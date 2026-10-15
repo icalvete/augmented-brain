@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/es/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/connect-services.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/connect-services.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/connect-services.es.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/connect-services.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/connect-services.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/connect-services.es.html"/>
+  </url>
+</urlset>

@@ -3,11 +3,108 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>augmented brain</title>
-<meta name="description" content="Un segundo cerebro para trabajar con asistentes de IA: tareas, áreas y reglas que tu asistente recuerda de una sesión a otra.">
-<meta property="og:title" content="augmented brain">
-<meta property="og:description" content="Tareas, áreas y reglas que tu asistente de IA recuerda de una sesión a otra.">
-<meta property="og:image" content="../img/og-image.png">
+<title>augmented brain · memoria para tu asistente de IA</title>
+<meta name="description" content="Tu asistente de IA lo olvida todo al cerrar la sesión. augmented brain le da a Claude Code un cuaderno, un método y un portero: tareas y decisiones que recuerda, guardadas como ficheros normales en tu máquina.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/es/">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/es/">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="augmented brain · memoria para tu asistente de IA">
+<meta property="og:description" content="Un cuaderno, un método y un portero para tu asistente de IA. Libre, gratis y con ficheros normales en tu máquina.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/es/">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="augmented brain · memoria para tu asistente de IA">
+<meta name="twitter:description" content="Un cuaderno, un método y un portero para tu asistente de IA. Libre, gratis y con ficheros normales en tu máquina.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "SoftwareApplication",
+ "name": "augmented brain",
+ "url": "https://icalvete.github.io/augmented-brain/es/",
+ "inLanguage": "es",
+ "description": "Tu asistente de IA lo olvida todo al cerrar la sesión. augmented brain le da a Claude Code un cuaderno, un método y un portero: tareas y decisiones que recuerda, guardadas como ficheros normales en tu máquina.",
+ "applicationCategory": "DeveloperApplication",
+ "operatingSystem": "Linux, macOS",
+ "license": "https://opensource.org/licenses/MIT",
+ "offers": {
+  "@type": "Offer",
+  "price": "0",
+  "priceCurrency": "EUR"
+ },
+ "image": "https://icalvete.github.io/augmented-brain/img/og-image.png",
+ "sameAs": [
+  "https://github.com/icalvete/augmented-brain"
+ ]
+}
+</script>
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "FAQPage",
+ "inLanguage": "es",
+ "mainEntity": [
+  {
+   "@type": "Question",
+   "name": "¿Es gratis?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Sí. Es software libre, con licencia MIT. Sin cuenta y sin suscripción."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "¿Mis notas salen de mi máquina?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "augmented brain no las envía a ningún sitio: se quedan en ficheros en tu máquina. Tu asistente las lee para trabajar, como cualquier otro fichero que abre, así que viajan con la conversación. Con una copia de seguridad, van además a un repositorio git privado que eliges tú."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "¿Con qué asistentes funciona?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Hoy, con Claude Code. El método funciona como servidor MCP, así que cualquier asistente que hable MCP puede usarlo; vendrán adaptadores para otros."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "¿Funciona en Windows?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Todavía no. De momento, Linux y macOS."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "¿Puedo editar las notas a mano?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Sí, son ficheros Markdown. Después, augmented-brain check las revisa y rehace el índice."
+   }
+  },
+  {
+   "@type": "Question",
+   "name": "¿Y si dejo de usarlo?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Tus notas se quedan donde están, como ficheros normales. No hay nada que exportar."
+   }
+  }
+ ]
+}
+</script>
 <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,93 +113,210 @@
 <link rel="stylesheet" href="../site.css">
 </head>
 <body>
+<a class="skip" href="#main">Ir al contenido</a>
 
 <header class="wrap top">
   <a class="brand" href="./"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Principal">
-    <a class="hide-sm" href="#get">Qué te da</a>
-    <a class="hide-sm" href="#commands">Comandos</a>
-    <a href="../">English</a>
+    <a class="hide-sm" href="#how">Cómo funciona</a>
+    <a class="hide-sm" href="#start">Empezar</a>
+    <a href="../" hreflang="en" data-lang="en">English</a>
     <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
   </nav>
 </header>
 
-<main>
+<main id="main">
   <div class="wrap hero">
-    <div class="card"><img src="../img/logo.svg" alt="Logo de augmented brain: un cerebro con el nombre encima" width="592" height="487"></div>
     <div>
-      <h1>Tu asistente de IA lo olvida todo al cerrar la sesión.</h1>
-      <p class="lead">augmented brain le da memoria y una forma de trabajar: tareas, áreas y reglas que recuerda de una sesión a otra, guardadas en ficheros Markdown que son tuyos.</p>
-      <ol class="steps" aria-label="Empieza en tres pasos">
-        <li><div class="cmd"><code id="c1">curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code><button class="copy" data-copy="c1">Copiar</button></div></li>
-        <li><div class="cmd"><code id="c2">augmented-brain init</code><button class="copy" data-copy="c2">Copiar</button></div></li>
-        <li><div class="cmd"><code id="c3">augmented-brain doctor</code><button class="copy" data-copy="c3">Copiar</button></div></li>
-      </ol>
-      <p class="note">Linux o macOS, con <a href="https://docs.claude.com/en/docs/claude-code">Claude Code</a>. Sin root. Después, abre Claude Code en tu carpeta de trabajo. Si tras instalar no se encuentra el comando, abre una terminal nueva.</p>
+      <p class="kicker">Para Claude Code · Linux y macOS · libre y gratis</p>
+      <h1>Tu asistente de IA se despierta cada mañana con amnesia.</h1>
+      <p class="lead">augmented brain le da un cuaderno. Apunta lo que decidís y lo relee la próxima vez.</p>
+      <div class="actions">
+        <a class="btn" href="#start">Empieza en tres pasos</a>
+        <a class="btn ghost" href="#story">Mira un ejemplo</a>
+      </div>
     </div>
+    <div class="card"><img src="../img/logo.svg" alt="Logo de augmented brain: un cerebro con el nombre encima" width="592" height="487"></div>
   </div>
+
+  <section id="story">
+    <div class="wrap">
+      <div class="head">
+        <h2>Lunes, 9 de la mañana</h2>
+        <p>El mismo lunes, dos veces.</p>
+      </div>
+      <div class="versus">
+        <div class="side without">
+          <p class="label">Sin él</p>
+          <div class="bubble you">Seguimos con el formulario de contacto.</div>
+          <div class="bubble ai">¡Claro! ¿Qué formulario? ¿Me cuentas de qué va el proyecto?</div>
+          <p class="after">Quince minutos volviendo a explicarlo todo.</p>
+        </div>
+        <div class="side with">
+          <p class="label">Con augmented brain</p>
+          <div class="bubble you">Seguimos con el formulario de contacto.</div>
+          <div class="bubble ai">Está aparcado. Quedamos en nombre, correo y mensaje, enviado por email. Lo siguiente es el plan. ¿Empiezo?</div>
+          <p class="after">Vuelves al trabajo sin más.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="head">
+        <h2>Tres cosas que le faltaban a tu asistente</h2>
+      </div>
+      <div class="three">
+        <div class="thing">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M6 3v18M10 8h5M10 12h5"/></svg>
+          </div>
+          <h3>Un cuaderno</h3>
+          <p>Cada tarea, decisión y lección va a un fichero de texto en tu máquina. En la siguiente sesión, el asistente lo lee lo primero.</p>
+          <p class="eg">“¿Por qué elegimos Postgres?” Está en las notas, con su fecha.</p>
+        </div>
+        <div class="thing">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7 5M3.5 12l1.5 1.5L7 11M3.5 18l1.5 1.5L7 17"/></svg>
+          </div>
+          <h3>Un método</h3>
+          <p>Como la checklist de un piloto: cada tarea va de la idea a terminada por los mismos seis pasos. Nada se queda a medias.</p>
+          <p class="eg">“Apárcalo” guarda dónde estás y el siguiente paso, como un marcapáginas.</p>
+        </div>
+        <div class="thing">
+          <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <h3>Un portero</h3>
+          <p>Hay puertas que solo abres tú: subir código, entrar como root, escribir una contraseña en un fichero.</p>
+          <p class="eg">El asistente tiene que preguntarte antes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section>
     <div class="wrap">
       <div class="head">
-        <h2>Sigue donde lo dejaste</h2>
-        <p>Una tarea aparcada un día y retomada al siguiente, en una sesión nueva que no sabe nada de la primera.</p>
+        <h2>La vida de una tarea</h2>
+        <p>Seis pasos, como una receta. Entre uno y otro, dices “adelante”; dentro de cada uno, el asistente trabaja sin más.</p>
       </div>
-      <div class="chat">
-        <div class="msg"><div class="who">tú</div><div class="bubble">Nueva tarea: añadir un formulario de contacto a la web.</div></div>
-        <div class="msg ai"><div class="who">claude</div><div class="bubble">Abierta <em>task-formulario-de-contacto</em>, en definición. ¿Qué campos debe tener?</div></div>
-        <div class="gap">…acordáis nombre, email y mensaje, y lo dejáis por hoy…</div>
-        <div class="msg"><div class="who">tú</div><div class="bubble">Apárcala, mañana seguimos con el plan.</div></div>
-        <div class="msg ai"><div class="who">claude</div><div class="bubble">Aparcada. Siguiente: escribir el plan.</div></div>
-        <div class="day">Al día siguiente · sesión nueva</div>
-        <div class="msg"><div class="who">tú</div><div class="bubble">Seguimos con el formulario de contacto.</div></div>
-        <div class="msg ai"><div class="who">claude</div><div class="bubble">Está aparcada con la definición acordada: nombre, email y mensaje, enviado por correo. Lo siguiente es el plan. La carpeta del proyecto sigue vacía: ¿dónde está el código de la web?</div></div>
-      </div>
-      <p class="proof">Sin repetir contexto. El asistente leyó la tarea y comprobó el estado real antes de fiarse de ella.</p>
-    </div>
-  </section>
-
-  <section id="get">
-    <div class="wrap">
-      <div class="head"><h2>Qué te da</h2></div>
-      <div class="grid">
-        <div class="item"><h3>Tareas que duran</h3><p>Todo trabajo pasa por definir, analizar, planificar, ejecutar con diario, validar y cerrar. Apárcala y retómala en cualquier sesión.</p></div>
-        <div class="item"><h3>Áreas</h3><p>Cada responsabilidad, de tu plataforma a un proyecto propio, agrupa sus tareas y lo que has aprendido de ella.</p></div>
-        <div class="item"><h3>Reglas que se cumplen</h3><p>Cómo te gusta trabajar se carga en cada sesión. Las reglas importantes se hacen cumplir, no solo se piden.</p></div>
-        <div class="item"><h3>Un guardia</h3><p>Nada de commit ni push salvo que lo permitas, nunca root, ningún secreto en comandos ni ficheros. Los perfiles de AWS de producción y los hosts intocables te piden confirmación, también por ssh.</p></div>
-        <div class="item"><h3>Trabajo y personal, separados</h3><p>Cada espacio tiene su memoria, sus reglas y su copia de seguridad. La carpeta en la que abres el asistente elige el espacio.</p></div>
-        <div class="item"><h3>Copia y restauración</h3><p>Cada espacio va a un repositorio git privado tuyo. Si pierdes el portátil, lo recuperas todo en uno nuevo.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="commands">
-    <div class="wrap">
-      <div class="head"><h2>Comandos</h2><p>Unos pocos, para montarlo todo. El trabajo de cada día ocurre dentro de Claude Code.</p></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Comando</th><th>Qué hace</th></tr></thead>
-          <tbody>
-            <tr><td><code>augmented-brain init</code></td><td>Monta augmented brain y tu primer espacio</td></tr>
-            <tr><td><code>augmented-brain space add</code></td><td>Añade otro espacio: personal, un cliente…</td></tr>
-            <tr><td><code>augmented-brain doctor</code></td><td>Dice qué falta y cómo arreglarlo</td></tr>
-            <tr><td><code>augmented-brain check</code></td><td>Revisa las notas del espacio de esta carpeta y rehace su índice</td></tr>
-            <tr><td><code>augmented-brain backup setup &lt;url&gt;</code></td><td>Conecta este espacio a un repositorio git privado</td></tr>
-            <tr><td><code>augmented-brain backup</code></td><td>Guarda los últimos cambios (<code>--all</code> para todos los espacios)</td></tr>
-            <tr><td><code>augmented-brain restore &lt;url&gt;</code></td><td>Recupera un espacio en una máquina nueva</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="plain">En Claude Code bastan tus palabras: “nueva tarea…”, “¿qué tengo pendiente?”, “apárcala”, “apunta esto en el buzón”.</p>
+      <ol class="life">
+        <li><b>Definir</b><span>Qué queremos y cómo sabremos que ha funcionado.</span><em>“Un formulario: nombre, correo, mensaje.”</em></li>
+        <li><b>Analizar</b><span>Cómo están las cosas de verdad. Comprobado, no supuesto.</span><em>“La web ya envía correos.”</em></li>
+        <li><b>Planificar</b><span>Pasos en orden, cada uno con vuelta atrás.</span><em>“Formulario, validación y envío.”</em></li>
+        <li><b>Hacer</b><span>Trabajar, con un diario con fecha.</span><em>“16-oct — filtro de spam puesto.”</em></li>
+        <li><b>Validar</b><span>Probar que funciona, de verdad.</span><em>“Mandé uno. Llegó.”</em></li>
+        <li><b>Cerrar</b><span>Se guarda siempre, nunca se borra.</span><em>“Hecho. Lección: probar antes en el móvil.”</em></li>
+      </ol>
     </div>
   </section>
 
   <section>
     <div class="wrap">
-      <div class="head"><h2>Guías</h2></div>
+      <div class="head">
+        <h2>El portero, trabajando</h2>
+        <p>Reglas de verdad, comprobadas antes de cada comando. También si va escondido dentro de otro, o por ssh.</p>
+      </div>
+      <div class="term" role="img" aria-label="Ejemplos de comandos que el guardia para o consulta">
+        <div class="line"><code>git push origin main</code><span class="tag stop">parado</span><span class="why">solo subes tú, salvo en los repos que permitas</span></div>
+        <div class="line"><code>sudo apt remove nginx</code><span class="tag stop">parado</span><span class="why">nunca como root</span></div>
+        <div class="line"><code>export API_KEY=sk-…</code><span class="tag stop">parado</span><span class="why">ningún secreto en comandos ni ficheros</span></div>
+        <div class="line"><code>aws --profile prod s3 rm …</code><span class="tag ask">te pregunta</span><span class="why">producción la apruebas tú</span></div>
+        <div class="line"><code>ssh db01 "systemctl restart …"</code><span class="tag ask">te pregunta</span><span class="why">una máquina que marcaste como intocable</span></div>
+        <div class="line"><code>aws --profile dev s3 ls</code><span class="tag go">adelante</span><span class="why">lo demás funciona como siempre</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap split">
+      <div>
+        <h2>Tus notas son ficheros</h2>
+        <p>Markdown en una carpeta. Ábrelas con cualquier editor. Sin cuenta, sin almacenamiento en la nube, sin ataduras. Si mañana dejas augmented brain, tus notas se quedan.</p>
+        <p>El asistente lee la cabecera. El resto lo escribes tú, en el idioma que quieras.</p>
+      </div>
+      <pre class="file" aria-label="Ejemplo de un fichero de tarea"><span class="fname">tasks/task-formulario-contacto.md</span><span class="fm">---
+title: Formulario de contacto
+status: parked
+waiting_on: nobody
+next: Escribir el plan
+---</span>
+## Lo esencial
+Nombre, correo y mensaje, enviado por email.
+
+## Diario
+- 2026-10-15 — Campos acordados.
+- 2026-10-15 — Aparcada: plan mañana.</pre>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head"><h2>Y además</h2></div>
+      <div class="grid">
+        <div class="item"><h3>Dos cajones</h3><p>Trabajo y personal, cada uno con sus notas, sus reglas y su copia. La carpeta donde abres el asistente elige el cajón.</p></div>
+        <div class="item"><h3>Pierdes el portátil, no el cerebro</h3><p>Cada cajón se copia en un repositorio git privado tuyo. Un comando lo recupera en una máquina nueva.</p></div>
+        <div class="item"><h3>Con tus palabras</h3><p>“Tarea nueva…”, “¿qué tengo pendiente?”, “apárcalo”, “apunta esto para luego”. No hay comandos que aprender.</p></div>
+        <div class="item"><h3>Áreas</h3><p>Lo que cuidas siempre, como “la web” o “los servidores”, agrupa sus tareas y lo que aprendiste.</p></div>
+        <div class="item"><h3>Tus herramientas</h3><p>Calendario, correo, documentos y Jira pueden sumarse. <a href="../guide/connect-services.es.html">Cómo conectarlos</a>.</p></div>
+        <div class="item"><h3>No depende de una IA</h3><p>El método funciona como servidor MCP, el estándar abierto para herramientas de IA. Primero Claude Code; otros pueden venir después.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="start">
+    <div class="wrap">
+      <div class="head">
+        <h2>Empieza en tres pasos</h2>
+        <p>Unos minutos. Sin root.</p>
+      </div>
+      <ol class="steps">
+        <li><span>Instala</span><div class="cmd"><code id="c1">curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code><button class="copy" data-copy="c1">Copiar</button></div></li>
+        <li><span>Prepara tu primer cajón</span><div class="cmd"><code id="c2">augmented-brain init</code><button class="copy" data-copy="c2">Copiar</button></div></li>
+        <li><span>Comprueba que todo está en su sitio</span><div class="cmd"><code id="c3">augmented-brain doctor</code><button class="copy" data-copy="c3">Copiar</button></div></li>
+      </ol>
+      <p class="note">Después, abre <a href="https://docs.claude.com/en/docs/claude-code">Claude Code</a> en tu carpeta de trabajo y di “tarea nueva”. Si tras instalar no se encuentra el comando, abre una terminal nueva.</p>
+      <details class="more">
+        <summary>Todos los comandos</summary>
+        <div class="table-wrap">
+          <table>
+            <tbody>
+              <tr><td><code>augmented-brain init</code></td><td>Prepara augmented brain y tu primer espacio</td></tr>
+              <tr><td><code>augmented-brain space add</code></td><td>Añade otro espacio: personal, un cliente…</td></tr>
+              <tr><td><code>augmented-brain doctor</code></td><td>Dice qué falta y cómo arreglarlo</td></tr>
+              <tr><td><code>augmented-brain check</code></td><td>Revisa las notas de esta carpeta y rehace su índice</td></tr>
+              <tr><td><code>augmented-brain backup setup &lt;url&gt;</code></td><td>Copia este espacio en un repositorio git privado</td></tr>
+              <tr><td><code>augmented-brain backup</code></td><td>Guarda los últimos cambios (<code>--all</code> para todos los espacios)</td></tr>
+              <tr><td><code>augmented-brain restore &lt;url&gt;</code></td><td>Recupera un espacio en una máquina nueva</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="head"><h2>Preguntas</h2></div>
+      <div class="faq">
+        <details><summary>¿Es gratis?</summary><p>Sí. Es software libre, con licencia MIT. Sin cuenta y sin suscripción.</p></details>
+        <details><summary>¿Mis notas salen de mi máquina?</summary><p>augmented brain no las envía a ningún sitio: se quedan en ficheros en tu máquina. Tu asistente las lee para trabajar, como cualquier otro fichero que abre, así que viajan con la conversación. Con una copia de seguridad, van además a un repositorio git privado que eliges tú.</p></details>
+        <details><summary>¿Con qué asistentes funciona?</summary><p>Hoy, con Claude Code. El método funciona como servidor MCP, así que cualquier asistente que hable MCP puede usarlo; vendrán adaptadores para otros.</p></details>
+        <details><summary>¿Funciona en Windows?</summary><p>Todavía no. De momento, Linux y macOS.</p></details>
+        <details><summary>¿Puedo editar las notas a mano?</summary><p>Sí, son ficheros Markdown. Después, <code>augmented-brain check</code> las revisa y rehace el índice.</p></details>
+        <details><summary>¿Y si dejo de usarlo?</summary><p>Tus notas se quedan donde están, como ficheros normales. No hay nada que exportar.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head"><h2>Para saber más</h2></div>
       <div class="guides">
         <a class="guide" href="../guide/connect-services.es.html"><h3>Conecta tus servicios</h3><span>Calendario, correo, documentos y Jira, por MCP.</span></a>
-        <a class="guide" href="https://github.com/icalvete/augmented-brain/blob/main/docs/spec/memory-format.md"><h3>Cómo se guarda la memoria</h3><span>Las carpetas, los ficheros y lo que lee el programa (en inglés).</span></a>
+        <a class="guide" href="https://github.com/icalvete/augmented-brain/blob/main/docs/spec/memory-format.md"><h3>Cómo se guardan las notas</h3><span>Las carpetas, los ficheros y lo que lee el programa (en inglés).</span></a>
         <a class="guide" href="https://github.com/icalvete/augmented-brain"><h3>Código e incidencias</h3><span>El código, el registro de cambios y dónde avisar de un problema.</span></a>
       </div>
     </div>
@@ -117,6 +331,9 @@
 </footer>
 
 <script>
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
 document.querySelectorAll(".copy").forEach(function (b) {
   b.addEventListener("click", function () {
     var text = document.getElementById(b.dataset.copy).textContent;
