@@ -9,7 +9,7 @@ All in plain text files of yours, backed up to your own git.</p>
 <p align="center"><a href="https://icalvete.github.io/augmented-brain/">Website</a> ·
 <a href="docs/guide/how-it-works.md">How it works</a> · <a href="README.es.md">Leer en español</a></p>
 
-<p align="center">[![Sponsor](https://img.shields.io/github/sponsors/icalvete?label=Sponsor&logo=githubsponsors&color=EA4AAA)](https://github.com/sponsors/icalvete)</p>
+<p align="center"><a href="https://github.com/sponsors/icalvete"><img alt="Sponsor" src="https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white"></a></p>
 
 > [!WARNING]
 > **Alpha.** This is an early version: it may have bugs, its format and commands may

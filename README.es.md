@@ -9,7 +9,7 @@ Todo queda en ficheros de texto tuyos, con copia en tu propio git.</p>
 <p align="center"><a href="https://icalvete.github.io/augmented-brain/es/">Web</a> ·
 <a href="docs/guide/how-it-works.es.md">Cómo funciona</a> · <a href="README.md">Read in English</a></p>
 
-<p align="center">[![Sponsor](https://img.shields.io/github/sponsors/icalvete?label=Sponsor&logo=githubsponsors&color=EA4AAA)](https://github.com/sponsors/icalvete)</p>
+<p align="center"><a href="https://github.com/sponsors/icalvete"><img alt="Patrocina" src="https://img.shields.io/badge/Patrocina-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white"></a></p>
 
 > [!WARNING]
 > **Alfa.** Es una versión temprana: puede tener errores, su formato y sus comandos
