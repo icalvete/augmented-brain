@@ -1,5 +1,42 @@
 # Changelog
 
+## Unreleased
+
+A first run that a newcomer can follow, found by trying it on a clean Ubuntu desktop.
+
+- The installer asks the language first (the system's is the default; `AB_LANGUAGE`
+  answers it), and everything after follows it: its messages, the spaces' names, the
+  program and the first-session interview. The interview then follows the language the
+  user writes in.
+- The installer checks first for git and Claude Code and, if one is missing, gives the
+  exact command to install it. It adds `~/.local/bin` to the PATH in the shell's startup
+  file, runs `init`, and ends with one next step.
+- `init` asks nothing: the language comes from the system, and it creates two spaces,
+  `work` and `personal` (`trabajo` and `personal` in Spanish), each in
+  `~/augmented-brain/<space>` with its notes inside. `init --custom` asks, as before.
+- A work folder that does not exist is created instead of refused.
+- The installer offers to install what is missing (git with the system's package
+  manager, Claude Code with its official installer, and the desktop app), showing only a
+  line while it works and a ✓ when done (their own output only if they fail), and, at
+  the end, to open Claude in
+  the work space, with the right PATH: one command from nothing to the first session.
+- A guided first session: while the profile is blank, Claude asks six quick questions,
+  saying why it asks each one, and with the answers saves the profile (`profile_save`),
+  creates areas, sets the guard (`safety_save`: production AWS profiles and hosts not to
+  touch) and remembers people (`person_save`).
+- A default space, `default_space` (set to `personal` by `init`): a session outside every
+  work folder, such as the scratch folder where the Claude desktop app starts a new
+  session, uses it, and Claude says so in one line. Without one, Claude says at once that
+  no memory is loaded and which folders to open.
+- People: a new note type in `people/`, listed in the index with who they are and the
+  names the user calls them, so "Marcos" leads to the right person.
+- `doctor` fails when git, Claude Code or the plugin is missing, with the command to
+  fix it, and shows what is only news (a blank profile, a folder outside your spaces)
+  with `·` instead of a warning.
+- `restore` puts the notes back in the same place inside the work folder, installs the
+  plugin when it is missing, and ends with the next step.
+- The language is read from `LC_ALL`, `LC_MESSAGES` and `LANG`, in that order.
+
 ## 0.1.0-alpha
 
 Released 2026-10-15. **Alpha:** the first usable version, tested on Linux only. It may

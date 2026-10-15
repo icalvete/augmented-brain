@@ -159,7 +159,7 @@
       <h1>Tu cerebro, aumentado con IA.</h1>
       <p class="lead">Tu asistente de IA recuerda en qué estabais, trabaja con método y te pregunta antes de tocar lo delicado. Todo queda en ficheros de texto tuyos, con copia en tu propio git.</p>
       <div class="actions">
-        <a class="btn" href="#start">Empieza en tres pasos</a>
+        <a class="btn" href="#start">Empieza en dos pasos</a>
         <a class="btn ghost" href="#story">Mira un ejemplo</a>
         <a class="btn heart" href="https://github.com/sponsors/icalvete">♥ Patrocina</a>
       </div>
@@ -180,7 +180,8 @@
         <div class="use"><p class="say">“¿Por qué elegimos Postgres?”</p><p>Lo busca en tus notas y te da la decisión, con su fecha y su porqué.</p></div>
         <div class="use"><p class="say">“Guárdalo como lección.”</p><p>Lo aprendido queda en una nota propia. La próxima vez que aparezca el tema, ya lo sabe.</p></div>
         <div class="use"><p class="say">“Borra el bucket viejo de producción.”</p><p>Antes de ejecutarlo, te pregunta. Producción la apruebas tú.</p></div>
-        <div class="use"><p class="say">Abres Claude en <code>~/personal</code></p><p>Solo ve tus notas personales. Las del trabajo se quedan en su cajón.</p></div>
+        <div class="use"><p class="say">Abres Claude en <code>~/augmented-brain/personal</code></p><p>Solo ve tus notas personales. Las del trabajo se quedan en su cajón.</p></div>
+        <div class="use"><p class="say">“Dile a Marcos que lo dejamos para el lunes.”</p><p>Sabe que Marcos es tu jefe, porque se lo contaste el primer día, y te prepara el mensaje.</p></div>
         <div class="use"><p class="say">Se te rompe el portátil</p><p>Un comando en el nuevo y lo tienes todo: notas, tareas y reglas. Más abajo, cómo.</p></div>
       </div>
     </div>
@@ -343,21 +344,20 @@ Nombre, correo y mensaje, enviado por email.
   <section id="start">
     <div class="wrap">
       <div class="head">
-        <h2>Empieza en tres pasos</h2>
-        <p>Unos minutos. Sin root.</p>
+        <h2>Empieza en dos pasos</h2>
+        <p>Unos minutos. augmented brain no necesita root.</p>
       </div>
       <ol class="steps">
-        <li><span>Instala</span><div class="cmd"><code id="c1">curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code><button class="copy" data-copy="c1">Copiar</button></div></li>
-        <li><span>Prepara tu primer cajón</span><div class="cmd"><code id="c2">augmented-brain init</code><button class="copy" data-copy="c2">Copiar</button></div></li>
-        <li><span>Comprueba que todo está en su sitio</span><div class="cmd"><code id="c3">augmented-brain doctor</code><button class="copy" data-copy="c3">Copiar</button></div></li>
+        <li><span>Instálalo con un solo comando. Te pregunta el idioma y te ofrece instalar lo que falte: git, Claude Code y la app de escritorio de Claude</span><div class="cmd"><code id="c1">curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code><button class="copy" data-copy="c1">Copiar</button></div></li>
+        <li><span>Contesta a Claude: la primera vez te hace seis preguntas rápidas, y te explica para qué sirve cada una</span></li>
       </ol>
-      <p class="note">Después, abre <a href="https://docs.claude.com/en/docs/claude-code">Claude Code</a> en tu carpeta de trabajo y di “tarea nueva”. Si tras instalar no se encuentra el comando, abre una terminal nueva.</p>
+      <p class="note">Crea dos espacios, <code>trabajo</code> y <code>personal</code>, en <code>~/augmented-brain</code>, y te pregunta si abre Claude ya. Las próximas veces, abre la app de Claude y pulsa <b>+ New</b>: sin elegir carpeta estás en tu espacio personal; para el de trabajo, elige <code>~/augmented-brain/trabajo</code> con <b>Choose…</b>. O en una terminal: <code>cd ~/augmented-brain/trabajo &amp;&amp; claude</code>. Si algo no va, <code>augmented-brain doctor</code> te dice qué falta.</p>
       <details class="more">
         <summary>Todos los comandos</summary>
         <div class="table-wrap">
           <table>
             <tbody>
-              <tr><td><code>augmented-brain init</code></td><td>Prepara augmented brain y tu primer espacio</td></tr>
+              <tr><td><code>augmented-brain init</code></td><td>Lo prepara todo: los espacios trabajo y personal y el plugin (lo lanza el instalador; <code>--custom</code> para elegir tú)</td></tr>
               <tr><td><code>augmented-brain space add</code></td><td>Añade otro espacio: personal, un cliente…</td></tr>
               <tr><td><code>augmented-brain doctor</code></td><td>Dice qué falta y cómo arreglarlo</td></tr>
               <tr><td><code>augmented-brain check</code></td><td>Revisa las notas de esta carpeta y rehace su índice</td></tr>

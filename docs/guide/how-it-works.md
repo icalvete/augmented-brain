@@ -58,19 +58,32 @@ wall: read the [disclaimer](../../DISCLAIMER.md).
 
 ## Your files
 
-Each **space** has its own notes folder:
+Everything lives in `~/augmented-brain`, one folder per **space**. You work inside it,
+and its notes go in `notes/`:
 
 ```
-~/augmented-brain/work/
-├── MEMORY.md     the index Claude reads at the start (written by the program)
-├── inbox.md      quick notes, to sort out later
-├── areas/        what you always look after: "the website", "the servers"
-├── tasks/        one file per task
-├── knowledge/    how things work and what you learned
-├── rules/        rules for this space only
-├── reviews/      weekly reviews
-└── archive/      old stuff; never loaded, never deleted
+~/augmented-brain/
+├── work/                 open Claude here for work
+│   ├── notes/
+│   │   ├── MEMORY.md     the index Claude reads at the start (written by the program)
+│   │   ├── inbox.md      quick notes, to sort out later
+│   │   ├── areas/        what you always look after: "the website", "the servers"
+│   │   ├── tasks/        one file per task
+│   │   ├── knowledge/    how things work and what you learned
+│   │   ├── people/       who you deal with, so it knows who "Marcos" is
+│   │   ├── rules/        rules for this space only
+│   │   ├── reviews/      weekly reviews
+│   │   └── archive/      old stuff; never loaded, never deleted
+│   └── (your projects)
+└── personal/             and here for personal things, with its own notes/
 ```
+
+Your **profile**, who you are and how you like to work, is one for every space:
+`~/.config/augmented-brain/profile.md`. You don't write it by hand: the first time you
+open Claude, it asks six quick questions, saying why it asks each one. With your answers
+it saves the profile, creates your areas, tells the guard what is production and which
+machines must not be touched, and notes the people you work with. To change anything,
+tell it.
 
 A task is a text file. At the top, between the `---` lines, the data the program uses.
 Below, what you and Claude write:
@@ -100,22 +113,34 @@ You can open and edit everything with any editor. The full format is in
 
 ## Work and personal, apart
 
-A space is a full set of notes, rules and backup. **The folder where you open Claude picks
-the space**, following your configuration:
+A space is a full set of notes, rules and backup. The installer creates two, `work` and
+`personal`. **The folder where you open Claude picks the space**, following your
+configuration:
 
 ```toml
 # ~/.config/augmented-brain/config.toml
+default_space = "personal"
+
 [spaces.work]
-memory = "~/augmented-brain/work"
-work_folders = ["~/work"]
+memory = "~/augmented-brain/work/notes"
+work_folders = ["~/augmented-brain/work"]
 
 [spaces.personal]
-memory = "~/augmented-brain/personal"
-work_folders = ["~/personal"]
+memory = "~/augmented-brain/personal/notes"
+work_folders = ["~/augmented-brain/personal"]
 ```
 
-In `~/work/website`, Claude sees your work notes. In `~/personal/blog`, your personal
-ones. They never mix. To add another: `augmented-brain space add`.
+In `~/augmented-brain/work/website`, Claude sees your work notes. In
+`~/augmented-brain/personal/blog`, your personal ones. They never mix.
+
+What if you open Claude in another folder? For example, the desktop app starts each new
+session in a scratch folder of its own. Then the **default space**, `personal`, is used,
+and Claude tells you in one line, with how to switch to work. You can change it in
+`default_space`, or remove it.
+
+Do your projects already live elsewhere, like `~/code`? Add that folder to the
+`work_folders` of the right space. For a new space (a client, say):
+`augmented-brain space add client`.
 
 ## The backup
 

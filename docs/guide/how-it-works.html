@@ -58,16 +58,22 @@
   <ul><li><strong>Go ahead</strong>: almost always. <code>ls</code>, <code>go test</code>, <code>aws --profile dev s3 ls</code>.</li><li><strong>Ask you</strong>: production, or a machine you marked as untouchable. <code>aws --profile prod …</code>, <code>ssh db01 …</code>.</li><li><strong>Stop</strong>: pushing code, root and secrets. <code>git push</code>, <code>sudo …</code>, a token in a command.</li></ul>
   <p>It also looks inside <code>ssh</code>, <code>bash -c</code> and loops. It is a net against slips, not a security wall: read the <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md">disclaimer</a>.</p>
   <h2>Your files</h2>
-  <p>Each <strong>space</strong> has its own notes folder:</p>
-  <pre><code>~/augmented-brain/work/
-├── MEMORY.md     the index Claude reads at the start (written by the program)
-├── inbox.md      quick notes, to sort out later
-├── areas/        what you always look after: "the website", "the servers"
-├── tasks/        one file per task
-├── knowledge/    how things work and what you learned
-├── rules/        rules for this space only
-├── reviews/      weekly reviews
-└── archive/      old stuff; never loaded, never deleted</code></pre>
+  <p>Everything lives in <code>~/augmented-brain</code>, one folder per <strong>space</strong>. You work inside it, and its notes go in <code>notes/</code>:</p>
+  <pre><code>~/augmented-brain/
+├── work/                 open Claude here for work
+│   ├── notes/
+│   │   ├── MEMORY.md     the index Claude reads at the start (written by the program)
+│   │   ├── inbox.md      quick notes, to sort out later
+│   │   ├── areas/        what you always look after: "the website", "the servers"
+│   │   ├── tasks/        one file per task
+│   │   ├── knowledge/    how things work and what you learned
+│   │   ├── people/       who you deal with, so it knows who "Marcos" is
+│   │   ├── rules/        rules for this space only
+│   │   ├── reviews/      weekly reviews
+│   │   └── archive/      old stuff; never loaded, never deleted
+│   └── (your projects)
+└── personal/             and here for personal things, with its own notes/</code></pre>
+  <p>Your <strong>profile</strong>, who you are and how you like to work, is one for every space: <code>~/.config/augmented-brain/profile.md</code>. You don't write it by hand: the first time you open Claude, it asks six quick questions, saying why it asks each one. With your answers it saves the profile, creates your areas, tells the guard what is production and which machines must not be touched, and notes the people you work with. To change anything, tell it.</p>
   <p>A task is a text file. At the top, between the <code>---</code> lines, the data the program uses. Below, what you and Claude write:</p>
   <pre><code>---
 id: task-add-a-contact-form
@@ -88,16 +94,20 @@ Name, email and message, sent by email.
 - 2026-10-15 — Parked. Next: Write the plan</code></pre>
   <p>You can open and edit everything with any editor. The full format is in <a href="https://github.com/icalvete/augmented-brain/blob/main/docs/spec/memory-format.md">memory-format.md</a>.</p>
   <h2>Work and personal, apart</h2>
-  <p>A space is a full set of notes, rules and backup. <strong>The folder where you open Claude picks the space</strong>, following your configuration:</p>
+  <p>A space is a full set of notes, rules and backup. The installer creates two, <code>work</code> and <code>personal</code>. <strong>The folder where you open Claude picks the space</strong>, following your configuration:</p>
   <pre><code># ~/.config/augmented-brain/config.toml
+default_space = "personal"
+
 [spaces.work]
-memory = "~/augmented-brain/work"
-work_folders = ["~/work"]
+memory = "~/augmented-brain/work/notes"
+work_folders = ["~/augmented-brain/work"]
 
 [spaces.personal]
-memory = "~/augmented-brain/personal"
-work_folders = ["~/personal"]</code></pre>
-  <p>In <code>~/work/website</code>, Claude sees your work notes. In <code>~/personal/blog</code>, your personal ones. They never mix. To add another: <code>augmented-brain space add</code>.</p>
+memory = "~/augmented-brain/personal/notes"
+work_folders = ["~/augmented-brain/personal"]</code></pre>
+  <p>In <code>~/augmented-brain/work/website</code>, Claude sees your work notes. In <code>~/augmented-brain/personal/blog</code>, your personal ones. They never mix.</p>
+  <p>What if you open Claude in another folder? For example, the desktop app starts each new session in a scratch folder of its own. Then the <strong>default space</strong>, <code>personal</code>, is used, and Claude tells you in one line, with how to switch to work. You can change it in <code>default_space</code>, or remove it.</p>
+  <p>Do your projects already live elsewhere, like <code>~/code</code>? Add that folder to the <code>work_folders</code> of the right space. For a new space (a client, say): <code>augmented-brain space add client</code>.</p>
   <h2>The backup</h2>
   <p>The notes folder of each space is also a git repository. The backup pushes it to a private repository of yours. Set it up once:</p>
   <pre><code>augmented-brain backup setup git@github.com:you/my-brain.git</code></pre>

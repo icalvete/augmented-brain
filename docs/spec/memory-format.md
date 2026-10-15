@@ -23,6 +23,10 @@ The space is chosen by **the folder you open the assistant in**. Spaces never re
 
 Spaces are declared in the configuration file (see "Configuration" below), not inside the memory.
 
+By default, `augmented-brain init` creates two spaces, `work` and `personal` (in Spanish, `trabajo` and `personal`). Each one is a folder in `~/augmented-brain/`, which is its work folder, and its memory folder sits inside it as `notes/` (`notas/`). Any other layout can be set with `init --custom` or by editing the configuration.
+
+A session that runs outside every work folder (for example, the scratch folder the Claude desktop app opens a new session in) uses the **default space**, `default_space` in the configuration; `init` sets it to `personal`. Without one, no memory is loaded there and the assistant tells the user which folders to open.
+
 ## Layout of a space
 
 ```
@@ -33,6 +37,7 @@ Spaces are declared in the configuration file (see "Configuration" below), not i
 ├── areas/             # ongoing responsibilities (one file each)
 ├── tasks/             # projects with a beginning and an end (one file each)
 ├── knowledge/         # how things work (reference) and what you learned (lesson)
+├── people/            # who the user deals with, so a first name finds the right person
 ├── rules/             # this space's own rules (the common rules ship with the program)
 ├── reviews/           # one file per weekly review
 └── archive/           # old journals and merged files; never loaded, never deleted
@@ -49,7 +54,7 @@ Every file except `MEMORY.md` and `inbox.md` starts with a YAML header between `
 ```yaml
 ---
 id: task-backup-restore          # unique in the space; also the file name without .md
-type: task                       # profile | area | task | reference | lesson | rule
+type: task                       # profile | area | task | reference | lesson | rule | person
 title: Backup and restore        # shown in indexes; any language
 summary: One line on what it is  # shown in indexes; any language
 area: area-platform              # tasks, references and lessons: the area they belong to
@@ -115,6 +120,14 @@ An area is something you look after with no end date (your platform, your observ
 
 Both belong to an area and can relate to tasks.
 
+## People
+
+A person is someone the user deals with: `people/person-<name>.md`. The title is the name,
+and the summary says who they are to the user and the other names the user calls them
+("my manager · also: Marcos"), so the index alone tells the assistant who "Marcos" is. The
+body keeps anything else worth remembering. People belong to a space: work contacts stay
+in the work space.
+
 ## Rules
 
 Rules tell the assistant how to work. There are two levels:
@@ -137,18 +150,19 @@ The program rebuilds these after every change; editing them by hand is pointless
 
 ```toml
 language = "en"                  # en | es: the language the program speaks to you
+default_space = "personal"       # used outside every work folder (optional)
 
 [spaces.work]
-memory = "~/brains/work"
-work_folders = ["~/work"]        # opening the assistant here selects this space
+memory = "~/augmented-brain/work/notes"
+work_folders = ["~/augmented-brain/work", "~/code"]   # opening the assistant here selects this space
 backup = "git@github.com:me/brain-work-private.git"
 production_aws_profiles = ["prod", "prod-eu"]   # the user confirms first
 untouchable_hosts = ["db01", "db02", "db03"]    # ssh to them: the user confirms first
-git_allowed_repos = ["~/work/notes"]            # the assistant may commit and push here, with git -C
+git_allowed_repos = ["~/code/website"]          # the assistant may commit and push here, with git -C
 
 [spaces.personal]
-memory = "~/brains/personal"
-work_folders = ["~/personal"]
+memory = "~/augmented-brain/personal/notes"
+work_folders = ["~/augmented-brain/personal"]
 backup = "git@github.com:me/brain-personal-private.git"
 ```
 
@@ -157,7 +171,9 @@ backup = "git@github.com:me/brain-personal-private.git"
 Each space backs up to its own private git repository: the memory folder itself is the
 repository. Every backup also copies this space's part of the configuration and the
 profile into `.augmented-brain/` inside the memory folder, so restoring on a new machine
-needs nothing else. Paths are kept with `~`, so they point to the new machine's home.
+needs nothing else. Paths are kept with `~`, so they point to the new machine's home, and
+the notes go back to the same place inside the work folder. A restore also installs the
+Claude Code plugin when it is missing.
 
 A backup is refused while any file of the memory holds a secret. The generated index is
 rebuilt after a restore.

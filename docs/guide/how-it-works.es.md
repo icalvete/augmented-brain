@@ -58,19 +58,32 @@ no un muro de seguridad: lee el [aviso legal](../../DISCLAIMER.md#aviso-legal).
 
 ## Tus ficheros
 
-Cada **espacio** tiene su carpeta de notas:
+Todo vive en `~/augmented-brain`, con una carpeta por **espacio**. Trabajas dentro de ella,
+y sus notas van en `notas/`:
 
 ```
-~/augmented-brain/trabajo/
-├── MEMORY.md     el índice que Claude lee al empezar (lo genera el programa)
-├── inbox.md      apuntes rápidos, para ordenar luego
-├── areas/        lo que cuidas siempre: "la web", "los servidores"
-├── tasks/        un fichero por tarea
-├── knowledge/    cómo funcionan las cosas y lo aprendido
-├── rules/        reglas solo de este espacio
-├── reviews/      revisiones semanales
-└── archive/      lo antiguo; no se carga y no se borra
+~/augmented-brain/
+├── trabajo/              abre Claude aquí para lo del trabajo
+│   ├── notas/
+│   │   ├── MEMORY.md     el índice que Claude lee al empezar (lo genera el programa)
+│   │   ├── inbox.md      apuntes rápidos, para ordenar luego
+│   │   ├── areas/        lo que cuidas siempre: "la web", "los servidores"
+│   │   ├── tasks/        un fichero por tarea
+│   │   ├── knowledge/    cómo funcionan las cosas y lo aprendido
+│   │   ├── people/       con quién tratas, para saber quién es "Marcos"
+│   │   ├── rules/        reglas solo de este espacio
+│   │   ├── reviews/      revisiones semanales
+│   │   └── archive/      lo antiguo; no se carga y no se borra
+│   └── (tus proyectos)
+└── personal/             y aquí para lo personal, con sus propias notas/
 ```
+
+Tu **perfil**, quién eres y cómo te gusta trabajar, es uno para todos los espacios:
+`~/.config/augmented-brain/profile.md`. No hace falta escribirlo a mano: la primera vez
+que abres Claude, te hace seis preguntas rápidas, explicándote el porqué de cada una. Con
+tus respuestas guarda el perfil, crea tus áreas, le dice al guardia qué es producción y
+qué máquinas no se tocan, y apunta a las personas con las que trabajas. Para cambiar
+cualquier cosa, díselo.
 
 Una tarea es un fichero de texto. Arriba, entre las líneas `---`, los datos que usa el
 programa. Debajo, lo que escribís tú y Claude:
@@ -100,22 +113,34 @@ Puedes abrir y editar todo con cualquier editor. El formato completo está en
 
 ## Trabajo y personal, separados
 
-Un espacio es un juego completo de notas, reglas y copia. **La carpeta donde abres Claude
-elige el espacio**, según tu configuración:
+Un espacio es un juego completo de notas, reglas y copia. El instalador crea dos,
+`trabajo` y `personal`. **La carpeta donde abres Claude elige el espacio**, según tu
+configuración:
 
 ```toml
 # ~/.config/augmented-brain/config.toml
+default_space = "personal"
+
 [spaces.trabajo]
-memory = "~/augmented-brain/trabajo"
-work_folders = ["~/trabajo"]
+memory = "~/augmented-brain/trabajo/notas"
+work_folders = ["~/augmented-brain/trabajo"]
 
 [spaces.personal]
-memory = "~/augmented-brain/personal"
-work_folders = ["~/personal"]
+memory = "~/augmented-brain/personal/notas"
+work_folders = ["~/augmented-brain/personal"]
 ```
 
-En `~/trabajo/web`, Claude ve las notas del trabajo. En `~/personal/blog`, las personales.
-Nunca se mezclan. Para añadir otro: `augmented-brain space add`.
+En `~/augmented-brain/trabajo/web`, Claude ve las notas del trabajo. En
+`~/augmented-brain/personal/blog`, las personales. Nunca se mezclan.
+
+¿Y si abres Claude en otra carpeta? Por ejemplo, la app de escritorio empieza cada sesión
+nueva en una carpeta temporal suya. Entonces se usa el **espacio por defecto**,
+`personal`, y Claude te lo dice en una línea, con cómo pasar al de trabajo. Puedes
+cambiarlo en `default_space`, o quitarlo.
+
+¿Tus proyectos ya viven en otra carpeta, como `~/code`? Añádela a `work_folders` del
+espacio que toque. Para un espacio nuevo (un cliente, por ejemplo):
+`augmented-brain space add cliente`.
 
 ## La copia de seguridad
 

@@ -37,25 +37,39 @@ You talk to it as usual. This is what changes:
 | "Why did we pick Postgres?" | It looks it up in your notes and gives you the decision, with date and reason |
 | "Save that as a lesson." | What you learned gets its own note, for next time |
 | "Delete the old production bucket." | Before running it, it asks you |
-| You open Claude in `~/personal` | It only sees your personal notes; not the work ones |
+| You open Claude in `~/augmented-brain/personal` | It only sees your personal notes; not the work ones |
+| "Tell Marcos we moved it to Monday." | It knows Marcos is your manager and drafts the message |
 | Your laptop dies | `augmented-brain restore` on the new one and it is all back |
 
-## Start in three steps
+## Start in two steps
 
-Linux or macOS, with [Claude Code](https://docs.claude.com/en/docs/claude-code) installed.
+Linux or macOS. augmented brain needs no root.
+
+**1. Install it** with one command:
 
 ```bash
 curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh
-augmented-brain init
-augmented-brain doctor
 ```
 
-`init` asks your language, a name for your first space and the folder you work in, and
-installs the Claude Code plugin. `doctor` tells you if anything is missing, and how to
-fix it. Then open Claude Code in your work folder.
+It asks the language first. If git or Claude Code is missing, it offers to install them,
+and the Claude desktop app too, the easiest way to work (on Ubuntu and Debian, or on a Mac
+with Homebrew). Then it sets everything up (two spaces, `work` and `personal`, in
+`~/augmented-brain`, and the Claude Code plugin) and asks whether to open Claude right away.
 
-If `augmented-brain` is not found right after installing, open a new terminal; the installer
-prints the line to add to your shell profile when its folder is not in your `PATH`.
+**2. Answer Claude.** The first time, it asks six quick questions, saying what each one is
+for: who you are, what you look after, how you want answers, what must not be touched,
+which tools you use and who you work with. With that it creates your areas, sets up the
+guard and learns who is who.
+
+From then on, open the Claude app, click **+ New** and write. Without choosing a folder you
+are in your personal space; for work, pick the folder `~/augmented-brain/work` with
+**Choose…**. From a terminal:
+
+```bash
+cd ~/augmented-brain/work && claude
+```
+
+If something is off, `augmented-brain doctor` tells you what is missing and how to fix it.
 
 ## What it looks like
 
@@ -123,7 +137,7 @@ It does not run by itself yet: it is a command you run.
 
 | Command | What it does |
 |---|---|
-| `augmented-brain init` | Set up augmented brain and your first space |
+| `augmented-brain init` | Sets everything up: the `work` and `personal` spaces and the plugin. The installer runs it; `--custom` to choose yourself |
 | `augmented-brain space add` | Add another space (personal, a client…) |
 | `augmented-brain doctor` | Say what is missing, and how to fix it |
 | `augmented-brain check` | Check the notes of this folder's space and rebuild its index |
