@@ -3,13 +3,14 @@ package doctor
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
 
@@ -37,6 +38,8 @@ type Env struct {
 	// Plugin reports whether the Claude Code plugin is installed; nil means ask
 	// Claude Code itself.
 	Plugin func() (bool, error)
+	// Lang is the language of the report when there is no configuration to say it.
+	Lang string
 }
 
 // Run returns every check, in the order they are shown. Later checks are skipped when
@@ -47,30 +50,34 @@ func Run(e Env) []Check {
 	}
 	var out []Check
 	add := func(s Status, what, fix string) { out = append(out, Check{s, what, fix}) }
+	if e.Lang == "" {
+		e.Lang = "en"
+	}
 
 	c, err := config.Load(e.ConfigDir)
 	switch {
 	case errors.Is(err, config.ErrNotFound):
-		add(Failed, "no configuration in "+e.ConfigDir, "run `augmented-brain init`")
+		add(Failed, i18n.T(e.Lang, "doctor.noconfig", e.ConfigDir), i18n.T(e.Lang, "doctor.noconfig.fix"))
 		return append(out, tools(e)...)
 	case err != nil:
-		add(Failed, err.Error(), "fix the file, or move it away and run `augmented-brain init`")
+		add(Failed, err.Error(), i18n.T(e.Lang, "doctor.badconfig.fix"))
 		return append(out, tools(e)...)
 	}
-	add(OK, "configuration: "+filepath.Join(c.Dir, config.FileName), "")
+	e.Lang = c.Language
+	l := e.Lang
+	add(OK, i18n.T(l, "doctor.config", filepath.Join(c.Dir, config.FileName)), "")
 
 	profile := filepath.Join(c.Dir, "profile.md")
 	if _, err := os.Stat(profile); err != nil {
-		add(Warning, "no profile at "+profile, "write who you are and how you like to work there")
+		add(Warning, i18n.T(l, "doctor.noprofile", profile), i18n.T(l, "doctor.noprofile.fix"))
 	} else {
-		add(OK, "profile: "+profile, "")
+		add(OK, i18n.T(l, "doctor.profile", profile), "")
 	}
 
 	if s := c.SpaceFor(e.WorkDir); s != nil {
-		add(OK, fmt.Sprintf("this folder belongs to space %q", s.Name), "")
+		add(OK, i18n.T(l, "doctor.inspace", s.Name), "")
 	} else {
-		add(Warning, fmt.Sprintf("this folder belongs to no space (spaces: %v)", c.SpaceNames()),
-			"open your assistant inside a space's work folder, or run `augmented-brain space add`")
+		add(Warning, i18n.T(l, "doctor.nospace", strings.Join(c.SpaceNames(), ", ")), i18n.T(l, "doctor.nospace.fix"))
 	}
 
 	for _, name := range c.SpaceNames() {
@@ -80,24 +87,19 @@ func Run(e Env) []Check {
 }
 
 func space(c *config.Config, s *config.Space) []Check {
+	l := c.Language
 	m, problems, err := memory.Load(s.Memory)
 	if err != nil {
-		return []Check{{Failed, fmt.Sprintf("space %s: memory folder %s: %v", s.Name, s.Memory, err),
-			"create it, or fix the path in " + filepath.Join(c.Dir, config.FileName)}}
+		return []Check{{Failed, i18n.T(l, "doctor.nomemory", s.Name, s.Memory, err),
+			i18n.T(l, "doctor.nomemory.fix", filepath.Join(c.Dir, config.FileName))}}
 	}
 	if len(problems) > 0 {
-		return []Check{{Failed, fmt.Sprintf("space %s: %d notes are not valid", s.Name, len(problems)),
-			"run `augmented-brain check` inside the space to see them"}}
+		return []Check{{Failed, i18n.T(l, "doctor.invalid", s.Name, len(problems)), i18n.T(l, "doctor.invalid.fix")}}
 	}
-	notes := fmt.Sprintf("%d notes", len(m.Notes))
-	if len(m.Notes) == 1 {
-		notes = "1 note"
-	}
-	checks := []Check{{OK, fmt.Sprintf("space %s: %s, all valid", s.Name, notes), ""}}
+	checks := []Check{{OK, i18n.T(l, "doctor.valid", s.Name, i18n.Count(l, "notes", len(m.Notes))), ""}}
 	current, _ := os.ReadFile(filepath.Join(s.Memory, memory.IndexFile))
 	if string(current) != m.Index(c.Language) {
-		checks = append(checks, Check{Warning, fmt.Sprintf("space %s: %s is out of date", s.Name, memory.IndexFile),
-			"run `augmented-brain check` inside the space to rebuild it"})
+		checks = append(checks, Check{Warning, i18n.T(l, "doctor.stale", s.Name, memory.IndexFile), i18n.T(l, "doctor.stale.fix")})
 	}
 	return checks
 }
@@ -105,13 +107,13 @@ func space(c *config.Config, s *config.Space) []Check {
 func tools(e Env) []Check {
 	var out []Check
 	for _, t := range []struct{ bin, why, fix string }{
-		{"claude", "Claude Code", "install it: https://docs.claude.com/en/docs/claude-code"},
-		{"git", "git, for backups", "install git with your system's package manager"},
+		{"claude", i18n.T(e.Lang, "doctor.claude"), i18n.T(e.Lang, "doctor.claude.fix")},
+		{"git", i18n.T(e.Lang, "doctor.git"), i18n.T(e.Lang, "doctor.git.fix")},
 	} {
 		if p, err := e.LookPath(t.bin); err == nil {
-			out = append(out, Check{OK, t.why + ": " + p, ""})
+			out = append(out, Check{OK, i18n.T(e.Lang, "doctor.tool", t.why, p), ""})
 		} else {
-			out = append(out, Check{Warning, t.why + ": not found", t.fix})
+			out = append(out, Check{Warning, i18n.T(e.Lang, "doctor.notool", t.why), t.fix})
 		}
 	}
 	return append(out, plugin(e)...)
@@ -128,12 +130,12 @@ func plugin(e Env) []Check {
 	ok, err := installed()
 	switch {
 	case err != nil:
-		return []Check{{Warning, "Claude Code plugin: cannot tell (" + err.Error() + ")", ""}}
+		return []Check{{Warning, i18n.T(e.Lang, "doctor.plugin.unknown", err), ""}}
 	case !ok:
-		return []Check{{Warning, "Claude Code plugin " + claudecode.Plugin + ": not installed",
+		return []Check{{Warning, i18n.T(e.Lang, "doctor.plugin.missing", claudecode.Plugin),
 			"claude plugin marketplace add " + claudecode.Marketplace() + " && claude plugin install " + claudecode.Plugin + " --scope user"}}
 	}
-	return []Check{{OK, "Claude Code plugin " + claudecode.Plugin + ": installed", ""}}
+	return []Check{{OK, i18n.T(e.Lang, "doctor.plugin.ok", claudecode.Plugin), ""}}
 }
 
 // Worst returns the most serious status in the report.

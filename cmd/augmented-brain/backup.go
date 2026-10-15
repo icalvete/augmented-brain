@@ -9,6 +9,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 )
 
 // cmdBackup: `backup` saves the current space (or every space with --all);
@@ -27,7 +28,7 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 			fmt.Fprintln(errOut, err)
 			return 1
 		}
-		fmt.Fprintf(out, "Space %s will back up to %s. Run `augmented-brain backup` to make the first copy.\n", s.Name, args[1])
+		fmt.Fprintln(out, i18n.T(c.Language, "backup.setup", s.Name, args[1]))
 		return 0
 	}
 
@@ -64,12 +65,12 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 		res, err := backup.Run(c, s, host)
 		switch {
 		case err != nil:
-			fmt.Fprintf(errOut, "✗ %s: %v\n", s.Name, err)
+			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.failed", s.Name, err))
 			code = 1
 		case res.Committed:
-			fmt.Fprintf(out, "✓ %s: changes saved and pushed to %s\n", s.Name, s.Backup)
+			fmt.Fprintln(out, i18n.T(c.Language, "backup.saved", s.Name, s.Backup))
 		default:
-			fmt.Fprintf(out, "✓ %s: nothing new; %s is up to date\n", s.Name, s.Backup)
+			fmt.Fprintln(out, i18n.T(c.Language, "backup.same", s.Name, s.Backup))
 		}
 	}
 	return code
@@ -102,7 +103,10 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
-	fmt.Fprintf(out, "Space %s restored in %s.\nWork folder: %s\nNext: run `augmented-brain doctor`.\n",
-		s.Name, s.Memory, strings.Join(s.WorkFolders, ", "))
+	lang := i18n.FromEnv()
+	if c, err := config.Load(dir); err == nil {
+		lang = c.Language
+	}
+	fmt.Fprintln(out, i18n.T(lang, "restore.done", s.Name, s.Memory, strings.Join(s.WorkFolders, ", ")))
 	return 0
 }

@@ -1,0 +1,54 @@
+package i18n
+
+import (
+	"regexp"
+	"testing"
+)
+
+var verb = regexp.MustCompile(`%[-+# 0-9.]*[a-zA-Z]`)
+
+// Every message exists in every language, with the same placeholders in the same order,
+// so a translation can never swallow or misplace a value.
+func TestCatalog(t *testing.T) {
+	for lang, msgs := range messages {
+		for key := range messages["en"] {
+			if _, ok := msgs[key]; !ok {
+				t.Errorf("%s: missing %q", lang, key)
+			}
+		}
+		for key, f := range msgs {
+			en, ok := messages["en"][key]
+			if !ok {
+				t.Errorf("%s: %q does not exist in English", lang, key)
+				continue
+			}
+			if a, b := verb.FindAllString(en, -1), verb.FindAllString(f, -1); fmtString(a) != fmtString(b) {
+				t.Errorf("%s %q: placeholders %v, English has %v", lang, key, b, a)
+			}
+		}
+	}
+}
+
+func TestT(t *testing.T) {
+	if got := T("es", "doctor.inspace", "work"); got != `esta carpeta es del espacio "work"` {
+		t.Errorf("T = %q", got)
+	}
+	if got := T("fr", "doctor.git"); got != "git, for backups" {
+		t.Errorf("unknown language must fall back to English: %q", got)
+	}
+	if got := Count("es", "notes", 1); got != "1 nota" {
+		t.Errorf("Count = %q", got)
+	}
+	t.Setenv("LANG", "es_ES.UTF-8")
+	if FromEnv() != "es" {
+		t.Error("LANG es_ES not detected")
+	}
+}
+
+func fmtString(v []string) string {
+	s := ""
+	for _, x := range v {
+		s += x + ","
+	}
+	return s
+}

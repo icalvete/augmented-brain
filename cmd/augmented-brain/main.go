@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/doctor"
 	"github.com/icalvete/augmented-brain/internal/hook"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/mcpserver"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/version"
@@ -86,7 +88,7 @@ func currentSpace(errOut io.Writer) (*config.Config, *config.Space, bool) {
 	}
 	c, err := config.Load(dir)
 	if errors.Is(err, config.ErrNotFound) {
-		fmt.Fprintf(errOut, "%v.\nRun `augmented-brain init` to create one.\n", err)
+		fmt.Fprintln(errOut, i18n.T(i18n.FromEnv(), "config.missing", err))
 		return nil, nil, false
 	}
 	if err != nil {
@@ -100,18 +102,18 @@ func currentSpace(errOut io.Writer) (*config.Config, *config.Space, bool) {
 	}
 	s := c.SpaceFor(wd)
 	if s == nil {
-		fmt.Fprintf(errOut, "%s is not inside any space's work folder.\nSpaces: %v\n", wd, c.SpaceNames())
+		fmt.Fprintln(errOut, i18n.T(c.Language, "space.none", wd, strings.Join(c.SpaceNames(), ", ")))
 		return c, nil, false
 	}
 	return c, s, true
 }
 
 func cmdSpace(out, errOut io.Writer) int {
-	_, s, ok := currentSpace(errOut)
+	c, s, ok := currentSpace(errOut)
 	if !ok {
 		return 1
 	}
-	fmt.Fprintf(out, "space:  %s\nmemory: %s\n", s.Name, s.Memory)
+	fmt.Fprintln(out, i18n.T(c.Language, "space.show", s.Name, s.Memory))
 	return 0
 }
 
@@ -128,8 +130,8 @@ func cmdCheck(out, errOut io.Writer) int {
 	for _, p := range problems {
 		fmt.Fprintln(out, "  ✗", p.Error())
 	}
-	fmt.Fprintf(out, "space %s: %s, %s\n", s.Name,
-		plural(len(m.Notes), "note"), plural(len(problems), "problem"))
+	fmt.Fprintln(out, i18n.T(c.Language, "check.summary", s.Name,
+		i18n.Count(c.Language, "notes", len(m.Notes)), i18n.Count(c.Language, "problems", len(problems))))
 	if len(problems) > 0 {
 		return 1
 	}
@@ -138,7 +140,7 @@ func cmdCheck(out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	} else if changed {
-		fmt.Fprintf(out, "%s rebuilt\n", memory.IndexFile)
+		fmt.Fprintln(out, i18n.T(c.Language, "check.rebuilt", memory.IndexFile))
 	}
 	return 0
 }
@@ -150,7 +152,7 @@ func cmdDoctor(out, errOut io.Writer) int {
 		return 1
 	}
 	wd, _ := os.Getwd()
-	checks := doctor.Run(doctor.Env{ConfigDir: dir, WorkDir: wd})
+	checks := doctor.Run(doctor.Env{ConfigDir: dir, WorkDir: wd, Lang: i18n.FromEnv()})
 	marks := map[doctor.Status]string{doctor.OK: "✓", doctor.Warning: "!", doctor.Failed: "✗"}
 	for _, c := range checks {
 		fmt.Fprintf(out, "%s %s\n", marks[c.Status], c.What)
@@ -162,13 +164,6 @@ func cmdDoctor(out, errOut io.Writer) int {
 		return 1
 	}
 	return 0
-}
-
-func plural(n int, word string) string {
-	if n == 1 {
-		return fmt.Sprintf("1 %s", word)
-	}
-	return fmt.Sprintf("%d %ss", n, word)
 }
 
 // cmdMCP serves the tools over stdin and stdout. The assistant starts it in the folder
