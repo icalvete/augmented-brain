@@ -119,5 +119,10 @@ func (m *Memory) WriteIndex(lang string) (bool, error) {
 	if old, err := os.ReadFile(path); err == nil && string(old) == text {
 		return false, nil
 	}
-	return true, os.WriteFile(path, []byte(text), 0o644)
+	// One step (write, then rename), like the notes: a crash never leaves half an index.
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, []byte(text), 0o644); err != nil {
+		return false, err
+	}
+	return true, os.Rename(tmp, path)
 }
