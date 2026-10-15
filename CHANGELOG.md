@@ -1,8 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.2.0-alpha
 
-A first run that a newcomer can follow, found by trying it on a clean Ubuntu desktop.
+Released 2026-10-15. **Alpha:** a first run that a newcomer can follow, found by trying
+it on a clean Ubuntu desktop. Tested by a person on Ubuntu 24.04; on macOS, the install
+is tested hands-off on GitHub's machines, and the visual part (the desktop app, signing
+in) is still to be tried by a person.
 
 - The installer asks the language first (the system's is the default; `AB_LANGUAGE`
   answers it), and everything after follows it: its messages, the spaces' names, the

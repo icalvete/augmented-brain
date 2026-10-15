@@ -13,7 +13,8 @@ All in plain text files of yours, backed up to your own git.</p>
 
 > [!WARNING]
 > **Alpha.** This is an early version: it may have bugs, its format and commands may
-> change, and it has been tested on Linux only. Read the [disclaimer](DISCLAIMER.md)
+> change. Tested by a person on Linux; on macOS, only the install, automatically.
+> Read the [disclaimer](DISCLAIMER.md)
 > before you use it, and back up anything important.
 
 ---

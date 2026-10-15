@@ -13,7 +13,8 @@ Todo queda en ficheros de texto tuyos, con copia en tu propio git.</p>
 
 > [!WARNING]
 > **Alfa.** Es una versión temprana: puede tener errores, su formato y sus comandos
-> pueden cambiar, y solo se ha probado en Linux. Lee el [aviso legal](DISCLAIMER.md#aviso-legal)
+> pueden cambiar. Probado por una persona en Linux; en macOS, solo la instalación, de forma
+> automática. Lee el [aviso legal](DISCLAIMER.md#aviso-legal)
 > antes de usarlo, y haz copia de lo importante.
 
 ---
