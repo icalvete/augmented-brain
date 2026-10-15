@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>augmented brain brand</title>
+<link rel="icon" href="../assets/brand/out/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a brand sheet; each section shows an asset where it will live (README, browser tab, phone, social card). */
+:root {
+  --ink: #143024; --mint: #9CC9AF; --sage: #6B9A82; --soft: #E1EBE2;
+  --bg: #F6F9F7; --surface: #FFFFFF; --fg: #13231B; --muted: #55685E; --line: #D7E2DB;
+  --gh-light: #FFFFFF; --gh-dark: #0D1117; --gh-dark-fg: #E6EDF3; --gh-line: #D0D7DE; --gh-line-dark: #30363D;
+  --display: "Quicksand", "Nunito", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1612; --surface: #15211B; --fg: #E4EFE9; --muted: #9DB3A7; --line: #26362E; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0E1612; --surface: #15211B; --fg: #E4EFE9; --muted: #9DB3A7; --line: #26362E; color-scheme: dark }
+
+code { font-family: var(--mono); font-size: 0.9em; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.55; }
+.page { max-width: 1040px; margin: 0 auto; padding-block: 40px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 56px; }
+h1, h2 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h2 { font-size: 1.45rem; }
+.eyebrow { font: 500 0.72rem/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+p { margin: 0; max-width: 65ch; }
+.lead { color: var(--muted); }
+section { display: grid; gap: 18px; }
+.head { display: grid; gap: 6px; }
+img { display: block; height: auto; max-width: 100%; }
+
+.hero { background: var(--soft); border-radius: 18px; padding-block: 48px; padding-inline: clamp(20px, 5vw, 56px);
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 32px; align-items: center; color: var(--ink); }
+.hero h1 { font-size: clamp(1.9rem, 4.5vw, 3rem); color: var(--ink); }
+.hero p { color: #2C4A3B; }
+.hero .note { font: 500 0.78rem/1.4 var(--mono); color: #3D5E4E; }
+@media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+
+.grounds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.ground { border-radius: 12px; padding: 28px; display: grid; gap: 14px; justify-items: center; border: 1px solid var(--line); }
+.ground span { font: 500 0.72rem/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.g-white { background: #FFFFFF; color: #55685E; }
+.g-soft { background: var(--soft); color: #3D5E4E; border-color: transparent; }
+.g-ink { background: var(--ink); color: var(--mint); border-color: transparent; }
+@media (max-width: 720px) { .grounds { grid-template-columns: 1fr; } }
+
+.readmes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.gh { border-radius: 10px; overflow: hidden; border: 1px solid var(--gh-line); background: var(--gh-light); color: #1F2328; min-width: 0; }
+.gh.dark { background: var(--gh-dark); color: var(--gh-dark-fg); border-color: var(--gh-line-dark); }
+.gh-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--gh-line); font: 600 0.82rem/1 var(--body); }
+.gh.dark .gh-bar { border-color: var(--gh-line-dark); }
+.gh-body { padding: 18px; display: grid; gap: 12px; }
+.gh-body p { font-size: 0.86rem; }
+.gh-body .cmd { font: 0.8rem/1.5 var(--mono); background: #F6F8FA; border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; color: #1F2328; }
+.gh.dark .gh-body .cmd { background: #161B22; color: var(--gh-dark-fg); }
+@media (max-width: 720px) { .readmes { grid-template-columns: 1fr; } }
+
+.icons { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: grid; gap: 16px; align-content: start; min-width: 0; }
+.tabs { display: flex; gap: 4px; background: #DEE3E0; border-radius: 10px 10px 0 0; padding: 8px 8px 0; overflow: hidden; }
+.tab { display: flex; align-items: center; gap: 8px; background: #FFFFFF; color: #1F2328; border-radius: 8px 8px 0 0; padding: 8px 12px; font-size: 0.8rem; min-width: 0; white-space: nowrap; }
+.tab.off { background: transparent; color: #55685E; }
+.tab img { width: 16px; height: 16px; }
+.urlbar { background: #FFFFFF; color: #55685E; border: 1px solid #DEE3E0; border-top: 0; border-radius: 0 0 10px 10px; padding: 8px 12px; font: 0.78rem var(--mono); }
+.sizes { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 22px; }
+.size { display: grid; gap: 8px; justify-items: center; }
+.size span { font: 0.72rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.phone { justify-self: center; width: min(220px, 100%); aspect-ratio: 9 / 16; border-radius: 28px; padding: 22px 18px;
+  background: linear-gradient(160deg, #2E4B60, #6A5C8F); display: grid; grid-template-columns: repeat(3, 1fr); align-content: start; gap: 16px; }
+.app { display: grid; gap: 4px; justify-items: center; color: #FFFFFF; font-size: 0.62rem; }
+.app i { width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.22); display: block; }
+.app img { width: 48px; height: 48px; border-radius: 12px; }
+@media (max-width: 720px) { .icons { grid-template-columns: 1fr; } }
+
+.social { max-width: 560px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.social .meta { padding: 12px 14px; display: grid; gap: 2px; }
+.social .meta b { font-size: 0.92rem; }
+.social .meta span { font-size: 0.8rem; color: var(--muted); }
+
+.swatches { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.sw { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+.chip { height: 96px; }
+.sw .info { padding: 12px; display: grid; gap: 2px; }
+.sw .info b { font-family: var(--display); }
+.sw .info span { font: 0.76rem var(--mono); color: var(--muted); }
+@media (max-width: 720px) { .swatches { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.foot { color: var(--muted); font-size: 0.82rem; border-top: 1px solid var(--line); padding-top: 18px; }
+</style>
+</head>
+<body>
+
+<main class="page">
+
+  <header class="hero">
+    <div style="display:grid; gap:14px">
+      <span class="eyebrow" style="color:#3D5E4E">Brand sheet</span>
+      <h1>augmented brain</h1>
+      <p>The logo, its icons and its palette, shown where they will live: the README on GitHub, the browser tab, a phone home screen and the card people see when the link is shared. Every asset is generated by <code>assets/brand/build.py</code>.</p>
+      <p class="note">Sample texts on this page are placeholders.</p>
+    </div>
+    <img src="../assets/brand/out/logo.svg" alt="augmented brain logo: a brain with the name across it" width="592" height="487">
+  </header>
+
+  <section>
+    <div class="head"><span class="eyebrow">Logo and symbol · logo.svg, symbol.svg</span><h2>On different backgrounds</h2>
+      <p class="lead">The symbol is the same brain without the name. It is used where the text does not fit: icons and headers. On dark backgrounds use the <code>-dark</code> versions: a light border keeps the dark outline visible.</p></div>
+    <div class="grounds">
+      <div class="ground g-white"><img src="../assets/brand/out/logo.svg" alt="Logo on white" style="width:min(220px,100%)"><span>Logo · white</span></div>
+      <div class="ground g-soft"><img src="../assets/brand/out/symbol.svg" alt="Symbol on soft green" style="width:min(150px,100%)"><span>Symbol · soft</span></div>
+      <div class="ground g-ink"><img src="../assets/brand/out/logo-dark.svg" alt="Dark-background logo on ink green" style="width:min(220px,100%)"><span>Logo-dark · ink</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">Header · header.svg</span><h2>The README on GitHub</h2>
+      <p class="lead">One header for every background: the main logo on a white card with rounded corners, so it reads on GitHub's light and dark pages.</p></div>
+    <div class="readmes">
+      <div class="gh"><div class="gh-bar">README.md</div><div class="gh-body">
+        <img src="../assets/brand/out/header.svg" alt="README header on a light page">
+        <p>A way of working for Claude Code: tasks, areas and rules that stick, on Linux and macOS.</p>
+        <div class="cmd">curl -fsSL https://…/install.sh | sh
+augmented-brain init</div></div></div>
+      <div class="gh dark"><div class="gh-bar">README.md</div><div class="gh-body">
+        <img src="../assets/brand/out/header.svg" alt="README header on a dark page">
+        <p>A way of working for Claude Code: tasks, areas and rules that stick, on Linux and macOS.</p>
+        <div class="cmd">curl -fsSL https://…/install.sh | sh
+augmented-brain init</div></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">Icons · favicon and apple-touch-icon</span><h2>Browser tab and phone</h2>
+      <p class="lead">The 16 px icon is the hardest one: it is the one in the browser tab, so it is a simplified silhouette.</p></div>
+    <div class="icons">
+      <div class="panel">
+        <div>
+          <div class="tabs">
+            <div class="tab"><img src="../assets/brand/out/favicon-32.png" alt="">augmented brain</div>
+            <div class="tab off">Docs</div>
+            <div class="tab off">Issues</div>
+          </div>
+          <div class="urlbar">augmented-brain docs</div>
+        </div>
+        <div class="sizes">
+          <div class="size"><img src="../assets/brand/out/favicon-16.png" alt="Favicon 16 px" width="16" height="16"><span>16</span></div>
+          <div class="size"><img src="../assets/brand/out/favicon-32.png" alt="Favicon 32 px" width="32" height="32"><span>32</span></div>
+          <div class="size"><img src="../assets/brand/out/favicon.svg" alt="SVG favicon at 64 px" width="64" height="64"><span>svg · 64</span></div>
+          <div class="size"><img src="../assets/brand/out/apple-touch-icon.png" alt="Apple touch icon 180 px" width="90" height="90" style="border-radius:20px"><span>180 (at half size)</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="phone" aria-label="Sample phone home screen">
+          <div class="app"><i></i>Notes</div>
+          <div class="app"><img src="../assets/brand/out/apple-touch-icon.png" alt="">aug. brain</div>
+          <div class="app"><i></i>Mail</div>
+          <div class="app"><i></i>Maps</div>
+          <div class="app"><i></i>Photos</div>
+          <div class="app"><i></i>Files</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">Social card · og-image 1280×640</span><h2>When the link is shared</h2>
+      <p class="lead">The card GitHub, Slack or LinkedIn show when someone pastes the repository link.</p></div>
+    <div class="social">
+      <img src="../assets/brand/out/og-image.png" alt="Social preview image" width="1280" height="640">
+      <div class="meta"><b>augmented brain</b><span>A way of working for Claude Code · github.com</span></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="head"><span class="eyebrow">Palette · palette.css</span><h2>Four colours</h2>
+      <p class="lead">Measured on the original logo. These are the CSS variables the site and the docs use.</p></div>
+    <div class="swatches">
+      <div class="sw"><div class="chip" style="background:var(--ink)"></div><div class="info"><b>ink</b><span>--ab-ink · #143024</span><span>outline and text</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--sage)"></div><div class="info"><b>sage</b><span>--ab-sage · #6B9A82</span><span>shade</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--mint)"></div><div class="info"><b>mint</b><span>--ab-mint · #9CC9AF</span><span>fill</span></div></div>
+      <div class="sw"><div class="chip" style="background:var(--soft)"></div><div class="info"><b>soft</b><span>--ab-soft · #E1EBE2</span><span>light background</span></div></div>
+    </div>
+  </section>
+
+  <p class="foot">Header typeface: Quicksand, under the SIL Open Font License. Sources and build script: <code>assets/brand/</code>.</p>
+</main>
+</body>
+</html>
