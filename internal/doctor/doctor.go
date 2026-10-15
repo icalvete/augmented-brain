@@ -6,12 +6,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 
+	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // Status of one check.
@@ -19,6 +22,7 @@ type Status int
 
 const (
 	OK      Status = iota
+	Info           // worth knowing, not a problem
 	Warning        // works, but something is worth a look
 	Failed         // must be fixed
 )
@@ -68,16 +72,24 @@ func Run(e Env) []Check {
 	add(OK, i18n.T(l, "doctor.config", filepath.Join(c.Dir, config.FileName)), "")
 
 	profile := filepath.Join(c.Dir, "profile.md")
-	if _, err := os.Stat(profile); err != nil {
-		add(Warning, i18n.T(l, "doctor.noprofile", profile), i18n.T(l, "doctor.noprofile.fix"))
+	if brain.ProfileEmpty(c.Dir) {
+		add(Info, i18n.T(l, "doctor.blankprofile"), "")
 	} else {
 		add(OK, i18n.T(l, "doctor.profile", profile), "")
 	}
 
-	if s := c.SpaceFor(e.WorkDir); s != nil {
+	if s, isDefault := c.SpaceAt(e.WorkDir); s != nil && !isDefault {
 		add(OK, i18n.T(l, "doctor.inspace", s.Name), "")
+	} else if s != nil {
+		add(Info, i18n.T(l, "doctor.default", s.Name), "")
 	} else {
-		add(Warning, i18n.T(l, "doctor.nospace", strings.Join(c.SpaceNames(), ", ")), i18n.T(l, "doctor.nospace.fix"))
+		var where []string
+		for _, name := range c.SpaceNames() {
+			if f := c.Spaces[name].WorkFolders; len(f) > 0 {
+				where = append(where, name+" ("+paths.Tilde(f[0])+")")
+			}
+		}
+		add(Info, i18n.T(l, "doctor.nospace", strings.Join(where, ", ")), "")
 	}
 
 	for _, name := range c.SpaceNames() {
@@ -108,12 +120,12 @@ func tools(e Env) []Check {
 	var out []Check
 	for _, t := range []struct{ bin, why, fix string }{
 		{"claude", i18n.T(e.Lang, "doctor.claude"), i18n.T(e.Lang, "doctor.claude.fix")},
-		{"git", i18n.T(e.Lang, "doctor.git"), i18n.T(e.Lang, "doctor.git.fix")},
+		{"git", i18n.T(e.Lang, "doctor.git"), i18n.T(e.Lang, "doctor.git.fix", GitInstall())},
 	} {
 		if p, err := e.LookPath(t.bin); err == nil {
 			out = append(out, Check{OK, i18n.T(e.Lang, "doctor.tool", t.why, p), ""})
 		} else {
-			out = append(out, Check{Warning, i18n.T(e.Lang, "doctor.notool", t.why), t.fix})
+			out = append(out, Check{Failed, i18n.T(e.Lang, "doctor.notool", t.why), t.fix})
 		}
 	}
 	return append(out, plugin(e)...)
@@ -132,10 +144,28 @@ func plugin(e Env) []Check {
 	case err != nil:
 		return []Check{{Warning, i18n.T(e.Lang, "doctor.plugin.unknown", err), ""}}
 	case !ok:
-		return []Check{{Warning, i18n.T(e.Lang, "doctor.plugin.missing", claudecode.Plugin),
+		return []Check{{Failed, i18n.T(e.Lang, "doctor.plugin.missing", claudecode.Plugin),
 			"claude plugin marketplace add " + claudecode.Marketplace() + " && claude plugin install " + claudecode.Plugin + " --scope user"}}
 	}
 	return []Check{{OK, i18n.T(e.Lang, "doctor.plugin.ok", claudecode.Plugin), ""}}
+}
+
+// GitInstall is the command that installs git on this system.
+func GitInstall() string {
+	if runtime.GOOS == "darwin" {
+		return "xcode-select --install"
+	}
+	for _, pm := range []struct{ bin, cmd string }{
+		{"apt-get", "sudo apt install git"},
+		{"dnf", "sudo dnf install git"},
+		{"pacman", "sudo pacman -S git"},
+		{"zypper", "sudo zypper install git"},
+	} {
+		if _, err := exec.LookPath(pm.bin); err == nil {
+			return pm.cmd
+		}
+	}
+	return "your system's package manager"
 }
 
 // Worst returns the most serious status in the report.

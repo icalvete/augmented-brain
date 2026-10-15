@@ -36,7 +36,10 @@ as Markdown files. Use these tools instead of editing those files by hand.
   touches before trusting the note.
 - Ideas and loose ends that are not a task go to the inbox (capture).
 - What is worth keeping beyond a task becomes a reference or a lesson (knowledge_new).
-- Nothing is ever deleted: tasks are closed, not removed.`
+- Nothing is ever deleted: tasks are closed, not removed.
+- Who the user is and how they like to work is their profile (profile_save).
+- When the user names someone, look for them under People in the index. If they are
+  not there and seem to matter, offer to remember them (person_save).`
 
 // Resolver opens the brain of the space the assistant is working in.
 type Resolver func() (*brain.Brain, error)
@@ -202,6 +205,38 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		func(b *brain.Brain, in knowledgeIn) (string, error) {
 			n, err := b.NewKnowledge(in.Kind, in.Title, in.Summary, in.Area, in.Body)
 			return header(n, err)
+		})
+
+	type personIn struct {
+		Name    string   `json:"name" jsonschema:"full name, or how the user knows them"`
+		Aliases []string `json:"aliases,omitempty" jsonschema:"other names the user uses for them, e.g. a nickname"`
+		Role    string   `json:"role,omitempty" jsonschema:"who they are to the user, in a few words: 'my manager', 'client, runs the shop'"`
+		Notes   string   `json:"notes,omitempty" jsonschema:"anything else worth remembering about them"`
+	}
+	tool(s, locked, "person_save", "Remember someone the user works or deals with, so a first name like 'Marcos' leads to the right person. Saving a name that exists updates it. People live in the space, and the index lists them.",
+		func(b *brain.Brain, in personIn) (string, error) {
+			n, err := b.SavePerson(brain.PersonInput{Name: in.Name, Aliases: in.Aliases, Role: in.Role, Notes: in.Notes})
+			return header(n, err)
+		})
+
+	type safetyIn struct {
+		ProductionAWSProfiles []string `json:"production_aws_profiles,omitempty" jsonschema:"AWS CLI profiles that reach production; the guard asks before commands that use them. Replaces the list."`
+		UntouchableHosts      []string `json:"untouchable_hosts,omitempty" jsonschema:"hosts that must not be touched without asking (ssh names as the user types them). Replaces the list."`
+	}
+	tool(s, locked, "safety_save", "Set what the guard must ask the user about in this space: production AWS profiles and hosts not to touch. Use it in the first session and when the user names a new one; each list given replaces the old one, so include what should stay.",
+		func(b *brain.Brain, in safetyIn) (string, error) {
+			return b.SaveSafety(brain.SafetyInput{ProductionAWSProfiles: in.ProductionAWSProfiles, UntouchableHosts: in.UntouchableHosts})
+		})
+
+	type profileIn struct {
+		Name      string `json:"name" jsonschema:"what the user wants to be called"`
+		About     string `json:"about,omitempty" jsonschema:"what they do and work on, in their words; short lines starting with '- '"`
+		WorkStyle string `json:"work_style,omitempty" jsonschema:"how they like to work with you: language, length of answers, how much to ask before acting; short lines starting with '- '"`
+	}
+	tool(s, locked, "profile_save", "Save who the user is and how they like to work. Every space shares it, and every session starts by reading it. Use it in the first session, and whenever the user asks to change it; it replaces the whole profile, so include what should stay.",
+		func(b *brain.Brain, in profileIn) (string, error) {
+			n, err := b.SaveProfile(brain.ProfileInput{Name: in.Name, About: in.About, WorkStyle: in.WorkStyle})
+			return render(n, err)
 		})
 
 	return s

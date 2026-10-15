@@ -228,3 +228,43 @@ func TestSetupKeepsAForeignOrigin(t *testing.T) {
 		t.Error("restore over a file was accepted")
 	}
 }
+
+// The default layout keeps the notes inside the work folder; a restore puts them in the
+// same place, so the new machine looks like the old one.
+func TestRestoreKeepsTheLayout(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git not installed")
+	}
+	root, _ := filepath.EvalSymlinks(t.TempDir())
+	remote := filepath.Join(root, "remote.git")
+	if out, err := exec.Command("git", "init", "-q", "--bare", "-b", "main", remote).CombinedOutput(); err != nil {
+		t.Fatal(err, string(out))
+	}
+	home1 := filepath.Join(root, "home1")
+	t.Setenv("HOME", home1)
+	cfg1 := filepath.Join(home1, "cfg")
+	o := setup.Options{Language: "es", Space: "trabajo", WorkFolder: "~/augmented-brain/trabajo", Memory: "~/augmented-brain/trabajo/notas"}
+	if _, err := setup.Init(cfg1, o); err != nil {
+		t.Fatal(err)
+	}
+	c, _ := config.Load(cfg1)
+	if err := Setup(c, c.Spaces["trabajo"], remote); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Run(c, c.Spaces["trabajo"], "one"); err != nil {
+		t.Fatal(err)
+	}
+
+	home2 := filepath.Join(root, "home2")
+	t.Setenv("HOME", home2)
+	got, err := Restore(filepath.Join(home2, "cfg"), RestoreOptions{URL: remote})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := filepath.Join(home2, "augmented-brain", "trabajo", "notas"); got.Memory != want {
+		t.Errorf("notes restored in %s, want %s", got.Memory, want)
+	}
+	if len(got.WorkFolders) != 1 || got.WorkFolders[0] != filepath.Join(home2, "augmented-brain", "trabajo") {
+		t.Errorf("work folder %v", got.WorkFolders)
+	}
+}

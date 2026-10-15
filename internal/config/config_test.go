@@ -156,4 +156,58 @@ func TestEditsKeepTheFile(t *testing.T) {
 	if err := SetSpaceKey(dir, "nope", "backup", "x"); err == nil {
 		t.Error("a missing space was accepted")
 	}
+
+	// Lists: set, then replaced in place.
+	if err := SetSpaceList(dir, "work", "untouchable_hosts", []string{"db01"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := SetSpaceList(dir, "work", "untouchable_hosts", []string{"db01", "db02"}); err != nil {
+		t.Fatal(err)
+	}
+	data, _ = os.ReadFile(real)
+	if n := strings.Count(string(data), "untouchable_hosts ="); n != 1 {
+		t.Errorf("untouchable_hosts set %d times:\n%s", n, data)
+	}
+	if c, err := Load(dir); err != nil || strings.Join(c.Spaces["work"].UntouchableHosts, ",") != "db01,db02" {
+		t.Errorf("hosts after edits: %+v %v", c.Spaces["work"], err)
+	}
+}
+
+// The default space serves folders outside every space; a default that is not a space
+// is refused.
+func TestDefaultSpace(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	dir := filepath.Join(home, "cfg")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	text := "language = \"es\"\n\n[spaces.trabajo]\nmemory = \"~/ab/trabajo/notas\"\nwork_folders = [\"~/ab/trabajo\"]\n\n[spaces.personal]\nmemory = \"~/ab/personal/notas\"\nwork_folders = [\"~/ab/personal\"]\n"
+	if err := os.WriteFile(filepath.Join(dir, FileName), []byte(text), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	c, _ := Load(dir)
+	if s, d := c.SpaceAt(filepath.Join(home, "elsewhere")); s != nil || d {
+		t.Errorf("no default yet: %v %v", s, d)
+	}
+	if err := SetDefaultSpace(dir, "personal"); err != nil {
+		t.Fatal(err)
+	}
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s, d := c.SpaceAt(filepath.Join(home, "elsewhere")); s == nil || s.Name != "personal" || !d {
+		t.Errorf("outside: %v %v", s, d)
+	}
+	if s, d := c.SpaceAt(filepath.Join(home, "ab", "trabajo", "web")); s == nil || s.Name != "trabajo" || d {
+		t.Errorf("inside trabajo: %v %v", s, d)
+	}
+	if err := SetDefaultSpace(dir, "nope"); err == nil || !strings.Contains(err.Error(), "not one of the spaces") {
+		t.Errorf("a default that is not a space: %v", err)
+	}
+	data, _ := os.ReadFile(filepath.Join(dir, FileName))
+	if n := strings.Count(string(data), "default_space"); n != 1 {
+		t.Errorf("default_space written %d times:\n%s", n, data)
+	}
 }

@@ -107,7 +107,7 @@ func TestAddSpaceErrors(t *testing.T) {
 	}{
 		{Options{Space: "Work!", WorkFolder: "~/work", Memory: "~/m/x"}, "lowercase"},
 		{Options{Space: "work", WorkFolder: "~/work", Memory: "~/m/x"}, "already a space"},
-		{Options{Space: "x", WorkFolder: "~/nope", Memory: "~/m/x"}, "does not exist"},
+		{Options{Space: "x", WorkFolder: "~/m/work/MEMORY.md", Memory: "~/m/x"}, "is a file"},
 		{Options{Space: "x", WorkFolder: "~/work/sub", Memory: "~/m/x"}, "already belongs"},
 		{Options{Space: "x", WorkFolder: "~", Memory: "~/m/work"}, "memory folder"},
 	}

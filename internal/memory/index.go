@@ -20,6 +20,7 @@ var indexLabels = map[string]map[string]string{
 		"profile":   "Profile",
 		"rules":     "Rules",
 		"areas":     "Areas",
+		"people":    "People",
 		"tasks":     "Live tasks",
 		"noarea":    "No area",
 		"none":      "none yet",
@@ -33,6 +34,7 @@ var indexLabels = map[string]map[string]string{
 		"profile":   "Perfil",
 		"rules":     "Reglas",
 		"areas":     "Áreas",
+		"people":    "Personas",
 		"tasks":     "Tareas vivas",
 		"noarea":    "Sin área",
 		"none":      "todavía ninguna",
@@ -74,6 +76,9 @@ func (m *Memory) Index(lang string) string {
 	section(l["rules"], m.OfType("rule"))
 	areas := m.OfType("area")
 	section(l["areas"], areas)
+	if people := m.OfType("person"); len(people) > 0 {
+		section(l["people"], people)
+	}
 
 	fmt.Fprintf(&b, "\n## %s\n", l["tasks"])
 	byArea := map[string][]*Note{}

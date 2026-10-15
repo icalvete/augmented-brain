@@ -23,9 +23,10 @@ import (
 
 // Brain is one space, open for reading and writing.
 type Brain struct {
-	Space    *config.Space
-	Language string
-	Mem      *memory.Memory
+	Space     *config.Space
+	Language  string
+	Mem       *memory.Memory
+	ConfigDir string // where the configuration and the profile live
 	// Now gives today's date; tests replace it.
 	Now func() time.Time
 }
@@ -41,7 +42,7 @@ func Open(c *config.Config, s *config.Space) (*Brain, error) {
 		return nil, fmt.Errorf("space %s has %d notes that are not valid (first: %v); run `augmented-brain check`",
 			s.Name, len(problems), problems[0])
 	}
-	return &Brain{Space: s, Language: c.Language, Mem: m, Now: time.Now}, nil
+	return &Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: time.Now}, nil
 }
 
 func (b *Brain) today() string { return b.Now().Format("2006-01-02") }

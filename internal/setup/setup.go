@@ -21,7 +21,7 @@ import (
 )
 
 // Folders every space has.
-var spaceFolders = []string{"areas", "tasks", "knowledge", "rules", "reviews", "archive"}
+var spaceFolders = []string{"areas", "tasks", "knowledge", "people", "rules", "reviews", "archive"}
 
 var validName = regexp.MustCompile(`^[a-z][a-z0-9-]{0,30}$`)
 
@@ -73,8 +73,8 @@ func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if info, err := os.Stat(work); err != nil || !info.IsDir() {
-		return nil, fmt.Errorf("work folder %s does not exist", work)
+	if info, err := os.Stat(work); err == nil && !info.IsDir() {
+		return nil, fmt.Errorf("work folder %s is a file", work)
 	}
 	if s := c.SpaceFor(work); s != nil {
 		return nil, fmt.Errorf("work folder %s already belongs to space %q", work, s.Name)
@@ -94,6 +94,12 @@ func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
 	}
 
 	res := &Result{ConfigPath: filepath.Join(c.Dir, config.FileName)}
+	if _, err := os.Stat(work); errors.Is(err, os.ErrNotExist) {
+		if err := os.MkdirAll(work, 0o755); err != nil {
+			return nil, err
+		}
+		res.Created = append(res.Created, work+string(filepath.Separator))
+	}
 	if first {
 		if err := os.MkdirAll(c.Dir, 0o700); err != nil {
 			return nil, err

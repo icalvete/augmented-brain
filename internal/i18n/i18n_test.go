@@ -33,15 +33,21 @@ func TestT(t *testing.T) {
 	if got := T("es", "doctor.inspace", "work"); got != `esta carpeta es del espacio "work"` {
 		t.Errorf("T = %q", got)
 	}
-	if got := T("fr", "doctor.git"); got != "git, for backups" {
+	if got := T("fr", "notes.1"); got != "1 note" {
 		t.Errorf("unknown language must fall back to English: %q", got)
 	}
 	if got := Count("es", "notes", 1); got != "1 nota" {
 		t.Errorf("Count = %q", got)
 	}
+	t.Setenv("LC_ALL", "")
+	t.Setenv("LC_MESSAGES", "")
 	t.Setenv("LANG", "es_ES.UTF-8")
 	if FromEnv() != "es" {
 		t.Error("LANG es_ES not detected")
+	}
+	t.Setenv("LC_ALL", "en_US.UTF-8")
+	if FromEnv() != "en" {
+		t.Error("LC_ALL must win over LANG")
 	}
 }
 

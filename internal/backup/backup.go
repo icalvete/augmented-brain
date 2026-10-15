@@ -261,7 +261,7 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 
 	mem := o.Memory
 	if mem == "" {
-		mem = "~/augmented-brain/" + name
+		mem = defaultMemory(name, s, o.WorkFolder)
 	}
 	if mem, err = expand(mem); err != nil {
 		return nil, err
@@ -314,6 +314,21 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 		_, _ = m.WriteIndex(c.Language)
 	}
 	return s, nil
+}
+
+// defaultMemory says where a restored space's notes go when the user does not say: in
+// the same place inside its work folder as on the machine that made the backup (the
+// usual ~/augmented-brain/<space>/notes), or ~/augmented-brain/<space> otherwise.
+func defaultMemory(name string, saved *config.Space, work string) string {
+	if len(saved.WorkFolders) > 0 {
+		if rel, err := filepath.Rel(saved.WorkFolders[0], saved.Memory); err == nil && rel != "." && !strings.HasPrefix(rel, "..") {
+			if work == "" {
+				work = saved.WorkFolders[0]
+			}
+			return filepath.Join(work, rel)
+		}
+	}
+	return "~/augmented-brain/" + name
 }
 
 func expand(p string) (string, error) { return paths.Resolve(p) }

@@ -22,6 +22,7 @@ var Folders = map[string]string{
 	"lesson":    "knowledge",
 	"rule":      "rules",
 	"review":    "reviews",
+	"person":    "people",
 	"profile":   "",
 }
 
@@ -107,7 +108,7 @@ func (n *Note) check() error {
 	case h.Type == "":
 		add("type is missing")
 	case !known:
-		add("type %q is not one of: area, task, reference, lesson, rule, review, profile", h.Type)
+		add("type %q is not one of: area, task, reference, lesson, rule, review, person, profile", h.Type)
 	case filepath.ToSlash(filepath.Dir(n.Path)) != orDot(folder):
 		add("a %s goes in %s/, not in %s", h.Type, orDot(folder), filepath.ToSlash(filepath.Dir(n.Path)))
 	}

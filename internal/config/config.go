@@ -36,8 +36,11 @@ type Space struct {
 
 // Config is the whole configuration file.
 type Config struct {
-	Language string            `toml:"language"`
-	Spaces   map[string]*Space `toml:"spaces"`
+	Language string `toml:"language"`
+	// DefaultSpace is used when the assistant runs in a folder of no space, such as the
+	// scratch folder the Claude desktop app opens a new session in. Empty: none.
+	DefaultSpace string            `toml:"default_space,omitempty"`
+	Spaces       map[string]*Space `toml:"spaces"`
 
 	// Dir is the folder the configuration was read from.
 	Dir string `toml:"-"`
@@ -105,6 +108,11 @@ func (c *Config) normalize() error {
 	if len(c.Spaces) == 0 {
 		return errors.New("no spaces declared")
 	}
+	if c.DefaultSpace != "" {
+		if _, ok := c.Spaces[c.DefaultSpace]; !ok {
+			return fmt.Errorf("default_space %q is not one of the spaces (%s)", c.DefaultSpace, strings.Join(c.SpaceNames(), ", "))
+		}
+	}
 	for name, s := range c.Spaces {
 		s.Name = name
 		if s.Memory == "" {
@@ -135,7 +143,7 @@ func (c *Config) Save() error {
 	if err := os.MkdirAll(c.Dir, 0o700); err != nil {
 		return err
 	}
-	out := Config{Language: c.Language, Spaces: map[string]*Space{}}
+	out := Config{Language: c.Language, DefaultSpace: c.DefaultSpace, Spaces: map[string]*Space{}}
 	for name, s := range c.Spaces {
 		cp := *s
 		cp.Memory = tilde(s.Memory)
@@ -208,12 +216,24 @@ func AddSpace(dir string, s *Space) error {
 // SetSpaceKey sets one string setting of a space in the configuration file in dir,
 // changing only that line (or adding it under the space's header).
 func SetSpaceKey(dir, space, key, value string) error {
+	return setSpaceLine(dir, space, key, fmt.Sprintf("%s = %q", key, value))
+}
+
+// SetSpaceList sets one list setting of a space (such as untouchable_hosts) the same way.
+func SetSpaceList(dir, space, key string, values []string) error {
+	quoted := make([]string, len(values))
+	for i, v := range values {
+		quoted[i] = fmt.Sprintf("%q", v)
+	}
+	return setSpaceLine(dir, space, key, fmt.Sprintf("%s = [%s]", key, strings.Join(quoted, ", ")))
+}
+
+func setSpaceLine(dir, space, key, line string) error {
 	path := filepath.Join(dir, FileName)
 	old, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	line := fmt.Sprintf("%s = %q", key, value)
 	lines := strings.Split(string(old), "\n")
 	header := -1
 	for i, l := range lines {
@@ -294,6 +314,49 @@ func (c *Config) SpaceFor(dir string) *Space {
 		}
 	}
 	return best
+}
+
+// SpaceAt returns the space for a session in dir: the one whose work folder holds it,
+// or else the default space, if there is one. isDefault says which.
+func (c *Config) SpaceAt(dir string) (s *Space, isDefault bool) {
+	if s := c.SpaceFor(dir); s != nil {
+		return s, false
+	}
+	if s, ok := c.Spaces[c.DefaultSpace]; ok {
+		return s, true
+	}
+	return nil, false
+}
+
+// SetDefaultSpace writes default_space in the configuration file in dir, right after
+// the language, changing nothing else.
+func SetDefaultSpace(dir, space string) error {
+	path := filepath.Join(dir, FileName)
+	old, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	line := fmt.Sprintf("default_space = %q", space)
+	lines := strings.Split(string(old), "\n")
+	at := -1
+	for i, l := range lines {
+		t := strings.TrimSpace(l)
+		if strings.HasPrefix(t, "[") {
+			break
+		}
+		if strings.HasPrefix(t, "default_space") {
+			lines[i] = line
+			return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
+		}
+		if strings.HasPrefix(t, "language") {
+			at = i + 1
+		}
+	}
+	if at < 0 {
+		at = 0
+	}
+	lines = append(lines[:at], append([]string{line}, lines[at:]...)...)
+	return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
 }
 
 // within reports whether path is folder itself or inside it.

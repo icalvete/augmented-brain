@@ -88,7 +88,7 @@ func TestTools(t *testing.T) {
 		names = append(names, tl.Name)
 	}
 	sort.Strings(names)
-	want := "area_new capture knowledge_new pending task_close task_get task_journal task_new task_park task_update where_am_i"
+	want := "area_new capture knowledge_new pending person_save profile_save safety_save task_close task_get task_journal task_new task_park task_update where_am_i"
 	if got := strings.Join(names, " "); got != want {
 		t.Errorf("tools = %s", got)
 	}
@@ -180,5 +180,82 @@ func TestNoSpace(t *testing.T) {
 	})
 	if out, isErr := call(t, cs, "pending", nil); !isErr || !strings.Contains(out, "space add") {
 		t.Errorf("no space: %v %s", isErr, out)
+	}
+}
+
+// The first session saves the profile through the tool; it keeps its first date and is
+// no longer blank afterwards.
+func TestProfileSave(t *testing.T) {
+	open := space(t)
+	cfgDir := filepath.Join(os.Getenv("HOME"), "cfg")
+	if !brain.ProfileEmpty(cfgDir) {
+		t.Fatal("a new profile must count as blank")
+	}
+	cs := connect(t, open)
+	if out, isErr := call(t, cs, "profile_save", map[string]any{"name": ""}); !isErr {
+		t.Errorf("a profile without a name was saved: %s", out)
+	}
+	out, isErr := call(t, cs, "profile_save", map[string]any{
+		"name": "Ana", "about": "- Builds the shop's website", "work_style": "- Short answers"})
+	if isErr {
+		t.Fatal(out)
+	}
+	data, err := os.ReadFile(filepath.Join(cfgDir, "profile.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"- Name: Ana\n- Builds the shop's website\n", "## How I like to work\n- Short answers\n", "updated: \"2026-10-15\""} {
+		if !strings.Contains(string(data), want) {
+			t.Errorf("profile lacks %q:\n%s", want, data)
+		}
+	}
+	if brain.ProfileEmpty(cfgDir) {
+		t.Error("a saved profile still counts as blank")
+	}
+}
+
+// People: a first name leads to the right person through the index; saving the same
+// name again updates them.
+func TestPersonSave(t *testing.T) {
+	cs := connect(t, space(t))
+	if out, isErr := call(t, cs, "person_save", map[string]any{
+		"name": "Marcos García", "aliases": []string{"Marcos", "Marquitos"}, "role": "my manager"}); isErr {
+		t.Fatal(out)
+	}
+	if out, isErr := call(t, cs, "person_save", map[string]any{
+		"name": "Marcos García", "aliases": []string{"Marcos"}, "role": "my manager, product team"}); isErr {
+		t.Fatal(out)
+	}
+	index, err := os.ReadFile(filepath.Join(os.Getenv("HOME"), "brain", "MEMORY.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "## People\n- [Marcos García](people/person-marcos-garcia.md) — my manager, product team · also: Marcos\n"
+	if !strings.Contains(string(index), want) {
+		t.Errorf("index lacks %q:\n%s", want, index)
+	}
+	if _, isErr := call(t, cs, "person_save", map[string]any{"name": " "}); !isErr {
+		t.Error("a person without a name was saved")
+	}
+}
+
+// Safety settings go to the configuration; a list left out stays as it was.
+func TestSafetySave(t *testing.T) {
+	open := space(t)
+	cs := connect(t, open)
+	if out, isErr := call(t, cs, "safety_save", map[string]any{
+		"production_aws_profiles": []string{"prod"}, "untouchable_hosts": []string{"db01"}}); isErr {
+		t.Fatal(out)
+	}
+	if out, isErr := call(t, cs, "safety_save", map[string]any{"untouchable_hosts": []string{"db01", "db02"}}); isErr {
+		t.Fatal(out)
+	}
+	c, err := config.Load(filepath.Join(os.Getenv("HOME"), "cfg"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	w := c.Spaces["work"]
+	if strings.Join(w.ProductionAWSProfiles, ",") != "prod" || strings.Join(w.UntouchableHosts, ",") != "db01,db02" {
+		t.Errorf("settings: %+v", w)
 	}
 }

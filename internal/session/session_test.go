@@ -112,3 +112,35 @@ func TestContextNeverOverBudget(t *testing.T) {
 		t.Error("size must never count less than the characters")
 	}
 }
+
+// While the profile is blank the session asks the assistant to meet the user first; once
+// it is filled in, it does not.
+func TestFirstSession(t *testing.T) {
+	c, s := space(t, "es")
+	if text := Context(c, s); !strings.Contains(text, "## First session: get to know the user") || !strings.Contains(text, "the language the user writes in (Spanish if you cannot tell yet)") {
+		t.Errorf("a blank profile must start with the first-session note:\n%s", text)
+	}
+	profile := filepath.Join(c.Dir, "profile.md")
+	data, err := os.ReadFile(profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	filled := strings.Replace(string(data), "- Nombre:", "- Nombre: Ana", 1)
+	if err := os.WriteFile(profile, []byte(filled), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if text := Context(c, s); strings.Contains(text, "First session") {
+		t.Error("a filled profile must not ask to meet the user again")
+	}
+}
+
+// Outside every space the assistant must tell the user, with the folders to open.
+func TestNoSpace(t *testing.T) {
+	c, s := space(t, "es")
+	text := NoSpace(c, "/tmp/scratch")
+	for _, want := range []string{"/tmp/scratch", "outside the user's spaces", "Spanish if you cannot tell", "work: " + s.WorkFolders[0], "Choose…"} {
+		if !strings.Contains(text, want) {
+			t.Errorf("no-space text lacks %q:\n%s", want, text)
+		}
+	}
+}

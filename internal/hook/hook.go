@@ -54,7 +54,8 @@ func load(cfgDir, dir string) (*config.Config, *config.Space, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return c, c.SpaceFor(dir), nil
+	s, _ := c.SpaceAt(dir)
+	return c, s, nil
 }
 
 // SessionStart adds the space's profile, rules and index to the session.
@@ -71,6 +72,9 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 		text = session.NoSpace(c, i.Cwd)
 	default:
 		text = session.Context(c, s)
+		if _, isDefault := c.SpaceAt(i.Cwd); isDefault {
+			text = session.ContextWith(c, s, session.DefaultNote(c, s, i.Cwd))
+		}
 	}
 	return write(out, output{specific{HookEventName: "SessionStart", AdditionalContext: text}})
 }

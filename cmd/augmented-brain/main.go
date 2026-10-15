@@ -154,7 +154,7 @@ func cmdDoctor(out, errOut io.Writer) int {
 	}
 	wd, _ := os.Getwd()
 	checks := doctor.Run(doctor.Env{ConfigDir: dir, WorkDir: wd, Lang: i18n.FromEnv()})
-	marks := map[doctor.Status]string{doctor.OK: "✓", doctor.Warning: "!", doctor.Failed: "✗"}
+	marks := map[doctor.Status]string{doctor.OK: "✓", doctor.Info: "·", doctor.Warning: "!", doctor.Failed: "✗"}
 	for _, c := range checks {
 		fmt.Fprintf(out, "%s %s\n", marks[c.Status], c.What)
 		if c.Fix != "" {
@@ -183,7 +183,7 @@ func cmdMCP(errOut io.Writer) int {
 		if err != nil {
 			return nil, err
 		}
-		s := c.SpaceFor(wd)
+		s, _ := c.SpaceAt(wd)
 		if s == nil {
 			return nil, fmt.Errorf("%s belongs to no space (spaces: %v); open the assistant inside a space's work folder, or run `augmented-brain space add`", wd, c.SpaceNames())
 		}

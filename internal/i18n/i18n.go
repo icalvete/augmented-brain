@@ -16,12 +16,11 @@ var messages = map[string]map[string]string{
 		"doctor.noconfig.fix":   "run `augmented-brain init`",
 		"doctor.badconfig.fix":  "fix the file, or move it away and run `augmented-brain init`",
 		"doctor.config":         "configuration: %s",
-		"doctor.noprofile":      "no profile at %s",
-		"doctor.noprofile.fix":  "write who you are and how you like to work there",
+		"doctor.blankprofile":   "profile: not filled in yet; Claude will ask you in your first session",
 		"doctor.profile":        "profile: %s",
 		"doctor.inspace":        "this folder belongs to space %q",
-		"doctor.nospace":        "this folder belongs to no space (spaces: %s)",
-		"doctor.nospace.fix":    "open your assistant inside a space's work folder, or run `augmented-brain space add`",
+		"doctor.default":        "this folder is outside your spaces' folders: Claude uses the default space, %s",
+		"doctor.nospace":        "this folder is outside your spaces; open Claude in one of them: %s",
 		"doctor.nomemory":       "space %s: memory folder %s: %v",
 		"doctor.nomemory.fix":   "create it, or fix the path in %s",
 		"doctor.invalid":        "space %s: %d notes are not valid",
@@ -32,9 +31,9 @@ var messages = map[string]map[string]string{
 		"doctor.tool":           "%s: %s",
 		"doctor.notool":         "%s: not found",
 		"doctor.claude":         "Claude Code",
-		"doctor.claude.fix":     "install it: https://docs.claude.com/en/docs/claude-code",
-		"doctor.git":            "git, for backups",
-		"doctor.git.fix":        "install git with your system's package manager",
+		"doctor.claude.fix":     "install it with: curl -fsSL https://claude.ai/install.sh | bash",
+		"doctor.git":            "git",
+		"doctor.git.fix":        "install it with: %s",
 		"doctor.plugin.unknown": "Claude Code plugin: cannot tell (%v)",
 		"doctor.plugin.missing": "Claude Code plugin %s: not installed",
 		"doctor.plugin.ok":      "Claude Code plugin %s: installed",
@@ -52,19 +51,19 @@ var messages = map[string]map[string]string{
 		"backup.saved":   "✓ %s: changes saved and pushed to %s",
 		"backup.same":    "✓ %s: nothing new; %s is up to date",
 		"backup.failed":  "✗ %s: %v",
-		"restore.done":   "Space %s restored in %s.\nWork folder: %s\nNext: run `augmented-brain doctor`.",
+		"restore.done":   "✓ Space %s restored: its notes are in %s",
+		"restore.next":   "Now open Claude in it:\n  cd %s && claude",
 	},
 	"es": {
 		"doctor.noconfig":       "no hay configuración en %s",
 		"doctor.noconfig.fix":   "lanza `augmented-brain init`",
 		"doctor.badconfig.fix":  "arregla el fichero, o apártalo y lanza `augmented-brain init`",
 		"doctor.config":         "configuración: %s",
-		"doctor.noprofile":      "no hay perfil en %s",
-		"doctor.noprofile.fix":  "escribe ahí quién eres y cómo te gusta trabajar",
+		"doctor.blankprofile":   "perfil: aún sin rellenar; Claude te lo preguntará en tu primera sesión",
 		"doctor.profile":        "perfil: %s",
 		"doctor.inspace":        "esta carpeta es del espacio %q",
-		"doctor.nospace":        "esta carpeta no es de ningún espacio (espacios: %s)",
-		"doctor.nospace.fix":    "abre tu asistente dentro de la carpeta de trabajo de un espacio, o lanza `augmented-brain space add`",
+		"doctor.default":        "esta carpeta está fuera de las de tus espacios: Claude usa el espacio por defecto, %s",
+		"doctor.nospace":        "esta carpeta está fuera de tus espacios; abre Claude en uno de ellos: %s",
 		"doctor.nomemory":       "espacio %s: carpeta de la memoria %s: %v",
 		"doctor.nomemory.fix":   "créala, o corrige la ruta en %s",
 		"doctor.invalid":        "espacio %s: %d notas no son válidas",
@@ -75,9 +74,9 @@ var messages = map[string]map[string]string{
 		"doctor.tool":           "%s: %s",
 		"doctor.notool":         "%s: no encontrado",
 		"doctor.claude":         "Claude Code",
-		"doctor.claude.fix":     "instálalo: https://docs.claude.com/en/docs/claude-code",
-		"doctor.git":            "git, para las copias de seguridad",
-		"doctor.git.fix":        "instala git con el gestor de paquetes de tu sistema",
+		"doctor.claude.fix":     "instálalo con: curl -fsSL https://claude.ai/install.sh | bash",
+		"doctor.git":            "git",
+		"doctor.git.fix":        "instálalo con: %s",
 		"doctor.plugin.unknown": "plugin de Claude Code: no se puede saber (%v)",
 		"doctor.plugin.missing": "plugin de Claude Code %s: no instalado",
 		"doctor.plugin.ok":      "plugin de Claude Code %s: instalado",
@@ -94,7 +93,8 @@ var messages = map[string]map[string]string{
 		"backup.saved":          "✓ %s: cambios guardados y subidos a %s",
 		"backup.same":           "✓ %s: nada nuevo; %s está al día",
 		"backup.failed":         "✗ %s: %v",
-		"restore.done":          "Espacio %s recuperado en %s.\nCarpeta de trabajo: %s\nSiguiente: lanza `augmented-brain doctor`.",
+		"restore.done":          "✓ Espacio %s recuperado: sus notas están en %s",
+		"restore.next":          "Ahora abre Claude en él:\n  cd %s && claude",
 	},
 }
 
@@ -120,10 +120,16 @@ func Count(lang, key string, n int) string {
 	return T(lang, key+".n", n)
 }
 
-// FromEnv guesses the language from $LANG when there is no configuration yet.
+// FromEnv guesses the language from the locale when there is no configuration yet,
+// in the order the C library reads it: LC_ALL, LC_MESSAGES, then LANG.
 func FromEnv() string {
-	if strings.HasPrefix(os.Getenv("LANG"), "es") {
-		return "es"
+	for _, v := range []string{"LC_ALL", "LC_MESSAGES", "LANG"} {
+		if l := os.Getenv(v); l != "" {
+			if strings.HasPrefix(l, "es") {
+				return "es"
+			}
+			return "en"
+		}
 	}
 	return "en"
 }

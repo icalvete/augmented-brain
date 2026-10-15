@@ -29,8 +29,11 @@ func TestNoConfiguration(t *testing.T) {
 	if Worst(checks) != Failed || !strings.Contains(checks[0].Fix, "augmented-brain init") {
 		t.Errorf("checks = %+v", checks)
 	}
-	if c := find(checks, "Claude Code"); c == nil || c.Status != Warning {
-		t.Errorf("missing tool not reported: %+v", checks)
+	if c := find(checks, "Claude Code"); c == nil || c.Status != Failed || !strings.Contains(c.Fix, "claude.ai/install.sh") {
+		t.Errorf("missing Claude Code must fail with its install command: %+v", checks)
+	}
+	if c := find(checks, "git"); c == nil || c.Status != Failed || !strings.Contains(c.Fix, GitInstall()) {
+		t.Errorf("missing git must fail with its install command: %+v", checks)
 	}
 }
 
@@ -47,16 +50,19 @@ func TestHealthyAndBroken(t *testing.T) {
 	}
 
 	checks := Run(Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: yes})
-	if w := Worst(checks); w != OK {
+	if w := Worst(checks); w > Info {
 		t.Fatalf("a fresh setup is not healthy: %+v", checks)
+	}
+	if c := find(checks, "Claude will ask you"); c == nil || c.Status != Info {
+		t.Errorf("a blank profile is news, not a problem: %+v", checks)
 	}
 	if find(checks, `belongs to space "work"`) == nil {
 		t.Errorf("current space not reported: %+v", checks)
 	}
 
-	// Outside any space: a warning, not a failure.
-	if c := find(Run(Env{ConfigDir: cfg, WorkDir: home, LookPath: allTools, Plugin: yes}), "belongs to no space"); c == nil || c.Status != Warning {
-		t.Error("outside a space must be a warning")
+	// Outside any space: news, with where the spaces are.
+	if c := find(Run(Env{ConfigDir: cfg, WorkDir: home, LookPath: allTools, Plugin: yes}), "outside your spaces"); c == nil || c.Status != Info || !strings.Contains(c.What, "work (~/work)") {
+		t.Errorf("outside a space must say where the spaces are, as news: %+v", c)
 	}
 
 	// A new valid note makes the index stale.
@@ -79,7 +85,7 @@ func TestHealthyAndBroken(t *testing.T) {
 }
 
 func TestPluginCheck(t *testing.T) {
-	if c := plugin(Env{LookPath: allTools, Plugin: no}); len(c) != 1 || c[0].Status != Warning || !strings.Contains(c[0].Fix, "claude plugin install") {
+	if c := plugin(Env{LookPath: allTools, Plugin: no}); len(c) != 1 || c[0].Status != Failed || !strings.Contains(c[0].Fix, "claude plugin install") {
 		t.Errorf("missing plugin: %+v", c)
 	}
 	if c := plugin(Env{LookPath: allTools, Plugin: yes}); len(c) != 1 || c[0].Status != OK {

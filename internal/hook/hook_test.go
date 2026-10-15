@@ -59,7 +59,7 @@ func TestSessionStart(t *testing.T) {
 		t.Errorf("in a space: %v", o)
 	}
 	o = run(t, ss, map[string]any{"cwd": "/"})
-	if !strings.Contains(o["additionalContext"].(string), "belongs to no space") {
+	if !strings.Contains(o["additionalContext"].(string), "outside the user's spaces") {
 		t.Errorf("outside: %v", o)
 	}
 	none := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, t.TempDir()) }

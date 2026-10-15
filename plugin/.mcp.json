@@ -1,8 +1,11 @@
 {
   "mcpServers": {
     "augmented-brain": {
-      "command": "augmented-brain",
-      "args": ["mcp"]
+      "command": "sh",
+      "args": [
+        "-c",
+        "PATH=\"$PATH:$HOME/.local/bin\" exec augmented-brain mcp"
+      ]
     }
   }
 }

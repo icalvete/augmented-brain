@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
+	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // cmdBackup: `backup` saves the current space (or every space with --all);
@@ -81,7 +83,7 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("restore", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	o := backup.RestoreOptions{}
-	fs.StringVar(&o.Memory, "memory", "", "where to put the space's notes (default ~/augmented-brain/<space>)")
+	fs.StringVar(&o.Memory, "memory", "", "where to put the space's notes (default: where they were, inside the work folder)")
 	fs.StringVar(&o.WorkFolder, "work", "", "work folder that selects the space (default: the one saved in the backup)")
 	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
 		o.URL, args = args[0], args[1:]
@@ -107,6 +109,13 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 	if c, err := config.Load(dir); err == nil {
 		lang = c.Language
 	}
-	fmt.Fprintln(out, i18n.T(lang, "restore.done", s.Name, s.Memory, strings.Join(s.WorkFolders, ", ")))
+	fmt.Fprintln(out, i18n.T(lang, "restore.done", s.Name, paths.Tilde(s.Memory)))
+	// A new machine has no plugin yet: install it, as init does.
+	if ok, err := claudecode.Installed(claudecode.Exec); err == nil && !ok {
+		installPlugin(&asker{out: out}, lang, out, errOut)
+	}
+	if len(s.WorkFolders) > 0 {
+		fmt.Fprintln(out, i18n.T(lang, "restore.next", paths.Tilde(s.WorkFolders[0])))
+	}
 	return 0
 }
