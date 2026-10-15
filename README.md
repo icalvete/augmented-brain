@@ -109,6 +109,9 @@ go test ./...
 go build ./cmd/augmented-brain
 ```
 
+`scripts/e2e-claude.sh` runs the whole story (open, park, resume, close a task, and the
+guard) against a real, isolated Claude Code. It spends usage: run it before a release.
+
 The brand (logo, icons, palette) is in [`assets/brand/`](assets/brand/), shown in place in
 [`docs/brand.html`](docs/brand.html). [`scripts/privacy-check.sh`](scripts/privacy-check.sh)
 blocks commits that would publish personal data or secrets.

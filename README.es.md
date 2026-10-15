@@ -111,6 +111,10 @@ go test ./...
 go build ./cmd/augmented-brain
 ```
 
+`scripts/e2e-claude.sh` prueba la historia entera (abrir, aparcar, retomar y cerrar una
+tarea, y el guardia) con un Claude Code de verdad y aislado. Gasta uso: lánzalo antes de
+cada versión.
+
 La marca (logo, iconos y paleta) está en [`assets/brand/`](assets/brand/), y se ve en su
 sitio en [`docs/brand.html`](docs/brand.html).
 [`scripts/privacy-check.sh`](scripts/privacy-check.sh) bloquea los commits que
