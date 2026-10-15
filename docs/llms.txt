@@ -1,0 +1,28 @@
+# augmented brain
+
+> Your brain, augmented with AI. augmented brain gives an AI assistant (Claude Code today) memory, a method and a guard: it remembers your tasks, decisions and people from one session to the next, works through tasks with a method, and asks before touching anything risky. Everything is plain Markdown files of yours, backed up to your own git. Free, MIT, alpha; Linux and macOS.
+
+Install with one command, which asks the language, offers to install what is missing (git, Claude Code, the Claude desktop app), creates two spaces (work and personal) in ~/augmented-brain and opens Claude:
+
+    curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh
+
+The first session is a short guided interview. A session outside every space's folder (such as a new session in the Claude desktop app with no folder chosen) uses the personal space.
+
+## Docs
+
+- [README](https://raw.githubusercontent.com/icalvete/augmented-brain/main/README.md): what it does, getting started, commands, backup
+- [How it works](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.md): the four layers, a session step by step, where every file lives, spaces, backup
+- [Connect your services](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.md): calendar, mail, documents and Jira through MCP
+- [Memory format](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/spec/memory-format.md): folders, note headers, configuration, backup
+
+## Spanish
+
+- [README en español](https://raw.githubusercontent.com/icalvete/augmented-brain/main/README.es.md)
+- [Cómo funciona](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.es.md)
+- [Conecta tus servicios](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.es.md)
+
+## Optional
+
+- [Changelog](https://raw.githubusercontent.com/icalvete/augmented-brain/main/CHANGELOG.md): what changed in each version
+- [Disclaimer](https://raw.githubusercontent.com/icalvete/augmented-brain/main/DISCLAIMER.md): alpha software, no warranty, not affiliated with Anthropic
+- [Handbook for coding agents](https://raw.githubusercontent.com/icalvete/augmented-brain/main/AGENTS.md): how to build, test and change the code
