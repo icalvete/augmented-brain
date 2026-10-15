@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/doctor"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
@@ -18,7 +19,8 @@ Usage:
   augmented-brain init         set up augmented brain and your first space
   augmented-brain space        show which space this folder belongs to
   augmented-brain space add    add another space (work, personal…)
-  augmented-brain check        check the memory of this folder's space
+  augmented-brain check        check the notes of this folder's space and rebuild its index
+  augmented-brain doctor       say what is missing, and how to fix it
   augmented-brain version      show the version
 `
 
@@ -47,6 +49,8 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 		return cmdSpace(out, errOut)
 	case "check":
 		return cmdCheck(out, errOut)
+	case "doctor":
+		return cmdDoctor(out, errOut)
 	default:
 		fmt.Fprintf(errOut, "unknown command %q\n\n%s", args[0], usage)
 		return 2
@@ -92,7 +96,7 @@ func cmdSpace(out, errOut io.Writer) int {
 }
 
 func cmdCheck(out, errOut io.Writer) int {
-	_, s, ok := currentSpace(errOut)
+	c, s, ok := currentSpace(errOut)
 	if !ok {
 		return 1
 	}
@@ -107,6 +111,34 @@ func cmdCheck(out, errOut io.Writer) int {
 	fmt.Fprintf(out, "space %s: %s, %s\n", s.Name,
 		plural(len(m.Notes), "note"), plural(len(problems), "problem"))
 	if len(problems) > 0 {
+		return 1
+	}
+	// All notes are valid: bring the index up to date.
+	if changed, err := m.WriteIndex(c.Language); err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	} else if changed {
+		fmt.Fprintf(out, "%s rebuilt\n", memory.IndexFile)
+	}
+	return 0
+}
+
+func cmdDoctor(out, errOut io.Writer) int {
+	dir, err := config.Dir()
+	if err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	}
+	wd, _ := os.Getwd()
+	checks := doctor.Run(doctor.Env{ConfigDir: dir, WorkDir: wd})
+	marks := map[doctor.Status]string{doctor.OK: "✓", doctor.Warning: "!", doctor.Failed: "✗"}
+	for _, c := range checks {
+		fmt.Fprintf(out, "%s %s\n", marks[c.Status], c.What)
+		if c.Fix != "" {
+			fmt.Fprintf(out, "    → %s\n", c.Fix)
+		}
+	}
+	if doctor.Worst(checks) == doctor.Failed {
 		return 1
 	}
 	return 0
