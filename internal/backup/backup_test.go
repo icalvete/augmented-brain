@@ -110,3 +110,121 @@ func TestBackupAndRestore(t *testing.T) {
 		t.Error("a second restore of the same space was accepted")
 	}
 }
+
+// Found in the review before 0.1: two machines backing up the same space. Different
+// notes merge (the generated index too); the same note changed on both stops the backup.
+func TestTwoMachines(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git not installed")
+	}
+	root := t.TempDir()
+	remote := filepath.Join(root, "remote.git")
+	if out, err := exec.Command("git", "init", "-q", "--bare", "-b", "main", remote).CombinedOutput(); err != nil {
+		t.Fatal(err, string(out))
+	}
+	home1 := filepath.Join(root, "h1")
+	t.Setenv("HOME", home1)
+	if err := os.MkdirAll(filepath.Join(home1, "work"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	cfg1 := filepath.Join(home1, "cfg")
+	if _, err := setup.Init(cfg1, setup.Options{Space: "work", WorkFolder: "~/work", Memory: "~/brain"}); err != nil {
+		t.Fatal(err)
+	}
+	c1, _ := config.Load(cfg1)
+	if err := Setup(c1, c1.Spaces["work"], remote); err != nil {
+		t.Fatal(err)
+	}
+	c1, _ = config.Load(cfg1)
+	s1 := c1.Spaces["work"]
+	if _, err := Run(c1, s1, "one"); err != nil {
+		t.Fatal(err)
+	}
+
+	home2 := filepath.Join(root, "h2")
+	t.Setenv("HOME", home2)
+	cfg2 := filepath.Join(home2, "cfg")
+	s2, err := Restore(cfg2, RestoreOptions{URL: remote})
+	if err != nil {
+		t.Fatal(err)
+	}
+	c2, _ := config.Load(cfg2)
+
+	note := func(dir, id, body string) {
+		t.Helper()
+		text := "---\nid: " + id + "\ntype: lesson\ntitle: " + id + "\n---\n" + body + "\n"
+		if err := os.WriteFile(filepath.Join(dir, "knowledge", id+".md"), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		m, _, _ := memory.Load(dir)
+		if _, err := m.WriteIndex("en"); err != nil { // both machines rebuild the index
+			t.Fatal(err)
+		}
+	}
+
+	// Different notes on each machine: both backups go through.
+	note(s2.Memory, "lesson-from-two", "two")
+	if _, err := Run(c2, s2, "two"); err != nil {
+		t.Fatal(err)
+	}
+	note(s1.Memory, "lesson-from-one", "one")
+	if res, err := Run(c1, s1, "one"); err != nil || !res.Pushed {
+		t.Fatalf("machine one after machine two: %+v %v", res, err)
+	}
+	m1, problems, _ := memory.Load(s1.Memory)
+	if len(problems) > 0 || m1.Notes["lesson-from-two"] == nil || m1.Notes["lesson-from-one"] == nil {
+		t.Errorf("merge lost notes: %v %v", m1.IDs(), problems)
+	}
+	idx, _ := os.ReadFile(filepath.Join(s1.Memory, memory.IndexFile))
+	if strings.Contains(string(idx), "<<<<<<<") {
+		t.Errorf("index left with conflict markers:\n%s", idx)
+	}
+
+	// The same note changed differently on both machines: stopped, nothing touched.
+	if _, err := Run(c2, s2, "two"); err != nil { // machine two catches up first
+		t.Fatal(err)
+	}
+	note(s1.Memory, "lesson-shared", "version one")
+	if _, err := Run(c1, s1, "one"); err != nil {
+		t.Fatal(err)
+	}
+	note(s2.Memory, "lesson-shared", "version two")
+	_, err = Run(c2, s2, "two")
+	if err == nil || !strings.Contains(err.Error(), "knowledge/lesson-shared.md") {
+		t.Fatalf("a real conflict must stop the backup and name the note: %v", err)
+	}
+	if b, _ := os.ReadFile(filepath.Join(s2.Memory, "knowledge", "lesson-shared.md")); !strings.Contains(string(b), "version two") {
+		t.Errorf("the local note was changed:\n%s", b)
+	}
+	if out, _ := exec.Command("git", "-C", s2.Memory, "status", "--porcelain").Output(); strings.Contains(string(out), "UU") {
+		t.Errorf("a merge was left half done:\n%s", out)
+	}
+}
+
+func TestSetupKeepsAForeignOrigin(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git not installed")
+	}
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	if err := os.MkdirAll(filepath.Join(home, "work"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: "~/work", Memory: "~/brain"}); err != nil {
+		t.Fatal(err)
+	}
+	c, _ := config.Load(cfg)
+	s := c.Spaces["work"]
+	for _, args := range [][]string{{"init", "-q"}, {"remote", "add", "origin", "git@example.com:me/notes.git"}} {
+		if out, err := exec.Command("git", append([]string{"-C", s.Memory}, args...)...).CombinedOutput(); err != nil {
+			t.Fatal(err, string(out))
+		}
+	}
+	if err := Setup(c, s, filepath.Join(home, "backup.git")); err == nil || !strings.Contains(err.Error(), "does not change it") {
+		t.Errorf("a foreign origin was replaced: %v", err)
+	}
+	if _, err := Restore(cfg, RestoreOptions{URL: "x", Memory: filepath.Join(cfg, "config.toml")}); err == nil {
+		t.Error("restore over a file was accepted")
+	}
+}

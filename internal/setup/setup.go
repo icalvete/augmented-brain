@@ -166,6 +166,17 @@ func createSpace(lang, dir string, today string) ([]string, error) {
 	return created, nil
 }
 
+// EnsureFolders creates the folders every space has, if missing. git does not keep empty
+// folders, so a restored space needs them back.
+func EnsureFolders(dir string) error {
+	for _, f := range spaceFolders {
+		if err := os.MkdirAll(filepath.Join(dir, f), 0o755); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // copyTemplate writes templates/<lang>/<name> to dst unless dst exists. It reports
 // whether it wrote the file.
 func copyTemplate(lang, name, dst, today string) (bool, error) {

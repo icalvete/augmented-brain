@@ -20,6 +20,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/setup"
 )
 
 // MetaDir holds, inside the memory folder, the copy of the configuration and profile.
@@ -47,7 +48,12 @@ func Setup(c *config.Config, s *config.Space, url string) error {
 			return err
 		}
 	}
-	if _, err := git(s.Memory, "remote", "get-url", "origin"); err == nil {
+	if out, err := git(s.Memory, "remote", "get-url", "origin"); err == nil {
+		// Only replace an origin augmented brain set itself: the memory folder may already
+		// be a repository of the user's, pointing somewhere else on purpose.
+		if cur := strings.TrimSpace(out); cur != url && cur != s.Backup {
+			return fmt.Errorf("%s is already a git repository whose origin is %s; augmented brain does not change it. Set its backup by hand, or remove that remote first", s.Memory, cur)
+		}
 		if _, err := git(s.Memory, "remote", "set-url", "origin", url); err != nil {
 			return err
 		}
@@ -88,11 +94,64 @@ func Run(c *config.Config, s *config.Space, host string) (*Result, error) {
 		}
 		res.Committed = true
 	}
+	if err := catchUp(c, s); err != nil {
+		return res, err
+	}
 	if _, err := git(s.Memory, "push", "-q", "-u", "origin", "HEAD:main"); err != nil {
 		return res, err
 	}
 	res.Pushed = true
 	return res, nil
+}
+
+var ident = []string{"-c", "user.name=augmented brain", "-c", "user.email=backup@augmented-brain.invalid"}
+
+// catchUp merges what another machine pushed to the backup since this one last did,
+// so the push that follows is accepted. The generated files (the index and the copy of
+// the configuration) are rebuilt when they are all that collides; a real collision on
+// a note stops the backup without touching anything.
+func catchUp(c *config.Config, s *config.Space) error {
+	if _, err := git(s.Memory, "fetch", "-q", "origin"); err != nil {
+		return nil // nothing there yet, or offline: the push will say
+	}
+	if _, err := git(s.Memory, "rev-parse", "-q", "--verify", "origin/main"); err != nil {
+		return nil
+	}
+	if _, err := git(s.Memory, "merge-base", "--is-ancestor", "origin/main", "HEAD"); err == nil {
+		return nil // nothing new over there
+	}
+	if _, err := git(s.Memory, append(ident, "merge", "-q", "--no-edit", "origin/main")...); err == nil {
+		return nil
+	}
+	out, _ := git(s.Memory, "diff", "--name-only", "--diff-filter=U")
+	var notes []string
+	for _, f := range strings.Fields(out) {
+		if f != memory.IndexFile && !strings.HasPrefix(f, MetaDir+"/") {
+			notes = append(notes, f)
+		}
+	}
+	if len(notes) > 0 {
+		_, _ = git(s.Memory, "merge", "--abort")
+		return fmt.Errorf("nothing was backed up: another machine changed the same notes (%s). Open %s, run `git merge origin/main`, keep the right version of each, commit, and back up again",
+			strings.Join(notes, ", "), s.Memory)
+	}
+	// Only generated files collide: rebuild them and finish the merge.
+	m, problems, err := memory.Load(s.Memory)
+	if err != nil || len(problems) > 0 {
+		_, _ = git(s.Memory, "merge", "--abort")
+		return fmt.Errorf("merging the backup of another machine left notes that are not valid; nothing was backed up")
+	}
+	if _, err := m.WriteIndex(c.Language); err != nil {
+		return err
+	}
+	if err := writeMeta(c, s); err != nil {
+		return err
+	}
+	if _, err := git(s.Memory, "add", "-A"); err != nil {
+		return err
+	}
+	_, err = git(s.Memory, append(ident, "commit", "-q", "--no-edit")...)
+	return err
 }
 
 // writeMeta copies config.toml (this space only) and the profile into MetaDir.
@@ -206,6 +265,9 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	if mem, err = expand(mem); err != nil {
 		return nil, err
 	}
+	if info, err := os.Stat(mem); err == nil && !info.IsDir() {
+		return nil, fmt.Errorf("%s is a file: choose a folder for the memory", mem)
+	}
 	if entries, err := os.ReadDir(mem); err == nil && len(entries) > 0 {
 		return nil, fmt.Errorf("%s already exists and is not empty: choose another memory folder", mem)
 	}
@@ -219,6 +281,9 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 		return nil, fmt.Errorf("copying the backup into %s: %v: %s", mem, err, strings.TrimSpace(string(out)))
 	}
 	if _, err := git(mem, "remote", "set-url", "origin", o.URL); err != nil {
+		return nil, err
+	}
+	if err := setup.EnsureFolders(mem); err != nil {
 		return nil, err
 	}
 	s.Memory = mem
