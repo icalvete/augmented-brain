@@ -30,6 +30,7 @@ type Space struct {
 	Backup                string   `toml:"backup,omitempty"`
 	ProductionAWSProfiles []string `toml:"production_aws_profiles,omitempty"`
 	UntouchableHosts      []string `toml:"untouchable_hosts,omitempty"`
+	GitAllowedRepos       []string `toml:"git_allowed_repos,omitempty"`
 }
 
 // Config is the whole configuration file.
@@ -118,6 +119,11 @@ func (c *Config) normalize() error {
 				return fmt.Errorf("space %q: %w", name, err)
 			}
 		}
+		for i, f := range s.GitAllowedRepos {
+			if s.GitAllowedRepos[i], err = absPath(f); err != nil {
+				return fmt.Errorf("space %q: %w", name, err)
+			}
+		}
 	}
 	return nil
 }
@@ -135,6 +141,13 @@ func (c *Config) Save() error {
 		cp.WorkFolders = make([]string, len(s.WorkFolders))
 		for i, f := range s.WorkFolders {
 			cp.WorkFolders[i] = tilde(f)
+		}
+		cp.GitAllowedRepos = make([]string, len(s.GitAllowedRepos))
+		for i, f := range s.GitAllowedRepos {
+			cp.GitAllowedRepos[i] = tilde(f)
+		}
+		if len(cp.GitAllowedRepos) == 0 {
+			cp.GitAllowedRepos = nil
 		}
 		out.Spaces[name] = &cp
 	}

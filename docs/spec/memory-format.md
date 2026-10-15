@@ -142,8 +142,9 @@ language = "en"                  # en | es: the language the program speaks to y
 memory = "~/brains/work"
 work_folders = ["~/work"]        # opening the assistant here selects this space
 backup = "git@github.com:me/brain-work-private.git"
-production_aws_profiles = ["prod", "prod-eu"]
-untouchable_hosts = ["db01", "db02", "db03"]
+production_aws_profiles = ["prod", "prod-eu"]   # the user confirms first
+untouchable_hosts = ["db01", "db02", "db03"]    # ssh to them: the user confirms first
+git_allowed_repos = ["~/work/notes"]            # the assistant may commit and push here, with git -C
 
 [spaces.personal]
 memory = "~/brains/personal"

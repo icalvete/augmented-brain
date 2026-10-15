@@ -14,6 +14,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/doctor"
+	"github.com/icalvete/augmented-brain/internal/hook"
 	"github.com/icalvete/augmented-brain/internal/mcpserver"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/version"
@@ -28,6 +29,7 @@ Usage:
   augmented-brain check        check the notes of this folder's space and rebuild its index
   augmented-brain doctor       say what is missing, and how to fix it
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
+  augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use
   augmented-brain version      show the version
 `
 
@@ -60,6 +62,8 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 		return cmdDoctor(out, errOut)
 	case "mcp":
 		return cmdMCP(errOut)
+	case "hook":
+		return cmdHook(args[1:], in, out, errOut)
 	default:
 		fmt.Fprintf(errOut, "unknown command %q\n\n%s", args[0], usage)
 		return 2
@@ -189,6 +193,30 @@ func cmdMCP(errOut io.Writer) int {
 	if err := mcpserver.New(open, lockFile).Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
+	}
+	return 0
+}
+
+// cmdHook answers a Claude Code hook. A hook must never break the assistant, so it
+// always exits 0 and reports problems on stderr.
+func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
+	if len(args) != 1 {
+		fmt.Fprintln(errOut, "usage: augmented-brain hook session-start|pre-tool-use")
+		return 2
+	}
+	dir, _ := config.Dir()
+	var err error
+	switch args[0] {
+	case "session-start":
+		err = hook.SessionStart(in, out, dir)
+	case "pre-tool-use":
+		err = hook.PreToolUse(in, out, dir)
+	default:
+		fmt.Fprintf(errOut, "unknown hook %q\n", args[0])
+		return 2
+	}
+	if err != nil {
+		fmt.Fprintln(errOut, "augmented-brain hook:", err)
 	}
 	return 0
 }
