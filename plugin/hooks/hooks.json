@@ -1,0 +1,20 @@
+{
+  "description": "augmented brain: load the space when a session starts, and guard commands and file writes.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "augmented-brain hook session-start", "timeout": 10 }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          { "type": "command", "command": "augmented-brain hook pre-tool-use", "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}

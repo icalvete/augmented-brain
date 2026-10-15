@@ -1,0 +1,16 @@
+{
+  "name": "augmented-brain",
+  "owner": {
+    "name": "augmented brain"
+  },
+  "metadata": {
+    "description": "A second brain for working with AI coding assistants."
+  },
+  "plugins": [
+    {
+      "name": "brain",
+      "source": "./plugin",
+      "description": "Tasks, areas and rules your assistant remembers across sessions, with safety hooks. Needs the augmented-brain program on your PATH."
+    }
+  ]
+}

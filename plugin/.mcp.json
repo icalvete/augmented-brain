@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "augmented-brain": {
+      "command": "augmented-brain",
+      "args": ["mcp"]
+    }
+  }
+}

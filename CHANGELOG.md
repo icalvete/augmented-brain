@@ -15,6 +15,11 @@
 - MCP server (`augmented-brain mcp`), for any assistant that speaks MCP: open, update,
   journal, park and close tasks; see what is pending; capture to the inbox; create
   areas, references and lessons. Calls run one at a time, also across sessions.
+- Claude Code plugin `brain` (marketplace in this repository): loads the space's profile,
+  rules and index when a session starts, guards commands and file writes (no commit or
+  push, no root, no secrets; production AWS profiles and untouchable hosts ask first),
+  and registers the MCP server. Checked end to end with a clean Claude Code: open a
+  task, record a decision, park it, resume it in a new session, close it.
 
 ## 0.0.1
 

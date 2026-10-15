@@ -1,0 +1,8 @@
+{
+  "name": "brain",
+  "description": "augmented brain for Claude Code: loads your space's memory and rules when a session starts, guards commands and file writes, and gives Claude the tools to keep tasks, areas and knowledge.",
+  "homepage": "https://github.com/icalvete/augmented-brain",
+  "repository": "https://github.com/icalvete/augmented-brain",
+  "license": "MIT",
+  "keywords": ["memory", "second-brain", "tasks", "safety", "mcp"]
+}
