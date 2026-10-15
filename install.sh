@@ -81,4 +81,7 @@ case ":$PATH:" in
      echo "and open a new terminal." ;;
 esac
 echo
+echo "This is an alpha version: it may have bugs and may change. Read the disclaimer:"
+echo "  https://github.com/$REPO/blob/main/DISCLAIMER.md"
+echo
 echo "Next: run  augmented-brain init"

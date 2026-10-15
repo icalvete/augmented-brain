@@ -196,3 +196,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 .skip { position: absolute; left: 12px; top: -48px; background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 8px; z-index: 10; }
 .skip:focus { top: 12px; }
 section[id] { scroll-margin-top: 16px; }
+
+/* alpha notice, on top of every page */
+.alpha { background: #F3E2B0; color: #4D3A06; font-size: 0.9rem; padding-block: 8px; }
+.alpha a { color: #4D3A06; text-decoration-color: #4D3A06; }

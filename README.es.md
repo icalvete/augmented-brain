@@ -7,6 +7,11 @@ Tareas, áreas y reglas que tu asistente recuerda de una sesión a otra.</p>
 
 <p align="center"><a href="README.md">Read in English</a></p>
 
+> [!WARNING]
+> **Alfa.** Es una versión temprana: puede tener errores, su formato y sus comandos
+> pueden cambiar, y solo se ha probado en Linux. Lee el [aviso legal](DISCLAIMER.md#aviso-legal)
+> antes de usarlo, y haz copia de lo importante.
+
 ---
 
 Los asistentes de IA para programar funcionan muy bien dentro de una sesión y lo
@@ -122,4 +127,5 @@ publicarían datos personales o secretos.
 
 ## Licencia
 
-MIT. Ver [LICENSE](LICENSE).
+MIT. Ver [LICENSE](LICENSE) y el [aviso legal](DISCLAIMER.md#aviso-legal). Sin
+relación con Anthropic; "Claude" y "Claude Code" son marcas de Anthropic, PBC.

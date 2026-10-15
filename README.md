@@ -7,6 +7,11 @@ Tasks, areas and rules that your assistant remembers from one session to the nex
 
 <p align="center"><a href="README.es.md">Leer en español</a></p>
 
+> [!WARNING]
+> **Alpha.** This is an early version: it may have bugs, its format and commands may
+> change, and it has been tested on Linux only. Read the [disclaimer](DISCLAIMER.md)
+> before you use it, and back up anything important.
+
 ---
 
 AI coding assistants are great inside one session and forget everything when it ends.
@@ -118,4 +123,5 @@ blocks commits that would publish personal data or secrets.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE) and the [disclaimer](DISCLAIMER.md). Not affiliated with
+Anthropic; "Claude" and "Claude Code" are trademarks of Anthropic, PBC.
