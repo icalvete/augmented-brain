@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Memory format v0.1 (`docs/spec/memory-format.md`): a folder per type, one profile for
+  the person plus an optional one per space; importing other formats is planned for 0.2.
+- Go core: `internal/config` (spaces, chosen by the folder you work in) and
+  `internal/memory` (reads and checks every note's header; the body can be in any language).
+- `augmented-brain version`, `space` and `check`.
+
 ## 0.0.1
 
 First public snapshot: the project's goal, design and brand. Nothing to install yet.

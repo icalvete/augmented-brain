@@ -72,6 +72,15 @@ deja todo listo. Luego abres tu asistente y dices *"nueva tarea: …"*.
 archivo), y *Getting Things Done*, de David Allen (el buzón y la revisión semanal),
 adaptados a trabajar con un asistente de IA.
 
+## Desarrollo
+
+Necesita Go 1.25 o posterior (un `go` más antiguo lo descarga solo).
+
+```bash
+go test ./...
+go build ./cmd/augmented-brain
+```
+
 ## El repositorio
 
 - [`docs/spec/memory-format.md`](docs/spec/memory-format.md): cómo se guarda la memoria (borrador, en inglés).

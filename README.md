@@ -70,6 +70,15 @@ use) and sets everything up. Then you open your assistant and say *"new task: â€
 archive) and *Getting Things Done* by David Allen (the inbox and the weekly review),
 adapted to working with an AI assistant.
 
+## Development
+
+Needs Go 1.25 or later (an older `go` downloads it by itself).
+
+```bash
+go test ./...
+go build ./cmd/augmented-brain
+```
+
 ## Repository
 
 - [`docs/spec/memory-format.md`](docs/spec/memory-format.md): how the memory is stored (draft).
