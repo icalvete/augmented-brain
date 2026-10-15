@@ -12,6 +12,9 @@
   assistant's own settings are not touched.
 - `augmented-brain doctor`: says what is missing, and how to fix it.
 - The session index, `MEMORY.md`, is generated: live tasks grouped by area.
+- MCP server (`augmented-brain mcp`), for any assistant that speaks MCP: open, update,
+  journal, park and close tasks; see what is pending; capture to the inbox; create
+  areas, references and lessons. Calls run one at a time, also across sessions.
 
 ## 0.0.1
 
