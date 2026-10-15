@@ -37,6 +37,10 @@ if [ -n "${AB_CHECK_HOME:-}" ]; then
   export PATH
 fi
 
+# A newcomer's shell does not have ~/.local/bin in its PATH yet (GitHub's runners do).
+PATH="$(printf '%s' "$PATH" | awk -v RS=: -v ORS=: -v d="$HOME/.local/bin" '$0 != d && $0 != d "/"' | sed 's/:$//')"
+export PATH
+
 echo "2. run the installer, hands-off"
 [ "${AB_CHECK_DESKTOP:-}" = 1 ] || AB_NO_DESKTOP=1
 AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP="${AB_NO_DESKTOP:-}" \
