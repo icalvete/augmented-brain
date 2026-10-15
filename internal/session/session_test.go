@@ -86,3 +86,29 @@ func TestContextBudget(t *testing.T) {
 		t.Errorf("big index: %d characters, cut note present: %v", n, strings.Contains(text, "The index was cut"))
 	}
 }
+
+// Found in the review before 0.1: a huge profile, hundreds of space rules and emojis
+// must never push the session context over the budget.
+func TestContextNeverOverBudget(t *testing.T) {
+	c, s := space(t, "en")
+	profile := "---\nid: profile\ntype: profile\ntitle: Profile\n---\n" + strings.Repeat("I like short answers 🙂. ", 600) + "\n"
+	if err := os.WriteFile(filepath.Join(c.Dir, "profile.md"), []byte(profile), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 300; i++ {
+		rule := fmt.Sprintf("---\nid: rule-%03d\ntype: rule\ntitle: A rule with a fairly long title number %03d\n---\nbody\n", i, i)
+		if err := os.WriteFile(filepath.Join(s.Memory, "rules", fmt.Sprintf("rule-%03d.md", i)), []byte(rule), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	text := Context(c, s)
+	if n := size(text); n > Budget {
+		t.Fatalf("context is %d units, over %d", n, Budget)
+	}
+	if !strings.Contains(text, "The profile was cut to fit") || !strings.Contains(text, "### How we work") {
+		t.Errorf("the profile note or the common rules are missing")
+	}
+	if utf8.RuneCountInString(text) > size(text) {
+		t.Error("size must never count less than the characters")
+	}
+}

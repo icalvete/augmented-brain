@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/memory"
@@ -45,22 +44,65 @@ func Context(c *config.Config, s *config.Space) string {
 		spaceRules = section("Rules of this space", strings.Join(full, "\n"))
 	}
 	text := head + profile + common + spaceRules + index
-	if utf8.RuneCountInString(text) <= Budget {
+	if size(text) <= Budget {
 		return text
 	}
+	// 1. Space rules by title and path, to be read when needed.
 	if len(short) > 0 {
 		spaceRules = section("Rules of this space (read each file before acting on its subject)", strings.Join(short, "\n"))
 	}
+	// 2. A long profile, cut, saying where the whole one is.
+	if size(profile) > profileBudget {
+		profile = cut(profile, profileBudget) + fmt.Sprintf("\n(The profile was cut to fit. Read it whole in %s.)\n", filepath.Join(c.Dir, "profile.md"))
+	}
 	text = head + profile + common + spaceRules + index
-	if utf8.RuneCountInString(text) <= Budget {
+	if size(text) <= Budget {
 		return text
 	}
+	// 3. The index, cut, saying where the whole one is.
 	note := fmt.Sprintf("\n\n(The index was cut to fit. Read it whole in %s.)\n", filepath.Join(s.Memory, memory.IndexFile))
-	keep := Budget - utf8.RuneCountInString(head+profile+common+spaceRules+note)
-	if keep < 0 {
-		keep = 0
+	text = head + profile + common + spaceRules + cut(index, Budget-size(head+profile+common+spaceRules+note)) + note
+	// 4. Whatever is left (hundreds of space rules), never over the budget.
+	if size(text) > Budget {
+		end := "\n(Cut to fit. Read the space's rules and index in " + s.Memory + ".)\n"
+		text = cut(text, Budget-size(end)) + end
 	}
-	return head + profile + common + spaceRules + string([]rune(index)[:min(keep, utf8.RuneCountInString(index))]) + note
+	return text
+}
+
+// profileBudget is the most of the profile loaded when everything does not fit.
+const profileBudget = 2500
+
+// size counts like Claude Code may: in UTF-16 units, so a character outside the basic
+// plane (an emoji) counts twice. It is never less than the number of characters.
+func size(s string) int {
+	n := 0
+	for _, r := range s {
+		n++
+		if r > 0xFFFF {
+			n++
+		}
+	}
+	return n
+}
+
+// cut keeps the start of s that fits in max units, without splitting a character.
+func cut(s string, max int) string {
+	if max <= 0 {
+		return ""
+	}
+	n := 0
+	for i, r := range s {
+		w := 1
+		if r > 0xFFFF {
+			w = 2
+		}
+		if n+w > max {
+			return s[:i]
+		}
+		n += w
+	}
+	return s
 }
 
 // NoSpace is the text for a session that starts outside every space.
