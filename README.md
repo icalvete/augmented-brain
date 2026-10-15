@@ -9,66 +9,93 @@ Tasks, areas and rules that your assistant remembers from one session to the nex
 
 ---
 
-> **Status: 0.0.1, design stage.** Nothing to install yet. This repository holds the
-> project's goal, its design and its brand. Follow along or open an issue with ideas.
-
-## The problem
-
 AI coding assistants are great inside one session and forget everything when it ends.
-You explain the same context again, half-finished work gets lost between sessions, and
-nothing stops the assistant from running a risky command on the wrong machine.
+You explain the same context again, half-finished work gets lost, and nothing stops a
+risky command on the wrong machine.
 
-## What augmented brain does
+**augmented brain gives your assistant a memory and a way of working**, kept as plain
+Markdown files that you own, and guards it while it works.
 
-It gives your assistant a memory and a way of working, kept as plain Markdown files
-that you own.
+## Start in three steps
 
-- **Tasks with a lifecycle.** Every piece of work goes through the same steps: define,
-  analyse, plan, execute (with a journal), validate, close. You can park a task and pick
-  it up days later, in another session, exactly where you left it.
-- **Areas.** Ongoing responsibilities (your platform, your side project) group their
-  tasks and what you learned about them, so you start from the right map.
-- **Rules that stick.** How you like to work is loaded at the start of every session.
-  The important ones are enforced, not just asked for: no commits or pushes unless you
-  say so, no root, no secrets written into commands or files.
-- **Safe on servers and in the cloud.** The same protections apply over `ssh`. AWS
-  production profiles ask for confirmation first.
-- **Work and personal kept apart.** Each *space* has its own memory, rules and backup.
-  The folder you open the assistant in picks the space.
-- **Backup and restore.** Lose your laptop and get everything back on a new one.
-- **Your tools.** Guidance to connect Google Calendar, Gmail, Drive, Jira and other
-  services through MCP.
-
-## How it will work
+Linux or macOS, with [Claude Code](https://docs.claude.com/en/docs/claude-code) installed.
 
 ```bash
 curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh
 augmented-brain init
+augmented-brain doctor
 ```
 
-`init` asks three questions (language, where to keep your memory, which assistant you
-use) and sets everything up. Then you open your assistant and say *"new task: …"*.
+`init` asks your language, a name for your first space and the folder you work in, and
+installs the Claude Code plugin. `doctor` tells you if anything is missing, and how to
+fix it. Then open Claude Code in your work folder.
 
-- **One binary**, written in Go. No Python, Node or anything else to install.
-- **Linux and macOS** first; Windows later.
-- **Claude Code** first. The method lives in an MCP server, so other assistants can use
-  it too.
-- **English and Spanish.**
+## What it looks like
 
-## Roadmap
+> **You:** New task: add a contact form to the website.
+>
+> **Claude:** Opened *task-contact-form*, in definition. What fields should it have?
+>
+> *…you agree on name, email and message, and stop for the day…*
+>
+> **You:** Park it, we continue tomorrow with the plan.
+>
+> **Claude:** Parked. Next: write the plan.
 
-| Version | What |
+The next day, in a **new session**:
+
+> **You:** Let's continue with the contact form.
+>
+> **Claude:** It is parked with the definition agreed: name, email and message, sent by
+> email. Next is the plan. The project folder is still empty: where is the website code?
+
+No context to repeat. The assistant read the task and checked the real state before
+trusting it.
+
+## What you get
+
+- **Tasks with a lifecycle**: define, analyse, plan, execute with a journal, validate,
+  close. Park a task and resume it days later, in any session.
+- **Areas** that group the tasks and the knowledge of each responsibility.
+- **Rules loaded in every session**, and the important ones enforced by a guard: no
+  commit or push unless you allow it, never root, no secrets in commands or files.
+  Production AWS profiles and hosts you mark as untouchable ask you first, also over
+  `ssh`.
+- **Work and personal apart**: each *space* has its own memory, rules and backup. The
+  folder you open the assistant in picks the space.
+- **Backup and restore** to a private git repository of yours, one per space.
+- **Your services** (calendar, mail, Jira…) through MCP: see
+  [Connect your services](docs/guide/connect-services.md).
+
+## Commands
+
+| Command | What it does |
 |---|---|
-| 0.0.1 | Goal, design and brand (this release) |
-| 0.1 | Memory format, `init` and `doctor`, Claude Code plugin with the safety hooks |
-| 0.2 | MCP server with the task lifecycle, weekly review and backup / restore |
-| 0.3 | Documentation site, installer and first public binaries |
+| `augmented-brain init` | Set up augmented brain and your first space |
+| `augmented-brain space add` | Add another space (personal, a client…) |
+| `augmented-brain doctor` | Say what is missing, and how to fix it |
+| `augmented-brain check` | Check the notes of this folder's space and rebuild its index |
+| `augmented-brain backup setup <url>` | Back up this space to a private git repository |
+| `augmented-brain backup` | Save the latest changes (`--all` for every space) |
+| `augmented-brain restore <url>` | Bring a space back on a new machine |
 
-## Inspiration
+Everyday work happens inside Claude Code, in plain words: "new task…", "what is
+pending?", "park it", "note this in the inbox".
 
-*Building a Second Brain* by Tiago Forte (the PARA method: projects, areas, resources,
-archive) and *Getting Things Done* by David Allen (the inbox and the weekly review),
-adapted to working with an AI assistant.
+## How it works
+
+- **Your memory is Markdown**, one folder per space: `tasks/`, `areas/`, `knowledge/`,
+  `rules/`. Open it and edit it with any editor. The format is in
+  [docs/spec/memory-format.md](docs/spec/memory-format.md).
+- **One program**, `augmented-brain`, written in Go. Nothing else to install.
+- **An MCP server** gives your assistant the tools of the method, so other assistants
+  can use it too. Claude Code is the first one supported.
+- **A Claude Code plugin** loads your space when a session starts and runs the guard
+  before every command and file write. The guard is a safety net against mistakes, not
+  a security boundary.
+
+Inspired by *Building a Second Brain* by Tiago Forte and *Getting Things Done* by David
+Allen, adapted to working with an AI assistant.
 
 ## Development
 
@@ -79,12 +106,9 @@ go test ./...
 go build ./cmd/augmented-brain
 ```
 
-## Repository
-
-- [`docs/spec/memory-format.md`](docs/spec/memory-format.md): how the memory is stored (draft).
-- [`docs/brand.html`](docs/brand.html): logo, icons and palette, shown in place.
-- [`assets/brand/`](assets/brand/): brand sources and the script that builds every asset.
-- [`scripts/privacy-check.sh`](scripts/privacy-check.sh): blocks commits that would publish personal data or secrets.
+The brand (logo, icons, palette) is in [`assets/brand/`](assets/brand/), shown in place in
+[`docs/brand.html`](docs/brand.html). [`scripts/privacy-check.sh`](scripts/privacy-check.sh)
+blocks commits that would publish personal data or secrets.
 
 ## License
 
