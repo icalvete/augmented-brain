@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-alpha
+
+Released 2026-10-15. **Alpha:** the first usable version, tested on Linux only. It may
+have bugs and its format may change; read [DISCLAIMER.md](DISCLAIMER.md).
 
 - Memory format v0.1 (`docs/spec/memory-format.md`): a folder per type, one profile for
   the person plus an optional one per space; importing other formats is planned for 0.2.
@@ -26,6 +29,10 @@
   configuration and the profile; a backup is refused while a note holds a secret.
 - Releases: `install.sh` (Linux and macOS, no root, checksum verified) and archives for
   amd64 and arm64, built and published by GitHub Actions on a version tag.
+- A code review before this release: the guard understands compound commands and what
+  shells read; parking never loses a journal; config edits keep comments; backups merge
+  across two machines. `scripts/e2e-claude.sh` checks the whole story with a real Claude.
+- The website: a product page in English and Spanish, with a disclaimer and this alpha notice.
 
 ## 0.0.1
 
