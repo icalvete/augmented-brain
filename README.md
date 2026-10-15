@@ -9,6 +9,8 @@ All in plain text files of yours, backed up to your own git.</p>
 <p align="center"><a href="https://icalvete.github.io/augmented-brain/">Website</a> ·
 <a href="docs/guide/how-it-works.md">How it works</a> · <a href="README.es.md">Leer en español</a></p>
 
+<p align="center">[![Sponsor](https://img.shields.io/github/sponsors/icalvete?label=Sponsor&logo=githubsponsors&color=EA4AAA)](https://github.com/sponsors/icalvete)</p>
+
 > [!WARNING]
 > **Alpha.** This is an early version: it may have bugs, its format and commands may
 > change, and it has been tested on Linux only. Read the [disclaimer](DISCLAIMER.md)
@@ -165,6 +167,12 @@ guard) against a real, isolated Claude Code. It spends usage: run it before a re
 The brand (logo, icons, palette) is in [`assets/brand/`](assets/brand/), shown in place in
 [`docs/brand.html`](docs/brand.html). [`scripts/privacy-check.sh`](scripts/privacy-check.sh)
 blocks commits that would publish personal data or secrets.
+
+## Support the project
+
+augmented brain is free and MIT-licensed. If it saves you time, you can
+[sponsor its development](https://github.com/sponsors/icalvete): it pays for the time to answer issues and add features. There is also paid support
+(answers by email within two working days) and a one-hour setup session by video call.
 
 ## License
 

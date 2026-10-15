@@ -29,6 +29,11 @@ code { font-family: var(--mono); font-size: 0.9em; background: var(--code); padd
 .top nav { display: flex; gap: 18px; font-size: 0.95rem; }
 .top nav a { text-decoration: none; color: var(--muted); }
 .top nav a:hover { color: var(--ink); }
+/* the GitHub Sponsors pink, darker so it keeps AA contrast on white */
+.top nav a.sponsor { color: #BF3989; font-weight: 600; }
+.top nav a.sponsor:hover { color: #8A1F5E; }
+.top nav a, .brand { white-space: nowrap; }
+@media (max-width: 600px) { .top nav a.sponsor .label { display: none; } }
 
 /* hero */
 .hero { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 48px; align-items: center; padding-block: 40px 56px; }

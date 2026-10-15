@@ -9,6 +9,8 @@ Todo queda en ficheros de texto tuyos, con copia en tu propio git.</p>
 <p align="center"><a href="https://icalvete.github.io/augmented-brain/es/">Web</a> ·
 <a href="docs/guide/how-it-works.es.md">Cómo funciona</a> · <a href="README.md">Read in English</a></p>
 
+<p align="center">[![Sponsor](https://img.shields.io/github/sponsors/icalvete?label=Sponsor&logo=githubsponsors&color=EA4AAA)](https://github.com/sponsors/icalvete)</p>
+
 > [!WARNING]
 > **Alfa.** Es una versión temprana: puede tener errores, su formato y sus comandos
 > pueden cambiar, y solo se ha probado en Linux. Lee el [aviso legal](DISCLAIMER.md#aviso-legal)
@@ -167,6 +169,12 @@ La marca (logo, iconos y paleta) está en [`assets/brand/`](assets/brand/), y se
 sitio en [`docs/brand.html`](docs/brand.html).
 [`scripts/privacy-check.sh`](scripts/privacy-check.sh) bloquea los commits que
 publicarían datos personales o secretos.
+
+## Apoya el proyecto
+
+augmented brain es libre y gratis (licencia MIT). Si te ahorra tiempo, puedes
+[patrocinar su desarrollo](https://github.com/sponsors/icalvete): paga el tiempo de responder incidencias y añadir funciones. También hay soporte de pago
+(respuesta por correo en dos días laborables) y una sesión de puesta en marcha de una hora por videollamada.
 
 ## Licencia
 
