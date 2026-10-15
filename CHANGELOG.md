@@ -20,6 +20,12 @@
   push, no root, no secrets; production AWS profiles and untouchable hosts ask first),
   and registers the MCP server. Checked end to end with a clean Claude Code: open a
   task, record a decision, park it, resume it in a new session, close it.
+- `init` offers to install the Claude Code plugin; `doctor` checks it.
+- Backup and restore: `augmented-brain backup setup <url>`, `backup` (or `backup --all`)
+  and `restore <url>`. Each space goes to its own private repository with its
+  configuration and the profile; a backup is refused while a note holds a secret.
+- Releases: `install.sh` (Linux and macOS, no root, checksum verified) and archives for
+  amd64 and arm64, built and published by GitHub Actions on a version tag.
 
 ## 0.0.1
 

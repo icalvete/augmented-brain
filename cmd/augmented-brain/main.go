@@ -28,6 +28,9 @@ Usage:
   augmented-brain space add    add another space (work, personal…)
   augmented-brain check        check the notes of this folder's space and rebuild its index
   augmented-brain doctor       say what is missing, and how to fix it
+  augmented-brain backup       save this folder's space to its private repository (--all: every space)
+  augmented-brain backup setup URL   connect this folder's space to a private git repository
+  augmented-brain restore URL  bring a space back from its backup, on a new machine
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
   augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use
   augmented-brain version      show the version
@@ -64,6 +67,10 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 		return cmdMCP(errOut)
 	case "hook":
 		return cmdHook(args[1:], in, out, errOut)
+	case "backup":
+		return cmdBackup(args[1:], out, errOut)
+	case "restore":
+		return cmdRestore(args[1:], out, errOut)
 	default:
 		fmt.Fprintf(errOut, "unknown command %q\n\n%s", args[0], usage)
 		return 2

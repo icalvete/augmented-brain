@@ -152,6 +152,16 @@ work_folders = ["~/personal"]
 backup = "git@github.com:me/brain-personal-private.git"
 ```
 
+## Backup
+
+Each space backs up to its own private git repository: the memory folder itself is the
+repository. Every backup also copies this space's part of the configuration and the
+profile into `.augmented-brain/` inside the memory folder, so restoring on a new machine
+needs nothing else. Paths are kept with `~`, so they point to the new machine's home.
+
+A backup is refused while any file of the memory holds a secret. The generated index is
+rebuilt after a restore.
+
 ## Decisions
 
 - **A folder per type**, not one flat folder with prefixes: a newcomer sees at a glance what there is and where each thing goes.
