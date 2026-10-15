@@ -46,6 +46,14 @@ fetch() { # fetch <url> <file>
   fi
 }
 
+if command -v sha256sum >/dev/null 2>&1; then
+  sha() { sha256sum "$1" | awk '{print $1}'; }
+elif command -v shasum >/dev/null 2>&1; then
+  sha() { shasum -a 256 "$1" | awk '{print $1}'; }
+else
+  fail "needs sha256sum or shasum to check the download."
+fi
+
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -55,12 +63,8 @@ archive="$(grep "_${os}_${arch}\.tar\.gz\$" "$TMP/checksums.txt" | awk '{print $
 fetch "$BASE/$archive" "$TMP/$archive" || fail "cannot download $archive"
 
 want="$(grep " ${archive}\$" "$TMP/checksums.txt" | awk '{print $1}')"
-if command -v sha256sum >/dev/null 2>&1; then
-  got="$(sha256sum "$TMP/$archive" | awk '{print $1}')"
-else
-  got="$(shasum -a 256 "$TMP/$archive" | awk '{print $1}')"
-fi
-[ "$got" = "$want" ] || fail "the download does not match its checksum: not installed."
+got="$(sha "$TMP/$archive")"
+[ -n "$want" ] && [ "$got" = "$want" ] || fail "the download does not match its checksum: not installed."
 
 tar -xzf "$TMP/$archive" -C "$TMP"
 mkdir -p "$DIR"
