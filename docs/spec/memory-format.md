@@ -96,12 +96,13 @@ Two more statuses pause a task without losing anything:
 
 ### Task body
 
-The body uses these sections, in your language (the program does not read them; the templates write the headings for you):
+The body uses these sections, in your language (the templates write the headings for you):
 
 1. **Essentials**: three to six lines that are enough to resume the task without reading anything else. Rewritten every time the task is parked.
-2. **Definition**, **Analysis**, **Plan**, **Journal**, **Validation**, **Closing**: one per phase.
+2. **Definition**, **Analysis**, **Plan**, **Validation**, **Closing**: one per phase.
+3. **Journal**: dated lines, `- YYYY-MM-DD — what happened`. Always the last section.
 
-The journal only grows at the end. When a task file passes about 10 KB, its oldest journal entries move to `archive/` and the task links to them.
+The program never searches the prose. It relies on two positions only: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. When a task file passes about 10 KB, its oldest journal entries move to `archive/` and the task links to them.
 
 ## Areas
 
