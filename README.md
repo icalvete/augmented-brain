@@ -30,6 +30,9 @@ augmented-brain doctor
 installs the Claude Code plugin. `doctor` tells you if anything is missing, and how to
 fix it. Then open Claude Code in your work folder.
 
+If `augmented-brain` is not found right after installing, open a new terminal; the installer
+prints the line to add to your shell profile when its folder is not in your `PATH`.
+
 ## What it looks like
 
 > **You:** New task: add a contact form to the website.
