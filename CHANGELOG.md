@@ -7,6 +7,11 @@
 - Go core: `internal/config` (spaces, chosen by the folder you work in) and
   `internal/memory` (reads and checks every note's header; the body can be in any language).
 - `augmented-brain version`, `space` and `check`.
+- `augmented-brain init` and `space add`: create the configuration, the profile and the
+  spaces from templates in English or Spanish. Nothing is overwritten, and the
+  assistant's own settings are not touched.
+- `augmented-brain doctor`: says what is missing, and how to fix it.
+- The session index, `MEMORY.md`, is generated: live tasks grouped by area.
 
 ## 0.0.1
 
