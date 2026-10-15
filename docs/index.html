@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="augmented brain">
 <meta property="og:title" content="augmented brain · a memory for your AI coding assistant">
-<meta property="og:description" content="A notebook, a method and a doorman for your AI coding assistant. Free, open source, plain files on your machine.">
+<meta property="og:description" content="Augment your AI assistant's brain: it remembers where you left off, works with a method and asks before anything risky. Free, open source, plain files backed up to your git.">
 <meta property="og:url" content="https://icalvete.github.io/augmented-brain/">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="augmented brain · a memory for your AI coding assistant">
-<meta name="twitter:description" content="A notebook, a method and a doorman for your AI coding assistant. Free, open source, plain files on your machine.">
+<meta name="twitter:description" content="Augment your AI assistant's brain: it remembers where you left off, works with a method and asks before anything risky. Free, open source, plain files backed up to your git.">
 <meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
 <script>
 // First visit: if the browser prefers Spanish, go to the Spanish page. A language picked
@@ -107,6 +107,14 @@
   },
   {
    "@type": "Question",
+   "name": "Does the backup run by itself?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Not yet. You run augmented-brain backup whenever you like. One command, no questions."
+   }
+  },
+  {
+   "@type": "Question",
    "name": "What if I stop using it?",
    "acceptedAnswer": {
     "@type": "Answer",
@@ -130,7 +138,8 @@
 <header class="wrap top">
   <a class="brand" href="./"><img src="img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Main">
-    <a class="hide-sm" href="#how">How it works</a>
+    <a class="hide-sm" href="#what">What it does</a>
+    <a class="hide-sm" href="#backup">Backup</a>
     <a class="hide-sm" href="#start">Start</a>
     <a href="es/" hreflang="es" data-lang="es">Español</a>
     <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
@@ -141,8 +150,8 @@
   <div class="wrap hero">
     <div>
       <p class="kicker">For Claude Code · Linux and macOS · free and open source · alpha</p>
-      <h1>Your AI assistant wakes up every morning with amnesia.</h1>
-      <p class="lead">augmented brain gives it a notebook. It writes down what you decide, and reads it back next time.</p>
+      <h1>Augment your AI assistant's brain.</h1>
+      <p class="lead">It remembers where you left off, works with a method, and asks before touching anything risky. All in plain text files of yours, backed up to your own git.</p>
       <div class="actions">
         <a class="btn" href="#start">Start in three steps</a>
         <a class="btn ghost" href="#story">See an example</a>
@@ -150,6 +159,25 @@
     </div>
     <div class="card"><img src="img/logo.svg" alt="augmented brain logo: a brain with the name across it" width="592" height="487"></div>
   </div>
+
+  <section id="what">
+    <div class="wrap">
+      <div class="head">
+        <h2>What it does, day to day</h2>
+        <p>You talk to it as usual. This is what changes.</p>
+      </div>
+      <div class="uses">
+        <div class="use"><p class="say">“Where were we?”</p><p>It lists your live tasks, each with its next step and who is holding it up.</p></div>
+        <div class="use"><p class="say">“Park it, we carry on tomorrow.”</p><p>It writes down where you stopped and what comes next. Tomorrow, in a new session, it starts there.</p></div>
+        <div class="use"><p class="say">“Note: renew the certificate in November.”</p><p>It goes to the inbox, without opening a task. You sort it out in the weekly review.</p></div>
+        <div class="use"><p class="say">“Why did we pick Postgres?”</p><p>It looks it up in your notes and gives you the decision, with its date and its reason.</p></div>
+        <div class="use"><p class="say">“Save that as a lesson.”</p><p>What you learned gets its own note. Next time the topic comes up, it already knows.</p></div>
+        <div class="use"><p class="say">“Delete the old production bucket.”</p><p>Before running it, it asks you. Production is yours to approve.</p></div>
+        <div class="use"><p class="say">You open Claude in <code>~/personal</code></p><p>It only sees your personal notes. Work stays in its own drawer.</p></div>
+        <div class="use"><p class="say">Your laptop dies</p><p>One command on the new one and it is all back: notes, tasks and rules. More on that below.</p></div>
+      </div>
+    </div>
+  </section>
 
   <section id="story">
     <div class="wrap">
@@ -186,7 +214,7 @@
           </div>
           <h3>A notebook</h3>
           <p>Every task, decision and lesson goes into a plain text file on your machine. Next session, the assistant reads it first.</p>
-          <p class="eg">“Why did we pick Postgres?” It's in the notes, with the date.</p>
+          <p class="eg">“Which fields did the form have?” It's in its task, with the date.</p>
         </div>
         <div class="thing">
           <div class="icon" aria-hidden="true">
@@ -264,12 +292,39 @@ Name, email and message, sent by email.
     </div>
   </section>
 
+  <section id="backup">
+    <div class="wrap">
+      <div class="head">
+        <h2>Lose the laptop, keep the brain</h2>
+        <p>Each drawer can back up to a private git repository of yours. This is what you get:</p>
+      </div>
+      <div class="backup">
+        <ul class="pros">
+          <li><b>A new machine in minutes.</b> <code>augmented-brain restore</code> brings the whole drawer back: notes, tasks, rules, your profile and its settings. Open Claude and carry on.</li>
+          <li><b>Several machines, one brain.</b> Laptop and desktop? Each backup first fetches what the other machine did, and merges it.</li>
+          <li><b>Full history.</b> Every backup is a git commit, with the machine and the time. See what changed, and go back to any day.</li>
+          <li><b>Your place, not ours.</b> GitHub, GitLab or your own server: you pick the repository. augmented brain has no cloud.</li>
+          <li><b>One repository per drawer.</b> Work can live in your company's git, and personal in yours.</li>
+          <li><b>No secrets go up.</b> If a note holds something that looks like a password or a token, the backup stops and tells you where.</li>
+          <li><b>Nothing gets overwritten.</b> If two machines changed the same note, it stops without touching anything and tells you how to fix it.</li>
+        </ul>
+        <div class="howto">
+          <p class="label">Set it up once</p>
+          <div class="cmd"><code>augmented-brain backup setup \
+  git@github.com:you/my-brain.git</code></div>
+          <div class="cmd"><code>augmented-brain backup</code></div>
+          <p class="note">The first links the drawer to your repository. The second saves the changes: run it at the end of the day, or with <code>--all</code> for every drawer.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section>
     <div class="wrap">
       <div class="head"><h2>Also in the box</h2></div>
       <div class="grid">
         <div class="item"><h3>Two drawers</h3><p>Work and personal, each with its own notes, rules and backup. The folder you open picks the drawer.</p></div>
-        <div class="item"><h3>Lose the laptop, keep the brain</h3><p>Each drawer backs up to a private git repository of yours. One command brings it back on a new machine.</p></div>
+        <div class="item"><h3>Lessons that stay</h3><p>“Save that as a lesson” and what you learned outlives the conversation. Sorted by area.</p></div>
         <div class="item"><h3>Plain words</h3><p>“New task…”, “what's pending?”, “park it”, “note this for later”. No commands to learn.</p></div>
         <div class="item"><h3>Areas</h3><p>Ongoing responsibilities, like “the website” or “the servers”, group their tasks and what you learned.</p></div>
         <div class="item"><h3>Your tools</h3><p>Calendar, mail, documents and Jira can join in. <a href="guide/connect-services.html">How to connect them</a>.</p></div>
@@ -318,6 +373,7 @@ Name, email and message, sent by email.
         <details><summary>Which assistants does it work with?</summary><p>Claude Code today. The method runs as an MCP server, so any assistant that speaks MCP can use it; adapters for others will follow.</p></details>
         <details><summary>Does it work on Windows?</summary><p>Not yet. Linux and macOS for now.</p></details>
         <details><summary>Can I edit the notes by hand?</summary><p>Yes, they are Markdown files. Afterwards, <code>augmented-brain check</code> checks them and rebuilds the index.</p></details>
+        <details><summary>Does the backup run by itself?</summary><p>Not yet. You run <code>augmented-brain backup</code> whenever you like. One command, no questions.</p></details>
         <details><summary>What if I stop using it?</summary><p>Your notes stay where they are, as plain files. There is nothing to export.</p></details>
       </div>
     </div>

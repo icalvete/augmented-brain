@@ -4,7 +4,7 @@
     "name": "augmented brain"
   },
   "metadata": {
-    "description": "A second brain for working with AI coding assistants."
+    "description": "Augment the brain of your AI coding assistant: memory, method and a guard."
   },
   "plugins": [
     {

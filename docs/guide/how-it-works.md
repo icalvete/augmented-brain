@@ -2,7 +2,12 @@
 
 [Leer en español](how-it-works.es.md)
 
-![augmented brain in four layers](../img/how-layers.en.svg)
+augmented brain is one small program and a folder of notes. This is how the pieces fit:
+
+<picture>
+  <source media="(max-width: 600px)" srcset="../img/how-layers-narrow.en.svg">
+  <img alt="augmented brain in four layers" src="../img/how-layers.en.svg">
+</picture>
 
 ## Four layers
 
@@ -28,7 +33,10 @@ Two words that come up a lot:
 
 ## A session, step by step
 
-![A session, step by step](../img/how-session.en.svg)
+<picture>
+  <source media="(max-width: 600px)" srcset="../img/how-session-narrow.en.svg">
+  <img alt="A session, step by step" src="../img/how-session.en.svg">
+</picture>
 
 **1. You open Claude.** The start hook looks at the folder you are in and picks your
 space. Before you type anything, it hands Claude your profile, your rules and the list of
@@ -111,9 +119,39 @@ ones. They never mix. To add another: `augmented-brain space add`.
 
 ## The backup
 
-Each space can have its own private git repository. `augmented-brain backup` pushes the
-changes; if another of your machines changed something, it merges that first. On a new
-machine, `augmented-brain restore <url>` brings everything back.
+The notes folder of each space is also a git repository. The backup pushes it to a
+private repository of yours. Set it up once:
+
+```bash
+augmented-brain backup setup git@github.com:you/my-brain.git
+```
+
+And from then on, whenever you like (at the end of the day, say):
+
+```bash
+augmented-brain backup          # this space
+augmented-brain backup --all    # every space
+```
+
+What you get:
+
+- **A new machine in minutes.** `augmented-brain restore <url>` brings the whole space
+  back: notes, tasks, rules, your profile and the space's settings. Open Claude and carry
+  on where you left off.
+- **Several machines, one brain.** Before pushing, the backup fetches what your other
+  machine did and merges it.
+- **Full history.** Every backup is a git commit, with the machine and the time. With
+  `git log` you see what changed, and you can go back to any day.
+- **Your place.** GitHub, GitLab or your own server: you pick the repository. augmented
+  brain has no cloud.
+- **One repository per space.** Work can go to your company's git, and personal to yours.
+- **No secrets go up.** If a note holds something that looks like a password or a token,
+  the backup stops and tells you which file.
+- **Nothing gets overwritten.** If two machines changed the same note, it stops without
+  touching anything and explains how to sort it out. The index, being generated, is
+  rebuilt by itself.
+
+It does not run by itself yet: it is a command you run.
 
 ## What it does not do
 

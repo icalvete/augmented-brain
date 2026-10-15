@@ -201,6 +201,35 @@ section[id] { scroll-margin-top: 16px; }
 .alpha { background: #F3E2B0; color: #4D3A06; font-size: 0.9rem; padding-block: 8px; }
 .alpha a { color: #4D3A06; text-decoration-color: #4D3A06; }
 
-/* diagrams in the guides: generated SVGs, full width, scroll sideways on phones */
-.diagram { margin: 18px 0 26px; overflow-x: auto; }
-.diagram img { display: block; width: 100%; min-width: 640px; height: auto; }
+/* diagrams in the guides: generated SVGs drawn at the size they are shown; <picture>
+   swaps in the narrow, stacked version on phones, so there is never a sideways scroll */
+.diagram { margin: 22px 0 28px; }
+.diagram img { display: block; width: 100%; max-width: 760px; height: auto; margin: 0 auto; }
+.prose .table-wrap { margin: 0 0 18px; }
+@media (min-width: 900px) { .prose .diagram { margin-inline: -40px; } }
+@media (max-width: 600px) {
+  .prose table, .prose thead, .prose tbody, .prose tr, .prose td { display: block; }
+  .prose thead { display: none; }
+  .prose tr { border-bottom: 1px solid var(--line); padding: 10px 0; }
+  .prose td { border: 0; padding: 2px 0; }
+  .prose td:first-child { font-weight: 600; color: var(--ink); }
+}
+
+/* "what it does": what you say, and what happens */
+.uses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+.use { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 6px; align-content: start; }
+.use .say { font: 600 1rem var(--body); color: var(--ink); background: var(--soft); border-radius: 10px; padding: 6px 10px; justify-self: start; }
+.use p:not(.say) { color: var(--muted); font-size: 0.97rem; }
+
+/* backup: what you get, and how to set it up */
+.backup { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.pros { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.pros li { padding-left: 22px; position: relative; color: var(--muted); }
+.pros li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 10px; height: 10px; border-radius: 3px; background: var(--mint); }
+.pros b { color: var(--ink); }
+.howto { display: grid; gap: 10px; background: var(--code); border-radius: 16px; padding: 18px; }
+.howto .label { font: 700 0.8rem var(--display); color: var(--sage); text-transform: uppercase; letter-spacing: 0.1em; }
+.howto .cmd code { white-space: pre; }
+@media (max-width: 820px) {
+  .uses, .backup { grid-template-columns: 1fr; }
+}

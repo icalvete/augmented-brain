@@ -43,14 +43,15 @@
 
 <main class="wrap prose">
   <h1>Cómo funciona</h1>
-  <p class="diagram"><img src="../img/how-layers.es.svg" alt="augmented brain en cuatro capas"></p>
+  <p>augmented brain es un programa pequeño y una carpeta de notas. Así encajan las piezas:</p>
+  <figure class="diagram"><picture><source media="(max-width: 600px)" srcset="../img/how-layers-narrow.es.svg"><img alt="augmented brain en cuatro capas" src="../img/how-layers.es.svg"></picture></figure>
   <h2>Cuatro capas</h2>
   <div class="table-wrap"><table><thead><tr><th>Capa</th><th>Qué es</th><th>Dónde vive</th></tr></thead><tbody><tr><td><strong>3 · Tú y tu asistente</strong></td><td>Hablas con Claude Code como siempre. No hay comandos nuevos que aprender.</td><td>Tu terminal</td></tr><tr><td><strong>2 · El plugin</strong></td><td>Las puertas por las que Claude entra al programa: dos hooks y un servidor MCP.</td><td>Dentro de Claude Code, que lo instala</td></tr><tr><td><strong>1 · El programa</strong></td><td><code>augmented-brain</code>, un solo fichero. Vigila los comandos, lleva las tareas, rehace el índice y hace la copia.</td><td><code>~/.local/bin/augmented-brain</code></td></tr><tr><td><strong>0 · Tus ficheros</strong></td><td>Texto normal: la configuración, tus notas y, si quieres, su copia.</td><td><code>~/.config/augmented-brain/</code>, <code>~/augmented-brain/</code> y tu repo git</td></tr></tbody></table></div>
   <p>Dicho de otra forma: <strong>tus notas son un cuaderno, el programa es quien lo ordena y el plugin es la puerta.</strong> Tú solo hablas con Claude; Claude entra por la puerta y el programa escribe en el cuaderno.</p>
   <p>Dos palabras que salen mucho:</p>
   <ul><li><strong>Hook</strong>: un aviso que Claude Code lanza en un momento concreto. Aquí, al empezar la sesión y antes de cada comando. En cada aviso, Claude Code arranca el programa, le pregunta y el programa termina. No queda nada funcionando de fondo.</li><li><strong>MCP</strong> (Model Context Protocol): un estándar abierto para dar herramientas a un asistente. El programa ofrece las suyas (“abre una tarea”, “apárcala”) y Claude las usa. Al ser un estándar, otros asistentes podrán usar las mismas.</li></ul>
   <h2>Una sesión, paso a paso</h2>
-  <p class="diagram"><img src="../img/how-session.es.svg" alt="Una sesión, paso a paso"></p>
+  <figure class="diagram"><picture><source media="(max-width: 600px)" srcset="../img/how-session-narrow.es.svg"><img alt="Una sesión, paso a paso" src="../img/how-session.es.svg"></picture></figure>
   <p><strong>1. Abres Claude.</strong> El hook de inicio mira en qué carpeta estás y elige tu espacio. Antes de que escribas nada, le pasa a Claude tu perfil, tus reglas y la lista de tareas vivas. Por eso sabe dónde lo dejaste.</p>
   <p><strong>2. Dices “apárcala”.</strong> Claude usa la herramienta <code>task_park</code>. El programa apunta en el fichero de la tarea dónde se quedó y cuál es el siguiente paso, y rehace el índice. La próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.</p>
   <p><strong>3. Claude va a ejecutar un comando.</strong> El hook del guardia lo lee antes y decide:</p>
@@ -98,7 +99,14 @@ memory = "~/augmented-brain/personal"
 work_folders = ["~/personal"]</code></pre>
   <p>En <code>~/trabajo/web</code>, Claude ve las notas del trabajo. En <code>~/personal/blog</code>, las personales. Nunca se mezclan. Para añadir otro: <code>augmented-brain space add</code>.</p>
   <h2>La copia de seguridad</h2>
-  <p>Cada espacio puede tener su repositorio git privado. <code>augmented-brain backup</code> sube los cambios; si otra de tus máquinas cambió algo, primero lo mezcla. En una máquina nueva, <code>augmented-brain restore &lt;url&gt;</code> lo trae todo de vuelta.</p>
+  <p>La carpeta de notas de cada espacio es también un repositorio git. La copia lo sube a un repositorio privado tuyo. Se monta una vez:</p>
+  <pre><code>augmented-brain backup setup git@github.com:tu-usuario/mi-cerebro.git</code></pre>
+  <p>Y desde entonces, cuando quieras (al acabar el día, por ejemplo):</p>
+  <pre><code>augmented-brain backup          # este espacio
+augmented-brain backup --all    # todos</code></pre>
+  <p>Lo que te da:</p>
+  <ul><li><strong>Una máquina nueva en minutos.</strong> <code>augmented-brain restore &lt;url&gt;</code> trae el espacio entero: notas, tareas, reglas, tu perfil y la configuración del espacio. Abres Claude y sigue donde lo dejaste.</li><li><strong>Varias máquinas, un solo cerebro.</strong> Antes de subir, la copia trae lo que hizo tu otra máquina y lo mezcla.</li><li><strong>Todo el historial.</strong> Cada copia es un commit de git, con la máquina y la hora. Con <code>git log</code> ves qué cambió y puedes volver a cualquier día.</li><li><strong>En tu sitio.</strong> GitHub, GitLab o tu servidor: el repositorio lo eliges tú. No hay nube de augmented brain.</li><li><strong>Un repositorio por espacio.</strong> El del trabajo puede ir al git de la empresa y el personal al tuyo.</li><li><strong>No sube secretos.</strong> Si una nota tiene algo que parece una contraseña o un token, la copia se para y te dice en qué fichero.</li><li><strong>No pisa nada.</strong> Si dos máquinas cambiaron la misma nota, se para sin tocar nada y te explica cómo resolverlo. El índice, que es generado, se rehace solo.</li></ul>
+  <p>Todavía no se lanza sola: es un comando tuyo.</p>
   <h2>Lo que no hace</h2>
   <ul><li><strong>No hay servidor ni cuenta.</strong> Si Claude no está abierto, no funciona nada.</li><li><strong>No envía datos a nadie.</strong> Solo la copia, si la configuras, habla con tu repositorio.</li><li><strong>No toca tus ajustes de Claude Code.</strong> El plugin se pone y se quita con los comandos de Claude Code.</li><li><strong>Ojo: tu asistente lee tus notas</strong>, como cualquier fichero que abre. Viajan con tus conversaciones a su proveedor. No guardes ahí lo que no compartirías.</li></ul>
   <h2>Quitarlo</h2>

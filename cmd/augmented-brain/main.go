@@ -1,4 +1,5 @@
-// Command augmented-brain sets up and runs a second brain for AI coding assistants.
+// Command augmented-brain sets up and runs augmented brain: memory, method and
+// a guard for AI coding assistants.
 package main
 
 import (
@@ -22,7 +23,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
-const usage = `augmented brain: a second brain for AI coding assistants.
+const usage = `augmented brain: memory, method and a guard for AI coding assistants.
 
 Usage:
   augmented-brain init         set up augmented brain and your first space

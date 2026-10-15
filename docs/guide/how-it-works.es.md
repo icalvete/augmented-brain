@@ -2,7 +2,12 @@
 
 [Read in English](how-it-works.md)
 
-![augmented brain en cuatro capas](../img/how-layers.es.svg)
+augmented brain es un programa pequeño y una carpeta de notas. Así encajan las piezas:
+
+<picture>
+  <source media="(max-width: 600px)" srcset="../img/how-layers-narrow.es.svg">
+  <img alt="augmented brain en cuatro capas" src="../img/how-layers.es.svg">
+</picture>
 
 ## Cuatro capas
 
@@ -28,7 +33,10 @@ Dos palabras que salen mucho:
 
 ## Una sesión, paso a paso
 
-![Una sesión, paso a paso](../img/how-session.es.svg)
+<picture>
+  <source media="(max-width: 600px)" srcset="../img/how-session-narrow.es.svg">
+  <img alt="Una sesión, paso a paso" src="../img/how-session.es.svg">
+</picture>
 
 **1. Abres Claude.** El hook de inicio mira en qué carpeta estás y elige tu espacio. Antes
 de que escribas nada, le pasa a Claude tu perfil, tus reglas y la lista de tareas vivas.
@@ -111,9 +119,39 @@ Nunca se mezclan. Para añadir otro: `augmented-brain space add`.
 
 ## La copia de seguridad
 
-Cada espacio puede tener su repositorio git privado. `augmented-brain backup` sube los
-cambios; si otra de tus máquinas cambió algo, primero lo mezcla. En una máquina nueva,
-`augmented-brain restore <url>` lo trae todo de vuelta.
+La carpeta de notas de cada espacio es también un repositorio git. La copia lo sube a un
+repositorio privado tuyo. Se monta una vez:
+
+```bash
+augmented-brain backup setup git@github.com:tu-usuario/mi-cerebro.git
+```
+
+Y desde entonces, cuando quieras (al acabar el día, por ejemplo):
+
+```bash
+augmented-brain backup          # este espacio
+augmented-brain backup --all    # todos
+```
+
+Lo que te da:
+
+- **Una máquina nueva en minutos.** `augmented-brain restore <url>` trae el espacio
+  entero: notas, tareas, reglas, tu perfil y la configuración del espacio. Abres Claude y
+  sigue donde lo dejaste.
+- **Varias máquinas, un solo cerebro.** Antes de subir, la copia trae lo que hizo tu otra
+  máquina y lo mezcla.
+- **Todo el historial.** Cada copia es un commit de git, con la máquina y la hora. Con
+  `git log` ves qué cambió y puedes volver a cualquier día.
+- **En tu sitio.** GitHub, GitLab o tu servidor: el repositorio lo eliges tú. No hay nube
+  de augmented brain.
+- **Un repositorio por espacio.** El del trabajo puede ir al git de la empresa y el
+  personal al tuyo.
+- **No sube secretos.** Si una nota tiene algo que parece una contraseña o un token, la
+  copia se para y te dice en qué fichero.
+- **No pisa nada.** Si dos máquinas cambiaron la misma nota, se para sin tocar nada y te
+  explica cómo resolverlo. El índice, que es generado, se rehace solo.
+
+Todavía no se lanza sola: es un comando tuyo.
 
 ## Lo que no hace
 

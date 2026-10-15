@@ -2,10 +2,12 @@
   <img alt="augmented brain" src="assets/brand/out/header.svg" width="320">
 </p>
 
-<p align="center"><b>A second brain for working with AI coding assistants.</b><br>
-Tasks, areas and rules that your assistant remembers from one session to the next.</p>
+<p align="center"><b>Augment your AI assistant's brain.</b><br>
+It remembers where you left off, works with a method, and asks before touching anything risky.<br>
+All in plain text files of yours, backed up to your own git.</p>
 
-<p align="center"><a href="README.es.md">Leer en español</a></p>
+<p align="center"><a href="https://icalvete.github.io/augmented-brain/">Website</a> ·
+<a href="docs/guide/how-it-works.md">How it works</a> · <a href="README.es.md">Leer en español</a></p>
 
 > [!WARNING]
 > **Alpha.** This is an early version: it may have bugs, its format and commands may
@@ -20,6 +22,21 @@ risky command on the wrong machine.
 
 **augmented brain gives your assistant a memory and a way of working**, kept as plain
 Markdown files that you own, and guards it while it works.
+
+## What it does, day to day
+
+You talk to it as usual. This is what changes:
+
+| You | What happens |
+|---|---|
+| "Where were we?" | It lists your live tasks, each with its next step and who holds it up |
+| "Park it, we carry on tomorrow." | It writes down where you stopped and what comes next; tomorrow, in a new session, it starts there |
+| "Note: renew the certificate in November." | It goes to the inbox, no task opened; you sort it out in the weekly review |
+| "Why did we pick Postgres?" | It looks it up in your notes and gives you the decision, with date and reason |
+| "Save that as a lesson." | What you learned gets its own note, for next time |
+| "Delete the old production bucket." | Before running it, it asks you |
+| You open Claude in `~/personal` | It only sees your personal notes; not the work ones |
+| Your laptop dies | `augmented-brain restore` on the new one and it is all back |
 
 ## Start in three steps
 
@@ -71,9 +88,34 @@ trusting it.
   `ssh`.
 - **Work and personal apart**: each *space* has its own memory, rules and backup. The
   folder you open the assistant in picks the space.
-- **Backup and restore** to a private git repository of yours, one per space.
+- **Backup and restore** to a private git repository of yours, one per space. More
+  below.
 - **Your services** (calendar, mail, Jira…) through MCP: see
   [Connect your services](docs/guide/connect-services.md).
+
+## Lose the laptop, keep the brain
+
+The notes folder of each space is a git repository, and the backup pushes it to a
+private repository of yours:
+
+```bash
+augmented-brain backup setup git@github.com:you/my-brain.git   # once
+augmented-brain backup                                         # whenever you like
+```
+
+- **A new machine in minutes.** `augmented-brain restore <url>` brings the whole space
+  back: notes, tasks, rules, your profile and its settings.
+- **Several machines, one brain.** Before pushing, it fetches what your other machine did
+  and merges it.
+- **Full history.** Every backup is a commit, with the machine and the time: see what
+  changed, go back to any day.
+- **Your place.** GitHub, GitLab or your own server. augmented brain has no cloud.
+- **One repository per space.** Work can go to your company's git.
+- **No secrets go up.** If a note seems to hold a password or a token, it stops.
+- **Nothing gets overwritten.** If two machines changed the same note, it stops and tells
+  you what to do.
+
+It does not run by itself yet: it is a command you run.
 
 ## Commands
 
