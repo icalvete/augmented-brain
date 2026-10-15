@@ -1,6 +1,6 @@
 # Memory format
 
-**Status: draft v0.1.** This document defines how augmented brain stores what you and your assistant know: what files exist, what goes in each, and which fields the program reads. Everything is plain Markdown that you can open, edit and search with any tool.
+**Status: v0.1, the format the 0.1 release implements.** This document defines how augmented brain stores what you and your assistant know: what files exist, what goes in each, and which fields the program reads. Everything is plain Markdown that you can open, edit and search with any tool.
 
 ## Principles
 
@@ -28,7 +28,7 @@ Spaces are declared in the configuration file (see "Configuration" below), not i
 ```
 <memory folder>/
 ├── MEMORY.md          # the index loaded at the start of every session (generated)
-├── profile.md         # who you are and how you like to work
+├── profile.md         # optional: what only applies in this space (your role at work…)
 ├── inbox.md           # quick captures, processed in the weekly review
 ├── areas/             # ongoing responsibilities (one file each)
 ├── tasks/             # projects with a beginning and an end (one file each)
@@ -39,6 +39,8 @@ Spaces are declared in the configuration file (see "Configuration" below), not i
 ```
 
 `MEMORY.md` is the name Claude Code loads automatically from the memory folder; only its first 200 lines (or 25 KB) are read, so the program keeps it well under that.
+
+**Your profile** (who you are, your language, how you like answers) is the same person in every space, so it lives once, next to the configuration: `profile.md` in the configuration folder. A space's own `profile.md` only adds what applies there.
 
 ## File header
 
@@ -148,8 +150,8 @@ work_folders = ["~/personal"]
 backup = "git@github.com:me/brain-personal-private.git"
 ```
 
-## Open questions (draft)
+## Decisions
 
-- Folder per type (above) or one flat folder with prefixes (`task-…`, `area-…`), as the system this comes from does today.
-- Whether `profile.md` belongs to each space or is shared.
-- How an existing memory in the older format is imported.
+- **A folder per type**, not one flat folder with prefixes: a newcomer sees at a glance what there is and where each thing goes.
+- **One profile for the person**, next to the configuration; each space may add its own `profile.md`.
+- **Importing an existing memory** from other formats is not part of 0.1; it is planned for 0.2.
