@@ -27,9 +27,9 @@ type Space struct {
 	Name                  string   `toml:"-"`
 	Memory                string   `toml:"memory"`
 	WorkFolders           []string `toml:"work_folders"`
-	Backup                string   `toml:"backup"`
-	ProductionAWSProfiles []string `toml:"production_aws_profiles"`
-	UntouchableHosts      []string `toml:"untouchable_hosts"`
+	Backup                string   `toml:"backup,omitempty"`
+	ProductionAWSProfiles []string `toml:"production_aws_profiles,omitempty"`
+	UntouchableHosts      []string `toml:"untouchable_hosts,omitempty"`
 }
 
 // Config is the whole configuration file.
@@ -120,6 +120,59 @@ func (c *Config) normalize() error {
 		}
 	}
 	return nil
+}
+
+// Save writes the configuration to its folder, creating the folder if needed. Paths
+// under the home folder are written with ~ so the file is easy to read and to move.
+func (c *Config) Save() error {
+	if err := os.MkdirAll(c.Dir, 0o700); err != nil {
+		return err
+	}
+	out := Config{Language: c.Language, Spaces: map[string]*Space{}}
+	for name, s := range c.Spaces {
+		cp := *s
+		cp.Memory = tilde(s.Memory)
+		cp.WorkFolders = make([]string, len(s.WorkFolders))
+		for i, f := range s.WorkFolders {
+			cp.WorkFolders[i] = tilde(f)
+		}
+		out.Spaces[name] = &cp
+	}
+	var b strings.Builder
+	b.WriteString("# augmented brain configuration. See docs/spec/memory-format.md, \"Configuration\".\n\n")
+	enc := toml.NewEncoder(&b)
+	enc.Indent = ""
+	if err := enc.Encode(out); err != nil {
+		return err
+	}
+	// The encoder writes an empty [spaces] table before the [spaces.x] ones: drop it.
+	text := strings.Replace(b.String(), "[spaces]\n", "", 1)
+	text = strings.ReplaceAll(text, "\n[spaces.", "\n\n[spaces.")
+	text = strings.Replace(text, "\n\n\n[spaces.", "\n\n[spaces.", 1)
+	path := filepath.Join(c.Dir, FileName)
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, []byte(text), 0o600); err != nil {
+		return err
+	}
+	return os.Rename(tmp, path)
+}
+
+// tilde writes a path under the home folder as ~/…
+func tilde(p string) string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return p
+	}
+	if h, err := filepath.EvalSymlinks(home); err == nil {
+		home = h
+	}
+	if p == home {
+		return "~"
+	}
+	if rel, err := filepath.Rel(home, p); err == nil && within(p, home) {
+		return "~/" + filepath.ToSlash(rel)
+	}
+	return p
 }
 
 // SpaceNames returns the declared spaces, sorted.

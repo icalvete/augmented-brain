@@ -15,16 +15,18 @@ import (
 const usage = `augmented brain: a second brain for AI coding assistants.
 
 Usage:
-  augmented-brain version    show the version
-  augmented-brain space      show which space this folder belongs to
-  augmented-brain check      check the memory of this folder's space
+  augmented-brain init         set up augmented brain and your first space
+  augmented-brain space        show which space this folder belongs to
+  augmented-brain space add    add another space (work, personal…)
+  augmented-brain check        check the memory of this folder's space
+  augmented-brain version      show the version
 `
 
 func main() {
-	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
+	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
 }
 
-func run(args []string, out, errOut io.Writer) int {
+func run(args []string, in io.Reader, out, errOut io.Writer) int {
 	if len(args) == 0 {
 		fmt.Fprint(errOut, usage)
 		return 2
@@ -36,7 +38,12 @@ func run(args []string, out, errOut io.Writer) int {
 	case "help", "--help", "-h":
 		fmt.Fprint(out, usage)
 		return 0
+	case "init":
+		return cmdInit(args[1:], in, out, errOut)
 	case "space":
+		if len(args) > 1 && args[1] == "add" {
+			return cmdSpaceAdd(args[2:], in, out, errOut)
+		}
 		return cmdSpace(out, errOut)
 	case "check":
 		return cmdCheck(out, errOut)
