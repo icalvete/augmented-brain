@@ -2,8 +2,8 @@
   <img alt="augmented brain" src="assets/brand/out/header.svg" width="320">
 </p>
 
-<p align="center"><b>Aumenta el cerebro de tu asistente de IA.</b><br>
-Recuerda en qué estabais, trabaja con método y te pregunta antes de tocar lo delicado.<br>
+<p align="center"><b>Tu cerebro, aumentado con IA.</b><br>
+Tu asistente recuerda en qué estabais, trabaja con método y te pregunta antes de tocar lo delicado.<br>
 Todo queda en ficheros de texto tuyos, con copia en tu propio git.</p>
 
 <p align="center"><a href="https://icalvete.github.io/augmented-brain/es/">Web</a> ·

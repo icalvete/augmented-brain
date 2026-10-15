@@ -2,8 +2,8 @@
   <img alt="augmented brain" src="assets/brand/out/header.svg" width="320">
 </p>
 
-<p align="center"><b>Augment your AI assistant's brain.</b><br>
-It remembers where you left off, works with a method, and asks before touching anything risky.<br>
+<p align="center"><b>Your brain, augmented with AI.</b><br>
+Your assistant remembers where you left off, works with a method, and asks before touching anything risky.<br>
 All in plain text files of yours, backed up to your own git.</p>
 
 <p align="center"><a href="https://icalvete.github.io/augmented-brain/">Website</a> ·
