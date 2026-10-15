@@ -169,7 +169,9 @@ David Allen, adaptados a trabajar con un asistente de IA.
 
 ## Desarrollo
 
-Necesita Go 1.25 o posterior (un `go` más antiguo lo descarga solo).
+Necesita Go 1.25 o posterior (un `go` más antiguo lo descarga solo). ¿Trabajas con un
+agente de IA? Su manual es [AGENTS.md](AGENTS.md) (en inglés): el mapa del código, las
+comprobaciones y las reglas de la casa.
 
 ```bash
 go test ./...

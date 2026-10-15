@@ -169,7 +169,9 @@ Allen, adapted to working with an AI assistant.
 
 ## Development
 
-Needs Go 1.25 or later (an older `go` downloads it by itself).
+Needs Go 1.25 or later (an older `go` downloads it by itself). Working with an AI coding
+agent? Its handbook is [AGENTS.md](AGENTS.md): the map of the code, the checks and the
+rules of the house.
 
 ```bash
 go test ./...
