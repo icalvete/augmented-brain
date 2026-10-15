@@ -9,30 +9,41 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/setup"
 )
 
 var messages = map[string]map[string]string{
 	"en": {
-		"space":   "Space name (one part of your life: work, personal…)",
-		"work":    "Work folder: opening your assistant here selects this space",
-		"memory":  "Memory folder: where this space's notes will live",
-		"created": "Created:",
-		"config":  "Configuration:",
-		"done":    "Done. Space %q is ready.",
-		"next":    "Next: run `augmented-brain doctor`, and fill in your profile:\n  %s",
-		"added":   "Space %q added.",
+		"space":    "Space name (one part of your life: work, personal…)",
+		"work":     "Work folder: opening your assistant here selects this space",
+		"memory":   "Memory folder: where this space's notes will live",
+		"created":  "Created:",
+		"config":   "Configuration:",
+		"done":     "Done. Space %q is ready.",
+		"next":     "Next: run `augmented-brain doctor`, and fill in your profile:\n  %s",
+		"added":    "Space %q added.",
+		"plugin?":  "Install the Claude Code plugin now? (yes, no)",
+		"yes":      "yes",
+		"plugin":   "Claude Code plugin installed. It loads your space when a session starts, and guards commands and file writes.",
+		"noclaude": "Claude Code was not found. Install it, then add the plugin with:",
+		"later":    "To install the Claude Code plugin later:",
 	},
 	"es": {
-		"space":   "Nombre del espacio (una parte de tu vida: work, personal…)",
-		"work":    "Carpeta de trabajo: abrir tu asistente aquí elige este espacio",
-		"memory":  "Carpeta de la memoria: donde vivirán las notas de este espacio",
-		"created": "Creado:",
-		"config":  "Configuración:",
-		"done":    "Hecho. El espacio %q está listo.",
-		"next":    "Siguiente: lanza `augmented-brain doctor` y rellena tu perfil:\n  %s",
-		"added":   "Espacio %q añadido.",
+		"space":    "Nombre del espacio (una parte de tu vida: work, personal…)",
+		"work":     "Carpeta de trabajo: abrir tu asistente aquí elige este espacio",
+		"memory":   "Carpeta de la memoria: donde vivirán las notas de este espacio",
+		"created":  "Creado:",
+		"config":   "Configuración:",
+		"done":     "Hecho. El espacio %q está listo.",
+		"next":     "Siguiente: lanza `augmented-brain doctor` y rellena tu perfil:\n  %s",
+		"added":    "Espacio %q añadido.",
+		"plugin?":  "¿Instalo ahora el plugin de Claude Code? (sí, no)",
+		"yes":      "sí",
+		"plugin":   "Plugin de Claude Code instalado. Carga tu espacio al empezar cada sesión y vigila los comandos y las escrituras de ficheros.",
+		"noclaude": "No encuentro Claude Code. Instálalo y después añade el plugin con:",
+		"later":    "Para instalar el plugin de Claude Code más adelante:",
 	},
 }
 
@@ -90,6 +101,7 @@ func defaults(o *setup.Options, space string) {
 
 func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 	fs, o, yes, lang := spaceFlags("init", errOut)
+	noPlugin := fs.Bool("no-plugin", false, "do not install the Claude Code plugin")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
@@ -118,9 +130,33 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 		return 1
 	}
 	report(out, *lang, res)
+	if !*noPlugin {
+		installPlugin(a, *lang, out, errOut)
+	}
 	fmt.Fprintf(out, "\n"+msg(*lang, "done")+"\n", o.Space)
 	fmt.Fprintf(out, msg(*lang, "next")+"\n", filepath.Join(dir, "profile.md"))
 	return 0
+}
+
+// installPlugin offers to install the Claude Code plugin. A failure here does not undo
+// the rest: it says how to install the plugin by hand.
+func installPlugin(a *asker, lang string, out, errOut io.Writer) {
+	manual := fmt.Sprintf("  claude plugin marketplace add %s\n  claude plugin install %s --scope user\n",
+		claudecode.Marketplace(), claudecode.Plugin)
+	if !claudecode.Available() {
+		fmt.Fprintf(out, "\n%s\n%s", msg(lang, "noclaude"), manual)
+		return
+	}
+	answer := strings.ToLower(a.ask(msg(lang, "plugin?"), msg(lang, "yes")))
+	if !strings.HasPrefix(answer, "y") && !strings.HasPrefix(answer, "s") {
+		fmt.Fprintf(out, "\n%s\n%s", msg(lang, "later"), manual)
+		return
+	}
+	if err := claudecode.Install(claudecode.Exec); err != nil {
+		fmt.Fprintf(errOut, "\n%v\n%s\n%s", err, msg(lang, "later"), manual)
+		return
+	}
+	fmt.Fprintf(out, "\n%s\n", msg(lang, "plugin"))
 }
 
 func cmdSpaceAdd(args []string, in io.Reader, out, errOut io.Writer) int {

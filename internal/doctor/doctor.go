@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
@@ -33,6 +34,9 @@ type Env struct {
 	ConfigDir string
 	WorkDir   string
 	LookPath  func(string) (string, error)
+	// Plugin reports whether the Claude Code plugin is installed; nil means ask
+	// Claude Code itself.
+	Plugin func() (bool, error)
 }
 
 // Run returns every check, in the order they are shown. Later checks are skipped when
@@ -110,7 +114,26 @@ func tools(e Env) []Check {
 			out = append(out, Check{Warning, t.why + ": not found", t.fix})
 		}
 	}
-	return out
+	return append(out, plugin(e)...)
+}
+
+func plugin(e Env) []Check {
+	if _, err := e.LookPath("claude"); err != nil {
+		return nil // already reported: Claude Code not found
+	}
+	installed := e.Plugin
+	if installed == nil {
+		installed = func() (bool, error) { return claudecode.Installed(claudecode.Exec) }
+	}
+	ok, err := installed()
+	switch {
+	case err != nil:
+		return []Check{{Warning, "Claude Code plugin: cannot tell (" + err.Error() + ")", ""}}
+	case !ok:
+		return []Check{{Warning, "Claude Code plugin " + claudecode.Plugin + ": not installed",
+			"claude plugin marketplace add " + claudecode.Marketplace() + " && claude plugin install " + claudecode.Plugin + " --scope user"}}
+	}
+	return []Check{{OK, "Claude Code plugin " + claudecode.Plugin + ": installed", ""}}
 }
 
 // Worst returns the most serious status in the report.
