@@ -218,10 +218,16 @@ func (b *Brain) Park(in ParkInput) (*memory.Note, error) {
 	if in.WaitingOn != "" {
 		cp.Header.WaitingOn = in.WaitingOn
 	}
+	entry := fmt.Sprintf(b.text("parked"), in.Next)
 	if in.Essentials != "" {
-		cp.Body = replaceFirstSection(cp.Body, in.Essentials)
+		if body, ok := replaceFirstSection(cp.Body, in.Essentials); ok {
+			cp.Body = body
+		} else {
+			// No safe place to put them: keep them in the journal, never lose text.
+			entry += " " + strings.Join(strings.Fields(in.Essentials), " ")
+		}
 	}
-	cp.Body = b.journalLine(cp.Body, fmt.Sprintf(b.text("parked"), in.Next))
+	cp.Body = b.journalLine(cp.Body, entry)
 	return &cp, b.save(&cp)
 }
 
@@ -242,24 +248,37 @@ func (b *Brain) Close(id, result string) (*memory.Note, error) {
 	return &cp, b.save(&cp)
 }
 
-// replaceFirstSection swaps the text under the first "## " heading for text.
-func replaceFirstSection(body, text string) string {
-	start := strings.Index(body, "## ")
-	if start < 0 {
-		return body
+// replaceFirstSection swaps the text under the first level-2 heading ("## " at the start
+// of a line, outside code blocks) for text. It only does so when another level-2
+// heading follows, so the rest of the task, the journal above all, is never touched;
+// otherwise it reports false and changes nothing.
+func replaceFirstSection(body, text string) (string, bool) {
+	lines := strings.SplitAfter(body, "\n")
+	first, next := -1, -1
+	inCode := false
+	for i, l := range lines {
+		if strings.HasPrefix(strings.TrimSpace(l), "```") {
+			inCode = !inCode
+			continue
+		}
+		if inCode || !strings.HasPrefix(l, "## ") {
+			continue
+		}
+		if first < 0 {
+			first = i
+		} else {
+			next = i
+			break
+		}
 	}
-	eol := strings.Index(body[start:], "\n")
-	if eol < 0 {
-		return body
+	if first < 0 || next < 0 {
+		return body, false
 	}
-	head := body[:start+eol+1]
-	rest := body[start+eol+1:]
-	end := strings.Index(rest, "\n## ")
-	tail := ""
-	if end >= 0 {
-		tail = rest[end+1:]
+	head := strings.Join(lines[:first+1], "")
+	if !strings.HasSuffix(head, "\n") {
+		head += "\n"
 	}
-	return head + strings.TrimSpace(text) + "\n\n" + tail
+	return head + strings.TrimSpace(text) + "\n\n" + strings.Join(lines[next:], ""), true
 }
 
 // ---- pending ----

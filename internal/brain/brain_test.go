@@ -186,3 +186,40 @@ func TestSlug(t *testing.T) {
 		}
 	}
 }
+
+// Found in the review before 0.1: parking with new essentials must never lose the rest
+// of a task written or edited by hand.
+func TestReplaceFirstSection(t *testing.T) {
+	cases := []struct {
+		name, body, want string
+		ok               bool
+	}{
+		{"template", "## Essentials\nold\n\n## 1. Definition\nkeep\n", "## Essentials\nnew\n\n## 1. Definition\nkeep\n", true},
+		{"only one section", "Notes\n\n## Journal\n- one\n- two\n", "Notes\n\n## Journal\n- one\n- two\n", false},
+		{"level 3 is not a section", "### Context\nx\n## Essentials\nold\n## Journal\n- one\n", "### Context\nx\n## Essentials\nnew\n\n## Journal\n- one\n", true},
+		{"heading in a code block", "## Essentials\nold\n```\n## not a heading\n```\n## Journal\n- one\n", "## Essentials\nnew\n\n## Journal\n- one\n", true},
+		{"no heading", "just text\n", "just text\n", false},
+	}
+	for _, c := range cases {
+		got, ok := replaceFirstSection(c.body, "new")
+		if got != c.want || ok != c.ok {
+			t.Errorf("%s: got %q (%v), want %q (%v)", c.name, got, ok, c.want, c.ok)
+		}
+	}
+}
+
+func TestParkKeepsHandWrittenJournal(t *testing.T) {
+	b := open(t, "en")
+	n, _ := b.NewTask(NewTaskInput{Title: "Hand written"})
+	n.Body = "Notes by hand.\n\n## Journal\n- 2026-10-01 — first entry\n"
+	if err := b.save(n); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := b.Park(ParkInput{ID: n.Header.ID, Next: "go on", Essentials: "new essentials"}); err != nil {
+		t.Fatal(err)
+	}
+	text := read(t, b, n.Path)
+	if !strings.Contains(text, "first entry") || !strings.Contains(text, "Parked. Next: go on new essentials") {
+		t.Errorf("journal lost or essentials dropped:\n%s", text)
+	}
+}
