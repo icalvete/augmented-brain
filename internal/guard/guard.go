@@ -6,9 +6,10 @@
 package guard
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // Verdict of the guard.
@@ -365,24 +366,10 @@ func Write(text string) Decision {
 
 // resolve makes a path absolute against the command's folder and resolves symlinks.
 func (p Policy) resolve(path string) (string, error) {
-	if path == "~" || strings.HasPrefix(path, "~/") {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		path = filepath.Join(home, path[1:])
-	}
-	if !filepath.IsAbs(path) && p.Cwd != "" {
+	if !filepath.IsAbs(path) && path != "~" && !strings.HasPrefix(path, "~/") && p.Cwd != "" {
 		path = filepath.Join(p.Cwd, path)
 	}
-	path, err := filepath.Abs(path)
-	if err != nil {
-		return "", err
-	}
-	if r, err := filepath.EvalSymlinks(path); err == nil {
-		path = r
-	}
-	return path, nil
+	return paths.Resolve(path)
 }
 
 func contains(list []string, s string) bool {

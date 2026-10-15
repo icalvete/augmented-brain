@@ -16,6 +16,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/templates"
 )
 
@@ -198,19 +199,5 @@ func abs(p string) (string, error) {
 	if p == "" {
 		return "", errors.New("a folder is missing")
 	}
-	if p == "~" || strings.HasPrefix(p, "~/") {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		p = filepath.Join(home, p[1:])
-	}
-	p, err := filepath.Abs(p)
-	if err != nil {
-		return "", err
-	}
-	if r, err := filepath.EvalSymlinks(p); err == nil {
-		p = r
-	}
-	return p, nil
+	return paths.Resolve(p)
 }

@@ -20,6 +20,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/setup"
 )
 
@@ -315,13 +316,4 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	return s, nil
 }
 
-func expand(p string) (string, error) {
-	if p == "~" || strings.HasPrefix(p, "~/") {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		p = filepath.Join(home, p[1:])
-	}
-	return filepath.Abs(p)
-}
+func expand(p string) (string, error) { return paths.Resolve(p) }

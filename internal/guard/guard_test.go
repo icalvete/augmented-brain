@@ -8,7 +8,7 @@ import (
 )
 
 func TestCommand(t *testing.T) {
-	home := t.TempDir()
+	home, _ := filepath.EvalSymlinks(t.TempDir()) // macOS: /var is /private/var
 	t.Setenv("HOME", home)
 	repo := filepath.Join(home, "repos", "mine")
 	if err := os.MkdirAll(repo, 0o755); err != nil {
@@ -194,7 +194,7 @@ k`)
 }
 
 func TestRelativeGitDir(t *testing.T) {
-	home := t.TempDir()
+	home, _ := filepath.EvalSymlinks(t.TempDir())
 	repo := filepath.Join(home, "repo")
 	sub := filepath.Join(repo, "sub")
 	if err := os.MkdirAll(sub, 0o755); err != nil {

@@ -16,7 +16,7 @@ func write(t *testing.T, dir, body string) {
 }
 
 func TestLoadAndSpaceFor(t *testing.T) {
-	home := t.TempDir()
+	home, _ := filepath.EvalSymlinks(t.TempDir()) // macOS: /var is /private/var
 	t.Setenv("HOME", home)
 	for _, d := range []string{"work", "work/clients", "personal"} {
 		if err := os.MkdirAll(filepath.Join(home, d), 0o755); err != nil {

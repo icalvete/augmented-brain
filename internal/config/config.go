@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // FileName is the configuration file inside the configuration folder.
@@ -263,22 +264,7 @@ func tildeAll(paths []string) []string {
 }
 
 // tilde writes a path under the home folder as ~/…
-func tilde(p string) string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return p
-	}
-	if h, err := filepath.EvalSymlinks(home); err == nil {
-		home = h
-	}
-	if p == home {
-		return "~"
-	}
-	if rel, err := filepath.Rel(home, p); err == nil && within(p, home) {
-		return "~/" + filepath.ToSlash(rel)
-	}
-	return p
-}
+func tilde(p string) string { return paths.Tilde(p) }
 
 // SpaceNames returns the declared spaces, sorted.
 func (c *Config) SpaceNames() []string {
@@ -311,33 +297,11 @@ func (c *Config) SpaceFor(dir string) *Space {
 }
 
 // within reports whether path is folder itself or inside it.
-func within(path, folder string) bool {
-	rel, err := filepath.Rel(folder, path)
-	if err != nil {
-		return false
-	}
-	return rel == "." || (rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)))
-}
+func within(path, folder string) bool { return paths.Within(path, folder) }
 
-// absPath expands a leading ~, makes the path absolute and resolves symlinks when the
-// path exists, so the same folder always compares equal.
-func absPath(p string) (string, error) {
-	if p == "~" || strings.HasPrefix(p, "~/") || strings.HasPrefix(p, `~\`) {
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		p = filepath.Join(home, p[1:])
-	}
-	p, err := filepath.Abs(p)
-	if err != nil {
-		return "", err
-	}
-	if r, err := filepath.EvalSymlinks(p); err == nil {
-		p = r
-	}
-	return filepath.Clean(p), nil
-}
+// absPath expands a leading ~, makes the path absolute and resolves symlinks, also
+// through the part that does not exist yet, so the same folder always compares equal.
+func absPath(p string) (string, error) { return paths.Resolve(p) }
 
 func contains(list []string, s string) bool {
 	for _, x := range list {

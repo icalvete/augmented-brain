@@ -18,7 +18,7 @@ func TestBackupAndRestore(t *testing.T) {
 	if _, err := exec.LookPath("git"); err != nil {
 		t.Skip("git not installed")
 	}
-	root := t.TempDir()
+	root, _ := filepath.EvalSymlinks(t.TempDir()) // macOS: /var is /private/var
 	remote := filepath.Join(root, "remote.git")
 	if out, err := exec.Command("git", "init", "-q", "--bare", "-b", "main", remote).CombinedOutput(); err != nil {
 		t.Fatal(err, string(out))
