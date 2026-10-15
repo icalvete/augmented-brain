@@ -102,6 +102,9 @@ pending?", "park it", "note this in the inbox".
   before every command and file write. The guard is a safety net against mistakes, not
   a security boundary.
 
+The four layers, a session step by step and where every file lives:
+[How it works](docs/guide/how-it-works.md).
+
 Inspired by *Building a Second Brain* by Tiago Forte and *Getting Things Done* by David
 Allen, adapted to working with an AI assistant.
 

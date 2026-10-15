@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How it works · augmented brain</title>
+<meta name="description" content="How augmented brain works, in four layers: you and your assistant, the plugin, the program and your files. What happens in a session and where every file lives.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="How it works · augmented brain">
+<meta property="og:description" content="Four layers, a session step by step, and where every file lives.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/how-it-works.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How it works · augmented brain">
+<meta name="twitter:description" content="Four layers, a session step by step, and where every file lives.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="how-it-works.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<main class="wrap prose">
+  <h1>How it works</h1>
+  <p class="diagram"><img src="../img/how-layers.en.svg" alt="augmented brain in four layers"></p>
+  <h2>Four layers</h2>
+  <div class="table-wrap"><table><thead><tr><th>Layer</th><th>What it is</th><th>Where it lives</th></tr></thead><tbody><tr><td><strong>3 · You and your assistant</strong></td><td>You talk to Claude Code as usual. No new commands to learn.</td><td>Your terminal</td></tr><tr><td><strong>2 · The plugin</strong></td><td>The doors Claude uses to reach the program: two hooks and an MCP server.</td><td>Inside Claude Code, which installs it</td></tr><tr><td><strong>1 · The program</strong></td><td><code>augmented-brain</code>, a single file. It guards commands, keeps tasks, rebuilds the index and runs the backup.</td><td><code>~/.local/bin/augmented-brain</code></td></tr><tr><td><strong>0 · Your files</strong></td><td>Plain text: the configuration, your notes and, if you want, their backup.</td><td><code>~/.config/augmented-brain/</code>, <code>~/augmented-brain/</code> and your git repo</td></tr></tbody></table></div>
+  <p>Put another way: <strong>your notes are a notebook, the program keeps it in order and the plugin is the door.</strong> You only talk to Claude; Claude comes in through the door and the program writes in the notebook.</p>
+  <p>Two words that come up a lot:</p>
+  <ul><li><strong>Hook</strong>: a call Claude Code makes at a given moment. Here, when a session starts and before every command. Each time, Claude Code starts the program, asks it, and the program exits. Nothing keeps running in the background.</li><li><strong>MCP</strong> (Model Context Protocol): an open standard to give tools to an assistant. The program offers its own (“open a task”, “park it”) and Claude uses them. Since it is a standard, other assistants will be able to use the same ones.</li></ul>
+  <h2>A session, step by step</h2>
+  <p class="diagram"><img src="../img/how-session.en.svg" alt="A session, step by step"></p>
+  <p><strong>1. You open Claude.</strong> The start hook looks at the folder you are in and picks your space. Before you type anything, it hands Claude your profile, your rules and the list of live tasks. That is how it knows where you left off.</p>
+  <p><strong>2. You say “park it”.</strong> Claude uses the <code>task_park</code> tool. The program writes down in the task file where it stopped and what the next step is, and rebuilds the index. The next session starts from there. Opening, resuming and closing work the same way.</p>
+  <p><strong>3. Claude is about to run a command.</strong> The guard hook reads it first and decides:</p>
+  <ul><li><strong>Go ahead</strong>: almost always. <code>ls</code>, <code>go test</code>, <code>aws --profile dev s3 ls</code>.</li><li><strong>Ask you</strong>: production, or a machine you marked as untouchable. <code>aws --profile prod …</code>, <code>ssh db01 …</code>.</li><li><strong>Stop</strong>: pushing code, root and secrets. <code>git push</code>, <code>sudo …</code>, a token in a command.</li></ul>
+  <p>It also looks inside <code>ssh</code>, <code>bash -c</code> and loops. It is a net against slips, not a security wall: read the <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md">disclaimer</a>.</p>
+  <h2>Your files</h2>
+  <p>Each <strong>space</strong> has its own notes folder:</p>
+  <pre><code>~/augmented-brain/work/
+├── MEMORY.md     the index Claude reads at the start (written by the program)
+├── inbox.md      quick notes, to sort out later
+├── areas/        what you always look after: "the website", "the servers"
+├── tasks/        one file per task
+├── knowledge/    how things work and what you learned
+├── rules/        rules for this space only
+├── reviews/      weekly reviews
+└── archive/      old stuff; never loaded, never deleted</code></pre>
+  <p>A task is a text file. At the top, between the <code>---</code> lines, the data the program uses. Below, what you and Claude write:</p>
+  <pre><code>---
+id: task-add-a-contact-form
+type: task
+title: Add a contact form
+area: area-website
+status: parked
+waiting_on: me
+next: Write the plan
+created: "2026-10-15"
+updated: "2026-10-15"
+---
+## Essentials
+Name, email and message, sent by email.
+
+## Journal
+- 2026-10-15 — Task opened.
+- 2026-10-15 — Parked. Next: Write the plan</code></pre>
+  <p>You can open and edit everything with any editor. The full format is in <a href="https://github.com/icalvete/augmented-brain/blob/main/docs/spec/memory-format.md">memory-format.md</a>.</p>
+  <h2>Work and personal, apart</h2>
+  <p>A space is a full set of notes, rules and backup. <strong>The folder where you open Claude picks the space</strong>, following your configuration:</p>
+  <pre><code># ~/.config/augmented-brain/config.toml
+[spaces.work]
+memory = "~/augmented-brain/work"
+work_folders = ["~/work"]
+
+[spaces.personal]
+memory = "~/augmented-brain/personal"
+work_folders = ["~/personal"]</code></pre>
+  <p>In <code>~/work/website</code>, Claude sees your work notes. In <code>~/personal/blog</code>, your personal ones. They never mix. To add another: <code>augmented-brain space add</code>.</p>
+  <h2>The backup</h2>
+  <p>Each space can have its own private git repository. <code>augmented-brain backup</code> pushes the changes; if another of your machines changed something, it merges that first. On a new machine, <code>augmented-brain restore &lt;url&gt;</code> brings everything back.</p>
+  <h2>What it does not do</h2>
+  <ul><li><strong>No server and no account.</strong> If Claude is not open, nothing runs.</li><li><strong>It sends data to no one.</strong> Only the backup, if you set it up, talks to your repository.</li><li><strong>It does not touch your Claude Code settings.</strong> The plugin goes in and out with Claude Code's own commands.</li><li><strong>Mind this: your assistant reads your notes</strong>, like any file it opens. They travel with your conversations to its provider. Do not keep there what you would not share.</li></ul>
+  <h2>Remove it</h2>
+  <pre><code>claude plugin uninstall brain@augmented-brain
+claude plugin marketplace remove augmented-brain
+rm ~/.local/bin/augmented-brain
+rm -r ~/.config/augmented-brain        # configuration and profile</code></pre>
+  <p>Your notes stay in <code>~/augmented-brain/</code>. They are yours.</p>
+  <a class="back" href="../">← Back to augmented brain</a>
+</main>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license</span></div>
+</footer>
+<script>
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

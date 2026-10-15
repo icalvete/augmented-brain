@@ -104,6 +104,9 @@ El trabajo de cada día ocurre dentro de Claude Code, con tus palabras: "nueva t
   antes de cada comando y cada escritura de fichero. El guardia es una red contra
   errores, no una barrera de seguridad.
 
+Las cuatro capas, una sesión paso a paso y dónde vive cada fichero:
+[Cómo funciona](docs/guide/how-it-works.es.md).
+
 Inspirado en *Building a Second Brain*, de Tiago Forte, y *Getting Things Done*, de
 David Allen, adaptados a trabajar con un asistente de IA.
 

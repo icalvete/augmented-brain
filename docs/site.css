@@ -200,3 +200,7 @@ section[id] { scroll-margin-top: 16px; }
 /* alpha notice, on top of every page */
 .alpha { background: #F3E2B0; color: #4D3A06; font-size: 0.9rem; padding-block: 8px; }
 .alpha a { color: #4D3A06; text-decoration-color: #4D3A06; }
+
+/* diagrams in the guides: generated SVGs, full width, scroll sideways on phones */
+.diagram { margin: 18px 0 26px; overflow-x: auto; }
+.diagram img { display: block; width: 100%; min-width: 640px; height: auto; }
