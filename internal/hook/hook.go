@@ -7,6 +7,7 @@ package hook
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
 	"sort"
@@ -46,23 +47,26 @@ func write(out io.Writer, o output) error {
 	return json.NewEncoder(out).Encode(o)
 }
 
-// load reads the configuration and the space of dir. Both may be nil.
-func load(cfgDir, dir string) (*config.Config, *config.Space) {
+// load reads the configuration and the space of dir. Both may be nil; err says why
+// the configuration could not be read.
+func load(cfgDir, dir string) (*config.Config, *config.Space, error) {
 	c, err := config.Load(cfgDir)
 	if err != nil {
-		return nil, nil
+		return nil, nil, err
 	}
-	return c, c.SpaceFor(dir)
+	return c, c.SpaceFor(dir), nil
 }
 
 // SessionStart adds the space's profile, rules and index to the session.
 func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 	i := read(in)
-	c, s := load(cfgDir, i.Cwd)
+	c, s, err := load(cfgDir, i.Cwd)
 	var text string
 	switch {
-	case c == nil:
+	case errors.Is(err, config.ErrNotFound):
 		text = "augmented brain is installed but not set up yet: no memory is loaded. The user can run `augmented-brain init`."
+	case err != nil:
+		text = "augmented brain cannot read its configuration, so no memory is loaded and the space's own safety settings (production profiles, untouchable hosts) are not applied until it is fixed. Tell the user: " + err.Error() + ". `augmented-brain doctor` shows the problem."
 	case s == nil:
 		text = session.NoSpace(c, i.Cwd)
 	default:
@@ -75,7 +79,7 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	i := read(in)
 	p := guard.Policy{Cwd: i.Cwd}
-	if _, s := load(cfgDir, i.Cwd); s != nil {
+	if _, s, _ := load(cfgDir, i.Cwd); s != nil {
 		p = guard.Policy{GitAllowedRepos: s.GitAllowedRepos, Cwd: i.Cwd,
 			ProductionAWSProfiles: s.ProductionAWSProfiles, UntouchableHosts: s.UntouchableHosts}
 	}

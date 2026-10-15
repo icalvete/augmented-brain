@@ -108,3 +108,17 @@ func TestPreToolUse(t *testing.T) {
 		t.Errorf("broken input: err=%v out=%q", err, out.String())
 	}
 }
+
+// Found in the review before 0.1: a broken configuration must be named as such, not
+// sent to init (which refuses because the file exists).
+func TestSessionStartBrokenConfig(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, config.FileName), []byte("[spaces.work\nmemory = "), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	ss := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, dir) }
+	text := run(t, ss, map[string]any{"cwd": "/"})["additionalContext"].(string)
+	if !strings.Contains(text, "cannot read its configuration") || strings.Contains(text, "not set up yet") {
+		t.Errorf("broken config: %s", text)
+	}
+}
