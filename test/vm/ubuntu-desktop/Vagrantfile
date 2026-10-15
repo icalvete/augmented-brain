@@ -1,0 +1,54 @@
+# A clean Ubuntu 24.04 desktop, to try augmented brain the way a newcomer would.
+#
+# Nothing of augmented brain is installed here on purpose: follow the README inside
+# the VM. To start again from scratch, restore the "clean" snapshot.
+#
+#   vagrant up                          # first time: downloads the box, opens the window
+#   vagrant snapshot save clean         # once, right after the first boot
+#   vagrant snapshot restore clean      # back to a machine that has never seen it
+#   vagrant ssh                         # a terminal inside, without the desktop
+#   vagrant halt                        # switch it off; vagrant destroy deletes it
+#
+# Needs VirtualBox 7.2.8 or later on a Linux 7.0 host. User and password: vagrant.
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "gusztavvargadr/ubuntu-desktop-2404-lts"
+  config.vm.box_version = "2607.0.0"   # the last version with an amd64 VirtualBox build
+  config.vm.hostname = "ab-ubuntu"
+  config.vm.synced_folder ".", "/vagrant", disabled: true   # a newcomer's machine shares nothing
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "augmented-brain-ubuntu"
+    vb.gui = true
+    vb.cpus = 4
+    vb.memory = 6144
+    vb.customize ["modifyvm", :id, "--clipboard-mode", "bidirectional"]
+    vb.customize ["modifyvm", :id, "--vram", "128"]
+  end
+
+  # Spanish keyboard, for the console and for GNOME; change "es" to suit the tester.
+  config.vm.provision "shell", inline: <<-SHELL
+    set -e
+    sed -i 's/^XKBLAYOUT=.*/XKBLAYOUT="es"/' /etc/default/keyboard
+    setupcon --force || true
+    # GNOME, for the user and for the login screen: Spanish only, and the user can't
+    # end up with another layout first
+    mkdir -p /etc/dconf/profile /etc/dconf/db/local.d /etc/dconf/db/gdm.d
+    printf 'user-db:user\\nsystem-db:local\\n' > /etc/dconf/profile/user
+    printf 'user-db:user\\nsystem-db:gdm\\nfile-db:/usr/share/gdm/greeter-dconf-defaults\\n' > /etc/dconf/profile/gdm
+    for db in local gdm; do
+      printf "[org/gnome/desktop/input-sources]\\nsources=[('xkb', 'es')]\\nmru-sources=[('xkb', 'es')]\\n" > /etc/dconf/db/$db.d/00-keyboard
+    done
+    dconf update
+    # the box's user may already have its own choice, which would win over the default
+    for key in sources mru-sources; do
+      sudo -u vagrant dbus-run-session gsettings reset org.gnome.desktop.input-sources $key || true
+    done
+    # Log in straight to the desktop: after a snapshot restore, VirtualBox can keep showing
+    # a frozen login screen while the session has already started on another console.
+    sed -i '/^\\[daemon\\]/,/^\\[/{/^#\\? *AutomaticLogin/d}' /etc/gdm3/custom.conf
+    sed -i 's/^\\[daemon\\]$/[daemon]\\nAutomaticLoginEnable=true\\nAutomaticLogin=vagrant/' /etc/gdm3/custom.conf
+    # No "a new Ubuntu is available" window in the middle of a test.
+    sed -i 's/^Prompt=.*/Prompt=never/' /etc/update-manager/release-upgrades
+  SHELL
+end
