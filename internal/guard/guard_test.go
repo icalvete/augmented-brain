@@ -87,6 +87,62 @@ func TestCommand(t *testing.T) {
 		{"ssh admin@db01", Ask},
 		{"ssh db02 uptime", Allow},
 		{`ssh db01 "sudo reboot"`, Deny}, // deny wins over ask
+
+		// found in the review before 0.1: compound commands
+		{"for f in a b; do git push; done", Deny},
+		{"if true; then sudo id; fi", Deny},
+		{"{ git push; }", Deny},
+		{"if git diff --quiet; then :; else git commit -am wip; fi", Deny},
+		{"while read l; do echo $l; done < f", Allow},
+		// options and separators
+		{"sudo -u app -- git push", Deny},
+		{"sudo -u app -- sudo id", Deny},
+		{"sudo -u app bash -c 'git push'", Deny},
+		{"bash -lc 'git push'", Deny},
+		{"sh -ec 'sudo id'", Deny},
+		{"bash -lc 'ls -la'", Allow},
+		// shells reading a heredoc or a here-string
+		{"bash <<'EOF'\ngit push\nEOF", Deny},
+		{"ssh web01 bash <<'EOF'\nsudo systemctl restart x\nEOF", Deny},
+		{"ssh web01 <<'EOF'\nsudo systemctl restart x\nEOF", Deny},
+		{"bash <<< 'git push'", Deny},
+		{"cat <<'EOF' > notes.md\ngit push and sudo are words here\nEOF", Allow},
+		// substitutions
+		{`echo "$(git push)"`, Deny},
+		{`out="$(sudo id)"`, Deny},
+		{"echo `git push`", Deny},
+		{"diff <(sudo cat /etc/shadow) x", Deny},
+		{`echo "today is $(date +%F)"`, Allow},
+		// exported variables carry over
+		{"export AWS_PROFILE=prod; aws s3 ls", Ask},
+		{"export AWS_PROFILE=prod && terraform plan", Ask},
+		// wrappers whose options take a value
+		{"nice -n 10 git push", Deny},
+		{"xargs -n 1 git push", Deny},
+		{"timeout -k 5 10 git push", Deny},
+		{"env -u FOO git push", Deny},
+		{"watch -n 5 sudo id", Deny},
+		{"find . -name x -exec git push \\;", Deny},
+		{"find . -name '*.go' -exec gofmt -l {} +", Allow},
+		{"run0 id", Deny},
+		{"pkexec id", Deny},
+		// git global options with a separate value
+		{"git --git-dir .git commit -m x", Deny},
+		{"git --work-tree . push", Deny},
+		{"git --namespace x push", Deny},
+		{"git --no-pager log -1", Allow},
+		// no longer false positives
+		{"command -v sudo", Allow},
+		{"sudo -l", Allow},
+		{"sudo -v", Allow},
+		{"sudo -p 'pw:' -u app id", Allow},
+		{"sudo -e /etc/hosts", Deny},
+		// hosts
+		{"ssh -B eth0 db01 uptime", Ask},
+		{"ssh db01.example.com uptime", Ask},
+		{"scp backup.sql db01:/tmp/", Ask},
+		{"rsync -a ./ admin@db01:/srv/", Ask},
+		{"scp backup.sql web01:/tmp/", Allow},
 	}
 	for _, c := range cases {
 		d := p.Command(c.cmd)
@@ -119,16 +175,36 @@ func TestWrite(t *testing.T) {
 	}
 }
 
-func TestCommands(t *testing.T) {
-	got := commands(`a 'b c' "d \"e\"" f\ g; h | i && j # comment
+func TestParse(t *testing.T) {
+	got := parse(`a 'b c' "d \"e\"" f\ g; h | i && j # comment
 k`)
 	want := [][]string{{"a", "b c", `d "e"`, "f g"}, {"h"}, {"i"}, {"j"}, {"k"}}
 	if len(got) != len(want) {
-		t.Fatalf("got %q", got)
+		t.Fatalf("got %+v", got)
 	}
 	for i := range want {
-		if strings.Join(got[i], "|") != strings.Join(want[i], "|") {
-			t.Errorf("command %d: got %q, want %q", i, got[i], want[i])
+		if strings.Join(got[i].words, "|") != strings.Join(want[i], "|") {
+			t.Errorf("command %d: got %q, want %q", i, got[i].words, want[i])
 		}
+	}
+	hd := parse("cat <<EOF | wc -l\nline one\nline two\nEOF\nls")
+	if len(hd) != 3 || hd[0].stdin != "line one\nline two\n" || hd[2].words[0] != "ls" {
+		t.Errorf("heredoc: %+v", hd)
+	}
+}
+
+func TestRelativeGitDir(t *testing.T) {
+	home := t.TempDir()
+	repo := filepath.Join(home, "repo")
+	sub := filepath.Join(repo, "sub")
+	if err := os.MkdirAll(sub, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	p := Policy{GitAllowedRepos: []string{repo}, Cwd: sub}
+	if p.Command("git -C . push").Verdict != Deny {
+		t.Error("-C . is the sub folder, not the allowed repo")
+	}
+	if p.Command("git -C .. push").Verdict != Allow {
+		t.Error("-C .. from the sub folder is the allowed repo")
 	}
 }

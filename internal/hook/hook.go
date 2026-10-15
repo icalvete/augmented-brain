@@ -74,9 +74,9 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 // PreToolUse runs the guard on a Bash command or on the text of a file write.
 func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	i := read(in)
-	var p guard.Policy
+	p := guard.Policy{Cwd: i.Cwd}
 	if _, s := load(cfgDir, i.Cwd); s != nil {
-		p = guard.Policy{GitAllowedRepos: s.GitAllowedRepos,
+		p = guard.Policy{GitAllowedRepos: s.GitAllowedRepos, Cwd: i.Cwd,
 			ProductionAWSProfiles: s.ProductionAWSProfiles, UntouchableHosts: s.UntouchableHosts}
 	}
 	var d guard.Decision
