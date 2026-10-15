@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>augmented brain</title>
+<meta name="description" content="A second brain for working with AI coding assistants: tasks, areas and rules your assistant remembers across sessions.">
+<meta property="og:title" content="augmented brain">
+<meta property="og:description" content="Tasks, areas and rules your AI coding assistant remembers across sessions.">
+<meta property="og:image" content="img/og-image.png">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<header class="wrap top">
+  <a class="brand" href="./"><img src="img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a class="hide-sm" href="#get">What you get</a>
+    <a class="hide-sm" href="#commands">Commands</a>
+    <a href="es/">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div class="card"><img src="img/logo.svg" alt="augmented brain logo: a brain with the name across it" width="592" height="487"></div>
+    <div>
+      <h1>Your AI assistant forgets everything when the session ends.</h1>
+      <p class="lead">augmented brain gives it a memory and a way of working: tasks, areas and rules it remembers from one session to the next, kept as Markdown files you own.</p>
+      <ol class="steps" aria-label="Start in three steps">
+        <li><div class="cmd"><code id="c1">curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code><button class="copy" data-copy="c1">Copy</button></div></li>
+        <li><div class="cmd"><code id="c2">augmented-brain init</code><button class="copy" data-copy="c2">Copy</button></div></li>
+        <li><div class="cmd"><code id="c3">augmented-brain doctor</code><button class="copy" data-copy="c3">Copy</button></div></li>
+      </ol>
+      <p class="note">Linux or macOS, with <a href="https://docs.claude.com/en/docs/claude-code">Claude Code</a>. No root needed. Then open Claude Code in your work folder.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <div class="head">
+        <h2>Pick up where you left off</h2>
+        <p>A task parked one day and resumed the next, in a new session that knows nothing of the first.</p>
+      </div>
+      <div class="chat">
+        <div class="msg"><div class="who">you</div><div class="bubble">New task: add a contact form to the website.</div></div>
+        <div class="msg ai"><div class="who">claude</div><div class="bubble">Opened <em>task-contact-form</em>, in definition. What fields should it have?</div></div>
+        <div class="gap">…you agree on name, email and message, and stop for the day…</div>
+        <div class="msg"><div class="who">you</div><div class="bubble">Park it, we continue tomorrow with the plan.</div></div>
+        <div class="msg ai"><div class="who">claude</div><div class="bubble">Parked. Next: write the plan.</div></div>
+        <div class="day">Next day · new session</div>
+        <div class="msg"><div class="who">you</div><div class="bubble">Let's continue with the contact form.</div></div>
+        <div class="msg ai"><div class="who">claude</div><div class="bubble">It is parked with the definition agreed: name, email and message, sent by email. Next is the plan. The project folder is still empty: where is the website code?</div></div>
+      </div>
+      <p class="proof">No context to repeat. The assistant read the task, and checked the real state before trusting it.</p>
+    </div>
+  </section>
+
+  <section id="get">
+    <div class="wrap">
+      <div class="head"><h2>What you get</h2></div>
+      <div class="grid">
+        <div class="item"><h3>Tasks that last</h3><p>Every piece of work goes through define, analyse, plan, execute with a journal, validate and close. Park it, resume it in any session.</p></div>
+        <div class="item"><h3>Areas</h3><p>Each responsibility, from your platform to a side project, groups its tasks and what you learned about it.</p></div>
+        <div class="item"><h3>Rules that stick</h3><p>How you like to work is loaded in every session. The important rules are enforced, not just asked for.</p></div>
+        <div class="item"><h3>A guard</h3><p>No commit or push unless you allow it, never root, no secrets in commands or files. Production AWS profiles and untouchable hosts ask you first, also over ssh.</p></div>
+        <div class="item"><h3>Work and personal apart</h3><p>Each space has its own memory, rules and backup. The folder you open the assistant in picks the space.</p></div>
+        <div class="item"><h3>Backup and restore</h3><p>Each space goes to a private git repository of yours. Lose your laptop and get everything back on a new one.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="commands">
+    <div class="wrap">
+      <div class="head"><h2>Commands</h2><p>A handful, to set things up. Everyday work happens inside Claude Code.</p></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td><code>augmented-brain init</code></td><td>Set up augmented brain and your first space</td></tr>
+            <tr><td><code>augmented-brain space add</code></td><td>Add another space: personal, a client…</td></tr>
+            <tr><td><code>augmented-brain doctor</code></td><td>Say what is missing, and how to fix it</td></tr>
+            <tr><td><code>augmented-brain check</code></td><td>Check the notes of this folder's space and rebuild its index</td></tr>
+            <tr><td><code>augmented-brain backup setup &lt;url&gt;</code></td><td>Back up this space to a private git repository</td></tr>
+            <tr><td><code>augmented-brain backup</code></td><td>Save the latest changes (<code>--all</code> for every space)</td></tr>
+            <tr><td><code>augmented-brain restore &lt;url&gt;</code></td><td>Bring a space back on a new machine</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="plain">In Claude Code, plain words do: “new task…”, “what is pending?”, “park it”, “note this in the inbox”.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head"><h2>Guides</h2></div>
+      <div class="guides">
+        <a class="guide" href="guide/connect-services.html"><h3>Connect your services</h3><span>Calendar, mail, documents and Jira, through MCP.</span></a>
+        <a class="guide" href="https://github.com/icalvete/augmented-brain/blob/main/docs/spec/memory-format.md"><h3>How the memory is stored</h3><span>The folders, the files and what the program reads.</span></a>
+        <a class="guide" href="https://github.com/icalvete/augmented-brain"><h3>Source and issues</h3><span>The code, the changelog, and where to report a problem.</span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>augmented brain · MIT license</span>
+    <span>Inspired by <em>Building a Second Brain</em> and <em>Getting Things Done</em>.</span>
+  </div>
+</footer>
+
+<script>
+document.querySelectorAll(".copy").forEach(function (b) {
+  b.addEventListener("click", function () {
+    var text = document.getElementById(b.dataset.copy).textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(done, function () { select(b.dataset.copy); });
+    } else { select(b.dataset.copy); }
+  });
+});
+function select(id) {
+  var r = document.createRange(); r.selectNodeContents(document.getElementById(id));
+  var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+}
+</script>
+</body>
+</html>

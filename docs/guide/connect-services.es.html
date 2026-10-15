@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conecta tus servicios · augmented brain</title>
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="connect-services.html">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<main class="wrap prose">
+  <h1>Conecta tus servicios</h1>
+  <p>augmented brain guarda tus tareas y tus notas. Para leer tu calendario, tu correo, tus documentos o tus tickets, tu asistente necesita además esos servicios. Claude Code habla con ellos mediante <strong>MCP</strong> (Model Context Protocol): pequeños conectores que le dan herramientas como “lista las reuniones de hoy” o “lee esta incidencia de Jira”.</p>
+
+  <h2>La forma fácil: los conectores de claude.ai</h2>
+  <p>Si entras en Claude Code con tu cuenta de claude.ai, los conectores que actives en claude.ai también funcionan en Claude Code.</p>
+  <ol>
+    <li>Abre <strong>claude.ai → Ajustes → Conectores</strong>.</li>
+    <li>Conecta los servicios que quieras: Google Calendar, Gmail, Google Drive, Atlassian (Jira y Confluence) y otros. Cada uno te pide entrar en ese servicio una vez.</li>
+    <li><strong>Empieza una sesión nueva de Claude Code.</strong> Los conectores se cargan al empezar la sesión: una sesión que ya estaba abierta no verá un conector que acabas de añadir.</li>
+    <li>En Claude Code, escribe <code>/mcp</code> para verlos. Si alguno pide autenticación, se arregla desde claude.ai, no desde Claude Code.</li>
+  </ol>
+  <p>Y ya está. Tu asistente los usa cuando una tarea los necesita (“¿qué reuniones tengo mañana?”, “resúmeme las incidencias abiertas de esta épica”).</p>
+
+  <h2>Sin cuenta de claude.ai</h2>
+  <p>Si usas Claude Code con una API key, los conectores de claude.ai no están disponibles. Puedes añadir servidores MCP tú mismo:</p>
+  <pre><code>claude mcp add --scope user &lt;nombre&gt; -- &lt;comando que arranca el servidor&gt;</code></pre>
+  <p>Muchos servicios publican un servidor MCP oficial; usa esos cuando existan. Lee qué puede hacer un servidor antes de añadirlo: actúa con tu cuenta.</p>
+
+  <h2>Buenos hábitos</h2>
+  <ul>
+    <li><strong>Conecta solo lo que uses.</strong> Cada conector añade herramientas entre las que tu asistente tiene que elegir.</li>
+    <li><strong>Tus reglas de seguridad siguen valiendo.</strong> El guardia de augmented brain vigila los comandos y las escrituras de ficheros. Las acciones dentro de un conector (enviar un correo, editar un ticket) se confirman con los avisos de permiso de Claude Code: léelos antes de aceptar.</li>
+    <li><strong>Nunca pegues una contraseña o un token en el chat</strong> para conectar un servicio. Cada conector entra por la página del propio servicio.</li>
+  </ul>
+  <a class="back" href="../es/">← Volver a augmented brain</a>
+</main>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT</span></div>
+</footer>
+</body>
+</html>
