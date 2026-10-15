@@ -111,8 +111,14 @@ func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
 	}
 	res.Created = append(res.Created, created...)
 
-	c.Spaces[o.Space] = &config.Space{Name: o.Space, Memory: mem, WorkFolders: []string{work}}
-	if err := c.Save(); err != nil {
+	sp := &config.Space{Name: o.Space, Memory: mem, WorkFolders: []string{work}}
+	c.Spaces[o.Space] = sp
+	if first {
+		err = c.Save()
+	} else {
+		err = config.AddSpace(c.Dir, sp) // keep the rest of the file, comments included
+	}
+	if err != nil {
 		return nil, err
 	}
 	return res, nil

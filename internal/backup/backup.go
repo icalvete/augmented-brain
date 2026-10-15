@@ -55,7 +55,7 @@ func Setup(c *config.Config, s *config.Space, url string) error {
 		return err
 	}
 	s.Backup = url
-	return c.Save()
+	return config.SetSpaceKey(c.Dir, s.Name, "backup", url)
 }
 
 // Result says what a backup did.
@@ -176,8 +176,10 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	s.Name = name
 
 	c, err := config.Load(cfgDir)
+	fresh := false
 	switch {
 	case errors.Is(err, config.ErrNotFound):
+		fresh = true
 		c = &config.Config{Language: saved.Language, Spaces: map[string]*config.Space{}, Dir: cfgDir}
 		if err := os.MkdirAll(cfgDir, 0o700); err != nil {
 			return nil, err
@@ -233,7 +235,12 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 		}
 	}
 	c.Spaces[name] = s
-	if err := c.Save(); err != nil {
+	if fresh {
+		err = c.Save()
+	} else {
+		err = config.AddSpace(cfgDir, s) // keep the rest of the file, comments included
+	}
+	if err != nil {
 		return nil, err
 	}
 	// The index is generated: rebuild it for this machine.

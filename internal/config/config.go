@@ -162,12 +162,104 @@ func (c *Config) Save() error {
 	text := strings.Replace(b.String(), "[spaces]\n", "", 1)
 	text = strings.ReplaceAll(text, "\n[spaces.", "\n\n[spaces.")
 	text = strings.Replace(text, "\n\n\n[spaces.", "\n\n[spaces.", 1)
-	path := filepath.Join(c.Dir, FileName)
+	return writeAtomic(filepath.Join(c.Dir, FileName), text)
+}
+
+// writeAtomic replaces a file in one step (write, then rename). When the path is a
+// symlink, the file it points to is replaced and the link is kept.
+func writeAtomic(path, text string) error {
+	if real, err := filepath.EvalSymlinks(path); err == nil {
+		path = real
+	}
 	tmp := path + ".tmp"
 	if err := os.WriteFile(tmp, []byte(text), 0o600); err != nil {
 		return err
 	}
 	return os.Rename(tmp, path)
+}
+
+// AddSpace appends a space to the configuration file in dir, leaving everything else
+// in the file (comments included) as it is.
+func AddSpace(dir string, s *Space) error {
+	path := filepath.Join(dir, FileName)
+	old, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	block := &Config{Spaces: map[string]*Space{s.Name: s}, Dir: dir}
+	var b strings.Builder
+	enc := toml.NewEncoder(&b)
+	enc.Indent = ""
+	cp := *s
+	cp.Memory = tilde(s.Memory)
+	cp.WorkFolders = tildeAll(s.WorkFolders)
+	cp.GitAllowedRepos = tildeAll(s.GitAllowedRepos)
+	block.Spaces[s.Name] = &cp
+	if err := enc.Encode(struct {
+		Spaces map[string]*Space `toml:"spaces"`
+	}{block.Spaces}); err != nil {
+		return err
+	}
+	text := strings.TrimRight(string(old), "\n") + "\n\n" + strings.TrimSpace(strings.Replace(b.String(), "[spaces]\n", "", 1)) + "\n"
+	return replaceChecked(dir, path, string(old), text)
+}
+
+// SetSpaceKey sets one string setting of a space in the configuration file in dir,
+// changing only that line (or adding it under the space's header).
+func SetSpaceKey(dir, space, key, value string) error {
+	path := filepath.Join(dir, FileName)
+	old, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	line := fmt.Sprintf("%s = %q", key, value)
+	lines := strings.Split(string(old), "\n")
+	header := -1
+	for i, l := range lines {
+		t := strings.TrimSpace(l)
+		if header < 0 {
+			if t == "[spaces."+space+"]" || t == `[spaces."`+space+`"]` {
+				header = i
+			}
+			continue
+		}
+		if strings.HasPrefix(t, "[") {
+			break // the next table: the key is not there yet
+		}
+		if strings.HasPrefix(t, key+" ") || strings.HasPrefix(t, key+"=") {
+			lines[i] = line
+			return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
+		}
+	}
+	if header < 0 {
+		return fmt.Errorf("%s has no space %q", path, space)
+	}
+	lines = append(lines[:header+1], append([]string{line}, lines[header+1:]...)...)
+	return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
+}
+
+// replaceChecked writes the new text and loads it back; if it does not load, the old
+// text is put back and the error returned, so a bad edit never leaves a broken file.
+func replaceChecked(dir, path, old, text string) error {
+	if err := writeAtomic(path, text); err != nil {
+		return err
+	}
+	if _, err := Load(dir); err != nil {
+		_ = writeAtomic(path, old)
+		return fmt.Errorf("the change would break %s, so it was not made: %w", path, err)
+	}
+	return nil
+}
+
+func tildeAll(paths []string) []string {
+	if len(paths) == 0 {
+		return nil
+	}
+	out := make([]string, len(paths))
+	for i, p := range paths {
+		out[i] = tilde(p)
+	}
+	return out
 }
 
 // tilde writes a path under the home folder as ~/…
