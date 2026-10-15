@@ -1,0 +1,35 @@
+name: install
+
+# The installer from nothing, on a clean macOS and a clean Ubuntu: what a newcomer gets
+# with one command. The visual part (the desktop app's window, signing in, the
+# interview) still needs a person; see scripts/install-check.sh.
+
+on:
+  push:            # any branch: a branch is how a change gets tried before main
+    paths: [install.sh, scripts/install-check.sh, plugin/**, cmd/**, internal/**, .github/workflows/install.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            shell: /bin/zsh   # the default shell on a Mac
+          - os: ubuntu-latest
+            shell: /bin/bash
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install from nothing and check
+        env:
+          SHELL: ${{ matrix.shell }}
+          AB_CHECK_DESKTOP: "1"   # Homebrew on macOS, Anthropic's apt repository on Ubuntu
+        run: scripts/install-check.sh
