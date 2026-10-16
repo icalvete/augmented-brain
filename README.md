@@ -13,8 +13,7 @@ All in plain text files of yours, backed up to your own git.</p>
 
 > [!WARNING]
 > **Alpha.** This is an early version: it may have bugs, its format and commands may
-> change. Tested by a person on Linux; on macOS, only the install, automatically.
-> Read the [disclaimer](DISCLAIMER.md)
+> change. Tested by a person on Ubuntu and on macOS. Read the [disclaimer](DISCLAIMER.md)
 > before you use it, and back up anything important.
 
 ---
@@ -53,8 +52,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
 ```
 
 It asks the language first. If git or Claude Code is missing, it offers to install them,
-and the Claude desktop app too, the easiest way to work (on Ubuntu and Debian, or on a Mac
-with Homebrew). Then it sets everything up (two spaces, `work` and `personal`, in
+and the Claude desktop app too, the easiest way to work (on a Mac, Ubuntu
+and Debian). Then it sets everything up (two spaces, `work` and `personal`, in
 `~/augmented-brain`, and the Claude Code plugin) and asks whether to open Claude right away.
 
 **2. Answer Claude.** The first time, it asks six quick questions, saying what each one is

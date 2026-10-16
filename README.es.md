@@ -13,8 +13,7 @@ Todo queda en ficheros de texto tuyos, con copia en tu propio git.</p>
 
 > [!WARNING]
 > **Alfa.** Es una versión temprana: puede tener errores, su formato y sus comandos
-> pueden cambiar. Probado por una persona en Linux; en macOS, solo la instalación, de forma
-> automática. Lee el [aviso legal](DISCLAIMER.md#aviso-legal)
+> pueden cambiar. Probado por una persona en Ubuntu y en macOS. Lee el [aviso legal](DISCLAIMER.md#aviso-legal)
 > antes de usarlo, y haz copia de lo importante.
 
 ---
@@ -53,8 +52,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
 ```
 
 Primero te pregunta el idioma. Si te falta git o Claude Code, te ofrece instalarlos, y
-también la app de escritorio de Claude, la forma más cómoda de trabajar (en Ubuntu y Debian,
-o en Mac con Homebrew). Después lo deja todo listo (dos espacios, `trabajo` y `personal`,
+también la app de escritorio de Claude, la forma más cómoda de trabajar (en Mac, Ubuntu y
+Debian). Después lo deja todo listo (dos espacios, `trabajo` y `personal`,
 en `~/augmented-brain`, y el plugin de Claude Code) y te pregunta si abre Claude ya.
 
 **2. Contesta a Claude.** La primera vez te hace seis preguntas rápidas, explicándote para

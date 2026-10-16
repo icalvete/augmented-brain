@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1-alpha
+
+Released 2026-10-16. Tried by a person on a real Mac (macOS 26, Apple M1, no Homebrew):
+one command installed Claude Code, the desktop app and augmented brain, and the first
+session started in the personal space with the interview, in Spanish.
+
+- On a Mac without Homebrew, the usual one, the installer now installs the Claude
+  desktop app too: the latest version from Anthropic's update feed (the one Homebrew
+  reads), with its signature checked, into /Applications (or ~/Applications).
+- The install check on GitHub runs on a Mac without Homebrew as well.
+
 ## 0.2.0-alpha
 
 Released 2026-10-15. **Alpha:** a first run that a newcomer can follow, found by trying
