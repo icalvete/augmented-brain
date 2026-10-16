@@ -20,6 +20,9 @@ jobs:
         include:
           - os: macos-latest
             shell: /bin/zsh   # the default shell on a Mac
+          - os: macos-latest  # most Macs have no Homebrew: the app comes from Anthropic's feed
+            shell: /bin/zsh
+            nobrew: "1"
           - os: ubuntu-latest
             shell: /bin/bash
     runs-on: ${{ matrix.os }}
@@ -31,5 +34,6 @@ jobs:
       - name: Install from nothing and check
         env:
           SHELL: ${{ matrix.shell }}
-          AB_CHECK_DESKTOP: "1"   # Homebrew on macOS, Anthropic's apt repository on Ubuntu
+          AB_CHECK_DESKTOP: "1"   # Homebrew or the feed on macOS, Anthropic's apt repository on Ubuntu
+          AB_CHECK_NO_BREW: ${{ matrix.nobrew }}
         run: scripts/install-check.sh

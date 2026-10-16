@@ -37,6 +37,14 @@ if [ -n "${AB_CHECK_HOME:-}" ]; then
   export PATH
 fi
 
+# AB_CHECK_NO_BREW=1: a Mac without Homebrew, the usual one; the installer must fetch
+# the desktop app by itself.
+if [ "${AB_CHECK_NO_BREW:-}" = 1 ]; then
+  PATH="$(printf '%s' "$PATH" | awk -v RS=: -v ORS=: '$0 !~ /^(\/opt\/homebrew|\/usr\/local)\/s?bin\/?$/' | sed 's/:$//')"
+  export PATH
+  if command -v brew >/dev/null 2>&1; then bad "Homebrew is still in the PATH"; fi
+fi
+
 # A newcomer's shell does not have ~/.local/bin in its PATH yet (GitHub's runners do).
 PATH="$(printf '%s' "$PATH" | awk -v RS=: -v ORS=: -v d="$HOME/.local/bin" '$0 != d && $0 != d "/"' | sed 's/:$//')"
 export PATH
@@ -67,7 +75,10 @@ check "and the first-session interview starts" grep -q 'First session: get to kn
 check "doctor finds nothing missing" sh -c "cd '$HOME/augmented-brain/trabajo' && PATH=\"$HOME/.local/bin:\$PATH\" '$AB' doctor"
 check "a second run only updates" sh -c "AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP=1 AB_RELEASE_URL='file://$TMP/release' sh '$ROOT/install.sh' </dev/null 2>&1 | grep -q 'Ya estaba configurado'"
 if [ "${AB_CHECK_DESKTOP:-}" = 1 ]; then
-  check "desktop app installed" sh -c 'command -v claude-desktop || test -d /Applications/Claude.app'
+  check "desktop app installed" sh -c 'command -v claude-desktop || test -d /Applications/Claude.app || test -d "$HOME/Applications/Claude.app"'
+  if [ "$(uname -s)" = Darwin ]; then
+    check "and its signature is intact" sh -c 'codesign --verify --deep --strict /Applications/Claude.app 2>/dev/null || codesign --verify --deep --strict "$HOME/Applications/Claude.app"'
+  fi
 fi
 
 echo

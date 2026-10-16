@@ -119,7 +119,8 @@ DESKTOP_KEY_URL="https://downloads.claude.ai/claude-desktop/key.asc"
 DESKTOP_KEY="/usr/share/keyrings/claude-desktop-archive-keyring.asc"
 DESKTOP_REPO="deb [arch=amd64,arm64 signed-by=$DESKTOP_KEY] https://downloads.claude.ai/claude-desktop/apt/stable stable main"
 # desktop_install: true when the app got installed. On Linux, from Anthropic's apt
-# repository (Debian and Ubuntu only); on macOS, with Homebrew when it is there.
+# repository (Debian and Ubuntu only); on macOS, with Homebrew when it is there, or
+# else straight from Anthropic's update feed (the one Homebrew reads too).
 desktop_install() {
   case "$os" in
     linux)
@@ -127,10 +128,35 @@ desktop_install() {
       sudo sh -c "curl -fsSLo '$DESKTOP_KEY' '$DESKTOP_KEY_URL' && echo '$DESKTOP_REPO' > /etc/apt/sources.list.d/claude-desktop.list && apt-get update -q && apt-get install -y claude-desktop"
       ;;
     darwin)
-      command -v brew >/dev/null 2>&1 || return 1
-      brew install --cask claude
+      if command -v brew >/dev/null 2>&1; then
+        brew install --cask claude
+      else
+        mac_desktop_install
+      fi
       ;;
   esac
+}
+
+# mac_desktop_install: the latest Claude.app from Anthropic's update feed, into
+# /Applications (or ~/Applications when that is not writable). ditto keeps the app's
+# signature intact, and codesign checks it before the app is put in place.
+DESKTOP_FEED="https://downloads.claude.ai/releases/darwin/universal/RELEASES.json"
+mac_desktop_install() {
+  feed="$(curl -fsSL "$DESKTOP_FEED")" || return 1
+  # the version the feed calls current, and the zip of that version
+  cur="$(printf '%s' "$feed" | sed -n 's/.*"currentRelease":"\([^"]*\)".*/\1/p')"
+  url="$(printf '%s' "$feed" | tr ',' '\n' | sed -n 's/.*"url":"\(https:[^"]*\.zip\)".*/\1/p' | grep -F "/$cur/" | head -n 1)"
+  [ -n "$cur" ] && [ -n "$url" ] || return 1
+  dl="$(mktemp -d)"
+  curl -fsSL "$url" -o "$dl/Claude.zip" &&
+    ditto -x -k "$dl/Claude.zip" "$dl/x" &&
+    codesign --verify --deep --strict "$dl/x/Claude.app" || { rm -rf "$dl"; return 1; }
+  dest=/Applications
+  [ -w "$dest" ] || { dest="$HOME/Applications"; mkdir -p "$dest"; }
+  rm -rf "$dest/Claude.app" && ditto "$dl/x/Claude.app" "$dest/Claude.app"
+  rc=$?  # not "status": zsh, which can be sh on a Mac, keeps that name read-only
+  rm -rf "$dl"
+  return $rc
 }
 
 if [ "${AB_NO_INIT:-}" != 1 ]; then
@@ -174,7 +200,7 @@ if [ "${AB_NO_INIT:-}" != 1 ]; then
   if [ "${AB_NO_DESKTOP:-}" != 1 ] && ! has_desktop; then
     can=0
     { [ "$os" = linux ] && command -v apt-get >/dev/null 2>&1; } && can=1
-    { [ "$os" = darwin ] && command -v brew >/dev/null 2>&1; } && can=1
+    [ "$os" = darwin ] && can=1
     # without a terminal to ask (and no AB_YES), say nothing: it is only an offer
     { [ "${AB_YES:-}" = 1 ] || (exec </dev/tty) 2>/dev/null; } || can=0
     if [ "$can" = 1 ]; then
@@ -190,9 +216,6 @@ if [ "${AB_NO_INIT:-}" != 1 ]; then
               "La app de escritorio no se ha instalado; puedes usar Claude en la terminal."
         fi
       fi
-    elif [ "$os" = darwin ]; then
-      say "Tip: Claude's desktop app is the easiest way to work. Download it from https://claude.ai/download" \
-          "Consejo: la app de escritorio de Claude es la forma más cómoda de trabajar. Descárgala en https://claude.ai/download"
     fi
   fi
 fi
