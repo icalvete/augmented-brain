@@ -8,6 +8,10 @@
 - The website, the README and the guide say up front that Claude Code needs a paid
   Claude plan (Pro or above). "Is it free?" said only that augmented brain is.
 - The guides have a Copy button on every code block.
+- The home page plays a short recreated conversation, two days of work in forty
+  seconds: resuming a task, parking it, picking it up in a new session and the guard
+  asking before production. It has a pause button, and it shows still with reduced
+  motion or without JavaScript. The alpha notice is centered.
 
 ## 0.2.2-alpha
 

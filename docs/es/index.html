@@ -159,12 +159,42 @@
       <p class="lead">Tu asistente de IA recuerda en qué estabais, trabaja con método y te pregunta antes de tocar lo delicado. Todo queda en ficheros de texto tuyos, con copia en tu propio git.</p>
       <div class="actions">
         <a class="btn" href="#start">Empieza en dos pasos</a>
-        <a class="btn ghost" href="#story">Mira un ejemplo</a>
+        <a class="btn ghost" href="#demo">Mira un ejemplo</a>
         <a class="btn heart" href="https://github.com/sponsors/icalvete">♥ Patrocina</a>
       </div>
     </div>
     <div class="card"><img src="../img/logo.svg" alt="Logo de augmented brain: un cerebro con el nombre encima" width="592" height="487"></div>
   </div>
+
+  <section id="demo">
+    <div class="wrap">
+      <div class="head">
+        <h2>Míralo en marcha</h2>
+        <p>Dos días de trabajo, en cuarenta segundos.</p>
+      </div>
+      <div class="demo" data-demo>
+        <div class="demo-bar"><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="demo-title">Claude · ~/augmented-brain/trabajo</span><button class="demo-play" type="button" aria-pressed="false" data-pause="Pausa" data-play="Seguir" hidden>Pausa</button></div>
+        <div class="demo-body">
+          <p class="demo-day" data-step>Lunes, 9:00 · sesión nueva</p>
+          <div class="bubble you" data-step>¿En qué estábamos?</div>
+          <div class="bubble ai" data-step>Tienes dos tareas vivas:<ul><li><b>Formulario de contacto</b>, aparcada. Siguiente: escribir el plan.</li><li><b>Renovar el certificado</b>, en definición. Esperas a Marcos, que te pasa el dominio.</li></ul></div>
+          <div class="bubble you" data-step>Seguimos con el formulario.</div>
+          <div class="bubble ai" data-step>Quedamos en nombre, correo y mensaje, enviado por email. Te propongo el plan: el formulario, el envío y una prueba. ¿Empiezo?</div>
+          <p class="demo-note" data-step>… y trabajáis toda la mañana …</p>
+          <p class="demo-day" data-step>Lunes, 18:30</p>
+          <div class="bubble you" data-step>Apárcalo, mañana seguimos.</div>
+          <div class="bubble ai" data-step>Aparcada. Hecho: el formulario y el envío. Siguiente: probarlo en local.</div>
+          <p class="demo-note" data-step>✓ Guardado en <code>tasks/formulario-de-contacto.md</code></p>
+          <p class="demo-day" data-step>Martes, 9:00 · sesión nueva</p>
+          <div class="bubble you" data-step>¿Seguimos?</div>
+          <div class="bubble ai" data-step>Ayer a las 18:30 dejamos el formulario hecho, con su envío. Toca probarlo en local. ¿Lo pruebo?</div>
+          <div class="bubble you" data-step>Funciona. Súbelo a producción.</div>
+          <div class="demo-guard" data-step>🛡 <b>El guardia te pregunta antes.</b> <code>aws --profile prod s3 sync …</code> usa un perfil de producción.<div class="choices"><span>Permitir</span><span>No</span></div></div>
+        </div>
+      </div>
+      <p class="demo-caption">Un ejemplo recreado. Contigo, las tareas son las tuyas.</p>
+    </div>
+  </section>
 
   <section id="what">
     <div class="wrap">
@@ -428,5 +458,6 @@ function select(id) {
   var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
 }
 </script>
+<script src="../demo.js" defer></script>
 </body>
 </html>

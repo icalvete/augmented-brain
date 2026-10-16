@@ -170,12 +170,42 @@
       <p class="lead">Your AI assistant remembers where you left off, works with a method, and asks before touching anything risky. All in plain text files of yours, backed up to your own git.</p>
       <div class="actions">
         <a class="btn" href="#start">Start in two steps</a>
-        <a class="btn ghost" href="#story">See an example</a>
+        <a class="btn ghost" href="#demo">See an example</a>
         <a class="btn heart" href="https://github.com/sponsors/icalvete">♥ Sponsor</a>
       </div>
     </div>
     <div class="card"><img src="img/logo.svg" alt="augmented brain logo: a brain with the name across it" width="592" height="487"></div>
   </div>
+
+  <section id="demo">
+    <div class="wrap">
+      <div class="head">
+        <h2>See it at work</h2>
+        <p>Two days of work, in forty seconds.</p>
+      </div>
+      <div class="demo" data-demo>
+        <div class="demo-bar"><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="demo-title">Claude · ~/augmented-brain/work</span><button class="demo-play" type="button" aria-pressed="false" data-pause="Pause" data-play="Play" hidden>Pause</button></div>
+        <div class="demo-body">
+          <p class="demo-day" data-step>Monday, 9:00 · new session</p>
+          <div class="bubble you" data-step>Where were we?</div>
+          <div class="bubble ai" data-step>You have two live tasks:<ul><li><b>Contact form</b>, parked. Next: write the plan.</li><li><b>Renew the certificate</b>, in definition. Waiting for Marcos to send you the domain.</li></ul></div>
+          <div class="bubble you" data-step>Let's carry on with the form.</div>
+          <div class="bubble ai" data-step>We agreed on name, email and message, sent by email. Here is the plan: the form, sending it, and a test. Shall I start?</div>
+          <p class="demo-note" data-step>… and you work on it all morning …</p>
+          <p class="demo-day" data-step>Monday, 18:30</p>
+          <div class="bubble you" data-step>Park it, we carry on tomorrow.</div>
+          <div class="bubble ai" data-step>Parked. Done: the form and sending it. Next: try it locally.</div>
+          <p class="demo-note" data-step>✓ Saved in <code>tasks/contact-form.md</code></p>
+          <p class="demo-day" data-step>Tuesday, 9:00 · new session</p>
+          <div class="bubble you" data-step>Shall we carry on?</div>
+          <div class="bubble ai" data-step>Yesterday at 18:30 we left the form done, sending included. Next is trying it locally. Shall I?</div>
+          <div class="bubble you" data-step>It works. Push it to production.</div>
+          <div class="demo-guard" data-step>🛡 <b>The guard asks you first.</b> <code>aws --profile prod s3 sync …</code> uses a production profile.<div class="choices"><span>Allow</span><span>No</span></div></div>
+        </div>
+      </div>
+      <p class="demo-caption">A recreated example. With you, the tasks are yours.</p>
+    </div>
+  </section>
 
   <section id="what">
     <div class="wrap">
@@ -439,5 +469,6 @@ function select(id) {
   var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
 }
 </script>
+<script src="demo.js" defer></script>
 </body>
 </html>
