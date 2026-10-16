@@ -34,8 +34,10 @@ Usage:
   augmented-brain backup       save this folder's space to its private repository (--all: every space)
   augmented-brain backup setup URL   connect this folder's space to a private git repository
   augmented-brain restore URL  bring a space back from its backup, on a new machine
+  augmented-brain update       update augmented brain and its Claude Code plugin
+  augmented-brain uninstall    remove the program and the plugin (your notes stay)
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
-  augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use
+  augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use, session-end
   augmented-brain version      show the version
 `
 
@@ -74,6 +76,10 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 		return cmdBackup(args[1:], out, errOut)
 	case "restore":
 		return cmdRestore(args[1:], out, errOut)
+	case "update":
+		return cmdUpdate(args[1:], out, errOut)
+	case "uninstall":
+		return cmdUninstall(args[1:], in, out, errOut)
 	default:
 		fmt.Fprintf(errOut, "unknown command %q\n\n%s", args[0], usage)
 		return 2
@@ -204,7 +210,7 @@ func cmdMCP(errOut io.Writer) int {
 // always exits 0 and reports problems on stderr.
 func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 	if len(args) != 1 {
-		fmt.Fprintln(errOut, "usage: augmented-brain hook session-start|pre-tool-use")
+		fmt.Fprintln(errOut, "usage: augmented-brain hook session-start|pre-tool-use|session-end")
 		return 2
 	}
 	dir, _ := config.Dir()
@@ -214,6 +220,8 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 		err = hook.SessionStart(in, out, dir)
 	case "pre-tool-use":
 		err = hook.PreToolUse(in, out, dir)
+	case "session-end":
+		err = hook.SessionEnd(in, dir)
 	default:
 		fmt.Fprintf(errOut, "unknown hook %q\n", args[0])
 		return 2

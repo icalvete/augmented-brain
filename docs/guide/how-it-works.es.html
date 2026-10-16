@@ -57,6 +57,7 @@
   <p><strong>3. Claude va a ejecutar un comando.</strong> El hook del guardia lo lee antes y decide:</p>
   <ul><li><strong>Adelante</strong>: casi siempre. <code>ls</code>, <code>go test</code>, <code>aws --profile dev s3 ls</code>.</li><li><strong>Te pregunta</strong>: producción, o una máquina que marcaste como intocable. <code>aws --profile prod …</code>, <code>ssh db01 …</code>.</li><li><strong>Lo para</strong>: subir código, root y secretos. <code>git push</code>, <code>sudo …</code>, un token en un comando.</li></ul>
   <p>También mira dentro de <code>ssh</code>, de <code>bash -c</code> y de los bucles. Es una red contra despistes, no un muro de seguridad: lee el <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md#aviso-legal">aviso legal</a>.</p>
+  <p><strong>4. Cierras la sesión.</strong> El hook de cierre lanza la copia de seguridad del espacio, por detrás, si la tienes montada. No esperas a nada. Si falla, Claude te lo dice al empezar la siguiente.</p>
   <h2>Tus ficheros</h2>
   <p>Todo vive en <code>~/augmented-brain</code>, con una carpeta por <strong>espacio</strong>. Trabajas dentro de ella, y sus notas van en <code>notas/</code>:</p>
   <pre><code>~/augmented-brain/
@@ -109,22 +110,27 @@ work_folders = ["~/augmented-brain/personal"]</code></pre>
   <p>¿Y si abres Claude en otra carpeta? Por ejemplo, la app de escritorio empieza cada sesión nueva en una carpeta temporal suya. Entonces se usa el <strong>espacio por defecto</strong>, <code>personal</code>, y Claude te lo dice en una línea, con cómo pasar al de trabajo. Puedes cambiarlo en <code>default_space</code>, o quitarlo.</p>
   <p>¿Tus proyectos ya viven en otra carpeta, como <code>~/code</code>? Añádela a <code>work_folders</code> del espacio que toque. Para un espacio nuevo (un cliente, por ejemplo): <code>augmented-brain space add cliente</code>.</p>
   <h2>La copia de seguridad</h2>
-  <p>La carpeta de notas de cada espacio es también un repositorio git. La copia lo sube a un repositorio privado tuyo. Se monta una vez:</p>
-  <pre><code>augmented-brain backup setup git@github.com:tu-usuario/mi-cerebro.git</code></pre>
-  <p>Y desde entonces, cuando quieras (al acabar el día, por ejemplo):</p>
+  <p>La carpeta de notas de cada espacio es también un repositorio git. La copia lo sube a un repositorio privado tuyo, uno por espacio.</p>
+  <p><strong>Montarla: pídeselo a Claude.</strong> Dile “monta la copia de seguridad” (al final de la entrevista ya te lo ofrece). Crea en tu cuenta de GitHub un repositorio privado, <code>augmented-brain-&lt;espacio&gt;</code>, lo conecta y hace la primera copia. Para eso usa <code>gh</code>, la herramienta oficial de GitHub: si no la tienes, Claude te dice cómo instalarla y te guía en el único paso que necesita tu navegador, entrar con tu cuenta. ¿Prefieres otro sitio (GitLab, el git de tu empresa)? Dale la dirección del repositorio, o hazlo tú:</p>
+  <pre><code>augmented-brain backup setup git@gitlab.com:tu-usuario/mi-cerebro.git</code></pre>
+  <p>Desde entonces <strong>se hace sola cada vez que terminas una sesión</strong> de Claude, en segundo plano. Si falla (sin conexión, sin permiso en el repositorio), Claude te lo dice al empezar la siguiente. También puedes lanzarla a mano:</p>
   <pre><code>augmented-brain backup          # este espacio
 augmented-brain backup --all    # todos</code></pre>
+  <h3>En una máquina nueva</h3>
+  <ol><li>Instala augmented brain con el comando de siempre. Te crea los espacios vacíos. Si al acabar se abre Claude, ciérralo sin hacer la entrevista: tu perfil viene en la copia.</li><li>Recupera cada espacio desde su copia:<pre><code>augmented-brain restore https://github.com/tu-usuario/augmented-brain-trabajo.git</code></pre>Sustituye el espacio vacío por el tuyo: notas, tareas, reglas, tu perfil y la configuración del espacio. Si ese espacio ya tuviera notas tuyas, no lo pisa.</li><li>Abre Claude. Sigue donde lo dejaste, y la copia sigue haciéndose sola.</li></ol>
+  <p>Si el repositorio está en GitHub, antes de restaurar entra una vez con <code>gh auth login</code> para que git tenga permiso.</p>
   <p>Lo que te da:</p>
-  <ul><li><strong>Una máquina nueva en minutos.</strong> <code>augmented-brain restore &lt;url&gt;</code> trae el espacio entero: notas, tareas, reglas, tu perfil y la configuración del espacio. Abres Claude y sigue donde lo dejaste.</li><li><strong>Varias máquinas, un solo cerebro.</strong> Antes de subir, la copia trae lo que hizo tu otra máquina y lo mezcla.</li><li><strong>Todo el historial.</strong> Cada copia es un commit de git, con la máquina y la hora. Con <code>git log</code> ves qué cambió y puedes volver a cualquier día.</li><li><strong>En tu sitio.</strong> GitHub, GitLab o tu servidor: el repositorio lo eliges tú. No hay nube de augmented brain.</li><li><strong>Un repositorio por espacio.</strong> El del trabajo puede ir al git de la empresa y el personal al tuyo.</li><li><strong>No sube secretos.</strong> Si una nota tiene algo que parece una contraseña o un token, la copia se para y te dice en qué fichero.</li><li><strong>No pisa nada.</strong> Si dos máquinas cambiaron la misma nota, se para sin tocar nada y te explica cómo resolverlo. El índice, que es generado, se rehace solo.</li></ul>
-  <p>Todavía no se lanza sola: es un comando tuyo.</p>
+  <ul><li><strong>Una máquina nueva en minutos</strong>, con los tres pasos de arriba.</li><li><strong>Varias máquinas, un solo cerebro.</strong> Antes de subir, la copia trae lo que hizo tu otra máquina y lo mezcla.</li><li><strong>Todo el historial.</strong> Cada copia es un commit de git, con la máquina y la hora. Con <code>git log</code> ves qué cambió y puedes volver a cualquier día.</li><li><strong>En tu sitio.</strong> GitHub, GitLab o tu servidor: el repositorio lo eliges tú. No hay nube de augmented brain.</li><li><strong>Un repositorio por espacio.</strong> El del trabajo puede ir al git de la empresa y el personal al tuyo.</li><li><strong>No sube secretos.</strong> Si una nota tiene algo que parece una contraseña o un token, la copia se para y te dice en qué fichero.</li><li><strong>No pisa nada.</strong> Si dos máquinas cambiaron la misma nota, se para sin tocar nada y te explica cómo resolverlo. El índice, que es generado, se rehace solo.</li></ul>
+  <p>Para apagar la copia automática: <code>AB_NO_AUTO_BACKUP=1</code>.</p>
   <h2>Lo que no hace</h2>
-  <ul><li><strong>No hay servidor ni cuenta.</strong> Si Claude no está abierto, no funciona nada.</li><li><strong>No envía datos a nadie.</strong> Solo la copia, si la configuras, habla con tu repositorio.</li><li><strong>No toca tus ajustes de Claude Code.</strong> El plugin se pone y se quita con los comandos de Claude Code.</li><li><strong>Ojo: tu asistente lee tus notas</strong>, como cualquier fichero que abre. Viajan con tus conversaciones a su proveedor. No guardes ahí lo que no compartirías.</li></ul>
+  <ul><li><strong>No hay servidor ni cuenta.</strong> Si Claude no está abierto, no funciona nada.</li><li><strong>No envía tus datos a nadie.</strong> Solo la copia, si la configuras, habla con tu repositorio. Aparte, una vez al día, pregunta a GitHub cuál es la última versión, sin mandar nada tuyo. <code>AB_NO_UPDATE_CHECK=1</code> lo apaga.</li><li><strong>No toca tus ajustes de Claude Code.</strong> El plugin se pone y se quita con los comandos de Claude Code, que el instalador, <code>update</code> y <code>uninstall</code> lanzan por ti.</li><li><strong>Ojo: tu asistente lee tus notas</strong>, como cualquier fichero que abre. Viajan con tus conversaciones a su proveedor. No guardes ahí lo que no compartirías.</li></ul>
+  <h2>Actualizarlo</h2>
+  <p>Cuando hay versión nueva, Claude te lo dice al empezar una sesión y se ofrece a actualizarlo. También puedes hacerlo tú:</p>
+  <pre><code>augmented-brain update</code></pre>
+  <p>Actualiza el programa y el plugin de Claude. Tus notas y tu configuración no se tocan. Después, cierra y abre Claude para que use la versión nueva.</p>
   <h2>Quitarlo</h2>
-  <pre><code>claude plugin uninstall brain@augmented-brain
-claude plugin marketplace remove augmented-brain
-rm ~/.local/bin/augmented-brain
-rm -r ~/.config/augmented-brain        # configuración y perfil</code></pre>
-  <p>Tus notas se quedan en <code>~/augmented-brain/</code>. Son tuyas.</p>
+  <pre><code>augmented-brain uninstall</code></pre>
+  <p>Quita el plugin de Claude y el programa, después de preguntarte. Tus notas se quedan en <code>~/augmented-brain/</code>: son tuyas. También se quedan tu configuración (para borrarla: <code>augmented-brain uninstall --config</code>), Claude Code, su app y git. Si vuelves a instalarlo, lo encuentras todo como estaba.</p>
   <a class="back" href="../es/">← Volver a augmented brain</a>
 </main>
 

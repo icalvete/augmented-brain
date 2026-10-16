@@ -268,3 +268,70 @@ func TestRestoreKeepsTheLayout(t *testing.T) {
 		t.Errorf("work folder %v", got.WorkFolders)
 	}
 }
+
+// On a new machine the installer has already made the spaces, empty: restoring one of
+// them replaces it. A space with anything of the user's is never replaced.
+func TestRestoreOverAFreshInstall(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git not installed")
+	}
+	root, _ := filepath.EvalSymlinks(t.TempDir())
+	remote := filepath.Join(root, "remote.git")
+	if out, err := exec.Command("git", "init", "-q", "--bare", "-b", "main", remote).CombinedOutput(); err != nil {
+		t.Fatal(err, string(out))
+	}
+	o := func(space string) setup.Options {
+		return setup.Options{Language: "es", Space: space, WorkFolder: "~/augmented-brain/" + space, Memory: "~/augmented-brain/" + space + "/notas"}
+	}
+	// The old machine, with a note, backed up.
+	t.Setenv("HOME", filepath.Join(root, "old"))
+	cfg1 := filepath.Join(root, "old", "cfg")
+	if _, err := setup.Init(cfg1, o("trabajo")); err != nil {
+		t.Fatal(err)
+	}
+	c, _ := config.Load(cfg1)
+	s := c.Spaces["trabajo"]
+	if err := os.WriteFile(filepath.Join(s.Memory, "inbox.md"), []byte("# Buzón\n\n- 2026-10-16 — from the old machine\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := Setup(c, s, remote); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Run(c, s, "old"); err != nil {
+		t.Fatal(err)
+	}
+
+	// The new machine, freshly installed: trabajo and personal, untouched.
+	home := filepath.Join(root, "new")
+	t.Setenv("HOME", home)
+	cfg2 := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg2, o("trabajo")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := setup.AddSpace(cfg2, o("personal")); err != nil {
+		t.Fatal(err)
+	}
+	if !Pristine(filepath.Join(home, "augmented-brain", "trabajo", "notas")) {
+		t.Fatal("a fresh space must count as pristine")
+	}
+	got, err := Restore(cfg2, RestoreOptions{URL: remote})
+	if err != nil {
+		t.Fatal(err)
+	}
+	inbox, _ := os.ReadFile(filepath.Join(got.Memory, "inbox.md"))
+	if !strings.Contains(string(inbox), "from the old machine") {
+		t.Errorf("notes not restored over the fresh space: %s", inbox)
+	}
+	c2, err := config.Load(cfg2)
+	if err != nil || c2.Spaces["trabajo"].Backup != remote || len(c2.Spaces) != 2 {
+		t.Fatalf("config after restore: %+v %v", c2, err)
+	}
+
+	// Restoring again over a space that now holds the user's notes is refused.
+	if Pristine(got.Memory) {
+		t.Error("a restored space is not pristine")
+	}
+	if _, err := Restore(cfg2, RestoreOptions{URL: remote}); err == nil || !strings.Contains(err.Error(), "notes of its own") {
+		t.Errorf("a space with notes was replaced: %v", err)
+	}
+}

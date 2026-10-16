@@ -113,15 +113,19 @@ fiarse de ella.
 ## Pierdes el portátil, no el cerebro
 
 La carpeta de notas de cada espacio es un repositorio git, y la copia la sube a un
-repositorio privado tuyo:
+repositorio privado tuyo. **Para montarla, díselo a Claude:** "monta la copia de
+seguridad". Crea el repositorio privado en tu GitHub, lo conecta y hace la primera copia.
+O, con otro repositorio:
 
 ```bash
-augmented-brain backup setup git@github.com:tu-usuario/mi-cerebro.git   # una vez
-augmented-brain backup                                                   # cuando quieras
+augmented-brain backup setup git@gitlab.com:tu-usuario/mi-cerebro.git   # una vez
+augmented-brain backup                                                   # a mano, si quieres
 ```
 
-- **Una máquina nueva en minutos.** `augmented-brain restore <url>` trae el espacio
-  entero: notas, tareas, reglas, tu perfil y su configuración.
+- **Una máquina nueva en minutos.** Instala augmented brain y lanza
+  `augmented-brain restore <url>`: sustituye el espacio vacío por el tuyo, con notas,
+  tareas, reglas, tu perfil y su configuración. Paso a paso, en
+  [Cómo funciona](docs/guide/how-it-works.es.md#en-una-máquina-nueva).
 - **Varias máquinas, un solo cerebro.** Antes de subir, trae lo que hizo tu otra máquina
   y lo mezcla.
 - **Todo el historial.** Cada copia es un commit, con la máquina y la hora: ves qué
@@ -131,7 +135,8 @@ augmented-brain backup                                                   # cuand
 - **No sube secretos.** Si una nota parece tener una contraseña o un token, se para.
 - **No pisa nada.** Si dos máquinas cambiaron la misma nota, se para y te explica qué hacer.
 
-Todavía no se lanza sola: es un comando tuyo.
+Una vez montada, **se hace sola cada vez que terminas una sesión** de Claude; si falla,
+Claude te lo dice al empezar la siguiente.
 
 ## Comandos
 
@@ -144,6 +149,8 @@ Todavía no se lanza sola: es un comando tuyo.
 | `augmented-brain backup setup <url>` | Conecta este espacio a un repositorio git privado |
 | `augmented-brain backup` | Guarda los últimos cambios (`--all` para todos los espacios) |
 | `augmented-brain restore <url>` | Recupera un espacio en una máquina nueva |
+| `augmented-brain update` | Actualiza augmented brain y su plugin de Claude Code (Claude te avisa cuando hay versión nueva) |
+| `augmented-brain uninstall` | Quita el programa y el plugin; tus notas se quedan |
 
 El trabajo de cada día ocurre dentro de Claude Code, con tus palabras: "nueva tarea…",
 "¿qué tengo pendiente?", "apárcala", "apunta esto en el buzón".

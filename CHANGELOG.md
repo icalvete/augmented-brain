@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased
+
+- `augmented-brain update`: updates the program, through the published installer, and
+  then the Claude Code plugin, which until now stayed at the version first installed.
+  Running the installer again also updates the plugin.
+- The backup runs by itself: when a Claude session ends, a new hook backs up its space
+  in the background, if it has a backup set up. git never waits for a password there;
+  if it fails, the next session tells you, with git's reason. Backups run one at a time.
+  `augmented-brain backup --space NAME` backs up a space from anywhere.
+  `AB_NO_AUTO_BACKUP=1` turns it off.
+- Set up the backup by asking Claude: the new `backup_setup` tool creates a private
+  repository `augmented-brain-<space>` in the user's GitHub account with `gh`, lets git
+  use gh's login, and makes the first copy; without gh, it returns the steps for Claude to
+  guide the user through. The first-session interview ends by offering it.
+- `restore` works on a freshly installed machine: it replaces a space that is still as the
+  installer left it (and a blank profile) instead of refusing; a space with the user's
+  notes is never replaced. The guide explains restoring step by step.
+- `augmented-brain uninstall`: removes the Claude Code plugin and the program, after
+  asking (`--yes` does not ask). The notes always stay, and the configuration too unless
+  `--config`; Claude Code, its app, git and the PATH line (Claude Code lives in the same
+  folder) are left alone. Installing again finds everything as it was: the installer now
+  installs the plugin when it is missing instead of trying to update it.
+- At most once a day, the first session tells you when a newer version is out, and
+  Claude offers to run the update for you. `AB_NO_UPDATE_CHECK=1` turns it off.
+
 ## 0.2.1-alpha
 
 Released 2026-10-16. Tried by a person on a real Mac (macOS 26, Apple M1, no Homebrew):

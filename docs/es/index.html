@@ -99,7 +99,7 @@
    "name": "¿La copia se hace sola?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "Todavía no. La lanzas tú con augmented-brain backup, cuando quieras. Es un solo comando y no pregunta nada."
+    "text": "Sí. Una vez montada, se hace sola cada vez que termina una sesión de Claude, en segundo plano. Si falla, Claude te lo dice al empezar la siguiente sesión."
    }
   },
   {
@@ -320,7 +320,7 @@ Nombre, correo y mensaje, enviado por email.
           <div class="cmd"><code>augmented-brain backup setup \
   git@github.com:tu-usuario/mi-cerebro.git</code></div>
           <div class="cmd"><code>augmented-brain backup</code></div>
-          <p class="note">El primero conecta el cajón con tu repositorio. El segundo guarda los cambios: lánzalo al acabar el día, o con <code>--all</code> para todos los cajones.</p>
+          <p class="note">Lo más fácil: dile a Claude “monta la copia de seguridad” y crea un repositorio privado en tu GitHub. Si prefieres otro sitio, el primer comando conecta el cajón con tu repositorio, una vez. Desde entonces la copia se hace sola cada vez que termina una sesión de Claude; el segundo la hace a mano, si quieres (<code>--all</code> para todos los cajones).</p>
         </div>
       </div>
     </div>
@@ -363,6 +363,8 @@ Nombre, correo y mensaje, enviado por email.
               <tr><td><code>augmented-brain backup setup &lt;url&gt;</code></td><td>Copia este espacio en un repositorio git privado</td></tr>
               <tr><td><code>augmented-brain backup</code></td><td>Guarda los últimos cambios (<code>--all</code> para todos los espacios)</td></tr>
               <tr><td><code>augmented-brain restore &lt;url&gt;</code></td><td>Recupera un espacio en una máquina nueva</td></tr>
+              <tr><td><code>augmented-brain update</code></td><td>Actualiza augmented brain y su plugin de Claude Code (Claude te avisa cuando hay versión nueva)</td></tr>
+              <tr><td><code>augmented-brain uninstall</code></td><td>Quita el programa y el plugin; tus notas se quedan</td></tr>
             </tbody>
           </table>
         </div>
@@ -379,7 +381,7 @@ Nombre, correo y mensaje, enviado por email.
         <details><summary>¿Con qué asistentes funciona?</summary><p>Hoy, con Claude Code. El método funciona como servidor MCP, así que cualquier asistente que hable MCP puede usarlo; vendrán adaptadores para otros.</p></details>
         <details><summary>¿Funciona en Windows?</summary><p>Todavía no. De momento, Linux y macOS.</p></details>
         <details><summary>¿Puedo editar las notas a mano?</summary><p>Sí, son ficheros Markdown. Después, <code>augmented-brain check</code> las revisa y rehace el índice.</p></details>
-        <details><summary>¿La copia se hace sola?</summary><p>Todavía no. La lanzas tú con <code>augmented-brain backup</code>, cuando quieras. Es un solo comando y no pregunta nada.</p></details>
+        <details><summary>¿La copia se hace sola?</summary><p>Sí. Una vez montada, se hace sola cada vez que termina una sesión de Claude, en segundo plano. Si falla, Claude te lo dice al empezar la siguiente sesión.</p></details>
         <details><summary>¿Cómo puedo apoyarlo?</summary><p>Patrocínalo en <a href="https://github.com/sponsors/icalvete">GitHub Sponsors</a>. Paga el tiempo de responder incidencias y añadir funciones.</p></details>
         <details><summary>¿Hay soporte de pago?</summary><p>Sí, en <a href="https://github.com/sponsors/icalvete">GitHub Sponsors</a>: el nivel Support te da respuesta por correo en dos días laborables, y la Setup session es una hora por videollamada para dejarlo montado contigo.</p></details>
         <details><summary>¿Y si dejo de usarlo?</summary><p>Tus notas se quedan donde están, como ficheros normales. No hay nada que exportar.</p></details>

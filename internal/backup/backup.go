@@ -17,6 +17,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 
+	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/memory"
@@ -255,8 +256,31 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	case err != nil:
 		return nil, err
 	}
-	if _, dup := c.Spaces[name]; dup {
-		return nil, fmt.Errorf("there is already a space called %q here", name)
+	// A new machine already has the spaces the installer made, empty. One that is still
+	// untouched is replaced by its backup; one with anything of the user's is not.
+	replace := false
+	if old, dup := c.Spaces[name]; dup {
+		if !Pristine(old.Memory) {
+			return nil, fmt.Errorf("there is already a space called %q here, with notes of its own: restore with --memory into another folder, or remove that space first", name)
+		}
+		replace = true
+		if o.Memory == "" {
+			o.Memory = old.Memory
+		}
+		if o.WorkFolder == "" && len(old.WorkFolders) > 0 {
+			o.WorkFolder = old.WorkFolders[0]
+		}
+		if err := os.RemoveAll(old.Memory); err != nil {
+			return nil, err
+		}
+	}
+	// A blank profile (the one a new install writes) gives way to the backed-up one.
+	if !fresh && brain.ProfileEmpty(cfgDir) {
+		if data, err := os.ReadFile(filepath.Join(clone, MetaDir, "profile.md")); err == nil {
+			if err := os.WriteFile(filepath.Join(cfgDir, "profile.md"), data, 0o644); err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	mem := o.Memory
@@ -301,9 +325,12 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 		}
 	}
 	c.Spaces[name] = s
-	if fresh {
+	switch {
+	case fresh:
 		err = c.Save()
-	} else {
+	case replace:
+		err = updateSpace(cfgDir, s) // the space is there: change its settings, keep the rest
+	default:
 		err = config.AddSpace(cfgDir, s) // keep the rest of the file, comments included
 	}
 	if err != nil {
@@ -314,6 +341,58 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 		_, _ = m.WriteIndex(c.Language)
 	}
 	return s, nil
+}
+
+// Pristine reports whether a space's memory is still as the installer left it: not a
+// backup, no notes but the starter area, and an empty inbox. Only such a space may be
+// replaced by a restore.
+func Pristine(dir string) bool {
+	if _, err := os.Stat(filepath.Join(dir, ".git")); err == nil {
+		return false
+	}
+	m, problems, err := memory.Load(dir)
+	if err != nil || len(problems) > 0 || len(m.Notes) > 1 {
+		return false
+	}
+	for id := range m.Notes {
+		if id != "area-general" {
+			return false
+		}
+	}
+	inbox, _ := os.ReadFile(filepath.Join(dir, "inbox.md"))
+	for _, line := range strings.Split(string(inbox), "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "- ") {
+			return false
+		}
+	}
+	return true
+}
+
+// updateSpace writes a restored space's settings over those of the space it replaces.
+func updateSpace(cfgDir string, s *config.Space) error {
+	for key, value := range map[string]string{"memory": paths.Tilde(s.Memory), "backup": s.Backup} {
+		if err := config.SetSpaceKey(cfgDir, s.Name, key, value); err != nil {
+			return err
+		}
+	}
+	work := make([]string, len(s.WorkFolders))
+	for i, f := range s.WorkFolders {
+		work[i] = paths.Tilde(f)
+	}
+	for key, values := range map[string][]string{
+		"work_folders":            work,
+		"production_aws_profiles": s.ProductionAWSProfiles,
+		"untouchable_hosts":       s.UntouchableHosts,
+		"git_allowed_repos":       s.GitAllowedRepos,
+	} {
+		if len(values) == 0 && key != "work_folders" {
+			continue
+		}
+		if err := config.SetSpaceList(cfgDir, s.Name, key, values); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // defaultMemory says where a restored space's notes go when the user does not say: in

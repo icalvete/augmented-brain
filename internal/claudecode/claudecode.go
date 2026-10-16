@@ -13,6 +13,9 @@ import (
 // Plugin is the plugin id in Claude Code: plugin name @ marketplace name.
 const Plugin = "brain@augmented-brain"
 
+// MarketplaceName is the marketplace's name, as .claude-plugin/marketplace.json says.
+const MarketplaceName = "augmented-brain"
+
 // Marketplace returns where the marketplace comes from: the public repository, or
 // $AB_MARKETPLACE (a path or another repository) to test unpublished changes.
 func Marketplace() string {
@@ -44,6 +47,29 @@ func Installed(run Runner) (bool, error) {
 		return false, fmt.Errorf("claude plugin list: %v: %s", err, strings.TrimSpace(out))
 	}
 	return strings.Contains(out, Plugin), nil
+}
+
+// Update brings the marketplace and the plugin to their latest version. Claude Code
+// uses it from the next session on.
+func Update(run Runner) error {
+	if out, err := run("claude", "plugin", "marketplace", "update", MarketplaceName); err != nil {
+		return fmt.Errorf("updating the marketplace: %v: %s", err, strings.TrimSpace(out))
+	}
+	if out, err := run("claude", "plugin", "update", Plugin); err != nil {
+		return fmt.Errorf("updating the plugin: %v: %s", err, strings.TrimSpace(out))
+	}
+	return nil
+}
+
+// Uninstall removes the plugin and its marketplace. Something already gone is fine.
+func Uninstall(run Runner) error {
+	if out, err := run("claude", "plugin", "uninstall", Plugin); err != nil && !strings.Contains(out, "not") {
+		return fmt.Errorf("removing the plugin: %v: %s", err, strings.TrimSpace(out))
+	}
+	if out, err := run("claude", "plugin", "marketplace", "remove", MarketplaceName); err != nil && !strings.Contains(out, "not") {
+		return fmt.Errorf("removing the marketplace: %v: %s", err, strings.TrimSpace(out))
+	}
+	return nil
 }
 
 // Install adds the marketplace and installs the plugin for the user. Both steps are

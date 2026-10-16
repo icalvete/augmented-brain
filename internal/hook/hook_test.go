@@ -3,11 +3,14 @@ package hook
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/setup"
 )
@@ -120,5 +123,86 @@ func TestSessionStartBrokenConfig(t *testing.T) {
 	text := run(t, ss, map[string]any{"cwd": "/"})["additionalContext"].(string)
 	if !strings.Contains(text, "cannot read its configuration") || strings.Contains(text, "not set up yet") {
 		t.Errorf("broken config: %s", text)
+	}
+}
+
+// No test asks GitHub: the latest version is whatever each test says.
+func TestMain(m *testing.M) {
+	LatestVersion = func() (string, error) { return "", nil }
+	os.Exit(m.Run())
+}
+
+// A newer version out: the session asks the assistant to say so and offer to update.
+func TestSessionStartUpdateNotice(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	t.Setenv("AB_NO_UPDATE_CHECK", "")
+	ss := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, cfgDir) }
+	old := LatestVersion
+	t.Cleanup(func() { LatestVersion = old })
+
+	LatestVersion = func() (string, error) { return "99.0.0", nil }
+	o := run(t, ss, map[string]any{"cwd": work})
+	if text := o["additionalContext"].(string); !strings.Contains(text, "augmented brain 99.0.0 is available") || !strings.Contains(text, "`augmented-brain update`") {
+		t.Errorf("no update notice:\n%s", text)
+	}
+
+	// Up to date (the answer is cached for a day, so start from a new configuration).
+	cfgDir, work = setupSpace(t)
+	LatestVersion = func() (string, error) { return "0.0.0", nil }
+	o = run(t, func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, cfgDir) }, map[string]any{"cwd": work})
+	if strings.Contains(o["additionalContext"].(string), "is available") {
+		t.Error("an up-to-date install must not hear about updates")
+	}
+}
+
+// When a session ends, its space is backed up, but only if it has a backup set up.
+func TestSessionEnd(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	t.Setenv("AB_NO_AUTO_BACKUP", "")
+	var started []string
+	old := StartBackup
+	StartBackup = func(space string) error { started = append(started, space); return nil }
+	t.Cleanup(func() { StartBackup = old })
+	end := func(cwd string) {
+		data, _ := json.Marshal(map[string]any{"cwd": cwd})
+		if err := SessionEnd(bytes.NewReader(data), cfgDir); err != nil {
+			t.Fatal(err)
+		}
+	}
+	end(work)
+	if len(started) != 0 {
+		t.Errorf("a space without a backup was backed up: %v", started)
+	}
+	if err := config.SetSpaceKey(cfgDir, "work", "backup", "git@example.com:me/brain.git"); err != nil {
+		t.Fatal(err)
+	}
+	end(work)
+	end("/") // outside every space, with no default space: nothing
+	if strings.Join(started, ",") != "work" {
+		t.Errorf("started: %v", started)
+	}
+	t.Setenv("AB_NO_AUTO_BACKUP", "1")
+	end(work)
+	if len(started) != 1 {
+		t.Error("AB_NO_AUTO_BACKUP=1 must turn it off")
+	}
+}
+
+// A failed backup is told to the user at the start of the next session.
+func TestSessionStartBackupFailed(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	if err := config.SetSpaceKey(cfgDir, "work", "backup", "git@example.com:me/brain.git"); err != nil {
+		t.Fatal(err)
+	}
+	backup.RecordStatus(cfgDir, "work", errors.New("permission denied (publickey)"), time.Date(2026, 10, 16, 18, 0, 0, 0, time.UTC))
+	ss := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, cfgDir) }
+	o := run(t, ss, map[string]any{"cwd": work})
+	if text := o["additionalContext"].(string); !strings.Contains(text, "The last backup of space work, at 2026-10-16 18:00, failed: permission denied (publickey)") {
+		t.Errorf("no warning about the failed backup:\n%s", text)
+	}
+	backup.RecordStatus(cfgDir, "work", nil, time.Now())
+	o = run(t, ss, map[string]any{"cwd": work})
+	if strings.Contains(o["additionalContext"].(string), "failed") {
+		t.Error("a backup that worked again must not be reported")
 	}
 }

@@ -1,10 +1,14 @@
 {
-  "description": "augmented brain: load the space when a session starts, and guard commands and file writes.",
+  "description": "augmented brain: load the space when a session starts, guard commands and file writes, and back the space up when a session ends.",
   "hooks": {
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start", "timeout": 10 }
+          {
+            "type": "command",
+            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start",
+            "timeout": 10
+          }
         ]
       }
     ],
@@ -12,7 +16,22 @@
       {
         "matcher": "Bash|Write|Edit|MultiEdit|NotebookEdit",
         "hooks": [
-          { "type": "command", "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook pre-tool-use", "timeout": 10 }
+          {
+            "type": "command",
+            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook pre-tool-use",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-end",
+            "timeout": 10
+          }
         ]
       }
     ]

@@ -112,15 +112,19 @@ trusting it.
 ## Lose the laptop, keep the brain
 
 The notes folder of each space is a git repository, and the backup pushes it to a
-private repository of yours:
+private repository of yours. **To set it up, tell Claude:** "set up the backup". It
+creates the private repository in your GitHub, connects it and makes the first copy. Or,
+with another repository:
 
 ```bash
-augmented-brain backup setup git@github.com:you/my-brain.git   # once
-augmented-brain backup                                         # whenever you like
+augmented-brain backup setup git@gitlab.com:you/my-brain.git   # once
+augmented-brain backup                                         # by hand, if you like
 ```
 
-- **A new machine in minutes.** `augmented-brain restore <url>` brings the whole space
-  back: notes, tasks, rules, your profile and its settings.
+- **A new machine in minutes.** Install augmented brain and run
+  `augmented-brain restore <url>`: it replaces the empty space with yours, with notes,
+  tasks, rules, your profile and its settings. Step by step, in
+  [How it works](docs/guide/how-it-works.md#on-a-new-machine).
 - **Several machines, one brain.** Before pushing, it fetches what your other machine did
   and merges it.
 - **Full history.** Every backup is a commit, with the machine and the time: see what
@@ -131,7 +135,8 @@ augmented-brain backup                                         # whenever you li
 - **Nothing gets overwritten.** If two machines changed the same note, it stops and tells
   you what to do.
 
-It does not run by itself yet: it is a command you run.
+Once set up, **it runs by itself every time a Claude session ends**; if it fails, Claude
+tells you at the start of the next one.
 
 ## Commands
 
@@ -144,6 +149,8 @@ It does not run by itself yet: it is a command you run.
 | `augmented-brain backup setup <url>` | Back up this space to a private git repository |
 | `augmented-brain backup` | Save the latest changes (`--all` for every space) |
 | `augmented-brain restore <url>` | Bring a space back on a new machine |
+| `augmented-brain update` | Update augmented brain and its Claude Code plugin (Claude tells you when there is a new version) |
+| `augmented-brain uninstall` | Remove the program and the plugin; your notes stay |
 
 Everyday work happens inside Claude Code, in plain words: "new task…", "what is
 pending?", "park it", "note this in the inbox".

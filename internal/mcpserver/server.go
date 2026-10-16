@@ -13,6 +13,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/memory"
@@ -38,6 +39,7 @@ as Markdown files. Use these tools instead of editing those files by hand.
 - What is worth keeping beyond a task becomes a reference or a lesson (knowledge_new).
 - Nothing is ever deleted: tasks are closed, not removed.
 - Who the user is and how they like to work is their profile (profile_save).
+- A space without a backup can lose everything with the machine: offer backup_setup.
 - When the user names someone, look for them under People in the index. If they are
   not there and seem to matter, offer to remember them (person_save).`
 
@@ -226,6 +228,14 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	tool(s, locked, "safety_save", "Set what the guard must ask the user about in this space: production AWS profiles and hosts not to touch. Use it in the first session and when the user names a new one; each list given replaces the old one, so include what should stay.",
 		func(b *brain.Brain, in safetyIn) (string, error) {
 			return b.SaveSafety(brain.SafetyInput{ProductionAWSProfiles: in.ProductionAWSProfiles, UntouchableHosts: in.UntouchableHosts})
+		})
+
+	type backupIn struct {
+		RepoURL string `json:"repo_url,omitempty" jsonschema:"a private git repository the user can push to; leave it out to create one in their GitHub account"`
+	}
+	tool(s, locked, "backup_setup", "Set up the backup of this space: a private git repository that keeps its notes, pushed by itself every time a session ends. Without repo_url it creates augmented-brain-<space> in the user's GitHub account with the gh command line; when gh is missing or not logged in, it returns the steps to guide the user through.",
+		func(b *brain.Brain, in backupIn) (string, error) {
+			return setupBackup(b, in.RepoURL, backup.Exec)
 		})
 
 	type profileIn struct {

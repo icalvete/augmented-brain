@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -139,7 +140,9 @@ func firstSession(lang string) string {
 		"answers and autonomy in work_style.\n" +
 		"6. The people they deal with most, and what they call them. Why: so a first name like \"Marcos\" leads to the right person. " +
 		"Save each one with person_save, with their nicknames as aliases.\n\n" +
-		"At the end, show a short summary of what you saved and where, tell them they can change any of it just by asking, and offer to open their first task.\n"
+		"At the end, show a short summary of what you saved and where, tell them they can change any of it just by asking, " +
+		"and offer two things: to set up the backup of their notes (backup_setup: a private repository, so losing the machine loses nothing), " +
+		"and to open their first task.\n"
 }
 
 // DefaultNote tells the assistant that the session runs outside every space's folder,
@@ -162,6 +165,35 @@ func DefaultNote(c *config.Config, s *config.Space, dir string) string {
 			"\"+ New\" then \"Choose…\" under the message box; in a terminal, `cd <folder> && claude`.", strings.Join(others, "; "))
 	}
 	return note + "\n"
+}
+
+// BackupFailedNote tells the assistant that the last backup of the space failed.
+func BackupFailedNote(lang, space string, when time.Time, reason string) string {
+	// git's first line says what happened; the rest is advice for people at a terminal.
+	if i := strings.IndexAny(reason, "\r\n"); i >= 0 {
+		reason = reason[:i]
+	}
+	if len(reason) > 240 {
+		reason = cut(reason, 240) + "…"
+	}
+	language := map[string]string{"es": "Spanish"}[lang]
+	if language == "" {
+		language = "English"
+	}
+	return fmt.Sprintf("\nThe last backup of space %s, at %s, failed: %s. In one short line of your first answer, in the language "+
+		"the user writes in (%s if you cannot tell), tell them their notes are not backed up, and offer to look into it "+
+		"(running `augmented-brain backup` in the space's folder shows the problem).\n", space, when.Format("2006-01-02 15:04"), reason, language)
+}
+
+// UpdateNote tells the assistant that a newer augmented brain is out.
+func UpdateNote(lang, current, latest string) string {
+	language := map[string]string{"es": "Spanish"}[lang]
+	if language == "" {
+		language = "English"
+	}
+	return fmt.Sprintf("\naugmented brain %s is available (this machine has %s). In one short line of your first answer, "+
+		"in the language the user writes in (%s if you cannot tell), tell them and offer to update it: you can run "+
+		"`augmented-brain update` yourself if they say yes. Afterwards they restart Claude to use it.\n", latest, current, language)
 }
 
 // NoSpace is the text for a session that starts outside every space. The assistant

@@ -68,3 +68,36 @@ func TestInstalled(t *testing.T) {
 		t.Errorf("default marketplace = %s", Marketplace())
 	}
 }
+
+func TestUpdate(t *testing.T) {
+	f := &fake{}
+	if err := Update(f.run); err != nil {
+		t.Fatal(err)
+	}
+	want := "claude plugin marketplace update augmented-brain\nclaude plugin update brain@augmented-brain"
+	if got := strings.Join(f.calls, "\n"); got != want {
+		t.Errorf("calls:\n%s", got)
+	}
+	f = &fake{out: map[string]string{"claude plugin update": "plugin not found"},
+		fail: map[string]bool{"claude plugin update": true}}
+	if err := Update(f.run); err == nil || !strings.Contains(err.Error(), "plugin not found") {
+		t.Errorf("err = %v", err)
+	}
+}
+
+func TestUninstall(t *testing.T) {
+	f := &fake{}
+	if err := Uninstall(f.run); err != nil {
+		t.Fatal(err)
+	}
+	want := "claude plugin uninstall brain@augmented-brain\nclaude plugin marketplace remove augmented-brain"
+	if got := strings.Join(f.calls, "\n"); got != want {
+		t.Errorf("calls:\n%s", got)
+	}
+	// Already gone: fine.
+	f = &fake{out: map[string]string{"claude plugin uninstall": "plugin not installed"},
+		fail: map[string]bool{"claude plugin uninstall": true}}
+	if err := Uninstall(f.run); err != nil {
+		t.Errorf("a plugin already gone must not fail: %v", err)
+	}
+}

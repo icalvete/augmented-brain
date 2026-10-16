@@ -110,7 +110,7 @@
    "name": "Does the backup run by itself?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "Not yet. You run augmented-brain backup whenever you like. One command, no questions."
+    "text": "Yes. Once it is set up, it runs every time a Claude session ends, in the background. If it fails, Claude tells you at the start of the next session."
    }
   },
   {
@@ -331,7 +331,7 @@ Name, email and message, sent by email.
           <div class="cmd"><code>augmented-brain backup setup \
   git@github.com:you/my-brain.git</code></div>
           <div class="cmd"><code>augmented-brain backup</code></div>
-          <p class="note">The first links the drawer to your repository. The second saves the changes: run it at the end of the day, or with <code>--all</code> for every drawer.</p>
+          <p class="note">Easiest: tell Claude “set up the backup” and it creates a private repository in your GitHub. Rather somewhere else? The first command links the drawer to your repository, once. From then on the backup runs by itself every time a Claude session ends; the second saves by hand, if you like (<code>--all</code> for every drawer).</p>
         </div>
       </div>
     </div>
@@ -374,6 +374,8 @@ Name, email and message, sent by email.
               <tr><td><code>augmented-brain backup setup &lt;url&gt;</code></td><td>Back up this space to a private git repository</td></tr>
               <tr><td><code>augmented-brain backup</code></td><td>Save the latest changes (<code>--all</code> for every space)</td></tr>
               <tr><td><code>augmented-brain restore &lt;url&gt;</code></td><td>Bring a space back on a new machine</td></tr>
+              <tr><td><code>augmented-brain update</code></td><td>Update augmented brain and its Claude Code plugin (Claude tells you when there is a new version)</td></tr>
+              <tr><td><code>augmented-brain uninstall</code></td><td>Remove the program and the plugin; your notes stay</td></tr>
             </tbody>
           </table>
         </div>
@@ -390,7 +392,7 @@ Name, email and message, sent by email.
         <details><summary>Which assistants does it work with?</summary><p>Claude Code today. The method runs as an MCP server, so any assistant that speaks MCP can use it; adapters for others will follow.</p></details>
         <details><summary>Does it work on Windows?</summary><p>Not yet. Linux and macOS for now.</p></details>
         <details><summary>Can I edit the notes by hand?</summary><p>Yes, they are Markdown files. Afterwards, <code>augmented-brain check</code> checks them and rebuilds the index.</p></details>
-        <details><summary>Does the backup run by itself?</summary><p>Not yet. You run <code>augmented-brain backup</code> whenever you like. One command, no questions.</p></details>
+        <details><summary>Does the backup run by itself?</summary><p>Yes. Once it is set up, it runs every time a Claude session ends, in the background. If it fails, Claude tells you at the start of the next session.</p></details>
         <details><summary>How can I support it?</summary><p>Sponsor it on <a href="https://github.com/sponsors/icalvete">GitHub Sponsors</a>. It pays for the time to answer issues and add features.</p></details>
         <details><summary>Is there paid support?</summary><p>Yes, on <a href="https://github.com/sponsors/icalvete">GitHub Sponsors</a>: the Support tier gets you an answer by email within two working days, and the Setup session is one hour on a video call to set it up with you.</p></details>
         <details><summary>What if I stop using it?</summary><p>Your notes stay where they are, as plain files. There is nothing to export.</p></details>

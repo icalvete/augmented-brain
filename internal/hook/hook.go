@@ -11,11 +11,18 @@ import (
 	"io"
 	"os"
 	"sort"
+	"time"
 
+	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/session"
+	"github.com/icalvete/augmented-brain/internal/update"
+	"github.com/icalvete/augmented-brain/internal/version"
 )
+
+// LatestVersion asks for the latest published version; tests replace it.
+var LatestVersion = update.Fetch
 
 type input struct {
 	Cwd       string         `json:"cwd"`
@@ -71,10 +78,17 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 	case s == nil:
 		text = session.NoSpace(c, i.Cwd)
 	default:
-		text = session.Context(c, s)
+		var note string
 		if _, isDefault := c.SpaceAt(i.Cwd); isDefault {
-			text = session.ContextWith(c, s, session.DefaultNote(c, s, i.Cwd))
+			note = session.DefaultNote(c, s, i.Cwd)
 		}
+		if st, ok := backup.LastStatus(cfgDir, s.Name); ok && !st.OK && s.Backup != "" {
+			note += session.BackupFailedNote(c.Language, s.Name, st.Time, st.Error)
+		}
+		if latest := update.Available(cfgDir, version.Version, time.Now(), LatestVersion); latest != "" {
+			note += session.UpdateNote(c.Language, version.Version, latest)
+		}
+		text = session.ContextWith(c, s, note)
 	}
 	return write(out, output{specific{HookEventName: "SessionStart", AdditionalContext: text}})
 }

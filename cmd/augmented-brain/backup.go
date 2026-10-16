@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
@@ -37,12 +40,22 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("backup", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	all := fs.Bool("all", false, "back up every space, not only this folder's")
+	only := fs.String("space", "", "back up this space, wherever you are")
+	auto := fs.Bool("auto", false, "started by the assistant when a session ends: quiet, never asks for a password")
 	if err := fs.Parse(args); err != nil {
 		return 2
 	}
+	if *auto {
+		// Nobody is there to type a password: git must fail instead of waiting.
+		os.Setenv("GIT_TERMINAL_PROMPT", "0")
+		if os.Getenv("GIT_SSH_COMMAND") == "" {
+			os.Setenv("GIT_SSH_COMMAND", "ssh -o BatchMode=yes")
+		}
+		out, errOut = io.Discard, io.Discard
+	}
 	var c *config.Config
 	var spaces []*config.Space
-	if *all {
+	if *all || *only != "" {
 		dir, err := config.Dir()
 		if err == nil {
 			c, err = config.Load(dir)
@@ -52,7 +65,13 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 			return 1
 		}
 		for _, n := range c.SpaceNames() {
-			spaces = append(spaces, c.Spaces[n])
+			if *only == "" || n == *only {
+				spaces = append(spaces, c.Spaces[n])
+			}
+		}
+		if len(spaces) == 0 {
+			fmt.Fprintf(errOut, "there is no space called %q\n", *only)
+			return 1
 		}
 	} else {
 		cc, s, ok := currentSpace(errOut)
@@ -61,10 +80,18 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 		}
 		c, spaces = cc, []*config.Space{s}
 	}
+	// Backups run one at a time: two sessions that end together must not share a repository.
+	unlock, err := filelock.Lock(filepath.Join(c.Dir, ".backup.lock"))
+	if err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	}
+	defer unlock()
 	host, _ := os.Hostname()
 	code := 0
 	for _, s := range spaces {
 		res, err := backup.Run(c, s, host)
+		backup.RecordStatus(c.Dir, s.Name, err, time.Now())
 		switch {
 		case err != nil:
 			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.failed", s.Name, err))

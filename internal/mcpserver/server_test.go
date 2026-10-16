@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -88,7 +89,7 @@ func TestTools(t *testing.T) {
 		names = append(names, tl.Name)
 	}
 	sort.Strings(names)
-	want := "area_new capture knowledge_new pending person_save profile_save safety_save task_close task_get task_journal task_new task_park task_update where_am_i"
+	want := "area_new backup_setup capture knowledge_new pending person_save profile_save safety_save task_close task_get task_journal task_new task_park task_update where_am_i"
 	if got := strings.Join(names, " "); got != want {
 		t.Errorf("tools = %s", got)
 	}
@@ -257,5 +258,28 @@ func TestSafetySave(t *testing.T) {
 	w := c.Spaces["work"]
 	if strings.Join(w.ProductionAWSProfiles, ",") != "prod" || strings.Join(w.UntouchableHosts, ",") != "db01,db02" {
 		t.Errorf("settings: %+v", w)
+	}
+}
+
+// backup_setup with a repository given: connected, first copy pushed, and asking again
+// says where it backs up.
+func TestBackupSetup(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git not installed")
+	}
+	cs := connect(t, space(t))
+	remote := filepath.Join(t.TempDir(), "remote.git")
+	if out, err := exec.Command("git", "init", "-q", "--bare", "-b", "main", remote).CombinedOutput(); err != nil {
+		t.Fatal(err, string(out))
+	}
+	out, isErr := call(t, cs, "backup_setup", map[string]any{"repo_url": remote})
+	if isErr || !strings.Contains(out, "Backup of space work set up") {
+		t.Fatalf("setup: %s", out)
+	}
+	if log, err := exec.Command("git", "--git-dir", remote, "log", "--oneline", "main").CombinedOutput(); err != nil || len(log) == 0 {
+		t.Errorf("nothing pushed: %v %s", err, log)
+	}
+	if out, _ := call(t, cs, "backup_setup", map[string]any{}); !strings.Contains(out, "already backs up to "+remote) {
+		t.Errorf("second call: %s", out)
 	}
 }

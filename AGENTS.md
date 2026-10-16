@@ -17,14 +17,14 @@ it feels to a newcomer.
 
 | Path | What |
 |---|---|
-| `cmd/augmented-brain/` | The commands: `init`, `space add`, `doctor`, `check`, `backup`, `restore`, `mcp`, `hook`. User-facing messages of `init` live in `init.go`. |
+| `cmd/augmented-brain/` | The commands: `init`, `space add`, `doctor`, `check`, `backup`, `restore`, `update`, `uninstall`, `mcp`, `hook`. User-facing messages of `init` live in `init.go`. |
 | `internal/config` | The configuration file: spaces, `default_space`. Edits keep the user's comments (`AddSpace`, `SetSpaceKey`, `SetSpaceList`, `SetDefaultSpace`). |
 | `internal/memory` | Reads and checks notes (headers only), builds the index `MEMORY.md`. |
 | `internal/brain` | Everything that writes notes: tasks, areas, knowledge, people, the profile, safety settings. |
 | `internal/mcpserver` | The MCP tools, thin layers over `brain`. Calls run one at a time (mutex plus a file lock). |
-| `internal/hook`, `internal/session` | The SessionStart and PreToolUse hooks; what the assistant reads at the start (budget: 9,500 UTF-16 units). |
+| `internal/hook`, `internal/session` | The SessionStart, PreToolUse and SessionEnd hooks (SessionEnd starts the automatic backup); what the assistant reads at the start (budget: 9,500 UTF-16 units). |
 | `internal/guard` | The command guard: a small shell parser and the policy (push, root, secrets, production profiles, untouchable hosts). |
-| `internal/setup`, `internal/doctor`, `internal/backup`, `internal/claudecode` | Creating spaces, the health check, backup and restore, installing the plugin. |
+| `internal/setup`, `internal/doctor`, `internal/backup`, `internal/claudecode`, `internal/update` | Creating spaces, the health check, backup and restore, installing the plugin, the new-version check. |
 | `internal/i18n`, `internal/rules`, `internal/templates` | Messages, the common rules and the starter files, in English and Spanish. |
 | `plugin/` | The Claude Code plugin: `hooks/hooks.json`, `.mcp.json`. `.claude-plugin/marketplace.json` makes this repo its marketplace. |
 | `install.sh` | The installer people run with `curl … \| sh`. |
@@ -49,9 +49,10 @@ Heavier checks, before a release or when you touch what they cover:
   result (13 with the desktop app). It installs Claude Code for whoever runs it, so use
   `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on macOS and Ubuntu on
   every push that touches the installer, the plugin or the code (`install.yml`).
-- `scripts/e2e-claude.sh`: the whole story (open, park, resume, close a task; the guard)
-  against a real, isolated Claude Code. It spends usage of a logged-in account; see the
-  script's header for the one-time login.
+- `scripts/e2e-claude.sh`: the whole story (open, park, resume, close a task; the guard;
+  the automatic backup; the first-session interview) against a real, isolated Claude
+  Code. It spends usage of a logged-in account; see the script's header for the one-time
+  login.
 - `test/vm/ubuntu-desktop/Vagrantfile`: for what only a person can judge (the desktop app,
   signing in, the first-session interview). Restore the `clean` snapshot between tries.
   To test unpublished work there, upload a release built with `scripts/release-build.sh`

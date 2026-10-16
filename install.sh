@@ -317,8 +317,9 @@ echo "  https://github.com/$REPO/blob/main/DISCLAIMER.md"
 cfg="${AB_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/augmented-brain}"
 if [ -f "$cfg/config.toml" ]; then
   echo
-  say "Already set up ($(tilde "$cfg")): only the program was updated." \
-      "Ya estaba configurado ($(tilde "$cfg")): solo se ha actualizado el programa."
+  say "Already set up ($(tilde "$cfg")): the program is updated; now the Claude Code plugin." \
+      "Ya estaba configurado ($(tilde "$cfg")): programa actualizado; ahora, el plugin de Claude Code."
+  "$DIR/augmented-brain" update --plugin </dev/null || true
   exit 0
 fi
 # Offer to open Claude right here: this terminal cannot pick up the new PATH, so the

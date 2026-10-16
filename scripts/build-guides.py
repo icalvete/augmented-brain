@@ -40,6 +40,28 @@ def inline(s):
     return "".join(out)
 
 
+def item(lines):
+    """The inside of a list item: its text, and any fenced code in it."""
+    out, text, code = [], [], None
+    for ln in lines:
+        if ln.startswith("```"):
+            if code is None:
+                if text:
+                    out.append(inline(" ".join(t.strip() for t in text if t.strip())))
+                    text = []
+                code = []
+            else:
+                out.append("<pre><code>" + H.escape("\n".join(code), quote=False) + "</code></pre>")
+                code = None
+        elif code is not None:
+            code.append(ln)
+        else:
+            text.append(ln)
+    if text and any(t.strip() for t in text):
+        out.append(inline(" ".join(t.strip() for t in text if t.strip())))
+    return "".join(out)
+
+
 def convert(md):
     lines = md.splitlines()
     out, i = [], 0
@@ -77,6 +99,18 @@ def convert(md):
             t = "<thead><tr>" + "".join(f"<th>{inline(c)}</th>" for c in head) + "</tr></thead><tbody>"
             t += "".join("<tr>" + "".join(f"<td>{inline(c)}</td>" for c in r) + "</tr>" for r in body)
             out.append(f'  <div class="table-wrap"><table>{t}</tbody></table></div>')
+        elif re.match(r"\d+\. ", ln):
+            # A numbered list: each item may go on in lines indented by three spaces,
+            # with fenced code inside.
+            items = []
+            while i < len(lines) and (re.match(r"\d+\. ", lines[i]) or lines[i].startswith("   ") or
+                                      (not lines[i].strip() and i + 1 < len(lines) and lines[i + 1].startswith("   "))):
+                if re.match(r"\d+\. ", lines[i]):
+                    items.append([re.sub(r"^\d+\. ", "", lines[i])])
+                else:
+                    items[-1].append(lines[i][3:])
+                i += 1
+            out.append("  <ol>" + "".join(f"<li>{item(x)}</li>" for x in items) + "</ol>")
         elif ln.startswith("- "):
             items = []
             while i < len(lines) and (lines[i].startswith("- ") or lines[i].startswith("  ")):
@@ -88,7 +122,7 @@ def convert(md):
             out.append("  <ul>" + "".join(f"<li>{inline(x)}</li>" for x in items) + "</ul>")
         else:
             para = []
-            while i < len(lines) and lines[i].strip() and not re.match(r"(#|```|\||- |!\[|<picture>)", lines[i]):
+            while i < len(lines) and lines[i].strip() and not re.match(r"(#|```|\||- |!\[|<picture>|\d+\. )", lines[i]):
                 para.append(lines[i].strip())
                 i += 1
             out.append(f"  <p>{inline(' '.join(para))}</p>")

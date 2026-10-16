@@ -56,6 +56,10 @@ session starts from there. Opening, resuming and closing work the same way.
 It also looks inside `ssh`, `bash -c` and loops. It is a net against slips, not a security
 wall: read the [disclaimer](../../DISCLAIMER.md).
 
+**4. You close the session.** The end hook starts the backup of the space, in the
+background, if you set one up. You wait for nothing. If it fails, Claude tells you at the
+start of the next one.
+
 ## Your files
 
 Everything lives in `~/augmented-brain`, one folder per **space**. You work inside it,
@@ -145,24 +149,47 @@ Do your projects already live elsewhere, like `~/code`? Add that folder to the
 ## The backup
 
 The notes folder of each space is also a git repository. The backup pushes it to a
-private repository of yours. Set it up once:
+private repository of yours, one per space.
+
+**Setting it up: ask Claude.** Say "set up the backup" (it offers at the end of the
+interview). It creates a private repository in your GitHub account,
+`augmented-brain-<space>`, connects it and makes the first copy. For that it uses `gh`,
+GitHub's official command line: if you don't have it, Claude tells you how to install it
+and walks you through the one step that needs your browser, logging in. Rather somewhere
+else (GitLab, your company's git)? Give it the repository's address, or do it yourself:
 
 ```bash
-augmented-brain backup setup git@github.com:you/my-brain.git
+augmented-brain backup setup git@gitlab.com:you/my-brain.git
 ```
 
-And from then on, whenever you like (at the end of the day, say):
+From then on **it runs by itself every time a Claude session ends**, in the background.
+If it fails (no network, no access to the repository), Claude tells you at the start of
+the next one. You can also run it by hand:
 
 ```bash
 augmented-brain backup          # this space
 augmented-brain backup --all    # every space
 ```
 
+### On a new machine
+
+1. Install augmented brain with the usual command. It creates the spaces, empty. If
+   Claude opens at the end, close it without doing the interview: your profile comes in
+   the backup.
+2. Bring each space back from its backup:
+   ```bash
+   augmented-brain restore https://github.com/you/augmented-brain-work.git
+   ```
+   It replaces the empty space with yours: notes, tasks, rules, your profile and the
+   space's settings. If that space already had notes of yours, it leaves it alone.
+3. Open Claude. It carries on where you left off, and the backup keeps running by itself.
+
+If the repository is on GitHub, log in once with `gh auth login` before restoring, so git
+has access.
+
 What you get:
 
-- **A new machine in minutes.** `augmented-brain restore <url>` brings the whole space
-  back: notes, tasks, rules, your profile and the space's settings. Open Claude and carry
-  on where you left off.
+- **A new machine in minutes**, with the three steps above.
 - **Several machines, one brain.** Before pushing, the backup fetches what your other
   machine did and merges it.
 - **Full history.** Every backup is a git commit, with the machine and the time. With
@@ -176,24 +203,38 @@ What you get:
   touching anything and explains how to sort it out. The index, being generated, is
   rebuilt by itself.
 
-It does not run by itself yet: it is a command you run.
+To turn the automatic backup off: `AB_NO_AUTO_BACKUP=1`.
 
 ## What it does not do
 
 - **No server and no account.** If Claude is not open, nothing runs.
-- **It sends data to no one.** Only the backup, if you set it up, talks to your repository.
+- **It sends your data to no one.** Only the backup, if you set it up, talks to your
+  repository. Apart from that, once a day, it asks GitHub which version is the latest,
+  sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns it off.
 - **It does not touch your Claude Code settings.** The plugin goes in and out with Claude
-  Code's own commands.
+  Code's own commands, which the installer, `update` and `uninstall` run for you.
 - **Mind this: your assistant reads your notes**, like any file it opens. They travel with
   your conversations to its provider. Do not keep there what you would not share.
+
+## Update it
+
+When a new version is out, Claude tells you at the start of a session and offers to
+update it. You can also do it yourself:
+
+```bash
+augmented-brain update
+```
+
+It updates the program and the Claude plugin. Your notes and your configuration are not
+touched. Then close and open Claude so it uses the new version.
 
 ## Remove it
 
 ```bash
-claude plugin uninstall brain@augmented-brain
-claude plugin marketplace remove augmented-brain
-rm ~/.local/bin/augmented-brain
-rm -r ~/.config/augmented-brain        # configuration and profile
+augmented-brain uninstall
 ```
 
-Your notes stay in `~/augmented-brain/`. They are yours.
+It removes the Claude plugin and the program, after asking. Your notes stay in
+`~/augmented-brain/`: they are yours. Your configuration stays too (to remove it:
+`augmented-brain uninstall --config`), and so do Claude Code, its app and git. If you
+install it again, you find everything as it was.
