@@ -71,6 +71,7 @@ export HOME="$FAKE_HOME"
 export AB_CONFIG_DIR="$FAKE_HOME/.config/augmented-brain"
 export CLAUDE_CONFIG_DIR="$CLAUDE_DIR"
 export PATH="$BIN:/usr/bin:/bin"
+export AB_NO_UPDATE_CHECK=1  # no network checks, no update notices in the answers
 unset XDG_CONFIG_HOME
 
 pass=0
@@ -81,11 +82,13 @@ check() { if eval "$2"; then ok "$1"; else bad "$1"; fi; }
 
 # ask <step> [extra tools]: runs `claude -p` in the work folder, with the prompt in
 # $T/prompts/<step> (prompts go through stdin so no command line carries them).
+# With cont=1 it carries on the last conversation, for scenarios of several turns.
 ask() {
   step="$1"
   tools="mcp__plugin_brain_augmented-brain${2:+,$2}"
   set -- -p --output-format text --plugin-dir "$ROOT/plugin" --allowedTools "$tools"
   if [ -n "${AB_E2E_MODEL:-}" ]; then set -- "$@" --model "$AB_E2E_MODEL"; fi
+  if [ -n "${cont:-}" ]; then set -- "$@" --continue; fi
   (cd "$WORK" && claude "$@" < "$T/prompts/$step" > "$OUT/$step" 2>&1)
 }
 
@@ -181,6 +184,60 @@ EOF
 ask 7 Bash
 check "dev profile ran (control)" "grep -qx dev '$T/aws-ran' 2>/dev/null"
 check "prod profile did not run" "! grep -qx prod '$T/aws-ran' 2>/dev/null"
+
+echo "8. the space backs itself up when the session ends"
+BACKUP="$T/backup.git"
+BACKUP_WORD="inbox-$(date +%s)"
+git init -q --bare -b main "$BACKUP"
+(cd "$WORK" && augmented-brain backup setup "$BACKUP" > "$OUT/backup-setup" 2>&1)
+prompt 8 <<EOF
+Note this in the inbox, nothing else: $BACKUP_WORD. Then reply DONE.
+EOF
+ask 8
+check "noted in the inbox" "grep -q '$BACKUP_WORD' '$MEMORY/inbox.md'"
+# The backup runs in the background after the session ends: give it a little time.
+n=0
+until git --git-dir="$BACKUP" show main:inbox.md 2>/dev/null | grep -q "$BACKUP_WORD" || [ $n -ge 30 ]; do
+  sleep 1; n=$((n + 1))
+done
+check "backed up by itself" "git --git-dir='$BACKUP' show main:inbox.md 2>/dev/null | grep -q '$BACKUP_WORD'"
+
+echo "9. the first-session interview saves what it learns"
+# The profile is still blank, so the session starts with the interview: one answer a turn.
+prompt 9.0 <<EOF
+Hi.
+EOF
+prompt 9.1 <<EOF
+I'm Dana Reyes and I run the IT of a small bakery.
+EOF
+prompt 9.2 <<EOF
+The bakery's online shop. Nothing else in this space.
+EOF
+prompt 9.3 <<EOF
+English, short, and give me your recommendation first.
+EOF
+prompt 9.4 <<EOF
+Edit freely, but ask before deleting or publishing. The AWS profile shop-prod reaches production, and the server db-main must not be touched lightly.
+EOF
+prompt 9.5 <<EOF
+Gmail and Google Calendar. No need to connect them now.
+EOF
+prompt 9.6 <<EOF
+Marcos Ortega, my business partner, I call him Marquitos. That's all.
+EOF
+cont=
+for step in 9.0 9.1 9.2 9.3 9.4 9.5 9.6; do
+  ask "$step"
+  cont=1
+done
+cont=
+check "profile saved" "grep -q 'Dana' '$AB_CONFIG_DIR/profile.md' && grep -qi 'bakery' '$AB_CONFIG_DIR/profile.md'"
+check "work style saved" "grep -qi 'recommendation' '$AB_CONFIG_DIR/profile.md'"
+check "area created" "grep -qil 'shop' '$MEMORY'/areas/*.md 2>/dev/null"
+check "production profile saved" "grep -q 'production_aws_profiles.*shop-prod' '$CONFIG'"
+check "host saved" "grep -q 'untouchable_hosts.*db-main' '$CONFIG'"
+check "person saved with nickname" "grep -ql 'Marquitos' '$MEMORY'/people/*.md 2>/dev/null"
+check "offers the backup" "grep -qi 'backup' '$OUT/9.6'"
 
 echo
 echo "$pass OK, $fail FAIL"
