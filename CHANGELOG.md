@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.2.2-alpha
+
+Released 2026-10-16. Easier to keep up to date, back up and remove. Checked with the
+installer on macOS and Ubuntu, and end to end with a real Claude Code (26 of 26).
 
 - `augmented-brain update`: updates the program, through the published installer, and
   then the Claude Code plugin, which until now stayed at the version first installed.
