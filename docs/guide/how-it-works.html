@@ -132,6 +132,23 @@ augmented-brain backup --all    # every space</code></pre>
   <pre><code>augmented-brain uninstall</code></pre>
   <p>It removes the Claude plugin and the program, after asking. Your notes stay in <code>~/augmented-brain/</code>: they are yours. Your configuration stays too (to remove it: <code>augmented-brain uninstall --config</code>), and so do Claude Code, its app and git. If you install it again, you find everything as it was.</p>
   <a class="back" href="../">← Back to augmented brain</a>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+</script>
 </main>
 
 <footer>

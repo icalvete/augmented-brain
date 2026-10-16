@@ -43,7 +43,9 @@ Le hablas como siempre. Esto es lo que cambia:
 
 ## Empieza en dos pasos
 
-Linux o macOS. augmented brain no necesita root.
+Necesitas macOS o Linux y una cuenta de Claude de pago (Pro o superior), porque Claude Code
+no entra en el plan gratuito. augmented brain no necesita root. ¿Nunca has abierto una
+terminal? Sigue los [primeros pasos](docs/guide/getting-started.es.md).
 
 **1. Instálalo** con un solo comando:
 

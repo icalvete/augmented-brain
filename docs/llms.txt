@@ -11,6 +11,7 @@ The first session is a short guided interview. A session outside every space's f
 ## Docs
 
 - [README](https://raw.githubusercontent.com/icalvete/augmented-brain/main/README.md): what it does, getting started, commands, backup
+- [Getting started](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/getting-started.md): from nothing to the first session for people new to the terminal; what you need (a paid Claude plan), phrases for the first week, a glossary, common problems
 - [How it works](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.md): the four layers, a session step by step, where every file lives, spaces, backup
 - [Connect your services](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.md): calendar, mail, documents and Jira through MCP
 - [Memory format](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/spec/memory-format.md): folders, note headers, configuration, backup
@@ -18,6 +19,7 @@ The first session is a short guided interview. A session outside every space's f
 ## Spanish
 
 - [README en español](https://raw.githubusercontent.com/icalvete/augmented-brain/main/README.es.md)
+- [Primeros pasos](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/getting-started.es.md)
 - [Cómo funciona](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.es.md)
 - [Conecta tus servicios](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.es.md)
 

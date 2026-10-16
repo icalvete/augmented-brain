@@ -43,7 +43,9 @@ You talk to it as usual. This is what changes:
 
 ## Start in two steps
 
-Linux or macOS. augmented brain needs no root.
+You need macOS or Linux and a paid Claude account (Pro or above), because Claude Code is
+not in the free plan. augmented brain needs no root. Never opened a terminal? Follow
+[getting started](docs/guide/getting-started.md).
 
 **1. Install it** with one command:
 

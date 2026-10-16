@@ -67,9 +67,9 @@ Heavier checks, before a release or when you touch what they cover:
   templates, `README.md` and `README.es.md`, `docs/index.html` and `docs/es/index.html`,
   each guide and its `.es` twin. Change one, change the other.
 - **Generated files are not edited by hand.** Change the source and regenerate:
-  `docs/img/*.svg` from `docs/img/diagrams.py`; `docs/guide/how-it-works*.html` from the
-  `.md` files with `scripts/build-guides.py`; a space's `MEMORY.md` is written by the
-  program.
+  `docs/img/*.svg` from `docs/img/diagrams.py`; `docs/guide/how-it-works*.html` and
+  `getting-started*.html` from their `.md` files with `scripts/build-guides.py`; a space's
+  `MEMORY.md` is written by the program.
 - **The memory format is a contract.** `docs/spec/memory-format.md` describes it; a change
   to folders, header fields or note types updates the spec, the index and their tests.
 - **A new MCP tool** goes in `internal/mcpserver/server.go`, does its work in

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started · augmented brain</title>
+<meta name="description" content="Install augmented brain from scratch, step by step, even if you have never opened a terminal: what you need, the installer, the first session and what to say in your first week.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/getting-started.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/getting-started.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/getting-started.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/getting-started.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Getting started · augmented brain">
+<meta property="og:description" content="From nothing to your first session, step by step, without knowing the terminal.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/getting-started.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Getting started · augmented brain">
+<meta name="twitter:description" content="From nothing to your first session, step by step, without knowing the terminal.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="getting-started.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<main class="wrap prose">
+  <h1>Getting started</h1>
+  <p>This guide is for starting from scratch, even if you have never opened a terminal. It takes about ten minutes.</p>
+  <h2>What you need</h2>
+  <ul><li><strong>A computer with macOS or Linux</strong> (Ubuntu, Debian…). Not Windows yet.</li><li><strong>A paid Claude account</strong>: Pro or above. augmented brain is free, but it works with Claude Code, and Claude Code is not in the free plan. The plans are at <a href="https://claude.com/pricing">claude.com/pricing</a>.</li><li><strong>Your computer's password</strong>, in case something missing has to be installed.</li></ul>
+  <h2>1. Open the terminal</h2>
+  <p>The terminal is a window where you type commands instead of clicking buttons. You only need it to install.</p>
+  <ul><li><strong>On a Mac:</strong> press <code>Cmd + Space</code>, type <code>Terminal</code> and press Enter.</li><li><strong>On Ubuntu:</strong> press <code>Ctrl + Alt + T</code>.</li></ul>
+  <h2>2. Paste the install command</h2>
+  <p>Copy this line:</p>
+  <pre><code>curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code></pre>
+  <p>Paste it into the terminal (<code>Cmd + V</code> on a Mac, <code>Ctrl + Shift + V</code> on Ubuntu) and press Enter.</p>
+  <h2>3. Answer the installer</h2>
+  <p>It asks a few questions. To accept what it suggests, just press Enter.</p>
+  <ol><li><strong>The language.</strong> English or Spanish.</li><li><strong>Whatever is missing</strong>, if anything: git (keeps the history of your notes), Claude Code and the Claude desktop app. It tells you what each one is for before installing it.</li><li><strong>Open the Claude app now?</strong> Say yes.</li></ol>
+  <p>If it asks for your password, type it even though you see nothing: the terminal does not show it, not even as asterisks. Press Enter when done.</p>
+  <p>On a Mac, if git is missing, a window opens to install Apple's developer tools. Accept, wait until it finishes and paste the command again.</p>
+  <h2>4. Sign in to Claude</h2>
+  <p>In the Claude app:</p>
+  <ol><li>Sign in with your account.</li><li>Open the <strong>Code</strong> tab.</li><li>Click <strong>+ New</strong> and type “Hi”.</li></ol>
+  <p>Without choosing a folder, you work in your personal space. For the work one, pick the folder <code>~/augmented-brain/work</code> with <strong>Choose…</strong>.</p>
+  <h2>5. Answer the interview</h2>
+  <p>The first time, Claude introduces itself and asks six questions, one at a time, telling you what each one is for: who you are, what you look after, how you want answers, what must not be touched, which tools you use and who you work with. You can skip any of them.</p>
+  <p>At the end it shows what it saved and offers to set up the backup. Say yes: your notes go to a private repository of yours, and losing the computer loses nothing.</p>
+  <h2>Your first week</h2>
+  <p>Talk to it as usual. These phrases pay off from day one:</p>
+  <div class="table-wrap"><table><thead><tr><th>You say</th><th>What it does</th></tr></thead><tbody><tr><td>“New task: prepare Thursday's meeting.”</td><td>Opens a task and asks what it needs to define it</td></tr><tr><td>“Park it, we carry on tomorrow.”</td><td>Writes down where you stopped and what comes next</td></tr><tr><td>“Where were we?”</td><td>Lists your live tasks with their next step</td></tr><tr><td>“Let's carry on with Thursday's meeting.”</td><td>Resumes the task where you left it, in any session</td></tr><tr><td>“Note this: call the insurance.”</td><td>Puts it in the inbox, without opening a task</td></tr><tr><td>“We go with supplier B, it is cheaper.”</td><td>Writes it in the task's journal, with the date</td></tr><tr><td>“Save that as a lesson.”</td><td>What you learned gets a note of its own</td></tr><tr><td>“Close the task.”</td><td>Closes it; it is never deleted</td></tr><tr><td>“Marta is my boss, I call her Martie.”</td><td>Saves her, and next time it knows who she is</td></tr><tr><td>“Why did we pick supplier B?”</td><td>Finds it in your notes and gives you the decision, with date and reason</td></tr></tbody></table></div>
+  <h2>Words you will hear</h2>
+  <ul><li><strong>Space:</strong> a separate drawer, with its own notes and rules. There are two, <code>work</code> and <code>personal</code>. The folder you open Claude in decides which one you are in.</li><li><strong>Task:</strong> something with a start and an end. It goes through six phases, from idea to closed.</li><li><strong>Area:</strong> something you always look after (the website, the house, a team). It groups its tasks.</li><li><strong>Inbox:</strong> where loose ideas wait until you sort them.</li><li><strong>Guard:</strong> the check that stops a risky command, or asks you first.</li><li><strong>Backup:</strong> your notes, pushed to a private git repository of yours after every session.</li><li><strong>Plugin:</strong> the piece that connects augmented brain to Claude Code. The installer puts it in.</li></ul>
+  <h2>If something goes wrong</h2>
+  <ul><li><strong>Claude does not introduce itself or run the interview.</strong> Start a new session. If nothing changes, open the terminal and type <code>augmented-brain doctor</code>: it tells you what is missing and how to fix it.</li><li><strong>The terminal cannot find a command</strong> (<code>command not found</code>). Close the terminal and open another one: the new one finds the programs just installed.</li><li><strong>Claude asks you for a paid plan.</strong> Claude Code needs Pro or above.</li><li><strong>“This system is not supported yet”.</strong> Today it works on macOS and Linux.</li><li><strong>Something else.</strong> Tell us in <a href="https://github.com/icalvete/augmented-brain/issues">the project's issues</a>, with what showed up on screen.</li></ul>
+  <p>To see what happens inside, go on to <a href="how-it-works.html">How it works</a>.</p>
+  <a class="back" href="../">← Back to augmented brain</a>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+</script>
+</main>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license</span></div>
+</footer>
+<script>
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

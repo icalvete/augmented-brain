@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- A "Getting started" guide for people who have never opened a terminal: what you need,
+  opening the terminal, the installer's questions, signing in, the interview, phrases for
+  the first week, the words you will hear and what to do when something fails.
+- The website, the README and the guide say up front that Claude Code needs a paid
+  Claude plan (Pro or above). "Is it free?" said only that augmented brain is.
+- The guides have a Copy button on every code block.
+
 ## 0.2.2-alpha
 
 Released 2026-10-16. Easier to keep up to date, back up and remove. Checked with the

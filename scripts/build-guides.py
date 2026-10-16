@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds docs/guide/how-it-works(.es).html from the Markdown guides.
+"""Builds the guide pages (docs/guide/<name>(.es).html) from their Markdown sources.
 
 The .md files are the source: change them and run this, never edit the .html by hand.
 The page frame (header, footer, styles) is taken from the connect-services pages, so all
@@ -135,32 +135,61 @@ def frame(lang):
     return head, rest.split("</main>", 1)[1]
 
 
-def page(lang, title, desc, ogdesc, back):
+# A Copy button on every code block, so nobody has to select a long command by hand.
+COPY = """<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "{copy}";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "{copied}"; setTimeout(function () { b.textContent = "{copy}"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+</script>"""
+
+
+def page(lang, slug, title, desc, ogdesc, back):
     head, tail = frame(lang)
-    md = (G / ("how-it-works.es.md" if lang == "es" else "how-it-works.md")).read_text()
+    md = (G / (slug + (".es.md" if lang == "es" else ".md"))).read_text()
     md = "\n".join(l for l in md.splitlines() if not re.match(r"\[(Read in English|Leer en español)\]", l))
-    name = "how-it-works.es.html" if lang == "es" else "how-it-works.html"
-    other = "how-it-works.html" if lang == "es" else "how-it-works.es.html"
+    name = slug + (".es.html" if lang == "es" else ".html")
+    other = slug + (".html" if lang == "es" else ".es.html")
     old_other = "connect-services.html" if lang == "es" else "connect-services.es.html"
     old_title = "Conecta tus servicios" if lang == "es" else "Connect your services"
     h = head.replace(old_title, title)
     h = re.sub(r'(<meta name="description" content=")[^"]*', r"\g<1>" + desc, h)
     h = re.sub(r'(<meta property="og:description" content=")[^"]*', r"\g<1>" + ogdesc, h)
     h = re.sub(r'(<meta name="twitter:description" content=")[^"]*', r"\g<1>" + ogdesc, h)
-    h = h.replace(BASE + "connect-services.es.html", BASE + "how-it-works.es.html")
-    h = h.replace(BASE + "connect-services.html", BASE + "how-it-works.html")
+    h = h.replace(BASE + "connect-services.es.html", BASE + slug + ".es.html")
+    h = h.replace(BASE + "connect-services.html", BASE + slug + ".html")
     h = h.replace(f'href="{old_other}"', f'href="{other}"')
     assert "connect-services" not in h, "a link to the other guide is left"
-    body = convert(md) + "\n" + back
+    body = convert(md) + "\n" + back + "\n" + COPY.replace("{copy}", "Copiar" if lang == "es" else "Copy") \
+        .replace("{copied}", "Copiado" if lang == "es" else "Copied")
     (G / name).write_text(h + '<main class="wrap prose">\n' + body + "\n</main>" + tail)
     print("ok", name)
 
 
-page("en", "How it works",
+page("en", "getting-started", "Getting started",
+     "Install augmented brain from scratch, step by step, even if you have never opened a terminal: what you need, the installer, the first session and what to say in your first week.",
+     "From nothing to your first session, step by step, without knowing the terminal.",
+     '  <a class="back" href="../">← Back to augmented brain</a>')
+page("es", "getting-started", "Primeros pasos",
+     "Instala augmented brain desde cero, paso a paso, aunque nunca hayas abierto una terminal: qué necesitas, el instalador, la primera sesión y qué decir la primera semana.",
+     "De cero a tu primera sesión, paso a paso, sin saber de terminales.",
+     '  <a class="back" href="../es/">← Volver a augmented brain</a>')
+page("en", "how-it-works", "How it works",
      "How augmented brain works, in four layers: you and your assistant, the plugin, the program and your files. What happens in a session and where every file lives.",
      "Four layers, a session step by step, and where every file lives.",
      '  <a class="back" href="../">← Back to augmented brain</a>')
-page("es", "Cómo funciona",
+page("es", "how-it-works", "Cómo funciona",
      "Cómo funciona augmented brain, en cuatro capas: tú y tu asistente, el plugin, el programa y tus ficheros. Qué pasa en una sesión y dónde vive cada fichero.",
      "Cuatro capas, una sesión paso a paso y dónde vive cada fichero.",
      '  <a class="back" href="../es/">← Volver a augmented brain</a>')
