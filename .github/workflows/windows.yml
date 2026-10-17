@@ -30,3 +30,15 @@ jobs:
         run: go build -o augmented-brain.exe ./cmd/augmented-brain
       - name: The program runs
         run: ./augmented-brain.exe version
+
+  # The installer from nothing, hands-off, on a clean Windows: install-check.ps1.
+  install:
+    runs-on: windows-latest
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install from nothing and check
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-check.ps1
