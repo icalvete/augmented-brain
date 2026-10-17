@@ -6,7 +6,7 @@ name: install
 
 on:
   push:            # any branch: a branch is how a change gets tried before main
-    paths: [install.sh, scripts/install-check.sh, plugin/**, cmd/**, internal/**, .github/workflows/install.yml]
+    paths: [install.sh, scripts/install-check.sh, scripts/install-check-mac.sh, plugin/**, cmd/**, internal/**, .github/workflows/install.yml]
   workflow_dispatch:
 
 permissions:
@@ -23,6 +23,9 @@ jobs:
           - os: macos-latest  # most Macs have no Homebrew: the app comes from Anthropic's feed
             shell: /bin/zsh
             nobrew: "1"
+          - os: macos-15-intel  # Intel Macs: the darwin_amd64 build and the Intel app
+            shell: /bin/zsh
+            nobrew: "1"
           - os: ubuntu-latest
             shell: /bin/bash
     runs-on: ${{ matrix.os }}
@@ -37,3 +40,6 @@ jobs:
           AB_CHECK_DESKTOP: "1"   # Homebrew or the feed on macOS, Anthropic's apt repository on Ubuntu
           AB_CHECK_NO_BREW: ${{ matrix.nobrew }}
         run: scripts/install-check.sh
+      - name: What only a Mac can get wrong (PATH file, macOS version, Apple's git)
+        if: runner.os == 'macOS'
+        run: scripts/install-check-mac.sh

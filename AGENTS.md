@@ -49,6 +49,10 @@ Heavier checks, before a release or when you touch what they cover:
   result (13 with the desktop app). It installs Claude Code for whoever runs it, so use
   `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on macOS and Ubuntu on
   every push that touches the installer, the plugin or the code (`install.yml`).
+- `scripts/install-check-mac.sh`: what only a Mac can get wrong in the installer (the PATH
+  file for zsh and bash, macOS 13 or later, Apple's stub git), with fakes for `sw_vers`
+  and `xcode-select`. CI runs it on every Mac row; on a Mac without Go, give it a built
+  release with `AB_CHECK_RELEASE`.
 - `scripts/e2e-claude.sh`: the whole story (open, park, resume, close a task; the guard;
   the automatic backup; the first-session interview) against a real, isolated Claude
   Code. It spends usage of a logged-in account; see the script's header for the one-time

@@ -95,8 +95,36 @@ case "$(uname -m)" in
   arm64 | aarch64) arch=arm64 ;;
   *) fail "$(say "this processor ($(uname -m)) is not supported yet." "este procesador ($(uname -m)) aún no está soportado.")" ;;
 esac
+# Claude Code and its desktop app need macOS 13 (Ventura) or later: say so before
+# installing anything that would not start.
+if [ "$os" = darwin ]; then
+  macos="$(sw_vers -productVersion 2>/dev/null)"
+  if [ "${macos%%.*}" -lt 13 ] 2>/dev/null; then
+    fail "$(say "this Mac has macOS $macos, and Claude Code needs macOS 13 (Ventura) or later. Update it in System Settings → General → Software Update, then run this installer again." \
+                "este Mac tiene macOS $macos, y Claude Code necesita macOS 13 (Ventura) o posterior. Actualízalo en Ajustes del Sistema → General → Actualización de software y vuelve a lanzar este instalador.")"
+  fi
+fi
 
 # --- 1. What it needs -------------------------------------------------------------
+
+# has_git: git that really works. On a Mac, /usr/bin/git exists even without Apple's
+# developer tools: then it is only a stub that offers to install them.
+has_git() {
+  g="$(command -v git 2>/dev/null)" || return 1
+  [ "$os" = darwin ] && [ "$g" = /usr/bin/git ] && { xcode-select -p >/dev/null 2>&1 || return 1; }
+  return 0
+}
+
+# wait_for_xcode: the developer tools install in their own window; wait for them here
+# (up to 45 minutes) instead of asking for the installer to be run again.
+wait_for_xcode() {
+  i=0
+  until xcode-select -p >/dev/null 2>&1; do
+    i=$((i + 1))
+    [ "$i" -gt 540 ] && return 1
+    sleep 5
+  done
+}
 
 git_install() {
   if [ "$os" = darwin ]; then echo "xcode-select --install"; return; fi
@@ -160,7 +188,7 @@ mac_desktop_install() {
 }
 
 if [ "${AB_NO_INIT:-}" != 1 ]; then
-  if ! command -v git >/dev/null 2>&1; then
+  if ! has_git; then
     cmd="$(git_install)"
     say "augmented brain needs git, to keep the history and the backup of your notes." \
         "augmented brain necesita git, para el historial y la copia de seguridad de tus notas."
@@ -176,9 +204,16 @@ if [ "${AB_NO_INIT:-}" != 1 ]; then
         fi ;;
       xcode-select*)
         xcode-select --install 2>/dev/null || true
-        say "A window opens to install Apple's developer tools, which bring git. Accept it, wait until it finishes, and run this installer again." \
-            "Se abre una ventana para instalar las herramientas de desarrollo de Apple, que traen git. Acéptala, espera a que termine y vuelve a lanzar este instalador."
-        exit 1 ;;
+        if [ "${AB_YES:-}" != 1 ] && (exec </dev/tty) 2>/dev/null; then
+          say "A window opens to install Apple's developer tools, which bring git. Click Install and accept; it takes a few minutes. I wait here and carry on by myself when it finishes (if you closed the window, press Ctrl+C and run this installer again)." \
+              "Se abre una ventana para instalar las herramientas de desarrollo de Apple, que traen git. Pulsa Instalar y acepta; tarda unos minutos. Yo espero aquí y sigo solo cuando acabe (si cerraste la ventana, pulsa Ctrl+C y vuelve a lanzar este instalador)."
+          wait_for_xcode || fail "$(say "Apple's developer tools did not finish installing. Run this installer again." "las herramientas de desarrollo de Apple no terminaron de instalarse. Vuelve a lanzar este instalador.")"
+          say "✓ git installed" "✓ git instalado"
+        else
+          say "A window opens to install Apple's developer tools, which bring git. Accept it, wait until it finishes, and run this installer again." \
+              "Se abre una ventana para instalar las herramientas de desarrollo de Apple, que traen git. Acéptala, espera a que termine y vuelve a lanzar este instalador."
+          exit 1
+        fi ;;
       *)
         say "Install it with $cmd, then run this installer again." "Instálalo con $cmd y vuelve a lanzar este instalador."
         exit 1 ;;
@@ -278,7 +313,16 @@ case ":$PATH:" in
   *)
     case "$(basename "${SHELL:-sh}")" in
       zsh) rc="$HOME/.zshrc" ;;
-      bash) rc="$HOME/.bashrc" ;;
+      bash)
+        rc="$HOME/.bashrc"
+        if [ "$os" = darwin ]; then
+          # The first of these that exists is the one bash reads; creating .bash_profile
+          # when only .profile exists would stop bash from reading .profile.
+          rc="$HOME/.bash_profile"
+          for f in "$HOME/.bash_profile" "$HOME/.bash_login" "$HOME/.profile"; do
+            [ -f "$f" ] && { rc="$f"; break; }
+          done
+        fi ;;
       *) rc="$HOME/.profile" ;;
     esac
     case "$DIR" in

@@ -7,7 +7,8 @@ takes about ten minutes.
 
 ## What you need
 
-- **A computer with macOS or Linux** (Ubuntu, Debian…). Not Windows yet.
+- **A computer with macOS or Linux** (Ubuntu, Debian…). On a Mac, macOS 13 (Ventura) or
+  later: see the Apple menu → About This Mac. Not Windows yet.
 - **A paid Claude account**: Pro or above. augmented brain is free, but it works with
   Claude Code, and Claude Code is not in the free plan. The plans are at
   [claude.com/pricing](https://claude.com/pricing).
@@ -44,8 +45,8 @@ It asks a few questions. To accept what it suggests, just press Enter.
 If it asks for your password, type it even though you see nothing: the terminal does not
 show it, not even as asterisks. Press Enter when done.
 
-On a Mac, if git is missing, a window opens to install Apple's developer tools. Accept,
-wait until it finishes and paste the command again.
+On a Mac, if git is missing, a window opens to install Apple's developer tools. Click
+**Install** and accept. It takes a few minutes; the installer waits and carries on by itself.
 
 ## 4. Sign in to Claude
 
@@ -108,6 +109,8 @@ Talk to it as usual. These phrases pay off from day one:
   new one finds the programs just installed.
 - **Claude asks you for a paid plan.** Claude Code needs Pro or above.
 - **"This system is not supported yet".** Today it works on macOS and Linux.
+- **"Claude Code needs macOS 13".** Update the Mac in System Settings → General → Software
+  Update, then paste the command again.
 - **Something else.** Tell us in
   [the project's issues](https://github.com/icalvete/augmented-brain/issues), with what
   showed up on screen.

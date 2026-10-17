@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- The installer on a Mac: it says up front when macOS is older than 13 (Ventura), which
+  Claude Code needs, instead of installing what would not start. Without Apple's
+  developer tools it no longer takes the stub /usr/bin/git for git; it opens their
+  installer and, with a terminal, waits for it and carries on, with no need to run it
+  again. With bash, the PATH line goes to ~/.bash_profile (or the .bash_login or
+  .profile already there), which the Mac's Terminal reads, not to ~/.bashrc.
+- `scripts/install-check-mac.sh` checks those three on every Mac row of CI, and CI now
+  has an Intel Mac too (macos-15-intel).
 - A "Getting started" guide for people who have never opened a terminal: what you need,
   opening the terminal, the installer's questions, signing in, the interview, phrases for
   the first week, the words you will hear and what to do when something fails.
