@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"runtime"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/claudecode"
@@ -53,6 +54,12 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 	// The installer replaces the program and, as the configuration exists, then runs
 	// `augmented-brain update --plugin` with the new program.
 	cmd := exec.Command("sh", "-c", `curl -fsSL "$1/install.sh" | sh`, "sh", base)
+	if runtime.GOOS == "windows" {
+		// Windows has no sh: its installer is install.ps1, run by the PowerShell that
+		// comes with Windows. It can replace this program while it runs.
+		cmd = exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
+			"irm '"+base+"/install.ps1' | iex")
+	}
 	cmd.Env = append(os.Environ(), "AB_LANGUAGE="+lang, "AB_NO_DESKTOP=1")
 	cmd.Stdout, cmd.Stderr = out, errOut
 	if err := cmd.Run(); err != nil {

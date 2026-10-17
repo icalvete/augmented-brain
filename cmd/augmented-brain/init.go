@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/claudecode"
@@ -198,7 +199,12 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 	case os.Getenv("AB_NEW_TERMINAL") == "1": // set by install.sh when it changed the PATH
 		next = "newterm"
 	}
-	fmt.Fprintf(out, "\n"+msg(*lang, next)+"\n", spaces[0].WorkFolder)
+	text := fmt.Sprintf(msg(*lang, next), spaces[0].WorkFolder)
+	if runtime.GOOS == "windows" {
+		// Windows PowerShell 5.1, the one that comes with Windows, has no &&.
+		text = strings.ReplaceAll(text, " && claude", "; claude")
+	}
+	fmt.Fprintf(out, "\n%s\n", text)
 	return 0
 }
 
