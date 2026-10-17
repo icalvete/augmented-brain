@@ -142,16 +142,26 @@ func Count(lang, key string, n int) string {
 	return T(lang, key+".n", n)
 }
 
-// FromEnv guesses the language from the locale when there is no configuration yet,
-// in the order the C library reads it: LC_ALL, LC_MESSAGES, then LANG.
+// FromEnv guesses the language when there is no configuration yet: AB_LANGUAGE, which
+// the installers set; then the locale, in the order the C library reads it (LC_ALL,
+// LC_MESSAGES, LANG); then the system's own setting where there is one, as on Windows,
+// which has no locale variables.
 func FromEnv() string {
+	if l := os.Getenv("AB_LANGUAGE"); l == "en" || l == "es" {
+		return l
+	}
 	for _, v := range []string{"LC_ALL", "LC_MESSAGES", "LANG"} {
 		if l := os.Getenv(v); l != "" {
-			if strings.HasPrefix(l, "es") {
-				return "es"
-			}
-			return "en"
+			return pick(l)
 		}
+	}
+	return pick(systemLanguage())
+}
+
+// pick maps a locale or language tag (es_ES.UTF-8, es-ES, en-US) to a language we speak.
+func pick(l string) string {
+	if strings.HasPrefix(strings.ToLower(l), "es") {
+		return "es"
 	}
 	return "en"
 }

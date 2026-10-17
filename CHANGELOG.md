@@ -5,6 +5,8 @@
 - The guard blocks commands for Claude Code's PowerShell tool, the main one on Windows,
   and asks the assistant to use Bash (Git Bash) instead. The guard reads only POSIX
   shell: on Windows, a `git push` through PowerShell went through unchecked.
+- The language is detected on Windows too (its display language), and `AB_LANGUAGE`
+  wins over the locale.
 - The plugin starts the program directly, with `~/.local/bin` added to the PATH it gets,
   instead of through `sh`, which Windows does not have: there the server did not start.
 - A "Getting started" guide for people who have never opened a terminal: what you need,
