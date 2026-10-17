@@ -31,6 +31,7 @@ it feels to a newcomer.
 | `docs/` | The website (GitHub Pages, served from `main`), the guides and the format spec. |
 | `scripts/` | Checks, builders and release helpers (below). |
 | `test/vm/ubuntu-desktop/` | A clean Ubuntu desktop VM (Vagrant + VirtualBox) to try it as a newcomer. |
+| `test/vm/windows-11/` | A clean Windows 11 VM, the same way, for the Windows work (evaluation edition, about 90 days). |
 
 ## Build and check
 
