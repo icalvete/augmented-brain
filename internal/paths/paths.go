@@ -50,6 +50,13 @@ func Within(path, folder string) bool {
 	return rel == "." || (rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)))
 }
 
+// Same reports whether two resolved paths are the same folder. Like Within, it ignores
+// case on Windows, where C:\Notes and c:\notes are one folder.
+func Same(a, b string) bool {
+	rel, err := filepath.Rel(a, b)
+	return err == nil && rel == "."
+}
+
 // Tilde writes a path under the home folder as ~/…, for files people read.
 func Tilde(p string) string {
 	home, err := os.UserHomeDir()

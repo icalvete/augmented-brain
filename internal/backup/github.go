@@ -73,6 +73,8 @@ func GitHubSteps(installed bool) string {
 	switch runtime.GOOS {
 	case "darwin":
 		install += "`brew install gh` if Homebrew is there, otherwise the installer from https://cli.github.com"
+	case "windows":
+		install += "`winget install --id GitHub.cli -e --source winget` (then open a new terminal, so gh is on the PATH)"
 	default:
 		install += "`sudo apt install gh` on Ubuntu or Debian (other systems: https://cli.github.com)"
 	}

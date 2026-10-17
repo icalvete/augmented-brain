@@ -152,8 +152,11 @@ func plugin(e Env) []Check {
 
 // GitInstall is the command that installs git on this system.
 func GitInstall() string {
-	if runtime.GOOS == "darwin" {
+	switch runtime.GOOS {
+	case "darwin":
 		return "xcode-select --install"
+	case "windows":
+		return "winget install --id Git.Git -e --source winget"
 	}
 	for _, pm := range []struct{ bin, cmd string }{
 		{"apt-get", "sudo apt install git"},
