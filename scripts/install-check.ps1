@@ -7,7 +7,8 @@
 # yes to everything (AB_YES=1), in Spanish, with the plugin from this checkout. Then it
 # checks what a newcomer would get: Git, Claude Code, the program, the PATH, the two
 # spaces, the default space, the plugin and its MCP server, the first-session interview,
-# doctor, and that a second run only updates.
+# doctor, that a second run only updates, and that uninstall removes the program and the
+# plugin, keeps the notes, and a new install brings them back.
 #
 # It installs Git, Claude Code and the program for the user who runs it, so run it on a
 # throwaway machine: GitHub Actions does (.github/workflows/windows.yml), and so does the
@@ -86,6 +87,19 @@ try {
   Check "doctor finds nothing missing" { $code -eq 0 }
   $again = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
   Check "a second run only updates" { $again -match 'Ya estaba configurado' }
+
+  Write-Host "4. uninstall, and install again"
+  & $ab uninstall --yes 2>&1 | ForEach-Object { "    | $_" }
+  Start-Sleep -Seconds 5   # the .exe is deleted by a helper once the program has ended
+  Check "the program is gone" { -not (Test-Path $ab) }
+  Check "the plugin is gone" { -not ((claude plugin list 2>&1 | Out-String) -match 'brain@augmented-brain') }
+  Check "the notes stay" { Test-Path "$env:USERPROFILE\augmented-brain\trabajo\notas\MEMORY.md" }
+  Check "the configuration stays" { Test-Path $cfg }
+  $back = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
+  $back -split "`n" | ForEach-Object { "    | $_" }
+  Check "installing again brings the program back" { Test-Path $ab }
+  Check "and the plugin" { (claude plugin list 2>&1 | Out-String) -match 'brain@augmented-brain' }
+
   if ($env:AB_CHECK_DESKTOP -eq '1') {
     Check "desktop app installed" { Get-StartApps | Where-Object { $_.Name -eq 'Claude' } }
   }

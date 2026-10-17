@@ -5,6 +5,7 @@
 - The guard blocks commands for Claude Code's PowerShell tool, the main one on Windows,
   and asks the assistant to use Bash (Git Bash) instead. The guard reads only POSIX
   shell: on Windows, a `git push` through PowerShell went through unchecked.
+- On Windows, uninstall removes the program too.
 - A Windows installer, `install.ps1`, and Windows archives in every release. On Windows,
   `update` runs it, and init says `cd …; claude`.
 - The language is detected on Windows too (its display language), and `AB_LANGUAGE`
