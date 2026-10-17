@@ -88,7 +88,9 @@ tilde() { case "$1" in "$HOME"/*) echo "~${1#"$HOME"}" ;; *) echo "$1" ;; esac; 
 case "$(uname -s)" in
   Linux) os=linux ;;
   Darwin) os=darwin ;;
-  *) fail "$(say "this system ($(uname -s)) is not supported yet: Linux and macOS only." "este sistema ($(uname -s)) aún no está soportado: solo Linux y macOS.")" ;;
+  # On Windows, Git Bash can run this script too, but Windows has its own installer.
+  MINGW* | MSYS* | CYGWIN*) fail "$(say "this is the installer for Linux and macOS. On Windows, open PowerShell and run: irm https://github.com/$REPO/releases/latest/download/install.ps1 | iex" "este es el instalador de Linux y macOS. En Windows, abre PowerShell y lanza: irm https://github.com/$REPO/releases/latest/download/install.ps1 | iex")" ;;
+  *) fail "$(say "this system ($(uname -s)) is not supported yet: Linux, macOS and Windows only." "este sistema ($(uname -s)) aún no está soportado: solo Linux, macOS y Windows.")" ;;
 esac
 case "$(uname -m)" in
   x86_64 | amd64) arch=amd64 ;;

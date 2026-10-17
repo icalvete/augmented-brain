@@ -7,8 +7,9 @@ takes about ten minutes.
 
 ## What you need
 
-- **A computer with macOS or Linux** (Ubuntu, Debian…). On a Mac, macOS 13 (Ventura) or
-  later: see the Apple menu → About This Mac. Not Windows yet.
+- **A computer with Linux, macOS or Windows.** On a Mac, macOS 13 (Ventura) or later: see
+  the Apple menu → About This Mac. On Windows, Windows 10 or 11. What changes on each
+  system is in [Installing](install.md).
 - **A paid Claude account**: Pro or above. augmented brain is free, but it works with
   Claude Code, and Claude Code is not in the free plan. The plans are at
   [claude.com/pricing](https://claude.com/pricing).
@@ -21,17 +22,24 @@ need it to install.
 
 - **On a Mac:** press `Cmd + Space`, type `Terminal` and press Enter.
 - **On Ubuntu:** press `Ctrl + Alt + T`.
+- **On Windows:** press the Windows key, type `PowerShell` and press Enter.
 
 ## 2. Paste the install command
 
-Copy this line:
+Copy this line, on a Mac or Linux:
 
 ```bash
 curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh
 ```
 
-Paste it into the terminal (`Cmd + V` on a Mac, `Ctrl + Shift + V` on Ubuntu) and press
-Enter.
+Or this one, on Windows:
+
+```powershell
+irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
+```
+
+Paste it into the terminal (`Cmd + V` on a Mac, `Ctrl + Shift + V` on Ubuntu, a right
+click on Windows) and press Enter.
 
 ## 3. Answer the installer
 
@@ -47,6 +55,9 @@ show it, not even as asterisks. Press Enter when done.
 
 On a Mac, if git is missing, a window opens to install Apple's developer tools. Click
 **Install** and accept. It takes a few minutes; the installer waits and carries on by itself.
+
+On Windows there is no password to type: when Git is installed, Windows shows a window
+asking for permission. Click **Yes**.
 
 ## 4. Sign in to Claude
 
@@ -104,11 +115,12 @@ Talk to it as usual. These phrases pay off from day one:
 - **Claude does not introduce itself or run the interview.** Start a new session. If
   nothing changes, open the terminal and type `augmented-brain doctor`: it tells you what
   is missing and how to fix it.
-- **The terminal cannot find a command** (`command not found`). Close the terminal and
-  open another one: the
-  new one finds the programs just installed.
+- **The terminal cannot find a command** (`command not found`, or "not recognized" on
+  Windows). Close the terminal and open another one: the new one finds the programs just
+  installed.
 - **Claude asks you for a paid plan.** Claude Code needs Pro or above.
-- **"This system is not supported yet".** Today it works on macOS and Linux.
+- **"This system is not supported yet".** It works on Linux, macOS and Windows; see
+  [Installing](install.md) for what each one needs.
 - **"Claude Code needs macOS 13".** Update the Mac in System Settings → General → Software
   Update, then paste the command again.
 - **Something else.** Tell us in

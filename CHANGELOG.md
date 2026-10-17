@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- A guide, "Installing" ("Instalación"), that says what the one install command does on
+  Linux, macOS and Windows, where it puts things, what is different on each, and how to
+  update and uninstall. The README, the website and "Getting started" give the Windows
+  command too, and no longer say Windows is not supported. install.sh, run from Git Bash
+  on Windows, points to install.ps1.
 - The installer on a Mac: it says up front when macOS is older than 13 (Ventura), which
   Claude Code needs, instead of installing what would not start. Without Apple's
   developer tools it no longer takes the stub /usr/bin/git for git; it opens their

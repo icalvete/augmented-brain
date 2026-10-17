@@ -3,8 +3,8 @@
 [Leer en español](#aviso-legal)
 
 **augmented brain is alpha software.** It is in an early stage: it may have bugs, its
-format and commands may change between versions. A person has tested it on Ubuntu and
-on macOS.
+format and commands may change between versions. A person has tested it on Ubuntu,
+macOS and Windows 11.
 Back up anything important before you rely on it.
 
 - **No warranty.** augmented brain is provided "as is", without warranty of any kind,
@@ -33,7 +33,7 @@ Back up anything important before you rely on it.
 
 **augmented brain es software en fase alfa.** Está en una etapa temprana: puede tener
 errores, y su formato y sus comandos pueden cambiar de una versión a otra. Lo ha probado
-una persona en Ubuntu y en macOS. Haz copia de lo importante antes de confiar en él.
+una persona en Ubuntu, macOS y Windows 11. Haz copia de lo importante antes de confiar en él.
 
 - **Sin garantía.** augmented brain se ofrece "tal cual", sin garantía de ningún tipo,
   como dice la [licencia MIT](LICENSE). Los autores no responden de ningún daño o pérdida

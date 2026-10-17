@@ -185,6 +185,14 @@ page("es", "getting-started", "Primeros pasos",
      "Instala augmented brain desde cero, paso a paso, aunque nunca hayas abierto una terminal: qué necesitas, el instalador, la primera sesión y qué decir la primera semana.",
      "De cero a tu primera sesión, paso a paso, sin saber de terminales.",
      '  <a class="back" href="../es/">← Volver a augmented brain</a>')
+page("en", "install", "Installing",
+     "How to install augmented brain on Linux, macOS and Windows: what the one command does on each system, where it puts things, what is different on each one, updating and uninstalling.",
+     "One command on each system: what it does, where things go and what is different.",
+     '  <a class="back" href="../">\u2190 Back to augmented brain</a>')
+page("es", "install", "Instalaci\u00f3n",
+     "C\u00f3mo instalar augmented brain en Linux, macOS y Windows: qu\u00e9 hace el comando en cada sistema, d\u00f3nde deja cada cosa, qu\u00e9 cambia en cada uno, actualizar y desinstalar.",
+     "Un comando en cada sistema: qu\u00e9 hace, d\u00f3nde deja cada cosa y qu\u00e9 cambia.",
+     '  <a class="back" href="../es/">\u2190 Volver a augmented brain</a>')
 page("en", "how-it-works", "How it works",
      "How augmented brain works, in four layers: you and your assistant, the plugin, the program and your files. What happens in a session and where every file lives.",
      "Four layers, a session step by step, and where every file lives.",

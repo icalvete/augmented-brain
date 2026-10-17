@@ -46,7 +46,7 @@
  "inLanguage": "en",
  "description": "Your AI assistant forgets everything when the session ends. augmented brain gives Claude Code a notebook, a method and a doorman: tasks and decisions it remembers, kept as plain files on your machine.",
  "applicationCategory": "DeveloperApplication",
- "operatingSystem": "Linux, macOS",
+ "operatingSystem": "Linux, macOS, Windows",
  "license": "https://opensource.org/licenses/MIT",
  "offers": {
   "@type": "Offer",
@@ -94,7 +94,7 @@
    "name": "Does it work on Windows?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "Not yet. Linux and macOS for now."
+    "text": "Yes: Windows 10 and 11, with one PowerShell command. Claude runs its commands in Git Bash, which the installer sets up, so the guard works there too."
    }
   },
   {
@@ -149,7 +149,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<div class="alpha"><div class="wrap"><b>Alpha</b> · an early version, tested on Ubuntu and macOS. Things may change or break. <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md">Read the disclaimer</a>.</div></div>
+<div class="alpha"><div class="wrap"><b>Alpha</b> · an early version, tested on Ubuntu, macOS and Windows 11. Things may change or break. <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md">Read the disclaimer</a>.</div></div>
 
 <header class="wrap top">
   <a class="brand" href="./"><img src="img/favicon.svg" alt="">augmented brain</a>
@@ -165,7 +165,7 @@
 <main id="main">
   <div class="wrap hero">
     <div>
-      <p class="kicker">For Claude Code · Linux and macOS · free and open source · alpha</p>
+      <p class="kicker">For Claude Code · Linux, macOS and Windows · free and open source · alpha</p>
       <h1>Your brain, augmented with AI.</h1>
       <p class="lead">Your AI assistant remembers where you left off, works with a method, and asks before touching anything risky. All in plain text files of yours, backed up to your own git.</p>
       <div class="actions">
@@ -385,13 +385,13 @@ Name, email and message, sent by email.
     <div class="wrap">
       <div class="head">
         <h2>Start in two steps</h2>
-        <p>A few minutes, on macOS or Linux, with a paid Claude account (Pro or above). Never opened a terminal? Follow <a href="guide/getting-started.html">getting started</a>.</p>
+        <p>A few minutes, on Linux, macOS or Windows, with a paid Claude account (Pro or above). Never opened a terminal? Follow <a href="guide/getting-started.html">getting started</a>. What changes on each system: <a href="guide/install.html">Installing</a>.</p>
       </div>
       <ol class="steps">
-        <li><span>Install it with one command. It asks the language and offers to install what is missing: git, Claude Code and the Claude desktop app</span><div class="cmd"><code id="c1">curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code><button class="copy" data-copy="c1">Copy</button></div></li>
+        <li><span>Install it with one command. It asks the language and offers to install what is missing: git, Claude Code and the Claude desktop app</span><span>On Linux or a Mac, in the terminal:</span><div class="cmd"><code id="c1">curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code><button class="copy" data-copy="c1">Copy</button></div><span>On Windows, in PowerShell:</span><div class="cmd"><code id="c1w">irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex</code><button class="copy" data-copy="c1w">Copy</button></div></li>
         <li><span>Answer Claude: the first time it asks six quick questions, and says what each one is for</span></li>
       </ol>
-      <p class="note">It creates two spaces, <code>work</code> and <code>personal</code>, in <code>~/augmented-brain</code>, and asks whether to open Claude right away. From then on, open the Claude app and click <b>+ New</b>: without choosing a folder you are in your personal space; for work, pick <code>~/augmented-brain/work</code> with <b>Choose…</b>. Or in a terminal: <code>cd ~/augmented-brain/work &amp;&amp; claude</code>. If something is off, <code>augmented-brain doctor</code> tells you what is missing.</p>
+      <p class="note">It creates two spaces, <code>work</code> and <code>personal</code>, in <code>~/augmented-brain</code>, and asks whether to open Claude right away. From then on, open the Claude app and click <b>+ New</b>: without choosing a folder you are in your personal space; for work, pick <code>~/augmented-brain/work</code> with <b>Choose…</b>. Or in a terminal: <code>cd ~/augmented-brain/work &amp;&amp; claude</code> (on Windows, <code>cd ~\augmented-brain\work; claude</code>). If something is off, <code>augmented-brain doctor</code> tells you what is missing.</p>
       <details class="more">
         <summary>All the commands</summary>
         <div class="table-wrap">
@@ -420,7 +420,7 @@ Name, email and message, sent by email.
         <details><summary>Is it free?</summary><p>augmented brain is: open source, under the MIT license, with no account and no subscription. But it works with Claude Code, which needs a paid Claude account (Pro or above).</p></details>
         <details><summary>Do my notes leave my machine?</summary><p>augmented brain never sends them anywhere: they stay in files on your machine. Your assistant reads them to work, like any other file it opens, so they travel with the conversation. With a backup, they also go to a private git repository you choose.</p></details>
         <details><summary>Which assistants does it work with?</summary><p>Claude Code today. The method runs as an MCP server, so any assistant that speaks MCP can use it; adapters for others will follow.</p></details>
-        <details><summary>Does it work on Windows?</summary><p>Not yet. Linux and macOS for now.</p></details>
+        <details><summary>Does it work on Windows?</summary><p>Yes: Windows 10 and 11, with one PowerShell command. Claude runs its commands in Git Bash, which the installer sets up, so the guard works there too. See <a href="guide/install.html">Installing</a>.</p></details>
         <details><summary>Can I edit the notes by hand?</summary><p>Yes, they are Markdown files. Afterwards, <code>augmented-brain check</code> checks them and rebuilds the index.</p></details>
         <details><summary>Does the backup run by itself?</summary><p>Yes. Once it is set up, it runs every time a Claude session ends, in the background. If it fails, Claude tells you at the start of the next session.</p></details>
         <details><summary>How can I support it?</summary><p>Sponsor it on <a href="https://github.com/sponsors/icalvete">GitHub Sponsors</a>. It pays for the time to answer issues and add features.</p></details>
@@ -435,6 +435,7 @@ Name, email and message, sent by email.
       <div class="head"><h2>Read more</h2></div>
       <div class="guides">
         <a class="guide" href="guide/getting-started.html"><h3>Getting started</h3><span>From nothing to your first session, without knowing the terminal.</span></a>
+        <a class="guide" href="guide/install.html"><h3>Installing</h3><span>One command on Linux, macOS and Windows: what it does and what is different on each.</span></a>
         <a class="guide" href="guide/how-it-works.html"><h3>How it works</h3><span>Four layers, a session step by step, and where every file lives.</span></a>
         <a class="guide" href="guide/connect-services.html"><h3>Connect your services</h3><span>Calendar, mail, documents and Jira, through MCP.</span></a>
         <a class="guide" href="https://github.com/icalvete/augmented-brain/blob/main/docs/spec/memory-format.md"><h3>How the notes are stored</h3><span>The folders, the files and what the program reads.</span></a>

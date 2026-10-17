@@ -13,7 +13,7 @@ All in plain text files of yours, backed up to your own git.</p>
 
 > [!WARNING]
 > **Alpha.** This is an early version: it may have bugs, its format and commands may
-> change. Tested by a person on Ubuntu and on macOS. Read the [disclaimer](DISCLAIMER.md)
+> change. Tested by a person on Ubuntu, macOS and Windows 11. Read the [disclaimer](DISCLAIMER.md)
 > before you use it, and back up anything important.
 
 ---
@@ -43,19 +43,27 @@ You talk to it as usual. This is what changes:
 
 ## Start in two steps
 
-You need macOS or Linux and a paid Claude account (Pro or above), because Claude Code is
-not in the free plan. augmented brain needs no root. Never opened a terminal? Follow
-[getting started](docs/guide/getting-started.md).
+You need Linux, macOS (13 or later) or Windows (10 or 11), and a paid Claude account (Pro
+or above), because Claude Code is not in the free plan. augmented brain needs no root or
+administrator. Never opened a terminal? Follow
+[getting started](docs/guide/getting-started.md). What the installer does on each system,
+where it puts things and how to update or uninstall: [Installing](docs/guide/install.md).
 
-**1. Install it** with one command:
+**1. Install it** with one command. On Linux or a Mac, in the terminal:
 
 ```bash
 curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh
 ```
 
+On Windows, in PowerShell:
+
+```powershell
+irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
+```
+
 It asks the language first. If git or Claude Code is missing, it offers to install them,
-and the Claude desktop app too, the easiest way to work (on a Mac, Ubuntu
-and Debian). Then it sets everything up (two spaces, `work` and `personal`, in
+and the Claude desktop app too, the easiest way to work (on a Mac, Windows, Ubuntu and
+Debian). Then it sets everything up (two spaces, `work` and `personal`, in
 `~/augmented-brain`, and the Claude Code plugin) and asks whether to open Claude right away.
 
 **2. Answer Claude.** The first time, it asks six quick questions, saying what each one is
@@ -70,6 +78,8 @@ are in your personal space; for work, pick the folder `~/augmented-brain/work` w
 ```bash
 cd ~/augmented-brain/work && claude
 ```
+
+(On Windows, `cd ~\augmented-brain\work; claude`.)
 
 If something is off, `augmented-brain doctor` tells you what is missing and how to fix it.
 

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installing · augmented brain</title>
+<meta name="description" content="How to install augmented brain on Linux, macOS and Windows: what the one command does on each system, where it puts things, what is different on each one, updating and uninstalling.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/install.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/install.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/install.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/install.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Installing · augmented brain">
+<meta property="og:description" content="One command on each system: what it does, where things go and what is different.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/install.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Installing · augmented brain">
+<meta name="twitter:description" content="One command on each system: what it does, where things go and what is different.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="install.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<main class="wrap prose">
+  <h1>Installing</h1>
+  <p>One command installs augmented brain and everything it needs, on Linux, macOS and Windows. This page says what that command does on each system, where it puts things and what is different on each one. New to the terminal? <a href="getting-started.html">Getting started</a> walks you through it.</p>
+  <h2>On every system</h2>
+  <ul><li><strong>A paid Claude plan</strong> (Pro, Max, Team or Enterprise) or an Anthropic API key. augmented brain is free, but it works with Claude Code, and the free plan does not include Claude Code. The installer says so before installing it. Plans: <a href="https://claude.com/pricing">claude.com/pricing</a>.</li><li><strong>No administrator or root.</strong> The program goes in your own folder. Only installing something that is missing, like git, may ask for your password.</li><li><strong>The installer asks first.</strong> The language, then each missing piece, with what it is for. Press Enter to accept what it suggests.</li><li><strong>It always ends the same way:</strong> two spaces, <code>work</code> and <code>personal</code> (in Spanish, <code>trabajo</code> and <code>personal</code>), in <code>~/augmented-brain</code>, the Claude Code plugin installed, and the offer to open Claude.</li><li><strong>Every download is checked.</strong> The program comes from the project's latest release on GitHub, and its SHA-256 must match the release's list, or nothing is installed.</li></ul>
+  <h2>Linux</h2>
+  <p><strong>You need:</strong> a 64-bit PC or Arm (amd64 or arm64), <code>curl</code> or <code>wget</code>, and <code>sha256sum</code> (all usual distributions have them).</p>
+  <p><strong>Install:</strong> open a terminal (on Ubuntu, <code>Ctrl + Alt + T</code>) and paste:</p>
+  <pre><code>curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code></pre>
+  <p><strong>What it does:</strong></p>
+  <ol><li><strong>git</strong>, if missing, with your system's package manager: <code>apt</code> (Ubuntu, Debian), <code>dnf</code> (Fedora), <code>pacman</code> (Arch) or <code>zypper</code> (openSUSE). It asks for your password.</li><li><strong>Claude Code</strong>, if missing, with Anthropic's own installer, into <code>~/.local/bin</code>.</li><li><strong>The Claude desktop app</strong>, if you want it, <strong>only on Ubuntu and Debian</strong>: from Anthropic's apt repository, which it adds for you; it asks for your password. On other distributions you use Claude in the terminal.</li><li><strong>The program</strong>, into <code>~/.local/bin/augmented-brain</code>.</li><li><strong>The PATH:</strong> it adds <code>~/.local/bin</code> to <code>~/.bashrc</code> with bash, <code>~/.zshrc</code> with zsh, or <code>~/.profile</code> otherwise, unless it is already there.</li><li><strong>The setup</strong>, and the offer to open Claude.</li></ol>
+  <p><strong>Where things go:</strong> the program and Claude Code in <code>~/.local/bin</code>; the configuration in <code>~/.config/augmented-brain</code> (or <code>$XDG_CONFIG_HOME/augmented-brain</code>); your notes in <code>~/augmented-brain/&lt;space&gt;/notes</code>.</p>
+  <p><strong>Good to know:</strong></p>
+  <ul><li>After installing, <strong>open a new terminal</strong>: the one you used does not see the new PATH yet.</li><li>To work without the app: <code>cd ~/augmented-brain/work &amp;&amp; claude</code>.</li></ul>
+  <h2>macOS</h2>
+  <p><strong>You need:</strong> <strong>macOS 13 (Ventura) or later</strong>, which Claude Code needs; see the Apple menu → About This Mac. Apple silicon and Intel Macs both work. Homebrew is not needed.</p>
+  <p><strong>Install:</strong> open the Terminal (<code>Cmd + Space</code>, type <code>Terminal</code>, Enter) and paste:</p>
+  <pre><code>curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code></pre>
+  <p><strong>What it does:</strong></p>
+  <ol><li><strong>It checks the macOS version first.</strong> Older than 13, it says so and stops, before installing anything that would not start.</li><li><strong>git</strong>, if missing, comes with <strong>Apple's developer tools</strong>. A Mac has a <code>git</code> command even without them, but it only asks you to install them: the installer looks past it. A window opens: click <strong>Install</strong> and accept. It takes a few minutes; the installer waits and carries on by itself.</li><li><strong>Claude Code</strong>, if missing, with Anthropic's own installer, into <code>~/.local/bin</code>.</li><li><strong>The Claude desktop app</strong>, if you want it: with Homebrew when you have it, otherwise straight from Anthropic, with its signature checked. It goes to <code>/Applications</code>, or to <code>~/Applications</code> if you cannot write there.</li><li><strong>The program</strong>, into <code>~/.local/bin/augmented-brain</code>.</li><li><strong>The PATH:</strong> with zsh, the Mac's usual shell, in <code>~/.zshrc</code>. With bash, in <code>~/.bash_profile</code>, or in <code>~/.bash_login</code> or <code>~/.profile</code> if you already have one of them: the Mac's Terminal reads those, not <code>~/.bashrc</code>.</li><li><strong>The setup</strong>, and the offer to open the Claude app.</li></ol>
+  <p><strong>Where things go:</strong> as on Linux: <code>~/.local/bin</code>, <code>~/.config/augmented-brain</code> and <code>~/augmented-brain</code>.</p>
+  <p><strong>Good to know:</strong></p>
+  <ul><li>After installing, <strong>open a new Terminal window</strong>.</li><li>In the app: <strong>Code</strong> tab, <strong>+ New</strong>. Without choosing a folder you work in your personal space; for work, <strong>Choose…</strong> and pick <code>~/augmented-brain/work</code>.</li></ul>
+  <h2>Windows</h2>
+  <p><strong>You need:</strong> <strong>Windows 10 or 11</strong>, 64-bit PC or Arm. <strong>winget</strong>, Windows' own installer, which Windows 11 and an up-to-date Windows 10 already have (if it is missing, it comes with “App Installer” from the Microsoft Store). The PowerShell that comes with Windows is enough.</p>
+  <p><strong>Install:</strong> open <strong>PowerShell</strong> (Start menu, type <code>PowerShell</code>, Enter) and paste, with a right click:</p>
+  <pre><code>irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex</code></pre>
+  <p><strong>What it does:</strong></p>
+  <ol><li><strong>Git for Windows</strong>, if missing, with winget. <strong>On Windows it is required</strong>, not only for the history of your notes: it brings <strong>Git Bash</strong>, where Claude runs commands with the guard watching. Windows shows a permission window: click <strong>Yes</strong>.</li><li><strong>Claude Code</strong>, if missing, with Anthropic's own installer, into <code>%USERPROFILE%\.local\bin</code>.</li><li><strong>The Claude desktop app</strong>, if you want it, with winget.</li><li><strong>The program</strong>, into <code>%USERPROFILE%\.local\bin\augmented-brain.exe</code>.</li><li><strong>The PATH:</strong> it adds that folder to your user's PATH. Claude Code's own installer leaves that to you; this one does it.</li><li><strong>The setup</strong>, and the offer to open the Claude app.</li></ol>
+  <p><strong>Where things go:</strong> the program and Claude Code in <code>%USERPROFILE%\.local\bin</code>; the configuration in <code>%APPDATA%\augmented-brain</code>; your notes in <code>%USERPROFILE%\augmented-brain\&lt;space&gt;\notes</code>.</p>
+  <p><strong>Good to know:</strong></p>
+  <ul><li>After installing, <strong>open a new PowerShell window</strong>: the old one, and the ones already open, do not see the new PATH.</li><li><strong>Claude runs commands in Bash, not in PowerShell.</strong> The guard reads the shell, not PowerShell, so it stops every PowerShell command and Claude uses Git Bash instead. You will see that block in Claude's messages: it is expected.</li><li><strong>The app may ask to update itself</strong> the first time (“needs the latest desktop app”): winget does not always have the very latest one. Click <strong>Update</strong>.</li><li>To work without the app: <code>cd ~\augmented-brain\work; claude</code> (Windows PowerShell has no <code>&amp;&amp;</code>).</li></ul>
+  <h2>Updating</h2>
+  <pre><code>augmented-brain update</code></pre>
+  <p>It updates the program and the Claude Code plugin; your notes and settings stay. Claude tells you when a new version is out. Running the install command again does the same.</p>
+  <h2>Uninstalling</h2>
+  <pre><code>augmented-brain uninstall</code></pre>
+  <p>It removes the program and the Claude Code plugin. <strong>Your notes always stay</strong>, and so does the configuration unless you add <code>--config</code>. Claude Code, its desktop app, git and the PATH entry stay too: Claude Code lives in that same folder. On Windows the program file disappears a moment after the command ends, because Windows does not let a running program delete itself.</p>
+  <h2>If something goes wrong</h2>
+  <ul><li><strong>The terminal cannot find a command</strong> (<code>command not found</code>, or “not recognized” on Windows). Open a new terminal: the one you used does not see the new PATH yet.</li><li><strong>Anything else after installing.</strong> Run <code>augmented-brain doctor</code>: it says what is missing and how to fix it.</li><li><strong>“This system is not supported yet”.</strong> It works on Linux, macOS and Windows, on 64-bit PCs and Arm.</li><li><strong>macOS: “Claude Code needs macOS 13”.</strong> Update the Mac in System Settings → General → Software Update, then paste the command again.</li><li><strong>macOS: the developer tools window did not open.</strong> Run <code>xcode-select --install</code> and then the install command again.</li><li><strong>Linux: no desktop app offered.</strong> It is only for Ubuntu and Debian; use Claude in the terminal.</li><li><strong>Windows: “winget is not recognized”.</strong> Install “App Installer” from the Microsoft Store, or install Git from <a href="https://git-scm.com/download/win">git-scm.com</a>, and run the command again.</li><li><strong>Claude asks for a paid plan.</strong> Claude Code needs Pro or above.</li><li><strong>Something else.</strong> Tell us in <a href="https://github.com/icalvete/augmented-brain/issues">the project's issues</a>, with what showed up on screen.</li></ul>
+  <a class="back" href="../">← Back to augmented brain</a>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+</script>
+</main>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license</span></div>
+</footer>
+<script>
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

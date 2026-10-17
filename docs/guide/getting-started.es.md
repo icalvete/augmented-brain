@@ -7,8 +7,9 @@ minutos.
 
 ## Lo que necesitas
 
-- **Un ordenador con macOS o Linux** (Ubuntu, Debian…). En Mac, macOS 13 (Ventura) o
-  posterior: lo ves en el menú de la manzana → Acerca de este Mac. Windows, todavía no.
+- **Un ordenador con Linux, macOS o Windows.** En Mac, macOS 13 (Ventura) o posterior: lo
+  ves en el menú de la manzana → Acerca de este Mac. En Windows, Windows 10 u 11. Lo que
+  cambia en cada sistema está en [Instalación](install.es.md).
 - **Una cuenta de Claude de pago**: Pro o superior. augmented brain es gratis, pero
   trabaja con Claude Code, y Claude Code no entra en el plan gratuito. Los planes, en
   [claude.com/pricing](https://claude.com/pricing).
@@ -21,16 +22,24 @@ necesitas para instalar.
 
 - **En Mac:** pulsa `Cmd + Espacio`, escribe `Terminal` y pulsa Enter.
 - **En Ubuntu:** pulsa `Ctrl + Alt + T`.
+- **En Windows:** pulsa la tecla de Windows, escribe `PowerShell` y pulsa Enter.
 
 ## 2. Pega el comando de instalación
 
-Copia esta línea:
+Copia esta línea, en Mac o Linux:
 
 ```bash
 curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh
 ```
 
-Pégala en la terminal (`Cmd + V` en Mac, `Ctrl + Shift + V` en Ubuntu) y pulsa Enter.
+O esta, en Windows:
+
+```powershell
+irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
+```
+
+Pégala en la terminal (`Cmd + V` en Mac, `Ctrl + Shift + V` en Ubuntu, clic derecho en
+Windows) y pulsa Enter.
 
 ## 3. Contesta al instalador
 
@@ -46,6 +55,9 @@ siquiera con asteriscos. Pulsa Enter al acabar.
 
 En Mac, si falta git, se abre una ventana para instalar las herramientas de desarrollo de
 Apple. Pulsa **Instalar** y acepta. Tarda unos minutos; el instalador espera y sigue solo.
+
+En Windows no hay contraseña que escribir: al instalar Git, Windows enseña una ventana que
+pide permiso. Pulsa **Sí**.
 
 ## 4. Entra en Claude
 
@@ -103,10 +115,12 @@ Háblale como siempre. Estas frases te sacan partido desde el primer día:
 - **Claude no se presenta ni te hace la entrevista.** Empieza una sesión nueva. Si sigue
   igual, abre la terminal y escribe `augmented-brain doctor`: te dice qué falta y cómo
   arreglarlo.
-- **La terminal dice que no encuentra una orden** (`command not found`). Cierra la
-  terminal y abre otra: la nueva ya encuentra los programas recién instalados.
+- **La terminal dice que no encuentra una orden** (`command not found`, o "no se reconoce"
+  en Windows). Cierra la terminal y abre otra: la nueva ya encuentra los programas recién
+  instalados.
 - **Claude te pide un plan de pago.** Claude Code necesita Pro o superior.
-- **"Este sistema aún no está soportado".** Hoy funciona en macOS y Linux.
+- **"Este sistema aún no está soportado".** Funciona en Linux, macOS y Windows; en
+  [Instalación](install.es.md) tienes lo que necesita cada uno.
 - **"Claude Code necesita macOS 13".** Actualiza el Mac en Ajustes del Sistema → General →
   Actualización de software y vuelve a pegar el comando.
 - **Otra cosa.** Cuéntalo en
