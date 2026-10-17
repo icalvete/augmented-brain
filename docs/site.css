@@ -94,7 +94,9 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
   .msg { grid-template-columns: 1fr; gap: 2px; }
   .who { padding-top: 0; }
   .gap, .day { padding-left: 0; }
-  .top nav a.hide-sm { display: none; }
+  /* The menu goes under the brand, whole: hiding links lost the way around the page. */
+  .top { flex-wrap: wrap; row-gap: 6px; padding-block: 14px; }
+  .top nav { width: 100%; flex-wrap: wrap; gap: 4px 16px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
@@ -189,6 +191,8 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
   .life { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .term .line { grid-template-columns: minmax(0, 1fr) auto; }
   .term .why { grid-column: 1 / -1; }
+  /* A long command wraps instead of being cut at the edge. */
+  .term code { white-space: normal; overflow-wrap: anywhere; overflow-x: visible; }
 }
 
 /* questions, skip link, anchors below the top edge */

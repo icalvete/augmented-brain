@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.2.3-alpha
 
+- On a phone, the website's menu shows every link, wrapping under the name instead of
+  hiding the sections, and the guard's commands wrap instead of being cut.
 - A guide, "Installing" ("Instalación"), that says what the one install command does on
   Linux, macOS and Windows, where it puts things, what is different on each, and how to
   update and uninstall. The README, the website and "Getting started" give the Windows
