@@ -47,7 +47,9 @@ function Say([string]$en, [string]$es) { Write-Host (Text $en $es) -ForegroundCo
 function Fail([string]$msg) { throw "augmented brain: $msg" }
 
 # A person at a terminal can be asked; a script, CI or a remote session cannot.
+# CI runners look interactive to Windows, so CI and a redirected input count as nobody.
 $interactive = [Environment]::UserInteractive -and $Host.Name -eq 'ConsoleHost' -and
+  -not $env:CI -and -not [Console]::IsInputRedirected -and
   -not ([Environment]::GetCommandLineArgs() | Where-Object { $_ -like '-NonI*' })
 # Ask <question>: true when the answer is yes (the default). With nobody to ask, it is
 # a no, unless AB_YES=1.

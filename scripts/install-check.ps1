@@ -54,6 +54,8 @@ try {
   $env:AB_NO_DESKTOP = if ($env:AB_CHECK_DESKTOP -eq '1') { '' } else { '1' }
   $env:AB_RELEASE_URL = ([Uri]$rel).AbsoluteUri
   $env:AB_MARKETPLACE = $Root
+  # Other programs write to stderr even when all goes well; only what they say counts.
+  $ErrorActionPreference = 'Continue'
   $log = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
   $log -split "`n" | ForEach-Object { "    | $_" }
   if ($log -match 'augmented brain: ') { Bad "install.ps1 stopped with an error" }
