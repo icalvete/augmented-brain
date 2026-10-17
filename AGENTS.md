@@ -50,6 +50,9 @@ Heavier checks, before a release or when you touch what they cover:
   result (13 with the desktop app). It installs Claude Code for whoever runs it, so use
   `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on macOS and Ubuntu on
   every push that touches the installer, the plugin or the code (`install.yml`).
+- `scripts/install-check.ps1`: the same for Windows and `install.ps1`, 14 checks. It
+  installs Git, Claude Code and the program for whoever runs it: CI runs it on
+  windows-latest (`windows.yml`), and so can the Windows VM from its `clean` snapshot.
 - `scripts/e2e-claude.sh`: the whole story (open, park, resume, close a task; the guard;
   the automatic backup; the first-session interview) against a real, isolated Claude
   Code. It spends usage of a logged-in account; see the script's header for the one-time
@@ -58,6 +61,10 @@ Heavier checks, before a release or when you touch what they cover:
   signing in, the first-session interview). Restore the `clean` snapshot between tries.
   To test unpublished work there, upload a release built with `scripts/release-build.sh`
   plus the plugin, and run the installer with `AB_RELEASE_URL` and `AB_MARKETPLACE`.
+- `test/vm/windows-11/Vagrantfile`: the same on Windows 11 (an evaluation edition,
+  about 90 days). From the host, `vagrant winrm -s powershell -c …` runs commands inside
+  and the guest reaches the host's 127.0.0.1 at 10.0.2.2, so a release served there with
+  `python3 -m http.server` can be installed with `AB_RELEASE_URL`.
 
 ## Rules of the house
 
