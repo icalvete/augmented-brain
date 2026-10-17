@@ -38,6 +38,14 @@ type Policy struct {
 
 var allow = Decision{Allow, ""}
 
+// PowerShell is the answer to any command for Claude Code's PowerShell tool, the main
+// one on Windows. The guard reads POSIX shell, not PowerShell, so it cannot tell a safe
+// PowerShell command from a push or an elevation: it blocks them all and sends the
+// assistant to Bash (Git Bash on Windows), where every rule applies.
+func PowerShell() Decision {
+	return Decision{Deny, "PowerShell commands are not checked by augmented brain yet, so they are blocked. Run the command with the Bash tool instead (Git Bash on Windows), in POSIX syntax. If it can only be done in PowerShell, give the user the exact command to run themselves, and wait for its output."}
+}
+
 const (
 	rootReason = "this would run as root. Never become root: give the user the exact command to run themselves, and wait for its output. Running as another user (sudo -u <user>) is fine."
 	maxDepth   = 4

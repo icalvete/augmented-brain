@@ -53,8 +53,9 @@ session starts from there. Opening, resuming and closing work the same way.
   `aws --profile prod …`, `ssh db01 …`.
 - **Stop**: pushing code, root and secrets. `git push`, `sudo …`, a token in a command.
 
-It also looks inside `ssh`, `bash -c` and loops. It is a net against slips, not a security
-wall: read the [disclaimer](../../DISCLAIMER.md).
+It also looks inside `ssh`, `bash -c` and loops. It reads the shell, not PowerShell, so it
+stops every PowerShell command too, and Claude runs it in Bash instead. It is a net
+against slips, not a security wall: read the [disclaimer](../../DISCLAIMER.md).
 
 **4. You close the session.** The end hook starts the backup of the space, in the
 background, if you set one up. You wait for nothing. If it fails, Claude tells you at the

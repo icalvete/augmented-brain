@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- The guard blocks commands for Claude Code's PowerShell tool, the main one on Windows,
+  and asks the assistant to use Bash (Git Bash) instead. The guard reads only POSIX
+  shell: on Windows, a `git push` through PowerShell went through unchecked.
 - A "Getting started" guide for people who have never opened a terminal: what you need,
   opening the terminal, the installer's questions, signing in, the interview, phrases for
   the first week, the words you will hear and what to do when something fails.

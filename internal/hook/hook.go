@@ -93,7 +93,8 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 	return write(out, output{specific{HookEventName: "SessionStart", AdditionalContext: text}})
 }
 
-// PreToolUse runs the guard on a Bash command or on the text of a file write.
+// PreToolUse runs the guard on a Bash command or on the text of a file write, and
+// blocks PowerShell commands, which the guard cannot read.
 func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	i := read(in)
 	p := guard.Policy{Cwd: i.Cwd}
@@ -106,6 +107,8 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	case "Bash":
 		cmd, _ := i.ToolInput["command"].(string)
 		d = p.Command(cmd)
+	case "PowerShell":
+		d = guard.PowerShell()
 	case "Write", "Edit", "MultiEdit", "NotebookEdit":
 		d = guard.Write(written(i.ToolInput))
 	default:

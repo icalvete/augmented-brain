@@ -53,8 +53,9 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
   `aws --profile prod …`, `ssh db01 …`.
 - **Lo para**: subir código, root y secretos. `git push`, `sudo …`, un token en un comando.
 
-También mira dentro de `ssh`, de `bash -c` y de los bucles. Es una red contra despistes,
-no un muro de seguridad: lee el [aviso legal](../../DISCLAIMER.md#aviso-legal).
+También mira dentro de `ssh`, de `bash -c` y de los bucles. Lee la shell, no PowerShell,
+así que para también cualquier comando de PowerShell, y Claude lo hace en Bash. Es una
+red contra despistes, no un muro de seguridad: lee el [aviso legal](../../DISCLAIMER.md#aviso-legal).
 
 **4. Cierras la sesión.** El hook de cierre lanza la copia de seguridad del espacio, por
 detrás, si la tienes montada. No esperas a nada. Si falla, Claude te lo dice al empezar
