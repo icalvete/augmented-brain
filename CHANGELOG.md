@@ -7,6 +7,8 @@
   shell: on Windows, a `git push` through PowerShell went through unchecked.
 - The language is detected on Windows too (its display language), and `AB_LANGUAGE`
   wins over the locale.
+- On Windows, the lock that keeps two writers apart now works, and the backup at the end
+  of a session runs on its own.
 - The plugin starts the program directly, with `~/.local/bin` added to the PATH it gets,
   instead of through `sh`, which Windows does not have: there the server did not start.
 - A "Getting started" guide for people who have never opened a terminal: what you need,
