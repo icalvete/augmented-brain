@@ -220,7 +220,8 @@ try {
   if ($app) {
     if (Ask (Text 'Open the Claude app now?' '\u00bfAbro ahora la app de Claude?')) {
       Start-Process "shell:AppsFolder\$($app.AppID)"
-      Say "In the app, sign in, open the Code tab and choose the folder $(Tilde $work)." "En la app, entra con tu cuenta, abre la pesta\u00f1a Code y elige la carpeta $(Tilde $work)."
+      Say "In the app, sign in, open the Code tab and click + New: without choosing a folder you work in your personal space; for work, pick $(Tilde $work) with Choose\u2026" `
+          "En la app, entra con tu cuenta, abre la pesta\u00f1a Code y pulsa + New: sin elegir carpeta trabajas en tu espacio personal; para el de trabajo, elige $(Tilde $work) con Choose\u2026"
     }
   } elseif (Ask (Text 'Open Claude now in your work space?' '\u00bfAbro Claude ahora en tu espacio de trabajo?')) {
     Set-Location $work
