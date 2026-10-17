@@ -23,6 +23,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp install.sh dist/
+          cp install.sh install.ps1 dist/
           notes="$(awk -v v="## ${GITHUB_REF_NAME#v}" '$0==v{on=1;next} /^## /{on=0} on' CHANGELOG.md)"
           gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes "${notes:-See CHANGELOG.md}"

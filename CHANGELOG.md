@@ -10,6 +10,18 @@
   .profile already there), which the Mac's Terminal reads, not to ~/.bashrc.
 - `scripts/install-check-mac.sh` checks those three on every Mac row of CI, and CI now
   has an Intel Mac too (macos-15-intel).
+- The guard blocks commands for Claude Code's PowerShell tool, the main one on Windows,
+  and asks the assistant to use Bash (Git Bash) instead. The guard reads only POSIX
+  shell: on Windows, a `git push` through PowerShell went through unchecked.
+- On Windows, uninstall removes the program too, and the console shows accents right.
+- A Windows installer, `install.ps1`, and Windows archives in every release. On Windows,
+  `update` runs it, and init says `cd …; claude`.
+- The language is detected on Windows too (its display language), and `AB_LANGUAGE`
+  wins over the locale.
+- On Windows, the lock that keeps two writers apart now works, and the backup at the end
+  of a session runs on its own.
+- The plugin starts the program directly, with `~/.local/bin` added to the PATH it gets,
+  instead of through `sh`, which Windows does not have: there the server did not start.
 - A "Getting started" guide for people who have never opened a terminal: what you need,
   opening the terminal, the installer's questions, signing in, the interview, phrases for
   the first week, the words you will hear and what to do when something fails.

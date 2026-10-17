@@ -12,11 +12,21 @@ import (
 	"strings"
 )
 
+// Home is the user's home folder. HOME wins where it is set, on Windows too: Git Bash,
+// which runs the assistant's hooks there, sets it, and so do the tests. Otherwise it is
+// the system's (USERPROFILE on Windows).
+func Home() (string, error) {
+	if h := os.Getenv("HOME"); h != "" {
+		return h, nil
+	}
+	return os.UserHomeDir()
+}
+
 // Resolve expands a leading ~, makes the path absolute and resolves symlinks in the part
 // of it that exists. The part that does not exist yet is kept as written.
 func Resolve(p string) (string, error) {
 	if p == "~" || strings.HasPrefix(p, "~/") || strings.HasPrefix(p, `~\`) {
-		home, err := os.UserHomeDir()
+		home, err := Home()
 		if err != nil {
 			return "", err
 		}
@@ -50,9 +60,16 @@ func Within(path, folder string) bool {
 	return rel == "." || (rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)))
 }
 
+// Same reports whether two resolved paths are the same folder. Like Within, it ignores
+// case on Windows, where C:\Notes and c:\notes are one folder.
+func Same(a, b string) bool {
+	rel, err := filepath.Rel(a, b)
+	return err == nil && rel == "."
+}
+
 // Tilde writes a path under the home folder as ~/…, for files people read.
 func Tilde(p string) string {
-	home, err := os.UserHomeDir()
+	home, err := Home()
 	if err != nil {
 		return p
 	}

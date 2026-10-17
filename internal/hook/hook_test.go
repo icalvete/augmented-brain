@@ -82,8 +82,11 @@ func TestPreToolUse(t *testing.T) {
 	}{
 		{map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": "ls"}}, ""},
 		{map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": "git push"}}, "deny"},
-		{map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": "git -C " + filepath.Join(work, "repo") + " push"}}, ""},
+		// In Bash a path is written with forward slashes, which git takes on Windows too.
+		{map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": "git -C " + filepath.ToSlash(filepath.Join(work, "repo")) + " push"}}, ""},
 		{map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}}, "ask"},
+		{map[string]any{"cwd": work, "tool_name": "PowerShell", "tool_input": map[string]any{"command": "git push origin main"}}, "deny"},
+		{map[string]any{"cwd": work, "tool_name": "PowerShell", "tool_input": map[string]any{"command": "Get-ChildItem"}}, "deny"},
 		{map[string]any{"cwd": "/", "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}}, ""}, // outside the space
 		{map[string]any{"cwd": "/", "tool_name": "Bash", "tool_input": map[string]any{"command": "sudo id"}}, "deny"},              // general rule
 		{map[string]any{"cwd": work, "tool_name": "Write", "tool_input": map[string]any{"file_path": "/x", "content": key}}, "deny"},

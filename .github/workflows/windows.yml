@@ -1,0 +1,44 @@
+name: windows
+
+# The tests on Windows, apart from ci.yml while Windows support is being built: every
+# push to main or to the windows branch, and every pull request.
+on:
+  push:
+    branches: [main, windows]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      # Keep the files as they are in the repository: Git for Windows would otherwise
+      # turn line endings into CRLF on checkout.
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Vet
+        run: go vet ./...
+      # No -race: on Windows it needs a C compiler the runner does not set up.
+      - name: Test
+        run: go test ./...
+      - name: Build
+        run: go build -o augmented-brain.exe ./cmd/augmented-brain
+      - name: The program runs
+        run: ./augmented-brain.exe version
+
+  # The installer from nothing, hands-off, on a clean Windows: install-check.ps1.
+  install:
+    runs-on: windows-latest
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Install from nothing and check
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-check.ps1

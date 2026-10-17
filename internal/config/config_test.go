@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -101,6 +102,9 @@ func TestDir(t *testing.T) {
 		t.Errorf("AB_CONFIG_DIR ignored: %q", d)
 	}
 	t.Setenv("AB_CONFIG_DIR", "")
+	if runtime.GOOS == "windows" {
+		return // Windows keeps it in AppData, its own user configuration folder
+	}
 	t.Setenv("XDG_CONFIG_HOME", "/tmp/xdg")
 	if d, _ := Dir(); d != "/tmp/xdg/augmented-brain" {
 		t.Errorf("XDG_CONFIG_HOME ignored: %q", d)

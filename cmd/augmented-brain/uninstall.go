@@ -70,9 +70,9 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 			code = 1
 		}
 	}
-	// Last, the program itself: Unix lets a running program remove its own file.
-	if self != "" && filepath.Base(self) == "augmented-brain" {
-		if err := os.Remove(self); err != nil {
+	// Last, the program itself, if it has its own name (not a test binary or go run).
+	if b := filepath.Base(self); self != "" && (b == "augmented-brain" || b == "augmented-brain.exe") {
+		if err := removeSelf(self); err != nil {
 			fmt.Fprintln(errOut, err)
 			code = 1
 		}

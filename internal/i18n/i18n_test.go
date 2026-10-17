@@ -39,6 +39,7 @@ func TestT(t *testing.T) {
 	if got := Count("es", "notes", 1); got != "1 nota" {
 		t.Errorf("Count = %q", got)
 	}
+	t.Setenv("AB_LANGUAGE", "")
 	t.Setenv("LC_ALL", "")
 	t.Setenv("LC_MESSAGES", "")
 	t.Setenv("LANG", "es_ES.UTF-8")
@@ -48,6 +49,15 @@ func TestT(t *testing.T) {
 	t.Setenv("LC_ALL", "en_US.UTF-8")
 	if FromEnv() != "en" {
 		t.Error("LC_ALL must win over LANG")
+	}
+	t.Setenv("AB_LANGUAGE", "es")
+	if FromEnv() != "es" {
+		t.Error("AB_LANGUAGE must win over the locale")
+	}
+	for in, want := range map[string]string{"es-ES": "es", "es_419": "es", "ES": "es", "en-US": "en", "": "en", "fr-FR": "en"} {
+		if got := pick(in); got != want {
+			t.Errorf("pick(%q) = %q, want %q", in, got, want)
+		}
 	}
 }
 

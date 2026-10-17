@@ -3,6 +3,8 @@ package paths
 import (
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 )
 
@@ -16,6 +18,9 @@ func TestResolveThroughASymlink(t *testing.T) {
 	}
 	link := filepath.Join(root, "var")
 	if err := os.Symlink(real, link); err != nil {
+		if runtime.GOOS == "windows" {
+			t.Skip("symlinks need Developer Mode or an administrator on Windows:", err)
+		}
 		t.Fatal(err)
 	}
 	realRoot, _ := filepath.EvalSymlinks(root)
@@ -33,6 +38,7 @@ func TestResolveThroughASymlink(t *testing.T) {
 	}
 
 	t.Setenv("HOME", link)
+	t.Setenv("USERPROFILE", link) // where Windows takes the home folder from
 	if got := Tilde(filepath.Join(link, "brain")); got != "~/brain" {
 		t.Errorf("Tilde through the link = %s", got)
 	}
@@ -41,5 +47,15 @@ func TestResolveThroughASymlink(t *testing.T) {
 	}
 	if got, _ := Resolve("~/x"); got != filepath.Join(realRoot, "private", "var", "x") {
 		t.Errorf("~ = %s", got)
+	}
+}
+
+func TestSame(t *testing.T) {
+	a := filepath.Join(t.TempDir(), "notes")
+	if !Same(a, a) || Same(a, filepath.Join(a, "sub")) || Same(a, a+"x") {
+		t.Error("Same: wrong answer for the same, a child and a sibling folder")
+	}
+	if runtime.GOOS == "windows" && !Same(a, strings.ToUpper(a)) {
+		t.Error("on Windows, the same folder in other case must be the same")
 	}
 }

@@ -84,7 +84,7 @@ func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
 		return nil, err
 	}
 	for _, s := range c.Spaces {
-		if s.Memory == mem {
+		if paths.Same(s.Memory, mem) {
 			return nil, fmt.Errorf("memory folder %s already belongs to space %q", mem, s.Name)
 		}
 	}

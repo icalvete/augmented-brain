@@ -63,7 +63,7 @@ func Dir() (string, error) {
 	if x := os.Getenv("XDG_CONFIG_HOME"); x != "" {
 		return filepath.Join(x, "augmented-brain"), nil
 	}
-	home, err := os.UserHomeDir()
+	home, err := paths.Home()
 	if err != nil {
 		return "", err
 	}

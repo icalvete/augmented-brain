@@ -1,0 +1,42 @@
+# A clean Windows 11 desktop, to try augmented brain the way a newcomer would.
+#
+# Nothing of augmented brain, Claude Code or Git is installed here on purpose: a
+# newcomer's Windows has none of them. To start again from scratch, restore the "clean"
+# snapshot.
+#
+#   vagrant up                          # first time: downloads the box, opens the window
+#   vagrant snapshot save clean         # once, right after the first boot
+#   vagrant snapshot restore clean      # back to a machine that has never seen it
+#   vagrant halt                        # switch it off; vagrant destroy deletes it
+#
+# The box carries an evaluation edition of Windows, valid for about 90 days: when it
+# expires, destroy the machine and bring it up again. Needs VirtualBox 7.2 or later and
+# about 40 GB of disk. User and password: vagrant.
+Vagrant.configure("2") do |config|
+  config.vm.box = "gusztavvargadr/windows-11"
+  config.vm.box_version = "2607.1.0"
+  config.vm.hostname = "ab-windows"
+  config.vm.synced_folder ".", "/vagrant", disabled: true   # a newcomer's machine shares nothing
+  config.vm.boot_timeout = 900                              # Windows takes its time on first boot
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "augmented-brain-windows"
+    vb.gui = true
+    vb.cpus = 4
+    vb.memory = 8192
+    vb.customize ["modifyvm", :id, "--clipboard-mode", "bidirectional"]
+    vb.customize ["modifyvm", :id, "--vram", "128"]
+  end
+
+  # A Spanish keyboard and Madrid's time zone, like the person who will try it. The
+  # language of Windows itself stays as the box brings it. The keyboard only applies
+  # from the next sign-in, so the machine restarts once before you save "clean".
+  config.vm.provision "shell", privileged: true, reboot: true, inline: <<-POWERSHELL
+    $ErrorActionPreference = "Stop"
+    $list = New-WinUserLanguageList es-ES
+    $list[0].InputMethodTips.Clear()
+    $list[0].InputMethodTips.Add("0C0A:0000040A")
+    Set-WinUserLanguageList $list -Force
+    Set-TimeZone -Id "Romance Standard Time"
+  POWERSHELL
+end
