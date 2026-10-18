@@ -32,7 +32,7 @@ var messages = map[string]map[string]string{
 		"now":      "Now open Claude in your work space:\n  cd %s && claude\nThe first time, it will ask who you are and how you like to work.",
 		"newterm":  "Now open a new terminal (so it finds what was just installed) and type:\n  cd %s && claude\nThe first time, Claude will ask who you are and how you like to work.",
 		"launch":   "From now on, to work: open a new terminal and type\n  cd %s && claude",
-		"desktop":  "From now on, to work: open the Claude app, go to the Code tab and choose the folder %s.\n(Or, in a new terminal: cd %[1]s && claude)",
+		"desktop":  "From now on, to work: open the Claude app, go to the Code tab and click + New. Without choosing a folder you work in your personal space; for the work one, pick the folder %s with Choose….\n(Or, in a new terminal: cd %[1]s && claude)",
 	},
 	"es": {
 		"space":    "Nombre del espacio (una parte de tu vida: work, personal…)",
@@ -50,7 +50,7 @@ var messages = map[string]map[string]string{
 		"now":      "Ahora abre Claude en tu espacio de trabajo:\n  cd %s && claude\nLa primera vez te preguntará quién eres y cómo te gusta trabajar.",
 		"newterm":  "Ahora abre una terminal nueva (para que encuentre lo recién instalado) y escribe:\n  cd %s && claude\nLa primera vez, Claude te preguntará quién eres y cómo te gusta trabajar.",
 		"launch":   "A partir de ahora, para trabajar: abre una terminal nueva y escribe\n  cd %s && claude",
-		"desktop":  "A partir de ahora, para trabajar: abre la app de Claude, ve a la pestaña Code y elige la carpeta %s.\n(O, en una terminal nueva: cd %[1]s && claude)",
+		"desktop":  "A partir de ahora, para trabajar: abre la app de Claude, ve a la pestaña Code y pulsa + New. Sin elegir carpeta trabajas en tu espacio personal; para el de trabajo, elige con Choose… la carpeta %s.\n(O, en una terminal nueva: cd %[1]s && claude)",
 	},
 }
 

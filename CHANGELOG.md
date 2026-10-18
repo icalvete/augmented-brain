@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.5-alpha
+
+Released 2026-10-18.
+
+- At the end of the install, the message about the Claude app says what to do: open
+  the Code tab and click + New, which starts in the personal space; for the work space,
+  pick its folder with Choose…. It used to send people to choose the work folder.
+
 ## 0.2.4-alpha
 
 Released 2026-10-18. The weekly review and reminders with a date, checked end to end
