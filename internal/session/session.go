@@ -39,6 +39,9 @@ func ContextWith(c *config.Config, s *config.Space, note string) string {
 	}
 	if brain.ProfileEmpty(c.Dir) {
 		head += firstSession(c.Language)
+	} else if len(problems) == 0 {
+		b := &brain.Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: Now}
+		head += dueNote(b) + reviewNote(b)
 	}
 	profile := section("Who the user is", profileText(c, s))
 	common := section("Rules", rules.Common(c.Language))
@@ -78,6 +81,55 @@ func ContextWith(c *config.Config, s *config.Space, note string) string {
 		text = cut(text, Budget-size(end)) + end
 	}
 	return text
+}
+
+// Now gives today's date; tests replace it.
+var Now = time.Now
+
+// maxDue is how many due items the session start lists; the rest are counted.
+const maxDue = 8
+
+// dueNote lists what comes up today: watch dates and inbox reminders due today or
+// tomorrow, and those already past.
+func dueNote(b *brain.Brain) string {
+	due := b.Reminders(1)
+	if len(due) == 0 {
+		return ""
+	}
+	var out strings.Builder
+	out.WriteString("\n## Due\n\nMention these in your first answer, briefly, before anything else:\n")
+	for i, d := range due {
+		if i == maxDue {
+			fmt.Fprintf(&out, "- and %d more: see the pending tool\n", len(due)-maxDue)
+			break
+		}
+		when := "today"
+		switch {
+		case d.Days == 1:
+			when = "tomorrow"
+		case d.Days < 0:
+			when = fmt.Sprintf("%d days overdue", -d.Days)
+		}
+		where := "inbox"
+		if d.TaskID != "" {
+			where = d.TaskID
+		}
+		fmt.Fprintf(&out, "- %s (%s): %s [%s]\n", d.Date, when, d.What, where)
+	}
+	out.WriteString("When one is dealt with, mark it: task_update with watch_done for a task, or take the capture out in the weekly review.\n")
+	return out.String()
+}
+
+// reviewNote asks the assistant to offer the weekly review when it is due.
+func reviewNote(b *brain.Brain) string {
+	due, days := b.ReviewDue()
+	if !due {
+		return ""
+	}
+	r := b.Review()
+	return fmt.Sprintf("\nThe weekly review is due: %d days since the last one, with %d captures in the inbox and %d tasks untouched for %d days or more. "+
+		"Offer it once, in one short line, when it does not interrupt other work (about ten minutes); if the user agrees, start with weekly_review.\n",
+		days, len(r.Inbox), len(r.Stale), brain.StaleDays)
 }
 
 // profileBudget is the most of the profile loaded when everything does not fit.

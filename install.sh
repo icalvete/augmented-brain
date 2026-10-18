@@ -136,6 +136,22 @@ git_install() {
   echo "your system's package manager"
 }
 
+# plan_notice: Claude Code is not in Claude's free plan. Said before installing it, so
+# nobody finds out after the whole setup. With a terminal it asks whether they have a
+# plan; a "no" does not stop the installation, because Claude asks to sign in or choose a
+# plan the first time it opens. Without a terminal, or with AB_YES=1, it only informs.
+PRICING_URL="https://claude.com/pricing"
+plan_notice() {
+  say "Claude Code needs a paid Claude plan (Pro, Max, Team or Enterprise) or an Anthropic API key: the free plan does not include it. Plans and prices: $PRICING_URL" \
+      "Claude Code necesita un plan de pago de Claude (Pro, Max, Team o Enterprise) o una clave de la API de Anthropic: el plan gratuito no lo incluye. Planes y precios: $PRICING_URL"
+  [ "${AB_YES:-}" = 1 ] && return 0
+  (exec </dev/tty) 2>/dev/null || return 0
+  if ! ask "$(say "Do you have one already?" "¿Ya tienes uno?") $(yn)"; then
+    say "No problem: the installation goes on. Get a plan at $PRICING_URL whenever you like; Claude asks you to sign in the first time you open it." \
+        "No pasa nada: la instalación sigue. Consigue un plan en $PRICING_URL cuando quieras; Claude te pedirá entrar la primera vez que lo abras."
+  fi
+}
+
 # Claude Code's own installer also uses ~/.local/bin; it may be there but not yet in
 # this terminal's PATH.
 has_claude() { command -v claude >/dev/null 2>&1 || [ -x "$HOME/.local/bin/claude" ]; }
@@ -224,6 +240,7 @@ if [ "${AB_NO_INIT:-}" != 1 ]; then
   if ! has_claude; then
     say "augmented brain works with Claude Code, Anthropic's assistant, and it is not installed." \
         "augmented brain trabaja con Claude Code, el asistente de Anthropic, y no está instalado."
+    plan_notice
     if ask "$(say "Install it now with its official installer?" "¿Lo instalo ahora con su instalador oficial?") $(yn)"; then
       say "Installing Claude Code…" "Instalando Claude Code…"
       quiet sh -c "curl -fsSL https://claude.ai/install.sh | bash" || fail "$(say "Claude Code was not installed." "Claude Code no se ha instalado.")"

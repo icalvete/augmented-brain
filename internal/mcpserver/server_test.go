@@ -89,7 +89,7 @@ func TestTools(t *testing.T) {
 		names = append(names, tl.Name)
 	}
 	sort.Strings(names)
-	want := "area_new backup_setup capture knowledge_new pending person_save profile_save safety_save task_close task_get task_journal task_new task_park task_update where_am_i"
+	want := "area_new backup_setup capture knowledge_new pending person_save profile_save review_done safety_save task_close task_get task_journal task_new task_park task_update weekly_review where_am_i"
 	if got := strings.Join(names, " "); got != want {
 		t.Errorf("tools = %s", got)
 	}

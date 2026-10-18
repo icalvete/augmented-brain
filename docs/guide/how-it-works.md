@@ -57,6 +57,11 @@ It also looks inside `ssh`, `bash -c` and loops. It reads the shell, not PowerSh
 stops every PowerShell command too, and Claude runs it in Bash instead. It is a net
 against slips, not a security wall: read the [disclaimer](../../DISCLAIMER.md).
 
+**What is due that day.** If a task has a watch date for today or tomorrow, or you said
+"remind me on Thursday" about something, Claude tells you as soon as you start. And when
+the last review is a week old or more and there are captures in the inbox or stalled
+tasks, it offers the weekly review: about ten minutes going through each of them with you.
+
 **4. You close the session.** The end hook starts the backup of the space, in the
 background, if you set one up. You wait for nothing. If it fails, Claude tells you at the
 start of the next one.

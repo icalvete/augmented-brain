@@ -34,6 +34,7 @@ Le hablas como siempre. Esto es lo que cambia:
 | "¿En qué estábamos?" | Te lista tus tareas vivas, cada una con su siguiente paso y quién la bloquea |
 | "Apárcalo, mañana seguimos." | Apunta dónde lo dejáis y qué viene después; mañana, en otra sesión, arranca ahí |
 | "Apunta: renovar el certificado en noviembre." | Va al buzón sin abrir tarea; lo ordenáis en la revisión semanal |
+| "Recuérdame el jueves que llame al seguro." | El jueves, nada más abrir Claude, te lo recuerda |
 | "¿Por qué elegimos Postgres?" | Lo busca en tus notas y te da la decisión, con fecha y porqué |
 | "Guárdalo como lección." | Lo aprendido queda en una nota propia, para la próxima vez |
 | "Borra el bucket viejo de producción." | Antes de ejecutarlo, te pregunta |

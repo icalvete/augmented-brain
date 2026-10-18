@@ -57,6 +57,11 @@ También mira dentro de `ssh`, de `bash -c` y de los bucles. Lee la shell, no Po
 así que para también cualquier comando de PowerShell, y Claude lo hace en Bash. Es una
 red contra despistes, no un muro de seguridad: lee el [aviso legal](../../DISCLAIMER.md#aviso-legal).
 
+**Lo que vence ese día.** Si una tarea tiene una fecha de aviso para hoy o mañana, o
+algo apuntado con "recuérdamelo el jueves", Claude te lo dice nada más empezar. Y si hace
+una semana o más de la última revisión y hay cosas en el buzón o tareas paradas, te ofrece
+la revisión semanal: unos diez minutos repasando contigo cada cosa.
+
 **4. Cierras la sesión.** El hook de cierre lanza la copia de seguridad del espacio, por
 detrás, si la tienes montada. No esperas a nada. Si falla, Claude te lo dice al empezar
 la siguiente.

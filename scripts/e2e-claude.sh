@@ -239,6 +239,29 @@ check "host saved" "grep -q 'untouchable_hosts.*db-main' '$CONFIG'"
 check "person saved with nickname" "grep -ql 'Marquitos' '$MEMORY'/people/*.md 2>/dev/null"
 check "offers the backup" "grep -qi 'backup' '$OUT/9.6'"
 
+echo "10. reminders come up at the start, and the weekly review empties the inbox"
+# The profile is saved now (scenario 9), so the session start says what is due.
+TODAY="$(date +%Y-%m-%d)"
+REMIND_WORD=BLUEFINCH
+prompt 10.1 <<EOF
+Note this in the inbox with a reminder for $TODAY: call $REMIND_WORD. Then reply DONE.
+EOF
+ask 10.1
+check "capture has its reminder" "grep -q '$REMIND_WORD.*(remind: $TODAY)' '$MEMORY/inbox.md'"
+prompt 10.2 <<EOF
+Answer from what you were given when this session started, without using any tool:
+what is due today? Quote each item.
+EOF
+ask 10.2
+check "the new session says what is due" "grep -q '$REMIND_WORD' '$OUT/10.2'"
+prompt 10.3 <<EOF
+Do the weekly review now, without asking me anything: drop every capture in the inbox,
+leave the tasks as they are, and finish the review. Then reply DONE.
+EOF
+ask 10.3
+check "review saved" "ls '$MEMORY'/reviews/review-*.md >/dev/null 2>&1"
+check "inbox emptied" "! grep -q '$REMIND_WORD' '$MEMORY/inbox.md'"
+
 echo
 echo "$pass OK, $fail FAIL"
 if [ "$fail" -gt 0 ]; then

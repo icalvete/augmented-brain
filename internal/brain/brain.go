@@ -328,11 +328,18 @@ func (b *Brain) Pending(within int) ([]Item, []Due) {
 
 // ---- inbox, areas, knowledge ----
 
-// Capture adds a dated line to the inbox, to be processed in the weekly review.
-func (b *Brain) Capture(text string) error {
+// Capture adds a dated line to the inbox, to be processed in the weekly review. With a
+// remind date (YYYY-MM-DD), the session start brings it up again on that day.
+func (b *Brain) Capture(text, remind string) error {
 	text = strings.TrimSpace(strings.ReplaceAll(text, "\n", " "))
 	if text == "" {
 		return errors.New("nothing to capture")
+	}
+	if remind != "" {
+		if err := checkDate(remind); err != nil {
+			return err
+		}
+		text += " (remind: " + remind + ")"
 	}
 	path := filepath.Join(b.Mem.Dir, "inbox.md")
 	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
