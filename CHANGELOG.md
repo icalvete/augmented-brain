@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.2.4-alpha
+
+Released 2026-10-18. The weekly review and reminders with a date, checked end to end
+with a real Claude Code (30 of 30).
 
 - The weekly review, which the inbox always promised: when the last one is a week old and
   there is something to go through, the session start offers it. The new
