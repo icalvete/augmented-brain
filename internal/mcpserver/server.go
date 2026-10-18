@@ -7,6 +7,7 @@ package mcpserver
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -35,7 +36,14 @@ as Markdown files. Use these tools instead of editing those files by hand.
   everything.
 - To resume a task, read it first (task_get), then check the real state of what it
   touches before trusting the note.
-- Ideas and loose ends that are not a task go to the inbox (capture).
+- Ideas and loose ends that are not a task go to the inbox (capture). "Remind me on
+  Thursday" is a capture with remind_on; a date to check on a task is a watch date
+  (task_update with watch_date and watch_what). Both come up at the start of the
+  session on their day.
+- The weekly review empties the inbox and looks at stalled tasks: weekly_review lists
+  what to go through; go through it with the user one item at a time (each capture
+  becomes a task, goes to an area or knowledge, or is dropped), then call review_done
+  with what was decided and the captures processed.
 - What is worth keeping beyond a task becomes a reference or a lesson (knowledge_new).
 - Nothing is ever deleted: tasks are closed, not removed.
 - Who the user is and how they like to work is their profile (profile_save).
@@ -136,12 +144,34 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		Next      string `json:"next,omitempty" jsonschema:"the single next action, one line"`
 		Summary   string `json:"summary,omitempty"`
 		Area      string `json:"area,omitempty" jsonschema:"id of the area"`
+		WatchDate string `json:"watch_date,omitempty" jsonschema:"add a date (YYYY-MM-DD) to look at something again; needs watch_what"`
+		WatchWhat string `json:"watch_what,omitempty" jsonschema:"what to look at on watch_date, one line"`
+		WatchDone string `json:"watch_done,omitempty" jsonschema:"mark the watch date on this day (YYYY-MM-DD) as done"`
 	}
-	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area. Only the fields given change; a status change is written in the journal.",
+	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal.",
 		func(b *brain.Brain, in updateIn) (string, error) {
-			n, err := b.Update(brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn,
-				Next: in.Next, Summary: in.Summary, Area: in.Area})
-			return header(n, err)
+			var n *memory.Note
+			var err error
+			if in.Status != "" || in.WaitingOn != "" || in.Next != "" || in.Summary != "" || in.Area != "" {
+				if n, err = b.Update(brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn,
+					Next: in.Next, Summary: in.Summary, Area: in.Area}); err != nil {
+					return "", err
+				}
+			}
+			if in.WatchDate != "" {
+				if n, err = b.AddWatch(in.ID, in.WatchDate, in.WatchWhat); err != nil {
+					return "", err
+				}
+			}
+			if in.WatchDone != "" {
+				if n, err = b.WatchDone(in.ID, in.WatchDone); err != nil {
+					return "", err
+				}
+			}
+			if n == nil {
+				return "", errors.New("nothing to change: give at least one field")
+			}
+			return header(n, nil)
 		})
 
 	type journalIn struct {
@@ -179,11 +209,64 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		})
 
 	type captureIn struct {
-		Text string `json:"text" jsonschema:"the idea, link or loose end, in one line"`
+		Text     string `json:"text" jsonschema:"the idea, link or loose end, in one line"`
+		RemindOn string `json:"remind_on,omitempty" jsonschema:"YYYY-MM-DD: bring it up again at the start of the session on that day"`
 	}
-	tool(s, locked, "capture", "Note something in the inbox without opening a task. The weekly review processes it.",
+	tool(s, locked, "capture", "Note something in the inbox without opening a task, optionally with a day to be reminded. The weekly review processes it.",
 		func(b *brain.Brain, in captureIn) (string, error) {
-			return "Captured.", b.Capture(in.Text)
+			if err := b.Capture(in.Text, in.RemindOn); err != nil {
+				return "", err
+			}
+			if in.RemindOn != "" {
+				return "Captured; it will come up on " + in.RemindOn + ".", nil
+			}
+			return "Captured.", nil
+		})
+
+	tool(s, locked, "weekly_review", "What the weekly review goes through: the inbox, live tasks untouched for two weeks or more, and the dates due this week.",
+		func(b *brain.Brain, _ struct{}) (string, error) {
+			r := b.Review()
+			var out strings.Builder
+			if r.Last == "" {
+				out.WriteString("No review yet in this space.\n")
+			} else {
+				fmt.Fprintf(&out, "Last review: %s.\n", r.Last)
+			}
+			fmt.Fprintf(&out, "\nInbox (%d):\n", len(r.Inbox))
+			for _, e := range r.Inbox {
+				fmt.Fprintf(&out, "- [%s] %s\n", e.Date, e.Text)
+			}
+			fmt.Fprintf(&out, "\nTasks untouched for %d days or more (%d):\n", brain.StaleDays, len(r.Stale))
+			for _, t := range r.Stale {
+				fmt.Fprintf(&out, "- %s (%s) · %s · waits on %s · next: %s\n", t.ID, t.Title, t.Status, t.WaitingOn, t.Next)
+			}
+			fmt.Fprintf(&out, "\nDue within %d days (%d):\n", brain.ReviewEvery, len(r.Reminders))
+			for _, d := range r.Reminders {
+				fmt.Fprintf(&out, "- %s (%d days): %s%s\n", d.Date, d.Days, d.What, taskRef(d.TaskID))
+			}
+			out.WriteString("\nGo through it with the user one item at a time, then call review_done.")
+			return out.String(), nil
+		})
+
+	type reviewDoneIn struct {
+		Summary   string   `json:"summary" jsonschema:"what was decided in the review, a few lines"`
+		Processed []string `json:"processed,omitempty" jsonschema:"the text of each inbox capture dealt with, exactly as weekly_review listed it; they leave the inbox"`
+	}
+	tool(s, locked, "review_done", "Finish the weekly review: save what was decided in reviews/ and take the processed captures out of the inbox.",
+		func(b *brain.Brain, in reviewDoneIn) (string, error) {
+			missing, err := b.InboxDone(in.Processed)
+			if err != nil && len(in.Processed) > 0 {
+				return "", err
+			}
+			n, err := b.SaveReview(in.Summary)
+			if err != nil {
+				return "", err
+			}
+			out := "Review saved in " + n.Path + "."
+			if len(missing) > 0 {
+				out += "\nNot found in the inbox (left as they were): " + strings.Join(missing, "; ")
+			}
+			return out, nil
 		})
 
 	type areaIn struct {
@@ -269,6 +352,13 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 			}
 			return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}, nil, nil
 		})
+}
+
+func taskRef(id string) string {
+	if id == "" {
+		return " [inbox]"
+	}
+	return " [" + id + "]"
 }
 
 func render(n *memory.Note, err error) (string, error) {

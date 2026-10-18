@@ -79,6 +79,9 @@ watch:                           # optional: dates to look at something again
     done: false
 ```
 
+A watch date that is due today or tomorrow, or already past and not `done`, is brought up
+at the start of the session.
+
 ## Task lifecycle
 
 A task moves through six phases. You approve each change of phase; inside a phase the assistant works without asking at every step.
@@ -127,6 +130,27 @@ and the summary says who they are to the user and the other names the user calls
 ("my manager · also: Marcos"), so the index alone tells the assistant who "Marcos" is. The
 body keeps anything else worth remembering. People belong to a space: work contacts stay
 in the work space.
+
+## Inbox
+
+`inbox.md` has no header. Each capture is one line, with the date it was captured:
+
+```
+- 2026-10-17 — Look at the new CI runner
+- 2026-10-17 — Call the insurance (remind: 2026-10-22)
+```
+
+A capture ending in `(remind: YYYY-MM-DD)` is brought up at the start of the session on
+that day. Any other line (the heading, a paragraph) is left alone.
+
+## Reviews
+
+The weekly review goes through the inbox (each capture becomes a task, goes to an area or
+knowledge, or is dropped), the live tasks untouched for 14 days or more, and the dates due
+in the coming week. Processed captures leave the inbox, and the review is kept as
+`reviews/review-<date>.md` (`type: review`), with what was decided as its body and the
+first line as its summary. When the last review is 7 days old or more and there is
+something to go through, the session start offers a new one.
 
 ## Rules
 

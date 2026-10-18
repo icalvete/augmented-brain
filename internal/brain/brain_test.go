@@ -142,7 +142,7 @@ func TestPendingAndCapture(t *testing.T) {
 		t.Errorf("due = %+v", due)
 	}
 
-	if err := b.Capture("look at\nthe new runner"); err != nil {
+	if err := b.Capture("look at\nthe new runner", ""); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.HasSuffix(read(t, b, "inbox.md"), "- 2026-10-15 — look at the new runner\n") {

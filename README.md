@@ -34,6 +34,7 @@ You talk to it as usual. This is what changes:
 | "Where were we?" | It lists your live tasks, each with its next step and who holds it up |
 | "Park it, we carry on tomorrow." | It writes down where you stopped and what comes next; tomorrow, in a new session, it starts there |
 | "Note: renew the certificate in November." | It goes to the inbox, no task opened; you sort it out in the weekly review |
+| "Remind me on Thursday to call the insurance." | On Thursday, as soon as you open Claude, it reminds you |
 | "Why did we pick Postgres?" | It looks it up in your notes and gives you the decision, with date and reason |
 | "Save that as a lesson." | What you learned gets its own note, for next time |
 | "Delete the old production bucket." | Before running it, it asks you |

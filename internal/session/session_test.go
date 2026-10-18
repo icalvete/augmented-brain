@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 	"unicode/utf8"
 
+	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/setup"
 )
@@ -142,5 +144,44 @@ func TestNoSpace(t *testing.T) {
 		if !strings.Contains(text, want) {
 			t.Errorf("no-space text lacks %q:\n%s", want, text)
 		}
+	}
+}
+
+func TestContextDueAndReview(t *testing.T) {
+	c, s := space(t, "en")
+	Now = func() time.Time { return time.Date(2026, 10, 20, 9, 0, 0, 0, time.UTC) }
+	defer func() { Now = time.Now }()
+	b, err := brain.Open(c, s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b.Now = func() time.Time { return time.Date(2026, 10, 10, 9, 0, 0, 0, time.UTC) }
+	if _, err := b.SaveProfile(brain.ProfileInput{Name: "Dana", About: "Runs a bakery's IT."}); err != nil {
+		t.Fatal(err)
+	}
+	task, _ := b.NewTask(brain.NewTaskInput{Title: "Certificates"})
+	if _, err := b.AddWatch(task.Header.ID, "2026-10-18", "renewed?"); err != nil {
+		t.Fatal(err)
+	}
+	if err := b.Capture("call the insurance", "2026-10-21"); err != nil {
+		t.Fatal(err)
+	}
+
+	text := Context(c, s)
+	for _, want := range []string{
+		"## Due",
+		"- 2026-10-18 (2 days overdue): renewed? [" + task.Header.ID + "]",
+		"- 2026-10-21 (tomorrow): call the insurance [inbox]",
+		"The weekly review is due: 10 days since the last one, with 1 captures in the inbox",
+	} {
+		if !strings.Contains(text, want) {
+			t.Errorf("context lacks %q:\n%s", want, text)
+		}
+	}
+
+	// A blank profile means the first session: the interview, nothing else.
+	c2, s2 := space(t, "en")
+	if text := Context(c2, s2); strings.Contains(text, "## Due") || strings.Contains(text, "weekly review is due") {
+		t.Errorf("the first session must only run the interview:\n%s", text)
 	}
 }

@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+- The weekly review, which the inbox always promised: when the last one is a week old and
+  there is something to go through, the session start offers it. The new
+  `weekly_review` tool lists the inbox, tasks untouched for two weeks and the dates due
+  this week; `review_done` keeps what was decided in `reviews/` and empties the
+  processed captures from the inbox.
+- Reminders: "remind me on Thursday" is a capture with a date (`capture` takes
+  `remind_on`), and `task_update` can now add a watch date to a task or mark it done.
+  Whatever is due today or tomorrow, or overdue, is said at the start of the session.
+- The installer on Linux and macOS says that Claude Code needs a paid plan before
+  installing it, as the Windows one already did, with a link to the plans, and asks
+  whether you have one. A "no" does not stop it: Claude asks you to sign in the
+  first time you open it. Without a terminal, or with `AB_YES=1`, it only informs.
+
 ## 0.2.3-alpha
 
 - On a phone, the website's menu shows every link, wrapping under the name instead of
