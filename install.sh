@@ -402,8 +402,8 @@ if [ "$desktop" = 1 ]; then
     else
       nohup claude-desktop >/dev/null 2>&1 &
     fi
-    say "In the app, sign in, open the Code tab and choose the folder $(tilde "$work")." \
-        "En la app, entra con tu cuenta, abre la pestaña Code y elige la carpeta $(tilde "$work")."
+    say "In the app, sign in, open the Code tab and click + New: without choosing a folder you work in your personal space; for work, pick $(tilde "$work") with Choose…" \
+        "En la app, entra con tu cuenta, abre la pestaña Code y pulsa + New: sin elegir carpeta trabajas en tu espacio personal; para el de trabajo, elige $(tilde "$work") con Choose…"
   fi
 elif ask "$(say "Open Claude now in your work space?" "¿Abro Claude ahora en tu espacio de trabajo?") $(yn)"; then
   cd "$work" && exec claude </dev/tty >/dev/tty 2>&1
