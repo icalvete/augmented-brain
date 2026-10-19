@@ -240,7 +240,12 @@ touched. Then close and open Claude so it uses the new version.
 augmented-brain uninstall
 ```
 
-It removes the Claude plugin and the program, after asking. Your notes stay in
-`~/augmented-brain/`: they are yours. Your configuration stays too (to remove it:
-`augmented-brain uninstall --config`), and so do Claude Code, its app and git. If you
-install it again, you find everything as it was.
+It removes the Claude plugin, what Claude Code keeps of it and the program, after asking.
+Your notes stay in `~/augmented-brain/`: they are yours. Your configuration stays too (to
+remove it: `augmented-brain uninstall --config`), and so do Claude Code, its app and git.
+If you install it again, you find everything as it was.
+
+**To start from scratch**, `augmented-brain uninstall --all`: it also removes your
+configuration, your profile and every space's notes. First it shows what it will remove,
+with how many notes each folder has, and asks. Anything of yours inside a space's folder
+stays. Your backup on GitHub is not deleted: it says which one it is and how to delete it.

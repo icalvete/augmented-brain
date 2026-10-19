@@ -163,7 +163,7 @@ tells you at the start of the next one.
 | `augmented-brain backup` | Save the latest changes (`--all` for every space) |
 | `augmented-brain restore <url>` | Bring a space back on a new machine |
 | `augmented-brain update` | Update augmented brain and its Claude Code plugin (Claude tells you when there is a new version) |
-| `augmented-brain uninstall` | Remove the program and the plugin; your notes stay |
+| `augmented-brain uninstall` | Remove the program and the plugin; your notes stay (`--all` to start from scratch) |
 
 Everyday work happens inside Claude Code, in plain words: "new task…", "what is
 pending?", "park it", "note this in the inbox".

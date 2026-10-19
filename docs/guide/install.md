@@ -153,8 +153,10 @@ tells you when a new version is out. Running the install command again does the 
 augmented-brain uninstall
 ```
 
-It removes the program and the Claude Code plugin. **Your notes always stay**, and so does
-the configuration unless you add `--config`. Claude Code, its desktop app, git and the PATH
+It removes the program, the Claude Code plugin and what Claude Code keeps of it (its cache
+and its server's logs). **Your notes stay**, and so does the configuration unless you add
+`--config`. To start from scratch, `--all` removes the configuration, your profile and
+every space's notes too, after showing what and asking. Claude Code, its desktop app, git and the PATH
 entry stay too: Claude Code lives in that same folder. On Windows the program file
 disappears a moment after the command ends, because Windows does not let a running program
 delete itself.

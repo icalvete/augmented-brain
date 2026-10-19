@@ -102,6 +102,18 @@ if [ "${AB_CHECK_DESKTOP:-}" = 1 ]; then
   fi
 fi
 
+echo "4. uninstall --all: starting from scratch leaves nothing behind"
+PATH="$HOME/.local/bin:$PATH" "$AB" uninstall --yes --all >"$TMP/uninstall.log" 2>&1 || { cat "$TMP/uninstall.log"; bad "uninstall --all exited with an error"; }
+check "the program is gone" sh -c "! test -e '$AB'"
+check "the configuration is gone" sh -c "! test -e '$HOME/.config/augmented-brain'"
+check "the notes are gone" sh -c "! test -e '$HOME/augmented-brain'"
+check "the plugin is gone" sh -c "! PATH=\"$HOME/.local/bin:\$PATH\" claude plugin list 2>/dev/null | grep -q 'brain@augmented-brain'"
+# Nothing named after it is left in the home: Claude Code's cache, data and logs of the
+# plugin included. The checkout and this check's own folder do not count.
+find "$HOME" -iname '*augmented*' -not -path "$ROOT*" -not -path "$TMP*" 2>/dev/null >"$TMP/left.txt"
+check "and nothing else is left" sh -c "! test -s '$TMP/left.txt'"
+sed 's/^/    left: /' "$TMP/left.txt"
+
 echo
 if [ "$fails" -gt 0 ]; then
   echo "$fails FAIL"

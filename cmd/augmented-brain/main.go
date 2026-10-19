@@ -35,7 +35,7 @@ Usage:
   augmented-brain backup setup URL   connect this folder's space to a private git repository
   augmented-brain restore URL  bring a space back from its backup, on a new machine
   augmented-brain update       update augmented brain and its Claude Code plugin
-  augmented-brain uninstall    remove the program and the plugin (your notes stay)
+  augmented-brain uninstall    remove the program and the plugin (your notes stay; --all: start from scratch)
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
   augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use, session-end
   augmented-brain version      show the version

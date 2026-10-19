@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- `augmented-brain uninstall` leaves nothing of the plugin behind: it also removes what
+  Claude Code keeps of it after uninstalling it (its cached copy, its data folder and the
+  logs of its MCP server), which a real uninstall left on the machine.
+- `augmented-brain uninstall --all` starts from scratch: the configuration, the profile and
+  every space's notes go too, after showing what (with how many notes each folder has) and
+  asking. A space's folder goes only when nothing of the user's is left in it. Backups on
+  GitHub are not deleted: it says which and how. The install check on Linux and macOS ends
+  with it and makes sure nothing is left.
+
 ## 0.2.7-alpha
 
 Released 2026-10-19.

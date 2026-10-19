@@ -157,8 +157,10 @@ mismo.
 augmented-brain uninstall
 ```
 
-Quita el programa y el plugin de Claude Code. **Tus notas se quedan siempre**, y la
-configuración también, salvo que añadas `--config`. Claude Code, su app de escritorio, git
+Quita el programa, el plugin de Claude Code y lo que Claude Code guarda de él (su caché y
+los registros de su servidor). **Tus notas se quedan**, y la configuración también, salvo que
+añadas `--config`. Para empezar de cero, `--all` borra también la configuración, tu perfil y
+las notas de cada espacio, después de enseñarte qué y preguntarte. Claude Code, su app de escritorio, git
 y la entrada del PATH también se quedan: Claude Code vive en esa misma carpeta. En Windows
 el programa desaparece un momento después de acabar el comando, porque Windows no deja que
 un programa en marcha se borre a sí mismo.

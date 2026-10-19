@@ -131,7 +131,8 @@ augmented-brain backup --all    # every space</code></pre>
   <p>It updates the program and the Claude plugin. Your notes and your configuration are not touched. Then close and open Claude so it uses the new version.</p>
   <h2>Remove it</h2>
   <pre><code>augmented-brain uninstall</code></pre>
-  <p>It removes the Claude plugin and the program, after asking. Your notes stay in <code>~/augmented-brain/</code>: they are yours. Your configuration stays too (to remove it: <code>augmented-brain uninstall --config</code>), and so do Claude Code, its app and git. If you install it again, you find everything as it was.</p>
+  <p>It removes the Claude plugin, what Claude Code keeps of it and the program, after asking. Your notes stay in <code>~/augmented-brain/</code>: they are yours. Your configuration stays too (to remove it: <code>augmented-brain uninstall --config</code>), and so do Claude Code, its app and git. If you install it again, you find everything as it was.</p>
+  <p><strong>To start from scratch</strong>, <code>augmented-brain uninstall --all</code>: it also removes your configuration, your profile and every space's notes. First it shows what it will remove, with how many notes each folder has, and asks. Anything of yours inside a space's folder stays. Your backup on GitHub is not deleted: it says which one it is and how to delete it.</p>
   <a class="back" href="../">← Back to augmented brain</a>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

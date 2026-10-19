@@ -163,7 +163,7 @@ Claude te lo dice al empezar la siguiente.
 | `augmented-brain backup` | Guarda los últimos cambios (`--all` para todos los espacios) |
 | `augmented-brain restore <url>` | Recupera un espacio en una máquina nueva |
 | `augmented-brain update` | Actualiza augmented brain y su plugin de Claude Code (Claude te avisa cuando hay versión nueva) |
-| `augmented-brain uninstall` | Quita el programa y el plugin; tus notas se quedan |
+| `augmented-brain uninstall` | Quita el programa y el plugin; tus notas se quedan (`--all` para empezar de cero) |
 
 El trabajo de cada día ocurre dentro de Claude Code, con tus palabras: "nueva tarea…",
 "¿qué tengo pendiente?", "apárcala", "apunta esto en el buzón".
