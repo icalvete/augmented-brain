@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.8-alpha
+
+Released 2026-10-19.
 
 - `augmented-brain uninstall` leaves nothing of the plugin behind: it also removes what
   Claude Code keeps of it after uninstalling it (its cached copy, its data folder and the
