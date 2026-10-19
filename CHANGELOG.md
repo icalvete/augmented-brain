@@ -10,6 +10,9 @@
   said the app was not installed. On failure, only the last lines of the output show,
   with the file that has all of it. The same on macOS and on Windows (where it warns
   that Windows may ask for permission in a window), and for installing git with sudo.
+- When a Claude app is already open, the installer says so (close it and open it again,
+  so it loads augmented brain) instead of seeming to open one: a second Claude app only
+  hands over to the one running and closes, so nothing appeared.
 
 ## 0.2.6-alpha
 

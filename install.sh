@@ -473,7 +473,13 @@ AB_NEW_TERMINAL="$new_terminal" AB_LAUNCH="$launch" AB_DESKTOP="$desktop" "$DIR/
 if [ "$lang" = es ]; then work="$HOME/augmented-brain/trabajo"; else work="$HOME/augmented-brain/work"; fi
 echo
 if [ "$desktop" = 1 ]; then
-  if ask "$(say "Open the Claude app now?" "¿Abro ahora la app de Claude?") $(yn)"; then
+  # A Claude app already running keeps the window: a second one only hands over to it
+  # and closes. Then say so, instead of seeming to open one.
+  if { [ "$os" = darwin ] && pgrep -x Claude >/dev/null 2>&1; } ||
+     { [ "$os" = linux ] && pgrep -f claude-desktop >/dev/null 2>&1; }; then
+    say "The Claude app is already open. Close it completely and open it again, so it loads augmented brain; then the Code tab and + New." \
+        "La app de Claude ya está abierta. Ciérrala del todo y vuelve a abrirla, para que cargue augmented brain; luego, pestaña Code y + New."
+  elif ask "$(say "Open the Claude app now?" "¿Abro ahora la app de Claude?") $(yn)"; then
     if [ "$os" = darwin ]; then
       open -a Claude
     else

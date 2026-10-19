@@ -267,7 +267,12 @@ try {
   $work = Join-Path $env:USERPROFILE ('augmented-brain\' + $(if ($lang -eq 'es') { 'trabajo' } else { 'work' }))
   Write-Host ''
   if ($app) {
-    if (Ask (Text 'Open the Claude app now?' '\u00bfAbro ahora la app de Claude?')) {
+    # A Claude app already running keeps the window: say so instead of opening another.
+    $running = Get-Process -Name claude -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path -notlike '*\.local\bin\*' }
+    if ($running) {
+      Say "The Claude app is already open. Close it completely and open it again, so it loads augmented brain; then the Code tab and + New." `
+          "La app de Claude ya est\u00e1 abierta. Ci\u00e9rrala del todo y vuelve a abrirla, para que cargue augmented brain; luego, pesta\u00f1a Code y + New."
+    } elseif (Ask (Text 'Open the Claude app now?' '\u00bfAbro ahora la app de Claude?')) {
       Start-Process "shell:AppsFolder\$($app.AppID)"
       Say "In the app, sign in, open the Code tab and click + New: without choosing a folder you work in your personal space; for work, pick $(Tilde $work) with Choose\u2026" `
           "En la app, entra con tu cuenta, abre la pesta\u00f1a Code y pulsa + New: sin elegir carpeta trabajas en tu espacio personal; para el de trabajo, elige $(Tilde $work) con Choose\u2026"
