@@ -114,7 +114,7 @@ check "the plugin is gone" sh -c "! PATH=\"$HOME/.local/bin:\$PATH\" claude plug
 # with the name, like the checkout and Go's module cache: those do not count.
 find "$HOME/.local/bin" "$HOME/.config" "$HOME/augmented-brain" "$HOME/.claude" \
   "$HOME/.cache/claude-cli-nodejs" "$HOME/Library/Caches/claude-cli-nodejs" \
-  -iname '*augmented*' 2>/dev/null >"$TMP/left.txt"
+  -iname '*augmented*' 2>/dev/null >"$TMP/left.txt" || true  # some folders do not exist
 check "and nothing else is left" sh -c "! test -s '$TMP/left.txt'"
 sed 's/^/    left: /' "$TMP/left.txt"
 
