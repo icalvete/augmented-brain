@@ -37,7 +37,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
 
 1. **git**, if missing, with your system's package manager: `apt` (Ubuntu, Debian), `dnf`
    (Fedora), `pacman` (Arch) or `zypper` (openSUSE). It asks for your password.
-2. **Claude Code**, if missing, with Anthropic's own installer, into `~/.local/bin`.
+2. **Claude Code**, if missing, with Anthropic's own installer, into `~/.local/bin`. If
+   you have it but it is behind, it offers to update it (`claude update`).
 3. **The Claude desktop app**, if you want it, **only on Ubuntu and Debian**: from
    Anthropic's apt repository, which it adds for you; it asks for your password. On other
    distributions you use Claude in the terminal.
@@ -74,7 +75,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    even without them, but it only asks you to install them: the installer looks past it.
    A window opens: click **Install** and accept. It takes a few minutes; the installer waits
    and carries on by itself.
-3. **Claude Code**, if missing, with Anthropic's own installer, into `~/.local/bin`.
+3. **Claude Code**, if missing, with Anthropic's own installer, into `~/.local/bin`. If
+   you have it but it is behind, it offers to update it (`claude update`).
 4. **The Claude desktop app**, if you want it: with Homebrew when you have it, otherwise
    straight from Anthropic, with its signature checked. It goes to `/Applications`, or to
    `~/Applications` if you cannot write there.
@@ -111,7 +113,9 @@ irm https://github.com/icalvete/augmented-brain/releases/latest/download/install
 1. **Git for Windows**, if missing, with winget. **On Windows it is required**, not only for
    the history of your notes: it brings **Git Bash**, where Claude runs commands with the
    guard watching. Windows shows a permission window: click **Yes**.
-2. **Claude Code**, if missing, with Anthropic's own installer, into `%USERPROFILE%\.local\bin`.
+2. **Claude Code**, if missing, with Anthropic's own installer, into
+   `%USERPROFILE%\.local\bin`. If you have it but it is behind, it offers to update it
+   (`claude update`).
 3. **The Claude desktop app**, if you want it, with winget.
 4. **The program**, into `%USERPROFILE%\.local\bin\augmented-brain.exe`.
 5. **The PATH:** it adds that folder to your user's PATH. Claude Code's own installer leaves

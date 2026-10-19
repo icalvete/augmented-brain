@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- The installer, on Linux, macOS and Windows, checks a Claude Code that is already there:
+  when it is older than Anthropic's stable release it says so and offers to update it with
+  `claude update` (yes by default). An old one can lack what the plugin uses, like the
+  end-of-session hook that starts the backup. If the update fails, it says how to do it
+  later and goes on. The install checks cover an old and a current Claude Code.
+
 ## 0.2.5-alpha
 
 Released 2026-10-18.

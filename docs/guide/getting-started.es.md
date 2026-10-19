@@ -47,7 +47,8 @@ Te hace unas pocas preguntas. Para aceptar lo que te propone, basta con pulsar E
 
 1. **El idioma.** Español o inglés.
 2. **Lo que falte**, si falta algo: git (guarda el historial de tus notas), Claude Code
-   y la app de escritorio de Claude. Te dice para qué es cada cosa antes de instalarla.
+   y la app de escritorio de Claude. Te dice para qué es cada cosa antes de instalarla. Si
+   ya tenías Claude Code pero está atrasado, te ofrece actualizarlo.
 3. **¿Abro ahora la app de Claude?** Di que sí.
 
 Si te pide la contraseña, escríbela aunque no veas nada: la terminal no la enseña, ni

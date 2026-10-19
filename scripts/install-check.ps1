@@ -88,6 +88,30 @@ try {
   $again = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
   Check "a second run only updates" { $again -match 'Ya estaba configurado' }
 
+  # An old Claude Code is offered an update; a current one is left alone. A fake claude,
+  # first in the PATH, says its version and records when it is asked to update.
+  $fake = Join-Path $env:TEMP 'ab-fake-claude'
+  New-Item -ItemType Directory -Force $fake | Out-Null
+  $marker = Join-Path $fake 'updated'
+  Set-Content -Encoding ascii (Join-Path $fake 'claude.cmd') "@echo off`r`nif ""%1""==""--version"" echo 2.1.100 (Claude Code)`r`nif ""%1""==""update"" type nul > ""$marker""`r`nexit /b 0"
+  $stable = Join-Path $fake 'stable'
+  $env:AB_CLAUDE_STABLE_URL = ([Uri]$stable).AbsoluteUri
+  $savedPath = $env:Path
+  $env:Path = "$fake;$env:Path"
+  try {
+    Set-Content -Encoding ascii $stable '2.1.292'
+    $old = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
+    Check "an old Claude Code is offered an update" { $old -match 'versi.n 2\.1\.100 y la actual es la 2\.1\.292' }
+    Check "and updated with its own updater" { Test-Path $marker }
+    Remove-Item -Force $marker -ErrorAction SilentlyContinue
+    Set-Content -Encoding ascii $stable '2.1.50'
+    $cur = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
+    Check "a current Claude Code is left alone" { -not (Test-Path $marker) -and -not ($cur -match 'la actual es') }
+  } finally {
+    $env:Path = $savedPath
+    Remove-Item Env:\AB_CLAUDE_STABLE_URL -ErrorAction SilentlyContinue
+  }
+
   Write-Host "4. uninstall, and install again"
   & $ab uninstall --yes 2>&1 | ForEach-Object { "    | $_" }
   Start-Sleep -Seconds 5   # the .exe is deleted by a helper once the program has ended

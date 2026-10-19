@@ -101,6 +101,33 @@ try {
   $claudeDir = Join-Path $env:USERPROFILE '.local\bin'
   function HasGit { [bool](Get-Command git -ErrorAction SilentlyContinue) -or (Test-Path (Join-Path $gitCmd 'git.exe')) }
   function HasClaude { [bool](Get-Command claude -ErrorAction SilentlyContinue) -or (Test-Path (Join-Path $claudeDir 'claude.exe')) }
+  function ClaudeExe {
+    $c = Get-Command claude -ErrorAction SilentlyContinue
+    if ($c) { $c.Source } else { Join-Path $claudeDir 'claude.exe' }
+  }
+  # ClaudeUpdate: an old Claude Code can lack what the plugin uses (the end-of-session
+  # hook that starts the backup, for one). When it is behind Anthropic's stable release,
+  # offer to update it with its own updater. It never stops the installation.
+  function ClaudeUpdate {
+    $url = if ($env:AB_CLAUDE_STABLE_URL) { $env:AB_CLAUDE_STABLE_URL } else { 'https://downloads.claude.ai/claude-code-releases/stable' }
+    try {
+      $have = (((& (ClaudeExe) --version) 2>$null | Out-String).Trim() -split '\s+')[0]
+      $want = ([string](Invoke-RestMethod -Uri $url -TimeoutSec 10 -ErrorAction Stop)).Trim()
+      if ([version]($have -replace '[^0-9.].*$', '') -ge [version]($want -replace '[^0-9.].*$', '')) { return }
+    } catch { return }  # offline, or not a version
+    Say "Your Claude Code is version $have and the current one is ${want}: an old one can lack what augmented brain uses." `
+        "Tu Claude Code est\u00e1 en la versi\u00f3n $have y la actual es la ${want}: una antigua puede no tener lo que usa augmented brain."
+    if (Ask (Text 'Update it now?' '\u00bfLo actualizo ahora?')) {
+      Say "Updating Claude Code..." "Actualizando Claude Code..."
+      if (Quiet { & (ClaudeExe) update }) {
+        Say "+ Claude Code updated" "+ Claude Code actualizado"
+      } else {
+        Say "Claude Code was not updated. Do it later with: claude update" "Claude Code no se ha actualizado. Hazlo m\u00e1s tarde con: claude update"
+      }
+    } else {
+      Say "Update it later with: claude update" "Actual\u00edzalo m\u00e1s tarde con: claude update"
+    }
+  }
   function DesktopApp { Get-StartApps -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Claude' } | Select-Object -First 1 }
 
   # --- 1. What it needs ---------------------------------------------------------------
@@ -141,6 +168,8 @@ try {
       if (-not (Quiet { powershell -NoProfile -ExecutionPolicy Bypass -Command $cmd })) { Fail (Text 'Claude Code was not installed.' 'Claude Code no se ha instalado.') }
       if (-not (HasClaude)) { Fail (Text 'Claude Code was installed but cannot be found; open a new terminal and run this installer again.' 'Claude Code se instal\u00f3, pero no lo encuentro; abre una terminal nueva y vuelve a lanzar este instalador.') }
       Say "+ Claude Code installed" "+ Claude Code instalado"
+    } else {
+      ClaudeUpdate
     }
     if ($env:AB_NO_DESKTOP -ne '1' -and $winget -and -not (DesktopApp) -and ($interactive -or $env:AB_YES -eq '1')) {
       Write-Host ''

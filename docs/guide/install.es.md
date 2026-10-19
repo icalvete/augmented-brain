@@ -39,7 +39,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
 
 1. **git**, si falta, con el gestor de paquetes de tu sistema: `apt` (Ubuntu, Debian), `dnf`
    (Fedora), `pacman` (Arch) o `zypper` (openSUSE). Te pide la contraseña.
-2. **Claude Code**, si falta, con el instalador de Anthropic, en `~/.local/bin`.
+2. **Claude Code**, si falta, con el instalador de Anthropic, en `~/.local/bin`. Si ya lo
+   tienes pero va atrasado, te ofrece actualizarlo (`claude update`).
 3. **La app de escritorio de Claude**, si la quieres, **solo en Ubuntu y Debian**: desde el
    repositorio apt de Anthropic, que añade por ti; te pide la contraseña. En otras
    distribuciones usas Claude en la terminal.
@@ -78,7 +79,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    comando `git` aunque no las tenga, pero solo sirve para pedirte que las instales: el
    instalador no se deja engañar. Se abre una ventana: pulsa **Instalar** y acepta. Tarda
    unos minutos; el instalador espera y sigue solo.
-3. **Claude Code**, si falta, con el instalador de Anthropic, en `~/.local/bin`.
+3. **Claude Code**, si falta, con el instalador de Anthropic, en `~/.local/bin`. Si ya lo
+   tienes pero va atrasado, te ofrece actualizarlo (`claude update`).
 4. **La app de escritorio de Claude**, si la quieres: con Homebrew si lo tienes y, si no,
    directamente de Anthropic, comprobando su firma. Va a `/Applications`, o a
    `~/Applications` si no puedes escribir allí.
@@ -116,6 +118,7 @@ irm https://github.com/icalvete/augmented-brain/releases/latest/download/install
    el historial de tus notas: trae **Git Bash**, donde Claude ejecuta los comandos con el
    guardia vigilando. Windows enseña una ventana de permiso: pulsa **Sí**.
 2. **Claude Code**, si falta, con el instalador de Anthropic, en `%USERPROFILE%\.local\bin`.
+   Si ya lo tienes pero va atrasado, te ofrece actualizarlo (`claude update`).
 3. **La app de escritorio de Claude**, si la quieres, con winget.
 4. **El programa**, en `%USERPROFILE%\.local\bin\augmented-brain.exe`.
 5. **El PATH:** añade esa carpeta al PATH de tu usuario. El instalador de Claude Code lo

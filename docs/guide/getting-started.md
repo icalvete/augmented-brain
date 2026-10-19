@@ -48,6 +48,7 @@ It asks a few questions. To accept what it suggests, just press Enter.
 1. **The language.** English or Spanish.
 2. **Whatever is missing**, if anything: git (keeps the history of your notes), Claude
    Code and the Claude desktop app. It tells you what each one is for before installing it.
+   If you already had Claude Code but it is behind, it offers to update it.
 3. **Open the Claude app now?** Say yes.
 
 If it asks for your password, type it even though you see nothing: the terminal does not

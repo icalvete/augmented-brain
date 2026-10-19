@@ -74,6 +74,27 @@ check "outside the folders, the personal space loads" grep -q 'the default space
 check "and the first-session interview starts" grep -q 'First session: get to know the user' "$TMP/start.json"
 check "doctor finds nothing missing" sh -c "cd '$HOME/augmented-brain/trabajo' && PATH=\"$HOME/.local/bin:\$PATH\" '$AB' doctor"
 check "a second run only updates" sh -c "AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP=1 AB_RELEASE_URL='file://$TMP/release' sh '$ROOT/install.sh' </dev/null 2>&1 | grep -q 'Ya estaba configurado'"
+# An old Claude Code is offered an update; a current one is left alone. A fake claude,
+# first in the PATH, says its version and records when it is asked to update.
+mkdir -p "$TMP/fakeclaude"
+cat >"$TMP/fakeclaude/claude" <<EOF
+#!/bin/sh
+case "\$1" in --version) echo "2.1.100 (Claude Code)" ;; update) touch "$TMP/claude-updated" ;; esac
+exit 0
+EOF
+chmod +x "$TMP/fakeclaude/claude"
+rerun() { # rerun <stable version>: the installer again, with the fake claude
+  echo "$1" >"$TMP/stable"
+  AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP=1 AB_RELEASE_URL="file://$TMP/release" \
+    AB_CLAUDE_STABLE_URL="file://$TMP/stable" PATH="$TMP/fakeclaude:$PATH" \
+    sh "$ROOT/install.sh" </dev/null >"$TMP/rerun.log" 2>&1
+}
+rerun 2.1.292
+check "an old Claude Code is offered an update" grep -q 'versión 2.1.100 y la actual es la 2.1.292' "$TMP/rerun.log"
+check "and updated with its own updater" test -f "$TMP/claude-updated"
+rm -f "$TMP/claude-updated"
+rerun 2.1.50
+check "a current Claude Code is left alone" sh -c "! test -f '$TMP/claude-updated' && ! grep -q 'la actual es' '$TMP/rerun.log'"
 if [ "${AB_CHECK_DESKTOP:-}" = 1 ]; then
   check "desktop app installed" sh -c 'command -v claude-desktop || test -d /Applications/Claude.app || test -d "$HOME/Applications/Claude.app"'
   if [ "$(uname -s)" = Darwin ]; then

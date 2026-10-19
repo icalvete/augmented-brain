@@ -155,6 +155,39 @@ plan_notice() {
 # Claude Code's own installer also uses ~/.local/bin; it may be there but not yet in
 # this terminal's PATH.
 has_claude() { command -v claude >/dev/null 2>&1 || [ -x "$HOME/.local/bin/claude" ]; }
+claude_bin() { command -v claude 2>/dev/null || echo "$HOME/.local/bin/claude"; }
+
+# older <a> <b>: true when version a is older than b. Only the numbers count.
+older() {
+  awk -v a="$1" -v b="$2" 'BEGIN {
+    n = split(a, x, "."); m = split(b, y, ".")
+    for (i = 1; i <= (n > m ? n : m); i++) { p = x[i] + 0; q = y[i] + 0; if (p < q) exit 0; if (p > q) exit 1 }
+    exit 1 }'
+}
+
+# claude_update: an old Claude Code can lack what the plugin uses (the end-of-session
+# hook that starts the backup, for one). When it is behind Anthropic's stable release,
+# offer to update it with its own updater. It never stops the installation.
+CLAUDE_STABLE_URL="${AB_CLAUDE_STABLE_URL:-https://downloads.claude.ai/claude-code-releases/stable}"
+claude_update() {
+  have="$("$(claude_bin)" --version 2>/dev/null | awk '{print $1}')"
+  want="$(curl -fsSL --max-time 10 "$CLAUDE_STABLE_URL" 2>/dev/null)"
+  case "$have" in [0-9]*.[0-9]*) ;; *) return 0 ;; esac
+  case "$want" in [0-9]*.[0-9]*) ;; *) return 0 ;; esac  # offline, or not a version
+  older "$have" "$want" || return 0
+  say "Your Claude Code is version $have and the current one is $want: an old one can lack what augmented brain uses." \
+      "Tu Claude Code está en la versión $have y la actual es la $want: una antigua puede no tener lo que usa augmented brain."
+  if ask "$(say "Update it now?" "¿Lo actualizo ahora?") $(yn)"; then
+    say "Updating Claude Code…" "Actualizando Claude Code…"
+    if quiet "$(claude_bin)" update; then
+      say "✓ Claude Code updated" "✓ Claude Code actualizado"
+    else
+      say "Claude Code was not updated. Do it later with: claude update" "Claude Code no se ha actualizado. Hazlo más tarde con: claude update"
+    fi
+  else
+    say "Update it later with: claude update" "Actualízalo más tarde con: claude update"
+  fi
+}
 
 # The Claude desktop app: its Code tab is Claude Code with windows instead of a terminal,
 # and it loads the same plugins.
@@ -250,6 +283,8 @@ if [ "${AB_NO_INIT:-}" != 1 ]; then
       say "Install it with this, then run this installer again:" "Instálalo con esto y vuelve a lanzar este instalador:"
       echo "  curl -fsSL https://claude.ai/install.sh | bash"; exit 1
     fi
+  else
+    claude_update
   fi
   if [ "${AB_NO_DESKTOP:-}" != 1 ] && ! has_desktop; then
     can=0
