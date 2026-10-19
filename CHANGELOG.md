@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.6-alpha
+
+Released 2026-10-19.
 
 - The installer, on Linux, macOS and Windows, checks a Claude Code that is already there:
   when it is older than Anthropic's stable release it says so and offers to update it with
