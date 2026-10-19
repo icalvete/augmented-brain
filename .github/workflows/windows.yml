@@ -3,9 +3,10 @@ name: windows
 # The tests on Windows, apart from ci.yml while Windows support is being built: every
 # push to main or to the windows branch, and every pull request.
 on:
-  push:
-    branches: [main, windows]
+  push:            # any branch: a branch is how a change gets tried before main
+    paths: [install.ps1, scripts/install-check.ps1, plugin/**, cmd/**, internal/**, go.mod, go.sum, .github/workflows/windows.yml]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
