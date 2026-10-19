@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.7-alpha
+
+Released 2026-10-19.
 
 - Installing the desktop app no longer goes quiet or gets it wrong. Before asking for the
   password (Linux), the installer says it will not show as you type it; it asks for it up
