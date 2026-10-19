@@ -61,6 +61,22 @@ function Ask([string]$q) {
 }
 # Quiet <scriptblock>: runs an installation without its noise; its output is shown only
 # when it fails.
+# Busy <program> <arguments>: a long step, shown as a dot every few seconds instead of
+# silence. On failure it shows only the last lines of the output and keeps all of it.
+function Busy([string]$exe, [string[]]$arguments) {
+  $log = [IO.Path]::GetTempFileName()
+  $p = Start-Process -FilePath $exe -ArgumentList $arguments -NoNewWindow -PassThru `
+    -RedirectStandardOutput $log -RedirectStandardError "$log.err"
+  $null = $p.Handle  # without this, ExitCode can come back empty
+  while (-not $p.HasExited) { Write-Host -NoNewline '.'; Start-Sleep -Seconds 3 }
+  Write-Host ''
+  $p.WaitForExit()
+  if ($p.ExitCode -eq 0) { Remove-Item -Force $log, "$log.err" -ErrorAction SilentlyContinue; return $true }
+  Get-Content $log, "$log.err" -ErrorAction SilentlyContinue | Select-Object -Last 12 | ForEach-Object { Write-Host "    | $_" }
+  Say "(the whole output is in $log)" "(la salida completa est\u00e1 en $log)"
+  return $false
+}
+
 function Quiet([scriptblock]$b) {
   # Windows PowerShell 5.1 turns a program's stderr into errors, which 'Stop' would
   # treat as a failure even when the program succeeds: only the exit code counts.
@@ -176,9 +192,13 @@ try {
       Say "Claude also has a desktop app: the same Claude Code, with windows instead of a terminal. It is the easiest way to work." `
           "Claude tiene tambi\u00e9n una app de escritorio: el mismo Claude Code, con ventanas en vez de terminal. Es la forma m\u00e1s c\u00f3moda de trabajar."
       if (Ask (Text 'Install it too?' '\u00bfLa instalo tambi\u00e9n?')) {
-        Say "Installing the desktop app (it can take a couple of minutes)..." "Instalando la app de escritorio (puede tardar un par de minutos)..."
-        if (Quiet { winget install --id Anthropic.Claude -e --source winget --silent --accept-source-agreements --accept-package-agreements --disable-interactivity }) {
+        Say "Installing the desktop app (it can take a couple of minutes). If Windows asks for permission in a window, accept it." `
+            "Instalando la app de escritorio (puede tardar un par de minutos). Si Windows te pide permiso en una ventana, ac\u00e9ptalo."
+        $ok = Busy 'winget' @('install', '--id', 'Anthropic.Claude', '-e', '--source', 'winget', '--silent', '--accept-source-agreements', '--accept-package-agreements', '--disable-interactivity')
+        # What counts is whether the app is there, not winget's exit code.
+        if (DesktopApp) {
           Say "+ Claude desktop app installed" "+ app de escritorio de Claude instalada"
+          if (-not $ok) { Say "(winget reported other problems, shown above; the app is installed)" "(winget avis\u00f3 de otros problemas, arriba; la app est\u00e1 instalada)" }
         } else {
           Say "The desktop app was not installed; you can use Claude in the terminal." "La app de escritorio no se ha instalado; puedes usar Claude en la terminal."
         }

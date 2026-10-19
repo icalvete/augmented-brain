@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- Installing the desktop app no longer goes quiet or gets it wrong. Before asking for the
+  password (Linux), the installer says it will not show as you type it; it asks for it up
+  front, then shows a dot every few seconds while the app installs. Whether it worked is
+  judged by the app being there, not by the exit code: on a real machine, apt failed over
+  half-installed kernel packages after installing the app all right, and the installer
+  said the app was not installed. On failure, only the last lines of the output show,
+  with the file that has all of it. The same on macOS and on Windows (where it warns
+  that Windows may ask for permission in a window), and for installing git with sudo.
+
 ## 0.2.6-alpha
 
 Released 2026-10-19.

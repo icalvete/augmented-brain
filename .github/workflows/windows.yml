@@ -42,4 +42,6 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Install from nothing and check
+        env:
+          AB_CHECK_DESKTOP: "1"   # the desktop app too, with winget
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-check.ps1

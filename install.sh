@@ -71,6 +71,37 @@ quiet() {
   fi
 }
 
+# busy <command…>: a long step, shown as a dot every few seconds instead of silence. On
+# failure it shows only the last lines of the output and keeps the whole of it in a file.
+# Anything that needs the terminal (a password) must be asked before: see sudo_first.
+busy() {
+  log="$(mktemp)"
+  "$@" >"$log" 2>&1 </dev/null &
+  pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    printf '.' >&2
+    sleep 3
+  done
+  echo >&2
+  if wait "$pid"; then
+    rm -f "$log"
+    return 0
+  fi
+  tail -n 12 "$log" | sed 's/^/    | /' >&2
+  say "(the whole output is in $log)" "(la salida completa está en $log)" >&2
+  return 1
+}
+
+# sudo_first: asks for the password now, saying that it will not show while it is typed,
+# so the slow part that follows runs without stopping to ask.
+sudo_first() {
+  sudo -n true 2>/dev/null && return 0  # no password needed (CI, or already given)
+  (exec </dev/tty) 2>/dev/null || return 1
+  say "Your password does not show as you type it, not even as asterisks: that is normal. Type it and press Enter." \
+      "Tu contraseña no se ve al escribirla, ni siquiera con asteriscos: es normal. Escríbela y pulsa Enter."
+  sudo -v </dev/tty
+}
+
 # The language, asked first: the system's is the default. AB_LANGUAGE answers it.
 if [ -n "${AB_LANGUAGE:-}" ]; then
   lang="$AB_LANGUAGE"
@@ -192,7 +223,8 @@ claude_update() {
 # The Claude desktop app: its Code tab is Claude Code with windows instead of a terminal,
 # and it loads the same plugins.
 has_desktop() {
-  command -v claude-desktop >/dev/null 2>&1 || [ -d /Applications/Claude.app ] || [ -d "$HOME/Applications/Claude.app" ]
+  command -v claude-desktop >/dev/null 2>&1 || [ -d /Applications/Claude.app ] || [ -d "$HOME/Applications/Claude.app" ] ||
+    [ "$(dpkg-query -W -f='${Status}' claude-desktop 2>/dev/null)" = "install ok installed" ]
 }
 DESKTOP_KEY_URL="https://downloads.claude.ai/claude-desktop/key.asc"
 DESKTOP_KEY="/usr/share/keyrings/claude-desktop-archive-keyring.asc"
@@ -246,8 +278,9 @@ if [ "${AB_NO_INIT:-}" != 1 ]; then
     case "$cmd" in
       sudo*)
         if ask "$(say "Install it now with: $cmd ? It will ask for your password." "¿Lo instalo ahora con: $cmd ? Te pedirá tu contraseña.") $(yn)"; then
+          sudo_first || fail "$(say "git was not installed." "git no se ha instalado.")"
           say "Installing git…" "Instalando git…"
-          quiet sh -c "$cmd" || fail "$(say "git was not installed." "git no se ha instalado.")"
+          busy sh -c "$cmd" || fail "$(say "git was not installed." "git no se ha instalado.")"
           say "✓ git installed" "✓ git instalado"
         else
           say "Install it with this, then run this installer again:" "Instálalo con esto y vuelve a lanzar este instalador:"
@@ -297,9 +330,18 @@ if [ "${AB_NO_INIT:-}" != 1 ]; then
       say "Claude also has a desktop app: the same Claude Code, with windows instead of a terminal. It is the easiest way to work." \
           "Claude tiene también una app de escritorio: el mismo Claude Code, con ventanas en vez de terminal. Es la forma más cómoda de trabajar."
       if ask "$(say "Install it too? On Linux it will ask for your password." "¿La instalo también? En Linux te pedirá tu contraseña.") $(yn)"; then
-        say "Installing the desktop app (it can take a couple of minutes)…" "Instalando la app de escritorio (puede tardar un par de minutos)…"
-        if quiet desktop_install; then
+        ok=1
+        [ "$os" = linux ] && { sudo_first || ok=0; }
+        if [ "$ok" = 1 ]; then
+          say "Installing the desktop app (it can take a couple of minutes)…" "Instalando la app de escritorio (puede tardar un par de minutos)…"
+          busy desktop_install && ok=1 || ok=0
+        fi
+        # What counts is whether the app is there: apt can fail over other packages of the
+        # system, half installed, after installing the app all right.
+        if has_desktop; then
           say "✓ Claude desktop app installed" "✓ app de escritorio de Claude instalada"
+          [ "$ok" = 1 ] || say "(the installer reported other problems of your system, shown above; they are not about Claude)" \
+                               "(el instalador avisó de otros problemas de tu sistema, arriba; no son de Claude)"
         else
           say "The desktop app was not installed; you can use Claude in the terminal." \
               "La app de escritorio no se ha instalado; puedes usar Claude en la terminal."
