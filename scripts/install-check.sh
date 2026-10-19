@@ -108,9 +108,13 @@ check "the program is gone" sh -c "! test -e '$AB'"
 check "the configuration is gone" sh -c "! test -e '$HOME/.config/augmented-brain'"
 check "the notes are gone" sh -c "! test -e '$HOME/augmented-brain'"
 check "the plugin is gone" sh -c "! PATH=\"$HOME/.local/bin:\$PATH\" claude plugin list 2>/dev/null | grep -q 'brain@augmented-brain'"
-# Nothing named after it is left in the home: Claude Code's cache, data and logs of the
-# plugin included. The checkout and this check's own folder do not count.
-find "$HOME" -iname '*augmented*' -not -path "$ROOT*" -not -path "$TMP*" 2>/dev/null >"$TMP/left.txt"
+# Nothing named after it is left where augmented brain and Claude Code write: the
+# program's folder, the configuration, the notes, Claude Code's folder and its cache
+# (~/.cache on Linux, ~/Library/Caches on macOS). A CI runner's home has other things
+# with the name, like the checkout and Go's module cache: those do not count.
+find "$HOME/.local/bin" "$HOME/.config" "$HOME/augmented-brain" "$HOME/.claude" \
+  "$HOME/.cache/claude-cli-nodejs" "$HOME/Library/Caches/claude-cli-nodejs" \
+  -iname '*augmented*' 2>/dev/null >"$TMP/left.txt"
 check "and nothing else is left" sh -c "! test -s '$TMP/left.txt'"
 sed 's/^/    left: /' "$TMP/left.txt"
 
