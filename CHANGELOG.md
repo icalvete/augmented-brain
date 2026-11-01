@@ -11,6 +11,12 @@
   breaking them, and asks to be updated. Nothing changes for notes today: this is
   format 1.
 
+- **Commit and push where you say, or after asking.** Besides `git_allowed_repos`, a
+  space can list repositories in `git_ask_repos`: there, Claude's `git -C <repo>
+  commit` or `push` asks you each time instead of being blocked. In both lists a git
+  worktree of a listed repository counts as it, and the last part of a path may hold a
+  `*` for one folder (`~/code/app-*`).
+
 ## 0.3.3-alpha
 
 Released 2026-11-01.

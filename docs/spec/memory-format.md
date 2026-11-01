@@ -252,13 +252,18 @@ untouchable_hosts = ["db01", "db02", "db03"]    # ssh, scp, sftp, mosh to them: 
 memory = "~/augmented-brain/work/notes"
 work_folders = ["~/augmented-brain/work", "~/code"]   # opening the assistant here selects this space
 backup = "git@github.com:me/brain-work-private.git"
-git_allowed_repos = ["~/code/website"]          # the assistant may commit and push here, with git -C
+git_allowed_repos = ["~/code/website", "~/code/website-*"]   # the assistant may commit and push here, with git -C
+git_ask_repos = ["~/code/infra"]                # the same, once the user confirms each time
 
 [spaces.personal]
 memory = "~/augmented-brain/personal/notes"
 work_folders = ["~/augmented-brain/personal"]
 backup = "git@github.com:me/brain-personal-private.git"
 ```
+
+In `git_allowed_repos` and `git_ask_repos` the last part of a path may hold a `*`, which
+matches one folder (`~/code/website-*` is every `website-<name>` next to `website`), and a
+git worktree of a listed repository counts as that repository, wherever it is.
 
 `production_aws_profiles` and `untouchable_hosts` may also appear inside a space, as older
 versions wrote them: the guard applies the top-level lists and every space's together.

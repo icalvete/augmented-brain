@@ -55,6 +55,11 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
   `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`, o `default` si no hay ninguno.
 - **Lo para**: subir código, root y secretos. `git push`, `sudo …`, un token en un comando,
   y lo que publica como un push: `gh pr merge`, `gh release create`, `glab mr merge`.
+  Puedes dejar que Claude haga commit y push en un repositorio tuyo, siempre escrito
+  como `git -C <repo>`: ponlo en `git_allowed_repos` del espacio para que pase, o en
+  `git_ask_repos` para que te pregunte cada vez. Un worktree de un repositorio de la
+  lista cuenta como él, y `~/code/app-*` vale para cada carpeta `app-<nombre>` junto a
+  `app`.
 
 También mira dentro de `ssh`, de `bash -c`, de los bucles y de lo que una tubería le pasa
 a una shell (`echo 'sudo …' | bash`). Si no puede leer su configuración, te pregunta antes

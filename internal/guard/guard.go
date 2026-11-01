@@ -6,6 +6,7 @@
 package guard
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -31,7 +32,12 @@ type Decision struct {
 // machine-wide; the repositories the assistant may commit in come from the space of the
 // folder it works in. With no configuration, only the general rules apply.
 type Policy struct {
-	GitAllowedRepos       []string // absolute paths where the assistant may commit and push
+	// GitAllowedRepos are the repositories where the assistant may commit and push, and
+	// GitAskRepos those where it may once the user confirms. Absolute paths; the last
+	// part may hold a * (one folder: ~/code/app-* is every app-<name> next to app), and
+	// a git worktree of a listed repository counts as that repository.
+	GitAllowedRepos       []string
+	GitAskRepos           []string
 	ProductionAWSProfiles []string // AWS profiles that need the user's confirmation
 	UntouchableHosts      []string // hosts that need the user's confirmation for ssh, scp, rsync
 	Cwd                   string   // the folder the command runs in, for relative paths
@@ -207,11 +213,16 @@ func (p Policy) git(args []string) Decision {
 		return allow
 	}
 	if dir != "" {
-		if d, err := p.resolve(dir); err == nil && contains(p.GitAllowedRepos, d) {
-			return allow
+		if d, err := p.resolve(dir); err == nil {
+			if repoListed(p.GitAllowedRepos, d) {
+				return allow
+			}
+			if repoListed(p.GitAskRepos, d) {
+				return Decision{Ask, "`git " + args[i] + "` in " + paths.Tilde(d) + " needs the user's go-ahead each time. Before asking, show them what would be committed or pushed."}
+			}
 		}
 	}
-	return Decision{Deny, "`git " + args[i] + "` is for the user. Leave the change ready and checked, show what would be committed, and tell the user it is ready. (To let the assistant commit in a repository, add it to git_allowed_repos in the configuration, and use `git -C <repo>`.)"}
+	return Decision{Deny, "`git " + args[i] + "` is for the user. Leave the change ready and checked, show what would be committed, and tell the user it is ready. (To let the assistant commit in a repository, add it to git_allowed_repos in the configuration, or to git_ask_repos to be asked each time, and use `git -C <repo>`.)"}
 }
 
 // sudo allows running as another user, but never as root, and checks the command it
@@ -669,6 +680,64 @@ func (p Policy) resolve(path string) (string, error) {
 		path = filepath.Join(p.Cwd, path)
 	}
 	return paths.Resolve(path)
+}
+
+// repoListed reports whether the repository at dir (resolved) is in list: the same
+// path, a match of an entry with a * in its last part, or a worktree of one of them.
+func repoListed(list []string, dir string) bool {
+	main := mainRepo(dir)
+	for _, x := range list {
+		for _, d := range []string{dir, main} {
+			if d == "" {
+				continue
+			}
+			if x == d {
+				return true
+			}
+			if strings.Contains(filepath.Base(x), "*") && filepath.Dir(x) == filepath.Dir(d) {
+				if ok, err := filepath.Match(filepath.Base(x), filepath.Base(d)); err == nil && ok {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// mainRepo is the repository a git worktree belongs to, read from its .git file
+// ("gitdir: <repo>/.git/worktrees/<name>", whose commondir leads to <repo>/.git); empty
+// when dir is not a linked worktree. A submodule has a .git file too, but its folder
+// is not a worktree's, so it never counts as its parent repository.
+func mainRepo(dir string) string {
+	data, err := os.ReadFile(filepath.Join(dir, ".git"))
+	if err != nil {
+		return "" // a folder (a repository of its own) or nothing
+	}
+	gitdir, ok := strings.CutPrefix(strings.TrimSpace(string(data)), "gitdir:")
+	if !ok {
+		return ""
+	}
+	gitdir = strings.TrimSpace(gitdir)
+	if !filepath.IsAbs(gitdir) {
+		gitdir = filepath.Join(dir, gitdir)
+	}
+	common, err := os.ReadFile(filepath.Join(gitdir, "commondir"))
+	if err != nil {
+		return ""
+	}
+	c := strings.TrimSpace(string(common))
+	if !filepath.IsAbs(c) {
+		c = filepath.Join(gitdir, c)
+	}
+	c = filepath.Clean(c)
+	if filepath.Base(c) != ".git" {
+		return ""
+	}
+	r, err := paths.Resolve(filepath.Dir(c))
+	if err != nil {
+		return ""
+	}
+	return r
 }
 
 func contains(list []string, s string) bool {

@@ -161,7 +161,7 @@ func policy(cfgDir, dir string) guard.Policy {
 	default:
 		p.ProductionAWSProfiles, p.UntouchableHosts = c.GuardLists()
 		if s != nil {
-			p.GitAllowedRepos = s.GitAllowedRepos
+			p.GitAllowedRepos, p.GitAskRepos = s.GitAllowedRepos, s.GitAskRepos
 		}
 	}
 	return p

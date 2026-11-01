@@ -305,3 +305,27 @@ func TestFormat(t *testing.T) {
 		t.Errorf("format written twice:\n%s", data)
 	}
 }
+
+// git_ask_repos is read like git_allowed_repos, and an entry with a * keeps it.
+func TestGitAskRepos(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	dir := t.TempDir()
+	write(t, dir, "language = \"en\"\n\n[spaces.work]\nmemory = \"~/m\"\nwork_folders = [\"~/w\"]\n"+
+		"git_allowed_repos = [\"~/w/app-*\"]\ngit_ask_repos = [\"~/w/infra\"]\n")
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := c.Spaces["work"]
+	if len(s.GitAskRepos) != 1 || !filepath.IsAbs(s.GitAskRepos[0]) || filepath.Base(s.GitAllowedRepos[0]) != "app-*" {
+		t.Fatalf("read: %v %v", s.GitAllowedRepos, s.GitAskRepos)
+	}
+	if err := c.Save(); err != nil {
+		t.Fatal(err)
+	}
+	data, _ := os.ReadFile(filepath.Join(dir, FileName))
+	if !strings.Contains(string(data), `git_ask_repos = ["~/w/infra"]`) || !strings.Contains(string(data), `git_allowed_repos = ["~/w/app-*"]`) {
+		t.Errorf("saved:\n%s", data)
+	}
+}

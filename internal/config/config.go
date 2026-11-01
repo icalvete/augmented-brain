@@ -36,6 +36,7 @@ type Space struct {
 	ProductionAWSProfiles []string `toml:"production_aws_profiles,omitempty"`
 	UntouchableHosts      []string `toml:"untouchable_hosts,omitempty"`
 	GitAllowedRepos       []string `toml:"git_allowed_repos,omitempty"`
+	GitAskRepos           []string `toml:"git_ask_repos,omitempty"`
 }
 
 // Config is the whole configuration file.
@@ -145,6 +146,11 @@ func (c *Config) normalize() error {
 				return fmt.Errorf("space %q: %w", name, err)
 			}
 		}
+		for i, f := range s.GitAskRepos {
+			if s.GitAskRepos[i], err = absPath(f); err != nil {
+				return fmt.Errorf("space %q: %w", name, err)
+			}
+		}
 	}
 	return nil
 }
@@ -171,6 +177,7 @@ func (c *Config) Save() error {
 		if len(cp.GitAllowedRepos) == 0 {
 			cp.GitAllowedRepos = nil
 		}
+		cp.GitAskRepos = tildeAll(s.GitAskRepos)
 		out.Spaces[name] = &cp
 	}
 	var b strings.Builder
@@ -216,6 +223,7 @@ func AddSpace(dir string, s *Space) error {
 	cp.Memory = tilde(s.Memory)
 	cp.WorkFolders = tildeAll(s.WorkFolders)
 	cp.GitAllowedRepos = tildeAll(s.GitAllowedRepos)
+	cp.GitAskRepos = tildeAll(s.GitAskRepos)
 	block.Spaces[s.Name] = &cp
 	if err := enc.Encode(struct {
 		Spaces map[string]*Space `toml:"spaces"`

@@ -544,6 +544,7 @@ func updateSpace(cfgDir string, s *config.Space) error {
 		"production_aws_profiles": s.ProductionAWSProfiles,
 		"untouchable_hosts":       s.UntouchableHosts,
 		"git_allowed_repos":       s.GitAllowedRepos,
+		"git_ask_repos":           s.GitAskRepos,
 	} {
 		if len(values) == 0 && key != "work_folders" {
 			continue

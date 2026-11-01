@@ -55,6 +55,10 @@ session starts from there. Opening, resuming and closing work the same way.
   `--profile`, `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`, or `default` when none is set.
 - **Stop**: pushing code, root and secrets. `git push`, `sudo …`, a token in a command,
   and what publishes like a push: `gh pr merge`, `gh release create`, `glab mr merge`.
+  You can let Claude commit and push in a repository of yours, always written as
+  `git -C <repo>`: list it in the space's `git_allowed_repos` to let it through, or in
+  `git_ask_repos` to be asked each time. A worktree of a listed repository counts as
+  it, and `~/code/app-*` covers every `app-<name>` folder next to `app`.
 
 It also looks inside `ssh`, `bash -c`, loops, and what a pipe feeds a shell
 (`echo 'sudo …' | bash`). If its configuration cannot be read, it asks you before every
