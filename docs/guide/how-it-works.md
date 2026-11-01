@@ -279,8 +279,8 @@ address to open yourself. What you find there, space by space:
   keeps each conversation). You can delete the transcript of an ended session; that
   session can then no longer be resumed.
 - **Profile**: who you are and how you like to work, the same one every space uses.
-- **Health**: notes that are not valid, the index, the last backup and the last weekly
-  review.
+- **Health**: notes that are not valid, repositories that notes point at and that are no
+  longer on this computer, the index, the last backup and the last weekly review.
 
 It changes your notes the same way Claude does, with the same program, and they wait for
 each other: you can have both open at once.

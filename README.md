@@ -163,7 +163,7 @@ tells you at the start of the next one.
 | `augmented-brain init` | Sets everything up: the `work` and `personal` spaces and the plugin. The installer runs it; `--custom` to choose yourself |
 | `augmented-brain space add` | Add another space (personal, a client…) |
 | `augmented-brain doctor` | Say what is missing, and how to fix it |
-| `augmented-brain check` | Check the notes of this folder's space and rebuild its index |
+| `augmented-brain check` | Check the notes of this folder's space and rebuild its index; it also warns of repositories in notes that are no longer on this computer |
 | `augmented-brain backup setup <url>` | Back up this space to a private git repository |
 | `augmented-brain backup` | Save the latest changes (`--all` for every space) |
 | `augmented-brain restore <url>` | Bring a space back on a new machine |

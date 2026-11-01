@@ -72,6 +72,12 @@ updated: 2026-10-15
 ---
 ```
 
+A repository in `repos:` that is in none of the space's work folders (it was moved,
+renamed or deleted, or this computer never had it) is reported, never fixed by itself:
+`augmented-brain check` and the panel's Health page list them, and reading the task
+tells the assistant to ask the user where it is now. A closed task is not checked. An
+absolute path, or one starting with `~`, is taken as it is.
+
 ### Task fields
 
 Tasks add the fields that drive the whole workflow:

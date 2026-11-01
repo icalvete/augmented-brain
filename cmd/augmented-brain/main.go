@@ -21,6 +21,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/mcpserver"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
@@ -144,6 +145,11 @@ func cmdCheck(out, errOut io.Writer) int {
 	for _, p := range problems {
 		fmt.Fprintln(out, "  ✗", p.Error())
 	}
+	if b, err := brain.Open(c, s); err == nil {
+		for _, x := range b.Mismatches() {
+			fmt.Fprintln(out, "  !", i18n.T(c.Language, "check.repo", x.Note, x.Repo, strings.Join(tildes(s.WorkFolders), ", ")))
+		}
+	}
 	fmt.Fprintln(out, i18n.T(c.Language, "check.summary", s.Name,
 		i18n.Count(c.Language, "notes", len(m.Notes)), i18n.Count(c.Language, "problems", len(problems))))
 	if len(problems) > 0 {
@@ -241,4 +247,13 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, "augmented-brain hook:", err)
 	}
 	return 0
+}
+
+// tildes writes each path under the home folder with ~, as a person reads it.
+func tildes(ps []string) []string {
+	out := make([]string, len(ps))
+	for i, p := range ps {
+		out[i] = paths.Tilde(p)
+	}
+	return out
 }

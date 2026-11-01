@@ -10,6 +10,7 @@
   <dt>{{t "f.dates"}}</dt><dd>{{tf "dates" .H.Created .H.Updated}}</dd>
   <dt>{{t "f.id"}}</dt><dd><code>{{.H.ID}}</code></dd>
 </dl>
+{{if .MissingRepos}}<p class="flash warn">{{range $i, $r := .MissingRepos}}{{if $i}}, {{end}}<code>{{$r}}</code>{{end}}: {{t "repos.missing"}}</p>{{end}}
 
 {{if .Watch}}<h2>{{t "watch"}}</h2><ul class="plain">
 {{range .Watch}}<li>{{if .Done}}<s>{{.Date}} · {{.What}}</s>{{else}}{{.Date}} · {{.What}}

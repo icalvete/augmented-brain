@@ -378,8 +378,9 @@ func (s *Server) task(v *view, r *http.Request) (string, page, error) {
 		Children             []taskRow
 		Parent               *taskRow
 		Live, CanHaveSubs    bool
+		MissingRepos         []string
 	}{h, n.Body, v.status(h.Status), v.areaTitleOrEmpty(h.Area), v.steps(done, len(steps)), v.areaOptions(h.Area), ph, h.Watch,
-		steps, kids, parent, live, live && h.Parent == ""}
+		steps, kids, parent, live, live && h.Parent == "", v.b.MissingRepos(n)}
 	return "task", p, nil
 }
 
@@ -743,11 +744,12 @@ func (s *Server) space(v *view, _ *http.Request) (string, page, error) {
 	d := struct {
 		Memory, Backup, BackupTime, BackupError, BackupWarning, LastReview string
 		WorkFolders, Problems                                              []string
+		Mismatches                                                         []brain.Mismatch
 		Notes                                                              int
 		IndexStale, BackupKnown, BackupOK, ReviewDue, IsDefault            bool
 	}{Memory: sp.Memory, Backup: sp.Backup, LastReview: v.b.LastReview(), WorkFolders: sp.WorkFolders,
 		Problems: problems, Notes: len(v.b.Mem.Notes), IndexStale: string(current) != v.b.Mem.Index(v.lang),
-		ReviewDue: due, IsDefault: v.c.DefaultSpace == sp.Name}
+		ReviewDue: due, IsDefault: v.c.DefaultSpace == sp.Name, Mismatches: v.b.Mismatches()}
 	if st, ok := backup.LastStatus(v.c.Dir, sp.Name); ok {
 		d.BackupKnown, d.BackupOK, d.BackupError, d.BackupWarning = true, st.OK, st.Error, st.Warning
 		d.BackupTime = st.Time.Local().Format("2006-01-02 15:04")

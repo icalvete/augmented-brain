@@ -165,7 +165,7 @@ Claude te lo dice al empezar la siguiente.
 | `augmented-brain init` | Lo prepara todo: los espacios `trabajo` y `personal` y el plugin. Lo lanza el instalador; `--custom` para elegir tú |
 | `augmented-brain space add` | Añade otro espacio (personal, un cliente…) |
 | `augmented-brain doctor` | Dice qué falta y cómo arreglarlo |
-| `augmented-brain check` | Revisa las notas del espacio de esta carpeta y rehace su índice |
+| `augmented-brain check` | Revisa las notas del espacio de esta carpeta y rehace su índice; también avisa de los repositorios de las notas que ya no están en este ordenador |
 | `augmented-brain backup setup <url>` | Conecta este espacio a un repositorio git privado |
 | `augmented-brain backup` | Guarda los últimos cambios (`--all` para todos los espacios) |
 | `augmented-brain restore <url>` | Recupera un espacio en una máquina nueva |

@@ -4,6 +4,9 @@
   <li class="{{if .Problems}}bad{{else}}good{{end}}">{{tf "space.notes" .Notes}}{{if .Problems}} · {{tf "space.invalid" (len .Problems)}}{{end}}</li>
   {{range .Problems}}<li class="bad sub"><code>{{.}}</code></li>{{end}}
   {{if .Problems}}<li class="sub">{{t "space.invalid.fix"}}</li>{{end}}
+  {{if .Mismatches}}<li class="warn">{{tf "space.repos" (len .Mismatches)}}</li>
+  {{range .Mismatches}}<li class="warn sub"><a href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.Note}}">{{.Title}}</a> · <code>{{.Repo}}</code></li>{{end}}
+  <li class="sub">{{t "space.repos.fix"}}</li>{{end}}
   <li class="{{if .IndexStale}}warn{{else}}good{{end}}">{{if .IndexStale}}{{t "space.index.stale"}}{{else}}{{t "space.index.ok"}}{{end}}</li>
   {{if .Backup}}
     {{if .BackupKnown}}<li class="{{if .BackupOK}}good{{else}}bad{{end}}">{{if .BackupOK}}{{tf "space.backup.ok" .BackupTime}}{{else}}{{tf "space.backup.failed" .BackupTime .BackupError}}{{end}}</li>

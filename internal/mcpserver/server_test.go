@@ -418,3 +418,29 @@ func TestSubtasksAndSteps(t *testing.T) {
 		t.Errorf("close with an open subtask: %s", out)
 	}
 }
+
+// task_get says when a repository of the task is in none of the work folders, so the
+// assistant asks the user instead of working on a folder that is gone.
+func TestTaskGetMissingRepo(t *testing.T) {
+	cs := connect(t, space(t))
+	if _, isErr := call(t, cs, "task_new", map[string]any{"title": "Ship it"}); isErr {
+		t.Fatal("task_new failed")
+	}
+	home := os.Getenv("HOME")
+	if err := os.MkdirAll(filepath.Join(home, "work", "app"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(home, "brain", "tasks", "task-ship-it.md")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data = []byte(strings.Replace(string(data), "\ntype: task\n", "\ntype: task\nrepos: [app, gone]\n", 1))
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out, isErr := call(t, cs, "task_get", map[string]any{"id": "task-ship-it"})
+	if isErr || !strings.Contains(out, "Not on this computer: repos gone of this task") || strings.Contains(out, "repos app,") {
+		t.Errorf("task_get:\n%s", out)
+	}
+}

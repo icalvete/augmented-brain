@@ -54,6 +54,7 @@ var messages = map[string]map[string]string{
 		"config.missing":      "%v.\nRun `augmented-brain init` to create one.",
 		"check.summary":       "space %s: %s, %s",
 		"check.rebuilt":       "%s rebuilt",
+		"check.repo":          "%s: repository %s is in none of the work folders (%s). Was it moved, renamed or deleted? Fix repos: in the note.",
 		"backup.setup":        "Space %s will back up to %s. Run `augmented-brain backup` to make the first copy.",
 		"backup.saved":        "✓ %s: changes saved and pushed to %s",
 		"backup.same":         "✓ %s: nothing new; %s is up to date",
@@ -249,6 +250,9 @@ var messages = map[string]map[string]string{
 		"panel.err.session":             "That session is no longer waiting to be recovered.",
 		"panel.err.confirm":             "Tick the box to confirm.",
 		"panel.err.delete":              "That transcript cannot be deleted: only those of ended sessions, not written in the last minutes.",
+		"panel.repos.missing":           "not in any work folder of this space on this computer. Was it moved, renamed or deleted? Fix it in the task's repos:, or ask your assistant to.",
+		"panel.space.repos":             "Repositories that notes point at and that are not on this computer: %d",
+		"panel.space.repos.fix":         "They are in none of the space's work folders: moved, renamed or deleted. Nothing is changed by itself; fix repos: in each note, or ask your assistant to.",
 	},
 	"es": {
 		"doctor.noconfig":        "no hay configuración en %s",
@@ -292,6 +296,7 @@ var messages = map[string]map[string]string{
 		"config.missing":         "%v.\nLanza `augmented-brain init` para crearla.",
 		"check.summary":          "espacio %s: %s, %s",
 		"check.rebuilt":          "%s rehecho",
+		"check.repo":             "%s: el repositorio %s no está en ninguna carpeta de trabajo (%s). ¿Se movió, cambió de nombre o se borró? Corrige repos: en la nota.",
 		"backup.setup":           "El espacio %s hará sus copias en %s. Lanza `augmented-brain backup` para hacer la primera.",
 		"backup.saved":           "✓ %s: cambios guardados y subidos a %s",
 		"backup.same":            "✓ %s: nada nuevo; %s está al día",
@@ -487,6 +492,9 @@ var messages = map[string]map[string]string{
 		"panel.err.session":             "Esa sesión ya no está esperando a que la recuperes.",
 		"panel.err.confirm":             "Marca la casilla para confirmar.",
 		"panel.err.delete":              "Esa transcripción no se puede borrar: solo las de sesiones terminadas que no se han escrito en los últimos minutos.",
+		"panel.repos.missing":           "no está en ninguna carpeta de trabajo de este espacio en este ordenador. ¿Se movió, cambió de nombre o se borró? Corrígelo en repos: de la tarea, o pídeselo a tu asistente.",
+		"panel.space.repos":             "Repositorios a los que apuntan las notas y que no están en este ordenador: %d",
+		"panel.space.repos.fix":         "No están en ninguna carpeta de trabajo del espacio: se movieron, cambiaron de nombre o se borraron. Nada se cambia solo; corrige repos: en cada nota, o pídeselo a tu asistente.",
 	},
 }
 

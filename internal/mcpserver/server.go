@@ -167,6 +167,11 @@ func New(open Resolver, lockFile string) *mcp.Server {
 			if p := b.Mem.ParentOf(n); p != nil {
 				out += fmt.Sprintf("\nPart of: %s (%s) · %s\n", p.Header.ID, p.Header.Title, p.Header.Status)
 			}
+			if miss := b.MissingRepos(n); len(miss) > 0 {
+				out += fmt.Sprintf("\nNot on this computer: repos %s of this task is in none of the space's work folders (%s); it was moved, renamed or deleted. "+
+					"Tell the user in one line and ask where it is now; do not change repos unless they say so.\n",
+					strings.Join(miss, ", "), strings.Join(b.Space.WorkFolders, ", "))
+			}
 			if kids := b.Mem.Children(n.Header.ID); len(kids) > 0 {
 				out += "\nSubtasks:\n"
 				for _, c := range kids {

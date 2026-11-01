@@ -281,8 +281,9 @@ dirección para que la abras tú. Lo que encuentras, espacio por espacio:
   ficheros donde Claude Code guarda cada conversación). Puedes borrar la transcripción
   de una sesión terminada; esa sesión ya no se podrá retomar.
 - **Perfil**: quién eres y cómo te gusta trabajar, el mismo para todos los espacios.
-- **Estado**: notas que no son válidas, el índice, la última copia de seguridad y la
-  última revisión semanal.
+- **Estado**: notas que no son válidas, repositorios a los que apuntan las notas y que ya
+  no están en este ordenador, el índice, la última copia de seguridad y la última
+  revisión semanal.
 
 Cambia tus notas igual que Claude, con el mismo programa, y se esperan el uno al otro:
 puedes tener los dos abiertos a la vez.

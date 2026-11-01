@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Repositories that are no longer there.** A note's `repos:` names folders inside the
+  space's work folder. When one is not there any more (it was moved, renamed or
+  deleted), `augmented-brain check` and the panel's Health page now say so, the task's
+  page in the panel shows it, and reading the task tells Claude to ask you where it is
+  now. Nothing is changed by itself. Closed tasks are not checked.
+
 ## 0.3.2-alpha
 
 Released 2026-11-01.
