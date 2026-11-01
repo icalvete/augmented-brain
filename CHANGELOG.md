@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.3.2-alpha
+
+Released 2026-11-01.
 
 - **Sessions in the panel.** A new section lists your Claude sessions of each space on
   this computer. Those that did not end show what was said after the last journal
