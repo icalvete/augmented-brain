@@ -237,7 +237,7 @@ check "area created" "grep -qil 'shop' '$MEMORY'/areas/*.md 2>/dev/null"
 check "production profile saved" "grep -q 'production_aws_profiles.*shop-prod' '$CONFIG'"
 check "host saved" "grep -q 'untouchable_hosts.*db-main' '$CONFIG'"
 check "person saved with nickname" "grep -ql 'Marquitos' '$MEMORY'/people/*.md 2>/dev/null"
-check "offers the backup" "grep -qi 'backup' '$OUT/9.6'"
+check "offers the backup" "grep -qiE 'back ?up|copia' '$OUT/9.6'"
 
 echo "10. reminders come up at the start, and the weekly review empties the inbox"
 # The profile is saved now (scenario 9), so the session start says what is due.
@@ -261,6 +261,88 @@ EOF
 ask 10.3
 check "review saved" "ls '$MEMORY'/reviews/review-*.md >/dev/null 2>&1"
 check "inbox emptied" "! grep -q '$REMIND_WORD' '$MEMORY/inbox.md'"
+
+# The space's state on this machine (which task is active, its sessions), edited below
+# to make time pass without waiting.
+STATE="$AB_CONFIG_DIR/state/$SPACE.json"
+# state_edit <python statements on s, the state, and ago(minutes), a time string>
+state_edit() {
+  python3 -I - "$STATE" "$1" <<'EOF'
+import json, sys, datetime
+path, code = sys.argv[1], sys.argv[2]
+s = json.load(open(path))
+def ago(minutes):
+    t = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(minutes=minutes)
+    return t.strftime("%Y-%m-%dT%H:%M:%SZ")
+exec(code)
+json.dump(s, open(path, "w"))
+EOF
+}
+
+echo "11. a task left 20 minutes without notes: the assistant is reminded to write"
+STOP_WORD=SANDPIPER
+prompt 11.1 <<EOF
+Open a new task titled "Choose a newsletter tool" and keep working on it. We talked it over and
+went for $STOP_WORD. Reply DONE.
+EOF
+# The task was last written 25 minutes ago, and nobody was reminded since; then, in the
+# same conversation, a question that has nothing to do with the task. The reminder must
+# come, and must not spill into the answer. (Whether the assistant then writes depends
+# on what is still missing: the method already has it note decisions as they come.)
+prompt 11.2 <<EOF
+What is 2 + 2? Answer with the number alone.
+EOF
+cont=
+ask 11.1
+NEWS="$(grep -l 'newsletter' "$MEMORY"/tasks/*.md 2>/dev/null | head -n 1)"
+check "newsletter task opened" "[ -n '$NEWS' ]"
+state_edit 's["since"] = ago(25); s.pop("reminded", None)'
+cont=1
+ask 11.2
+cont=
+check "the Stop hook reminded" "grep -q '\"reminded\"' '$STATE'"
+# What the user sees last is the answer, or nothing more: no line about the reminder.
+check "the answer stays clean" "! grep -qv -e '^4\$' -e '^\$' '$OUT/11.2'"
+check "the decision is in the journal" "grep -q '$STOP_WORD' '$NEWS'"
+
+echo "12. a compaction keeps the summary and points the task at it"
+COMPACT_WORD=KINGFISHER
+prompt 12.1 <<EOF
+About the newsletter tool: the first issue goes out on the day we call $COMPACT_WORD. Just acknowledge it in one word.
+EOF
+prompt 12.2 <<EOF
+/compact
+EOF
+cont=
+ask 12.1
+cont=1
+ask 12.2
+cont=
+check "summary kept in archive/sessions" "ls '$MEMORY'/archive/sessions/*.md >/dev/null 2>&1"
+check "the task's journal points at it" "grep -q 'archive/sessions/' '$NEWS'"
+
+echo "13. a session that never ended can be recovered"
+RECOVER_WORD="PELICAN$(date +%s)"
+prompt 13.1 <<EOF
+Park the newsletter task with next step "compare prices". Then, just between us and not to be
+written anywhere: the shop's opening day is $RECOVER_WORD. Reply OK.
+EOF
+ask 13.1
+# Make that session look like it was closed by force a quarter of an hour ago: not ended,
+# and its transcript untouched since.
+state_edit '
+se = s["sessions"][-1]
+se["closed"] = False
+se.pop("reported", None)
+import os, time
+t = time.time() - 15 * 60
+os.utime(se["transcript"], (t, t))'
+prompt 13.2 <<EOF
+If an earlier session of this space can be recovered, recover it now with session_recover, without
+asking me. Then reply with the shop's opening day word from it, alone.
+EOF
+ask 13.2
+check "recovers what was only said" "grep -q '$RECOVER_WORD' '$OUT/13.2'"
 
 echo
 echo "$pass OK, $fail FAIL"

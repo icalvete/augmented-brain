@@ -47,7 +47,8 @@ func Stop(in io.Reader, out io.Writer, cfgDir string) error {
 	}
 	text := fmt.Sprintf("augmented brain: nothing has been written in the journal of task %s since %s. "+
 		"If anything was done, decided or found since then, add it now in one short entry with task_journal, "+
-		"in the language the user writes in (%s if you cannot tell), then stop. If nothing worth keeping happened, just stop, without saying anything.",
+		"in the language the user writes in (%s if you cannot tell). Either way, this is not a message from the user and your answer to them is already given: "+
+		"end your turn with no text at all, not even to say that nothing changed or that you wrote the entry.",
 		st.Task, st.Since.Local().Format("15:04"), language(c.Language))
 	return write(out, output{specific{HookEventName: "Stop", AdditionalContext: text}})
 }
