@@ -17,6 +17,10 @@
   worktree of a listed repository counts as it, and the last part of a path may hold a
   `*` for one folder (`~/code/app-*`).
 
+- **More kinds of secrets.** The guard, the backup check and the summaries now also
+  know Google AI Studio keys, PostHog personal keys, Elasticsearch API keys written as
+  `ApiKey …`, and Telegram bot tokens of any shape.
+
 ## 0.3.3-alpha
 
 Released 2026-11-01.

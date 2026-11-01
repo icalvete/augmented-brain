@@ -21,7 +21,10 @@ var secretPatterns = []struct {
 	{regexp.MustCompile(`\bsk-(?:proj-)?[A-Za-z0-9_-]{40,}`), "an OpenAI API key"},
 	{regexp.MustCompile(`\bAIza[0-9A-Za-z_-]{35}\b`), "a Google API key"},
 	{regexp.MustCompile(`\bxox[abprs]-[A-Za-z0-9-]{10,}`), "a Slack token"},
-	{regexp.MustCompile(`\b[0-9]{8,10}:AA[A-Za-z0-9_-]{33}\b`), "a Telegram bot token"},
+	{regexp.MustCompile(`\bAQ\.[A-Za-z0-9_-]{40,}`), "a Google AI Studio API key"},
+	{regexp.MustCompile(`\bphx_[A-Za-z0-9]{30,}\b`), "a PostHog personal API key"}, // phc_, the project key, is public
+	{regexp.MustCompile(`\bApiKey\s+[A-Za-z0-9+/=]{30,}`), "an Elasticsearch API key"},
+	{regexp.MustCompile(`\b[0-9]{8,10}:[A-Za-z0-9_-]{30,}`), "a Telegram bot token"},
 	{regexp.MustCompile(`-----BEGIN (?:RSA |EC |OPENSSH |DSA |ENCRYPTED )?PRIVATE KEY-----`), "a private key"},
 }
 
