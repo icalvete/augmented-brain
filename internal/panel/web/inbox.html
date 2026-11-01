@@ -1,0 +1,17 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "inbox"}}</h1>
+<form method="post" action="{{$.Base}}/inbox/capture" class="stack box">
+  <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}">
+  <label>{{t "f.capture"}} <input name="text" required maxlength="1000"></label>
+  <label>{{t "f.remind"}} <input type="date" name="remind_on"></label>
+  <button type="submit">{{t "capture"}}</button>
+</form>
+<p class="hint">{{t "inbox.hint"}}</p>
+{{if .Entries}}<ul class="cards">
+{{range .Entries}}<li class="card">
+  <div class="title">{{.Text}}</div>
+  <div class="meta"><span>{{.Date}}</span>{{if .Remind}}<span class="badge">{{t "f.remind"}}: {{.Remind}}</span>{{end}}</div>
+  <form method="post" action="{{$.Base}}/inbox/done" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}"><input type="hidden" name="date" value="{{.Date}}"><input type="hidden" name="text" value="{{.Text}}"><button type="submit" class="small">{{t "inbox.done"}}</button></form>
+</li>{{end}}
+</ul>{{else}}<p class="empty">{{t "inbox.none"}}</p>{{end}}
+{{end}}{{end}}

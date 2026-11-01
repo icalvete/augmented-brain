@@ -90,7 +90,7 @@ func TestTools(t *testing.T) {
 		names = append(names, tl.Name)
 	}
 	sort.Strings(names)
-	want := "area_new backup_setup capture knowledge_new pending person_save profile_save review_done safety_save session_recover task_close task_get task_journal task_new task_park task_update weekly_review where_am_i"
+	want := "area_new backup_setup capture knowledge_new pending person_save profile_save review_done safety_save session_recover task_close task_get task_journal task_new task_park task_step task_update weekly_review where_am_i"
 	if got := strings.Join(names, " "); got != want {
 		t.Errorf("tools = %s", got)
 	}
@@ -383,5 +383,38 @@ func TestRecoverAfterTheLastWrite(t *testing.T) {
 	out, _ := call(t, cs, "session_recover", map[string]any{})
 	if !strings.Contains(out, "not yet") || strings.Contains(out, "already journaled") {
 		t.Errorf("recover: %s", out)
+	}
+}
+
+func TestSubtasksAndSteps(t *testing.T) {
+	cs := connect(t, space(t))
+	if out, isErr := call(t, cs, "task_new", map[string]any{"title": "New website"}); isErr {
+		t.Fatal(out)
+	}
+	if out, isErr := call(t, cs, "task_new", map[string]any{"title": "Domain name", "parent": "task-new-website"}); isErr || !strings.Contains(out, "parent: task-new-website") {
+		t.Fatalf("task_new with parent: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_new", map[string]any{"title": "Deeper", "parent": "task-domain-name"}); !isErr || !strings.Contains(out, "one level") {
+		t.Errorf("grandchild: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_step", map[string]any{"id": "task-new-website", "add": "Pick a theme"}); isErr || !strings.Contains(out, "1. [ ] Pick a theme") {
+		t.Errorf("task_step add: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_step", map[string]any{"id": "task-new-website", "number": 1, "done": true}); isErr || !strings.Contains(out, "1. [x] Pick a theme") {
+		t.Errorf("task_step tick: %s", out)
+	}
+	out, _ := call(t, cs, "pending", nil)
+	if !strings.Contains(out, "- task-new-website (New website) · definition · 1/1 steps · waits on me") ||
+		!strings.Contains(out, "\n  - task-domain-name (Domain name) · definition") {
+		t.Errorf("pending: %s", out)
+	}
+	if out, _ := call(t, cs, "task_get", map[string]any{"id": "task-new-website"}); !strings.Contains(out, "Subtasks:\n- task-domain-name (Domain name) · definition") {
+		t.Errorf("task_get: %s", out)
+	}
+	if out, _ := call(t, cs, "task_get", map[string]any{"id": "task-domain-name"}); !strings.Contains(out, "Part of: task-new-website (New website)") {
+		t.Errorf("task_get child: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_close", map[string]any{"id": "task-new-website", "result": "Up"}); !isErr || !strings.Contains(out, "task-domain-name") {
+		t.Errorf("close with an open subtask: %s", out)
 	}
 }

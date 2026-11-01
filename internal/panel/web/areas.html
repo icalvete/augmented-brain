@@ -1,0 +1,17 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "areas"}}</h1>
+<p class="hint">{{t "areas.hint"}}</p>
+{{if .Rows}}<ul class="cards">
+{{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
+  <div class="meta">{{if .Summary}}<span>{{.Summary}}</span>{{end}}<span class="badge">{{tf "areas.tasks" .Count}}</span></div></li>{{end}}
+</ul>{{else}}<p class="empty">{{t "areas.none"}}</p>{{end}}
+<details class="box">
+  <summary>{{t "area.new"}}</summary>
+  <form method="post" action="{{$.Base}}/area/new" class="stack">
+    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}">
+    <label>{{t "f.title"}} <input name="title" required maxlength="200"></label>
+    <label>{{t "f.summary"}} <input name="summary" maxlength="500"></label>
+    <button type="submit">{{t "create"}}</button>
+  </form>
+</details>
+{{end}}{{end}}

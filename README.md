@@ -167,11 +167,20 @@ tells you at the start of the next one.
 | `augmented-brain backup setup <url>` | Back up this space to a private git repository |
 | `augmented-brain backup` | Save the latest changes (`--all` for every space) |
 | `augmented-brain restore <url>` | Bring a space back on a new machine |
+| `augmented-brain panel` | Open the panel in your browser: see and edit your tasks, reminders, inbox and profile (`panel stop` to stop it) |
 | `augmented-brain update` | Update augmented brain and its Claude Code plugin (Claude tells you when there is a new version) |
 | `augmented-brain uninstall` | Remove the program and the plugin; your notes stay (`--all` to start from scratch) |
 
 Everyday work happens inside Claude Code, in plain words: "new task…", "what is
 pending?", "park it", "note this in the inbox".
+
+### The panel
+
+To see everything at a glance, or change something without asking Claude, open the
+panel: type `/brain:panel` in Claude, or run `augmented-brain panel`. It opens a page in
+your browser with your tasks, reminders, inbox, areas, knowledge, people and profile,
+space by space. It runs only on your computer and only while you use it: after 30
+minutes without use it stops by itself. Details: [The panel](docs/guide/how-it-works.md#the-panel).
 
 ## How it works
 

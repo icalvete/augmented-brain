@@ -52,6 +52,7 @@ type Header struct {
 	Updated string   `yaml:"updated"`
 
 	// Tasks only.
+	Parent    string  `yaml:"parent,omitempty"` // a subtask's parent task; one level only
 	Status    string  `yaml:"status,omitempty"`
 	WaitingOn string  `yaml:"waiting_on,omitempty"`
 	Next      string  `yaml:"next,omitempty"`

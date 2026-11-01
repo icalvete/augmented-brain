@@ -37,6 +37,11 @@ func TestCommand(t *testing.T) {
 		{"printf 'su propia área\\n' > nota.md", Allow},                         // Spanish "su" in an argument
 		{"cat > nota.md <<'EOF'\nTiene su propia área.\nsudo nada\nEOF", Allow}, // heredoc body is data
 		{"cat <<EOF\nhola\nEOF\nls", Allow},
+		// the panel the plugin's /brain:panel command opens
+		{"augmented-brain panel", Allow},
+		{"augmented-brain panel stop", Allow},
+		{"~/.local/bin/augmented-brain panel --no-browser", Allow},
+		{`PATH="$PATH:$HOME/.local/bin" augmented-brain panel`, Allow},
 
 		// git
 		{"git commit -m x", Deny},

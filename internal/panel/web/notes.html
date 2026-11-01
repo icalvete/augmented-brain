@@ -1,0 +1,8 @@
+{{define "content"}}{{with .D}}
+<h1>{{.Heading}}</h1>
+<p class="hint">{{.Hint}}</p>
+{{if .Rows}}<ul class="cards">
+{{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
+  <div class="meta">{{if .Kind}}<span class="badge">{{.Kind}}</span>{{end}}{{if .Summary}}<span>{{.Summary}}</span>{{end}}</div></li>{{end}}
+</ul>{{else}}<p class="empty">{{.Empty}}</p>{{end}}
+{{end}}{{end}}

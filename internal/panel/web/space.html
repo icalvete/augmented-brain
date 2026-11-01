@@ -1,0 +1,21 @@
+{{define "content"}}{{with .D}}
+<h1>{{tf "space.title" $.Space}}</h1>
+<ul class="health">
+  <li class="{{if .Problems}}bad{{else}}good{{end}}">{{tf "space.notes" .Notes}}{{if .Problems}} · {{tf "space.invalid" (len .Problems)}}{{end}}</li>
+  {{range .Problems}}<li class="bad sub"><code>{{.}}</code></li>{{end}}
+  {{if .Problems}}<li class="sub">{{t "space.invalid.fix"}}</li>{{end}}
+  <li class="{{if .IndexStale}}warn{{else}}good{{end}}">{{if .IndexStale}}{{t "space.index.stale"}}{{else}}{{t "space.index.ok"}}{{end}}</li>
+  {{if .Backup}}
+    {{if .BackupKnown}}<li class="{{if .BackupOK}}good{{else}}bad{{end}}">{{if .BackupOK}}{{tf "space.backup.ok" .BackupTime}}{{else}}{{tf "space.backup.failed" .BackupTime .BackupError}}{{end}}</li>
+    {{else}}<li class="warn">{{t "space.backup.never"}}</li>{{end}}
+    {{if .BackupWarning}}<li class="warn sub">{{.BackupWarning}}</li>{{end}}
+    <li class="sub">{{tf "space.backup.to" .Backup}}</li>
+  {{else}}<li class="bad">{{t "space.backup.none"}}</li>{{end}}
+  <li class="{{if .ReviewDue}}warn{{else}}good{{end}}">{{if .LastReview}}{{tf "space.review" .LastReview}}{{else}}{{t "space.review.never"}}{{end}}{{if .ReviewDue}} · {{t "space.review.due"}}{{end}}</li>
+</ul>
+<dl class="facts">
+  <dt>{{t "space.memory"}}</dt><dd><code>{{.Memory}}</code></dd>
+  {{if .WorkFolders}}<dt>{{t "space.folders"}}</dt><dd>{{range .WorkFolders}}<code>{{.}}</code> {{end}}</dd>{{end}}
+  {{if .IsDefault}}<dt>{{t "space.default"}}</dt><dd>{{t "yes"}}</dd>{{end}}
+</dl>
+{{end}}{{end}}

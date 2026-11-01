@@ -1,0 +1,12 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "profile"}}</h1>
+<p class="hint">{{tf "profile.hint" .Path}}</p>
+<form method="post" action="{{$.Base}}/profile" class="stack box">
+  <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}">
+  <label>{{t "f.name"}} <input name="name" value="{{.P.Name}}" required maxlength="200"></label>
+  <label>{{t "f.about"}} <textarea name="about" rows="6" maxlength="8000">{{.P.About}}</textarea></label>
+  <label>{{t "f.style"}} <textarea name="work_style" rows="6" maxlength="8000">{{.P.WorkStyle}}</textarea></label>
+  <p class="hint">{{t "profile.lines"}}</p>
+  <button type="submit">{{t "save"}}</button>
+</form>
+{{end}}{{end}}

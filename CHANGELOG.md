@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+- **Subtasks and steps.** A part of a task that waits on someone else or goes at its
+  own pace can be a subtask: a task of its own with `parent:` in its header
+  (`task_new` with `parent`). The index, `pending` and the panel list it under its
+  parent; only one level, and the parent cannot be closed while a subtask is open.
+  Smaller parts are steps: checkboxes (`- [ ] text`) in the task's Plan, added and
+  ticked with the new `task_step` tool or from the panel, and counted in the index
+  ("2/5 steps"). Each change of a step writes a short line in the journal.
+- **The panel**: `augmented-brain panel`, or `/brain:panel` in Claude, opens a page in
+  your browser to see and edit your spaces without the assistant: tasks (status, who
+  they wait on, next step, journal, park, close, new), watch dates and reminders, the
+  inbox, areas, knowledge, people and your profile, and each space's health (invalid
+  notes, index, last backup, weekly review). It runs only on this computer, only while
+  you use it (it stops by itself after 30 minutes without use, or with
+  `augmented-brain panel stop`), and only for whoever has the address it prints: the
+  address carries a key made for each run, and no cookie is set. It loads nothing from
+  the internet. Every change goes through the same code and the same locks as Claude's
+  tools, so the two never step on each other: saving a task saves only the fields you
+  changed, and a step is ticked only if it still says what the page showed. Running the
+  command several times at once starts one panel.
+
 ## 0.2.9-alpha
 
 Released 2026-11-01.

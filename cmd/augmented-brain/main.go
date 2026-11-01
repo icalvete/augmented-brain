@@ -13,6 +13,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/doctor"
@@ -34,6 +35,7 @@ Usage:
   augmented-brain backup       save this folder's space to its private repository (--all: every space)
   augmented-brain backup setup URL   connect this folder's space to a private git repository
   augmented-brain restore URL  bring a space back from its backup, on a new machine
+  augmented-brain panel        open the panel in your browser: see and edit your tasks, inbox, profile… (panel stop: stop it)
   augmented-brain update       update augmented brain and its Claude Code plugin
   augmented-brain uninstall    remove the program and the plugin (your notes stay; --all: start from scratch)
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
@@ -76,6 +78,8 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 		return cmdBackup(args[1:], out, errOut)
 	case "restore":
 		return cmdRestore(args[1:], out, errOut)
+	case "panel":
+		return cmdPanel(args[1:], out, errOut)
 	case "update":
 		return cmdUpdate(args[1:], out, errOut)
 	case "uninstall":
@@ -200,7 +204,7 @@ func cmdMCP(errOut io.Writer) int {
 	}
 	lockFile := ""
 	if dir, err := config.Dir(); err == nil {
-		lockFile = filepath.Join(dir, ".lock")
+		lockFile = filepath.Join(dir, backup.NotesLock)
 	}
 	if err := mcpserver.New(open, lockFile).Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		fmt.Fprintln(errOut, err)

@@ -1,0 +1,33 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "tasks"}}</h1>
+{{if .Live}}
+<ul class="cards">
+{{range .Live}}
+  <li class="card{{if .Mine}} mine{{end}}{{if .Sub}} sub{{end}}">
+    <a class="title" href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
+    <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span>
+      {{if .Mine}}<span class="badge you">{{t "waits.you"}}</span>{{else if .WaitingOn}}<span>{{t "waits"}}: {{.WaitingOn}}</span>{{end}}
+      {{if .Steps}}<span>{{.Steps}}</span>{{end}}
+      {{if .PartOf}}<span>{{t "partof"}}: {{.PartOf}}</span>{{else if not .Sub}}{{if .AreaTitle}}<span>{{.AreaTitle}}</span>{{end}}{{end}}</div>
+    {{if .Next}}<div class="next">{{t "next"}}: {{.Next}}</div>{{end}}
+  </li>
+{{end}}
+</ul>
+{{else}}<p class="empty">{{t "tasks.none"}}</p>{{end}}
+
+<details class="box">
+  <summary>{{t "task.new"}}</summary>
+  <form method="post" action="{{$.Base}}/task/new" class="stack">
+    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}">
+    <label>{{t "f.title"}} <input name="title" required maxlength="200"></label>
+    <label>{{t "f.summary"}} <input name="summary" maxlength="500"></label>
+    <label>{{t "f.area"}} <select name="area">{{range .Areas}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+    <button type="submit">{{t "task.open"}}</button>
+  </form>
+</details>
+
+{{if .Someday}}<details class="box"><summary>{{t "tasks.someday"}} ({{len .Someday}})</summary><ul class="plain">
+{{range .Someday}}<li><a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a></li>{{end}}</ul></details>{{end}}
+{{if .Closed}}<details class="box"><summary>{{t "tasks.closed"}} ({{len .Closed}})</summary><ul class="plain">
+{{range .Closed}}<li><a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a></li>{{end}}</ul></details>{{end}}
+{{end}}{{end}}

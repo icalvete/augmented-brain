@@ -13,6 +13,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/panel"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
@@ -100,6 +101,11 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 		fail(claudecode.Uninstall(claudecode.Exec))
 	}
 	fail(claudecode.RemoveLeftovers())
+	// A panel left running would keep the program in use (on Windows, it could not be
+	// removed) and would write notes that are going away.
+	if cfgDir != "" {
+		_, _ = panel.Stop(cfgDir)
+	}
 	if *withConfig && cfgDir != "" {
 		fail(os.RemoveAll(cfgDir))
 	}

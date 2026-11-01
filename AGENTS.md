@@ -17,17 +17,19 @@ it feels to a newcomer.
 
 | Path | What |
 |---|---|
-| `cmd/augmented-brain/` | The commands: `init`, `space add`, `doctor`, `check`, `backup`, `restore`, `update`, `uninstall`, `mcp`, `hook`. User-facing messages of `init` live in `init.go`. |
+| `cmd/augmented-brain/` | The commands: `init`, `space add`, `doctor`, `check`, `backup`, `restore`, `panel`, `update`, `uninstall`, `mcp`, `hook`. User-facing messages of `init` live in `init.go`. |
 | `internal/config` | The configuration file: spaces, `default_space`, the machine-wide guard lists. Edits keep the user's comments (`AddSpace`, `SetSpaceKey`, `SetSpaceList`, `SetTopList`, `SetDefaultSpace`). |
 | `internal/memory` | Reads and checks notes (headers only), builds the index `MEMORY.md`. |
 | `internal/brain` | Everything that writes notes: tasks, areas, knowledge, people, the profile, safety settings. |
-| `internal/mcpserver` | The MCP tools, thin layers over `brain`. Calls run one at a time (mutex plus a file lock). |
+| `internal/mcpserver` | The MCP tools, thin layers over `brain`. Calls run one at a time (`filelock.Writer`: a mutex plus the notes lock file). |
+| `internal/panel` | The local web panel (`augmented-brain panel`): started detached on demand, 127.0.0.1 only, pages under `/s/<session>/` (derived from the run's token in `panel.json`; no cookie, since cookies of 127.0.0.1 reach every port), `/ping` answers an HMAC challenge so a stale `panel.json` cannot be impersonated, `panel.lock` serializes start and stop, Host/Origin/CSRF checks, strict CSP, stops after 30 idle minutes. Pages in `web/` (`go:embed`, no external requests); writes through `brain` under the same `filelock.Writer` as the MCP server. |
+| `internal/filelock`, `internal/detach` | The cross-process lock and the shared `Writer`; starting a process that outlives its parent (the automatic backup, the panel). |
 | `internal/hook`, `internal/session` | The SessionStart, PreToolUse, Stop, PostCompact and SessionEnd hooks (SessionEnd starts the automatic backup); what the assistant reads at the start (budget: 9,500 UTF-16 units). |
 | `internal/state` | What this machine knows about each space's sessions (active task, last write, sessions that did not end), in the configuration folder, never backed up; and the reader of Claude Code's transcripts for `session_recover`. |
 | `internal/guard` | The command guard: a small shell parser and the policy (push, root, secrets, production profiles, untouchable hosts). |
 | `internal/setup`, `internal/doctor`, `internal/backup`, `internal/claudecode`, `internal/update` | Creating spaces, the health check, backup and restore, installing the plugin, the new-version check. |
 | `internal/i18n`, `internal/rules`, `internal/templates` | Messages, the common rules and the starter files, in English and Spanish. |
-| `plugin/` | The Claude Code plugin: `hooks/hooks.json`, `.mcp.json`. `.claude-plugin/marketplace.json` makes this repo its marketplace. |
+| `plugin/` | The Claude Code plugin: `hooks/hooks.json`, `.mcp.json`, `commands/panel.md` (`/brain:panel`). `.claude-plugin/marketplace.json` makes this repo its marketplace. |
 | `install.sh` | The installer people run with `curl … \| sh`. |
 | `docs/` | The website (GitHub Pages, served from `main`), the guides and the format spec. |
 | `scripts/` | Checks, builders and release helpers (below). |

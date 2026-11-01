@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
 
@@ -17,8 +18,9 @@ var StartBackup = func(space string) error {
 	}
 	cmd := exec.Command(self, "backup", "--auto", "--space", space)
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
-	detach(cmd)
-	return cmd.Start()
+	detach.Cmd(cmd)
+	_, err = detach.Start(cmd)
+	return err
 }
 
 // SessionEnd marks the session as ended normally (so the next one does not offer to

@@ -46,7 +46,8 @@ func (b *Brain) Inbox() ([]InboxEntry, error) {
 }
 
 // InboxDone takes processed captures out of the inbox. Each item is the text of a
-// capture, as Inbox returns it. It returns the items it could not find.
+// capture, as Inbox returns it (spaces around it do not count); every capture with
+// that text goes. It returns the items it could not find.
 func (b *Brain) InboxDone(items []string) ([]string, error) {
 	data, err := os.ReadFile(b.inboxPath())
 	if err != nil {
@@ -61,8 +62,8 @@ func (b *Brain) InboxDone(items []string) ([]string, error) {
 	found := map[string]bool{}
 	var keep []string
 	for _, l := range strings.Split(string(data), "\n") {
-		if m := inboxLine.FindStringSubmatch(l); m != nil && want[m[2]] {
-			found[m[2]] = true
+		if m := inboxLine.FindStringSubmatch(l); m != nil && want[strings.TrimSpace(m[2])] {
+			found[strings.TrimSpace(m[2])] = true
 			continue
 		}
 		keep = append(keep, l)
@@ -75,6 +76,27 @@ func (b *Brain) InboxDone(items []string) ([]string, error) {
 	}
 	sort.Strings(missing)
 	return missing, os.WriteFile(b.inboxPath(), []byte(strings.Join(keep, "\n")), 0o644)
+}
+
+// InboxDoneEntry takes one capture out of the inbox: the first with that date and
+// exactly that text, as Inbox returns them. Another capture with the same text stays.
+// It reports whether it found one.
+func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
+	data, err := os.ReadFile(b.inboxPath())
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	lines := strings.Split(string(data), "\n")
+	for i, l := range lines {
+		if m := inboxLine.FindStringSubmatch(l); m != nil && m[1] == date && m[2] == text {
+			lines = append(lines[:i], lines[i+1:]...)
+			return true, os.WriteFile(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o644)
+		}
+	}
+	return false, nil
 }
 
 // ---- watch dates ----

@@ -1,0 +1,13 @@
+{{define "content"}}{{with .D}}
+<p class="crumbs"><a href="{{$.Base}}/{{$.Section}}?s={{$.Space}}">← {{.Back}}</a></p>
+<h1>{{.H.Title}}</h1>
+<dl class="facts">
+  <dt>{{t "f.kind"}}</dt><dd>{{.Kind}}</dd>
+  {{if .H.Summary}}<dt>{{t "f.summary"}}</dt><dd>{{.H.Summary}}</dd>{{end}}
+  {{if .AreaTitle}}<dt>{{t "f.area"}}</dt><dd>{{.AreaTitle}}</dd>{{end}}
+  <dt>{{t "f.dates"}}</dt><dd>{{tf "dates" .H.Created .H.Updated}}</dd>
+  <dt>{{t "f.id"}}</dt><dd><code>{{.H.ID}}</code></dd>
+</dl>
+{{if .Tasks}}<h2>{{t "tasks"}}</h2><ul class="plain">{{range .Tasks}}<li><a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a> · {{.StatusLabel}}</li>{{end}}</ul>{{end}}
+{{if .Body}}<pre class="body">{{.Body}}</pre>{{end}}
+{{end}}{{end}}

@@ -69,3 +69,68 @@ func TestIndex(t *testing.T) {
 		t.Errorf("the generated MEMORY.md must not be read as a note: %v", problems)
 	}
 }
+
+// Subtasks are listed under their parent, indented, with the steps of their Plan counted.
+func TestIndexSubtasksAndSteps(t *testing.T) {
+	dir := t.TempDir()
+	writeFiles(t, dir, map[string]string{
+		"tasks/task-p.md": taskNote("task-p", "", "plan") + "## Plan\n- [x] one\n- [ ] two\n\n## Journal\n",
+		"tasks/task-k.md": strings.Replace(taskNote("task-k", "", "execution"), "status:", "parent: task-p\nstatus:", 1),
+		"tasks/task-o.md": strings.Replace(taskNote("task-o", "", "plan"), "status:", "parent: task-x\nstatus:", 1),
+	})
+	m, problems, err := Load(dir)
+	if err != nil || len(problems) != 1 || !strings.Contains(problems[0].Error(), `parent "task-x" does not exist`) {
+		t.Fatal(err, problems)
+	}
+	idx := m.Index("en")
+	if !strings.Contains(idx, "- [task-p](tasks/task-p.md) · plan · 1/2 steps · waits on me · next: do it\n"+
+		"  - [task-k](tasks/task-k.md) · execution · waits on me") || !strings.Contains(idx, "\n- [task-o](tasks/task-o.md)") {
+		t.Errorf("index:\n%s", idx)
+	}
+	if !strings.Contains(m.Index("es"), "1/2 pasos") {
+		t.Error("spanish step count")
+	}
+}
+
+// A parent that cannot be one (a loop, the task itself, a note that is not a task)
+// never nests anything: every task is listed once, on its own. A parent on a note that
+// is not a task is a soft problem: the note stays in the index.
+func TestIndexBadParents(t *testing.T) {
+	dir := t.TempDir()
+	withParent := func(note, parent string) string {
+		return strings.Replace(note, "\ntitle:", "\nparent: "+parent+"\ntitle:", 1)
+	}
+	writeFiles(t, dir, map[string]string{
+		"tasks/task-a.md":   withParent(taskNote("task-a", "", "plan"), "task-b"),
+		"tasks/task-b.md":   withParent(taskNote("task-b", "", "plan"), "task-a"),
+		"tasks/task-s.md":   withParent(taskNote("task-s", "", "plan"), "task-s"),
+		"tasks/task-r.md":   withParent(taskNote("task-r", "", "plan"), "area-x"),
+		"areas/area-x.md":   withParent("---\nid: area-x\ntype: area\ntitle: X\n---\n", "task-a"),
+		"tasks/task-top.md": taskNote("task-top", "", "plan"),
+	})
+	m, problems, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := m.Notes["area-x"]; !ok {
+		t.Fatalf("the area with a parent was dropped: %v", problems)
+	}
+	if len(problems) != 5 {
+		t.Errorf("problems: %v", problems)
+	}
+	idx := m.Index("en")
+	for _, id := range []string{"task-a", "task-b", "task-s", "task-r", "task-top"} {
+		if c := strings.Count(idx, "["+id+"]"); c != 1 {
+			t.Errorf("%s listed %d times:\n%s", id, c, idx)
+		}
+		if strings.Contains(idx, "  - ["+id+"]") {
+			t.Errorf("%s nested under a parent that cannot be one:\n%s", id, idx)
+		}
+		if len(m.Children(id)) != 0 {
+			t.Errorf("children of %s: %d", id, len(m.Children(id)))
+		}
+	}
+	if !strings.Contains(idx, "[X](areas/area-x.md)") {
+		t.Errorf("the area is not in the index:\n%s", idx)
+	}
+}

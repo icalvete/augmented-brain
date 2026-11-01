@@ -1,0 +1,12 @@
+//go:build !unix && !windows
+
+package panel
+
+import "errors"
+
+func pidAlive(int) bool           { return false }
+func exePath(int) (string, error) { return "", errors.New("not supported") }
+func terminate(int) error         { return errors.New("not supported") }
+func kill(int) error              { return errors.New("not supported") }
+
+const exactExe = false

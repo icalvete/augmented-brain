@@ -76,7 +76,8 @@ func Load(dir string) (*Memory, []Problem, error) {
 	return m, problems, nil
 }
 
-// checkLinks reports areas and related notes that do not exist.
+// checkLinks reports areas, parents and related notes that do not exist. These are
+// soft problems: the note itself is valid, is kept and can be written.
 func (m *Memory) checkLinks() []Problem {
 	var problems []Problem
 	for _, id := range m.IDs() {
@@ -86,6 +87,20 @@ func (m *Memory) checkLinks() []Problem {
 				problems = append(problems, Problem{n.Path, fmt.Errorf("area %q does not exist", a)})
 			}
 		}
+		if p := n.Header.Parent; p != "" {
+			var err error
+			switch {
+			case n.Header.Type != "task":
+				err = fmt.Errorf("parent %q: only a task can be part of another task", p)
+			case p == id:
+				err = fmt.Errorf("parent %q is the task itself", p)
+			default:
+				err = m.parentProblem(p)
+			}
+			if err != nil {
+				problems = append(problems, Problem{n.Path, err})
+			}
+		}
 		for _, r := range n.Header.Related {
 			if _, ok := m.Notes[r]; !ok {
 				problems = append(problems, Problem{n.Path, fmt.Errorf("related %q does not exist", r)})
@@ -93,6 +108,43 @@ func (m *Memory) checkLinks() []Problem {
 		}
 	}
 	return problems
+}
+
+// parentProblem says why id cannot be a subtask's parent, or nil when it can.
+func (m *Memory) parentProblem(id string) error {
+	p, ok := m.Notes[id]
+	switch {
+	case !ok:
+		return fmt.Errorf("parent %q does not exist", id)
+	case p.Header.Type != "task":
+		return fmt.Errorf("parent %q is a %s, not a task", id, p.Header.Type)
+	case p.Header.Parent != "":
+		return fmt.Errorf("parent %q is itself a subtask: subtasks go one level deep only", id)
+	}
+	return nil
+}
+
+// ParentOf returns the parent task of a subtask, when it exists and can be one: a task
+// that is not itself a subtask (so a loop of parents never counts). Otherwise nil.
+func (m *Memory) ParentOf(n *Note) *Note {
+	h := n.Header
+	if h.Type != "task" || h.Parent == "" || h.Parent == h.ID || m.parentProblem(h.Parent) != nil {
+		return nil
+	}
+	return m.Notes[h.Parent]
+}
+
+// Children returns the subtasks of a task, sorted by id: those whose parent is this
+// task and is a valid one (see ParentOf). A task that cannot be a parent has none, so
+// a subtask is never listed twice, under its parent and on its own.
+func (m *Memory) Children(id string) []*Note {
+	var out []*Note
+	for _, n := range m.OfType("task") {
+		if n.Header.Parent == id && m.ParentOf(n) != nil {
+			out = append(out, n)
+		}
+	}
+	return out
 }
 
 // IDs returns every note id, sorted.

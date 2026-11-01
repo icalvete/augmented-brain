@@ -136,6 +136,13 @@ Name, email and message, sent by email.
 - 2026-10-15 — Parked. Next: Write the plan
 ```
 
+A big task can be split in two ways. A **step** is a small part: a checkbox in the
+task's Plan, `- [ ] Buy the domain`, ticked when it is done; the index shows how many
+are done ("2/5 steps"). A **subtask** is a part with a life of its own, because it waits
+on someone else or goes at its own pace: a task of its own, with one more line at the
+top, `parent:`, the id of the bigger task. The index lists it under that task. Only one
+level: a subtask has no subtasks, and the bigger task closes last.
+
 You can open and edit everything with any editor. The full format is in
 [memory-format.md](../spec/memory-format.md).
 
@@ -240,9 +247,50 @@ What you get:
 
 To turn the automatic backup off: `AB_NO_AUTO_BACKUP=1`.
 
+## The panel
+
+The panel is a page in your browser to see and change your spaces without going through
+Claude. Open it with `/brain:panel` in Claude, or from a terminal:
+
+```bash
+augmented-brain panel
+```
+
+It opens your browser. If it cannot (on a computer with no screen, say), it prints an
+address to open yourself. What you find there, space by space:
+
+- **Tasks**: those waiting on you first, with their status and next step. Open one to
+  read it whole, write in its journal, change its status or next step, park it or close
+  it. You can open new ones too.
+- **Reminders**: the watch dates of your tasks and the inbox reminders, overdue first.
+  Add one, or mark it done.
+- **Inbox**: capture an idea, or mark one as dealt with.
+- **Areas**, **knowledge** and **people**: to read, and to create areas.
+- **Profile**: who you are and how you like to work, the same one every space uses.
+- **Health**: notes that are not valid, the index, the last backup and the last weekly
+  review.
+
+It changes your notes the same way Claude does, with the same program, and they wait for
+each other: you can have both open at once.
+
+It is made to stay yours:
+
+- It runs **only while you use it**. After 30 minutes without use it stops by itself.
+  To stop it now: `augmented-brain panel stop`, or the link at the bottom of the page.
+- It works **only on this computer**. Other machines on your network cannot reach it.
+- The address carries a **key**, made new each time the panel starts. Without it the
+  panel answers nothing, so another program or web page on your computer cannot use it.
+  The key stays in the address while you use the panel, so treat the address like a
+  password: do not share it. It stops working when the panel stops.
+- When you save a task, only what you changed on the page is saved: if Claude changed
+  something else in the meantime, that stays. A step is ticked only if it still says
+  what the page showed.
+- It loads **nothing from the internet**: no fonts, no statistics. It works offline.
+
 ## What it does not do
 
-- **No server and no account.** If Claude is not open, nothing runs.
+- **No server and no account.** If Claude is not open, nothing runs, except the panel
+  while you use it.
 - **It sends your data to no one.** Only the backup, if you set it up, talks to your
   repository. Apart from that, once a day, it asks GitHub which version is the latest,
   sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns it off.

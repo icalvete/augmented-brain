@@ -49,6 +49,11 @@ A summary in `archive/sessions/` is plain Markdown with no header, named `<date>
 
 **Your profile** (who you are, your language, how you like answers) is the same person in every space, so it lives once, next to the configuration: `profile.md` in the configuration folder. A space's own `profile.md` only adds what applies there.
 
+The shared profile has two sections the program knows by their headings, in English or
+Spanish: the first ("About me" / "Sobre mí", with the name line) and the work style
+("How I like to work" / "Cómo me gusta trabajar"). Other sections a person adds by hand
+are kept: the program reads them as part of the first one.
+
 ## File header
 
 Every file except `MEMORY.md`, `inbox.md` and what is in `archive/` starts with a YAML header between `---` lines (a byte order mark before it is fine). Keys and enumerated values are always English, whatever language you write in.
@@ -84,6 +89,47 @@ watch:                           # optional: dates to look at something again
 A watch date that is due today or tomorrow, or already past and not `done`, is brought up
 at the start of the session.
 
+### Subtasks
+
+A task may be part of a bigger one, with one more field:
+
+```yaml
+parent: task-new-website         # optional: the id of the task this one is a part of
+```
+
+A subtask is a whole task (its own status, waiting_on, next step and journal). Make one
+for a part that waits on someone else or goes at its own pace; anything smaller is a
+step (below). The rules:
+
+- The parent is an existing task that is not itself a subtask: one level only. The
+  program refuses to open a subtask under a missing task, a note that is not a task, a
+  subtask, or a closed task.
+- A parent cannot be closed while any of its subtasks is not closed. Parking the parent
+  leaves its subtasks as they are.
+- The index lists a live subtask under its parent, indented. A subtask whose parent is
+  closed, someday or missing is listed on its own, so it is never hidden. A `parent`
+  that does not exist, is not a task, is the task itself or is itself a subtask is
+  reported as a problem (like an `area` that does not exist), and so is a `parent` on a
+  note that is not a task; the note is still read and can still be written, and is
+  listed on its own, once.
+
+### Steps
+
+A step is a Markdown checkbox in the task's **Plan** section, the level-2 heading
+`## Plan` (numbered or not, `## 3. Plan`, any case):
+
+```markdown
+## 3. Plan
+- [x] Buy the domain
+- [ ] Point it to the server
+```
+
+Steps need no field: the program finds the Plan heading and reads its checkboxes
+(`- [ ]` or `- [x]`, also with `*`), outside code blocks, numbered from 1 in order. The
+index and `pending` show how many are done ("1/2 steps") when there are any. Adding a
+step puts it, unticked, at the end of the Plan; ticking or unticking one changes only its
+`[ ]`, and writes one line in the journal.
+
 ## Task lifecycle
 
 A task moves through six phases. You approve each change of phase; inside a phase the assistant works without asking at every step.
@@ -112,7 +158,7 @@ The body uses these sections, in your language (the templates write the headings
 2. **Definition**, **Analysis**, **Plan**, **Validation**, **Closing**: one per phase.
 3. **Journal**: dated lines, `- YYYY-MM-DD — what happened`. Always the last section.
 
-The program never searches the prose. It relies on two positions only: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. When a task file passes about 10 KB, its oldest journal entries move to `archive/` and the task links to them.
+The program never searches the prose. It relies on two positions only: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. The one exception is the checkboxes of the Plan section (see "Steps"). When a task file passes about 10 KB, its oldest journal entries move to `archive/` and the task links to them.
 
 ## Areas
 
@@ -167,7 +213,7 @@ All of them are loaded at the start of every session.
 
 The program rebuilds these after every change; editing them by hand is pointless:
 
-- `MEMORY.md`: your profile line, the rules, the areas, and the live tasks grouped by area, one line each, with status, who it waits on and the next step.
+- `MEMORY.md`: your profile line, the rules, the areas, and the live tasks grouped by area, one line each, with status, steps done when the Plan has any, who it waits on and the next step; subtasks indented under their parent.
 - The "Tasks" and "Knowledge" lists inside each area.
 
 ## Configuration
@@ -223,6 +269,12 @@ backed up, no text of the conversation): the active task and when it was last wr
 when the assistant was last reminded to write, and the sessions that started and ended,
 with the path of Claude Code's transcript of each. The Stop reminder, the request after a
 compaction and the offer to recover a session that did not end come from it.
+
+`panel.json`, also in the configuration folder and readable only by the user, says where
+the panel listens while it runs (its process, port and key); it goes away when the panel
+stops. `panel.lock`, next to it, lets one `augmented-brain panel` (or `panel stop`) at a
+time start or stop the panel, so several at once start only one. The panel changes notes
+only through the same code as the MCP tools.
 
 ## Decisions
 

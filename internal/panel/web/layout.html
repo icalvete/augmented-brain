@@ -1,0 +1,40 @@
+{{define "layout"}}<!doctype html>
+<html lang="{{.Lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="same-origin">
+<title>{{.Title}} · augmented brain</title>
+<link rel="icon" href="{{$.Base}}/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="{{$.Base}}/static/style.css">
+<script src="{{$.Base}}/static/app.js" defer></script>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <a class="brand" href="{{$.Base}}/tasks?s={{.Space}}"><img src="{{$.Base}}/static/logo.svg" alt="augmented brain" width="148" height="122"></a>
+  <a class="me" href="{{$.Base}}/profile?s={{.Space}}"{{if eq .Section "profile"}} aria-current="page"{{end}}>{{t "profile"}}<small>{{t "profile.all"}}</small></a>
+  <form class="spaces" method="get" action="{{$.Base}}/{{.Section}}">
+    <label for="space">{{t "space.select"}}</label>
+    <select id="space" name="s" class="autosubmit">
+      {{range .Spaces}}<option value="{{.}}"{{if eq . $.Space}} selected{{end}}>{{.}}</option>{{end}}
+    </select>
+    <button type="submit" class="nojs">{{t "go"}}</button>
+  </form>
+  <nav class="sections">
+    {{range .Nav}}<a href="{{$.Base}}/{{.Path}}?s={{$.Space}}"{{if eq .Path $.Section}} aria-current="page"{{end}}>{{.Label}}</a>{{end}}
+  </nav>
+  <footer>
+    <span>{{t "footer"}}</span>
+    <form method="post" action="{{$.Base}}/stop"><input type="hidden" name="csrf" value="{{.CSRF}}"><button type="submit" class="link">{{t "stop"}}</button></form>
+  </footer>
+</aside>
+<main>
+{{if .OK}}<p class="flash ok" role="status">{{t "saved"}}</p>{{end}}
+{{if .Error}}<p class="flash err" role="alert">{{.Error}}</p>{{end}}
+{{if .Problems}}<p class="flash warn">{{tf "problems" .Problems}} <a href="{{$.Base}}/space?s={{.Space}}">{{t "see"}}</a></p>{{end}}
+{{template "content" .}}
+</main>
+</div>
+</body>
+</html>{{end}}

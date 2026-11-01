@@ -137,6 +137,14 @@ Nombre, correo y mensaje, enviado por email.
 - 2026-10-15 — Aparcada. Siguiente: Escribir el plan
 ```
 
+Una tarea grande se puede partir de dos maneras. Un **paso** es una parte pequeña: una
+casilla del Plan de la tarea, `- [ ] Comprar el dominio`, que se marca al hacerla; el
+índice dice cuántos van hechos ("2/5 pasos"). Una **subtarea** es una parte con vida
+propia, porque espera a otra persona o lleva su propio ritmo: una tarea más, con una
+línea de más arriba, `parent:`, el id de la tarea grande. El índice la pone debajo de
+esa tarea. Un solo nivel: una subtarea no tiene subtareas, y la tarea grande se cierra
+la última.
+
 Puedes abrir y editar todo con cualquier editor. El formato completo está en
 [memory-format.md](../spec/memory-format.md) (en inglés).
 
@@ -241,9 +249,50 @@ Lo que te da:
 
 Para apagar la copia automática: `AB_NO_AUTO_BACKUP=1`.
 
+## El panel
+
+El panel es una página en tu navegador para ver y cambiar tus espacios sin pasar por
+Claude. Ábrelo con `/brain:panel` en Claude, o desde una terminal:
+
+```bash
+augmented-brain panel
+```
+
+Abre tu navegador. Si no puede (en un ordenador sin pantalla, por ejemplo), escribe una
+dirección para que la abras tú. Lo que encuentras, espacio por espacio:
+
+- **Tareas**: primero las que te esperan a ti, con su estado y su siguiente paso. Abre
+  una para leerla entera, escribir en su diario, cambiar su estado o su siguiente paso,
+  aparcarla o cerrarla. También puedes abrir tareas nuevas.
+- **Recordatorios**: las fechas para revisar de tus tareas y los recordatorios del
+  buzón, primero lo atrasado. Añade uno, o márcalo como hecho.
+- **Buzón**: apunta una idea, o marca una como resuelta.
+- **Áreas**, **conocimiento** y **personas**: para leer, y para crear áreas.
+- **Perfil**: quién eres y cómo te gusta trabajar, el mismo para todos los espacios.
+- **Estado**: notas que no son válidas, el índice, la última copia de seguridad y la
+  última revisión semanal.
+
+Cambia tus notas igual que Claude, con el mismo programa, y se esperan el uno al otro:
+puedes tener los dos abiertos a la vez.
+
+Está hecho para que siga siendo solo tuyo:
+
+- Funciona **solo mientras lo usas**. Tras 30 minutos sin uso se para solo. Para
+  pararlo ya: `augmented-brain panel stop`, o el enlace del pie de la página.
+- Funciona **solo en este ordenador**. Las otras máquinas de tu red no llegan a él.
+- La dirección lleva una **llave**, nueva cada vez que el panel arranca. Sin ella el
+  panel no responde nada, así que ningún otro programa ni página web de tu ordenador
+  puede usarlo. La llave sigue en la dirección mientras usas el panel, así que trata la
+  dirección como una contraseña: no la compartas. Deja de valer cuando el panel se para.
+- Al guardar una tarea, solo se guarda lo que cambiaste en la página: si Claude cambió
+  otra cosa mientras tanto, se queda. Un paso solo se marca si sigue diciendo lo que
+  mostraba la página.
+- No carga **nada de internet**: ni fuentes ni estadísticas. Funciona sin conexión.
+
 ## Lo que no hace
 
-- **No hay servidor ni cuenta.** Si Claude no está abierto, no funciona nada.
+- **No hay servidor ni cuenta.** Si Claude no está abierto, no funciona nada, salvo el
+  panel mientras lo usas.
 - **No envía tus datos a nadie.** Solo la copia, si la configuras, habla con tu
   repositorio. Aparte, una vez al día, pregunta a GitHub cuál es la última versión, sin
   mandar nada tuyo. `AB_NO_UPDATE_CHECK=1` lo apaga.

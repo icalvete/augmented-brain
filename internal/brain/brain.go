@@ -126,7 +126,8 @@ func (b *Brain) text(key string) string {
 type NewTaskInput struct {
 	Title   string
 	Summary string
-	Area    string // area id; empty means area-general when it exists
+	Area    string // area id; empty means the parent's area, or area-general when it exists
+	Parent  string // optional: the id of the task this one is a part of (a subtask)
 }
 
 // NewTask opens a task in the definition phase, waiting on the user.
@@ -134,7 +135,17 @@ func (b *Brain) NewTask(in NewTaskInput) (*memory.Note, error) {
 	if strings.TrimSpace(in.Title) == "" {
 		return nil, errors.New("a task needs a title")
 	}
+	var parent *memory.Note
+	if in.Parent != "" {
+		var err error
+		if parent, err = b.parent(in.Parent); err != nil {
+			return nil, err
+		}
+	}
 	area := in.Area
+	if area == "" && parent != nil {
+		area = parent.Header.Area
+	}
 	if area == "" {
 		if _, ok := b.Mem.Notes["area-general"]; ok {
 			area = "area-general"
@@ -153,11 +164,41 @@ func (b *Brain) NewTask(in NewTaskInput) (*memory.Note, error) {
 		Path: "tasks/" + id + ".md",
 		Header: memory.Header{
 			ID: id, Type: "task", Title: in.Title, Summary: in.Summary, Area: area,
-			Created: b.today(), Status: "definition", WaitingOn: "me", Next: next,
+			Created: b.today(), Parent: in.Parent, Status: "definition", WaitingOn: "me", Next: next,
 		},
 		Body: body,
 	}
 	return n, b.save(n)
+}
+
+// parent checks that id can take a subtask: a task, not closed, and not a subtask
+// itself (subtasks go one level deep only).
+func (b *Brain) parent(id string) (*memory.Note, error) {
+	p, err := b.Task(id)
+	if err != nil {
+		return nil, fmt.Errorf("the parent must be an existing task: %w", err)
+	}
+	if p.Header.Parent != "" {
+		return nil, fmt.Errorf("%q is already a subtask of %q, and subtasks go one level deep only: make this one a subtask of %q, or a step in the Plan of %q", id, p.Header.Parent, p.Header.Parent, id)
+	}
+	if p.Header.Status == "closed" {
+		return nil, fmt.Errorf("%q is closed: a closed task takes no new subtasks", id)
+	}
+	return p, nil
+}
+
+// openChildren refuses to close a task while any of its subtasks is not closed.
+func (b *Brain) openChildren(id string) error {
+	var open []string
+	for _, c := range b.Mem.Children(id) {
+		if c.Header.Status != "closed" {
+			open = append(open, fmt.Sprintf("%s (%s, %s)", c.Header.ID, c.Header.Title, c.Header.Status))
+		}
+	}
+	if len(open) > 0 {
+		return fmt.Errorf("%q cannot be closed while its subtasks are open; close them first: %s", id, strings.Join(open, "; "))
+	}
+	return nil
 }
 
 // Task returns a task.
@@ -171,6 +212,10 @@ type UpdateInput struct {
 	Next      string
 	Summary   string
 	Area      string
+	// Clear empties fields by name: "waiting_on", "next", "summary", "area". The MCP
+	// tool never sets it (a blank there keeps the field); the panel does, when the
+	// user empties a field. A live task still needs waiting_on and next.
+	Clear []string
 }
 
 // Update changes a task's header. A change of status is written in the journal.
@@ -199,6 +244,25 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 			return nil, err
 		}
 		h.Area = in.Area
+	}
+	for _, f := range in.Clear {
+		switch f {
+		case "waiting_on":
+			h.WaitingOn = ""
+		case "next":
+			h.Next = ""
+		case "summary":
+			h.Summary = ""
+		case "area":
+			h.Area = ""
+		default:
+			return nil, fmt.Errorf("%q cannot be cleared", f)
+		}
+	}
+	if h.Status == "closed" && old != "closed" {
+		if err := b.openChildren(h.ID); err != nil {
+			return nil, err
+		}
 	}
 	if h.Status != old {
 		cp.Body = b.journalLine(cp.Body, fmt.Sprintf(b.text("status"), old, h.Status))
@@ -283,6 +347,9 @@ func (b *Brain) Close(id, result string) (*memory.Note, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := b.openChildren(id); err != nil {
+		return nil, err
+	}
 	cp := *n
 	cp.Header.Status = "closed"
 	cp.Header.Next = ""
@@ -329,6 +396,11 @@ func replaceFirstSection(body, text string) (string, bool) {
 // Item is one line of the pending report.
 type Item struct {
 	ID, Title, Area, Status, WaitingOn, Next string
+	// Parent is the id of the task this one is part of, and ParentTitle its title;
+	// Sub is true when the item is listed right under its parent.
+	Parent, ParentTitle   string
+	Sub                   bool
+	StepsDone, StepsTotal int
 }
 
 // Due is a watch date that has come or is near.
@@ -349,7 +421,13 @@ func (b *Brain) Pending(within int) ([]Item, []Due) {
 			continue
 		}
 		if h.Status != "someday" {
-			items = append(items, Item{h.ID, h.Title, h.Area, h.Status, h.WaitingOn, h.Next})
+			it := Item{ID: h.ID, Title: h.Title, Area: h.Area, Status: h.Status, WaitingOn: h.WaitingOn, Next: h.Next,
+				Parent: h.Parent, Sub: b.Mem.Nested(n)}
+			if p := b.Mem.ParentOf(n); p != nil {
+				it.ParentTitle = p.Header.Title
+			}
+			it.StepsDone, it.StepsTotal = memory.StepCount(n.Body)
+			items = append(items, it)
 		}
 		for _, w := range h.Watch {
 			d, err := time.Parse("2006-01-02", w.Date)
@@ -364,8 +442,28 @@ func (b *Brain) Pending(within int) ([]Item, []Due) {
 	sort.SliceStable(items, func(i, j int) bool {
 		return items[i].WaitingOn == "me" && items[j].WaitingOn != "me"
 	})
+	items = nest(items)
 	sort.Slice(due, func(i, j int) bool { return due[i].Date < due[j].Date })
 	return items, due
+}
+
+// nest puts every subtask listed under its parent right after it, keeping the order of
+// the rest.
+func nest(items []Item) []Item {
+	subs := map[string][]Item{}
+	for _, i := range items {
+		if i.Sub {
+			subs[i.Parent] = append(subs[i.Parent], i)
+		}
+	}
+	out := make([]Item, 0, len(items))
+	for _, i := range items {
+		if !i.Sub {
+			out = append(out, i)
+			out = append(out, subs[i.ID]...)
+		}
+	}
+	return out
 }
 
 // ---- inbox, areas, knowledge ----

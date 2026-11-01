@@ -1,0 +1,5 @@
+{{define "content"}}{{with .D}}
+<h1>{{.Heading}}</h1>
+<p>{{.Text}}</p>
+{{if .Back}}<p><a href="{{.Back}}">← {{t "back"}}</a></p>{{end}}
+{{end}}{{end}}

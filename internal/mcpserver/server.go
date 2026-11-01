@@ -12,7 +12,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -36,6 +35,9 @@ as Markdown files. Use these tools instead of editing those files by hand.
   decided in its journal (task_journal) at the moment it happens, not only when parking:
   a session can end at any time, and what is not in the note is lost. Keep its next
   step and who it waits on up to date (task_update).
+- A part of a task that waits on someone else or goes at its own pace is a subtask
+  (task_new with parent; one level only). Any other part is a step: a checkbox in the
+  task's Plan (task_step).
 - Before switching to other work, park the task (task_park) with the exact next step
   and rewritten essentials, so another session can resume it without re-reading
   everything.
@@ -67,17 +69,11 @@ type opener func() (*brain.Brain, func(), error)
 func New(open Resolver, lockFile string) *mcp.Server {
 	// The SDK serves requests concurrently. Tools read and write the same files, so they
 	// run one at a time: each call sees every change made by the calls before it.
-	var mu sync.Mutex
+	w := filelock.NewWriter(lockFile)
 	locked := func() (*brain.Brain, func(), error) {
-		mu.Lock()
-		release := mu.Unlock
-		if lockFile != "" {
-			unlock, err := filelock.Lock(lockFile)
-			if err != nil {
-				mu.Unlock()
-				return nil, nil, err
-			}
-			release = func() { unlock(); mu.Unlock() }
+		release, err := w.Lock()
+		if err != nil {
+			return nil, nil, err
 		}
 		b, err := open()
 		if err != nil {
@@ -89,13 +85,13 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	// backup_setup runs a backup, which takes the notes lock itself (after the backup
 	// lock, never before): it runs one at a time in this process, without the file lock.
 	unlockedFile := func() (*brain.Brain, func(), error) {
-		mu.Lock()
+		release := w.LockProcess()
 		b, err := open()
 		if err != nil {
-			mu.Unlock()
+			release()
 			return nil, nil, err
 		}
-		return b, mu.Unlock, nil
+		return b, release, nil
 	}
 	s := mcp.NewServer(&mcp.Implementation{Name: "augmented-brain", Version: version.Version},
 		&mcp.ServerOptions{Instructions: Instructions})
@@ -125,7 +121,16 @@ func New(open Resolver, lockFile string) *mcp.Server {
 				out.WriteString("No live tasks.\n")
 			}
 			for _, i := range items {
-				fmt.Fprintf(&out, "- %s (%s) · %s · waits on %s · next: %s\n", i.ID, i.Title, i.Status, i.WaitingOn, i.Next)
+				indent, part, steps := "", "", ""
+				if i.Sub {
+					indent = "  "
+				} else if i.ParentTitle != "" {
+					part = " (part of " + i.ParentTitle + ")"
+				}
+				if i.StepsTotal > 0 {
+					steps = fmt.Sprintf(" · %d/%d steps", i.StepsDone, i.StepsTotal)
+				}
+				fmt.Fprintf(&out, "%s- %s (%s)%s · %s%s · waits on %s · next: %s\n", indent, i.ID, i.Title, part, i.Status, steps, i.WaitingOn, i.Next)
 			}
 			for _, d := range due {
 				fmt.Fprintf(&out, "! watch %s (%d days): %s [%s]\n", d.Date, d.Days, d.What, d.TaskID)
@@ -136,11 +141,12 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	type newTaskIn struct {
 		Title   string `json:"title" jsonschema:"short name of the task"`
 		Summary string `json:"summary,omitempty" jsonschema:"one line: what it is"`
-		Area    string `json:"area,omitempty" jsonschema:"id of its area; default area-general"`
+		Area    string `json:"area,omitempty" jsonschema:"id of its area; default the parent's area, or area-general"`
+		Parent  string `json:"parent,omitempty" jsonschema:"id of the task this one is a part of, making it a subtask; one level only"`
 	}
-	tool(s, locked, "task_new", "Open a new task, in the definition phase and waiting on the user. Returns the new task.",
+	tool(s, locked, "task_new", "Open a new task, in the definition phase and waiting on the user. Returns the new task. With parent it is a subtask: a part with its own status and next step, for a part that waits on someone else or goes at its own pace; the parent cannot close while it is open.",
 		func(b *brain.Brain, in newTaskIn) (string, error) {
-			n, err := b.NewTask(brain.NewTaskInput{Title: in.Title, Summary: in.Summary, Area: in.Area})
+			n, err := b.NewTask(brain.NewTaskInput{Title: in.Title, Summary: in.Summary, Area: in.Area, Parent: in.Parent})
 			if err == nil {
 				touched(b, n.Header.ID, true)
 			}
@@ -150,13 +156,58 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	type idIn struct {
 		ID string `json:"id" jsonschema:"task id, e.g. task-backup"`
 	}
-	tool(s, locked, "task_get", "Read a task: its header and its whole body, journal included.",
+	tool(s, locked, "task_get", "Read a task: its header and its whole body, journal included, and its subtasks.",
 		func(b *brain.Brain, in idIn) (string, error) {
 			n, err := b.Task(in.ID)
 			if err == nil {
 				touched(b, in.ID, false)
 			}
-			return render(n, err)
+			out, err := render(n, err)
+			if err != nil {
+				return "", err
+			}
+			if p := b.Mem.ParentOf(n); p != nil {
+				out += fmt.Sprintf("\nPart of: %s (%s) · %s\n", p.Header.ID, p.Header.Title, p.Header.Status)
+			}
+			if kids := b.Mem.Children(n.Header.ID); len(kids) > 0 {
+				out += "\nSubtasks:\n"
+				for _, c := range kids {
+					out += fmt.Sprintf("- %s (%s) · %s · waits on %s · next: %s\n", c.Header.ID, c.Header.Title, c.Header.Status, c.Header.WaitingOn, c.Header.Next)
+				}
+			}
+			return out, nil
+		})
+
+	type stepIn struct {
+		ID     string `json:"id"`
+		Number int    `json:"number,omitempty" jsonschema:"the step to tick or untick, 1 for the first checkbox of the Plan"`
+		Text   string `json:"text,omitempty" jsonschema:"the step to tick or untick, by its text (or a part only it contains), when number is not given"`
+		Done   bool   `json:"done,omitempty" jsonschema:"true to tick the step, false to untick it"`
+		Add    string `json:"add,omitempty" jsonschema:"add this step, unticked, at the end of the Plan, instead of ticking one"`
+	}
+	tool(s, locked, "task_step", "Steps are the small parts of a task: checkboxes (- [ ] text) in its Plan section. Add one (add), or tick or untick one by number or text (done). Each change writes a short journal line.",
+		func(b *brain.Brain, in stepIn) (string, error) {
+			var n *memory.Note
+			var err error
+			if in.Add != "" {
+				n, err = b.AddStep(in.ID, in.Add)
+			} else {
+				n, err = b.Step(brain.StepInput{ID: in.ID, Number: in.Number, Text: in.Text, Done: in.Done})
+			}
+			if err != nil {
+				return "", err
+			}
+			touched(b, in.ID, true)
+			var out strings.Builder
+			out.WriteString("Steps of " + n.Header.ID + ":\n")
+			for _, st := range memory.Steps(n.Body) {
+				mark := " "
+				if st.Done {
+					mark = "x"
+				}
+				fmt.Fprintf(&out, "%d. [%s] %s\n", st.N, mark, st.Text)
+			}
+			return out.String(), nil
 		})
 
 	type updateIn struct {

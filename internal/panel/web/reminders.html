@@ -1,0 +1,24 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "reminders"}}</h1>
+<p class="hint">{{tf "reminders.hint" .Within}}</p>
+{{if .Due}}<ul class="cards">
+{{range .Due}}<li class="card{{if le .Days 0}} mine{{end}}">
+  <div class="title">{{.What}}</div>
+  <div class="meta"><span class="badge">{{.Date}}</span><span>{{days .Days}}</span>
+  {{if .TaskID}}<a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.TaskID}}">{{.TaskTitle}}</a>{{else}}<a href="{{$.Base}}/inbox?s={{$.Space}}">{{t "inbox"}}</a>{{end}}</div>
+  {{if .TaskID}}<form method="post" action="{{$.Base}}/watch/done" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}"><input type="hidden" name="back" value="reminders"><input type="hidden" name="id" value="{{.TaskID}}"><input type="hidden" name="date" value="{{.Date}}"><button type="submit" class="small">{{t "done"}}</button></form>{{end}}
+</li>{{end}}
+</ul>{{else}}<p class="empty">{{t "reminders.none"}}</p>{{end}}
+
+{{if .Tasks}}<details class="box">
+  <summary>{{t "watch.add"}}</summary>
+  <form method="post" action="{{$.Base}}/watch/add" class="stack">
+    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}"><input type="hidden" name="back" value="reminders">
+    <label>{{t "f.task"}} <select name="id">{{range .Tasks}}<option value="{{.Value}}">{{.Label}}</option>{{end}}</select></label>
+    <label>{{t "f.date"}} <input type="date" name="date" required></label>
+    <label>{{t "f.what"}} <input name="what" required maxlength="500"></label>
+    <button type="submit">{{t "add"}}</button>
+  </form>
+</details>{{end}}
+<p class="hint">{{t "reminders.inbox"}} <a href="{{$.Base}}/inbox?s={{$.Space}}">{{t "inbox"}}</a></p>
+{{end}}{{end}}
