@@ -256,6 +256,34 @@ What you get:
 
 To turn the automatic backup off: `AB_NO_AUTO_BACKUP=1`.
 
+## Bring in a memory you already have
+
+If Claude Code has been keeping a memory for you (the files it writes in
+`~/.claude/projects/<folder>/memory/`), you can bring it into your spaces:
+
+```bash
+augmented-brain import ~/.claude/projects/<folder>/memory
+```
+
+That writes nothing. It shows where each note would go and what it could not decide:
+files that are not notes (an index), notes about you (copy what matters into your
+profile), links that would cross from one space to another, ids your space already
+has. When the list looks right, run it again with `--apply`. The folder you import
+from is only read.
+
+Each file becomes a note of its kind: by its name (`task-…`, `area-…`, `ref-…`,
+`lesson-…`, `rule-…`, `person-…`) or else by what Claude Code says it is. A task with
+no status comes in parked, waiting on you, with "review this imported task" as its next
+step. With more than one space, a small file says which space each area goes to:
+
+```text
+area-family = personal
+* = work
+```
+
+and goes in with `--map <file>`. `--repos-base <folder>` says what the notes' `repos:`
+paths are relative to, so they are rewritten relative to the space's work folder.
+
 ## The panel
 
 The panel is a page in your browser to see and change your spaces without going through

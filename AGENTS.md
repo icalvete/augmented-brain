@@ -17,7 +17,7 @@ it feels to a newcomer.
 
 | Path | What |
 |---|---|
-| `cmd/augmented-brain/` | The commands: `init`, `space add`, `doctor`, `check`, `backup`, `restore`, `panel`, `update`, `uninstall`, `mcp`, `hook`. User-facing messages of `init` live in `init.go`. |
+| `cmd/augmented-brain/` | The commands: `init`, `space add`, `doctor`, `check`, `import`, `backup`, `restore`, `panel`, `update`, `uninstall`, `mcp`, `hook`. User-facing messages of `init` live in `init.go`. |
 | `internal/config` | The configuration file: spaces, `default_space`, the machine-wide guard lists. Edits keep the user's comments (`AddSpace`, `SetSpaceKey`, `SetSpaceList`, `SetTopList`, `SetDefaultSpace`). |
 | `internal/memory` | Reads and checks notes (headers only), builds the index `MEMORY.md`. |
 | `internal/brain` | Everything that writes notes: tasks, areas, knowledge, people, the profile, safety settings. |
@@ -26,6 +26,7 @@ it feels to a newcomer.
 | `internal/filelock`, `internal/detach` | The cross-process lock and the shared `Writer`; starting a process that outlives its parent (the automatic backup, the panel). |
 | `internal/hook`, `internal/session` | The SessionStart, PreToolUse, Stop, PostCompact and SessionEnd hooks (SessionEnd starts the automatic backup); what the assistant reads at the start (budget: 9,500 UTF-16 units). |
 | `internal/format` | The version of each space's notes (`.augmented-brain/format`) and of the configuration folder (`format =` in `config.toml`, never written while it is 1), and the migrations that move them forward at the start of a session or in `check`, after a full copy. Notes of a newer version are refused, never written. |
+| `internal/importer` | `augmented-brain import`: a memory of Claude Code into the spaces. `MakePlan` decides (and reports what it cannot), `Apply` writes, never over a note that exists; the source is only read. |
 | `internal/state` | What this machine knows about each space's sessions (active task, last write, sessions that did not end), in the configuration folder, never backed up; and the reader of Claude Code's transcripts for `session_recover`. |
 | `internal/guard` | The command guard: a small shell parser and the policy (push, root, secrets, production profiles, untouchable hosts). |
 | `internal/setup`, `internal/doctor`, `internal/backup`, `internal/claudecode`, `internal/update` | Creating spaces, the health check, backup and restore, installing the plugin, the new-version check. |

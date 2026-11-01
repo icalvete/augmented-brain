@@ -165,6 +165,7 @@ Claude te lo dice al empezar la siguiente.
 | `augmented-brain init` | Lo prepara todo: los espacios `trabajo` y `personal` y el plugin. Lo lanza el instalador; `--custom` para elegir tú |
 | `augmented-brain space add` | Añade otro espacio (personal, un cliente…) |
 | `augmented-brain doctor` | Dice qué falta y cómo arreglarlo |
+| `augmented-brain import <carpeta>` | Trae una memoria que Claude Code ya escribió. Solo enseña lo que haría; `--apply` la escribe ([detalles](docs/guide/how-it-works.es.md#trae-una-memoria-que-ya-tienes)) |
 | `augmented-brain check` | Revisa las notas del espacio de esta carpeta y rehace su índice; también avisa de los repositorios de las notas que ya no están en este ordenador |
 | `augmented-brain backup setup <url>` | Conecta este espacio a un repositorio git privado |
 | `augmented-brain backup` | Guarda los últimos cambios (`--all` para todos los espacios) |

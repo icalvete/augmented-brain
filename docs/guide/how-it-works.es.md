@@ -259,6 +259,35 @@ Lo que te da:
 
 Para apagar la copia automática: `AB_NO_AUTO_BACKUP=1`.
 
+## Trae una memoria que ya tienes
+
+Si Claude Code ya te guarda una memoria (los ficheros que escribe en
+`~/.claude/projects/<carpeta>/memory/`), puedes traerla a tus espacios:
+
+```bash
+augmented-brain import ~/.claude/projects/<carpeta>/memory
+```
+
+Eso no escribe nada. Enseña adónde iría cada nota y lo que no ha podido decidir: ficheros
+que no son notas (un índice), notas sobre ti (copia lo que importe a tu perfil), enlaces
+que cruzarían de un espacio a otro, ids que tu espacio ya tiene. Cuando la lista esté
+bien, vuelve a lanzarlo con `--apply`. La carpeta de la que importas solo se lee.
+
+Cada fichero pasa a ser una nota de su tipo: por su nombre (`task-…`, `area-…`, `ref-…`,
+`lesson-…`, `rule-…`, `person-…`) o, si no, por lo que Claude Code dice que es. Una
+tarea sin estado entra aparcada, esperándote, con «revisar esta tarea importada» como
+siguiente paso. Con más de un espacio, un fichero pequeño dice a qué espacio va cada
+área:
+
+```text
+area-familia = personal
+* = trabajo
+```
+
+y se pasa con `--map <fichero>`. `--repos-base <carpeta>` dice respecto a qué carpeta
+están los `repos:` de las notas, para reescribirlos respecto a la carpeta de trabajo del
+espacio.
+
 ## El panel
 
 El panel es una página en tu navegador para ver y cambiar tus espacios sin pasar por

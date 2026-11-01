@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Bring in the memory Claude Code already keeps.** `augmented-brain import <folder>`
+  reads a memory written by Claude Code (or shaped like it) and shows where each note
+  would go in your spaces, and what it could not decide: files that are not notes,
+  notes about you, links that would cross spaces, ids already taken. Nothing is written
+  until you run it again with `--apply`, and the folder you import from is only read.
+  With several spaces, a small file says which space each area goes to (`--map`).
+
 ## 0.4.0-alpha
 
 Released 2026-11-01.

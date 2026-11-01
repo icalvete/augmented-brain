@@ -35,6 +35,7 @@ Usage:
   augmented-brain space add    add another space (work, personal…)
   augmented-brain check        check the notes of this folder's space and rebuild its index
   augmented-brain doctor       say what is missing, and how to fix it
+  augmented-brain import DIR   bring in a memory of Claude Code (--map FILE, --repos-base DIR; --apply to write it)
   augmented-brain backup       save this folder's space to its private repository (--all: every space)
   augmented-brain backup setup URL   connect this folder's space to a private git repository
   augmented-brain restore URL  bring a space back from its backup, on a new machine
@@ -73,6 +74,8 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 		return cmdCheck(out, errOut)
 	case "doctor":
 		return cmdDoctor(out, errOut)
+	case "import":
+		return cmdImport(args[1:], out, errOut)
 	case "mcp":
 		return cmdMCP(errOut)
 	case "hook":

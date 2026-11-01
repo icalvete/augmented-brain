@@ -307,4 +307,4 @@ only through the same code as the MCP tools.
 
 - **A folder per type**, not one flat folder with prefixes: a newcomer sees at a glance what there is and where each thing goes.
 - **One profile for the person**, next to the configuration; each space may add its own `profile.md`.
-- **Importing an existing memory** from other formats is not part of 0.1; it is planned for 0.2.
+- **Importing an existing memory** of Claude Code (`augmented-brain import`) reads the header only: a field this format has is kept, at the top or under `metadata`; a person's own conventions are turned into those fields by a step of their own before importing, not by the program. It plans first and writes only with `--apply`, never over an existing note, and never changes the source.
