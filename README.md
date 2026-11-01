@@ -114,7 +114,7 @@ trusting it.
 - **Rules loaded in every session**, and the important ones enforced by a guard: no
   commit or push unless you allow it, never root, no secrets in commands or files.
   Production AWS profiles and hosts you mark as untouchable ask you first, also over
-  `ssh`.
+  `ssh`, in every space.
 - **Work and personal apart**: each *space* has its own memory, rules and backup. The
   folder you open the assistant in picks the space.
 - **Backup and restore** to a private git repository of yours, one per space. More
@@ -143,10 +143,15 @@ augmented-brain backup                                         # by hand, if you
 - **Full history.** Every backup is a commit, with the machine and the time: see what
   changed, go back to any day.
 - **Your place.** GitHub, GitLab or your own server. augmented brain has no cloud.
-- **One repository per space.** Work can go to your company's git.
+- **One repository per space.** Work can go to your company's git. Your profile only
+  travels in the default space's backup (`personal`), never in the work one. The guard's
+  lists travel in none: on a new machine, Claude asks for them again.
 - **No secrets go up.** If a note seems to hold a password or a token, it stops.
 - **Nothing gets overwritten.** If two machines changed the same note, it stops and tells
-  you what to do.
+  you what to do. Captures in the inbox from two machines are both kept (a capture
+  already processed on one machine may come back once, at the next review).
+- **Big files stay out.** A file over 50 MB in the notes folder is left out of the
+  backup (GitHub refuses them), and Claude tells you which one.
 
 Once set up, **it runs by itself every time a Claude session ends**; if it fails, Claude
 tells you at the start of the next one.

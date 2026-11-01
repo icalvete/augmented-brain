@@ -9,8 +9,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
@@ -18,6 +21,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
@@ -29,8 +33,9 @@ as Markdown files. Use these tools instead of editing those files by hand.
 - Every piece of work is a task. It moves through definition, analysis, plan, execution,
   validation and closed, and the user approves each change of phase.
 - Keep the task current as you work: write what was done, what came out and what was
-  decided in its journal (task_journal), and keep its next step and who it waits on
-  up to date (task_update).
+  decided in its journal (task_journal) at the moment it happens, not only when parking:
+  a session can end at any time, and what is not in the note is lost. Keep its next
+  step and who it waits on up to date (task_update).
 - Before switching to other work, park the task (task_park) with the exact next step
   and rewritten essentials, so another session can resume it without re-reading
   everything.
@@ -81,6 +86,17 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		}
 		return b, release, nil
 	}
+	// backup_setup runs a backup, which takes the notes lock itself (after the backup
+	// lock, never before): it runs one at a time in this process, without the file lock.
+	unlockedFile := func() (*brain.Brain, func(), error) {
+		mu.Lock()
+		b, err := open()
+		if err != nil {
+			mu.Unlock()
+			return nil, nil, err
+		}
+		return b, mu.Unlock, nil
+	}
 	s := mcp.NewServer(&mcp.Implementation{Name: "augmented-brain", Version: version.Version},
 		&mcp.ServerOptions{Instructions: Instructions})
 
@@ -125,6 +141,9 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	tool(s, locked, "task_new", "Open a new task, in the definition phase and waiting on the user. Returns the new task.",
 		func(b *brain.Brain, in newTaskIn) (string, error) {
 			n, err := b.NewTask(brain.NewTaskInput{Title: in.Title, Summary: in.Summary, Area: in.Area})
+			if err == nil {
+				touched(b, n.Header.ID, true)
+			}
 			return render(n, err)
 		})
 
@@ -134,6 +153,9 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	tool(s, locked, "task_get", "Read a task: its header and its whole body, journal included.",
 		func(b *brain.Brain, in idIn) (string, error) {
 			n, err := b.Task(in.ID)
+			if err == nil {
+				touched(b, in.ID, false)
+			}
 			return render(n, err)
 		})
 
@@ -171,6 +193,11 @@ func New(open Resolver, lockFile string) *mcp.Server {
 			if n == nil {
 				return "", errors.New("nothing to change: give at least one field")
 			}
+			if n.Header.Status == "closed" || n.Header.Status == "parked" || n.Header.Status == "someday" {
+				released(b, in.ID)
+			} else {
+				touched(b, in.ID, true)
+			}
 			return header(n, nil)
 		})
 
@@ -181,6 +208,9 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	tool(s, locked, "task_journal", "Add a dated entry to a task's journal.",
 		func(b *brain.Brain, in journalIn) (string, error) {
 			n, err := b.Journal(in.ID, in.Entry)
+			if err == nil {
+				touched(b, in.ID, true)
+			}
 			return header(n, err)
 		})
 
@@ -195,6 +225,9 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		func(b *brain.Brain, in parkIn) (string, error) {
 			n, err := b.Park(brain.ParkInput{ID: in.ID, Next: in.Next, WaitingOn: in.WaitingOn,
 				Essentials: in.Essentials, Someday: in.Someday})
+			if err == nil {
+				released(b, in.ID)
+			}
 			return header(n, err)
 		})
 
@@ -205,6 +238,9 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	tool(s, locked, "task_close", "Close a finished task with its result. It is kept, never deleted.",
 		func(b *brain.Brain, in closeIn) (string, error) {
 			n, err := b.Close(in.ID, in.Result)
+			if err == nil {
+				released(b, in.ID)
+			}
 			return header(n, err)
 		})
 
@@ -308,7 +344,7 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		ProductionAWSProfiles []string `json:"production_aws_profiles,omitempty" jsonschema:"AWS CLI profiles that reach production; the guard asks before commands that use them. Replaces the list."`
 		UntouchableHosts      []string `json:"untouchable_hosts,omitempty" jsonschema:"hosts that must not be touched without asking (ssh names as the user types them). Replaces the list."`
 	}
-	tool(s, locked, "safety_save", "Set what the guard must ask the user about in this space: production AWS profiles and hosts not to touch. Use it in the first session and when the user names a new one; each list given replaces the old one, so include what should stay.",
+	tool(s, locked, "safety_save", "Set what the guard must ask the user about: production AWS profiles and hosts not to touch. They apply on this whole machine, in every space and outside them. Use it in the first session and when the user names a new one; each list given replaces the old one (the answer shows what was there), so include what should stay.",
 		func(b *brain.Brain, in safetyIn) (string, error) {
 			return b.SaveSafety(brain.SafetyInput{ProductionAWSProfiles: in.ProductionAWSProfiles, UntouchableHosts: in.UntouchableHosts})
 		})
@@ -316,7 +352,7 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	type backupIn struct {
 		RepoURL string `json:"repo_url,omitempty" jsonschema:"a private git repository the user can push to; leave it out to create one in their GitHub account"`
 	}
-	tool(s, locked, "backup_setup", "Set up the backup of this space: a private git repository that keeps its notes, pushed by itself every time a session ends. Without repo_url it creates augmented-brain-<space> in the user's GitHub account with the gh command line; when gh is missing or not logged in, it returns the steps to guide the user through.",
+	tool(s, unlockedFile, "backup_setup", "Set up the backup of this space: a private git repository that keeps its notes, pushed by itself every time a session ends. Without repo_url it creates augmented-brain-<space> in the user's GitHub account with the gh command line; when gh is missing or not logged in, it returns the steps to guide the user through.",
 		func(b *brain.Brain, in backupIn) (string, error) {
 			return setupBackup(b, in.RepoURL, backup.Exec)
 		})
@@ -332,7 +368,92 @@ func New(open Resolver, lockFile string) *mcp.Server {
 			return render(n, err)
 		})
 
+	type recoverIn struct {
+		SessionID string `json:"session_id,omitempty" jsonschema:"the session to recover; leave it out for the one the session start offered"`
+	}
+	tool(s, locked, "session_recover", "Read what the user and you said in an earlier session of this space that did not end normally, after the last journal entry of the task it worked on: only the messages, no tool output, at most the last 20,000 characters, from Claude Code's transcript on this machine. Use it when the session start offers it and the user agrees, then write in the task's journal what is missing.",
+		func(b *brain.Brain, in recoverIn) (string, error) {
+			return recoverSession(b, in.SessionID, time.Now())
+		})
+
 	return s
+}
+
+// touched and released keep the space's state on this machine (state package): which
+// task is active and when it was last written, for the Stop hook's reminder. A failure
+// there never fails the tool.
+func touched(b *brain.Brain, id string, write bool) {
+	if b.ConfigDir != "" {
+		_ = state.Touched(b.ConfigDir, b.Space.Name, id, time.Now(), write)
+	}
+}
+
+func released(b *brain.Brain, id string) {
+	if b.ConfigDir != "" {
+		_ = state.Released(b.ConfigDir, b.Space.Name, id, time.Now())
+	}
+}
+
+// recoverMax is the most text session_recover returns.
+const recoverMax = 20000
+
+var journalDate = regexp.MustCompile(`(?m)^- (\d{4}-\d{2}-\d{2}) — `)
+
+// recoverSession returns the conversation of an earlier session that never ended,
+// after the last journal entry of its task, and marks it as dealt with.
+func recoverSession(b *brain.Brain, id string, now time.Time) (string, error) {
+	st := state.Read(b.ConfigDir, b.Space.Name)
+	var se *state.Session
+	// The session asking is running, so its transcript is fresh and Unclosed leaves it out.
+	unclosed := st.Unclosed("", now)
+	for k := range unclosed {
+		if id != "" && unclosed[k].ID == id || id == "" && unclosed[k].Reported {
+			se = &unclosed[k]
+			break
+		}
+	}
+	if se == nil {
+		if id != "" {
+			return "", fmt.Errorf("there is no earlier session %s of this space to recover", id)
+		}
+		return "No earlier session of this space is waiting to be recovered.", nil
+	}
+	since := se.Started
+	// The last write to the task, when it happened while that session was still alive.
+	if st.Task == se.Task && st.Since.After(since) {
+		if info, err := os.Stat(se.Transcript); err == nil && st.Since.Before(info.ModTime()) {
+			since = st.Since
+		}
+	}
+	if n, ok := b.Mem.Notes[se.Task]; ok {
+		dates := journalDate.FindAllStringSubmatch(n.Body, -1)
+		if len(dates) > 0 {
+			if d, err := time.ParseInLocation("2006-01-02", dates[len(dates)-1][1], time.Local); err == nil && d.After(since) {
+				since = d
+			}
+		}
+	}
+	text, err := state.Conversation(se.Transcript, since, recoverMax)
+	if err != nil {
+		return "", fmt.Errorf("the transcript of that session cannot be read (%v); Claude Code deletes them after 30 days", err)
+	}
+	found := se.ID
+	_ = state.Update(b.ConfigDir, b.Space.Name, now, func(x *state.Space) {
+		for k := range x.Sessions {
+			if x.Sessions[k].ID == found {
+				x.Sessions[k].Closed = true
+			}
+		}
+	})
+	task := "the task it worked on"
+	if se.Task != "" {
+		task = "task " + se.Task
+	}
+	if strings.TrimSpace(text) == "" {
+		return fmt.Sprintf("The session started %s has nothing said after the last journal entry of %s.", se.Started.Local().Format("2006-01-02 15:04"), task), nil
+	}
+	return fmt.Sprintf("Session started %s, from %s on (the user's and your messages only). Write in the journal of %s what was done, decided or found that is not there yet, in a few short entries.\n\n%s",
+		se.Started.Local().Format("2006-01-02 15:04"), since.Local().Format("2006-01-02 15:04"), task, text), nil
 }
 
 // tool registers a handler that receives the brain of the current space, opened afresh
@@ -347,6 +468,14 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 			}
 			defer release()
 			text, err := h(b, in)
+			if note := brain.ProblemsNote(b.Problems, 3); note != "" {
+				// Files that are not valid notes do not stop the tools; the user hears about them.
+				if err != nil {
+					err = fmt.Errorf("%w\n\n%s", err, note)
+				} else {
+					text = strings.TrimRight(text, "\n") + "\n\n" + note
+				}
+			}
 			if err != nil {
 				return nil, nil, err
 			}

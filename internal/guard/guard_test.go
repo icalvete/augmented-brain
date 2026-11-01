@@ -208,3 +208,124 @@ func TestRelativeGitDir(t *testing.T) {
 		t.Error("-C .. from the sub folder is the allowed repo")
 	}
 }
+
+// Commands checked against the profile they inherit, the tools that take an AWS profile,
+// publishing with gh and glab, shells fed through a pipe and host names.
+func TestReviewFixes(t *testing.T) {
+	p := Policy{
+		ProductionAWSProfiles: []string{"prod", "default-prod"},
+		UntouchableHosts:      []string{"db01", "Backup.Example.COM"},
+	}
+	cases := []struct {
+		env  map[string]string
+		cmd  string
+		want Verdict
+	}{
+		// the profile an aws command uses without --profile
+		{map[string]string{"AWS_PROFILE": "prod"}, "aws s3 ls", Ask},
+		{map[string]string{"AWS_DEFAULT_PROFILE": "prod"}, "aws s3 ls", Ask},
+		{map[string]string{"AWS_PROFILE": "dev", "AWS_DEFAULT_PROFILE": "prod"}, "aws s3 ls", Ask}, // any candidate counts
+		{map[string]string{"AWS_PROFILE": "prod"}, "aws s3 ls --profile dev", Ask},
+		{map[string]string{"AWS_PROFILE": "dev"}, "aws s3 ls --profile dev", Allow},
+		{nil, "AWS_DEFAULT_PROFILE=prod aws s3 ls --profile dev", Ask},
+		{map[string]string{"AWS_PROFILE": "prod"}, "cdk deploy", Ask},
+		{map[string]string{"AWS_PROFILE": "dev"}, "cdk deploy", Allow},
+		{nil, "aws s3 ls", Allow},
+		// cdk, sam, serverless and aws-vault
+		{nil, "cdk deploy --profile prod", Ask},
+		{nil, "sam deploy --profile=prod", Ask},
+		{nil, "serverless deploy --aws-profile prod", Ask},
+		{nil, "npx cdk deploy --profile dev", Allow},
+		{nil, "npx cdk deploy --profile prod", Ask},
+		{nil, "aws-vault exec prod -- aws s3 ls", Ask},
+		{nil, "aws-vault exec --duration 1h prod -- terraform plan", Ask},
+		{nil, "aws-vault exec dev -- aws s3 ls", Allow},
+		{nil, "aws-vault exec dev -- sudo id", Deny},
+		// publishing and merging, like a push
+		{nil, "gh pr merge 12 --squash", Deny},
+		{nil, "gh release create v1.0.0", Deny},
+		{nil, "glab mr merge 7", Deny},
+		{nil, "gh pr view 12", Allow},
+		{nil, "gh pr list", Allow},
+		{nil, "glab mr accept 7", Deny},
+		{nil, "gh repo sync", Allow},
+		{nil, "gh repo sync --branch v1", Allow},
+		{nil, "gh repo sync owner/fork", Deny},
+		{nil, "gh repo sync --source owner2/repo2", Allow},
+		{nil, "gh repo sync owner/repo --source owner2/repo2", Deny},
+		// what reaches a shell through a pipe
+		{nil, "cat <<'E' | bash\nsudo id\nE", Deny},
+		{nil, "echo 'sudo ls' | bash", Deny},
+		{nil, "printf 'git push\\n' | sh", Deny},
+		{nil, "echo 'sudo ls' | ssh web01", Deny},
+		{nil, "cat <<'E' | sudo -u app bash\nls\nE", Allow},
+		{nil, "echo 'sudo ls' | grep sudo", Allow},
+		{nil, "echo 'sudo id' | (bash)", Deny},
+		{nil, "echo 'sudo id' | tee x | bash", Deny},
+		{nil, "echo 'sudo id' | { bash; }", Deny},
+		{nil, "(echo 'sudo id') | bash", Deny},
+		{nil, "echo 'sudo ls' || bash", Allow},
+		{nil, "ssh db01 < script.sh", Ask},
+		{nil, "ssh web01 < script.sh", Allow},
+		// host names: any case, short name and full name both ways, sftp and mosh
+		{nil, "ssh DB01 uptime", Ask},
+		{nil, "ssh db01.example.com uptime", Ask},
+		{nil, "ssh backup uptime", Ask},
+		{nil, "ssh backup.example.com", Ask},
+		{nil, "ssh backups uptime", Allow},
+		{nil, "sftp db01", Ask},
+		{nil, "sftp -P 2222 admin@db01", Ask},
+		{nil, "sftp web01", Allow},
+		{nil, "mosh db01", Ask},
+		{nil, "mosh --ssh 'ssh -p 2222' admin@db01 -- htop", Ask},
+		{nil, "mosh web01 -- sudo id", Deny},
+		{nil, "mosh web01", Allow},
+	}
+	for _, c := range cases {
+		q := p
+		q.Env = c.env
+		d := q.Command(c.cmd)
+		if d.Verdict != c.want {
+			t.Errorf("%q (env %v): got %v (%s), want %v", c.cmd, c.env, d.Verdict, d.Reason, c.want)
+		}
+	}
+
+	// A "default" profile that is production is the one aws uses with nothing set.
+	if (Policy{ProductionAWSProfiles: []string{"default"}}).Command("aws s3 ls").Verdict != Ask {
+		t.Error("the default profile is not checked")
+	}
+	if (Policy{ProductionAWSProfiles: []string{"default"}}).Command("sam deploy").Verdict != Ask {
+		t.Error("the default profile is not checked for sam")
+	}
+	if (Policy{ProductionAWSProfiles: []string{"default"}}).Command("aws s3 ls --profile dev").Verdict != Allow {
+		t.Error("default counted although a profile was given")
+	}
+}
+
+// When the configuration cannot be read, what the lists would cover asks every time;
+// the rest goes on as usual.
+func TestConfigProblem(t *testing.T) {
+	p := Policy{ConfigProblem: "config.toml: line 3: bad"}
+	for _, cmd := range []string{"aws s3 ls", "ssh web01 uptime", "scp x web01:/tmp", "sftp web01", "mosh web01", "cdk deploy --profile x"} {
+		if d := p.Command(cmd); d.Verdict != Ask || !strings.Contains(d.Reason, "cannot read its configuration") {
+			t.Errorf("%q: %v (%s)", cmd, d.Verdict, d.Reason)
+		}
+	}
+	for cmd, want := range map[string]Verdict{"ls -la": Allow, "git push": Deny, "ssh web01 sudo id": Deny} {
+		if d := p.Command(cmd); d.Verdict != want {
+			t.Errorf("%q: %v, want %v", cmd, d.Verdict, want)
+		}
+	}
+}
+
+// The keys of AWS's documentation are examples, not secrets; a real one next to them is.
+func TestAWSExampleKeys(t *testing.T) {
+	id, secret := examples[0], examples[1]
+	if what := FindSecret("aws_access_key_id = " + id + "\naws_secret_access_key = " + secret + "\n"); what != "" {
+		t.Errorf("AWS's example keys were taken for secrets: %s", what)
+	}
+	real := "AKI" + "A" + strings.Repeat("Q", 16)
+	if FindSecret("example "+id+" and real "+real) == "" {
+		t.Error("a real key next to the example one was missed")
+	}
+}

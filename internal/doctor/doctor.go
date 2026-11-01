@@ -2,12 +2,16 @@
 package doctor
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
@@ -44,6 +48,9 @@ type Env struct {
 	Plugin func() (bool, error)
 	// Lang is the language of the report when there is no configuration to say it.
 	Lang string
+	// Hook runs the PreToolUse hook as Claude Code does, with input on stdin, and returns
+	// what it prints; nil means run the installed program.
+	Hook func(input []byte) ([]byte, error)
 }
 
 // Run returns every check, in the order they are shown. Later checks are skipped when
@@ -91,6 +98,9 @@ func Run(e Env) []Check {
 		}
 		add(Info, i18n.T(l, "doctor.nospace", strings.Join(where, ", ")), "")
 	}
+
+	profiles, hosts := c.GuardLists()
+	add(Info, i18n.T(l, "doctor.lists", len(profiles), len(hosts)), "")
 
 	for _, name := range c.SpaceNames() {
 		out = append(out, space(c, c.Spaces[name])...)
@@ -147,7 +157,61 @@ func plugin(e Env) []Check {
 		return []Check{{Failed, i18n.T(e.Lang, "doctor.plugin.missing", claudecode.Plugin),
 			"claude plugin marketplace add " + claudecode.Marketplace() + " && claude plugin install " + claudecode.Plugin + " --scope user"}}
 	}
-	return []Check{{OK, i18n.T(e.Lang, "doctor.plugin.ok", claudecode.Plugin), ""}}
+	return []Check{{OK, i18n.T(e.Lang, "doctor.plugin.ok", claudecode.Plugin), ""}, guardWorks(e)}
+}
+
+// guardWorks runs the PreToolUse hook end to end with a command it must block. If the
+// program is not where the plugin looks for it, or answers wrong, every command would go
+// through unchecked without anyone noticing.
+func guardWorks(e Env) Check {
+	run := e.Hook
+	if run == nil {
+		run = runHook
+	}
+	in, _ := json.Marshal(map[string]any{"cwd": e.WorkDir, "hook_event_name": "PreToolUse",
+		"tool_name": "Bash", "tool_input": map[string]any{"command": "sudo id"}})
+	out, err := run(in)
+	var o struct {
+		Specific struct {
+			Decision string `json:"permissionDecision"`
+		} `json:"hookSpecificOutput"`
+	}
+	if err == nil {
+		err = json.Unmarshal(out, &o)
+	}
+	if err != nil || o.Specific.Decision != "deny" {
+		why := strings.TrimSpace(string(out))
+		if err != nil {
+			why = err.Error()
+		}
+		return Check{Failed, i18n.T(e.Lang, "doctor.guard.fail", why), i18n.T(e.Lang, "doctor.guard.fix")}
+	}
+	return Check{OK, i18n.T(e.Lang, "doctor.guard.ok"), ""}
+}
+
+// runHook runs `augmented-brain hook pre-tool-use` found the way the plugin's hooks find
+// it: on the PATH, or in ~/.local/bin.
+func runHook(input []byte) ([]byte, error) {
+	bin, err := exec.LookPath("augmented-brain")
+	if err != nil {
+		home, herr := paths.Home()
+		if herr != nil {
+			return nil, err
+		}
+		name := "augmented-brain"
+		if runtime.GOOS == "windows" {
+			name += ".exe"
+		}
+		bin = filepath.Join(home, ".local", "bin", name)
+		if _, serr := os.Stat(bin); serr != nil {
+			return nil, err
+		}
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, bin, "hook", "pre-tool-use")
+	cmd.Stdin = bytes.NewReader(input)
+	return cmd.Output()
 }
 
 // GitInstall is the command that installs git on this system.

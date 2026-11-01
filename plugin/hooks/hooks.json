@@ -1,5 +1,5 @@
 {
-  "description": "augmented brain: load the space when a session starts, guard commands and file writes, and back the space up when a session ends.",
+  "description": "augmented brain: load the space when a session starts, guard commands and file writes, remind the assistant to keep the task's journal, keep the summary when the conversation is compacted, and back the space up when a session ends.",
   "hooks": {
     "SessionStart": [
       {
@@ -19,6 +19,28 @@
           {
             "type": "command",
             "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook pre-tool-use",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook stop",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook post-compact",
             "timeout": 10
           }
         ]

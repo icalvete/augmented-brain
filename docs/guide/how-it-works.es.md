@@ -50,10 +50,17 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
 
 - **Adelante**: casi siempre. `ls`, `go test`, `aws --profile dev s3 ls`.
 - **Te pregunta**: producción, o una máquina que marcaste como intocable.
-  `aws --profile prod …`, `ssh db01 …`.
-- **Lo para**: subir código, root y secretos. `git push`, `sudo …`, un token en un comando.
+  `aws --profile prod …`, `ssh db01 …`. Esas dos listas son de toda la máquina: valen en
+  todos los espacios. Un `aws` se mira con todos los perfiles que puede usar: `--profile`,
+  `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`, o `default` si no hay ninguno.
+- **Lo para**: subir código, root y secretos. `git push`, `sudo …`, un token en un comando,
+  y lo que publica como un push: `gh pr merge`, `gh release create`, `glab mr merge`.
 
-También mira dentro de `ssh`, de `bash -c` y de los bucles. Lee la shell, no PowerShell,
+También mira dentro de `ssh`, de `bash -c`, de los bucles y de lo que una tubería le pasa
+a una shell (`echo 'sudo …' | bash`). Si no puede leer su configuración, te pregunta antes
+de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`, y antes de `cdk`, `sam` o
+`serverless` con un perfil, porque no sabe cuáles importan.
+`augmented-brain doctor` prueba el guardia de verdad y te dice si no está funcionando. Lee la shell, no PowerShell,
 así que para también cualquier comando de PowerShell, y Claude lo hace en Bash. Es una
 red contra despistes, no un muro de seguridad: lee el [aviso legal](../../DISCLAIMER.md#aviso-legal).
 
@@ -62,9 +69,21 @@ algo apuntado con "recuérdamelo el jueves", Claude te lo dice nada más empezar
 una semana o más de la última revisión y hay cosas en el buzón o tareas paradas, te ofrece
 la revisión semanal: unos diez minutos repasando contigo cada cosa.
 
-**4. Cierras la sesión.** El hook de cierre lanza la copia de seguridad del espacio, por
-detrás, si la tienes montada. No esperas a nada. Si falla, Claude te lo dice al empezar
-la siguiente.
+**Mientras trabajas, Claude va apuntando.** Cada decisión o paso terminado va al diario de
+la tarea en el momento, no solo al aparcarla: una sesión puede acabar en cualquier
+momento. Si hay una tarea abierta y en 20 minutos no se ha escrito nada en ella, un hook
+al final de la respuesta de Claude se lo recuerda, una vez. Cuando una conversación larga
+se compacta (Claude Code cambia los detalles por un resumen), el resumen se guarda en
+`archive/sessions/`, el diario de la tarea apunta a él, y Claude anota lo decidido antes
+de seguir.
+
+**4. Cierras la sesión.** El hook de cierre apunta que la sesión acabó bien y lanza la
+copia de seguridad del espacio, por detrás, si la tienes montada. No esperas a nada. Si
+la copia falla, Claude te lo dice al empezar la siguiente. Si una sesión no acabó bien (se
+cerró la ventana a la fuerza, se apagó la máquina), la siguiente te ofrece recuperarla:
+Claude lee lo que os dijisteis después de la última entrada del diario de la tarea, en el
+registro de la conversación que guarda Claude Code en esta máquina (lo guarda 30 días), y
+apunta lo que falte.
 
 ## Tus ficheros
 
@@ -91,7 +110,7 @@ y sus notas van en `notas/`:
 Tu **perfil**, quién eres y cómo te gusta trabajar, es uno para todos los espacios:
 `~/.config/augmented-brain/profile.md`. No hace falta escribirlo a mano: la primera vez
 que abres Claude, te hace seis preguntas rápidas, explicándote el porqué de cada una. Con
-tus respuestas guarda el perfil, crea tus áreas, le dice al guardia qué es producción y
+tus respuestas guarda el perfil, crea tus áreas, le dice al guardia (para todos los espacios) qué es producción y
 qué máquinas no se tocan, y apunta a las personas con las que trabajas. Para cambiar
 cualquier cosa, díselo.
 
@@ -185,8 +204,11 @@ augmented-brain backup --all    # todos
    ```bash
    augmented-brain restore https://github.com/tu-usuario/augmented-brain-trabajo.git
    ```
-   Sustituye el espacio vacío por el tuyo: notas, tareas, reglas, tu perfil y la
-   configuración del espacio. Si ese espacio ya tuviera notas tuyas, no lo pisa.
+   Sustituye el espacio vacío por el tuyo: notas, tareas, reglas y la configuración del
+   espacio. Tu perfil viene con el espacio por defecto (`personal`). Las listas del
+   guardia (producción, máquinas intocables) no van en ninguna copia, porque pueden
+   nombrar máquinas de tu trabajo: la siguiente sesión te ofrece volver a pedírtelas. Si ese espacio ya tuviera notas tuyas, no lo pisa. Si algo falla a
+   medias, el espacio vacío se queda como estaba.
 3. Abre Claude. Sigue donde lo dejaste, y la copia sigue haciéndose sola.
 
 Si el repositorio está en GitHub, antes de restaurar entra una vez con `gh auth login`
@@ -202,11 +224,19 @@ Lo que te da:
 - **En tu sitio.** GitHub, GitLab o tu servidor: el repositorio lo eliges tú. No hay nube
   de augmented brain.
 - **Un repositorio por espacio.** El del trabajo puede ir al git de la empresa y el
-  personal al tuyo.
+  personal al tuyo. Tu perfil solo viaja en la copia del espacio por defecto, nunca en la
+  del trabajo.
 - **No sube secretos.** Si una nota tiene algo que parece una contraseña o un token, la
   copia se para y te dice en qué fichero.
 - **No pisa nada.** Si dos máquinas cambiaron la misma nota, se para sin tocar nada y te
-  explica cómo resolverlo. El índice, que es generado, se rehace solo.
+  explica cómo resolverlo. El índice, que es generado, se rehace solo, y las capturas del
+  buzón hechas en dos máquinas se guardan las dos. Un detalle: una captura que
+  procesaste en una máquina puede volver si la otra apuntó algo a la vez. Sale otra vez
+  en la siguiente revisión, sin más.
+- **Ni basura ni gigantes.** Los restos de un cuelgue y los ficheros que dejan los
+  sistemas en las carpetas (`.DS_Store`, `Thumbs.db`) se quedan fuera. Un fichero de más
+  de 50 MB también (GitHub los rechaza), y Claude te dice cuál al empezar la siguiente
+  sesión.
 
 Para apagar la copia automática: `AB_NO_AUTO_BACKUP=1`.
 

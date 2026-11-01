@@ -167,8 +167,15 @@ func TestContextDueAndReview(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// A file that is not a valid note is named, and the rest keeps working.
+	if err := os.WriteFile(filepath.Join(s.Memory, "tasks", "task-broken.md"), []byte("no header here\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
 	text := Context(c, s)
 	for _, want := range []string{
+		"1 files of this space are not valid notes",
+		"tasks/task-broken.md: missing header",
 		"## Due",
 		"- 2026-10-18 (2 days overdue): renewed? [" + task.Header.ID + "]",
 		"- 2026-10-21 (tomorrow): call the insurance [inbox]",

@@ -24,6 +24,10 @@ func noTools(string) (string, error)  { return "", errors.New("not found") }
 func yes() (bool, error)              { return true, nil }
 func no() (bool, error)               { return false, nil }
 
+func denies([]byte) ([]byte, error) {
+	return []byte(`{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny"}}`), nil
+}
+
 func TestNoConfiguration(t *testing.T) {
 	checks := Run(Env{ConfigDir: t.TempDir(), WorkDir: "/", LookPath: noTools})
 	if Worst(checks) != Failed || !strings.Contains(checks[0].Fix, "augmented-brain init") {
@@ -49,7 +53,7 @@ func TestHealthyAndBroken(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	checks := Run(Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: yes})
+	checks := Run(Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: yes, Hook: denies})
 	if w := Worst(checks); w > Info {
 		t.Fatalf("a fresh setup is not healthy: %+v", checks)
 	}
@@ -61,7 +65,7 @@ func TestHealthyAndBroken(t *testing.T) {
 	}
 
 	// Outside any space: news, with where the spaces are.
-	if c := find(Run(Env{ConfigDir: cfg, WorkDir: home, LookPath: allTools, Plugin: yes}), "outside your spaces"); c == nil || c.Status != Info || !strings.Contains(c.What, "work (~/work)") {
+	if c := find(Run(Env{ConfigDir: cfg, WorkDir: home, LookPath: allTools, Plugin: yes, Hook: denies}), "outside your spaces"); c == nil || c.Status != Info || !strings.Contains(c.What, "work (~/work)") {
 		t.Errorf("outside a space must say where the spaces are, as news: %+v", c)
 	}
 
@@ -70,7 +74,7 @@ func TestHealthyAndBroken(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(home, "brain", "areas", "area-web.md"), []byte(note), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if c := find(Run(Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: yes}), "out of date"); c == nil || c.Status != Warning {
+	if c := find(Run(Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: yes, Hook: denies}), "out of date"); c == nil || c.Status != Warning {
 		t.Error("stale index not reported")
 	}
 
@@ -78,7 +82,7 @@ func TestHealthyAndBroken(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(home, "brain", "tasks", "task-x.md"), []byte("no header"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	checks = Run(Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: yes})
+	checks = Run(Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: yes, Hook: denies})
 	if c := find(checks, "not valid"); c == nil || c.Status != Failed || Worst(checks) != Failed {
 		t.Errorf("broken note not reported: %+v", checks)
 	}
@@ -88,10 +92,25 @@ func TestPluginCheck(t *testing.T) {
 	if c := plugin(Env{LookPath: allTools, Plugin: no}); len(c) != 1 || c[0].Status != Failed || !strings.Contains(c[0].Fix, "claude plugin install") {
 		t.Errorf("missing plugin: %+v", c)
 	}
-	if c := plugin(Env{LookPath: allTools, Plugin: yes}); len(c) != 1 || c[0].Status != OK {
+	if c := plugin(Env{LookPath: allTools, Plugin: yes, Hook: denies}); len(c) != 2 || c[0].Status != OK || c[1].Status != OK {
 		t.Errorf("installed plugin: %+v", c)
 	}
 	if c := plugin(Env{LookPath: noTools}); len(c) != 0 {
 		t.Errorf("without Claude Code the plugin is not checked: %+v", c)
+	}
+}
+
+// The guard is tried for real: a hook that cannot run, or lets a risky command through,
+// fails the check.
+func TestGuardCheck(t *testing.T) {
+	if c := guardWorks(Env{Lang: "en", Hook: denies}); c.Status != OK {
+		t.Errorf("working guard: %+v", c)
+	}
+	silent := func([]byte) ([]byte, error) { return nil, nil }
+	missing := func([]byte) ([]byte, error) { return nil, errors.New("executable file not found") }
+	for _, h := range []func([]byte) ([]byte, error){silent, missing} {
+		if c := guardWorks(Env{Lang: "es", Hook: h}); c.Status != Failed || !strings.Contains(c.Fix, "~/.local/bin") {
+			t.Errorf("broken guard: %+v", c)
+		}
 	}
 }

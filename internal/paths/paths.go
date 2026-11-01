@@ -9,6 +9,7 @@ package paths
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -51,20 +52,33 @@ func Resolve(p string) (string, error) {
 	}
 }
 
+// foldCase says whether folders compare ignoring case: on macOS and Windows, whose
+// disks usually do (/Users/Ana/Notes and /users/ana/notes are one folder). Tests set it.
+var foldCase = runtime.GOOS == "darwin" || runtime.GOOS == "windows"
+
+// rel is filepath.Rel, ignoring case where the system does.
+func rel(base, target string) (string, error) {
+	if foldCase {
+		base, target = strings.ToLower(base), strings.ToLower(target)
+	}
+	return filepath.Rel(base, target)
+}
+
 // Within reports whether path is folder itself or inside it. Both must be resolved.
+// It ignores case on macOS and Windows.
 func Within(path, folder string) bool {
-	rel, err := filepath.Rel(folder, path)
+	r, err := rel(folder, path)
 	if err != nil {
 		return false
 	}
-	return rel == "." || (rel != ".." && !strings.HasPrefix(rel, ".."+string(filepath.Separator)))
+	return r == "." || (r != ".." && !strings.HasPrefix(r, ".."+string(filepath.Separator)))
 }
 
 // Same reports whether two resolved paths are the same folder. Like Within, it ignores
-// case on Windows, where C:\Notes and c:\notes are one folder.
+// case on macOS and Windows.
 func Same(a, b string) bool {
-	rel, err := filepath.Rel(a, b)
-	return err == nil && rel == "."
+	r, err := rel(a, b)
+	return err == nil && r == "."
 }
 
 // Tilde writes a path under the home folder as ~/…, for files people read.
@@ -83,8 +97,12 @@ func Tilde(p string) string {
 		return "~"
 	}
 	if Within(p, home) {
-		rel, _ := filepath.Rel(home, p)
-		return "~/" + filepath.ToSlash(rel)
+		r, _ := rel(home, p)
+		if !foldCase || len(r) > len(p) || strings.ToLower(p[len(p)-len(r):]) != r {
+			return "~/" + filepath.ToSlash(r)
+		}
+		// Keep the case the path was written in: only its length counts here.
+		return "~/" + filepath.ToSlash(p[len(p)-len(r):])
 	}
 	return p
 }

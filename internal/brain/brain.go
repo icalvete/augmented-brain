@@ -29,26 +29,60 @@ type Brain struct {
 	ConfigDir string // where the configuration and the profile live
 	// Now gives today's date; tests replace it.
 	Now func() time.Time
+	// Problems are the files of the memory that are not valid notes. The brain works with
+	// the valid ones, and never writes over a file that could not be read.
+	Problems []memory.Problem
 }
 
-// Open loads the space's memory. It refuses to work on a memory with invalid notes:
-// writing on top of it could make things worse.
+// Open loads the space's memory. A file that is not a valid note does not stop the
+// rest: it is left out, listed in Problems, and never written over.
 func Open(c *config.Config, s *config.Space) (*Brain, error) {
 	m, problems, err := memory.Load(s.Memory)
 	if err != nil {
 		return nil, err
 	}
-	if len(problems) > 0 {
-		return nil, fmt.Errorf("space %s has %d notes that are not valid (first: %v); run `augmented-brain check`",
-			s.Name, len(problems), problems[0])
+	return &Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: time.Now, Problems: problems}, nil
+}
+
+// broken reports whether the file at path (relative to the memory folder) is one that
+// could not be read as a note.
+func (b *Brain) broken(path string) bool {
+	for _, p := range b.Problems {
+		if p.Path == path {
+			if n, ok := b.Mem.Notes[strings.TrimSuffix(filepath.Base(path), ".md")]; !ok || n.Path != path {
+				return true
+			}
+		}
 	}
-	return &Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: time.Now}, nil
+	return false
+}
+
+// ProblemsNote says, for the assistant, which files are not valid notes and how to fix
+// them; empty when all are. At most max files are named.
+func ProblemsNote(problems []memory.Problem, max int) string {
+	if len(problems) == 0 {
+		return ""
+	}
+	var out strings.Builder
+	fmt.Fprintf(&out, "%d files of this space are not valid notes; they are left out until fixed, and nothing writes over them:\n", len(problems))
+	for i, p := range problems {
+		if i == max {
+			fmt.Fprintf(&out, "- and %d more\n", len(problems)-max)
+			break
+		}
+		fmt.Fprintf(&out, "- %s\n", p.Error())
+	}
+	out.WriteString("Tell the user, in their language, and offer to fix each file (its header, between the --- lines at the top); `augmented-brain check` in the space's folder lists them all.\n")
+	return out.String()
 }
 
 func (b *Brain) today() string { return b.Now().Format("2006-01-02") }
 
 // save writes a note, keeps it in memory and rebuilds the index.
 func (b *Brain) save(n *memory.Note) error {
+	if b.broken(n.Path) {
+		return fmt.Errorf("%s is not a valid note, so it is not written over; fix it first (`augmented-brain check` says what is wrong)", n.Path)
+	}
 	n.Header.Updated = b.today()
 	if err := memory.Save(b.Mem.Dir, n); err != nil {
 		return err
@@ -72,9 +106,11 @@ func (b *Brain) get(id, kind string) (*memory.Note, error) {
 // texts the program writes into notes, per language.
 var texts = map[string]map[string]string{
 	"en": {"next": "Agree on the definition", "status": "Status: %s → %s.", "closed": "Closed: %s",
-		"parked": "Parked. Next: %s", "resumed": "Resumed."},
+		"parked": "Parked. Next: %s", "resumed": "Resumed.",
+		"compacted": "The conversation was compacted; Claude Code's summary is in %s."},
 	"es": {"next": "Acordar la definición", "status": "Estado: %s → %s.", "closed": "Cerrada: %s",
-		"parked": "Aparcada. Siguiente: %s", "resumed": "Retomada."},
+		"parked": "Aparcada. Siguiente: %s", "resumed": "Retomada.",
+		"compacted": "Se compactó la conversación; el resumen de Claude Code está en %s."},
 }
 
 func (b *Brain) text(key string) string {
@@ -182,6 +218,12 @@ func (b *Brain) Journal(id, entry string) (*memory.Note, error) {
 	cp := *n
 	cp.Body = b.journalLine(cp.Body, entry)
 	return &cp, b.save(&cp)
+}
+
+// JournalText adds to a task's journal one of the entries the program writes itself,
+// in the user's language (texts above).
+func (b *Brain) JournalText(key, id string, args ...any) (*memory.Note, error) {
+	return b.Journal(id, fmt.Sprintf(b.text(key), args...))
 }
 
 func (b *Brain) journalLine(body, entry string) string {
@@ -421,11 +463,21 @@ func Slug(title string) string {
 func (b *Brain) uniqueID(base string) string {
 	id := base
 	for i := 2; ; i++ {
-		if _, taken := b.Mem.Notes[id]; !taken {
+		if _, taken := b.Mem.Notes[id]; !taken && !b.brokenID(id) {
 			return id
 		}
 		id = fmt.Sprintf("%s-%d", base, i)
 	}
+}
+
+// brokenID reports whether a file named id.md, anywhere in the memory, is not valid.
+func (b *Brain) brokenID(id string) bool {
+	for _, p := range b.Problems {
+		if strings.TrimSuffix(filepath.Base(p.Path), ".md") == id && b.broken(p.Path) {
+			return true
+		}
+	}
+	return false
 }
 
 func (b *Brain) lang() string {

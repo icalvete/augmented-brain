@@ -28,6 +28,16 @@ type input struct {
 	Cwd       string         `json:"cwd"`
 	ToolName  string         `json:"tool_name"`
 	ToolInput map[string]any `json:"tool_input"`
+	// Common to every hook.
+	SessionID      string `json:"session_id"`
+	TranscriptPath string `json:"transcript_path"`
+	// SessionStart: startup, resume, clear, compact or fork.
+	Source string `json:"source"`
+	// Stop: true while the assistant goes on because of a Stop hook.
+	StopHookActive bool `json:"stop_hook_active"`
+	// PostCompact: manual or auto, and the summary Claude Code wrote.
+	Trigger        string `json:"trigger"`
+	CompactSummary string `json:"compact_summary"`
 }
 
 type specific struct {
@@ -74,7 +84,7 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 	case errors.Is(err, config.ErrNotFound):
 		text = "augmented brain is installed but not set up yet: no memory is loaded. The user can run `augmented-brain init`."
 	case err != nil:
-		text = "augmented brain cannot read its configuration, so no memory is loaded and the space's own safety settings (production profiles, untouchable hosts) are not applied until it is fixed. Tell the user: " + err.Error() + ". `augmented-brain doctor` shows the problem."
+		text = "augmented brain cannot read its configuration, so no memory is loaded, and until it is fixed the guard asks the user before every aws, ssh, scp, rsync, sftp and mosh command (it cannot tell production profiles and untouchable hosts). Tell the user: " + err.Error() + ". `augmented-brain doctor` shows the problem."
 	case s == nil:
 		text = session.NoSpace(c, i.Cwd)
 	default:
@@ -82,12 +92,18 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 		if _, isDefault := c.SpaceAt(i.Cwd); isDefault {
 			note = session.DefaultNote(c, s, i.Cwd)
 		}
-		if st, ok := backup.LastStatus(cfgDir, s.Name); ok && !st.OK && s.Backup != "" {
-			note += session.BackupFailedNote(c.Language, s.Name, st.Time, st.Error)
+		if st, ok := backup.LastStatus(cfgDir, s.Name); ok && s.Backup != "" {
+			if !st.OK {
+				note += session.BackupFailedNote(c.Language, s.Name, st.Time, st.Error)
+			} else if st.Warning != "" {
+				note += session.BackupWarningNote(c.Language, s.Name, st.Time, st.Warning)
+			}
 		}
 		if latest := update.Available(cfgDir, version.Version, time.Now(), LatestVersion); latest != "" {
 			note += session.UpdateNote(c.Language, version.Version, latest)
 		}
+		note += sessionStarted(c, s, i, cfgDir)
+		note += askSafety(c, cfgDir)
 		text = session.ContextWith(c, s, note)
 	}
 	return write(out, output{specific{HookEventName: "SessionStart", AdditionalContext: text}})
@@ -97,11 +113,7 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 // blocks PowerShell commands, which the guard cannot read.
 func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	i := read(in)
-	p := guard.Policy{Cwd: i.Cwd}
-	if _, s, _ := load(cfgDir, i.Cwd); s != nil {
-		p = guard.Policy{GitAllowedRepos: s.GitAllowedRepos, Cwd: i.Cwd,
-			ProductionAWSProfiles: s.ProductionAWSProfiles, UntouchableHosts: s.UntouchableHosts}
-	}
+	p := policy(cfgDir, i.Cwd)
 	var d guard.Decision
 	switch i.ToolName {
 	case "Bash":
@@ -120,6 +132,36 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	}
 	return write(out, output{specific{HookEventName: "PreToolUse",
 		PermissionDecision: decision, PermissionDecisionReason: "augmented brain: " + d.Reason}})
+}
+
+// Getenv reads the hook's environment, which the assistant's commands inherit; tests
+// replace it.
+var Getenv = os.Getenv
+
+// policy is what the guard applies to a command run in dir: the production profiles and
+// untouchable hosts of the whole machine (every space's lists too), the repositories the
+// space of dir lets the assistant commit in, and the AWS profile the command inherits.
+// When the configuration exists but cannot be read, the guard is told, so it asks
+// before every command those lists would cover instead of letting them through unseen.
+func policy(cfgDir, dir string) guard.Policy {
+	p := guard.Policy{Cwd: dir, Env: map[string]string{}}
+	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE"} {
+		if v := Getenv(k); v != "" {
+			p.Env[k] = v
+		}
+	}
+	c, s, err := load(cfgDir, dir)
+	switch {
+	case errors.Is(err, config.ErrNotFound):
+	case err != nil:
+		p.ConfigProblem = err.Error()
+	default:
+		p.ProductionAWSProfiles, p.UntouchableHosts = c.GuardLists()
+		if s != nil {
+			p.GitAllowedRepos = s.GitAllowedRepos
+		}
+	}
+	return p
 }
 
 // written collects the text a write would put in the file: every string in the tool's

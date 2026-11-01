@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // IndexFile is the index loaded at the start of every session.
@@ -129,5 +131,5 @@ func (m *Memory) WriteIndex(lang string) (bool, error) {
 	if err := os.WriteFile(tmp, []byte(text), 0o644); err != nil {
 		return false, err
 	}
-	return true, os.Rename(tmp, path)
+	return true, paths.Rename(tmp, path)
 }

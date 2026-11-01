@@ -28,6 +28,9 @@ func setupBackup(b *brain.Brain, url string, run backup.Runner) (string, error) 
 			} else {
 				msg += " The last one failed: " + st.Error
 			}
+			if st.Warning != "" {
+				msg += " Warning: " + st.Warning + "."
+			}
 		}
 		return msg, nil
 	}
@@ -47,11 +50,15 @@ func setupBackup(b *brain.Brain, url string, run backup.Runner) (string, error) 
 	// No one can type a password into the server: git must fail instead of waiting.
 	os.Setenv("GIT_TERMINAL_PROMPT", "0")
 	host, _ := os.Hostname()
-	_, err = backup.Run(c, s, host)
-	backup.RecordStatus(c.Dir, s.Name, err, time.Now())
+	res, err := backup.Run(c, s, host)
+	backup.RecordStatusWarning(c.Dir, s.Name, err, res.Warning(), time.Now())
 	if err != nil {
 		return "", fmt.Errorf("the backup is set up to %s, but the first copy failed: %w", url, err)
 	}
+	warn := ""
+	if w := res.Warning(); w != "" {
+		warn = " Tell the user: " + w + "."
+	}
 	return fmt.Sprintf("Backup of space %s set up: %s (private). The first copy is there, and from now on it runs by itself every time a session ends. "+
-		"On a new machine: install augmented brain, then `augmented-brain restore %s`.", s.Name, url, url), nil
+		"On a new machine: install augmented brain, then `augmented-brain restore %s`.", s.Name, url, url) + warn, nil
 }

@@ -18,6 +18,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/setup"
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 // connect starts the server with the given resolver and returns a connected client.
@@ -89,7 +90,7 @@ func TestTools(t *testing.T) {
 		names = append(names, tl.Name)
 	}
 	sort.Strings(names)
-	want := "area_new backup_setup capture knowledge_new pending person_save profile_save review_done safety_save task_close task_get task_journal task_new task_park task_update weekly_review where_am_i"
+	want := "area_new backup_setup capture knowledge_new pending person_save profile_save review_done safety_save session_recover task_close task_get task_journal task_new task_park task_update weekly_review where_am_i"
 	if got := strings.Join(names, " "); got != want {
 		t.Errorf("tools = %s", got)
 	}
@@ -240,24 +241,33 @@ func TestPersonSave(t *testing.T) {
 	}
 }
 
-// Safety settings go to the configuration; a list left out stays as it was.
+// Safety settings go to the configuration, machine-wide; a list left out stays as it
+// was, and a list a space kept of its own (older configurations) is replaced too.
 func TestSafetySave(t *testing.T) {
 	open := space(t)
+	cfgDir := filepath.Join(os.Getenv("HOME"), "cfg")
+	if err := config.SetSpaceList(cfgDir, "work", "untouchable_hosts", []string{"old01"}); err != nil {
+		t.Fatal(err)
+	}
 	cs := connect(t, open)
 	if out, isErr := call(t, cs, "safety_save", map[string]any{
 		"production_aws_profiles": []string{"prod"}, "untouchable_hosts": []string{"db01"}}); isErr {
 		t.Fatal(out)
+	} else if !strings.Contains(out, "before: [old01]") {
+		t.Errorf("the answer does not say what was there before: %s", out)
 	}
 	if out, isErr := call(t, cs, "safety_save", map[string]any{"untouchable_hosts": []string{"db01", "db02"}}); isErr {
 		t.Fatal(out)
 	}
-	c, err := config.Load(filepath.Join(os.Getenv("HOME"), "cfg"))
+	c, err := config.Load(cfgDir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	w := c.Spaces["work"]
-	if strings.Join(w.ProductionAWSProfiles, ",") != "prod" || strings.Join(w.UntouchableHosts, ",") != "db01,db02" {
-		t.Errorf("settings: %+v", w)
+	if strings.Join(c.ProductionAWSProfiles, ",") != "prod" || strings.Join(c.UntouchableHosts, ",") != "db01,db02" {
+		t.Errorf("machine-wide settings: %v %v", c.ProductionAWSProfiles, c.UntouchableHosts)
+	}
+	if w := c.Spaces["work"]; len(w.ProductionAWSProfiles)+len(w.UntouchableHosts) != 0 {
+		t.Errorf("the space kept lists of its own: %+v", w)
 	}
 }
 
@@ -281,5 +291,97 @@ func TestBackupSetup(t *testing.T) {
 	}
 	if out, _ := call(t, cs, "backup_setup", map[string]any{}); !strings.Contains(out, "already backs up to "+remote) {
 		t.Errorf("second call: %s", out)
+	}
+}
+
+// A file that is not a valid note does not lock the tools; every answer says which file
+// it is, so the user can fix it.
+func TestToolsWithInvalidNote(t *testing.T) {
+	open := space(t)
+	b, err := open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(b.Mem.Dir, "tasks", "task-x.md"), []byte("oops\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cs := connect(t, open)
+	out, isErr := call(t, cs, "task_new", map[string]any{"title": "Still works"})
+	if isErr || !strings.Contains(out, "task-still-works") || !strings.Contains(out, "tasks/task-x.md") {
+		t.Errorf("task_new: %v %s", isErr, out)
+	}
+}
+
+// The tools keep which task is active for the Stop hook, and session_recover returns
+// what was said in a session that never ended, once.
+func TestActiveTaskAndRecover(t *testing.T) {
+	open := space(t)
+	cfgDir := filepath.Join(os.Getenv("HOME"), "cfg")
+	cs := connect(t, open)
+	if out, isErr := call(t, cs, "task_new", map[string]any{"title": "Move the shop"}); isErr {
+		t.Fatal(out)
+	}
+	if st := state.Read(cfgDir, "work"); st.Task != "task-move-the-shop" {
+		t.Errorf("active task after task_new: %+v", st)
+	}
+	if out, isErr := call(t, cs, "task_park", map[string]any{"id": "task-move-the-shop", "next": "call the landlord"}); isErr {
+		t.Fatal(out)
+	}
+	if st := state.Read(cfgDir, "work"); st.Task != "" {
+		t.Errorf("a parked task is still active: %+v", st)
+	}
+
+	if out, _ := call(t, cs, "session_recover", map[string]any{}); !strings.Contains(out, "No earlier session") {
+		t.Errorf("nothing to recover: %s", out)
+	}
+	transcript := filepath.Join(t.TempDir(), "s1.jsonl")
+	line := `{"type":"user","timestamp":"` + time.Now().Add(time.Minute).UTC().Format(time.RFC3339) + `","message":{"content":"Use the blue van."}}`
+	if err := os.WriteFile(transcript, []byte(line+"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(transcript, time.Now().Add(-time.Hour), time.Now().Add(-time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now()
+	if err := state.Update(cfgDir, "work", now, func(s *state.Space) {
+		s.Sessions = append(s.Sessions, state.Session{ID: "s1", Transcript: transcript, Started: now.Add(-time.Hour),
+			Task: "task-move-the-shop", Reported: true})
+	}); err != nil {
+		t.Fatal(err)
+	}
+	out, isErr := call(t, cs, "session_recover", map[string]any{})
+	if isErr || !strings.Contains(out, "user: Use the blue van.") || !strings.Contains(out, "task task-move-the-shop") {
+		t.Errorf("recover: %s", out)
+	}
+	if out, _ := call(t, cs, "session_recover", map[string]any{}); !strings.Contains(out, "No earlier session") {
+		t.Errorf("recovered twice: %s", out)
+	}
+}
+
+// What was already journaled in the dead session is not returned again.
+func TestRecoverAfterTheLastWrite(t *testing.T) {
+	open := space(t)
+	cfgDir := filepath.Join(os.Getenv("HOME"), "cfg")
+	now := time.Now()
+	transcript := filepath.Join(t.TempDir(), "s1.jsonl")
+	msg := func(at time.Time, text string) string {
+		return `{"type":"user","timestamp":"` + at.UTC().Format(time.RFC3339) + `","message":{"content":"` + text + `"}}` + "\n"
+	}
+	if err := os.WriteFile(transcript, []byte(msg(now.Add(-50*time.Minute), "already journaled")+msg(now.Add(-30*time.Minute), "not yet")), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chtimes(transcript, now.Add(-20*time.Minute), now.Add(-20*time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if err := state.Update(cfgDir, "work", now, func(s *state.Space) {
+		s.Task, s.Since = "task-x", now.Add(-40*time.Minute)
+		s.Sessions = []state.Session{{ID: "s1", Transcript: transcript, Started: now.Add(-time.Hour), Task: "task-x", Reported: true}}
+	}); err != nil {
+		t.Fatal(err)
+	}
+	cs := connect(t, open)
+	out, _ := call(t, cs, "session_recover", map[string]any{})
+	if !strings.Contains(out, "not yet") || strings.Contains(out, "already journaled") {
+		t.Errorf("recover: %s", out)
 	}
 }

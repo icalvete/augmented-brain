@@ -50,10 +50,17 @@ session starts from there. Opening, resuming and closing work the same way.
 
 - **Go ahead**: almost always. `ls`, `go test`, `aws --profile dev s3 ls`.
 - **Ask you**: production, or a machine you marked as untouchable.
-  `aws --profile prod …`, `ssh db01 …`.
-- **Stop**: pushing code, root and secrets. `git push`, `sudo …`, a token in a command.
+  `aws --profile prod …`, `ssh db01 …`. Those two lists are for the whole machine: they
+  apply in every space. An `aws` command is checked against every profile it may use:
+  `--profile`, `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`, or `default` when none is set.
+- **Stop**: pushing code, root and secrets. `git push`, `sudo …`, a token in a command,
+  and what publishes like a push: `gh pr merge`, `gh release create`, `glab mr merge`.
 
-It also looks inside `ssh`, `bash -c` and loops. It reads the shell, not PowerShell, so it
+It also looks inside `ssh`, `bash -c`, loops, and what a pipe feeds a shell
+(`echo 'sudo …' | bash`). If its configuration cannot be read, it asks you before every
+`aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before `cdk`, `sam` or `serverless`
+with a profile, since it cannot tell which ones matter.
+`augmented-brain doctor` tries the guard for real and tells you if it is not working. It reads the shell, not PowerShell, so it
 stops every PowerShell command too, and Claude runs it in Bash instead. It is a net
 against slips, not a security wall: read the [disclaimer](../../DISCLAIMER.md).
 
@@ -62,9 +69,20 @@ against slips, not a security wall: read the [disclaimer](../../DISCLAIMER.md).
 the last review is a week old or more and there are captures in the inbox or stalled
 tasks, it offers the weekly review: about ten minutes going through each of them with you.
 
-**4. You close the session.** The end hook starts the backup of the space, in the
-background, if you set one up. You wait for nothing. If it fails, Claude tells you at the
-start of the next one.
+**While you work, Claude writes as it goes.** Each decision or finished step goes to the
+task's journal at the moment, not only when you park it: a session can end at any time.
+If a task is open and nothing has been written to it for 20 minutes, a hook at the end of
+Claude's answer reminds it, once. When a long conversation gets compacted (Claude Code
+replaces the details with a summary), the summary is kept in `archive/sessions/`, the
+task's journal points at it, and Claude writes down what was decided before going on.
+
+**4. You close the session.** The end hook notes that the session ended well, and starts
+the backup of the space, in the background, if you set one up. You wait for nothing. If
+the backup fails, Claude tells you at the start of the next one. If a session did not end
+well (the window was closed by force, the machine went down), the next one offers to
+recover it: Claude reads what you both said after the task's last journal entry, from
+Claude Code's own record of the conversation on this machine (it keeps it 30 days), and
+writes down what is missing.
 
 ## Your files
 
@@ -92,7 +110,7 @@ Your **profile**, who you are and how you like to work, is one for every space:
 `~/.config/augmented-brain/profile.md`. You don't write it by hand: the first time you
 open Claude, it asks six quick questions, saying why it asks each one. With your answers
 it saves the profile, creates your areas, tells the guard what is production and which
-machines must not be touched, and notes the people you work with. To change anything,
+machines must not be touched (for every space), and notes the people you work with. To change anything,
 tell it.
 
 A task is a text file. At the top, between the `---` lines, the data the program uses.
@@ -186,8 +204,12 @@ augmented-brain backup --all    # every space
    ```bash
    augmented-brain restore https://github.com/you/augmented-brain-work.git
    ```
-   It replaces the empty space with yours: notes, tasks, rules, your profile and the
-   space's settings. If that space already had notes of yours, it leaves it alone.
+   It replaces the empty space with yours: notes, tasks, rules and the space's settings.
+   Your profile comes with the default space (`personal`). The guard's lists
+   (production, untouchable machines) are in no backup, since they may name your work's
+   machines: the next session offers to ask you for them again. If that
+   space already had notes of yours, it leaves it alone. If anything fails half way, the
+   empty space stays as it was.
 3. Open Claude. It carries on where you left off, and the backup keeps running by itself.
 
 If the repository is on GitHub, log in once with `gh auth login` before restoring, so git
@@ -203,11 +225,17 @@ What you get:
 - **Your place.** GitHub, GitLab or your own server: you pick the repository. augmented
   brain has no cloud.
 - **One repository per space.** Work can go to your company's git, and personal to yours.
+  Your profile only travels in the default space's backup, never in the work one.
 - **No secrets go up.** If a note holds something that looks like a password or a token,
   the backup stops and tells you which file.
 - **Nothing gets overwritten.** If two machines changed the same note, it stops without
   touching anything and explains how to sort it out. The index, being generated, is
-  rebuilt by itself.
+  rebuilt by itself, and captures in the inbox from two machines are both kept. One
+  catch: a capture you processed on one machine can come back if the other machine
+  captured something at the same time. It just shows up again at the next review.
+- **No junk, no giants.** Leftovers of a crash and the files systems drop in folders
+  (`.DS_Store`, `Thumbs.db`) stay out. A file over 50 MB stays out too (GitHub refuses
+  them), and Claude tells you which one at the start of the next session.
 
 To turn the automatic backup off: `AB_NO_AUTO_BACKUP=1`.
 

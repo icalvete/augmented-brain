@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // Render returns the file text: the header, always in the same key order, then the body.
@@ -43,5 +45,5 @@ func Save(dir string, n *Note) error {
 	if err := os.WriteFile(tmp, data, 0o644); err != nil {
 		return err
 	}
-	return os.Rename(tmp, path)
+	return paths.Rename(tmp, path)
 }

@@ -109,3 +109,12 @@ func TestLoad(t *testing.T) {
 		t.Errorf("OfType(task) = %v", tasks)
 	}
 }
+
+// Some Windows editors start a file with a byte order mark: the note is still valid.
+func TestParseBOM(t *testing.T) {
+	data := "\xef\xbb\xbf---\nid: area-x\ntype: area\ntitle: X\n---\nbody\n"
+	n, err := Parse("areas/area-x.md", []byte(data))
+	if err != nil || n.Header.Title != "X" || n.Body != "body\n" {
+		t.Errorf("BOM: %v %+v", err, n)
+	}
+}

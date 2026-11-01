@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
-	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
@@ -80,18 +78,16 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 		}
 		c, spaces = cc, []*config.Space{s}
 	}
-	// Backups run one at a time: two sessions that end together must not share a repository.
-	unlock, err := filelock.Lock(filepath.Join(c.Dir, ".backup.lock"))
-	if err != nil {
-		fmt.Fprintln(errOut, err)
-		return 1
-	}
-	defer unlock()
+	// backup.Run takes the locks: backups run one at a time, and never during a write of
+	// the assistant.
 	host, _ := os.Hostname()
 	code := 0
 	for _, s := range spaces {
 		res, err := backup.Run(c, s, host)
-		backup.RecordStatus(c.Dir, s.Name, err, time.Now())
+		backup.RecordStatusWarning(c.Dir, s.Name, err, res.Warning(), time.Now())
+		if w := res.Warning(); w != "" && err == nil {
+			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.leftout", s.Name, strings.Join(res.LeftOut, ", "), backup.MaxFileSize>>20))
+		}
 		switch {
 		case err != nil:
 			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.failed", s.Name, err))

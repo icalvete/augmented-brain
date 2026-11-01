@@ -4,6 +4,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
+
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 // StartBackup starts the backup of a space in the background and returns at once, so
@@ -19,15 +21,20 @@ var StartBackup = func(space string) error {
 	return cmd.Start()
 }
 
-// SessionEnd backs up the space the session worked in, when it has a backup set up:
-// the user never has to remember to. AB_NO_AUTO_BACKUP=1 turns it off.
+// SessionEnd marks the session as ended normally (so the next one does not offer to
+// recover it) and backs up the space the session worked in, when it has a backup set
+// up: the user never has to remember to. AB_NO_AUTO_BACKUP=1 turns the backup off.
+//
+// Claude Code gives SessionEnd hooks 1.5 seconds in all, whatever the plugin asks for:
+// only quick work here (a small state file), and anything longer in a detached process.
 func SessionEnd(in io.Reader, cfgDir string) error {
 	i := read(in)
-	if os.Getenv("AB_NO_AUTO_BACKUP") == "1" {
+	c, s, err := load(cfgDir, i.Cwd)
+	if err != nil || c == nil || s == nil {
 		return nil
 	}
-	c, s, err := load(cfgDir, i.Cwd)
-	if err != nil || c == nil || s == nil || s.Backup == "" {
+	_ = state.Ended(cfgDir, s.Name, i.SessionID, Now())
+	if os.Getenv("AB_NO_AUTO_BACKUP") == "1" || s.Backup == "" {
 		return nil
 	}
 	return StartBackup(s.Name)

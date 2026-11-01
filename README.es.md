@@ -115,7 +115,7 @@ fiarse de ella.
 - **Reglas cargadas en cada sesión**, y las importantes vigiladas por un guardia: nada
   de commit ni push salvo que lo permitas, nunca root, ningún secreto en comandos ni
   ficheros. Los perfiles de AWS de producción y los hosts que marques como intocables
-  te piden confirmación, también por `ssh`.
+  te piden confirmación, también por `ssh`, en todos los espacios.
 - **Trabajo y personal, separados**: cada *espacio* tiene su memoria, sus reglas y su
   copia de seguridad. La carpeta en la que abres el asistente elige el espacio.
 - **Copia de seguridad y restauración** en un repositorio git privado tuyo, uno por
@@ -144,9 +144,16 @@ augmented-brain backup                                                   # a man
 - **Todo el historial.** Cada copia es un commit, con la máquina y la hora: ves qué
   cambió y vuelves a cualquier día.
 - **En tu sitio.** GitHub, GitLab o tu servidor. augmented brain no tiene nube.
-- **Un repositorio por espacio.** El del trabajo puede ir al git de la empresa.
+- **Un repositorio por espacio.** El del trabajo puede ir al git de la empresa. Tu
+  perfil solo viaja en la copia del espacio por defecto (`personal`), nunca en la del
+  trabajo. Las listas del guardia no viajan en ninguna: en una máquina nueva, Claude te
+  las vuelve a pedir.
 - **No sube secretos.** Si una nota parece tener una contraseña o un token, se para.
 - **No pisa nada.** Si dos máquinas cambiaron la misma nota, se para y te explica qué hacer.
+  Las capturas del buzón hechas en dos máquinas se guardan las dos (una ya procesada en
+  una máquina puede volver una vez, en la siguiente revisión).
+- **Los ficheros grandes se quedan fuera.** Un fichero de más de 50 MB en la carpeta de
+  notas no entra en la copia (GitHub los rechaza), y Claude te dice cuál.
 
 Una vez montada, **se hace sola cada vez que terminas una sesión** de Claude; si falla,
 Claude te lo dice al empezar la siguiente.

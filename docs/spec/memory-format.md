@@ -16,10 +16,9 @@ A **space** keeps one part of your life apart from the others, for example `work
 
 - its own memory folder (everything below);
 - its own rules, on top of the common ones;
-- its own risk settings (which cloud profiles are production, which hosts must not be touched);
 - its own backup repository.
 
-The space is chosen by **the folder you open the assistant in**. Spaces never read each other's memory. They share the program, the common rules and the safety hooks.
+The space is chosen by **the folder you open the assistant in**. Spaces never read each other's memory. They share the program, the common rules, the safety hooks and the risk settings (which cloud profiles are production, which hosts must not be touched): those are for the whole machine, so a production profile saved from one space is guarded in all of them.
 
 Spaces are declared in the configuration file (see "Configuration" below), not inside the memory.
 
@@ -41,7 +40,10 @@ A session that runs outside every work folder (for example, the scratch folder t
 ├── rules/             # this space's own rules (the common rules ship with the program)
 ├── reviews/           # one file per weekly review
 └── archive/           # old journals and merged files; never loaded, never deleted
+    └── sessions/      # summaries Claude Code wrote when it compacted a conversation
 ```
+
+A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the active task pointing at it.
 
 `MEMORY.md` is the name Claude Code loads automatically from the memory folder; only its first 200 lines (or 25 KB) are read, so the program keeps it well under that.
 
@@ -49,7 +51,7 @@ A session that runs outside every work folder (for example, the scratch folder t
 
 ## File header
 
-Every file except `MEMORY.md` and `inbox.md` starts with a YAML header between `---` lines. Keys and enumerated values are always English, whatever language you write in.
+Every file except `MEMORY.md`, `inbox.md` and what is in `archive/` starts with a YAML header between `---` lines (a byte order mark before it is fine). Keys and enumerated values are always English, whatever language you write in.
 
 ```yaml
 ---
@@ -175,13 +177,13 @@ The program rebuilds these after every change; editing them by hand is pointless
 ```toml
 language = "en"                  # en | es: the language the program speaks to you
 default_space = "personal"       # used outside every work folder (optional)
+production_aws_profiles = ["prod", "prod-eu"]   # every space: the user confirms first
+untouchable_hosts = ["db01", "db02", "db03"]    # ssh, scp, sftp, mosh to them: the user confirms first
 
 [spaces.work]
 memory = "~/augmented-brain/work/notes"
 work_folders = ["~/augmented-brain/work", "~/code"]   # opening the assistant here selects this space
 backup = "git@github.com:me/brain-work-private.git"
-production_aws_profiles = ["prod", "prod-eu"]   # the user confirms first
-untouchable_hosts = ["db01", "db02", "db03"]    # ssh to them: the user confirms first
 git_allowed_repos = ["~/code/website"]          # the assistant may commit and push here, with git -C
 
 [spaces.personal]
@@ -190,17 +192,37 @@ work_folders = ["~/augmented-brain/personal"]
 backup = "git@github.com:me/brain-personal-private.git"
 ```
 
+`production_aws_profiles` and `untouchable_hosts` may also appear inside a space, as older
+versions wrote them: the guard applies the top-level lists and every space's together.
+Host names match ignoring case, and a short name matches the full one either way (`db01`
+and `db01.example.com`).
+
 ## Backup
 
 Each space backs up to its own private git repository: the memory folder itself is the
-repository. Every backup also copies this space's part of the configuration and the
-profile into `.augmented-brain/` inside the memory folder, so restoring on a new machine
-needs nothing else. Paths are kept with `~`, so they point to the new machine's home, and
+repository. Every backup also copies this space's part of the configuration into
+`.augmented-brain/` inside the memory folder, so restoring on a new machine needs nothing
+else. The default space's backup (or the only space's) also carries the profile; no
+other backup does, so the personal profile never reaches a work repository. The
+machine-wide guard lists are in no backup (they may name work machines): after a restore
+that leaves them empty, the next session offers to ask for them again. Paths are kept with `~`, so they point to the new machine's home, and
 the notes go back to the same place inside the work folder. A restore also installs the
 Claude Code plugin when it is missing.
 
-A backup is refused while any file of the memory holds a secret. The generated index is
-rebuilt after a restore.
+A backup is refused while any file of the memory holds a secret (the made-up keys of
+AWS's documentation are not secrets). Files over 50 MB are left out, and the user is told.
+The repository gets a `.gitattributes` (`inbox.md merge=union`: captures from two machines
+are both kept, so one processed on one machine may come back if the other captured at the
+same time) and a `.gitignore` (`*.tmp`, `.DS_Store`, `Thumbs.db`, `desktop.ini`); lines
+the user adds to them stay. The generated index is rebuilt after a restore.
+
+## State of this machine
+
+`state/<space>.json` in the configuration folder keeps, for this machine only (never
+backed up, no text of the conversation): the active task and when it was last written,
+when the assistant was last reminded to write, and the sessions that started and ended,
+with the path of Claude Code's transcript of each. The Stop reminder, the request after a
+compaction and the offer to recover a session that did not end come from it.
 
 ## Decisions
 

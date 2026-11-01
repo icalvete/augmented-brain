@@ -20,6 +20,10 @@ import (
 // FileName is the configuration file inside the configuration folder.
 const FileName = "config.toml"
 
+// AskSafetyFile, in the configuration folder, says a restore brought no guard lists
+// (no backup carries them): the next session offers, once, to ask for them again.
+const AskSafetyFile = ".ask-safety"
+
 // Languages the program can speak.
 var Languages = []string{"en", "es"}
 
@@ -39,8 +43,13 @@ type Config struct {
 	Language string `toml:"language"`
 	// DefaultSpace is used when the assistant runs in a folder of no space, such as the
 	// scratch folder the Claude desktop app opens a new session in. Empty: none.
-	DefaultSpace string            `toml:"default_space,omitempty"`
-	Spaces       map[string]*Space `toml:"spaces"`
+	DefaultSpace string `toml:"default_space,omitempty"`
+	// ProductionAWSProfiles and UntouchableHosts are machine-wide: the guard applies them
+	// in every space and outside every space, together with any list a space still has
+	// of its own (older configurations kept them per space).
+	ProductionAWSProfiles []string          `toml:"production_aws_profiles,omitempty"`
+	UntouchableHosts      []string          `toml:"untouchable_hosts,omitempty"`
+	Spaces                map[string]*Space `toml:"spaces"`
 
 	// Dir is the folder the configuration was read from.
 	Dir string `toml:"-"`
@@ -143,7 +152,8 @@ func (c *Config) Save() error {
 	if err := os.MkdirAll(c.Dir, 0o700); err != nil {
 		return err
 	}
-	out := Config{Language: c.Language, DefaultSpace: c.DefaultSpace, Spaces: map[string]*Space{}}
+	out := Config{Language: c.Language, DefaultSpace: c.DefaultSpace, Spaces: map[string]*Space{},
+		ProductionAWSProfiles: c.ProductionAWSProfiles, UntouchableHosts: c.UntouchableHosts}
 	for name, s := range c.Spaces {
 		cp := *s
 		cp.Memory = tilde(s.Memory)
@@ -184,7 +194,7 @@ func writeAtomic(path, text string) error {
 	if err := os.WriteFile(tmp, []byte(text), 0o600); err != nil {
 		return err
 	}
-	return os.Rename(tmp, path)
+	return paths.Rename(tmp, path)
 }
 
 // AddSpace appends a space to the configuration file in dir, leaving everything else
@@ -219,15 +229,90 @@ func SetSpaceKey(dir, space, key, value string) error {
 	return setSpaceLine(dir, space, key, fmt.Sprintf("%s = %q", key, value))
 }
 
-// SetSpaceList sets one list setting of a space (such as untouchable_hosts) the same way.
-func SetSpaceList(dir, space, key string, values []string) error {
+// SetTopList sets one machine-wide list setting (production_aws_profiles,
+// untouchable_hosts) in the configuration file in dir: it changes only that line, or
+// adds it before the first table, and keeps everything else, comments included.
+func SetTopList(dir, key string, values []string) error {
+	path := filepath.Join(dir, FileName)
+	old, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	line := fmt.Sprintf("%s = [%s]", key, quoteAll(values))
+	lines := strings.Split(string(old), "\n")
+	at := -1
+	for i, l := range lines {
+		t := strings.TrimSpace(l)
+		if strings.HasPrefix(t, "[") {
+			if at < 0 {
+				at = i
+			}
+			break
+		}
+		if strings.HasPrefix(t, key+" ") || strings.HasPrefix(t, key+"=") {
+			lines[i] = line
+			return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
+		}
+	}
+	if at < 0 {
+		at = len(lines)
+	}
+	// Keep a blank line between the top settings and the first table.
+	insert := []string{line}
+	if at > 0 && strings.TrimSpace(lines[at-1]) == "" {
+		at--
+	} else if at < len(lines) {
+		insert = append(insert, "")
+	}
+	lines = append(lines[:at], append(insert, lines[at:]...)...)
+	return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
+}
+
+func quoteAll(values []string) string {
 	quoted := make([]string, len(values))
 	for i, v := range values {
 		quoted[i] = fmt.Sprintf("%q", v)
 	}
-	return setSpaceLine(dir, space, key, fmt.Sprintf("%s = [%s]", key, strings.Join(quoted, ", ")))
+	return strings.Join(quoted, ", ")
 }
 
+// GuardLists returns the production AWS profiles and the untouchable hosts the guard
+// applies: the machine-wide lists and every space's own, without repeats.
+func (c *Config) GuardLists() (profiles, hosts []string) {
+	profiles = append(profiles, c.ProductionAWSProfiles...)
+	hosts = append(hosts, c.UntouchableHosts...)
+	for _, name := range c.SpaceNames() {
+		profiles = append(profiles, c.Spaces[name].ProductionAWSProfiles...)
+		hosts = append(hosts, c.Spaces[name].UntouchableHosts...)
+	}
+	return unique(profiles), unique(hosts)
+}
+
+func unique(list []string) []string {
+	var out []string
+	seen := map[string]bool{}
+	for _, x := range list {
+		if x != "" && !seen[x] {
+			seen[x] = true
+			out = append(out, x)
+		}
+	}
+	return out
+}
+
+// SetSpaceList sets one list setting of a space (such as untouchable_hosts) the same way.
+func SetSpaceList(dir, space, key string, values []string) error {
+	return setSpaceLine(dir, space, key, fmt.Sprintf("%s = [%s]", key, quoteAll(values)))
+}
+
+// RemoveSpaceKey takes one setting out of a space in the configuration file in dir,
+// changing nothing else. A setting that is not there is fine.
+func RemoveSpaceKey(dir, space, key string) error {
+	return setSpaceLine(dir, space, key, "")
+}
+
+// setSpaceLine puts line in place of the key's line under the space's header, or adds
+// it there. An empty line removes the key.
 func setSpaceLine(dir, space, key, line string) error {
 	path := filepath.Join(dir, FileName)
 	old, err := os.ReadFile(path)
@@ -248,12 +333,19 @@ func setSpaceLine(dir, space, key, line string) error {
 			break // the next table: the key is not there yet
 		}
 		if strings.HasPrefix(t, key+" ") || strings.HasPrefix(t, key+"=") {
-			lines[i] = line
+			if line == "" {
+				lines = append(lines[:i], lines[i+1:]...)
+			} else {
+				lines[i] = line
+			}
 			return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
 		}
 	}
 	if header < 0 {
 		return fmt.Errorf("%s has no space %q", path, space)
+	}
+	if line == "" {
+		return nil
 	}
 	lines = append(lines[:header+1], append([]string{line}, lines[header+1:]...)...)
 	return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))

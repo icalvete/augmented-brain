@@ -18,11 +18,12 @@ it feels to a newcomer.
 | Path | What |
 |---|---|
 | `cmd/augmented-brain/` | The commands: `init`, `space add`, `doctor`, `check`, `backup`, `restore`, `update`, `uninstall`, `mcp`, `hook`. User-facing messages of `init` live in `init.go`. |
-| `internal/config` | The configuration file: spaces, `default_space`. Edits keep the user's comments (`AddSpace`, `SetSpaceKey`, `SetSpaceList`, `SetDefaultSpace`). |
+| `internal/config` | The configuration file: spaces, `default_space`, the machine-wide guard lists. Edits keep the user's comments (`AddSpace`, `SetSpaceKey`, `SetSpaceList`, `SetTopList`, `SetDefaultSpace`). |
 | `internal/memory` | Reads and checks notes (headers only), builds the index `MEMORY.md`. |
 | `internal/brain` | Everything that writes notes: tasks, areas, knowledge, people, the profile, safety settings. |
 | `internal/mcpserver` | The MCP tools, thin layers over `brain`. Calls run one at a time (mutex plus a file lock). |
-| `internal/hook`, `internal/session` | The SessionStart, PreToolUse and SessionEnd hooks (SessionEnd starts the automatic backup); what the assistant reads at the start (budget: 9,500 UTF-16 units). |
+| `internal/hook`, `internal/session` | The SessionStart, PreToolUse, Stop, PostCompact and SessionEnd hooks (SessionEnd starts the automatic backup); what the assistant reads at the start (budget: 9,500 UTF-16 units). |
+| `internal/state` | What this machine knows about each space's sessions (active task, last write, sessions that did not end), in the configuration folder, never backed up; and the reader of Claude Code's transcripts for `session_recover`. |
 | `internal/guard` | The command guard: a small shell parser and the policy (push, root, secrets, production profiles, untouchable hosts). |
 | `internal/setup`, `internal/doctor`, `internal/backup`, `internal/claudecode`, `internal/update` | Creating spaces, the health check, backup and restore, installing the plugin, the new-version check. |
 | `internal/i18n`, `internal/rules`, `internal/templates` | Messages, the common rules and the starter files, in English and Spanish. |
@@ -88,6 +89,9 @@ Heavier checks, before a release or when you touch what they cover:
   `internal/brain`, and is added to the tool list in `server_test.go`.
 - **The assistant reads what the hooks print.** Keep the session text under the budget,
   write it as instructions to the assistant, and tell it to answer in the user's language.
+- **SessionEnd has 1.5 seconds in all**, and a plugin's `timeout` does not raise it. Work
+  there must take well under a second (a small state file), or run in a detached process,
+  as the automatic backup does. Stop runs after every answer: keep it to milliseconds.
 - **The installer must work without a terminal** (CI, `AB_YES=1`) and with one; its own
   messages go through `say`, and other tools' noise through `quiet`.
 - **Plain words for people.** Short sentences, one idea each; a technical word is

@@ -35,11 +35,11 @@ func ContextWith(c *config.Config, s *config.Space, note string) string {
 		s.Name, s.Name, s.Memory)
 	head += note
 	if len(problems) > 0 {
-		head += fmt.Sprintf("\nWarning: %d notes of this space are not valid; tell the user to run `augmented-brain check`.\n", len(problems))
+		head += "\nWarning: " + brain.ProblemsNote(problems, 3)
 	}
 	if brain.ProfileEmpty(c.Dir) {
 		head += firstSession(c.Language)
-	} else if len(problems) == 0 {
+	} else {
 		b := &brain.Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: Now}
 		head += dueNote(b) + reviewNote(b)
 	}
@@ -186,7 +186,7 @@ func firstSession(lang string) string {
 		"3. How they want your answers: language, short or detailed, a recommendation first or the options. Why: so they never have to repeat it.\n" +
 		"4. How much you may do without asking (for example: edit freely, but ask before deleting or publishing), and what must never be touched lightly: " +
 		"AWS profiles that reach production, servers by name. Why: the guard will stop and ask them before anything that touches those. " +
-		"Save the profiles and hosts with safety_save.\n" +
+		"Save the profiles and hosts with safety_save: they apply on this whole machine, in every space.\n" +
 		"5. The tools they use (calendar, mail, documents, Jira…). Why: some can be connected to you; if they want, point them to the guide " +
 		"https://icalvete.github.io/augmented-brain/guide/connect-services.html. Now save the profile once with profile_save: name, what they do and their tools in about, " +
 		"answers and autonomy in work_style.\n" +
@@ -235,6 +235,20 @@ func BackupFailedNote(lang, space string, when time.Time, reason string) string 
 	return fmt.Sprintf("\nThe last backup of space %s, at %s, failed: %s. In one short line of your first answer, in the language "+
 		"the user writes in (%s if you cannot tell), tell them their notes are not backed up, and offer to look into it "+
 		"(running `augmented-brain backup` in the space's folder shows the problem).\n", space, when.Format("2006-01-02 15:04"), reason, language)
+}
+
+// BackupWarningNote tells the assistant that the last backup of the space went through
+// but left something out (files too big for it).
+func BackupWarningNote(lang, space string, when time.Time, warning string) string {
+	if len(warning) > 400 {
+		warning = cut(warning, 400) + "…"
+	}
+	language := map[string]string{"es": "Spanish"}[lang]
+	if language == "" {
+		language = "English"
+	}
+	return fmt.Sprintf("\nThe last backup of space %s, at %s, went through, but %s. In one short line of your first answer, in the language "+
+		"the user writes in (%s if you cannot tell), tell them which files are not backed up and why.\n", space, when.Format("2006-01-02 15:04"), warning, language)
 }
 
 // UpdateNote tells the assistant that a newer augmented brain is out.

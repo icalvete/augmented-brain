@@ -87,8 +87,8 @@ func TestPreToolUse(t *testing.T) {
 		{map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}}, "ask"},
 		{map[string]any{"cwd": work, "tool_name": "PowerShell", "tool_input": map[string]any{"command": "git push origin main"}}, "deny"},
 		{map[string]any{"cwd": work, "tool_name": "PowerShell", "tool_input": map[string]any{"command": "Get-ChildItem"}}, "deny"},
-		{map[string]any{"cwd": "/", "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}}, ""}, // outside the space
-		{map[string]any{"cwd": "/", "tool_name": "Bash", "tool_input": map[string]any{"command": "sudo id"}}, "deny"},              // general rule
+		{map[string]any{"cwd": "/", "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}}, "ask"}, // machine-wide, outside the space too
+		{map[string]any{"cwd": "/", "tool_name": "Bash", "tool_input": map[string]any{"command": "sudo id"}}, "deny"},                 // general rule
 		{map[string]any{"cwd": work, "tool_name": "Write", "tool_input": map[string]any{"file_path": "/x", "content": key}}, "deny"},
 		{map[string]any{"cwd": work, "tool_name": "Edit", "tool_input": map[string]any{"file_path": "/x", "old_string": key, "new_string": "removed"}}, ""},
 		{map[string]any{"cwd": work, "tool_name": "MultiEdit", "tool_input": map[string]any{"file_path": "/x", "edits": []any{map[string]any{"old_string": "a", "new_string": key}}}}, "deny"},
@@ -207,5 +207,54 @@ func TestSessionStartBackupFailed(t *testing.T) {
 	o = run(t, ss, map[string]any{"cwd": work})
 	if strings.Contains(o["additionalContext"].(string), "failed") {
 		t.Error("a backup that worked again must not be reported")
+	}
+}
+
+// The production profiles and untouchable hosts apply in every space, whichever space
+// saved them; the AWS profile a command inherits counts; and a configuration that
+// cannot be read makes those commands ask.
+func TestPreToolUseMachineWide(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	other := filepath.Join(os.Getenv("HOME"), "personal")
+	if _, err := setup.AddSpace(cfgDir, setup.Options{Space: "personal", WorkFolder: other, Memory: "~/brain-personal"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := config.SetTopList(cfgDir, "untouchable_hosts", []string{"db01.example.com"}); err != nil {
+		t.Fatal(err)
+	}
+	pre := func(in *bytes.Reader, out *bytes.Buffer) error { return PreToolUse(in, out, cfgDir) }
+	decide := func(cwd, cmd string) string {
+		o := run(t, pre, map[string]any{"cwd": cwd, "tool_name": "Bash", "tool_input": map[string]any{"command": cmd}})
+		if o == nil {
+			return ""
+		}
+		return o["permissionDecision"].(string)
+	}
+	for _, cwd := range []string{work, other, "/"} {
+		if got := decide(cwd, "aws s3 ls --profile prod"); got != "ask" { // saved in the work space
+			t.Errorf("%s: production profile: %q", cwd, got)
+		}
+		if got := decide(cwd, "ssh DB01 uptime"); got != "ask" {
+			t.Errorf("%s: untouchable host: %q", cwd, got)
+		}
+	}
+	old := Getenv
+	t.Cleanup(func() { Getenv = old })
+	Getenv = func(k string) string { return map[string]string{"AWS_PROFILE": "prod"}[k] }
+	if got := decide(other, "aws s3 ls"); got != "ask" {
+		t.Errorf("inherited AWS_PROFILE=prod: %q", got)
+	}
+	Getenv = func(string) string { return "" }
+
+	broken := t.TempDir()
+	if err := os.WriteFile(filepath.Join(broken, config.FileName), []byte("[spaces.work\nmemory = "), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	pre = func(in *bytes.Reader, out *bytes.Buffer) error { return PreToolUse(in, out, broken) }
+	if got := decide(work, "ssh web01 uptime"); got != "ask" {
+		t.Errorf("broken configuration: %q", got)
+	}
+	if got := decide(work, "ls"); got != "" {
+		t.Errorf("broken configuration, ls: %q", got)
 	}
 }

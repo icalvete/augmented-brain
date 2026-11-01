@@ -59,3 +59,19 @@ func TestSame(t *testing.T) {
 		t.Error("on Windows, the same folder in other case must be the same")
 	}
 }
+
+// On macOS and Windows a folder written in another case is the same folder.
+func TestWithinIgnoresCaseWhereTheSystemDoes(t *testing.T) {
+	old := foldCase
+	t.Cleanup(func() { foldCase = old })
+	folder := filepath.Join(string(filepath.Separator)+"Users", "Ana", "Notes")
+	inside := filepath.Join(string(filepath.Separator)+"users", "ana", "notes", "tasks")
+	foldCase = true
+	if !Within(inside, folder) || !Same(strings.ToUpper(folder), folder) {
+		t.Error("case-insensitive systems: not matched")
+	}
+	foldCase = false
+	if Within(inside, folder) {
+		t.Error("case-sensitive systems: matched")
+	}
+}

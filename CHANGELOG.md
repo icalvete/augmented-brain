@@ -1,5 +1,48 @@
 # Changelog
 
+## Unreleased
+
+- The production AWS profiles and the untouchable hosts are now for the whole machine.
+  Before, they belonged to the space the first-session interview ran in (often
+  `personal`, in the desktop app), so work sessions were not guarded. `safety_save` writes
+  them at the top of the configuration; lists still kept inside a space keep working.
+- The guard checks the AWS profile an `aws` command really uses when it gives none
+  (`AWS_PROFILE`, `AWS_DEFAULT_PROFILE`, or `default`); `cdk`, `sam`, `serverless` and
+  `aws-vault exec` with a production profile ask too; when several profiles could apply,
+  any production one asks. `gh pr merge`, `gh release create`, `glab mr merge` (and
+  `accept`), `gh repo sync <repo>` and similar are blocked like `git push`. What a pipe feeds a shell is
+  checked (`echo 'sudo …' | bash`, a heredoc into `bash` or `ssh`). Host names match in
+  any case and short or full either way; `sftp host` and `mosh` are covered.
+- When the configuration cannot be read, the guard asks before every `aws`, `ssh`, `scp`,
+  `rsync`, `sftp`, `mosh`, and `cdk`, `sam` or `serverless` with a profile, instead of
+  letting them through unchecked.
+  `augmented-brain doctor` runs the guard for real and says if it does not block, and
+  shows the guard's lists.
+- One note that is not valid no longer locks every tool: the others keep working, the
+  broken file is never written over, and the assistant is told which file and how to
+  fix it. A note saved with a byte order mark (some Windows editors) is valid.
+- The backup: the profile travels only in the default space's backup, never in a work
+  repository (a copy left by an older version is removed). The guard's lists are in no
+  backup; after a restore, the next session offers to ask for them again. Captures in the inbox from
+  two machines merge instead of stopping the backup. Leftovers of a crash and system
+  files stay out (`.gitignore`), and so does any file over 50 MB, with a warning at the
+  next session. A backup never runs at the same time as a write of the assistant or
+  another backup. AWS's documented example keys no longer stop it.
+- A restore that fails half way leaves the space it would replace as it was.
+- Offline, sessions no longer wait for the new-version check every time.
+- People whose names have no Latin letters no longer overwrite each other; a person is
+  found by name or by one of their other names.
+- `augmented-brain check` (and `space`, `backup`) outside every space's folder use the
+  default space, as Claude does. Folders match in any case on macOS and Windows.
+- Work is written down as it happens, so a session that ends badly loses little. The
+  method now says to journal each decision or finished step at the moment. A new Stop
+  hook reminds Claude, once, when a task is open and nothing was written for 20 minutes.
+  After Claude Code compacts a conversation, its summary is kept in
+  `archive/sessions/` (secrets taken out), the task's journal points at it, and Claude is
+  asked to write down what was decided. A session that did not end normally is offered
+  for recovery at the next start: the new `session_recover` tool reads what was said
+  after the task's last journal entry from Claude Code's transcript on this machine.
+
 ## 0.2.8-alpha
 
 Released 2026-10-19.

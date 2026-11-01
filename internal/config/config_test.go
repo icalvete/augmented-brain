@@ -215,3 +215,58 @@ func TestDefaultSpace(t *testing.T) {
 		t.Errorf("default_space written %d times:\n%s", n, data)
 	}
 }
+
+// The guard lists are machine-wide, and older per-space lists still count.
+func TestGuardListsAndSetTopList(t *testing.T) {
+	dir := t.TempDir()
+	write(t, dir, `# my comment
+language = "en"
+
+[spaces.work]
+memory = "/m/work"
+production_aws_profiles = ["prod", "shared"]
+
+[spaces.personal]
+memory = "/m/personal"
+untouchable_hosts = ["nas"]
+`)
+	if err := SetTopList(dir, "production_aws_profiles", []string{"shared", "live"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := SetTopList(dir, "untouchable_hosts", []string{"db01"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := SetTopList(dir, "untouchable_hosts", []string{"db01", "db02"}); err != nil {
+		t.Fatal(err)
+	}
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	profiles, hosts := c.GuardLists()
+	if strings.Join(profiles, ",") != "shared,live,prod" || strings.Join(hosts, ",") != "db01,db02,nas" {
+		t.Errorf("GuardLists = %v %v", profiles, hosts)
+	}
+	data, _ := os.ReadFile(filepath.Join(dir, FileName))
+	if !strings.HasPrefix(string(data), "# my comment\n") || strings.Count(string(data), "untouchable_hosts = [\"db01\"") != 1 {
+		t.Errorf("file:\n%s", data)
+	}
+	if err := RemoveSpaceKey(dir, "work", "production_aws_profiles"); err != nil {
+		t.Fatal(err)
+	}
+	if c, _ = Load(dir); len(c.Spaces["work"].ProductionAWSProfiles) != 0 {
+		t.Error("the space's list is still there")
+	}
+	// Saved and read back, the machine-wide lists stay.
+	c.Dir = t.TempDir()
+	if err := c.Save(); err != nil {
+		t.Fatal(err)
+	}
+	back, err := Load(c.Dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(back.UntouchableHosts, ",") != "db01,db02" {
+		t.Errorf("after Save: %v", back.UntouchableHosts)
+	}
+}

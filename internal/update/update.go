@@ -20,8 +20,12 @@ const Repo = "icalvete/augmented-brain"
 // cacheFile, in the configuration folder, remembers the last answer.
 const cacheFile = ".latest-version.json"
 
-// checkEvery is how often the latest version is asked for.
-const checkEvery = 24 * time.Hour
+// checkEvery is how often the latest version is asked for; retryEvery, how long to wait
+// after a check that failed (offline), so a session never waits for it twice in a row.
+const (
+	checkEvery = 24 * time.Hour
+	retryEvery = time.Hour
+)
 
 // Latest asks GitHub for the latest release, without its API (no rate limit, no token):
 // /releases/latest redirects to /releases/tag/v<version>.
@@ -83,6 +87,7 @@ func numbers(v string) ([]int, bool) {
 type cache struct {
 	Checked time.Time `json:"checked"`
 	Latest  string    `json:"latest"`
+	Failed  bool      `json:"failed,omitempty"` // the last check got no answer
 }
 
 // Available returns the latest version when it is newer than current, asking for it
@@ -97,12 +102,19 @@ func Available(cfgDir, current string, now time.Time, fetch func() (string, erro
 	if data, err := os.ReadFile(path); err == nil {
 		_ = json.Unmarshal(data, &c)
 	}
-	if c.Latest == "" || now.Sub(c.Checked) > checkEvery {
+	wait := checkEvery
+	if c.Failed {
+		wait = retryEvery
+	}
+	if c.Checked.IsZero() || now.Sub(c.Checked) > wait {
 		if latest, err := fetch(); err == nil && latest != "" {
 			c = cache{Checked: now, Latest: latest}
-			if data, err := json.Marshal(c); err == nil {
-				_ = os.WriteFile(path, data, 0o644)
-			}
+		} else {
+			// Remember the attempt too: offline, every session would wait for it again.
+			c.Checked, c.Failed = now, true
+		}
+		if data, err := json.Marshal(c); err == nil {
+			_ = os.WriteFile(path, data, 0o644)
 		}
 	}
 	if Newer(c.Latest, current) {

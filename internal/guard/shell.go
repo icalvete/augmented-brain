@@ -7,6 +7,7 @@ import "strings"
 type command struct {
 	words []string
 	stdin string
+	piped bool // reads the output of the command before it (a | b)
 }
 
 // parse splits a shell command line into simple commands. It understands quotes,
@@ -23,6 +24,7 @@ func parse(line string) []command {
 	var cur strings.Builder
 	inWord, hereString := false, false
 	stdin := ""
+	piped := false // the command being read gets the previous one's output
 
 	flushWord := func() {
 		if !inWord {
@@ -39,7 +41,8 @@ func parse(line string) []command {
 	flushCmd := func() {
 		flushWord()
 		if len(words) > 0 || stdin != "" {
-			out = append(out, command{words: words, stdin: stdin})
+			out = append(out, command{words: words, stdin: stdin, piped: piped})
+			piped = false
 		}
 		words, stdin = nil, ""
 	}
@@ -100,6 +103,7 @@ func parse(line string) []command {
 			pending = append(pending, h)
 		case r == '\n':
 			flushCmd()
+			piped = false
 			for _, h := range pending {
 				var body string
 				body, i = readBody(rs, i, h)
@@ -108,8 +112,21 @@ func parse(line string) []command {
 				}
 			}
 			pending = nil
-		case r == ';' || r == '&' || r == '|' || r == '(' || r == ')':
+		case r == '|' && i+1 < len(rs) && rs[i+1] == '|': // ||: the next command does not read this one
 			flushCmd()
+			piped = false
+			i++
+		case r == '|':
+			flushCmd()
+			piped = true
+			if i+1 < len(rs) && rs[i+1] == '&' { // |& pipes stderr too
+				i++
+			}
+		case r == '(' && len(words) == 0 && !inWord: // … | (bash): the subshell still reads the pipe
+			flushCmd()
+		case r == ';' || r == '&' || r == '(' || r == ')':
+			flushCmd()
+			piped = false
 		case r == ' ' || r == '\t':
 			flushWord()
 		case r == '#' && !inWord:
@@ -231,7 +248,7 @@ var reserved = map[string]bool{
 var wrappers = map[string]string{
 	"env": "uCS", "nohup": "", "exec": "a", "command": "", "nice": "n",
 	"timeout": "ks", "xargs": "nIPLsdEa", "watch": "ndg", "stdbuf": "ioe", "builtin": "",
-	"ionice": "cnp", "chrt": "", "taskset": "", "setsid": "", "unbuffer": "", "caffeinate": "",
+	"ionice": "cnp", "chrt": "", "taskset": "", "setsid": "", "unbuffer": "", "caffeinate": "", "npx": "pc",
 }
 
 // program strips variable assignments (NAME=value), reserved words and wrappers from

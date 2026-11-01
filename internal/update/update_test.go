@@ -64,3 +64,25 @@ func TestAvailable(t *testing.T) {
 		t.Errorf("turned off: %q", got)
 	}
 }
+
+// Offline, a failed check is remembered: the next sessions do not wait for it again
+// until an hour has passed.
+func TestAvailableOffline(t *testing.T) {
+	t.Setenv("AB_NO_UPDATE_CHECK", "")
+	dir := t.TempDir()
+	calls := 0
+	offline := func() (string, error) { calls++; return "", errors.New("no network") }
+	now := time.Date(2026, 10, 20, 9, 0, 0, 0, time.UTC)
+	for i := 0; i < 3; i++ {
+		if got := Available(dir, "0.1.0", now.Add(time.Duration(i)*time.Minute), offline); got != "" {
+			t.Errorf("offline: %q", got)
+		}
+	}
+	if calls != 1 {
+		t.Errorf("asked %d times while offline, want 1", calls)
+	}
+	online := func() (string, error) { calls++; return "0.2.0", nil }
+	if got := Available(dir, "0.1.0", now.Add(2*time.Hour), online); got != "0.2.0" || calls != 2 {
+		t.Errorf("back online: %q after %d calls", got, calls)
+	}
+}

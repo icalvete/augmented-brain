@@ -37,7 +37,7 @@ Usage:
   augmented-brain update       update augmented brain and its Claude Code plugin
   augmented-brain uninstall    remove the program and the plugin (your notes stay; --all: start from scratch)
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
-  augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use, session-end
+  augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use, stop, post-compact, session-end
   augmented-brain version      show the version
 `
 
@@ -86,7 +86,8 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 	}
 }
 
-// currentSpace loads the configuration and finds the space of the working folder.
+// currentSpace loads the configuration and finds the space of the working folder, or
+// the default space when the folder is outside every space.
 func currentSpace(errOut io.Writer) (*config.Config, *config.Space, bool) {
 	dir, err := config.Dir()
 	if err != nil {
@@ -107,7 +108,9 @@ func currentSpace(errOut io.Writer) (*config.Config, *config.Space, bool) {
 		fmt.Fprintln(errOut, err)
 		return nil, nil, false
 	}
-	s := c.SpaceFor(wd)
+	// The same space the hooks and the MCP server use: the default space outside every
+	// work folder.
+	s, _ := c.SpaceAt(wd)
 	if s == nil {
 		fmt.Fprintln(errOut, i18n.T(c.Language, "space.none", wd, strings.Join(c.SpaceNames(), ", ")))
 		return c, nil, false
@@ -210,7 +213,7 @@ func cmdMCP(errOut io.Writer) int {
 // always exits 0 and reports problems on stderr.
 func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 	if len(args) != 1 {
-		fmt.Fprintln(errOut, "usage: augmented-brain hook session-start|pre-tool-use|session-end")
+		fmt.Fprintln(errOut, "usage: augmented-brain hook session-start|pre-tool-use|stop|post-compact|session-end")
 		return 2
 	}
 	dir, _ := config.Dir()
@@ -222,6 +225,10 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 		err = hook.PreToolUse(in, out, dir)
 	case "session-end":
 		err = hook.SessionEnd(in, dir)
+	case "stop":
+		err = hook.Stop(in, out, dir)
+	case "post-compact":
+		err = hook.PostCompact(in, dir)
 	default:
 		fmt.Fprintf(errOut, "unknown hook %q\n", args[0])
 		return 2

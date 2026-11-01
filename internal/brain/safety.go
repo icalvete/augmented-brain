@@ -2,21 +2,31 @@ package brain
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 )
 
-// SafetyInput is what the guard must ask the user about in this space. A nil list
-// leaves that setting as it is; an empty one clears it.
+// SafetyInput is what the guard must ask the user about, on this whole machine. A nil
+// list leaves that setting as it is; an empty one clears it.
 type SafetyInput struct {
 	ProductionAWSProfiles []string
 	UntouchableHosts      []string
 }
 
-// SaveSafety writes the space's risk settings in the configuration file, changing only
-// those lines. The guard reads them on the next command.
+// SaveSafety writes the risk settings in the configuration file, changing only those
+// lines. They are machine-wide: the guard applies them in every space, and outside every
+// space, from the next command on. The list given replaces the old one, including any
+// list a space kept of its own (older configurations had them per space); the answer
+// shows what was there before, so nothing is dropped unseen.
 func (b *Brain) SaveSafety(in SafetyInput) (string, error) {
+	var oldProfiles, oldHosts []string
+	if c, err := config.Load(b.ConfigDir); err == nil {
+		oldProfiles, oldHosts = c.GuardLists()
+	}
+	before := map[string][]string{"production_aws_profiles": oldProfiles, "untouchable_hosts": oldHosts}
 	var done []string
 	for _, s := range []struct {
 		key    string
@@ -34,13 +44,23 @@ func (b *Brain) SaveSafety(in SafetyInput) (string, error) {
 				clean = append(clean, v)
 			}
 		}
-		if err := config.SetSpaceList(b.ConfigDir, b.Space.Name, s.key, clean); err != nil {
+		if err := config.SetTopList(b.ConfigDir, s.key, clean); err != nil {
 			return "", err
 		}
-		done = append(done, fmt.Sprintf("%s = [%s]", s.key, strings.Join(clean, ", ")))
+		c, err := config.Load(b.ConfigDir)
+		if err != nil {
+			return "", err
+		}
+		for _, name := range c.SpaceNames() {
+			if err := config.RemoveSpaceKey(b.ConfigDir, name, s.key); err != nil {
+				return "", err
+			}
+		}
+		done = append(done, fmt.Sprintf("%s = [%s] (before: [%s])", s.key, strings.Join(clean, ", "), strings.Join(before[s.key], ", ")))
 	}
 	if len(done) == 0 {
 		return "nothing to change", nil
 	}
-	return fmt.Sprintf("space %s: %s", b.Space.Name, strings.Join(done, "; ")), nil
+	_ = os.Remove(filepath.Join(b.ConfigDir, config.AskSafetyFile)) // asked and answered
+	return fmt.Sprintf("saved for every space on this machine: %s", strings.Join(done, "; ")), nil
 }

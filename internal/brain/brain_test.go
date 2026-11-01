@@ -223,3 +223,86 @@ func TestParkKeepsHandWrittenJournal(t *testing.T) {
 		t.Errorf("journal lost or essentials dropped:\n%s", text)
 	}
 }
+
+// One file that is not a valid note does not stop the rest: the brain opens, works with
+// the valid notes, and never writes over the broken file.
+func TestOpenWithInvalidNotes(t *testing.T) {
+	b := open(t, "en")
+	broken := filepath.Join(b.Mem.Dir, "tasks", "task-backup.md")
+	if err := os.WriteFile(broken, []byte("---\nid: task-backup\ntype: task\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	c, err := config.Load(b.ConfigDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b2, err := Open(c, c.Spaces["work"])
+	if err != nil {
+		t.Fatalf("one broken note locked the space: %v", err)
+	}
+	b2.Now = b.Now
+	if len(b2.Problems) != 1 || b2.Problems[0].Path != "tasks/task-backup.md" {
+		t.Fatalf("problems: %v", b2.Problems)
+	}
+	n, err := b2.NewTask(NewTaskInput{Title: "Backup"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n.Header.ID != "task-backup-2" {
+		t.Errorf("the new task took the broken file's name: %s", n.Header.ID)
+	}
+	if data, _ := os.ReadFile(broken); !strings.HasPrefix(string(data), "---\nid: task-backup\ntype: task\n") || strings.Contains(string(data), "title") {
+		t.Errorf("the broken file was written over:\n%s", data)
+	}
+	if err := b2.save(&memory.Note{Path: "tasks/task-backup.md", Header: memory.Header{ID: "task-backup", Type: "task",
+		Title: "x", Status: "plan", Next: "x", WaitingOn: "me"}}); err == nil {
+		t.Error("a write over the broken file was let through")
+	}
+	if _, err := b2.AddWatch(n.Header.ID, "2026-10-15", "check"); err != nil {
+		t.Fatal(err)
+	}
+	if r := b2.Reminders(1); len(r) != 1 {
+		t.Errorf("reminders with a broken note around: %v", r)
+	}
+	if note := ProblemsNote(b2.Problems, 3); !strings.Contains(note, "tasks/task-backup.md") || !strings.Contains(note, "augmented-brain check") {
+		t.Errorf("problems note: %s", note)
+	}
+}
+
+// Names with no Latin letters make no readable id: each person still gets their own
+// note, and saving the same name again updates it.
+func TestPeopleWithNonLatinNames(t *testing.T) {
+	b := open(t, "en")
+	m, err := b.SavePerson(PersonInput{Name: "Мария", Role: "client"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	w, err := b.SavePerson(PersonInput{Name: "王伟", Role: "supplier"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.Header.ID == w.Header.ID {
+		t.Fatalf("two people share %s", m.Header.ID)
+	}
+	again, err := b.SavePerson(PersonInput{Name: "мария", Role: "client, the shop"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again.Header.ID != m.Header.ID || len(b.Mem.OfType("person")) != 2 {
+		t.Errorf("saving Мария again made %s; people: %d", again.Header.ID, len(b.Mem.OfType("person")))
+	}
+	if b.Mem.Notes[w.Header.ID].Header.Summary != "supplier" {
+		t.Error("王伟 was overwritten")
+	}
+	// An alias leads to the person too.
+	if _, err := b.SavePerson(PersonInput{Name: "Marcos García", Aliases: []string{"Marquitos"}, Role: "manager"}); err != nil {
+		t.Fatal(err)
+	}
+	n, err := b.SavePerson(PersonInput{Name: "Marquitos", Role: "my manager"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n.Header.ID != "person-marcos-garcia" || n.Header.Title != "Marcos García" || !strings.HasSuffix(n.Header.Summary, "also: Marquitos") {
+		t.Errorf("by alias: %+v", n.Header)
+	}
+}

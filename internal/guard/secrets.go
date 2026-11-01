@@ -1,6 +1,9 @@
 package guard
 
-import "regexp"
+import (
+	"regexp"
+	"strings"
+)
 
 // High-confidence secret patterns only: a token with its exact shape, never words such
 // as "password", so the guard does not block by mistake.
@@ -22,12 +25,44 @@ var secretPatterns = []struct {
 	{regexp.MustCompile(`-----BEGIN (?:RSA |EC |OPENSSH |DSA |ENCRYPTED )?PRIVATE KEY-----`), "a private key"},
 }
 
+// examples are the made-up keys AWS's own documentation uses: they open no account, and
+// notes and commands quote them. Built in pieces so this file holds no key-shaped text.
+var examples = []string{
+	"AKIA" + "IOSFODNN7" + "EXAMPLE",
+	"wJalrXUtnFEMI/K7MDENG/" + "bPxRfiCYEXAMPLEKEY",
+}
+
 // FindSecret returns what kind of secret text contains, or "" if none.
 func FindSecret(text string) string {
 	for _, p := range secretPatterns {
-		if p.re.MatchString(text) {
-			return p.what
+		for _, m := range p.re.FindAllString(text, -1) {
+			if !isExample(m) {
+				return p.what
+			}
 		}
 	}
 	return ""
+}
+
+// RedactSecrets replaces each secret in text (AWS's examples apart) with a marker, for
+// text written by a program, such as a conversation summary, that must never hold one.
+func RedactSecrets(text string) string {
+	for _, p := range secretPatterns {
+		text = p.re.ReplaceAllStringFunc(text, func(m string) string {
+			if isExample(m) {
+				return m
+			}
+			return "[" + p.what + " removed]"
+		})
+	}
+	return text
+}
+
+func isExample(match string) bool {
+	for _, e := range examples {
+		if strings.Contains(match, e) {
+			return true
+		}
+	}
+	return false
 }

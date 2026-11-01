@@ -70,6 +70,7 @@ var delim = []byte("---")
 // Parse splits a file into its header and body, and checks the header.
 // path is relative to the memory folder.
 func Parse(path string, data []byte) (*Note, error) {
+	data = bytes.TrimPrefix(data, []byte("\xef\xbb\xbf")) // a BOM some Windows editors add
 	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
 	if !bytes.HasPrefix(data, append(delim, '\n')) {
 		return nil, errors.New("missing header: the file must start with a line '---'")

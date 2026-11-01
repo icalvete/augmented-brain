@@ -27,13 +27,21 @@ type Decision struct {
 	Reason  string
 }
 
-// Policy is what the guard protects. The lists come from the space of the folder the
-// assistant works in; with no space, only the general rules apply.
+// Policy is what the guard protects. The production profiles and untouchable hosts are
+// machine-wide; the repositories the assistant may commit in come from the space of the
+// folder it works in. With no configuration, only the general rules apply.
 type Policy struct {
 	GitAllowedRepos       []string // absolute paths where the assistant may commit and push
 	ProductionAWSProfiles []string // AWS profiles that need the user's confirmation
 	UntouchableHosts      []string // hosts that need the user's confirmation for ssh, scp, rsync
 	Cwd                   string   // the folder the command runs in, for relative paths
+	// Env is the environment the command inherits (AWS_PROFILE, AWS_DEFAULT_PROFILE), so
+	// an aws command with no profile of its own is checked against the one it will use.
+	// The hook passes it in; the guard never reads the environment itself.
+	Env map[string]string
+	// ConfigProblem, when not empty, says why the configuration could not be read: the
+	// lists above are unknown, so a command they would cover asks the user every time.
+	ConfigProblem string
 }
 
 var allow = Decision{Allow, ""}
@@ -63,7 +71,13 @@ func (p Policy) Command(line string) Decision {
 // commands after them. A deny wins over an ask.
 func (p Policy) commands(cmds []command, exported map[string]string, depth int) Decision {
 	var ask *Decision
-	for _, c := range cmds {
+	for i, c := range cmds {
+		if c.piped && c.stdin == "" && i > 0 {
+			// echo 'sudo id' | bash: bash reads what echo writes. Kept in the list, so a
+			// command further down the pipe (… | tee x | bash) gets it too.
+			cmds[i].stdin = output(cmds[i-1])
+			c.stdin = cmds[i].stdin
+		}
 		if len(c.words) > 0 && base(c.words[0]) == "export" {
 			for _, a := range c.words[1:] {
 				if eq := strings.IndexByte(a, '='); eq > 0 && isName(a[:eq]) {
@@ -83,6 +97,25 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 		return *ask
 	}
 	return allow
+}
+
+// output returns what a command writes when that is known from the command line alone:
+// cat or tee of its heredoc or here-string, echo and printf of their arguments. A shell
+// or ssh at the end of a pipe runs it, so the guard checks it as their stdin.
+func output(c command) string {
+	_, name, args := program(c.words)
+	switch name {
+	case "cat", "tee":
+		return c.stdin
+	case "echo":
+		for len(args) > 0 && (args[0] == "-n" || args[0] == "-e" || args[0] == "-E" || args[0] == "-ne" || args[0] == "-en") {
+			args = args[1:]
+		}
+		return strings.ReplaceAll(strings.Join(args, " "), `\n`, "\n") + "\n"
+	case "printf":
+		return strings.ReplaceAll(strings.Join(args, " "), `\n`, "\n") + "\n"
+	}
+	return ""
 }
 
 // inner checks a command line run by another command (ssh, sh -c, a heredoc for bash).
@@ -121,9 +154,19 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 		return Decision{Deny, "`" + name + "` switches to another user, root by default. " + rootReason}
 	case "aws":
 		return p.aws(env, args)
+	case "cdk", "sam", "serverless", "sls":
+		return p.awsTool(name, env, args)
+	case "aws-vault":
+		return p.awsVault(args, stdin, env, depth)
+	case "gh", "glab":
+		return publish(name, args)
 	case "ssh":
 		return p.ssh(args, stdin, env, depth)
-	case "scp", "rsync", "sftp":
+	case "mosh":
+		return p.mosh(args, env, depth)
+	case "sftp":
+		return p.sftp(args)
+	case "scp", "rsync":
 		return p.copyHosts(name, args)
 	case "sh", "bash", "zsh", "dash", "ksh":
 		return p.shell(args, stdin, env, depth)
@@ -136,6 +179,14 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 		return Decision{Ask, "this runs with the production AWS profile " + prof + "; the user confirms first."}
 	}
 	return allow
+}
+
+// hostUnknown asks before reaching any host when the configuration could not be read.
+func (p Policy) hostUnknown(name, host string) (Decision, bool) {
+	if host == "" {
+		return allow, false
+	}
+	return p.listsUnknown(name + " to " + host)
 }
 
 // git blocks commit and push unless the repository is explicitly allowed, written with -C.
@@ -227,25 +278,169 @@ func (p Policy) sudo(name string, args []string, stdin string, env map[string]st
 	return p.simple(rest, stdin, env, depth)
 }
 
+// aws asks before a command that may use a production profile. Which one it uses
+// depends on the AWS CLI's version and on what is set, so every candidate counts: the
+// one given with --profile, AWS_PROFILE and AWS_DEFAULT_PROFILE (set in the command or
+// inherited), and "default" when nothing is set.
 func (p Policy) aws(env map[string]string, args []string) Decision {
-	prof := env["AWS_PROFILE"]
-	for i, a := range args {
-		if a == "--profile" && i+1 < len(args) {
-			prof = args[i+1]
-		} else if strings.HasPrefix(a, "--profile=") {
-			prof = strings.TrimPrefix(a, "--profile=")
-		}
+	if d, unknown := p.listsUnknown("this AWS command"); unknown {
+		return d
 	}
-	if prof != "" && contains(p.ProductionAWSProfiles, prof) {
-		return Decision{Ask, "this AWS command uses the production profile " + prof + "; the user confirms first."}
+	if prof := p.productionProfile(env, profileFlag(args, "--profile")); prof != "" {
+		return Decision{Ask, "this AWS command may use the production profile " + prof + "; the user confirms first."}
 	}
 	return allow
+}
+
+// awsTool does the same for cdk, sam and serverless (whose --aws-profile counts too).
+func (p Policy) awsTool(name string, env map[string]string, args []string) Decision {
+	if d, unknown := p.listsUnknown(name); unknown {
+		return d
+	}
+	given := firstSet(profileFlag(args, "--profile"), profileFlag(args, "--aws-profile"))
+	if prof := p.productionProfile(env, given); prof != "" {
+		return Decision{Ask, name + " may run with the production AWS profile " + prof + "; the user confirms first."}
+	}
+	return allow
+}
+
+// productionProfile returns the first candidate profile that is production, or "".
+func (p Policy) productionProfile(env map[string]string, given string) string {
+	candidates := []string{given, env["AWS_PROFILE"], env["AWS_DEFAULT_PROFILE"], p.Env["AWS_PROFILE"], p.Env["AWS_DEFAULT_PROFILE"]}
+	if given == "" && firstSet(candidates...) == "" {
+		candidates = append(candidates, "default")
+	}
+	for _, c := range candidates {
+		if c != "" && contains(p.ProductionAWSProfiles, c) {
+			return c
+		}
+	}
+	return ""
+}
+
+// awsVault asks before aws-vault exec with a production profile, and checks the
+// command it runs.
+func (p Policy) awsVault(args []string, stdin string, env map[string]string, depth int) Decision {
+	if len(args) == 0 || args[0] != "exec" {
+		return allow
+	}
+	withValue := map[string]bool{"-d": true, "--duration": true, "--region": true, "-t": true, "--mfa-token": true,
+		"--prompt": true, "--backend": true}
+	i := 1
+	for ; i < len(args) && strings.HasPrefix(args[i], "-"); i++ {
+		if withValue[args[i]] && i+1 < len(args) {
+			i++
+		}
+	}
+	if i >= len(args) {
+		return allow
+	}
+	prof, rest := args[i], args[i+1:]
+	if len(rest) > 0 && rest[0] == "--" {
+		rest = rest[1:]
+	}
+	inner := allow
+	if len(rest) > 0 {
+		sub := map[string]string{}
+		for k, v := range env {
+			sub[k] = v
+		}
+		sub["AWS_PROFILE"] = prof
+		if inner = p.simple(rest, stdin, sub, depth); inner.Verdict == Deny {
+			return inner
+		}
+	}
+	if d, unknown := p.listsUnknown("aws-vault"); unknown {
+		return d
+	}
+	if contains(p.ProductionAWSProfiles, prof) {
+		return Decision{Ask, "aws-vault runs this with the production AWS profile " + prof + "; the user confirms first."}
+	}
+	return inner
+}
+
+// profileFlag returns the value of a --flag value or --flag=value argument.
+func profileFlag(args []string, flag string) string {
+	prof := ""
+	for i, a := range args {
+		if a == flag && i+1 < len(args) {
+			prof = args[i+1]
+		} else if strings.HasPrefix(a, flag+"=") {
+			prof = strings.TrimPrefix(a, flag+"=")
+		}
+	}
+	return prof
+}
+
+func firstSet(values ...string) string {
+	for _, v := range values {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
+// listsUnknown asks when the configuration could not be read: then the production
+// profiles and untouchable hosts are unknown, and what would check them cannot.
+func (p Policy) listsUnknown(what string) (Decision, bool) {
+	if p.ConfigProblem == "" {
+		return allow, false
+	}
+	return Decision{Ask, what + " may reach production or an untouchable host, and augmented brain cannot tell: it cannot read its configuration (" +
+		p.ConfigProblem + "). The user confirms first; `augmented-brain doctor` shows how to fix the configuration."}, true
+}
+
+// syncDestination reports whether gh repo sync names a destination repository (any
+// argument besides "repo", "sync" and the values of --branch and --source).
+func syncDestination(args []string) bool {
+	n := 0
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "-b" || a == "--branch" || a == "-s" || a == "--source":
+			i++
+		case strings.HasPrefix(a, "-"):
+		default:
+			if n++; n > 2 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// publish blocks the gh and glab commands that publish or merge, as it blocks a push.
+func publish(name string, args []string) Decision {
+	var words []string
+	for _, a := range args {
+		if !strings.HasPrefix(a, "-") {
+			words = append(words, a)
+		}
+	}
+	if len(words) < 2 {
+		return allow
+	}
+	blocked := map[string]map[string]bool{
+		"gh":   {"pr merge": true, "release create": true, "release upload": true, "release edit": true},
+		"glab": {"mr merge": true, "mr accept": true, "release create": true, "release upload": true},
+	}[name]
+	what := words[0] + " " + words[1]
+	// gh repo sync with no repository only updates the local clone; with one, it updates
+	// that repository on GitHub.
+	if name == "gh" && what == "repo sync" && syncDestination(args) {
+		blocked = map[string]bool{what: true}
+	}
+	if !blocked[what] {
+		return allow
+	}
+	return Decision{Deny, "`" + name + " " + what + "` publishes or merges, like a git push, so it is for the user. Leave the change ready and checked, and give the user the exact command to run themselves."}
 }
 
 // ssh asks before reaching an untouchable host, and checks the remote command, or what
 // it sends to the remote shell through stdin.
 func (p Policy) ssh(args []string, stdin string, env map[string]string, depth int) Decision {
-	host, rest := sshTarget(args)
+	host, rest := sshTarget(dropRedirections(args))
 	var d Decision
 	switch {
 	case len(rest) > 0 && isShell(base(rest[0])):
@@ -258,10 +453,95 @@ func (p Policy) ssh(args []string, stdin string, env map[string]string, depth in
 	if d.Verdict == Deny {
 		return d
 	}
+	if u, unknown := p.hostUnknown("ssh", host); unknown {
+		return u
+	}
 	if host != "" && p.untouchable(host) {
-		return Decision{Ask, "host " + host + " is marked as untouchable in this space; the user confirms first."}
+		return Decision{Ask, "host " + host + " is marked as untouchable; the user confirms first."}
 	}
 	return d
+}
+
+// mosh is ssh for unsteady connections: the same checks on its host and its command.
+func (p Policy) mosh(args []string, env map[string]string, depth int) Decision {
+	host, rest := "", []string(nil)
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if a == "--" {
+			continue
+		}
+		if strings.HasPrefix(a, "-") {
+			if (a == "-p" || a == "--port" || a == "--ssh" || a == "--server" || a == "--client" || a == "--predict" || a == "--family") && i+1 < len(args) {
+				i++
+			}
+			continue
+		}
+		host, rest = a, args[i+1:]
+		if at := strings.LastIndexByte(host, '@'); at >= 0 {
+			host = host[at+1:]
+		}
+		break
+	}
+	if len(rest) > 0 && rest[0] == "--" {
+		rest = rest[1:]
+	}
+	d := allow
+	if len(rest) > 0 {
+		if d = p.simple(rest, "", env, depth); d.Verdict == Deny {
+			return d
+		}
+	}
+	if u, unknown := p.hostUnknown("mosh", host); unknown {
+		return u
+	}
+	if host != "" && p.untouchable(host) {
+		return Decision{Ask, "host " + host + " is marked as untouchable; the user confirms first."}
+	}
+	return d
+}
+
+// sftp reaches the host given as its first argument that is not an option, with or
+// without a :path after it.
+func (p Policy) sftp(args []string) Decision {
+	withValue := "BbcDFiJloPRSs"
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if strings.HasPrefix(a, "-") {
+			if len(a) == 2 && strings.ContainsRune(withValue, rune(a[1])) {
+				i++
+			}
+			continue
+		}
+		host, _, _ := strings.Cut(a, ":")
+		if at := strings.LastIndexByte(host, '@'); at >= 0 {
+			host = host[at+1:]
+		}
+		if u, unknown := p.hostUnknown("sftp", host); unknown {
+			return u
+		}
+		if p.untouchable(host) {
+			return Decision{Ask, "sftp reaches " + host + ", marked as untouchable; the user confirms first."}
+		}
+		return allow
+	}
+	return allow
+}
+
+// dropRedirections takes the redirections out of a command's words (< file, >file,
+// 2>&1…): they are not arguments, and the guard does not know what a file holds.
+func dropRedirections(args []string) []string {
+	var out []string
+	for i := 0; i < len(args); i++ {
+		a := strings.TrimLeft(args[i], "0123456789")
+		if strings.HasPrefix(a, "<") || strings.HasPrefix(a, ">") || strings.HasPrefix(a, "&>") {
+			if strings.TrimLeft(a, "<>&") == "" && i+1 < len(args) {
+				i++ // the operator alone: the file is the next word
+			}
+			continue
+		}
+		out = append(out, args[i])
+	}
+	return out
 }
 
 // shell checks the commands a shell would run: the string after -c (also -lc, -ec…),
@@ -315,18 +595,29 @@ func (p Policy) copyHosts(name string, args []string) Decision {
 		if at := strings.LastIndexByte(hostPart, '@'); at >= 0 {
 			hostPart = hostPart[at+1:]
 		}
+		if u, unknown := p.hostUnknown(name, hostPart); unknown {
+			return u
+		}
 		if p.untouchable(hostPart) {
-			return Decision{Ask, name + " reaches " + hostPart + ", marked as untouchable in this space; the user confirms first."}
+			return Decision{Ask, name + " reaches " + hostPart + ", marked as untouchable; the user confirms first."}
 		}
 	}
 	return allow
 }
 
-// untouchable matches a host by its name or by its short name (db01 matches
-// db01.example.com).
+// untouchable matches a host by its name, ignoring case, or by its short name either
+// way: a saved db01 matches db01.example.com, and a saved db01.example.com matches db01.
 func (p Policy) untouchable(host string) bool {
+	host = strings.TrimSuffix(strings.ToLower(host), ".")
+	if host == "" {
+		return false
+	}
 	for _, h := range p.UntouchableHosts {
-		if host == h || strings.HasPrefix(host, h+".") {
+		h = strings.TrimSuffix(strings.ToLower(strings.TrimSpace(h)), ".")
+		if h == "" {
+			continue
+		}
+		if host == h || strings.HasPrefix(host, h+".") || strings.HasPrefix(h, host+".") {
 			return true
 		}
 	}
