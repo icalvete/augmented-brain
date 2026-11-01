@@ -4,7 +4,11 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
+
+	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/format"
 )
 
 // A repository is on this computer when a work folder has it; a closed task's missing
@@ -44,5 +48,20 @@ func TestMismatches(t *testing.T) {
 	b.Space.WorkFolders = nil
 	if got := b.MissingRepos(b.Mem.Notes[live.Header.ID]); !reflect.DeepEqual(got, []string{"~/nowhere"}) {
 		t.Errorf("no work folders, so only paths written in full can be told: %v", got)
+	}
+}
+
+// A space whose notes come from a newer program is not opened: writing could break them.
+func TestOpenRefusesNewerNotes(t *testing.T) {
+	b := open(t, "en")
+	if err := format.Write(b.Space.Memory, 99); err != nil {
+		t.Fatal(err)
+	}
+	c, err := config.Load(b.ConfigDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Open(c, c.Spaces["work"]); err == nil || !strings.Contains(err.Error(), "newer augmented brain") {
+		t.Errorf("Open: %v", err)
 	}
 }

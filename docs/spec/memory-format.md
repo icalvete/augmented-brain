@@ -215,6 +215,22 @@ Rules tell the assistant how to work. There are two levels:
 
 All of them are loaded at the start of every session.
 
+## Format version
+
+The notes of each space say which version of this format they follow, in
+`.augmented-brain/format` inside the memory folder: one line with a number. The
+configuration folder says its own, for the configuration and the profile, as
+`format = N` at the top of `config.toml`. Neither saying it means version 1, which is
+also never written to `config.toml`, because releases from before versions were
+written refuse settings they do not know. This document describes version 1.
+
+When a release writes something in a new way, it raises the version and brings a step
+that moves version N to N+1. At the start of a session (and in `augmented-brain check`)
+the program copies the whole folder to `migrations/` in the configuration folder, runs
+the missing steps one at a time and writes the new version after each, so a step that
+stops half way runs again from there. Notes of a newer version than the program knows
+are never written: the program asks to be updated.
+
 ## Generated files
 
 The program rebuilds these after every change; editing them by hand is pointless:

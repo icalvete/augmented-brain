@@ -102,6 +102,7 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 		if latest := update.Available(cfgDir, version.Version, time.Now(), LatestVersion); latest != "" {
 			note += session.UpdateNote(c.Language, version.Version, latest)
 		}
+		note += migrate(c, s, cfgDir)
 		note += sessionStarted(c, s, i, cfgDir)
 		note += askSafety(c, cfgDir)
 		text = session.ContextWith(c, s, note)

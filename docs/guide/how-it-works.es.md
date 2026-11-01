@@ -323,8 +323,12 @@ actualizarlo. También puedes hacerlo tú:
 augmented-brain update
 ```
 
-Actualiza el programa y el plugin de Claude. Tus notas y tu configuración no se tocan.
-Después, cierra y abre Claude para que use la versión nueva.
+Actualiza el programa y el plugin de Claude. Después, cierra y abre Claude para que use
+la versión nueva. Tus notas y tu configuración se quedan como están, salvo que la versión
+nueva las escriba de otra manera: entonces la primera sesión las pasa a la manera nueva,
+después de guardar una copia completa en la carpeta `migrations/` de la configuración, y
+Claude te lo dice. Una versión más vieja se niega a abrir notas escritas por una más
+nueva, en vez de estropearlas: actualízala también en ese ordenador.
 
 ## Quitarlo
 

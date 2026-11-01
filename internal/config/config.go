@@ -40,6 +40,9 @@ type Space struct {
 
 // Config is the whole configuration file.
 type Config struct {
+	// Format is the version of the configuration folder (this file and the profile);
+	// 0 when the file does not say, which means 1 (see package format).
+	Format   int    `toml:"format,omitzero"`
 	Language string `toml:"language"`
 	// DefaultSpace is used when the assistant runs in a folder of no space, such as the
 	// scratch folder the Claude desktop app opens a new session in. Empty: none.
@@ -449,6 +452,45 @@ func SetDefaultSpace(dir, space string) error {
 	}
 	lines = append(lines[:at], append([]string{line}, lines[at:]...)...)
 	return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
+}
+
+// FormatVersion is the version of the configuration folder: 1 when the file says none.
+func (c *Config) FormatVersion() int {
+	if c.Format < 1 {
+		return 1
+	}
+	return c.Format
+}
+
+// SetFormat records the version of the configuration folder, as the first line of the
+// file, keeping everything else as it is. Version 1 is never written: it is what a
+// file that says none means, and releases before versions were written refuse a
+// setting they do not know.
+func SetFormat(dir string, v int) error {
+	if v <= 1 {
+		return nil
+	}
+	path := filepath.Join(dir, FileName)
+	old, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	line := fmt.Sprintf("format = %d", v)
+	lines := strings.Split(string(old), "\n")
+	for i, l := range lines {
+		t := strings.TrimSpace(l)
+		if strings.HasPrefix(t, "[") {
+			break
+		}
+		if strings.HasPrefix(t, "format ") || strings.HasPrefix(t, "format=") {
+			if t == line {
+				return nil
+			}
+			lines[i] = line
+			return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
+		}
+	}
+	return replaceChecked(dir, path, string(old), line+"\n"+string(old))
 }
 
 // within reports whether path is folder itself or inside it.

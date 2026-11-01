@@ -270,3 +270,38 @@ untouchable_hosts = ["nas"]
 		t.Errorf("after Save: %v", back.UntouchableHosts)
 	}
 }
+
+// Format 1 is never written (older releases refuse settings they do not know); a later
+// one is, as the first line, and read back.
+func TestFormat(t *testing.T) {
+	dir := t.TempDir()
+	write(t, dir, "language = \"en\"\n\n[spaces.work]\nmemory = \"/tmp/m\"\nwork_folders = [\"/tmp/w\"]\n")
+	c, err := Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if c.FormatVersion() != 1 {
+		t.Errorf("no format: %d, want 1", c.FormatVersion())
+	}
+	if err := c.Save(); err != nil {
+		t.Fatal(err)
+	}
+	if err := SetFormat(dir, 1); err != nil {
+		t.Fatal(err)
+	}
+	if data, _ := os.ReadFile(filepath.Join(dir, FileName)); strings.Contains("\n"+string(data), "\nformat") {
+		t.Errorf("format written:\n%s", data)
+	}
+	if err := SetFormat(dir, 2); err != nil {
+		t.Fatal(err)
+	}
+	if c, err := Load(dir); err != nil || c.FormatVersion() != 2 {
+		t.Errorf("after SetFormat(2): %v %v", c, err)
+	}
+	if err := SetFormat(dir, 3); err != nil {
+		t.Fatal(err)
+	}
+	if data, _ := os.ReadFile(filepath.Join(dir, FileName)); strings.Count(string(data), "format =") != 1 {
+		t.Errorf("format written twice:\n%s", data)
+	}
+}

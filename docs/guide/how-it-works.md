@@ -320,8 +320,12 @@ update it. You can also do it yourself:
 augmented-brain update
 ```
 
-It updates the program and the Claude plugin. Your notes and your configuration are not
-touched. Then close and open Claude so it uses the new version.
+It updates the program and the Claude plugin. Then close and open Claude so it uses the
+new version. Your notes and your configuration stay as they are, unless the new version
+writes them in a different way: then the first session moves them to the new way, after
+keeping a full copy in the `migrations/` folder of the configuration, and Claude tells
+you. An older version refuses notes a newer one wrote, instead of breaking them: update
+it on that computer too.
 
 ## Remove it
 

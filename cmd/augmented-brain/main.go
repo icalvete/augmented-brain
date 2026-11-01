@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/doctor"
+	"github.com/icalvete/augmented-brain/internal/format"
 	"github.com/icalvete/augmented-brain/internal/hook"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/mcpserver"
@@ -136,6 +138,12 @@ func cmdCheck(out, errOut io.Writer) int {
 	c, s, ok := currentSpace(errOut)
 	if !ok {
 		return 1
+	}
+	if r, err := format.EnsureNotes(s.Memory, c.Dir, s.Name, time.Now()); err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	} else if r.Migrated() {
+		fmt.Fprintln(out, i18n.T(c.Language, "check.format", r.From, r.To, strings.Join(r.Done, "; "), paths.Tilde(r.Copy)))
 	}
 	m, problems, err := memory.Load(s.Memory)
 	if err != nil {

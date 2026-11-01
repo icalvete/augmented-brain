@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/format"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/templates"
@@ -154,6 +155,12 @@ func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
 // createSpace makes the space's folders, copies the starter files and writes the index.
 func createSpace(lang, dir string, today string) ([]string, error) {
 	var created []string
+	// Notes already there keep the version they say (or 1); the next session moves them
+	// on. A new space is written in this program's format.
+	fresh := true
+	if old, _, err := memory.Load(dir); err == nil && len(old.Notes) > 0 {
+		fresh = false
+	}
 	for _, f := range spaceFolders {
 		p := filepath.Join(dir, f)
 		if _, err := os.Stat(p); errors.Is(err, os.ErrNotExist) {
@@ -184,6 +191,11 @@ func createSpace(lang, dir string, today string) ([]string, error) {
 	}
 	if len(problems) > 0 {
 		return nil, fmt.Errorf("the memory folder %s has notes that are not valid: %v", dir, problems[0])
+	}
+	if fresh {
+		if err := format.Write(dir, format.Notes()); err != nil {
+			return nil, err
+		}
 	}
 	if changed, err := m.WriteIndex(lang); err != nil {
 		return nil, err

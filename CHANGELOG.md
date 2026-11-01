@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- **Notes say which format they follow.** Each space's notes now carry their format
+  version (`.augmented-brain/format`), and so does the configuration folder (in
+  `config.toml`, from version 2 on). When a future release writes notes in a new way,
+  the first session after updating moves them forward, after a full copy in
+  `migrations/` of the configuration folder, and Claude tells you; `augmented-brain
+  check` does the same. A program older than the notes refuses to open them instead of
+  breaking them, and asks to be updated. Nothing changes for notes today: this is
+  format 1.
+
 ## 0.3.3-alpha
 
 Released 2026-11-01.

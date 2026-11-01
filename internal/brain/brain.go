@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/format"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/templates"
 )
@@ -37,6 +38,9 @@ type Brain struct {
 // Open loads the space's memory. A file that is not a valid note does not stop the
 // rest: it is left out, listed in Problems, and never written over.
 func Open(c *config.Config, s *config.Space) (*Brain, error) {
+	if err := format.CheckNotes(s.Memory); err != nil {
+		return nil, err // written by a newer program: writing here could break them
+	}
 	m, problems, err := memory.Load(s.Memory)
 	if err != nil {
 		return nil, err

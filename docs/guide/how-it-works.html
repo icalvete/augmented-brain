@@ -138,7 +138,7 @@ augmented-brain backup --all    # every space</code></pre>
   <h2>Update it</h2>
   <p>When a new version is out, Claude tells you at the start of a session and offers to update it. You can also do it yourself:</p>
   <pre><code>augmented-brain update</code></pre>
-  <p>It updates the program and the Claude plugin. Your notes and your configuration are not touched. Then close and open Claude so it uses the new version.</p>
+  <p>It updates the program and the Claude plugin. Then close and open Claude so it uses the new version. Your notes and your configuration stay as they are, unless the new version writes them in a different way: then the first session moves them to the new way, after keeping a full copy in the <code>migrations/</code> folder of the configuration, and Claude tells you. An older version refuses notes a newer one wrote, instead of breaking them: update it on that computer too.</p>
   <h2>Remove it</h2>
   <pre><code>augmented-brain uninstall</code></pre>
   <p>It removes the Claude plugin, what Claude Code keeps of it and the program, after asking. Your notes stay in <code>~/augmented-brain/</code>: they are yours. Your configuration stays too (to remove it: <code>augmented-brain uninstall --config</code>), and so do Claude Code, its app and git. If you install it again, you find everything as it was.</p>

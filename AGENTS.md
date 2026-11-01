@@ -25,6 +25,7 @@ it feels to a newcomer.
 | `internal/panel` | The local web panel (`augmented-brain panel`): started detached on demand, 127.0.0.1 only, pages under `/s/<session>/` (derived from the run's token in `panel.json`; no cookie, since cookies of 127.0.0.1 reach every port), `/ping` answers an HMAC challenge so a stale `panel.json` cannot be impersonated, `panel.lock` serializes start and stop, Host/Origin/CSRF checks, strict CSP, stops after 30 idle minutes. Pages in `web/` (`go:embed`, no external requests); writes through `brain` under the same `filelock.Writer` as the MCP server. |
 | `internal/filelock`, `internal/detach` | The cross-process lock and the shared `Writer`; starting a process that outlives its parent (the automatic backup, the panel). |
 | `internal/hook`, `internal/session` | The SessionStart, PreToolUse, Stop, PostCompact and SessionEnd hooks (SessionEnd starts the automatic backup); what the assistant reads at the start (budget: 9,500 UTF-16 units). |
+| `internal/format` | The version of each space's notes (`.augmented-brain/format`) and of the configuration folder (`format =` in `config.toml`, never written while it is 1), and the migrations that move them forward at the start of a session or in `check`, after a full copy. Notes of a newer version are refused, never written. |
 | `internal/state` | What this machine knows about each space's sessions (active task, last write, sessions that did not end), in the configuration folder, never backed up; and the reader of Claude Code's transcripts for `session_recover`. |
 | `internal/guard` | The command guard: a small shell parser and the policy (push, root, secrets, production profiles, untouchable hosts). |
 | `internal/setup`, `internal/doctor`, `internal/backup`, `internal/claudecode`, `internal/update` | Creating spaces, the health check, backup and restore, installing the plugin, the new-version check. |
@@ -87,6 +88,10 @@ Heavier checks, before a release or when you touch what they cover:
   `MEMORY.md` is written by the program.
 - **The memory format is a contract.** `docs/spec/memory-format.md` describes it; a change
   to folders, header fields or note types updates the spec, the index and their tests.
+  A change that older notes do not already follow adds a step to
+  `format.NotesMigrations` (or `ConfigMigrations` for the configuration folder), which
+  raises the format version by one: the step must be safe to repeat, and gets a test
+  that runs it on notes written the old way.
 - **A new MCP tool** goes in `internal/mcpserver/server.go`, does its work in
   `internal/brain`, and is added to the tool list in `server_test.go`.
 - **The assistant reads what the hooks print.** Keep the session text under the budget,
