@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.4.0-alpha
+
+Released 2026-11-01.
 
 - **Notes say which format they follow.** Each space's notes now carry their format
   version (`.augmented-brain/format`), and so does the configuration folder (in
