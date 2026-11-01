@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.3.0-alpha
+
+Released 2026-11-01.
 
 - **Subtasks and steps.** A part of a task that waits on someone else or goes at its
   own pace can be a subtask: a task of its own with `parent:` in its header
