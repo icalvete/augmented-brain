@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.3.1-alpha
+
+Released 2026-11-01.
 
 - **The guard fails closed.** If `augmented-brain` cannot run when Claude is about to
   run a command or change a file (the program is missing from the PATH, crashes or
