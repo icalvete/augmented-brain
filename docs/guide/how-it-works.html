@@ -109,7 +109,7 @@ work_folders = ["~/augmented-brain/work"]
 memory = "~/augmented-brain/personal/notes"
 work_folders = ["~/augmented-brain/personal"]</code></pre>
   <p>In <code>~/augmented-brain/work/website</code>, Claude sees your work notes. In <code>~/augmented-brain/personal/blog</code>, your personal ones. They never mix.</p>
-  <p>What if you open Claude in another folder? For example, the desktop app starts each new session in a scratch folder of its own. Then the <strong>default space</strong>, <code>personal</code>, is used, and Claude tells you in one line, with how to switch to work. You can change it in <code>default_space</code>, or remove it.</p>
+  <p>What if you open Claude in another folder? For example, the desktop app starts each new session in a scratch folder of its own. Then the <strong>default space</strong>, <code>personal</code>, is used, and Claude tells you in one line, with how to switch to work. Its backup is also the one that keeps your profile. You can change it in <code>default_space</code>; if you have a single space, it is that one. A space added with <code>space add</code> sets it when there was none.</p>
   <p>Do your projects already live elsewhere, like <code>~/code</code>? Add that folder to the <code>work_folders</code> of the right space. For a new space (a client, say): <code>augmented-brain space add client</code>.</p>
   <h2>The backup</h2>
   <p>The notes folder of each space is also a git repository. The backup pushes it to a private repository of yours, one per space.</p>

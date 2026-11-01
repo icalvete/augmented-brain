@@ -164,8 +164,9 @@ En `~/augmented-brain/trabajo/web`, Claude ve las notas del trabajo. En
 
 ¿Y si abres Claude en otra carpeta? Por ejemplo, la app de escritorio empieza cada sesión
 nueva en una carpeta temporal suya. Entonces se usa el **espacio por defecto**,
-`personal`, y Claude te lo dice en una línea, con cómo pasar al de trabajo. Puedes
-cambiarlo en `default_space`, o quitarlo.
+`personal`, y Claude te lo dice en una línea, con cómo pasar al de trabajo. Su copia de
+seguridad es también la que guarda tu perfil. Puedes cambiarlo en `default_space`; si
+tienes un solo espacio, es ese. Un espacio añadido con `space add` lo fija si no lo había.
 
 ¿Tus proyectos ya viven en otra carpeta, como `~/code`? Añádela a `work_folders` del
 espacio que toque. Para un espacio nuevo (un cliente, por ejemplo):

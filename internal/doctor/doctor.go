@@ -99,6 +99,10 @@ func Run(e Env) []Check {
 		add(Info, i18n.T(l, "doctor.nospace", strings.Join(where, ", ")), "")
 	}
 
+	if names := c.SpaceNames(); len(names) > 1 && c.DefaultSpace == "" {
+		add(Warning, i18n.T(l, "doctor.nodefault"), i18n.T(l, "doctor.nodefault.fix", names[0], filepath.Join(c.Dir, config.FileName)))
+	}
+
 	profiles, hosts := c.GuardLists()
 	add(Info, i18n.T(l, "doctor.lists", len(profiles), len(hosts)), "")
 

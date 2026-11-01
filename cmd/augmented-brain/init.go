@@ -23,6 +23,7 @@ var messages = map[string]map[string]string{
 		"created":  "Created:",
 		"config":   "Configuration:",
 		"added":    "Space %q added.",
+		"default":  "%q is now your default space: it is used outside every space's folder, and its backup keeps your profile.",
 		"plugin?":  "Install the Claude Code plugin now? (yes, no)",
 		"yes":      "yes",
 		"plugin":   "Claude Code plugin installed. It loads your space when a session starts, and guards commands and file writes.",
@@ -41,6 +42,7 @@ var messages = map[string]map[string]string{
 		"created":  "Creado:",
 		"config":   "Configuración:",
 		"added":    "Espacio %q añadido.",
+		"default":  "%q es ahora tu espacio por defecto: se usa fuera de las carpetas de los espacios, y su copia de seguridad guarda tu perfil.",
 		"plugin?":  "¿Instalo ahora el plugin de Claude Code? (sí, no)",
 		"yes":      "sí",
 		"plugin":   "Plugin de Claude Code instalado. Carga tu espacio al empezar cada sesión y vigila los comandos y las escrituras de ficheros.",
@@ -265,6 +267,9 @@ func cmdSpaceAdd(args []string, in io.Reader, out, errOut io.Writer) int {
 	}
 	report(out, lang, res)
 	fmt.Fprintf(out, "\n"+msg(lang, "added")+"\n", o.Space)
+	if res.DefaultSpace != "" {
+		fmt.Fprintf(out, msg(lang, "default")+"\n", res.DefaultSpace)
+	}
 	return 0
 }
 

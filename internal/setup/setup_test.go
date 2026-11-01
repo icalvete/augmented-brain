@@ -77,6 +77,10 @@ func TestInitAndAddSpace(t *testing.T) {
 	if got := c.SpaceNames(); len(got) != 2 {
 		t.Errorf("spaces = %v", got)
 	}
+	// The second space chooses the default one, whose backup carries the profile.
+	if c.DefaultSpace != "personal" {
+		t.Errorf("default space = %q, want personal", c.DefaultSpace)
+	}
 
 	// An existing file is never overwritten.
 	area := filepath.Join(mem, "areas", "area-general.md")
@@ -88,6 +92,29 @@ func TestInitAndAddSpace(t *testing.T) {
 	}
 	if b, _ := os.ReadFile(area); !strings.Contains(string(b), "title: Mine") {
 		t.Error("an existing note was overwritten")
+	}
+}
+
+// Without a space named personal, the space that was there first stays the default, and
+// a third space changes nothing.
+func TestAddSpaceKeepsTheFirstAsDefault(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cfgDir := filepath.Join(home, "cfg")
+	if _, err := Init(cfgDir, Options{Space: "home", WorkFolder: "~/home", Memory: "~/m/home"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, step := range []struct{ space, chosen string }{{"job", "home"}, {"club", ""}} {
+		res, err := AddSpace(cfgDir, Options{Space: step.space, WorkFolder: "~/" + step.space, Memory: "~/m/" + step.space})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if res.DefaultSpace != step.chosen {
+			t.Errorf("adding %s: chose %q, want %q", step.space, res.DefaultSpace, step.chosen)
+		}
+	}
+	if c, _ := config.Load(cfgDir); c.DefaultSpace != "home" {
+		t.Errorf("default space = %q, want home", c.DefaultSpace)
 	}
 }
 

@@ -88,6 +88,44 @@ func TestHealthyAndBroken(t *testing.T) {
 	}
 }
 
+// Two spaces and no default one (a configuration from before 0.2.9): no backup keeps the
+// profile, and doctor says how to fix it.
+func TestNoDefaultSpace(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: "~/work", Memory: "~/brain/work"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := setup.AddSpace(cfg, setup.Options{Space: "home", WorkFolder: "~/home", Memory: "~/brain/home"}); err != nil {
+		t.Fatal(err)
+	}
+	run := func() *Check {
+		return find(Run(Env{ConfigDir: cfg, WorkDir: home, LookPath: allTools, Plugin: yes, Hook: denies}), "no default space")
+	}
+	if c := run(); c != nil {
+		t.Errorf("a default space was chosen, but doctor complains: %+v", c)
+	}
+
+	file := filepath.Join(cfg, "config.toml")
+	raw, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var kept []string
+	for _, l := range strings.Split(string(raw), "\n") {
+		if !strings.HasPrefix(l, "default_space") {
+			kept = append(kept, l)
+		}
+	}
+	if err := os.WriteFile(file, []byte(strings.Join(kept, "\n")), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if c := run(); c == nil || c.Status != Warning || !strings.Contains(c.Fix, `default_space = "home"`) {
+		t.Errorf("no default space must warn, with the line to add: %+v", c)
+	}
+}
+
 func TestPluginCheck(t *testing.T) {
 	if c := plugin(Env{LookPath: allTools, Plugin: no}); len(c) != 1 || c[0].Status != Failed || !strings.Contains(c[0].Fix, "claude plugin install") {
 		t.Errorf("missing plugin: %+v", c)

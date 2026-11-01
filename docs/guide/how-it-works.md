@@ -163,8 +163,9 @@ In `~/augmented-brain/work/website`, Claude sees your work notes. In
 
 What if you open Claude in another folder? For example, the desktop app starts each new
 session in a scratch folder of its own. Then the **default space**, `personal`, is used,
-and Claude tells you in one line, with how to switch to work. You can change it in
-`default_space`, or remove it.
+and Claude tells you in one line, with how to switch to work. Its backup is also the one
+that keeps your profile. You can change it in `default_space`; if you have a single space,
+it is that one. A space added with `space add` sets it when there was none.
 
 Do your projects already live elsewhere, like `~/code`? Add that folder to the
 `work_folders` of the right space. For a new space (a client, say):

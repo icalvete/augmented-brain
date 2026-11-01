@@ -24,7 +24,7 @@ Spaces are declared in the configuration file (see "Configuration" below), not i
 
 By default, `augmented-brain init` creates two spaces, `work` and `personal` (in Spanish, `trabajo` and `personal`). Each one is a folder in `~/augmented-brain/`, which is its work folder, and its memory folder sits inside it as `notes/` (`notas/`). Any other layout can be set with `init --custom` or by editing the configuration.
 
-A session that runs outside every work folder (for example, the scratch folder the Claude desktop app opens a new session in) uses the **default space**, `default_space` in the configuration; `init` sets it to `personal`. Without one, no memory is loaded there and the assistant tells the user which folders to open.
+A session that runs outside every work folder (for example, the scratch folder the Claude desktop app opens a new session in) uses the **default space**, `default_space` in the configuration; `init` sets it to `personal`, and `space add` sets it when there are two spaces or more and none is set (to `personal` if a space has that name, or else to the first space). Its backup is the one that carries the profile. Without one, no memory is loaded there and the assistant tells the user which folders to open.
 
 ## Layout of a space
 

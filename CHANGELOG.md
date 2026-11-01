@@ -22,7 +22,9 @@
   broken file is never written over, and the assistant is told which file and how to
   fix it. A note saved with a byte order mark (some Windows editors) is valid.
 - The backup: the profile travels only in the default space's backup, never in a work
-  repository (a copy left by an older version is removed). The guard's lists are in no
+  repository (a copy left by an older version is removed). `space add` sets the default
+  space when there was none, so some backup always keeps the profile, and `doctor` warns
+  when there are several spaces and no default one. The guard's lists are in no
   backup; after a restore, the next session offers to ask for them again. Captures in the inbox from
   two machines merge instead of stopping the backup. Leftovers of a crash and system
   files stay out (`.gitignore`), and so does any file over 50 MB, with a warning at the

@@ -38,6 +38,8 @@ type Options struct {
 type Result struct {
 	ConfigPath string
 	Created    []string
+	// DefaultSpace is set when adding the space also chose the default space.
+	DefaultSpace string
 }
 
 // Init creates the configuration, the profile and the first space.
@@ -53,13 +55,31 @@ func Init(cfgDir string, o Options) (*Result, error) {
 	return addSpace(c, o, true)
 }
 
-// AddSpace adds a space to an existing configuration.
+// AddSpace adds a space to an existing configuration. With two spaces or more there must
+// be a default one: it is used outside every folder and its backup carries the profile.
+// When there is none yet, it becomes "personal" if a space has that name, or else the
+// space that was there first.
 func AddSpace(cfgDir string, o Options) (*Result, error) {
 	c, err := config.Load(cfgDir)
 	if err != nil {
 		return nil, err
 	}
-	return addSpace(c, o, false)
+	before := c.SpaceNames()
+	res, err := addSpace(c, o, false)
+	if err != nil || c.DefaultSpace != "" || len(before) == 0 {
+		return res, err
+	}
+	def := before[0]
+	for _, n := range append(before, o.Space) {
+		if n == "personal" {
+			def = n
+		}
+	}
+	if err := config.SetDefaultSpace(cfgDir, def); err != nil {
+		return nil, err
+	}
+	res.DefaultSpace = def
+	return res, nil
 }
 
 func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
