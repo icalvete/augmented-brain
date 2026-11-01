@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.3.3-alpha
+
+Released 2026-11-01.
 
 - **Repositories that are no longer there.** A note's `repos:` names folders inside the
   space's work folder. When one is not there any more (it was moved, renamed or
