@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.9-alpha
+
+Released 2026-11-01.
 
 - The production AWS profiles and the untouchable hosts are now for the whole machine.
   Before, they belonged to the space the first-session interview ran in (often
