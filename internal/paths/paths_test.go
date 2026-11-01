@@ -70,6 +70,9 @@ func TestWithinIgnoresCaseWhereTheSystemDoes(t *testing.T) {
 	if !Within(inside, folder) || !Same(strings.ToUpper(folder), folder) {
 		t.Error("case-insensitive systems: not matched")
 	}
+	if runtime.GOOS == "windows" {
+		return // filepath.Rel itself ignores case on Windows
+	}
 	foldCase = false
 	if Within(inside, folder) {
 		t.Error("case-sensitive systems: matched")

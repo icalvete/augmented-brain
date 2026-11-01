@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -263,6 +264,9 @@ func TestBackupLeavesOutJunkAndBigFiles(t *testing.T) {
 // space it would replace as it was, and nothing behind.
 func TestRestoreFailureKeepsTheSpace(t *testing.T) {
 	needGit(t)
+	if runtime.GOOS == "windows" {
+		t.Skip("Windows ignores a folder's read-only mode, so the write cannot be made to fail")
+	}
 	if os.Getuid() == 0 {
 		t.Skip("root writes in read-only folders")
 	}
