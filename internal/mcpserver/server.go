@@ -9,8 +9,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
-	"regexp"
 	"strings"
 	"time"
 
@@ -448,8 +446,6 @@ func released(b *brain.Brain, id string) {
 // recoverMax is the most text session_recover returns.
 const recoverMax = 20000
 
-var journalDate = regexp.MustCompile(`(?m)^- (\d{4}-\d{2}-\d{2}) — `)
-
 // recoverSession returns the conversation of an earlier session that never ended,
 // after the last journal entry of its task, and marks it as dealt with.
 func recoverSession(b *brain.Brain, id string, now time.Time) (string, error) {
@@ -469,33 +465,12 @@ func recoverSession(b *brain.Brain, id string, now time.Time) (string, error) {
 		}
 		return "No earlier session of this space is waiting to be recovered.", nil
 	}
-	since := se.Started
-	// The last write to the task, when it happened while that session was still alive.
-	if st.Task == se.Task && st.Since.After(since) {
-		if info, err := os.Stat(se.Transcript); err == nil && st.Since.Before(info.ModTime()) {
-			since = st.Since
-		}
-	}
-	if n, ok := b.Mem.Notes[se.Task]; ok {
-		dates := journalDate.FindAllStringSubmatch(n.Body, -1)
-		if len(dates) > 0 {
-			if d, err := time.ParseInLocation("2006-01-02", dates[len(dates)-1][1], time.Local); err == nil && d.After(since) {
-				since = d
-			}
-		}
-	}
+	since := st.From(*se, b.LastEntry(se.Task))
 	text, err := state.Conversation(se.Transcript, since, recoverMax)
 	if err != nil {
 		return "", fmt.Errorf("the transcript of that session cannot be read (%v); Claude Code deletes them after 30 days", err)
 	}
-	found := se.ID
-	_ = state.Update(b.ConfigDir, b.Space.Name, now, func(x *state.Space) {
-		for k := range x.Sessions {
-			if x.Sessions[k].ID == found {
-				x.Sessions[k].Closed = true
-			}
-		}
-	})
+	_ = state.Dismissed(b.ConfigDir, b.Space.Name, se.ID, now)
 	task := "the task it worked on"
 	if se.Task != "" {
 		task = "task " + se.Task

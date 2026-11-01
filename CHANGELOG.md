@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **Sessions in the panel.** A new section lists your Claude sessions of each space on
+  this computer. Those that did not end show what was said after the last journal
+  entry, and you can keep it in the notes (in `archive/sessions/`, secrets taken out,
+  with a line in the task's journal) or mark it as reviewed, without opening Claude.
+  Those running now and those that ended show how much disk their transcripts take,
+  and the transcript of an ended session can be deleted, after you confirm that it can
+  no longer be resumed.
+
 ## 0.3.1-alpha
 
 Released 2026-11-01.

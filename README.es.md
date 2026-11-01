@@ -180,7 +180,7 @@ El trabajo de cada día ocurre dentro de Claude Code, con tus palabras: "nueva t
 
 Para verlo todo de un vistazo, o cambiar algo sin pedírselo a Claude, abre el panel:
 escribe `/brain:panel` en Claude, o lanza `augmented-brain panel`. Abre una página en tu
-navegador con tus tareas, recordatorios, buzón, áreas, conocimiento, personas y perfil,
+navegador con tus tareas, recordatorios, buzón, áreas, conocimiento, personas, sesiones y perfil,
 espacio por espacio. Solo funciona en tu ordenador y solo mientras lo usas: tras 30
 minutos sin uso se para solo. Más detalles: [El panel](docs/guide/how-it-works.es.md#el-panel).
 

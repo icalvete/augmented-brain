@@ -1,0 +1,42 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "sessions"}}</h1>
+<p class="hint">{{t "sessions.hint"}}</p>
+
+<h2>{{t "sessions.dead"}}</h2>
+<p class="hint">{{t "sessions.dead.hint"}}</p>
+{{if .Dead}}<ul class="cards">
+{{range .Dead}}<li class="card mine">
+  <div class="title">{{if .TaskID}}<a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.TaskID}}">{{.TaskTitle}}</a>{{else}}{{t "sessions.notask"}}{{end}}</div>
+  <div class="meta"><span class="badge">{{.Short}}</span><span>{{tf "sessions.started" .Started}}</span><span>{{tf "sessions.written" .Written}}</span>{{if .Size}}<span>{{.Size}}</span>{{end}}</div>
+  {{if .Said}}<details class="said"><summary>{{tf "sessions.said" .From}}</summary><pre class="body">{{.Said}}</pre></details>{{else}}<p class="hint">{{tf "sessions.said.none" .From}}</p>{{end}}
+  <div class="actions">
+    <form method="post" action="{{$.Base}}/session/recover" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}"><input type="hidden" name="id" value="{{.ID}}"><button type="submit" class="small">{{t "sessions.recover"}}</button></form>
+    <form method="post" action="{{$.Base}}/session/reviewed" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}"><input type="hidden" name="id" value="{{.ID}}"><button type="submit" class="link">{{t "sessions.reviewed"}}</button></form>
+  </div>
+</li>{{end}}
+</ul>{{else}}<p class="empty">{{t "sessions.dead.none"}}</p>{{end}}
+
+<h2>{{t "sessions.live"}}</h2>
+{{if .Live}}<ul class="cards">
+{{range .Live}}<li class="card">
+  <div class="title">{{if .TaskID}}<a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.TaskID}}">{{.TaskTitle}}</a>{{else}}{{t "sessions.notask"}}{{end}}</div>
+  <div class="meta"><span class="badge">{{.Short}}</span><span>{{tf "sessions.started" .Started}}</span><span>{{tf "sessions.written" .Written}}</span>{{if .Size}}<span>{{.Size}}</span>{{end}}</div>
+</li>{{end}}
+</ul>{{else}}<p class="empty">{{t "sessions.live.none"}}</p>{{end}}
+
+<h2>{{t "sessions.closed"}}</h2>
+{{if .Closed}}<p class="hint">{{tf "sessions.closed.hint" .ClosedSize}}</p>
+<ul class="cards">
+{{range .Closed}}<li class="card">
+  <div class="title">{{if .TaskID}}<a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.TaskID}}">{{.TaskTitle}}</a>{{else}}{{t "sessions.notask"}}{{end}}</div>
+  <div class="meta"><span class="badge">{{.Short}}</span><span>{{tf "sessions.started" .Started}}</span><span>{{.Size}}</span></div>
+  <details class="said"><summary>{{t "sessions.delete"}}</summary>
+    <form method="post" action="{{$.Base}}/session/delete" class="stack">
+      <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}"><input type="hidden" name="id" value="{{.ID}}">
+      <label class="check"><input type="checkbox" name="confirm" value="yes" required> {{t "sessions.delete.confirm"}}</label>
+      <button type="submit" class="small">{{t "sessions.delete"}}</button>
+    </form>
+  </details>
+</li>{{end}}
+</ul>{{else}}<p class="empty">{{t "sessions.closed.none"}}</p>{{end}}
+{{end}}{{end}}

@@ -107,10 +107,12 @@ func (b *Brain) get(id, kind string) (*memory.Note, error) {
 var texts = map[string]map[string]string{
 	"en": {"next": "Agree on the definition", "status": "Status: %s → %s.", "closed": "Closed: %s",
 		"parked": "Parked. Next: %s", "resumed": "Resumed.",
-		"compacted": "The conversation was compacted; Claude Code's summary is in %s."},
+		"compacted": "The conversation was compacted; Claude Code's summary is in %s.",
+		"recovered": "Recovered from the panel what was said in a session that did not end (started %s); it is in %s."},
 	"es": {"next": "Acordar la definición", "status": "Estado: %s → %s.", "closed": "Cerrada: %s",
 		"parked": "Aparcada. Siguiente: %s", "resumed": "Retomada.",
-		"compacted": "Se compactó la conversación; el resumen de Claude Code está en %s."},
+		"compacted": "Se compactó la conversación; el resumen de Claude Code está en %s.",
+		"recovered": "Recuperado desde el panel lo dicho en una sesión que no terminó (empezó %s); está en %s."},
 }
 
 func (b *Brain) text(key string) string {

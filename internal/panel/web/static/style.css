@@ -207,3 +207,11 @@ form.row button { flex: none; }
 .health li.sub { padding-left: 2.75rem; color: var(--muted); font-size: .9rem; }
 
 [hidden] { display: none !important; }
+
+/* Sessions */
+.said { margin-top: .4rem; }
+.said summary { cursor: pointer; color: var(--muted); font-size: .86rem; }
+.said summary:hover { color: var(--accent); }
+.said pre.body { margin-top: .5rem; max-height: 22rem; overflow-y: auto; }
+.said .stack { margin-top: .5rem; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: .5rem; }

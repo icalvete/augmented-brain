@@ -271,6 +271,13 @@ address to open yourself. What you find there, space by space:
   Add one, or mark it done.
 - **Inbox**: capture an idea, or mark one as dealt with.
 - **Areas**, **knowledge** and **people**: to read, and to create areas.
+- **Sessions**: your Claude sessions on this computer, from the last 30 days. Those that
+  did not end (closed by force, or cut off when the computer went down) show what was
+  said after the last journal entry: keep it in the notes (it goes to `archive/sessions/`
+  with a line in the task's journal) or mark it as reviewed. Those running now, and those
+  that ended, with how much disk their transcripts take (the files where Claude Code
+  keeps each conversation). You can delete the transcript of an ended session; that
+  session can then no longer be resumed.
 - **Profile**: who you are and how you like to work, the same one every space uses.
 - **Health**: notes that are not valid, the index, the last backup and the last weekly
   review.

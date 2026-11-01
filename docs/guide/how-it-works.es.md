@@ -273,6 +273,13 @@ dirección para que la abras tú. Lo que encuentras, espacio por espacio:
   buzón, primero lo atrasado. Añade uno, o márcalo como hecho.
 - **Buzón**: apunta una idea, o marca una como resuelta.
 - **Áreas**, **conocimiento** y **personas**: para leer, y para crear áreas.
+- **Sesiones**: tus sesiones de Claude en este ordenador, de los últimos 30 días. Las que
+  no terminaron (cerradas a la fuerza, o cortadas al apagarse el ordenador) muestran lo
+  dicho después de la última anotación del diario: guárdalo en las notas (va a
+  `archive/sessions/` con una línea en el diario de la tarea) o dalas por revisadas. Las
+  que están en marcha y las terminadas, con lo que ocupan sus transcripciones (los
+  ficheros donde Claude Code guarda cada conversación). Puedes borrar la transcripción
+  de una sesión terminada; esa sesión ya no se podrá retomar.
 - **Perfil**: quién eres y cómo te gusta trabajar, el mismo para todos los espacios.
 - **Estado**: notas que no son válidas, el índice, la última copia de seguridad y la
   última revisión semanal.

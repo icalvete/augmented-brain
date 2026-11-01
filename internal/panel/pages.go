@@ -44,6 +44,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("GET /note", s.read("", s.note))
 	m.HandleFunc("GET /profile", s.read("profile", s.profile))
 	m.HandleFunc("GET /space", s.read("space", s.space))
+	m.HandleFunc("GET /sessions", s.read("sessions", s.sessions))
 
 	m.HandleFunc("POST /task/new", s.write(s.taskNew))
 	m.HandleFunc("POST /task/update", s.write(s.taskUpdate))
@@ -57,6 +58,9 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /inbox/done", s.write(s.inboxDone))
 	m.HandleFunc("POST /area/new", s.write(s.areaNew))
 	m.HandleFunc("POST /profile", s.write(s.profileSave))
+	m.HandleFunc("POST /session/recover", s.write(s.sessionRecover))
+	m.HandleFunc("POST /session/reviewed", s.write(s.sessionReviewed))
+	m.HandleFunc("POST /session/delete", s.write(s.sessionDelete))
 	m.HandleFunc("POST /stop", s.handleStop)
 	return m
 }
@@ -95,7 +99,7 @@ func (s *Server) render(w http.ResponseWriter, _ *http.Request, status int, name
 		p.Lang = "en"
 	}
 	p.CSRF, p.Version, p.Base = s.csrf, version.Version, s.base()
-	for _, sec := range []string{"tasks", "reminders", "inbox", "areas", "knowledge", "people", "space"} {
+	for _, sec := range []string{"tasks", "reminders", "inbox", "areas", "knowledge", "people", "sessions", "space"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
 	}
 	var buf bytes.Buffer

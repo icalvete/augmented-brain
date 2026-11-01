@@ -12,7 +12,6 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
-	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
 
@@ -66,42 +65,30 @@ func PostCompact(in io.Reader, cfgDir string) error {
 		return nil
 	}
 	now := Now()
-	id := i.SessionID
-	if len(id) > 8 {
-		id = id[:8]
-	}
-	if id == "" {
-		id = "session"
-	}
-	rel := fmt.Sprintf("archive/sessions/%s-%s-%s.md", now.Format("2006-01-02"), now.Format("150405"), id)
-	head := map[string]string{"en": "# Conversation summary, %s\n\nWritten by Claude Code when it compacted the conversation (%s).\n\n",
-		"es": "# Resumen de la conversación, %s\n\nLo escribió Claude Code al compactar la conversación (%s).\n\n"}[c.Language]
+	head := map[string]string{"en": "# Conversation summary, %s\n\nWritten by Claude Code when it compacted the conversation (%s).",
+		"es": "# Resumen de la conversación, %s\n\nLo escribió Claude Code al compactar la conversación (%s)."}[c.Language]
 	if head == "" {
-		head = "# Conversation summary, %s\n\nWritten by Claude Code when it compacted the conversation (%s).\n\n"
+		head = "# Conversation summary, %s\n\nWritten by Claude Code when it compacted the conversation (%s)."
 	}
-	text := fmt.Sprintf(head, now.Format("2006-01-02 15:04"), i.Trigger) + guard.RedactSecrets(strings.TrimSpace(i.CompactSummary)) + "\n"
 
 	unlock, err := filelock.Lock(filepath.Join(cfgDir, backup.NotesLock))
 	if err != nil {
 		return err
 	}
 	defer unlock()
-	path := filepath.Join(s.Memory, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	b, err := brain.Open(c, s)
+	if err != nil {
 		return err
 	}
-	if err := os.WriteFile(path, []byte(text), 0o644); err != nil {
+	b.Now = Now
+	rel, err := b.SaveSession("compacted", i.SessionID, fmt.Sprintf(head, now.Format("2006-01-02 15:04"), i.Trigger), i.CompactSummary)
+	if err != nil {
 		return err
 	}
 	task := state.Read(cfgDir, s.Name).Task
 	if task == "" {
 		return nil
 	}
-	b, err := brain.Open(c, s)
-	if err != nil {
-		return err
-	}
-	b.Now = Now
 	if _, err := b.JournalText("compacted", task, rel); err != nil {
 		return nil // the task is gone or broken: the summary is kept all the same
 	}
