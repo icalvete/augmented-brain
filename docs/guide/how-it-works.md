@@ -60,6 +60,11 @@ It also looks inside `ssh`, `bash -c`, loops, and what a pipe feeds a shell
 (`echo 'sudo …' | bash`). If its configuration cannot be read, it asks you before every
 `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before `cdk`, `sam` or `serverless`
 with a profile, since it cannot tell which ones matter.
+Commands Claude leaves running to watch something (a log, a build) are checked the same
+way, and so are those of the helpers Claude starts (subagents and workflows). If the
+guard cannot run at all, because the program is missing or broken, Claude Code stops
+the command or the file change instead of letting it through (Claude Code 2.1.295 or
+later).
 `augmented-brain doctor` tries the guard for real and tells you if it is not working. It reads the shell, not PowerShell, so it
 stops every PowerShell command too, and Claude runs it in Bash instead. It is a net
 against slips, not a security wall: read the [disclaimer](../../DISCLAIMER.md).

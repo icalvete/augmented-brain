@@ -180,13 +180,19 @@ func guardWorks(e Env) Check {
 			Decision string `json:"permissionDecision"`
 		} `json:"hookSpecificOutput"`
 	}
-	if err == nil {
+	// The plugin's hook blocks the tool call when the program cannot run or prints
+	// something that is not an answer, so then the assistant can do nothing; when it
+	// answers but does not block, risky commands go through.
+	if err == nil && len(bytes.TrimSpace(out)) > 0 {
 		err = json.Unmarshal(out, &o)
 	}
-	if err != nil || o.Specific.Decision != "deny" {
+	if err != nil {
+		return Check{Failed, i18n.T(e.Lang, "doctor.guard.cannotrun", err.Error()), i18n.T(e.Lang, "doctor.guard.fix")}
+	}
+	if o.Specific.Decision != "deny" {
 		why := strings.TrimSpace(string(out))
-		if err != nil {
-			why = err.Error()
+		if why == "" {
+			why = "no answer"
 		}
 		return Check{Failed, i18n.T(e.Lang, "doctor.guard.fail", why), i18n.T(e.Lang, "doctor.guard.fix")}
 	}

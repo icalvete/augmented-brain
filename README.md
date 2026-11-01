@@ -191,8 +191,9 @@ minutes without use it stops by itself. Details: [The panel](docs/guide/how-it-w
 - **An MCP server** gives your assistant the tools of the method, so other assistants
   can use it too. Claude Code is the first one supported.
 - **A Claude Code plugin** loads your space when a session starts and runs the guard
-  before every command and file write. The guard is a safety net against mistakes, not
-  a security boundary.
+  before every command and file write. If the guard cannot run, the command or the
+  write does not happen either. The guard is a safety net against mistakes, not a
+  security boundary.
 
 The four layers, a session step by step and where every file lives:
 [How it works](docs/guide/how-it-works.md).

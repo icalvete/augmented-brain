@@ -1,5 +1,24 @@
 # Changelog
 
+## Unreleased
+
+- **The guard fails closed.** If `augmented-brain` cannot run when Claude is about to
+  run a command or change a file (the program is missing from the PATH, crashes or
+  takes more than 10 seconds), Claude Code now stops that action instead of letting it
+  through unchecked. It uses Claude Code's `onFailure: "block"`, from 2.1.295; older
+  versions ignore it and behave as before. Only the guard does this: the hooks that load
+  the space, remind, keep the summary and back up never block your work.
+  `augmented-brain doctor` now says which of the two problems it found: the guard
+  cannot run (everything stops) or it runs but lets a risky command through.
+  `augmented-brain uninstall` keeps the program when the plugin could not be removed
+  completely, so Claude Code is never left with a guard it cannot run.
+- **Commands left running are guarded too.** Claude Code's Monitor tool runs a command
+  in the background to watch a log or a build; the guard now checks that command
+  exactly as it checks Bash. The tool calls of subagents and workflows already went
+  through the guard.
+- The end-to-end check of the Stop reminder no longer fails when the assistant adds a
+  line after its answer, such as "Nothing new happened on the task".
+
 ## 0.3.0-alpha
 
 Released 2026-11-01.

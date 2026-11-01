@@ -334,3 +334,26 @@ func TestAWSExampleKeys(t *testing.T) {
 		t.Error("a real key next to the example one was missed")
 	}
 }
+
+// The Monitor tool runs a command in the background and reads its output line by line.
+// Its commands tend to be watch loops and pipes; what they run is checked as in Bash.
+func TestMonitorShapes(t *testing.T) {
+	p := Policy{ProductionAWSProfiles: []string{"prod"}, UntouchableHosts: []string{"db01"}}
+	cases := []struct {
+		cmd  string
+		want Verdict
+	}{
+		{"tail -f app.log | grep --line-buffered ERROR", Allow},
+		{"while true; do git status --short; sleep 30; done", Allow},
+		{"for i in 1 2 3; do echo tick $i; sleep 1; done", Allow},
+		{"while true; do aws s3 ls --profile prod; sleep 60; done", Ask},
+		{"until git push; do sleep 10; done", Deny},
+		{"ssh db01 tail -f /var/log/syslog", Ask},
+		{"tail -f app.log | sudo tee /var/log/copy", Deny},
+	}
+	for _, c := range cases {
+		if got := p.Command(c.cmd); got.Verdict != c.want {
+			t.Errorf("%q: got %v (%s), want %v", c.cmd, got.Verdict, got.Reason, c.want)
+		}
+	}
+}

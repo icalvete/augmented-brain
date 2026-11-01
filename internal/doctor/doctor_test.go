@@ -146,9 +146,21 @@ func TestGuardCheck(t *testing.T) {
 	}
 	silent := func([]byte) ([]byte, error) { return nil, nil }
 	missing := func([]byte) ([]byte, error) { return nil, errors.New("executable file not found") }
-	for _, h := range []func([]byte) ([]byte, error){silent, missing} {
+	garbled := func([]byte) ([]byte, error) { return []byte("panic: oops"), nil }
+	for _, h := range []func([]byte) ([]byte, error){silent, missing, garbled} {
 		if c := guardWorks(Env{Lang: "es", Hook: h}); c.Status != Failed || !strings.Contains(c.Fix, "~/.local/bin") {
 			t.Errorf("broken guard: %+v", c)
 		}
+	}
+	// A hook that cannot run blocks everything in Claude Code; one that answers without
+	// blocking lets risky commands through. The message says which.
+	if c := guardWorks(Env{Lang: "en", Hook: missing}); !strings.Contains(c.What, "stops every command") {
+		t.Errorf("missing program: %+v", c)
+	}
+	if c := guardWorks(Env{Lang: "en", Hook: garbled}); !strings.Contains(c.What, "stops every command") {
+		t.Errorf("garbled answer: %+v", c)
+	}
+	if c := guardWorks(Env{Lang: "en", Hook: silent}); !strings.Contains(c.What, "go through unchecked") {
+		t.Errorf("silent hook: %+v", c)
 	}
 }

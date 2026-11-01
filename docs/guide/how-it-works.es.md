@@ -60,6 +60,11 @@ También mira dentro de `ssh`, de `bash -c`, de los bucles y de lo que una tuber
 a una shell (`echo 'sudo …' | bash`). Si no puede leer su configuración, te pregunta antes
 de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`, y antes de `cdk`, `sam` o
 `serverless` con un perfil, porque no sabe cuáles importan.
+Los comandos que Claude deja en marcha para vigilar algo (un registro, una compilación)
+se miran igual, y también los de los ayudantes que Claude lanza (subagentes y flujos de
+trabajo). Si el guardia no puede ni arrancar, porque falta el programa o está roto,
+Claude Code para el comando o el cambio en el fichero en vez de dejarlo pasar (Claude
+Code 2.1.295 o posterior).
 `augmented-brain doctor` prueba el guardia de verdad y te dice si no está funcionando. Lee la shell, no PowerShell,
 así que para también cualquier comando de PowerShell, y Claude lo hace en Bash. Es una
 red contra despistes, no un muro de seguridad: lee el [aviso legal](../../DISCLAIMER.md#aviso-legal).

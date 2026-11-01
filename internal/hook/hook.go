@@ -109,14 +109,16 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 	return write(out, output{specific{HookEventName: "SessionStart", AdditionalContext: text}})
 }
 
-// PreToolUse runs the guard on a Bash command or on the text of a file write, and
-// blocks PowerShell commands, which the guard cannot read.
+// PreToolUse runs the guard on a shell command (Bash, or Monitor, which runs a command
+// in the background and is checked the same way) or on the text of a file write, and
+// blocks PowerShell commands, which the guard cannot read. A Monitor that opens a
+// WebSocket has no command and runs no program, so it goes through.
 func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	i := read(in)
 	p := policy(cfgDir, i.Cwd)
 	var d guard.Decision
 	switch i.ToolName {
-	case "Bash":
+	case "Bash", "Monitor":
 		cmd, _ := i.ToolInput["command"].(string)
 		d = p.Command(cmd)
 	case "PowerShell":

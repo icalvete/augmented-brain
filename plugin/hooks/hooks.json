@@ -1,5 +1,5 @@
 {
-  "description": "augmented brain: load the space when a session starts, guard commands and file writes, remind the assistant to keep the task's journal, keep the summary when the conversation is compacted, and back the space up when a session ends.",
+  "description": "augmented brain: load the space when a session starts, guard commands and file writes (and block them when the guard cannot run), remind the assistant to keep the task's journal, keep the summary when the conversation is compacted, and back the space up when a session ends.",
   "hooks": {
     "SessionStart": [
       {
@@ -14,12 +14,13 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash|PowerShell|Write|Edit|MultiEdit|NotebookEdit",
+        "matcher": "Bash|PowerShell|Monitor|Write|Edit|MultiEdit|NotebookEdit",
         "hooks": [
           {
             "type": "command",
             "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook pre-tool-use",
-            "timeout": 10
+            "timeout": 10,
+            "onFailure": "block"
           }
         ]
       }

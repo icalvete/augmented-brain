@@ -193,8 +193,9 @@ minutos sin uso se para solo. Más detalles: [El panel](docs/guide/how-it-works.
 - **Un servidor MCP** da a tu asistente las herramientas del método, así que otros
   asistentes también pueden usarlo. Claude Code es el primero.
 - **Un plugin de Claude Code** carga tu espacio al empezar cada sesión y pasa el guardia
-  antes de cada comando y cada escritura de fichero. El guardia es una red contra
-  errores, no una barrera de seguridad.
+  antes de cada comando y cada escritura de fichero. Si el guardia no puede arrancar,
+  el comando o la escritura tampoco se hacen. El guardia es una red contra errores, no
+  una barrera de seguridad.
 
 Las cuatro capas, una sesión paso a paso y dónde vive cada fichero:
 [Cómo funciona](docs/guide/how-it-works.es.md).

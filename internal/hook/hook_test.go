@@ -93,6 +93,13 @@ func TestPreToolUse(t *testing.T) {
 		{map[string]any{"cwd": work, "tool_name": "Edit", "tool_input": map[string]any{"file_path": "/x", "old_string": key, "new_string": "removed"}}, ""},
 		{map[string]any{"cwd": work, "tool_name": "MultiEdit", "tool_input": map[string]any{"file_path": "/x", "edits": []any{map[string]any{"old_string": "a", "new_string": key}}}}, "deny"},
 		{map[string]any{"cwd": work, "tool_name": "Read", "tool_input": map[string]any{"file_path": "/etc/passwd"}}, ""},
+		// Monitor runs a command in the background: checked exactly like Bash.
+		{map[string]any{"cwd": work, "tool_name": "Monitor", "tool_input": map[string]any{"description": "watch", "timeout_ms": 20000, "command": "tail -f app.log | grep ERROR"}}, ""},
+		{map[string]any{"cwd": work, "tool_name": "Monitor", "tool_input": map[string]any{"command": "while true; do git push; sleep 30; done"}}, "deny"},
+		{map[string]any{"cwd": work, "tool_name": "Monitor", "tool_input": map[string]any{"command": "aws logs tail app --follow --profile prod"}}, "ask"},
+		{map[string]any{"cwd": "/", "tool_name": "Monitor", "tool_input": map[string]any{"command": "sudo journalctl -f"}}, "deny"},
+		// A WebSocket watch runs no program.
+		{map[string]any{"cwd": work, "tool_name": "Monitor", "tool_input": map[string]any{"ws": map[string]any{"url": "wss://example.invalid/feed"}}}, ""},
 	}
 	for _, c := range cases {
 		o := run(t, pre, c.in)

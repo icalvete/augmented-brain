@@ -101,6 +101,9 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 		fail(claudecode.Uninstall(claudecode.Exec))
 	}
 	fail(claudecode.RemoveLeftovers())
+	// The plugin's guard blocks every command when it cannot run the program, so the
+	// program stays until the plugin is surely gone.
+	pluginGone := code == 0
 	// A panel left running would keep the program in use (on Windows, it could not be
 	// removed) and would write notes that are going away.
 	if cfgDir != "" {
@@ -122,7 +125,11 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 	}
 	// Last, the program itself, if it has its own name (not a test binary or go run).
 	if b := filepath.Base(self); self != "" && (b == "augmented-brain" || b == "augmented-brain.exe") {
-		fail(removeSelf(self))
+		if pluginGone {
+			fail(removeSelf(self))
+		} else {
+			fmt.Fprintln(errOut, i18n.T(lang, "uninstall.keptself", self))
+		}
 	}
 	if code == 0 {
 		if *all {
