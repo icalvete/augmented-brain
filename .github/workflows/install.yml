@@ -6,7 +6,7 @@ name: install
 
 on:
   push:            # any branch: a branch is how a change gets tried before main
-    paths: [install.sh, scripts/install-check.sh, scripts/install-check-mac.sh, plugin/**, cmd/**, internal/**, .github/workflows/install.yml]
+    paths: [install.sh, scripts/install-check.sh, scripts/install-check-mac.sh, plugin/**, cmd/**, internal/**, go.mod, go.sum, .github/workflows/install.yml]
   workflow_dispatch:
 
 permissions:

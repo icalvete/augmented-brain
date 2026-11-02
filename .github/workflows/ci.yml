@@ -1,8 +1,7 @@
 name: ci
 
 on:
-  push:
-    branches: [main]
+  push:            # any branch: a branch is how a change gets tried before main
   pull_request:
 
 permissions:
