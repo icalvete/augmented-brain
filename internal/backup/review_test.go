@@ -411,7 +411,7 @@ func TestMergeWithAnInvalidNote(t *testing.T) {
 		t.Fatal(err)
 	}
 	note(s1.Memory, "lesson-one")
-	if res, err := Run(c1, s1, "one"); err != nil || !res.Pushed {
+	if res, err := Run(c1, s1, "one"); err != nil {
 		t.Fatalf("an old invalid note stopped the merge: %+v %v", res, err)
 	}
 }

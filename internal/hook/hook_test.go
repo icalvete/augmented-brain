@@ -204,13 +204,13 @@ func TestSessionStartBackupFailed(t *testing.T) {
 	if err := config.SetSpaceKey(cfgDir, "work", "backup", "git@example.com:me/brain.git"); err != nil {
 		t.Fatal(err)
 	}
-	backup.RecordStatus(cfgDir, "work", errors.New("permission denied (publickey)"), time.Date(2026, 10, 16, 18, 0, 0, 0, time.UTC))
+	backup.RecordStatusWarning(cfgDir, "work", errors.New("permission denied (publickey)"), "", time.Date(2026, 10, 16, 18, 0, 0, 0, time.UTC))
 	ss := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, cfgDir) }
 	o := run(t, ss, map[string]any{"cwd": work})
 	if text := o["additionalContext"].(string); !strings.Contains(text, "The last backup of space work, at 2026-10-16 18:00, failed: permission denied (publickey)") {
 		t.Errorf("no warning about the failed backup:\n%s", text)
 	}
-	backup.RecordStatus(cfgDir, "work", nil, time.Now())
+	backup.RecordStatusWarning(cfgDir, "work", nil, "", time.Now())
 	o = run(t, ss, map[string]any{"cwd": work})
 	if strings.Contains(o["additionalContext"].(string), "failed") {
 		t.Error("a backup that worked again must not be reported")

@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// Run runs a command and returns its combined output. Tests replace it.
+// Runner runs a command and returns its combined output. Tests replace it.
 type Runner func(name string, args ...string) (string, error)
 
 // Exec runs real commands.

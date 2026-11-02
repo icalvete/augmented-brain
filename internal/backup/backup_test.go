@@ -47,7 +47,7 @@ func TestBackupAndRestore(t *testing.T) {
 		t.Fatal(err)
 	}
 	res, err := Run(c, s, "one")
-	if err != nil || !res.Committed || !res.Pushed {
+	if err != nil || !res.Committed {
 		t.Fatalf("first backup: %+v %v", res, err)
 	}
 	if res, err := Run(c, s, "one"); err != nil || res.Committed {
@@ -101,7 +101,7 @@ func TestBackupAndRestore(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(got.Memory, "inbox.md"), []byte("# Buzón\n\n- 2026-10-15 — from machine two\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if res, err := Run(c2, c2.Spaces["work"], "two"); err != nil || !res.Pushed {
+	if res, err := Run(c2, c2.Spaces["work"], "two"); err != nil {
 		t.Errorf("backup after restore: %+v %v", res, err)
 	}
 
@@ -168,7 +168,7 @@ func TestTwoMachines(t *testing.T) {
 		t.Fatal(err)
 	}
 	note(s1.Memory, "lesson-from-one", "one")
-	if res, err := Run(c1, s1, "one"); err != nil || !res.Pushed {
+	if res, err := Run(c1, s1, "one"); err != nil {
 		t.Fatalf("machine one after machine two: %+v %v", res, err)
 	}
 	m1, problems, _ := memory.Load(s1.Memory)

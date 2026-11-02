@@ -21,13 +21,9 @@ type Status struct {
 	Warning string `json:"warning,omitempty"`
 }
 
-// RecordStatus remembers how the backup of space went. It never fails: a status that
-// cannot be written only means no warning next time.
-func RecordStatus(cfgDir, space string, err error, now time.Time) {
-	RecordStatusWarning(cfgDir, space, err, "", now)
-}
-
-// RecordStatusWarning is RecordStatus with a warning for a backup that went through.
+// RecordStatusWarning remembers how the backup of space went, with the warning of one
+// that went through (empty when there is none). It never fails: a status that cannot be
+// written only means no warning next time.
 func RecordStatusWarning(cfgDir, space string, err error, warning string, now time.Time) {
 	all := readStatus(cfgDir)
 	st := Status{Time: now, OK: err == nil, Warning: warning}

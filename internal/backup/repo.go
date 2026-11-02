@@ -1,11 +1,13 @@
 package backup
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/filelock"
@@ -37,15 +39,10 @@ var repoFiles = map[string][]string{
 // ensureRepoFiles adds the lines of repoFiles that are missing, keeping anything else
 // the user wrote in those files.
 func ensureRepoFiles(dir string) error {
-	names := make([]string, 0, len(repoFiles))
-	for n := range repoFiles {
-		names = append(names, n)
-	}
-	sort.Strings(names)
-	for _, name := range names {
+	for _, name := range slices.Sorted(maps.Keys(repoFiles)) {
 		path := filepath.Join(dir, name)
 		old, err := os.ReadFile(path)
-		if err != nil && !os.IsNotExist(err) {
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 		have := map[string]bool{}
@@ -81,13 +78,53 @@ const (
 	excludeEnd   = "# augmented brain: end"
 )
 
-// leaveOutLarge keeps the files over MaxFileSize out of the backup: it lists them in
-// .git/info/exclude (between its own markers, rewritten each time, so a file that shrinks
-// comes back) and stops tracking any that were already in it. It returns them as
-// "path (size)", for the warning.
-func leaveOutLarge(dir string) ([]string, error) {
-	var big []string
-	var shown []string
+// bigFile is a file over MaxFileSize, by its path with forward slashes.
+type bigFile struct {
+	rel  string
+	size int64
+}
+
+// String is how the warning shows it: "path (size)".
+func (b bigFile) String() string { return fmt.Sprintf("%s (%d MB)", b.rel, b.size>>20) }
+
+// secretIn says which secret the file at p holds, or "" when it holds none.
+func secretIn(p string) (string, error) {
+	data, err := os.ReadFile(p)
+	if err != nil {
+		return "", err
+	}
+	return guard.FindSecret(string(data)), nil
+}
+
+// errSecrets stops a backup because of the files in found, each "path (what)".
+func errSecrets(found []string) error {
+	return fmt.Errorf("nothing was backed up: these files hold secrets, remove them first: %s", strings.Join(found, ", "))
+}
+
+// scan is what one walk over the memory found that a backup must not take.
+type scan struct {
+	big     []bigFile // left out of the backup
+	secrets []string  // "path (what)": they stop the backup
+	// unread is the first file that could not be read for secrets. It stops the backup
+	// too, but only after the big files are left out, and no later file is read.
+	unread error
+}
+
+// refusal is the error that stops the backup, or nil.
+func (sc *scan) refusal() error {
+	if sc.unread != nil {
+		return sc.unread
+	}
+	if len(sc.secrets) > 0 {
+		return errSecrets(sc.secrets)
+	}
+	return nil
+}
+
+// scanMemory walks the memory once, outside .git, for the files over MaxFileSize and
+// the files that hold a secret. Big files are not read: they stay out anyway.
+func scanMemory(dir string) (*scan, error) {
+	sc := &scan{}
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -102,17 +139,34 @@ func leaveOutLarge(dir string) ([]string, error) {
 		if err != nil {
 			return err
 		}
+		rel, _ := filepath.Rel(dir, p)
 		if info.Size() > MaxFileSize {
-			rel, _ := filepath.Rel(dir, p)
-			rel = filepath.ToSlash(rel)
-			big = append(big, rel)
-			shown = append(shown, fmt.Sprintf("%s (%d MB)", rel, info.Size()>>20))
+			sc.big = append(sc.big, bigFile{filepath.ToSlash(rel), info.Size()})
+			return nil
+		}
+		if sc.unread != nil {
+			return nil
+		}
+		what, err := secretIn(p)
+		switch {
+		case err != nil:
+			sc.unread = err
+		case what != "":
+			sc.secrets = append(sc.secrets, fmt.Sprintf("%s (%s)", rel, what))
 		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
+	return sc, nil
+}
+
+// leaveOutLarge keeps the big files out of the backup: it lists them in
+// .git/info/exclude (between its own markers, rewritten each time, so a file that shrinks
+// comes back) and stops tracking any that were already in it. It returns them as
+// "path (size)", for the warning.
+func leaveOutLarge(dir string, big []bigFile) ([]string, error) {
 	exclude := filepath.Join(dir, ".git", "info", "exclude")
 	old, _ := os.ReadFile(exclude)
 	var keep []string
@@ -134,7 +188,7 @@ func leaveOutLarge(dir string) ([]string, error) {
 		}
 		text += excludeStart + "\n"
 		for _, b := range big {
-			text += "/" + escapePattern(b) + "\n"
+			text += "/" + escapePattern(b.rel) + "\n"
 		}
 		text += excludeEnd
 	}
@@ -149,12 +203,14 @@ func leaveOutLarge(dir string) ([]string, error) {
 			return nil, err
 		}
 	}
+	var shown []string
 	for _, b := range big {
-		if _, err := git(dir, "ls-files", "--error-unmatch", "--", b); err == nil {
-			if _, err := git(dir, "rm", "-q", "--cached", "--", b); err != nil {
+		if _, err := git(dir, "ls-files", "--error-unmatch", "--", b.rel); err == nil {
+			if _, err := git(dir, "rm", "-q", "--cached", "--", b.rel); err != nil {
 				return nil, err
 			}
 		}
+		shown = append(shown, b.String())
 	}
 	return shown, nil
 }
@@ -196,19 +252,15 @@ func checkStaged(dir string) ([]string, error) {
 			if _, err := git(dir, "rm", "-q", "--cached", "--", rel); err != nil {
 				return nil, err
 			}
-			big = append(big, fmt.Sprintf("%s (%d MB)", rel, info.Size()>>20))
+			big = append(big, bigFile{rel, info.Size()}.String())
 			continue
 		}
-		data, err := os.ReadFile(p)
-		if err != nil {
-			continue
-		}
-		if what := guard.FindSecret(string(data)); what != "" {
+		if what, err := secretIn(p); err == nil && what != "" {
 			found = append(found, fmt.Sprintf("%s (%s)", rel, what))
 		}
 	}
 	if len(found) > 0 {
-		return nil, fmt.Errorf("nothing was backed up: these files hold secrets, remove them first: %s", strings.Join(found, ", "))
+		return nil, errSecrets(found)
 	}
 	return big, nil
 }

@@ -8,7 +8,6 @@ package backup
 import (
 	"errors"
 	"fmt"
-	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -21,7 +20,6 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
-	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -31,15 +29,25 @@ import (
 // MetaDir holds, inside the memory folder, the copy of the configuration and profile.
 const MetaDir = ".augmented-brain"
 
-// git runs git in dir and returns its output.
-func git(dir string, args ...string) (string, error) {
-	cmd := exec.Command("git", append([]string{"-C", dir}, args...)...)
+// runGit runs git and returns its combined output. Every git call of the package goes
+// through it: with GIT_TERMINAL_PROMPT=0, a repository that wants a password fails at
+// once instead of waiting for an answer nobody will type (the automatic backup has no
+// terminal).
+func runGit(args ...string) (string, error) {
+	cmd := exec.Command("git", args...)
 	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
 	out, err := cmd.CombinedOutput()
+	return string(out), err
+}
+
+// git runs git in dir and returns its output; an error carries the command and what
+// git said.
+func git(dir string, args ...string) (string, error) {
+	out, err := runGit(append([]string{"-C", dir}, args...)...)
 	if err != nil {
-		return string(out), fmt.Errorf("git %s: %v: %s", strings.Join(args, " "), err, strings.TrimSpace(string(out)))
+		return out, fmt.Errorf("git %s: %v: %s", strings.Join(args, " "), err, strings.TrimSpace(out))
 	}
-	return string(out), nil
+	return out, nil
 }
 
 // Setup makes the space's memory folder a git repository that backs up to url, and
@@ -75,7 +83,6 @@ func Setup(c *config.Config, s *config.Space, url string) error {
 // Result says what a backup did.
 type Result struct {
 	Committed bool
-	Pushed    bool
 	// LeftOut lists the files too big for the backup, as "path (size)".
 	LeftOut []string
 }
@@ -112,22 +119,24 @@ func Run(c *config.Config, s *config.Space, host string) (*Result, error) {
 	if _, err := git(s.Memory, "push", "-q", "-u", "origin", "HEAD:main"); err != nil {
 		return res, err
 	}
-	res.Pushed = true
 	return res, nil
 }
 
-// commit records what changed in the notes. The slow scans (sizes and secrets of every
-// file) run first, without the notes lock; under it, only the copy of the settings, the
+// commit records what changed in the notes. The slow scan (sizes and secrets of every
+// file) runs first, without the notes lock; under it, only the copy of the settings, the
 // staging and a check of what was staged, so the assistant never waits long.
 func commit(c *config.Config, s *config.Space, host string, res *Result) error {
 	if err := ensureRepoFiles(s.Memory); err != nil {
 		return err
 	}
-	var err error
-	if res.LeftOut, err = leaveOutLarge(s.Memory); err != nil {
+	sc, err := scanMemory(s.Memory)
+	if err != nil {
 		return err
 	}
-	if err := checkSecrets(s.Memory); err != nil {
+	if res.LeftOut, err = leaveOutLarge(s.Memory, sc.big); err != nil {
+		return err
+	}
+	if err := sc.refusal(); err != nil {
 		return err
 	}
 	unlock, err := lockNotes(c.Dir)
@@ -274,41 +283,6 @@ func writeMeta(c *config.Config, s *config.Space) error {
 	return nil
 }
 
-// checkSecrets refuses the backup when a file of the memory holds a secret.
-func checkSecrets(dir string) error {
-	var found []string
-	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() {
-			if d.Name() == ".git" {
-				return filepath.SkipDir
-			}
-			return nil
-		}
-		if info, err := d.Info(); err == nil && info.Size() > MaxFileSize {
-			return nil // left out of the backup anyway
-		}
-		data, err := os.ReadFile(p)
-		if err != nil {
-			return err
-		}
-		if what := guard.FindSecret(string(data)); what != "" {
-			rel, _ := filepath.Rel(dir, p)
-			found = append(found, fmt.Sprintf("%s (%s)", rel, what))
-		}
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	if len(found) > 0 {
-		return fmt.Errorf("nothing was backed up: these files hold secrets, remove them first: %s", strings.Join(found, ", "))
-	}
-	return nil
-}
-
 // RestoreOptions say where a restored space goes. Empty fields use what the backup says.
 type RestoreOptions struct {
 	URL        string
@@ -318,6 +292,9 @@ type RestoreOptions struct {
 
 // Restore clones a space's backup and adds the space to the configuration in cfgDir,
 // creating the configuration and the profile when there are none. It returns the space.
+//
+// Nothing that is there yet is touched until the copy of the notes is complete; if a
+// later step fails, the notes and the configuration go back to what they were.
 func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	tmp, err := os.MkdirTemp("", "augmented-brain-restore-")
 	if err != nil {
@@ -325,154 +302,36 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	}
 	defer os.RemoveAll(tmp)
 	clone := filepath.Join(tmp, "space")
-	if out, err := exec.Command("git", "clone", "-q", o.URL, clone).CombinedOutput(); err != nil {
-		return nil, fmt.Errorf("cloning %s: %v: %s", o.URL, err, strings.TrimSpace(string(out)))
-	}
-	var saved config.Config
-	if _, err := toml.DecodeFile(filepath.Join(clone, MetaDir, config.FileName), &saved); err != nil {
-		return nil, fmt.Errorf("%s is not an augmented brain backup: %v", o.URL, err)
-	}
-	if len(saved.Spaces) != 1 {
-		return nil, fmt.Errorf("the backup in %s should hold one space, it holds %d", o.URL, len(saved.Spaces))
-	}
-	var name string
-	var s *config.Space
-	for name, s = range saved.Spaces {
-	}
-	s.Name = name
-
-	c, err := config.Load(cfgDir)
-	fresh := false
-	switch {
-	case errors.Is(err, config.ErrNotFound):
-		fresh = true
-		c = &config.Config{Language: saved.Language, Spaces: map[string]*config.Space{}, Dir: cfgDir}
-		if err := os.MkdirAll(cfgDir, 0o700); err != nil {
-			return nil, err
-		}
-		profile := filepath.Join(cfgDir, "profile.md")
-		if data, err := os.ReadFile(filepath.Join(clone, MetaDir, "profile.md")); err == nil {
-			if _, err := os.Stat(profile); errors.Is(err, os.ErrNotExist) {
-				if err := os.WriteFile(profile, data, 0o644); err != nil {
-					return nil, err
-				}
-			}
-		}
-	case err != nil:
-		return nil, err
-	}
-	// A new machine already has the spaces the installer made, empty. One that is still
-	// untouched is replaced by its backup; one with anything of the user's is not.
-	var old *config.Space
-	if sp, dup := c.Spaces[name]; dup {
-		if !Pristine(sp.Memory) {
-			return nil, fmt.Errorf("there is already a space called %q here, with notes of its own: restore with --memory into another folder, or remove that space first", name)
-		}
-		old = sp
-		if o.Memory == "" {
-			o.Memory = old.Memory
-		}
-		if o.WorkFolder == "" && len(old.WorkFolders) > 0 {
-			o.WorkFolder = old.WorkFolders[0]
-		}
-	}
-
-	mem := o.Memory
-	if mem == "" {
-		mem = defaultMemory(name, s, o.WorkFolder)
-	}
-	if mem, err = expand(mem); err != nil {
-		return nil, err
-	}
-	replacing := old != nil && paths.Same(old.Memory, mem)
-	if info, err := os.Stat(mem); err == nil && !info.IsDir() {
-		return nil, fmt.Errorf("%s is a file: choose a folder for the memory", mem)
-	}
-	if entries, err := os.ReadDir(mem); err == nil && len(entries) > 0 && !replacing {
-		return nil, fmt.Errorf("%s already exists and is not empty: choose another memory folder", mem)
-	}
-	if err := os.MkdirAll(filepath.Dir(mem), 0o755); err != nil {
-		return nil, err
-	}
-	// Clone again, from the first clone, next to its place (a rename could not cross
-	// filesystems), and point origin back at the real backup. Nothing that is there yet
-	// is touched until this copy is complete.
-	staging := filepath.Join(filepath.Dir(mem), "."+filepath.Base(mem)+".restoring")
-	_ = os.RemoveAll(staging)
-	if out, err := exec.Command("git", "clone", "-q", clone, staging).CombinedOutput(); err != nil {
-		return nil, fmt.Errorf("copying the backup next to %s: %v: %s", mem, err, strings.TrimSpace(string(out)))
-	}
-	if _, err := git(staging, "remote", "set-url", "origin", o.URL); err != nil {
-		os.RemoveAll(staging)
-		return nil, err
-	}
-	if err := setup.EnsureFolders(staging); err != nil {
-		os.RemoveAll(staging)
-		return nil, err
-	}
-	// Swap it in: what was there (an empty folder, or the untouched space) goes aside,
-	// and comes back if anything after this fails.
-	aside := ""
-	if _, err := os.Stat(mem); err == nil {
-		aside = filepath.Join(filepath.Dir(mem), "."+filepath.Base(mem)+".before-restore")
-		_ = os.RemoveAll(aside)
-		if err := paths.Rename(mem, aside); err != nil {
-			os.RemoveAll(staging)
-			return nil, err
-		}
-	}
-	undo := func() {
-		os.RemoveAll(mem)
-		if aside != "" {
-			_ = paths.Rename(aside, mem)
-		}
-	}
-	if err := paths.Rename(staging, mem); err != nil {
-		os.RemoveAll(staging)
-		undo()
-		return nil, err
-	}
-
-	s.Memory = mem
-	s.Backup = o.URL
-	if o.WorkFolder != "" {
-		s.WorkFolders = []string{o.WorkFolder}
-	}
-	for i, f := range s.WorkFolders {
-		if s.WorkFolders[i], err = expand(f); err != nil {
-			undo()
-			return nil, err
-		}
-		if err := os.MkdirAll(s.WorkFolders[i], 0o755); err != nil {
-			undo()
-			return nil, err
-		}
-	}
-	c.Spaces[name] = s
-	// Several edits of the configuration may follow: if one fails, the file goes back to
-	// what it was, so it never points at a folder that is not there.
-	cfgFile := filepath.Join(cfgDir, config.FileName)
-	oldCfg, readErr := os.ReadFile(cfgFile)
-	switch {
-	case fresh:
-		err = c.Save()
-	case old != nil:
-		err = editSpace(cfgDir, s) // the space is there: change its settings, keep the rest
-	default:
-		err = config.AddSpace(cfgDir, s) // keep the rest of the file, comments included
-	}
+	lang, s, err := cloneBackup(o.URL, clone)
 	if err != nil {
-		if fresh {
-			os.Remove(cfgFile)
-		} else if readErr == nil {
-			_ = os.WriteFile(cfgFile, oldCfg, 0o600)
-		}
-		undo()
 		return nil, err
 	}
-	if aside != "" {
-		os.RemoveAll(aside)
+	c, fresh, err := openConfig(cfgDir, lang, clone)
+	if err != nil {
+		return nil, err
 	}
+	old, err := spaceToReplace(c, s.Name, &o)
+	if err != nil {
+		return nil, err
+	}
+	mem, replacing, err := chooseMemory(s, o, old)
+	if err != nil {
+		return nil, err
+	}
+	sw, err := swapIn(clone, mem, o.URL)
+	if err != nil {
+		return nil, err
+	}
+	if err := placeSpace(s, mem, o.URL, o.WorkFolder); err != nil {
+		sw.undo()
+		return nil, err
+	}
+	c.Spaces[s.Name] = s
+	if err := saveSpace(c, cfgDir, s, fresh, old != nil); err != nil {
+		sw.undo()
+		return nil, err
+	}
+	sw.keep()
 	// The untouched space now lives elsewhere: remove it, unless the restored notes went
 	// inside it.
 	if old != nil && !replacing && !paths.Within(mem, old.Memory) {
@@ -487,10 +346,8 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	// A blank profile (the one a new install writes) gives way to the backed-up one, when
 	// this backup carries it (only the default space's does).
 	if !fresh && brain.ProfileEmpty(cfgDir) {
-		if data, err := os.ReadFile(filepath.Join(mem, MetaDir, "profile.md")); err == nil {
-			if err := os.WriteFile(filepath.Join(cfgDir, "profile.md"), data, 0o644); err != nil {
-				return nil, err
-			}
+		if err := copyProfile(filepath.Join(mem, MetaDir), cfgDir); err != nil {
+			return nil, err
 		}
 	}
 	// The index is generated: rebuild it for this machine.
@@ -498,6 +355,201 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 		_, _ = m.WriteIndex(c.Language)
 	}
 	return s, nil
+}
+
+// cloneBackup clones the backup at url into dir and reads the configuration saved in
+// it: the language and the one space it holds.
+func cloneBackup(url, dir string) (string, *config.Space, error) {
+	if out, err := runGit("clone", "-q", url, dir); err != nil {
+		return "", nil, fmt.Errorf("cloning %s: %v: %s", url, err, strings.TrimSpace(out))
+	}
+	var saved config.Config
+	if _, err := toml.DecodeFile(filepath.Join(dir, MetaDir, config.FileName), &saved); err != nil {
+		return "", nil, fmt.Errorf("%s is not an augmented brain backup: %v", url, err)
+	}
+	if len(saved.Spaces) != 1 {
+		return "", nil, fmt.Errorf("the backup in %s should hold one space, it holds %d", url, len(saved.Spaces))
+	}
+	var s *config.Space
+	for name, sp := range saved.Spaces {
+		s = sp
+		s.Name = name
+	}
+	return saved.Language, s, nil
+}
+
+// openConfig loads the configuration in cfgDir. A machine with none gets a new one, in
+// the backup's language, with the profile of the backup in clone; fresh says so.
+func openConfig(cfgDir, lang, clone string) (c *config.Config, fresh bool, err error) {
+	c, err = config.Load(cfgDir)
+	if !errors.Is(err, config.ErrNotFound) {
+		return c, false, err
+	}
+	c = &config.Config{Language: lang, Spaces: map[string]*config.Space{}, Dir: cfgDir}
+	if err := os.MkdirAll(cfgDir, 0o700); err != nil {
+		return nil, false, err
+	}
+	if _, err := os.Stat(filepath.Join(cfgDir, "profile.md")); errors.Is(err, os.ErrNotExist) {
+		if err := copyProfile(filepath.Join(clone, MetaDir), cfgDir); err != nil {
+			return nil, false, err
+		}
+	}
+	return c, true, nil
+}
+
+// copyProfile copies the profile kept in a backup's MetaDir meta into cfgDir. A backup
+// without one copies nothing.
+func copyProfile(meta, cfgDir string) error {
+	data, err := os.ReadFile(filepath.Join(meta, "profile.md"))
+	if err != nil {
+		return nil
+	}
+	return os.WriteFile(filepath.Join(cfgDir, "profile.md"), data, 0o644)
+}
+
+// spaceToReplace returns the space called name that is already here, if any. A new
+// machine already has the spaces the installer made, empty: one that is still untouched
+// is replaced by its backup, and its folders fill what o leaves empty; one with
+// anything of the user's is not replaced.
+func spaceToReplace(c *config.Config, name string, o *RestoreOptions) (*config.Space, error) {
+	old, dup := c.Spaces[name]
+	if !dup {
+		return nil, nil
+	}
+	if !Pristine(old.Memory) {
+		return nil, fmt.Errorf("there is already a space called %q here, with notes of its own: restore with --memory into another folder, or remove that space first", name)
+	}
+	if o.Memory == "" {
+		o.Memory = old.Memory
+	}
+	if o.WorkFolder == "" && len(old.WorkFolders) > 0 {
+		o.WorkFolder = old.WorkFolders[0]
+	}
+	return old, nil
+}
+
+// chooseMemory says where the restored notes go, and refuses a file or a folder with
+// anything in it, unless that folder is the untouched space being replaced (replacing).
+func chooseMemory(s *config.Space, o RestoreOptions, old *config.Space) (mem string, replacing bool, err error) {
+	mem = o.Memory
+	if mem == "" {
+		mem = defaultMemory(s.Name, s, o.WorkFolder)
+	}
+	if mem, err = paths.Resolve(mem); err != nil {
+		return "", false, err
+	}
+	replacing = old != nil && paths.Same(old.Memory, mem)
+	if info, err := os.Stat(mem); err == nil && !info.IsDir() {
+		return "", false, fmt.Errorf("%s is a file: choose a folder for the memory", mem)
+	}
+	if entries, err := os.ReadDir(mem); err == nil && len(entries) > 0 && !replacing {
+		return "", false, fmt.Errorf("%s already exists and is not empty: choose another memory folder", mem)
+	}
+	return mem, replacing, nil
+}
+
+// swap is a restored copy of the notes put at mem; what was there before waits aside
+// until the restore is kept or undone.
+type swap struct{ mem, aside string }
+
+// undo removes the restored copy and puts back what was there.
+func (sw *swap) undo() {
+	os.RemoveAll(sw.mem)
+	if sw.aside != "" {
+		_ = paths.Rename(sw.aside, sw.mem)
+	}
+}
+
+// keep drops what was there before.
+func (sw *swap) keep() {
+	if sw.aside != "" {
+		os.RemoveAll(sw.aside)
+	}
+}
+
+// swapIn copies the clone to mem with origin pointing back at url. It clones again,
+// from the first clone, next to mem (a rename could not cross filesystems), and only
+// when that copy is complete moves what was at mem (an empty folder, or the untouched
+// space) aside and the copy in.
+func swapIn(clone, mem, url string) (*swap, error) {
+	if err := os.MkdirAll(filepath.Dir(mem), 0o755); err != nil {
+		return nil, err
+	}
+	staging := filepath.Join(filepath.Dir(mem), "."+filepath.Base(mem)+".restoring")
+	_ = os.RemoveAll(staging)
+	if out, err := runGit("clone", "-q", clone, staging); err != nil {
+		return nil, fmt.Errorf("copying the backup next to %s: %v: %s", mem, err, strings.TrimSpace(out))
+	}
+	if _, err := git(staging, "remote", "set-url", "origin", url); err != nil {
+		os.RemoveAll(staging)
+		return nil, err
+	}
+	if err := setup.EnsureFolders(staging); err != nil {
+		os.RemoveAll(staging)
+		return nil, err
+	}
+	sw := &swap{mem: mem}
+	if _, err := os.Stat(mem); err == nil {
+		sw.aside = filepath.Join(filepath.Dir(mem), "."+filepath.Base(mem)+".before-restore")
+		_ = os.RemoveAll(sw.aside)
+		if err := paths.Rename(mem, sw.aside); err != nil {
+			os.RemoveAll(staging)
+			return nil, err
+		}
+	}
+	if err := paths.Rename(staging, mem); err != nil {
+		os.RemoveAll(staging)
+		sw.undo()
+		return nil, err
+	}
+	return sw, nil
+}
+
+// placeSpace points the restored space at its new home: its notes at mem, its backup
+// at url, and its work folders (work, when given) resolved and created.
+func placeSpace(s *config.Space, mem, url, work string) error {
+	s.Memory = mem
+	s.Backup = url
+	if work != "" {
+		s.WorkFolders = []string{work}
+	}
+	for i, f := range s.WorkFolders {
+		dir, err := paths.Resolve(f)
+		if err != nil {
+			return err
+		}
+		s.WorkFolders[i] = dir
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// saveSpace writes the restored space into the configuration: the whole file when it is
+// fresh, the settings of the space it replaces, or a new space added to the rest.
+// Several edits may be needed: if one fails, the file goes back to what it was, so it
+// never points at a folder that is not there.
+func saveSpace(c *config.Config, cfgDir string, s *config.Space, fresh, replace bool) error {
+	cfgFile := filepath.Join(cfgDir, config.FileName)
+	oldCfg, readErr := os.ReadFile(cfgFile)
+	var err error
+	switch {
+	case fresh:
+		err = c.Save()
+	case replace:
+		err = editSpace(cfgDir, s) // the space is there: change its settings, keep the rest
+	default:
+		err = config.AddSpace(cfgDir, s) // keep the rest of the file, comments included
+	}
+	if err != nil {
+		if fresh {
+			os.Remove(cfgFile)
+		} else if readErr == nil {
+			_ = os.WriteFile(cfgFile, oldCfg, 0o600)
+		}
+	}
+	return err
 }
 
 // Pristine reports whether a space's memory is still as the installer left it: not a
@@ -570,5 +622,3 @@ func defaultMemory(name string, saved *config.Space, work string) string {
 	}
 	return "~/augmented-brain/" + name
 }
-
-func expand(p string) (string, error) { return paths.Resolve(p) }
