@@ -20,7 +20,7 @@ import (
 func cmdBackup(args []string, out, errOut io.Writer) int {
 	if len(args) > 0 && args[0] == "setup" {
 		if len(args) != 2 {
-			fmt.Fprintln(errOut, "usage: augmented-brain backup setup <url of a private git repository>")
+			fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.backup.setup"))
 			return 2
 		}
 		c, s, ok := currentSpace(errOut)
@@ -54,12 +54,8 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 	var c *config.Config
 	var spaces []*config.Space
 	if *all || *only != "" {
-		dir, err := config.Dir()
-		if err == nil {
-			c, err = config.Load(dir)
-		}
-		if err != nil {
-			fmt.Fprintln(errOut, err)
+		var ok bool
+		if c, ok = loadConfig(errOut); !ok {
 			return 1
 		}
 		for _, n := range c.SpaceNames() {
@@ -68,7 +64,7 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 			}
 		}
 		if len(spaces) == 0 {
-			fmt.Fprintf(errOut, "there is no space called %q\n", *only)
+			fmt.Fprintln(errOut, i18n.T(c.Language, "space.unknown", *only))
 			return 1
 		}
 	} else {
@@ -84,8 +80,8 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 	code := 0
 	for _, s := range spaces {
 		res, err := backup.Run(c, s, host)
-		backup.RecordStatusWarning(c.Dir, s.Name, err, res.Warning(), time.Now())
-		if w := res.Warning(); w != "" && err == nil {
+		backup.RecordStatusWarning(c.Dir, s.Name, err, res.Warning(c.Language), time.Now())
+		if w := res.Warning(c.Language); w != "" && err == nil {
 			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.leftout", s.Name, strings.Join(res.LeftOut, ", "), backup.MaxFileSize>>20))
 		}
 		switch {
@@ -115,7 +111,7 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 		return 2
 	}
 	if o.URL == "" {
-		fmt.Fprintln(errOut, "usage: augmented-brain restore <url of the space's backup> [--memory dir] [--work dir]")
+		fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.restore"))
 		return 2
 	}
 	dir, err := config.Dir()

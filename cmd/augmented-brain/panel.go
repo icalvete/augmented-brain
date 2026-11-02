@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/panel"
 )
@@ -18,21 +16,11 @@ import (
 // one running), prints its address, opens the browser, and returns at once.
 // AB_NO_BROWSER=1 or --no-browser only prints the address.
 func cmdPanel(args []string, out, errOut io.Writer) int {
-	dir, err := config.Dir()
-	if err != nil {
-		fmt.Fprintln(errOut, err)
+	c, ok := loadConfig(errOut)
+	if !ok {
 		return 1
 	}
-	c, err := config.Load(dir)
-	if errors.Is(err, config.ErrNotFound) {
-		fmt.Fprintln(errOut, i18n.T(i18n.FromEnv(), "config.missing", err))
-		return 1
-	}
-	if err != nil {
-		fmt.Fprintln(errOut, err)
-		return 1
-	}
-	l := c.Language
+	dir, l := c.Dir, c.Language
 	sub := ""
 	noBrowser := os.Getenv("AB_NO_BROWSER") == "1"
 	for _, a := range args {
@@ -42,7 +30,7 @@ func cmdPanel(args []string, out, errOut io.Writer) int {
 		case "stop", "serve":
 			sub = a
 		default:
-			fmt.Fprintln(errOut, "usage: augmented-brain panel [--no-browser] | panel stop")
+			fmt.Fprintln(errOut, i18n.T(l, "usage.panel"))
 			return 2
 		}
 	}

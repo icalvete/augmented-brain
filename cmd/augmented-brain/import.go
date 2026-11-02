@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
-	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/importer"
@@ -37,17 +36,12 @@ func cmdImport(args []string, out, errOut io.Writer) int {
 	if src == "" && fs.NArg() > 0 {
 		src = fs.Arg(0)
 	}
-	dir, err := config.Dir()
-	if err != nil {
-		fmt.Fprintln(errOut, err)
+	c, ok := loadConfig(errOut)
+	if !ok {
 		return 1
 	}
-	c, err := config.Load(dir)
-	if err != nil {
-		fmt.Fprintln(errOut, err)
-		return 1
-	}
-	lang := c.Language
+	dir, lang := c.Dir, c.Language
+	var err error
 	if src == "" {
 		fmt.Fprintln(errOut, i18n.T(lang, "import.usage"))
 		return 2

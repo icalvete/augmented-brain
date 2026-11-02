@@ -58,3 +58,18 @@ func TestCheckWarnsOfMissingRepos(t *testing.T) {
 		t.Errorf("check:\n%s", out.String())
 	}
 }
+
+// The help speaks the configuration's language, or the system's before there is one.
+func TestUsageLanguage(t *testing.T) {
+	t.Setenv("AB_CONFIG_DIR", t.TempDir())
+	t.Setenv("AB_LANGUAGE", "es")
+	var out, errOut bytes.Buffer
+	if code := run([]string{"nope"}, nil, &out, &errOut); code != 2 || !strings.Contains(errOut.String(), "no conozco el comando") || !strings.Contains(errOut.String(), "Uso:") {
+		t.Errorf("no configuration, Spanish system: %d\n%s", code, errOut.String())
+	}
+	home(t) // a Spanish configuration wins over an English system
+	t.Setenv("AB_LANGUAGE", "en")
+	if run([]string{"help"}, nil, &out, &errOut); !strings.Contains(out.String(), "Uso:") {
+		t.Errorf("Spanish configuration:\n%s", out.String())
+	}
+}

@@ -87,7 +87,7 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 		*lang = a.ask("Language / Idioma (en, es)", i18n.FromEnv())
 	}
 	if *lang != "en" && *lang != "es" {
-		fmt.Fprintf(errOut, "language %q: use en or es\n", *lang)
+		fmt.Fprintln(errOut, i18n.T(i18n.FromEnv(), "init.language", *lang))
 		return 2
 	}
 	var spaces []setup.Options
@@ -192,17 +192,11 @@ func cmdSpaceAdd(args []string, in io.Reader, out, errOut io.Writer) int {
 	if fs.NArg() > 0 && o.Space == "" {
 		o.Space = fs.Arg(0)
 	}
-	dir, err := config.Dir()
-	if err != nil {
-		fmt.Fprintln(errOut, err)
+	c, ok := loadConfig(errOut)
+	if !ok {
 		return 1
 	}
-	c, err := config.Load(dir)
-	if err != nil {
-		fmt.Fprintln(errOut, err)
-		return 1
-	}
-	lang := c.Language
+	dir, lang := c.Dir, c.Language
 	a := &asker{in: bufio.NewReader(in), out: out, interactive: !*yes}
 	o.Space = a.ask(msg(lang, "space"), o.Space)
 	defaults(o, lang)

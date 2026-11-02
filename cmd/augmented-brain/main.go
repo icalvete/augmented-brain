@@ -27,33 +27,13 @@ import (
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
-const usage = `augmented brain: memory, method and a guard for AI coding assistants.
-
-Usage:
-  augmented-brain init         set up augmented brain and your first space
-  augmented-brain space        show which space this folder belongs to
-  augmented-brain space add    add another space (work, personal…)
-  augmented-brain check        check the notes of this folder's space and rebuild its index
-  augmented-brain doctor       say what is missing, and how to fix it
-  augmented-brain import DIR   bring in a memory of Claude Code (--map FILE, --repos-base DIR; --apply to write it)
-  augmented-brain backup       save this folder's space to its private repository (--all: every space)
-  augmented-brain backup setup URL   connect this folder's space to a private git repository
-  augmented-brain restore URL  bring a space back from its backup, on a new machine
-  augmented-brain panel        open the panel in your browser: see and edit your tasks, inbox, profile… (panel stop: stop it)
-  augmented-brain update       update augmented brain and its Claude Code plugin
-  augmented-brain uninstall    remove the program and the plugin (your notes stay; --all: start from scratch)
-  augmented-brain mcp          run the MCP server (your assistant starts it, not you)
-  augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use, stop, post-compact, session-end
-  augmented-brain version      show the version
-`
-
 func main() {
 	os.Exit(run(os.Args[1:], os.Stdin, os.Stdout, os.Stderr))
 }
 
 func run(args []string, in io.Reader, out, errOut io.Writer) int {
 	if len(args) == 0 {
-		fmt.Fprint(errOut, usage)
+		fmt.Fprint(errOut, i18n.T(userLanguage(), "usage"))
 		return 2
 	}
 	switch args[0] {
@@ -61,7 +41,7 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprintln(out, version.Version)
 		return 0
 	case "help", "--help", "-h":
-		fmt.Fprint(out, usage)
+		fmt.Fprint(out, i18n.T(userLanguage(), "usage"))
 		return 0
 	case "init":
 		return cmdInit(args[1:], in, out, errOut)
@@ -91,26 +71,48 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 	case "uninstall":
 		return cmdUninstall(args[1:], in, out, errOut)
 	default:
-		fmt.Fprintf(errOut, "unknown command %q\n\n%s", args[0], usage)
+		l := userLanguage()
+		fmt.Fprintf(errOut, "%s\n\n%s", i18n.T(l, "usage.unknown", args[0]), i18n.T(l, "usage"))
 		return 2
 	}
+}
+
+// userLanguage is the language of the configuration, or the system's when there is
+// none yet.
+func userLanguage() string {
+	if dir, err := config.Dir(); err == nil {
+		if c, err := config.Load(dir); err == nil {
+			return c.Language
+		}
+	}
+	return i18n.FromEnv()
+}
+
+// loadConfig loads the configuration, or says why it cannot (with what to run when
+// there is none yet).
+func loadConfig(errOut io.Writer) (*config.Config, bool) {
+	dir, err := config.Dir()
+	if err != nil {
+		fmt.Fprintln(errOut, err)
+		return nil, false
+	}
+	c, err := config.Load(dir)
+	if errors.Is(err, config.ErrNotFound) {
+		fmt.Fprintln(errOut, i18n.T(i18n.FromEnv(), "config.missing", err))
+		return nil, false
+	}
+	if err != nil {
+		fmt.Fprintln(errOut, err)
+		return nil, false
+	}
+	return c, true
 }
 
 // currentSpace loads the configuration and finds the space of the working folder, or
 // the default space when the folder is outside every space.
 func currentSpace(errOut io.Writer) (*config.Config, *config.Space, bool) {
-	dir, err := config.Dir()
-	if err != nil {
-		fmt.Fprintln(errOut, err)
-		return nil, nil, false
-	}
-	c, err := config.Load(dir)
-	if errors.Is(err, config.ErrNotFound) {
-		fmt.Fprintln(errOut, i18n.T(i18n.FromEnv(), "config.missing", err))
-		return nil, nil, false
-	}
-	if err != nil {
-		fmt.Fprintln(errOut, err)
+	c, ok := loadConfig(errOut)
+	if !ok {
 		return nil, nil, false
 	}
 	wd, err := os.Getwd()

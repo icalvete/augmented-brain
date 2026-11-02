@@ -49,12 +49,12 @@ func setupBackup(b *brain.Brain, url string, run backup.Runner) (string, error) 
 	}
 	host, _ := os.Hostname()
 	res, err := backup.Run(c, s, host)
-	backup.RecordStatusWarning(c.Dir, s.Name, err, res.Warning(), time.Now())
+	backup.RecordStatusWarning(c.Dir, s.Name, err, res.Warning(c.Language), time.Now())
 	if err != nil {
 		return "", fmt.Errorf("the backup is set up to %s, but the first copy failed: %w", url, err)
 	}
 	warn := ""
-	if w := res.Warning(); w != "" {
+	if w := res.Warning(c.Language); w != "" {
 		warn = " Tell the user: " + w + "."
 	}
 	return fmt.Sprintf("Backup of space %s set up: %s (private). The first copy is there, and from now on it runs by itself every time a session ends. "+

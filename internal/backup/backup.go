@@ -22,6 +22,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/guard"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/setup"
@@ -79,14 +80,13 @@ type Result struct {
 	LeftOut []string
 }
 
-// Warning is what the user should hear about a backup that went through: the files it
-// left out. Empty when there is nothing to say.
-func (r *Result) Warning() string {
+// Warning is what the user should hear about a backup that went through, in their
+// language: the files it left out. Empty when there is nothing to say.
+func (r *Result) Warning(lang string) string {
 	if r == nil || len(r.LeftOut) == 0 {
 		return ""
 	}
-	return fmt.Sprintf("these files are bigger than %d MB and were left out of the backup: %s. Move them out of the notes folder (or make them smaller); the rest is backed up",
-		MaxFileSize>>20, strings.Join(r.LeftOut, ", "))
+	return i18n.T(lang, "backup.warning", MaxFileSize>>20, strings.Join(r.LeftOut, ", "))
 }
 
 // Run copies the configuration and profile into the memory, refuses if any file holds

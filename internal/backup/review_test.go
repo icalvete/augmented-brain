@@ -228,8 +228,8 @@ func TestBackupLeavesOutJunkAndBigFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(res.LeftOut) != 2 || res.LeftOut[0] != "knowledge/Report [final]!.mp4 (2 MB)" || !strings.Contains(res.Warning(), "knowledge/video.mp4 (2 MB)") {
-		t.Errorf("left out: %v; warning: %s", res.LeftOut, res.Warning())
+	if len(res.LeftOut) != 2 || res.LeftOut[0] != "knowledge/Report [final]!.mp4 (2 MB)" || !strings.Contains(res.Warning("en"), "knowledge/video.mp4 (2 MB)") {
+		t.Errorf("left out: %v; warning: %s", res.LeftOut, res.Warning("en"))
 	}
 	for name := range files {
 		if strings.HasSuffix(name, ".tmp") || name == ".DS_Store" || name == "Thumbs.db" {

@@ -15,6 +15,8 @@
   repository (`--git-dir`, `--work-tree`, `GIT_DIR`) never counts as an allowed one.
 - **A change to a task is saved whole or not at all.** A task update with a bad watch
   date used to save the rest of the change and then fail.
+- **The help and the commands' errors speak your language**, as the rest already did,
+  and so does the panel's warning about files left out of a backup.
 - Smaller fixes: the configuration keeps its format version when rewritten; `import`
   refuses to write into notes of a newer version and prints a command that can be
   pasted; every small file the program rewrites (the inbox too) is replaced in one step;
