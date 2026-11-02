@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"encoding/base64"
 	"regexp"
 	"strings"
 )
@@ -23,7 +24,7 @@ var secretPatterns = []struct {
 	{regexp.MustCompile(`\bxox[abprs]-[A-Za-z0-9-]{10,}`), "a Slack token"},
 	{regexp.MustCompile(`\bAQ\.[A-Za-z0-9_-]{40,}`), "a Google AI Studio API key"},
 	{regexp.MustCompile(`\bphx_[A-Za-z0-9]{30,}\b`), "a PostHog personal API key"}, // phc_, the project key, is public
-	{regexp.MustCompile(`\bApiKey\s+[A-Za-z0-9+/=]{30,}`), "an Elasticsearch API key"},
+	{regexp.MustCompile(`\bApiKey\s+[A-Za-z0-9+/=]{30,}`), elasticKey},             // without ApiKey: encodedElasticKeys
 	{regexp.MustCompile(`\b[0-9]{8,10}:[A-Za-z0-9_-]{30,}`), "a Telegram bot token"},
 	{regexp.MustCompile(`-----BEGIN (?:RSA |EC |OPENSSH |DSA |ENCRYPTED )?PRIVATE KEY-----`), "a private key"},
 }
@@ -35,6 +36,43 @@ var examples = []string{
 	"wJalrXUtnFEMI/K7MDENG/" + "bPxRfiCYEXAMPLEKEY",
 }
 
+const elasticKey = "an Elasticsearch API key"
+
+// base64Run is a candidate for an Elasticsearch API key in its "encoded" form, alone:
+// base64 of "<id>:<key>". The edges are checked by hand (Go has no lookbehind).
+var base64Run = regexp.MustCompile(`[A-Za-z0-9+/]{40,80}={0,2}`)
+
+// encodedElasticKeys returns where text holds an Elasticsearch API key written without
+// "ApiKey" before it. Only a run that decodes to a 20-character id, a colon and a key of
+// the same alphabet counts, so other base64 (a hash, an image) is not taken for one.
+func encodedElasticKeys(text string) [][]int {
+	var out [][]int
+	for _, loc := range base64Run.FindAllStringIndex(text, -1) {
+		if loc[0] > 0 && isB64(text[loc[0]-1]) || loc[1] < len(text) && (isB64(text[loc[1]]) || text[loc[1]] == '=') {
+			continue // part of a longer run
+		}
+		data, err := base64.StdEncoding.DecodeString(text[loc[0]:loc[1]])
+		if err != nil || len(data) < 36 || data[20] != ':' || !idChars(data[:20]) || !idChars(data[21:]) {
+			continue
+		}
+		out = append(out, loc)
+	}
+	return out
+}
+
+func isB64(c byte) bool {
+	return c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '+' || c == '/'
+}
+
+func idChars(b []byte) bool {
+	for _, c := range b {
+		if !(c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '_' || c == '-') {
+			return false
+		}
+	}
+	return true
+}
+
 // FindSecret returns what kind of secret text contains, or "" if none.
 func FindSecret(text string) string {
 	for _, p := range secretPatterns {
@@ -43,6 +81,9 @@ func FindSecret(text string) string {
 				return p.what
 			}
 		}
+	}
+	if len(encodedElasticKeys(text)) > 0 {
+		return elasticKey
 	}
 	return ""
 }
@@ -57,6 +98,10 @@ func RedactSecrets(text string) string {
 			}
 			return "[" + p.what + " removed]"
 		})
+	}
+	locs := encodedElasticKeys(text)
+	for i := len(locs) - 1; i >= 0; i-- {
+		text = text[:locs[i][0]] + "[" + elasticKey + " removed]" + text[locs[i][1]:]
 	}
 	return text
 }

@@ -190,6 +190,10 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 		return p.find(args, env, depth)
 	case "rm":
 		return p.rm(args)
+	case "vagrant":
+		return p.vagrant(args, env, depth)
+	case "docker", "podman", "kubectl":
+		return p.exec(name, args, env, depth)
 	}
 	// Any other program set to a production profile in the command itself.
 	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE"} {
@@ -599,6 +603,46 @@ func (p Policy) ssh(args []string, stdin string, env map[string]string, depth in
 		d = p.inner(stdin, env, depth) // the remote shell reads stdin
 	}
 	return worse(p.checkHost("ssh", host), d)
+}
+
+// vagrant ssh -c runs its command in the virtual machine: it is checked as ssh's is.
+func (p Policy) vagrant(args []string, env map[string]string, depth int) Decision {
+	if len(args) == 0 || args[0] != "ssh" {
+		return allow
+	}
+	d := allow
+	for i := 1; i < len(args); i++ {
+		switch a := args[i]; {
+		case (a == "-c" || a == "--command") && i+1 < len(args):
+			d = worse(d, p.inner(args[i+1], env, depth))
+			i++
+		case strings.HasPrefix(a, "--command="):
+			d = worse(d, p.inner(strings.TrimPrefix(a, "--command="), env, depth))
+		}
+	}
+	return d
+}
+
+// exec checks the command that docker exec, podman exec and kubectl exec run in a
+// container, as if it ran here: becoming root there is still for the user.
+func (p Policy) exec(name string, args []string, env map[string]string, depth int) Decision {
+	if len(args) == 0 || args[0] != "exec" || depth >= maxDepth {
+		return allow
+	}
+	args = args[1:]
+	if name == "kubectl" {
+		// kubectl exec <pod> [options] -- <command>
+		if i := slices.Index(args, "--"); i >= 0 && i+1 < len(args) {
+			return p.simple(args[i+1:], "", env, depth+1)
+		}
+		return allow
+	}
+	// docker exec [options] <container> <command>
+	i := firstOperand(args, oneOf("-e", "--env", "--env-file", "-u", "--user", "-w", "--workdir", "--detach-keys"))
+	if i+1 >= len(args) {
+		return allow
+	}
+	return p.simple(args[i+1:], "", env, depth+1)
 }
 
 // mosh is ssh for unsteady connections: the same checks on its host and its command.

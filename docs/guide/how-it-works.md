@@ -68,7 +68,8 @@ session starts from there. Opening, resuming and closing work the same way.
   `cd` (`cd ~ && rm -rf .`). After a `cd` the guard cannot follow (`cd "$DIR"`), an
   `rm -r .` asks you.
 
-It also looks inside `ssh`, `bash -c`, loops, and what a pipe feeds a shell
+It also looks inside `ssh`, `vagrant ssh -c`, `docker exec`, `kubectl exec`, `bash -c`,
+loops, and what a pipe feeds a shell
 (`echo 'sudo …' | bash`). If its configuration cannot be read, it asks you before every
 `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before the tools that call AWS
 on their own, since it cannot tell which ones matter.

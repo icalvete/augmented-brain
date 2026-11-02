@@ -17,6 +17,9 @@ From the second rehearsal of a real migration:
 - **The guard follows `cd`.** `cd ~ && rm -rf .` is never run, and `git -C` with a
   relative path counts from where the `cd` went. `rm -rf *` in a folder is no longer
   taken for the whole disk.
+- **The guard looks inside `vagrant ssh -c`, `docker exec`, `podman exec` and `kubectl
+  exec`**, as it does inside `ssh`: becoming root there is for you. And an Elasticsearch
+  API key pasted alone, without `ApiKey` before it, is caught as a secret.
 - **Flags go anywhere** (`import --map m folder --apply`), and an argument too many is
   an error instead of being ignored.
 

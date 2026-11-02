@@ -72,6 +72,17 @@ func TestCommand(t *testing.T) {
 		// commands that run other commands
 		{`ssh web01 "sudo systemctl restart nginx"`, Deny},
 		{`ssh -p 2222 deploy@web01 'sudo -u app ./restart.sh'`, Allow},
+		{`vagrant ssh -c 'sudo apt-get update'`, Deny}, // the virtual machine's command is checked like ssh's
+		{`vagrant ssh default --command="sudo reboot"`, Deny},
+		{`vagrant ssh -c 'sudo -u app ls'`, Allow},
+		{`vagrant ssh -c 'ls -la'`, Allow},
+		{`vagrant up`, Allow},
+		{`docker exec web sudo ls`, Deny},
+		{`docker exec -it -u app web bash -c "sudo id"`, Deny},
+		{`podman exec web ls /`, Allow},
+		{`kubectl exec -it pod-1 -- sudo ls`, Deny},
+		{`kubectl exec pod-1 -- ls`, Allow},
+		{`docker ps`, Allow},
 		{`bash -c "git push"`, Deny},
 		{`env FOO=1 nohup sudo id`, Deny},
 		{`timeout 10 sudo id`, Deny},

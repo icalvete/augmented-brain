@@ -1,6 +1,7 @@
 package guard
 
 import (
+	"encoding/base64"
 	"strings"
 	"testing"
 
@@ -62,6 +63,29 @@ func TestSecretKindsAreTranslated(t *testing.T) {
 			if got := i18n.T(lang, "secret."+p.what); got == "" || strings.HasPrefix(got, "secret.") || (lang == "es" && got == p.what) {
 				t.Errorf("%s in %s: %q", p.what, lang, got)
 			}
+		}
+	}
+}
+
+// An Elasticsearch API key in its "encoded" form is often pasted alone, without ApiKey
+// before it: base64 of "<20-character id>:<key>". Other base64 is not taken for one.
+func TestEncodedElasticKey(t *testing.T) {
+	key := base64.StdEncoding.EncodeToString([]byte(strings.Repeat("aB3_", 5) + ":" + strings.Repeat("Zx9-q", 4) + "Rt"))
+	for _, text := range []string{key, "ES_KEY=" + key + "\n", "'" + key + "'"} {
+		if got := FindSecret(text); got != "an Elasticsearch API key" {
+			t.Errorf("%q: %q", text, got)
+		}
+		if out := RedactSecrets(text); strings.Contains(out, key) {
+			t.Errorf("redact %q: %q", text, out)
+		}
+	}
+	for _, text := range []string{
+		base64.StdEncoding.EncodeToString([]byte(strings.Repeat("no colon here at all ", 3))),
+		"x" + key, // part of a longer run
+		strings.Repeat("A", 60),
+	} {
+		if got := FindSecret(text); got != "" {
+			t.Errorf("%q taken for %s", text, got)
 		}
 	}
 }

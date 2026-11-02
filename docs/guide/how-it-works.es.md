@@ -68,7 +68,8 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
   entero no se ejecuta nunca, tampoco después de un `cd` (`cd ~ && rm -rf .`). Después
   de un `cd` que el guardia no puede seguir (`cd "$DIR"`), un `rm -r .` te pregunta.
 
-También mira dentro de `ssh`, de `bash -c`, de los bucles y de lo que una tubería le pasa
+También mira dentro de `ssh`, de `vagrant ssh -c`, de `docker exec`, de `kubectl exec`, de
+`bash -c`, de los bucles y de lo que una tubería le pasa
 a una shell (`echo 'sudo …' | bash`). Si no puede leer su configuración, te pregunta antes
 de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`, y antes de las herramientas que
 llaman a AWS por su cuenta, porque no sabe cuáles importan.
