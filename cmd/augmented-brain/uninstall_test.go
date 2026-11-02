@@ -15,7 +15,7 @@ import (
 // Code leaves of the plugin, and returns the home and the configuration folder.
 func home(t *testing.T) (string, string) {
 	t.Helper()
-	h := t.TempDir()
+	h, _ := filepath.EvalSymlinks(t.TempDir()) // macOS: /var is /private/var
 	t.Setenv("HOME", h)
 	t.Setenv("USERPROFILE", h)
 	t.Setenv("XDG_CACHE_HOME", filepath.Join(h, ".cache"))

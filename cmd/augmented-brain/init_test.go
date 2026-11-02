@@ -15,7 +15,7 @@ import (
 // returns it with its configuration folder.
 func emptyHome(t *testing.T) (string, string) {
 	t.Helper()
-	h := t.TempDir()
+	h, _ := filepath.EvalSymlinks(t.TempDir()) // macOS: /var is /private/var
 	t.Setenv("HOME", h)
 	t.Setenv("USERPROFILE", h)
 	t.Setenv("PATH", t.TempDir())
