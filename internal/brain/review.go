@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -23,8 +22,20 @@ type InboxEntry struct {
 	Remind string // optional: the day to bring it up again
 }
 
-// inboxLine is "- 2026-10-17 — text", optionally ending in " (remind: 2026-10-22)".
-var inboxLine = regexp.MustCompile(`^- (\d{4}-\d{2}-\d{2}) — (.*?)(?: \(remind: (\d{4}-\d{2}-\d{2})\))?\s*$`)
+// remindSuffix splits the text of an inbox line ("- 2026-10-17 — text", see
+// memory.DatedLine) from the reminder it may end in: " (remind: 2026-10-22)".
+var remindSuffix = regexp.MustCompile(`^(.*?)(?: \(remind: (\d{4}-\d{2}-\d{2})\))?\s*$`)
+
+// parseInboxLine reads one line of the inbox; ok is false for a line that is not a
+// capture (the heading, a paragraph).
+func parseInboxLine(l string) (e InboxEntry, ok bool) {
+	date, rest, ok := memory.ParseDatedLine(l)
+	if !ok {
+		return InboxEntry{}, false
+	}
+	m := remindSuffix.FindStringSubmatch(rest)
+	return InboxEntry{Date: date, Text: m[1], Remind: m[2]}, true
+}
 
 func (b *Brain) inboxPath() string { return filepath.Join(b.Mem.Dir, "inbox.md") }
 
@@ -39,8 +50,8 @@ func (b *Brain) Inbox() ([]InboxEntry, error) {
 	}
 	var out []InboxEntry
 	for _, l := range strings.Split(string(data), "\n") {
-		if m := inboxLine.FindStringSubmatch(l); m != nil {
-			out = append(out, InboxEntry{Date: m[1], Text: m[2], Remind: m[3]})
+		if e, ok := parseInboxLine(l); ok {
+			out = append(out, e)
 		}
 	}
 	return out, nil
@@ -63,8 +74,8 @@ func (b *Brain) InboxDone(items []string) ([]string, error) {
 	found := map[string]bool{}
 	var keep []string
 	for _, l := range strings.Split(string(data), "\n") {
-		if m := inboxLine.FindStringSubmatch(l); m != nil && want[strings.TrimSpace(m[2])] {
-			found[strings.TrimSpace(m[2])] = true
+		if e, ok := parseInboxLine(l); ok && want[strings.TrimSpace(e.Text)] {
+			found[strings.TrimSpace(e.Text)] = true
 			continue
 		}
 		keep = append(keep, l)
@@ -92,7 +103,7 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 	}
 	lines := strings.Split(string(data), "\n")
 	for i, l := range lines {
-		if m := inboxLine.FindStringSubmatch(l); m != nil && m[1] == date && m[2] == text {
+		if e, ok := parseInboxLine(l); ok && e.Date == date && e.Text == text {
 			lines = append(lines[:i], lines[i+1:]...)
 			return true, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o644)
 		}
@@ -103,7 +114,7 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 // ---- watch dates ----
 
 func checkDate(d string) error {
-	if _, err := time.Parse("2006-01-02", d); err != nil {
+	if _, err := memory.ParseDate(d); err != nil {
 		return fmt.Errorf("date %q: use YYYY-MM-DD", d)
 	}
 	return nil
@@ -137,17 +148,13 @@ func (b *Brain) Reminders(within int) []Reminder {
 	for _, d := range due {
 		out = append(out, Reminder{Date: d.Date, Days: d.Days, What: d.What, TaskID: d.TaskID})
 	}
-	today, _ := time.Parse("2006-01-02", b.today())
+	today := b.today()
 	entries, _ := b.Inbox()
 	for _, e := range entries {
 		if e.Remind == "" {
 			continue
 		}
-		d, err := time.Parse("2006-01-02", e.Remind)
-		if err != nil {
-			continue
-		}
-		if days := int(d.Sub(today).Hours() / 24); days <= within {
+		if days, ok := memory.DaysBetween(today, e.Remind); ok && days <= within {
 			out = append(out, Reminder{Date: e.Remind, Days: days, What: e.Text})
 		}
 	}
@@ -204,12 +211,10 @@ func (b *Brain) ReviewDue() (bool, int) {
 			}
 		}
 	}
-	d, err := time.Parse("2006-01-02", since)
-	if err != nil {
+	days, ok := memory.DaysBetween(since, b.today())
+	if !ok {
 		return false, 0
 	}
-	today, _ := time.Parse("2006-01-02", b.today())
-	days := int(today.Sub(d).Hours() / 24)
 	return days >= ReviewEvery, days
 }
 
@@ -217,15 +222,11 @@ func (b *Brain) ReviewDue() (bool, int) {
 func (b *Brain) Review() Review {
 	r := Review{Last: b.LastReview(), Reminders: b.Reminders(ReviewEvery)}
 	r.Inbox, _ = b.Inbox()
-	today, _ := time.Parse("2006-01-02", b.today())
+	today := b.today()
 	items, _ := b.Pending(0)
 	for _, it := range items {
 		n := b.Mem.Notes[it.ID]
-		d, err := time.Parse("2006-01-02", n.Header.Updated)
-		if err != nil {
-			continue
-		}
-		if int(today.Sub(d).Hours()/24) >= StaleDays {
+		if days, ok := memory.DaysBetween(n.Header.Updated, today); ok && days >= StaleDays {
 			r.Stale = append(r.Stale, it)
 		}
 	}
@@ -244,9 +245,9 @@ func (b *Brain) SaveReview(summary string) (*memory.Note, error) {
 	if len([]rune(first)) > 120 {
 		first = string([]rune(first)[:117]) + "…"
 	}
-	id := b.uniqueID("review-" + b.today())
+	id := b.newID("review", b.today())
 	n := &memory.Note{
-		Path:   "reviews/" + id + ".md",
+		Path:   memory.PathFor("review", id),
 		Header: memory.Header{ID: id, Type: "review", Title: title, Summary: first, Created: b.today()},
 		Body:   summary + "\n",
 	}

@@ -9,22 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 )
-
-// Types of file, and the folder each one lives in.
-var Folders = map[string]string{
-	"area":      "areas",
-	"task":      "tasks",
-	"reference": "knowledge",
-	"lesson":    "knowledge",
-	"rule":      "rules",
-	"review":    "reviews",
-	"person":    "people",
-	"profile":   "",
-}
 
 // Task statuses: the six phases, plus the two that pause a task.
 var Statuses = []string{
@@ -68,31 +57,44 @@ type Note struct {
 
 var delim = []byte("---")
 
-// Parse splits a file into its header and body, and checks the header.
-// path is relative to the memory folder.
-func Parse(path string, data []byte) (*Note, error) {
+// Errors of a file whose header cannot be told apart from its body.
+var (
+	ErrNoHeader  = errors.New("missing header: the file must start with a line '---'")
+	ErrNotClosed = errors.New("header not closed: add a line '---' after it")
+)
+
+// SplitHeader returns the YAML header of a file, between its first two lines '---',
+// and the body after it. A byte order mark and Windows line ends are dropped first.
+// Parse uses it, and so does whatever reads files that are not notes yet.
+func SplitHeader(data []byte) (header, body []byte, err error) {
 	data = bytes.TrimPrefix(data, []byte("\xef\xbb\xbf")) // a BOM some Windows editors add
 	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
 	if !bytes.HasPrefix(data, append(delim, '\n')) {
-		return nil, errors.New("missing header: the file must start with a line '---'")
+		return nil, nil, ErrNoHeader
 	}
 	rest := data[len(delim)+1:]
 	end := bytes.Index(rest, append(append([]byte("\n"), delim...), '\n'))
 	if end < 0 {
-		if bytes.HasSuffix(rest, append([]byte("\n"), delim...)) {
-			end = len(rest) - len(delim) - 1
-		} else {
-			return nil, errors.New("header not closed: add a line '---' after it")
+		if !bytes.HasSuffix(rest, append([]byte("\n"), delim...)) {
+			return nil, nil, ErrNotClosed
 		}
+		return rest[:len(rest)-len(delim)-1], nil, nil
 	}
-	n := &Note{Path: filepath.ToSlash(path)}
-	dec := yaml.NewDecoder(bytes.NewReader(rest[:end]))
+	return rest[:end], rest[end+len(delim)+2:], nil
+}
+
+// Parse splits a file into its header and body, and checks the header.
+// path is relative to the memory folder.
+func Parse(path string, data []byte) (*Note, error) {
+	header, body, err := SplitHeader(data)
+	if err != nil {
+		return nil, err
+	}
+	n := &Note{Path: filepath.ToSlash(path), Body: string(body)}
+	dec := yaml.NewDecoder(bytes.NewReader(header))
 	dec.KnownFields(true)
 	if err := dec.Decode(&n.Header); err != nil {
 		return nil, fmt.Errorf("header: %w", err)
-	}
-	if body := end + len(delim) + 2; body < len(rest) {
-		n.Body = string(rest[body:])
 	}
 	if err := n.check(); err != nil {
 		return nil, err
@@ -105,7 +107,8 @@ func (n *Note) check() error {
 	var problems []string
 	add := func(format string, a ...any) { problems = append(problems, fmt.Sprintf(format, a...)) }
 
-	folder, known := Folders[h.Type]
+	t, known := Types[h.Type]
+	folder := t.Folder
 	switch {
 	case h.Type == "":
 		add("type is missing")
@@ -121,7 +124,7 @@ func (n *Note) check() error {
 		add("title is missing")
 	}
 	if h.Type == "task" {
-		if !contains(Statuses, h.Status) {
+		if !slices.Contains(Statuses, h.Status) {
 			add("status %q is not one of: %s", h.Status, strings.Join(Statuses, ", "))
 		}
 		if h.Status != "closed" && h.Next == "" {
@@ -144,13 +147,4 @@ func orDot(folder string) string {
 		return "."
 	}
 	return folder
-}
-
-func contains(list []string, s string) bool {
-	for _, x := range list {
-		if x == s {
-			return true
-		}
-	}
-	return false
 }

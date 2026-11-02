@@ -22,35 +22,42 @@ var (
 	checkbox    = regexp.MustCompile(`^(\s*[-*] \[)([ xX])(\] )(.*)$`)
 )
 
+// Headings returns the index of every level-2 heading ("## " at the start of a line)
+// among lines, outside code blocks. Sections run from one heading to the next, so this
+// is how the program finds the few it relies on: the essentials, the Plan.
+func Headings(lines []string) []int {
+	var out []int
+	inCode := false
+	for i, l := range lines {
+		if strings.HasPrefix(strings.TrimSpace(l), "```") {
+			inCode = !inCode
+			continue
+		}
+		if !inCode && strings.HasPrefix(l, "## ") {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
 // PlanSection returns the lines of body (split after every "\n") and the range of the
 // Plan section: from the line after its heading ("## Plan" or "## 3. Plan", any case)
 // to the next level-2 heading or the end. ok is false when there is no Plan section.
 // Lines inside code blocks are never taken for headings.
 func PlanSection(body string) (lines []string, from, to int, ok bool) {
 	lines = strings.SplitAfter(body, "\n")
-	from, to = -1, len(lines)
-	inCode := false
-	for i, l := range lines {
-		t := strings.TrimRight(l, "\r\n")
-		if strings.HasPrefix(strings.TrimSpace(t), "```") {
-			inCode = !inCode
+	heads := Headings(lines)
+	for k, i := range heads {
+		if !planHeading.MatchString(strings.TrimRight(lines[i], "\r\n")) {
 			continue
 		}
-		if inCode || !strings.HasPrefix(t, "## ") {
-			continue
+		to = len(lines)
+		if k+1 < len(heads) {
+			to = heads[k+1]
 		}
-		if from >= 0 {
-			to = i
-			break
-		}
-		if planHeading.MatchString(t) {
-			from = i + 1
-		}
+		return lines, i + 1, to, true
 	}
-	if from < 0 {
-		return lines, 0, 0, false
-	}
-	return lines, from, to, true
+	return lines, 0, 0, false
 }
 
 // Steps returns the checkboxes of the Plan section of a task's body, in order.

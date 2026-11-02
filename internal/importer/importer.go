@@ -15,13 +15,15 @@ package importer
 
 import (
 	"bufio"
-	"bytes"
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -117,15 +119,41 @@ func (p *Plan) Left() int {
 	return n
 }
 
-var prefixes = []struct{ prefix, kind string }{
-	{"task-", "task"}, {"area-", "area"}, {"ref-", "reference"}, {"reference-", "reference"},
-	{"lesson-", "lesson"}, {"rule-", "rule"}, {"person-", "person"},
+// kindOfID returns the type an id's prefix says, or "". A review is never imported by
+// its prefix, and "reference-" is taken for a reference as well as "ref-".
+func kindOfID(id string) string {
+	if strings.HasPrefix(id, "reference-") {
+		return "reference"
+	}
+	if t := memory.TypeOfID(id); t != "review" {
+		return t
+	}
+	return ""
 }
 
 // claudeKinds are the four kinds of Claude Code's automatic memory.
 var claudeKinds = map[string]string{"feedback": "rule", "reference": "reference", "project": "task"}
 
 var linkText = regexp.MustCompile(`\[([^\]\n]+)\]\(([^)\s]+\.md)\)`)
+
+// planner holds what MakePlan learns as it goes, for its steps to share.
+type planner struct {
+	c        *config.Config
+	o        Options
+	p        *Plan
+	titles   map[string]string         // file base name → the text of a link to it
+	notes    []*source                 // the source files with a header
+	archived []string                  // the files under archive/
+	ids      map[string]string         // id → space, of the notes being imported
+	existing map[string]*memory.Memory // the notes already in each space
+}
+
+// planned is a note on its way to a space.
+type planned struct {
+	src  *source
+	note *memory.Note
+	sp   string
+}
 
 // MakePlan reads the source folder and decides where each file goes.
 func MakePlan(src string, c *config.Config, o Options) (*Plan, error) {
@@ -136,23 +164,50 @@ func MakePlan(src string, c *config.Config, o Options) (*Plan, error) {
 	if !info.IsDir() {
 		return nil, fmt.Errorf("%s is not a folder", src)
 	}
-	if len(o.Map) == 0 {
+	if o.Map, err = spaceMap(c, o.Map); err != nil {
+		return nil, err
+	}
+	pl := &planner{c: c, o: o, p: &Plan{Source: src}, titles: map[string]string{}, ids: map[string]string{}}
+	if err := pl.scan(src); err != nil {
+		return nil, err
+	}
+	pl.loadSpaces()
+	for _, n := range pl.place() {
+		pl.fixLinks(n)
+	}
+	pl.placeArchives()
+	pl.p.sort()
+	return pl.p, nil
+}
+
+// spaceMap returns the map of areas to spaces, checked: with one space and no map,
+// everything goes there; with several, a map is needed.
+func spaceMap(c *config.Config, m map[string]string) (map[string]string, error) {
+	if len(m) == 0 {
 		names := c.SpaceNames()
 		if len(names) != 1 {
 			return nil, fmt.Errorf("there are %d spaces: say which space each area goes to (a map file, with a line \"* = <space>\" for the rest)", len(names))
 		}
-		o.Map = map[string]string{"*": names[0]}
+		m = map[string]string{"*": names[0]}
 	}
-	for area, sp := range o.Map {
+	for area, sp := range m {
 		if _, ok := c.Spaces[sp]; !ok {
 			return nil, fmt.Errorf("the map sends %s to space %q, which does not exist", area, sp)
 		}
 	}
-	p := &Plan{Source: src}
-	titles := map[string]string{} // file base name → the text of a link to it
-	var notes []*source
-	var archived []string
-	err = filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
+	return m, nil
+}
+
+// leave records a source file that is not imported, and why.
+func (pl *planner) leave(rel, kind, detail string) {
+	pl.p.Items = append(pl.p.Items, Item{Source: rel})
+	pl.p.Issues = append(pl.p.Issues, Issue{rel, kind, detail})
+}
+
+// scan walks the source folder: it reads every note, sets the archive files aside,
+// and collects the text of every link, which may be the only title a note has.
+func (pl *planner) scan(src string) error {
+	return filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -167,134 +222,142 @@ func MakePlan(src string, c *config.Config, o Options) (*Plan, error) {
 			return nil
 		}
 		if strings.HasPrefix(rel, "archive/") {
-			archived = append(archived, rel)
+			pl.archived = append(pl.archived, rel)
 			return nil
 		}
 		data, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}
-		for _, m := range linkText.FindAllStringSubmatch(string(data), -1) {
-			base := strings.TrimSuffix(filepath.Base(m[2]), ".md")
-			if _, seen := titles[base]; !seen || filepath.Base(rel) == memory.IndexFile {
-				titles[base] = strings.TrimSpace(m[1])
-			}
-		}
+		pl.linkTitles(rel, data)
 		s, err := read(rel, data)
 		switch {
-		case errors.Is(err, errNoHeader):
-			p.Items = append(p.Items, Item{Source: rel})
-			p.Issues = append(p.Issues, Issue{rel, NotANote, ""})
+		case errors.Is(err, memory.ErrNoHeader):
+			pl.leave(rel, NotANote, "")
 		case err != nil:
-			p.Items = append(p.Items, Item{Source: rel})
-			p.Issues = append(p.Issues, Issue{rel, Unreadable, err.Error()})
+			pl.leave(rel, Unreadable, err.Error())
 		default:
 			if fi, err := d.Info(); err == nil {
 				s.modified = fi.ModTime()
 			}
-			notes = append(notes, s)
+			pl.notes = append(pl.notes, s)
 		}
 		return nil
 	})
-	if err != nil {
-		return nil, err
-	}
+}
 
-	// First pass: the note each source becomes, and its space.
-	type planned struct {
-		src  *source
-		note *memory.Note
-		sp   string
+// linkTitles keeps the text of each link in a file as the title of the file it points
+// to: the first one found, unless the source's index has one, which wins.
+func (pl *planner) linkTitles(rel string, data []byte) {
+	for _, m := range linkText.FindAllStringSubmatch(string(data), -1) {
+		base := strings.TrimSuffix(filepath.Base(m[2]), ".md")
+		if _, seen := pl.titles[base]; !seen || filepath.Base(rel) == memory.IndexFile {
+			pl.titles[base] = strings.TrimSpace(m[1])
+		}
 	}
-	var all []planned
-	ids := map[string]string{} // id → space, of the notes being imported
-	existing := map[string]*memory.Memory{}
-	for name, sp := range c.Spaces {
+}
+
+// loadSpaces reads the notes each space already has, so an id is never taken twice.
+func (pl *planner) loadSpaces() {
+	pl.existing = map[string]*memory.Memory{}
+	for name, sp := range pl.c.Spaces {
 		if m, _, err := memory.Load(sp.Memory); err == nil {
-			existing[name] = m
+			pl.existing[name] = m
 		}
 	}
-	for _, s := range notes {
-		n, kind, issues := s.convert(titles, o)
-		p.Issues = append(p.Issues, issues...)
+}
+
+// place turns each source into its note and chooses its space. A note about the user,
+// one with no space, a second one with the same id, or one whose id the space already
+// has is left out.
+func (pl *planner) place() []planned {
+	var all []planned
+	for _, s := range pl.notes {
+		n, kind, issues := s.convert(pl.titles, pl.o)
+		pl.p.Issues = append(pl.p.Issues, issues...)
 		if kind == "user" {
-			p.Items = append(p.Items, Item{Source: s.rel})
-			p.Issues = append(p.Issues, Issue{s.rel, ToProfile, ""})
+			pl.leave(s.rel, ToProfile, "")
 			continue
 		}
-		sp := spaceOf(n, o.Map)
+		sp := spaceOf(n, pl.o.Map)
 		if sp == "" {
-			p.Items = append(p.Items, Item{Source: s.rel})
-			p.Issues = append(p.Issues, Issue{s.rel, NoSpace, n.Header.Area})
+			pl.leave(s.rel, NoSpace, n.Header.Area)
 			continue
 		}
-		if _, dup := ids[n.Header.ID]; dup {
-			p.Items = append(p.Items, Item{Source: s.rel})
-			p.Issues = append(p.Issues, Issue{s.rel, Duplicate, n.Header.ID})
+		if _, dup := pl.ids[n.Header.ID]; dup {
+			pl.leave(s.rel, Duplicate, n.Header.ID)
 			continue
 		}
-		if m := existing[sp]; m != nil {
+		if m := pl.existing[sp]; m != nil {
 			if _, taken := m.Notes[n.Header.ID]; taken {
-				p.Items = append(p.Items, Item{Source: s.rel})
-				p.Issues = append(p.Issues, Issue{s.rel, Taken, n.Header.ID})
+				pl.leave(s.rel, Taken, n.Header.ID)
 				continue
 			}
 		}
-		ids[n.Header.ID] = sp
+		pl.ids[n.Header.ID] = sp
 		all = append(all, planned{s, n, sp})
 	}
+	return all
+}
 
-	// Second pass: links that only make sense inside one space, and repositories.
-	for _, pl := range all {
-		h := &pl.note.Header
-		inSpace := func(id string) bool {
-			if ids[id] == pl.sp {
-				return true
-			}
-			if m := existing[pl.sp]; m != nil {
-				_, ok := m.Notes[id]
-				return ok
-			}
-			return false
+// fixLinks drops the area and the related notes that are not in the note's space
+// (links only make sense inside one), rewrites its repositories, and adds it to the
+// plan. It runs once every note has its space.
+func (pl *planner) fixLinks(n planned) {
+	h := &n.note.Header
+	inSpace := func(id string) bool {
+		if pl.ids[id] == n.sp {
+			return true
 		}
-		if h.Area != "" && h.Type != "area" && !inSpace(h.Area) {
-			p.Issues = append(p.Issues, Issue{pl.src.rel, MissingArea, h.Area})
-			h.Area = ""
+		if m := pl.existing[n.sp]; m != nil {
+			_, ok := m.Notes[id]
+			return ok
 		}
-		var related []string
-		for _, r := range h.Related {
-			if inSpace(r) {
-				related = append(related, r)
-			} else {
-				p.Issues = append(p.Issues, Issue{pl.src.rel, CrossLink, r})
-			}
-		}
-		h.Related = related
-		h.Repos = repos(h.Repos, o.ReposBase, c.Spaces[pl.sp], func(r string) {
-			p.Issues = append(p.Issues, Issue{pl.src.rel, RepoOutside, r})
-		})
-		p.Items = append(p.Items, Item{Source: pl.src.rel, Space: pl.sp, Note: pl.note})
+		return false
 	}
+	if h.Area != "" && h.Type != "area" && !inSpace(h.Area) {
+		pl.p.Issues = append(pl.p.Issues, Issue{n.src.rel, MissingArea, h.Area})
+		h.Area = ""
+	}
+	var related []string
+	for _, r := range h.Related {
+		if inSpace(r) {
+			related = append(related, r)
+		} else {
+			pl.p.Issues = append(pl.p.Issues, Issue{n.src.rel, CrossLink, r})
+		}
+	}
+	h.Related = related
+	h.Repos = repos(h.Repos, pl.o.ReposBase, pl.c.Spaces[n.sp], func(r string) {
+		pl.p.Issues = append(pl.p.Issues, Issue{n.src.rel, RepoOutside, r})
+	})
+	pl.p.Items = append(pl.p.Items, Item{Source: n.src.rel, Space: n.sp, Note: n.note})
+}
 
-	// Archive files follow the note they belong to: archive/<id>-… goes with <id>.
-	for _, rel := range archived {
+// placeArchives sends each archive file with the note it belongs to: archive/<id>-…
+// goes with <id> (the longest id that fits), or else to the space of the rest.
+func (pl *planner) placeArchives() {
+	for _, rel := range pl.archived {
 		base := strings.TrimSuffix(filepath.Base(rel), ".md")
 		sp, best := "", ""
-		for id, s := range ids {
+		for id, s := range pl.ids {
 			if (base == id || strings.HasPrefix(base, id+"-")) && len(id) > len(best) {
 				sp, best = s, id
 			}
 		}
 		if sp == "" {
-			sp = o.Map["*"]
+			sp = pl.o.Map["*"]
 		}
 		if sp == "" {
-			p.Items = append(p.Items, Item{Source: rel})
-			p.Issues = append(p.Issues, Issue{rel, ArchiveNoSpace, ""})
+			pl.leave(rel, ArchiveNoSpace, "")
 			continue
 		}
-		p.Items = append(p.Items, Item{Source: rel, Space: sp, Copy: true})
+		pl.p.Items = append(pl.p.Items, Item{Source: rel, Space: sp, Copy: true})
 	}
+}
+
+// sort orders the plan by source file, and each file's issues by kind.
+func (p *Plan) sort() {
 	sort.SliceStable(p.Items, func(i, j int) bool { return p.Items[i].Source < p.Items[j].Source })
 	sort.SliceStable(p.Issues, func(i, j int) bool {
 		if p.Issues[i].Source != p.Issues[j].Source {
@@ -302,7 +365,6 @@ func MakePlan(src string, c *config.Config, o Options) (*Plan, error) {
 		}
 		return p.Issues[i].Kind < p.Issues[j].Kind
 	})
-	return p, nil
 }
 
 func spaceOf(n *memory.Note, m map[string]string) string {
@@ -364,8 +426,6 @@ func mustRel(base, path string) string {
 
 // ---- reading a source file ----
 
-var errNoHeader = errors.New("no header")
-
 // source is one file of the source memory: its header, loosely read, and its body.
 type source struct {
 	rel      string
@@ -374,26 +434,18 @@ type source struct {
 	modified time.Time
 }
 
+// read splits a source file as memory does a note, but reads its header loosely: any
+// field, of any shape. A file with no header gives memory.ErrNoHeader.
 func read(rel string, data []byte) (*source, error) {
-	data = bytes.TrimPrefix(data, []byte("\xef\xbb\xbf"))
-	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
-	if !bytes.HasPrefix(data, []byte("---\n")) {
-		return nil, errNoHeader
+	header, body, err := memory.SplitHeader(data)
+	if errors.Is(err, memory.ErrNotClosed) {
+		return nil, errors.New("header not closed") // the shorter words of the import report
 	}
-	rest := data[4:]
-	end := bytes.Index(rest, []byte("\n---\n"))
-	body := []byte{}
-	switch {
-	case end >= 0:
-		body = rest[end+5:]
-		rest = rest[:end]
-	case bytes.HasSuffix(rest, []byte("\n---")):
-		rest = rest[:len(rest)-4]
-	default:
-		return nil, errors.New("header not closed")
+	if err != nil {
+		return nil, err
 	}
 	head := map[string]any{}
-	if err := yaml.Unmarshal(rest, &head); err != nil {
+	if err := yaml.Unmarshal(header, &head); err != nil {
 		return nil, err
 	}
 	return &source{rel: rel, head: head, body: string(body)}, nil
@@ -417,7 +469,7 @@ func (s *source) str(key string) string {
 	case string:
 		return strings.TrimSpace(x)
 	case time.Time:
-		return x.Format("2006-01-02")
+		return x.Format(memory.DateLayout)
 	case nil:
 		return ""
 	default:
@@ -460,112 +512,132 @@ var defaults = map[string]map[string]string{
 // convert turns a source file into a note of augmented brain. It returns the kind
 // "user" for a note about the user, which belongs in the profile.
 func (s *source) convert(titles map[string]string, o Options) (*memory.Note, string, []Issue) {
-	var issues []Issue
 	base := strings.TrimSuffix(filepath.Base(s.rel), ".md")
-	id := s.str("id")
-	if id == "" {
-		id = s.str("name")
+	id := s.id(base)
+	kind := s.kind(id)
+	if kind == "user" {
+		return nil, "user", nil
 	}
-	if id == "" || strings.ContainsAny(id, `/\ `) {
-		id = base
-	}
-	claude := s.str("type")
-	if m, ok := s.head["metadata"].(map[string]any); ok {
-		if t, ok := m["type"].(string); ok {
-			claude = t
-		}
-	}
-	// A type of augmented brain at the top of the header wins (a step before importing
-	// put it there); then the file name's prefix; Claude Code's own kind comes last, as
-	// it is often not what the note is (a lesson saved as "feedback").
-	kind := ""
-	if t, _ := s.head["type"].(string); t != "profile" && t != "review" {
-		if _, ok := memory.Folders[t]; ok {
-			kind = t
-		}
-	}
-	if kind == "" {
-		for _, px := range prefixes {
-			if strings.HasPrefix(id, px.prefix) {
-				kind = px.kind
-				break
-			}
-		}
-	}
-	if kind == "" {
-		if claude == "user" {
-			return nil, "user", nil
-		}
-		kind = claudeKinds[claude]
-	}
+	var issues []Issue
 	if kind == "" {
 		kind = "reference"
-		issues = append(issues, Issue{s.rel, UnknownType, claude})
+		issues = append(issues, Issue{s.rel, UnknownType, s.claudeType()})
 	}
-
-	title := s.str("title")
-	if title == "" {
-		title = titles[base]
-	}
-	if title == "" {
-		title = firstLine(s.str("description"), 80)
-	}
-	if title == "" {
-		title = strings.ReplaceAll(strings.TrimPrefix(id, kind+"-"), "-", " ")
-	}
-	day := o.Today
-	if day.IsZero() {
-		day = s.modified
-	}
-	updated := firstNonEmpty(dateOf(s.str("updated")), dateOf(s.str("modified")), day.Format("2006-01-02"))
+	updated := cmp.Or(dateOf(s.str("updated")), dateOf(s.str("modified")), s.day(o.Today))
 	h := memory.Header{
-		ID: id, Type: kind, Title: title,
-		Summary: firstNonEmpty(s.str("summary"), firstLine(s.str("description"), 300)),
+		ID: id, Type: kind, Title: s.title(id, kind, titles[base]),
+		Summary: cmp.Or(s.str("summary"), firstLine(s.str("description"), 300)),
 		Area:    s.str("area"), Repos: s.list("repos"), Related: s.list("related"),
-		Created: firstNonEmpty(dateOf(s.str("created")), updated), Updated: updated,
+		Created: cmp.Or(dateOf(s.str("created")), updated), Updated: updated,
 	}
 	if kind == "task" {
-		h.Parent = s.str("parent")
-		h.Status, h.WaitingOn, h.Next = s.str("status"), s.str("waiting_on"), s.str("next")
-		if !contains(memory.Statuses, h.Status) {
-			if h.Status != "" {
-				issues = append(issues, Issue{s.rel, DroppedField, "status: " + h.Status})
-			}
-			h.Status = "parked"
-			issues = append(issues, Issue{s.rel, TaskDefaults, ""})
-		}
-		lang := o.Language
-		if defaults[lang] == nil {
-			lang = "en"
-		}
-		if h.Status != "closed" {
-			if h.WaitingOn == "" {
-				h.WaitingOn = "me"
-			}
-			if h.Next == "" {
-				h.Next = defaults[lang]["next"]
-			}
-		}
-		h.Watch = s.watch()
+		issues = append(issues, s.taskFields(&h, o.Language)...)
 	}
-	for _, k := range sortedKeys(s.head) {
+	issues = append(issues, s.droppedFields()...)
+	return &memory.Note{Path: memory.PathFor(kind, id), Header: h, Body: strings.TrimLeft(s.body, "\n")}, kind, issues
+}
+
+// id is the note's id: the source's id or name, unless it cannot be a file name, and
+// then the file's own name.
+func (s *source) id(base string) string {
+	id := cmp.Or(s.str("id"), s.str("name"))
+	if id == "" || strings.ContainsAny(id, `/\ `) {
+		return base
+	}
+	return id
+}
+
+// kind is the type of note the source becomes. A type of augmented brain at the top of
+// the header wins (a step before importing put it there); then the id's prefix; Claude
+// Code's own kind comes last, as it is often not what the note is (a lesson saved as
+// "feedback"). It is "user" for a note about the user, and "" when nothing says.
+func (s *source) kind(id string) string {
+	if t, _ := s.head["type"].(string); t != "profile" && t != "review" {
+		if _, ok := memory.Types[t]; ok {
+			return t
+		}
+	}
+	if k := kindOfID(id); k != "" {
+		return k
+	}
+	claude := s.claudeType()
+	if claude == "user" {
+		return "user"
+	}
+	return claudeKinds[claude]
+}
+
+// claudeType is the kind Claude Code's memory gives the note: under metadata, or else
+// at the top of the header.
+func (s *source) claudeType() string {
+	if m, ok := s.head["metadata"].(map[string]any); ok {
+		if t, ok := m["type"].(string); ok {
+			return t
+		}
+	}
+	return s.str("type")
+}
+
+// title is the source's title, or else the text of a link to it, the first line of its
+// description, or its id in words.
+func (s *source) title(id, kind, linked string) string {
+	return cmp.Or(s.str("title"), linked, firstLine(s.str("description"), 80),
+		strings.ReplaceAll(strings.TrimPrefix(id, kind+"-"), "-", " "))
+}
+
+// day is the date of a note whose source says none: the import's, or else the file's.
+func (s *source) day(today time.Time) string {
+	if today.IsZero() {
+		today = s.modified
+	}
+	return today.Format(memory.DateLayout)
+}
+
+// taskFields fills the fields only tasks have. A task with no valid status is parked,
+// and a live one gets someone to wait on and a next step, so it is a valid note.
+func (s *source) taskFields(h *memory.Header, lang string) []Issue {
+	var issues []Issue
+	h.Parent = s.str("parent")
+	h.Status, h.WaitingOn, h.Next = s.str("status"), s.str("waiting_on"), s.str("next")
+	if !slices.Contains(memory.Statuses, h.Status) {
+		if h.Status != "" {
+			issues = append(issues, Issue{s.rel, DroppedField, "status: " + h.Status})
+		}
+		h.Status = "parked"
+		issues = append(issues, Issue{s.rel, TaskDefaults, ""})
+	}
+	if defaults[lang] == nil {
+		lang = "en"
+	}
+	if h.Status != "closed" {
+		if h.WaitingOn == "" {
+			h.WaitingOn = "me"
+		}
+		if h.Next == "" {
+			h.Next = defaults[lang]["next"]
+		}
+	}
+	h.Watch = s.watch()
+	return issues
+}
+
+// droppedFields reports the header fields, at the top or under metadata, that
+// augmented brain has no place for.
+func (s *source) droppedFields() []Issue {
+	var issues []Issue
+	for _, k := range slices.Sorted(maps.Keys(s.head)) {
 		if !known[k] {
 			issues = append(issues, Issue{s.rel, DroppedField, k})
 		}
 	}
 	if m, ok := s.head["metadata"].(map[string]any); ok {
-		for _, k := range sortedKeys(m) {
+		for _, k := range slices.Sorted(maps.Keys(m)) {
 			if !known[k] && k != "node_type" && k != "originSessionId" {
 				issues = append(issues, Issue{s.rel, DroppedField, "metadata." + k})
 			}
 		}
 	}
-	folder := memory.Folders[kind]
-	path := id + ".md"
-	if folder != "" {
-		path = folder + "/" + path
-	}
-	return &memory.Note{Path: path, Header: h, Body: strings.TrimLeft(s.body, "\n")}, kind, issues
+	return issues
 }
 
 func (s *source) watch() []memory.Watch {
@@ -580,7 +652,7 @@ func (s *source) watch() []memory.Watch {
 		w := memory.Watch{What: strings.TrimSpace(fmt.Sprint(m["what"]))}
 		switch d := m["date"].(type) {
 		case time.Time:
-			w.Date = d.Format("2006-01-02")
+			w.Date = d.Format(memory.DateLayout)
 		default:
 			w.Date = strings.TrimSpace(fmt.Sprint(d))
 		}
@@ -606,31 +678,4 @@ func firstLine(s string, max int) string {
 		line = strings.TrimSpace(string(r[:max-1])) + "…"
 	}
 	return line
-}
-
-func firstNonEmpty(xs ...string) string {
-	for _, x := range xs {
-		if x != "" {
-			return x
-		}
-	}
-	return ""
-}
-
-func contains(list []string, s string) bool {
-	for _, x := range list {
-		if x == s {
-			return true
-		}
-	}
-	return false
-}
-
-func sortedKeys(m map[string]any) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	return keys
 }

@@ -81,7 +81,8 @@ func ProblemsNote(problems []memory.Problem, max int) string {
 	return out.String()
 }
 
-func (b *Brain) today() string { return b.Now().Format("2006-01-02") }
+// today is the date of b.Now (local time), as the notes write dates.
+func (b *Brain) today() string { return b.Now().Format(memory.DateLayout) }
 
 // save writes a note, keeps it in memory and rebuilds the index.
 func (b *Brain) save(n *memory.Note) error {
@@ -160,7 +161,7 @@ func (b *Brain) NewTask(in NewTaskInput) (*memory.Note, error) {
 	} else if _, err := b.get(area, "area"); err != nil {
 		return nil, err
 	}
-	id := b.uniqueID("task-" + Slug(in.Title))
+	id := b.newID("task", Slug(in.Title))
 	tmpl, err := templates.FS.ReadFile(b.lang() + "/task.md")
 	if err != nil {
 		return nil, err
@@ -168,7 +169,7 @@ func (b *Brain) NewTask(in NewTaskInput) (*memory.Note, error) {
 	next := b.text("next")
 	body := strings.NewReplacer("{{SUMMARY}}", in.Summary, "{{NEXT}}", next, "{{DATE}}", b.today()).Replace(string(tmpl))
 	n := &memory.Note{
-		Path: "tasks/" + id + ".md",
+		Path: memory.PathFor("task", id),
 		Header: memory.Header{
 			ID: id, Type: "task", Title: in.Title, Summary: in.Summary, Area: area,
 			Created: b.today(), Parent: in.Parent, Status: "definition", WaitingOn: "me", Next: next,
@@ -327,7 +328,7 @@ func (b *Brain) journalLine(body, entry string) string {
 	if body != "" && !strings.HasSuffix(body, "\n") {
 		body += "\n"
 	}
-	return body + "- " + b.today() + " — " + strings.TrimSpace(entry) + "\n"
+	return body + memory.DatedLine(b.today(), strings.TrimSpace(entry))
 }
 
 // ParkInput pauses a task without losing anything.
@@ -397,26 +398,11 @@ func (b *Brain) Close(id, result string) (*memory.Note, error) {
 // otherwise it reports false and changes nothing.
 func replaceFirstSection(body, text string) (string, bool) {
 	lines := strings.SplitAfter(body, "\n")
-	first, next := -1, -1
-	inCode := false
-	for i, l := range lines {
-		if strings.HasPrefix(strings.TrimSpace(l), "```") {
-			inCode = !inCode
-			continue
-		}
-		if inCode || !strings.HasPrefix(l, "## ") {
-			continue
-		}
-		if first < 0 {
-			first = i
-		} else {
-			next = i
-			break
-		}
-	}
-	if first < 0 || next < 0 {
+	heads := memory.Headings(lines)
+	if len(heads) < 2 {
 		return body, false
 	}
+	first, next := heads[0], heads[1]
 	head := strings.Join(lines[:first+1], "")
 	if !strings.HasSuffix(head, "\n") {
 		head += "\n"
@@ -447,7 +433,7 @@ type Due struct {
 func (b *Brain) Pending(within int) ([]Item, []Due) {
 	var items []Item
 	var due []Due
-	today, _ := time.Parse("2006-01-02", b.today())
+	today := b.today()
 	for _, n := range b.Mem.OfType("task") {
 		h := n.Header
 		if h.Status == "closed" {
@@ -463,11 +449,11 @@ func (b *Brain) Pending(within int) ([]Item, []Due) {
 			items = append(items, it)
 		}
 		for _, w := range h.Watch {
-			d, err := time.Parse("2006-01-02", w.Date)
-			if err != nil || w.Done {
+			days, ok := memory.DaysBetween(today, w.Date)
+			if !ok || w.Done {
 				continue
 			}
-			if days := int(d.Sub(today).Hours() / 24); days <= within {
+			if days <= within {
 				due = append(due, Due{h.ID, w.Date, w.What, days})
 			}
 		}
@@ -514,13 +500,12 @@ func (b *Brain) Capture(text, remind string) error {
 		}
 		text += " (remind: " + remind + ")"
 	}
-	path := filepath.Join(b.Mem.Dir, "inbox.md")
-	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	f, err := os.OpenFile(b.inboxPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	_, err = fmt.Fprintf(f, "- %s — %s\n", b.today(), text)
+	_, err = f.WriteString(memory.DatedLine(b.today(), text))
 	return err
 }
 
@@ -529,9 +514,9 @@ func (b *Brain) NewArea(title, summary string) (*memory.Note, error) {
 	if strings.TrimSpace(title) == "" {
 		return nil, errors.New("an area needs a title")
 	}
-	id := b.uniqueID("area-" + Slug(title))
+	id := b.newID("area", Slug(title))
 	n := &memory.Note{
-		Path:   "areas/" + id + ".md",
+		Path:   memory.PathFor("area", id),
 		Header: memory.Header{ID: id, Type: "area", Title: title, Summary: summary, Created: b.today()},
 		Body:   "",
 	}
@@ -540,8 +525,7 @@ func (b *Brain) NewArea(title, summary string) (*memory.Note, error) {
 
 // NewKnowledge saves a reference (how something works) or a lesson (what was learned).
 func (b *Brain) NewKnowledge(kind, title, summary, area, body string) (*memory.Note, error) {
-	prefix := map[string]string{"reference": "ref-", "lesson": "lesson-"}[kind]
-	if prefix == "" {
+	if kind != "reference" && kind != "lesson" {
 		return nil, fmt.Errorf("kind %q: use reference or lesson", kind)
 	}
 	if strings.TrimSpace(title) == "" {
@@ -552,12 +536,12 @@ func (b *Brain) NewKnowledge(kind, title, summary, area, body string) (*memory.N
 			return nil, err
 		}
 	}
-	id := b.uniqueID(prefix + Slug(title))
+	id := b.newID(kind, Slug(title))
 	if body != "" && !strings.HasSuffix(body, "\n") {
 		body += "\n"
 	}
 	n := &memory.Note{
-		Path:   "knowledge/" + id + ".md",
+		Path:   memory.PathFor(kind, id),
 		Header: memory.Header{ID: id, Type: kind, Title: title, Summary: summary, Area: area, Created: b.today()},
 		Body:   body,
 	}
@@ -591,6 +575,13 @@ func Slug(title string) string {
 	return s
 }
 
+// newID returns a free id for a new note of that type: its prefix, then name.
+func (b *Brain) newID(typ, name string) string {
+	return b.uniqueID(memory.Types[typ].Prefix + name)
+}
+
+// uniqueID returns base, or base-2, base-3… when it is taken by a note or by a file
+// that is not a valid one.
 func (b *Brain) uniqueID(base string) string {
 	id := base
 	for i := 2; ; i++ {

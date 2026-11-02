@@ -2,6 +2,7 @@ package brain
 
 import (
 	"errors"
+	"slices"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/memory"
@@ -36,7 +37,7 @@ func (b *Brain) SavePerson(in PersonInput) (*memory.Note, error) {
 	summary := strings.TrimSpace(in.Role)
 	var aliases []string
 	for _, a := range extra {
-		if a = strings.TrimSpace(a); a != "" && !strings.EqualFold(a, title) && !containsFold(aliases, a) {
+		if a = strings.TrimSpace(a); a != "" && !strings.EqualFold(a, title) && !slices.ContainsFunc(aliases, func(x string) bool { return strings.EqualFold(x, a) }) {
 			aliases = append(aliases, a)
 		}
 	}
@@ -55,16 +56,17 @@ func (b *Brain) SavePerson(in PersonInput) (*memory.Note, error) {
 		body += "\n"
 	}
 	if old != nil {
-		old.Header.Title = title
-		old.Header.Summary = summary
+		cp := *old // the note in the index stays as it was until saved
+		cp.Header.Title = title
+		cp.Header.Summary = summary
 		if body != "" {
-			old.Body = body
+			cp.Body = body
 		}
-		return old, b.save(old)
+		return &cp, b.save(&cp)
 	}
-	id := b.uniqueID("person-" + Slug(name))
+	id := b.newID("person", Slug(name))
 	n := &memory.Note{
-		Path:   "people/" + id + ".md",
+		Path:   memory.PathFor("person", id),
 		Header: memory.Header{ID: id, Type: "person", Title: name, Summary: summary, Created: b.today()},
 		Body:   body,
 	}
@@ -102,15 +104,6 @@ func (b *Brain) findPerson(name string) (n *memory.Note, byAlias bool) {
 		}
 	}
 	return found, found != nil
-}
-
-func containsFold(list []string, s string) bool {
-	for _, x := range list {
-		if strings.EqualFold(x, s) {
-			return true
-		}
-	}
-	return false
 }
 
 // aliasesOf reads the other names back from a person's summary ("… · also: A, B").
