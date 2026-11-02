@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **The panel shows your rules and the shared notes.** A new Rules section lists the
+  rules of the space and the shared ones; Knowledge lists the shared references and
+  lessons too. Each shared note is marked as such.
+
 ## 0.5.0-alpha
 
 Released 2026-11-02.

@@ -11,6 +11,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/memory"
 )
 
 func (s *Server) routes() *http.ServeMux {
@@ -25,6 +26,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("GET /inbox", s.read("inbox", s.inbox))
 	m.HandleFunc("GET /areas", s.read("areas", s.areas))
 	m.HandleFunc("GET /knowledge", s.read("knowledge", s.knowledge))
+	m.HandleFunc("GET /rules", s.read("rules", s.rules))
 	m.HandleFunc("GET /people", s.read("people", s.people))
 	m.HandleFunc("GET /note", s.read("", s.note))
 	m.HandleFunc("GET /profile", s.read("profile", s.profile))
@@ -115,7 +117,7 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 		p.Lang = "en"
 	}
 	p.CSRF, p.Base = s.csrf, s.base()
-	for _, sec := range []string{"tasks", "reminders", "inbox", "areas", "knowledge", "people", "sessions", "space"} {
+	for _, sec := range []string{"tasks", "reminders", "inbox", "areas", "knowledge", "rules", "people", "sessions", "space"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
 	}
 	var buf bytes.Buffer
@@ -130,9 +132,10 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 
 // view is one space, open under the notes lock for the length of a request.
 type view struct {
-	c    *config.Config
-	b    *brain.Brain
-	lang string
+	c      *config.Config
+	b      *brain.Brain
+	shared *memory.Memory // the notes every space sees: shown, never written here
+	lang   string
 }
 
 var errNoSpace = errors.New("no such space")
@@ -167,7 +170,11 @@ func (s *Server) open(r *http.Request) (*view, func(), error) {
 		release()
 		return &view{c: c, lang: c.Language}, nil, err
 	}
-	return &view{c: c, b: b, lang: c.Language}, release, nil
+	shared, _, err := memory.LoadShared(c.SharedDir())
+	if err != nil {
+		shared = &memory.Memory{Dir: c.SharedDir(), Notes: map[string]*memory.Note{}}
+	}
+	return &view{c: c, b: b, shared: shared, lang: c.Language}, release, nil
 }
 
 func (v *view) t(key string, args ...any) string { return i18n.T(v.lang, "panel."+key, args...) }

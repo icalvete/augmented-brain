@@ -2,7 +2,7 @@
 <p class="crumbs"><a href="{{$.Base}}/{{$.Section}}?s={{$.Space}}">← {{.Back}}</a></p>
 <h1>{{.H.Title}}</h1>
 <dl class="facts">
-  <dt>{{t "f.kind"}}</dt><dd>{{.Kind}}</dd>
+  <dt>{{t "f.kind"}}</dt><dd>{{.Kind}}{{if .Shared}} · {{t "shared.long"}}{{end}}</dd>
   {{if .H.Summary}}<dt>{{t "f.summary"}}</dt><dd>{{.H.Summary}}</dd>{{end}}
   {{if .AreaTitle}}<dt>{{t "f.area"}}</dt><dd>{{.AreaTitle}}</dd>{{end}}
   <dt>{{t "f.dates"}}</dt><dd>{{tf "dates" .H.Created .H.Updated}}</dd>

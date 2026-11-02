@@ -321,7 +321,8 @@ address to open yourself. What you find there, space by space:
 - **Reminders**: the watch dates of your tasks and the inbox reminders, overdue first.
   Add one, or mark it done.
 - **Inbox**: capture an idea, or mark one as dealt with.
-- **Areas**, **knowledge** and **people**: to read, and to create areas.
+- **Areas**, **knowledge**, **rules** and **people**: to read, and to create areas.
+  Knowledge and rules show the space's own and the shared ones, marked "shared".
 - **Sessions**: your Claude sessions on this computer, from the last 30 days. Those that
   did not end (closed by force, or cut off when the computer went down) show what was
   said after the last journal entry: keep it in the notes (it goes to `archive/sessions/`

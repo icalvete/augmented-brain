@@ -22,6 +22,10 @@ var panelMessages = map[string]msg{
 		en: "Knowledge",
 		es: "Conocimiento",
 	},
+	"panel.rules": {
+		en: "Rules",
+		es: "Reglas",
+	},
 	"panel.people": {
 		en: "People",
 		es: "Personas",
@@ -331,12 +335,28 @@ var panelMessages = map[string]msg{
 		es: "Crear",
 	},
 	"panel.knowledge.hint": {
-		en: "References (how something works) and lessons (what was learned). Your assistant writes them; here you can read them.",
-		es: "Referencias (cómo funciona algo) y lecciones (qué se aprendió). Las escribe tu asistente; aquí puedes leerlas.",
+		en: "References (how something works) and lessons (what was learned), of this space and shared by every space. Your assistant writes them; here you can read them.",
+		es: "Referencias (cómo funciona algo) y lecciones (qué se aprendió), de este espacio y compartidas por todos. Las escribe tu asistente; aquí puedes leerlas.",
 	},
 	"panel.knowledge.none": {
 		en: "No references or lessons yet.",
 		es: "Aún no hay referencias ni lecciones.",
+	},
+	"panel.rules.hint": {
+		en: "How your assistant must work: the ones of this space, and the shared ones, which hold in every space. Your assistant loads them at the start of each session and writes them when you give it one; here you can read them. The rules that come with the program are not listed.",
+		es: "Cómo debe trabajar tu asistente: las de este espacio y las compartidas, que valen en todos. Tu asistente las carga al empezar cada sesión y las escribe cuando le das una; aquí puedes leerlas. No salen las que trae el programa.",
+	},
+	"panel.rules.none": {
+		en: "No rules of your own yet.",
+		es: "Aún no hay reglas tuyas.",
+	},
+	"panel.shared": {
+		en: "shared",
+		es: "compartida",
+	},
+	"panel.shared.long": {
+		en: "shared by every space",
+		es: "compartida por todos los espacios",
 	},
 	"panel.people.hint": {
 		en: "People you work or deal with, so a first name leads to the right person.",

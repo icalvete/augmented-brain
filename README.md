@@ -180,7 +180,7 @@ pending?", "park it", "note this in the inbox".
 
 To see everything at a glance, or change something without asking Claude, open the
 panel: type `/brain:panel` in Claude, or run `augmented-brain panel`. It opens a page in
-your browser with your tasks, reminders, inbox, areas, knowledge, people, sessions and profile,
+your browser with your tasks, reminders, inbox, areas, knowledge, rules, people, sessions and profile,
 space by space. It runs only on your computer and only while you use it: after 30
 minutes without use it stops by itself. Details: [The panel](docs/guide/how-it-works.md#the-panel).
 

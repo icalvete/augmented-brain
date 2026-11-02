@@ -325,7 +325,9 @@ dirección para que la abras tú. Lo que encuentras, espacio por espacio:
 - **Recordatorios**: las fechas para revisar de tus tareas y los recordatorios del
   buzón, primero lo atrasado. Añade uno, o márcalo como hecho.
 - **Buzón**: apunta una idea, o marca una como resuelta.
-- **Áreas**, **conocimiento** y **personas**: para leer, y para crear áreas.
+- **Áreas**, **conocimiento**, **reglas** y **personas**: para leer, y para crear
+  áreas. Conocimiento y reglas enseñan las del espacio y las compartidas, marcadas
+  «compartida».
 - **Sesiones**: tus sesiones de Claude en este ordenador, de los últimos 30 días. Las que
   no terminaron (cerradas a la fuerza, o cortadas al apagarse el ordenador) muestran lo
   dicho después de la última anotación del diario: guárdalo en las notas (va a

@@ -323,7 +323,7 @@ func TestPagesAndChanges(t *testing.T) {
 
 	// Every page answers, in each space.
 	for _, sp := range []string{"work", "home"} {
-		for _, path := range []string{"/tasks", "/reminders", "/inbox", "/areas", "/knowledge", "/people", "/profile", "/space"} {
+		for _, path := range []string{"/tasks", "/reminders", "/inbox", "/areas", "/knowledge", "/rules", "/people", "/profile", "/space"} {
 			if w := s.get(t, path+"?s="+sp); w.Code != http.StatusOK {
 				t.Errorf("%s in %s: %d", path, sp, w.Code)
 			}
@@ -337,6 +337,30 @@ func TestPagesAndChanges(t *testing.T) {
 	}
 	if !strings.Contains(s.get(t, "/tasks?s=work").Body.String(), "Cerradas (1)") {
 		t.Error("the closed task is not listed")
+	}
+	// The shared notes show in every space, marked as such, next to the space's own.
+	for path, text := range map[string]string{
+		"rules/rule-brief.md":       "---\nid: rule-brief\ntype: rule\ntitle: Respuestas breves\n---\nUna idea por frase.\n",
+		"knowledge/lesson-small.md": "---\nid: lesson-small\ntype: lesson\ntitle: Pasos pequeños\n---\n",
+	} {
+		full := filepath.Join(cfg, "shared", filepath.FromSlash(path))
+		if err := os.MkdirAll(filepath.Dir(full), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(full, []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, sp := range []string{"work", "home"} {
+		if body := s.get(t, "/rules?s="+sp).Body.String(); !strings.Contains(body, "Respuestas breves") || !strings.Contains(body, ">compartida<") {
+			t.Errorf("rules in %s:\n%s", sp, body)
+		}
+		if body := s.get(t, "/knowledge?s="+sp).Body.String(); !strings.Contains(body, "Pasos pequeños") {
+			t.Errorf("knowledge in %s lacks the shared lesson", sp)
+		}
+		if body := s.get(t, "/note?s="+sp+"&id=rule-brief").Body.String(); !strings.Contains(body, "compartida por todos los espacios") || !strings.Contains(body, "Una idea por frase.") {
+			t.Errorf("shared note in %s:\n%s", sp, body)
+		}
 	}
 	// Ids only resolve through the notes: never a path.
 	for _, bad := range []string{"../../etc/passwd", "..%2F..%2Fconfig", "MEMORY"} {

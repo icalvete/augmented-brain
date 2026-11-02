@@ -8,7 +8,10 @@ import (
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
 
-type noteRow struct{ ID, Title, Summary, Kind string }
+type noteRow struct {
+	ID, Title, Summary, Kind string
+	Shared                   bool
+}
 
 func (s *Server) areas(v *view, _ *http.Request) (string, page, error) {
 	type row struct {
@@ -41,15 +44,19 @@ func (s *Server) areaNew(v *view, r *http.Request) (string, error) {
 	return "/note?id=" + url.QueryEscape(n.Header.ID), nil
 }
 
+// list returns the space's notes of those types, then the shared ones (only rules and
+// knowledge can be shared).
 func (v *view) list(types ...string) []noteRow {
 	var rows []noteRow
-	for _, t := range types {
-		for _, n := range v.b.Mem.OfType(t) {
-			kind := ""
-			if len(types) > 1 {
-				kind = v.t("kind." + t)
+	for _, m := range []*memory.Memory{v.b.Mem, v.shared} {
+		for _, t := range types {
+			for _, n := range m.OfType(t) {
+				kind := ""
+				if len(types) > 1 {
+					kind = v.t("kind." + t)
+				}
+				rows = append(rows, noteRow{n.Header.ID, n.Header.Title, n.Header.Summary, kind, m == v.shared})
 			}
-			rows = append(rows, noteRow{n.Header.ID, n.Header.Title, n.Header.Summary, kind})
 		}
 	}
 	return rows
@@ -66,6 +73,12 @@ func (s *Server) knowledge(v *view, _ *http.Request) (string, page, error) {
 	return "notes", p, nil
 }
 
+func (s *Server) rules(v *view, _ *http.Request) (string, page, error) {
+	p := v.frame("rules", v.t("rules"))
+	p.D = notesData{v.t("rules"), v.t("rules.hint"), v.t("rules.none"), v.list("rule")}
+	return "notes", p, nil
+}
+
 func (s *Server) people(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("people", v.t("people"))
 	p.D = notesData{v.t("people"), v.t("people.hint"), v.t("people.none"), v.list("person")}
@@ -73,17 +86,21 @@ func (s *Server) people(v *view, _ *http.Request) (string, page, error) {
 }
 
 // note shows any note but a task (which has its own page), found by id among the
-// space's notes only: the id never becomes a path.
+// space's notes, then the shared ones: the id never becomes a path.
 func (s *Server) note(v *view, r *http.Request) (string, page, error) {
 	id := r.FormValue("id")
 	n, ok := v.b.Mem.Notes[id]
+	shared := false
 	if !ok {
+		n, shared = v.shared.Notes[id]
+	}
+	if n == nil {
 		return "", page{}, errors.New(v.t("err.note", id))
 	}
 	if n.Header.Type == "task" {
 		return s.task(v, r)
 	}
-	section := map[string]string{"area": "areas", "reference": "knowledge", "lesson": "knowledge", "person": "people"}[n.Header.Type]
+	section := map[string]string{"area": "areas", "reference": "knowledge", "lesson": "knowledge", "rule": "rules", "person": "people"}[n.Header.Type]
 	if section == "" {
 		section = "space"
 	}
@@ -101,6 +118,7 @@ func (s *Server) note(v *view, r *http.Request) (string, page, error) {
 		Body, Kind, AreaTitle string
 		Back                  string
 		Tasks                 []taskRow
-	}{n.Header, n.Body, v.t("kind." + n.Header.Type), v.areaTitle(n.Header.Area), v.t(section), tasks}
+		Shared                bool
+	}{n.Header, n.Body, v.t("kind." + n.Header.Type), v.areaTitle(n.Header.Area), v.t(section), tasks, shared}
 	return "note", p, nil
 }
