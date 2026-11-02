@@ -6,8 +6,11 @@
 package guard
 
 import (
+	"cmp"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -134,11 +137,7 @@ func (p Policy) inner(line string, exported map[string]string, depth int) Decisi
 	if what := FindSecret(line); what != "" {
 		return Decision{Deny, "the command has " + what + " written in it."}
 	}
-	env := map[string]string{}
-	for k, v := range exported {
-		env[k] = v
-	}
-	return p.commands(parse(line), env, depth+1)
+	return p.commands(parse(line), maps.Clone(exported), depth+1)
 }
 
 func (p Policy) simple(words []string, stdin string, exported map[string]string, depth int) Decision {
@@ -185,19 +184,52 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	}
 	// Any other program set to a production profile in the command itself.
 	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE"} {
-		if prof, ok := env[k]; ok && contains(p.ProductionAWSProfiles, prof) {
+		if prof, ok := env[k]; ok && slices.Contains(p.ProductionAWSProfiles, prof) {
 			return Decision{Ask, "this runs with the production AWS profile " + prof + "; the user confirms first."}
 		}
 	}
 	return allow
 }
 
-// hostUnknown asks before reaching any host when the configuration could not be read.
-func (p Policy) hostUnknown(name, host string) (Decision, bool) {
+// checkHost asks before name reaches target (host or user@host) when the host is
+// untouchable, or when the configuration could not be read and nobody can tell.
+func (p Policy) checkHost(name, target string) Decision {
+	host := target[strings.LastIndexByte(target, '@')+1:]
 	if host == "" {
-		return allow, false
+		return allow
 	}
-	return p.listsUnknown(name + " to " + host)
+	if d, unknown := p.listsUnknown(name + " to " + host); unknown {
+		return d
+	}
+	if p.untouchable(host) {
+		return Decision{Ask, name + " reaches " + host + ", marked as untouchable; the user confirms first."}
+	}
+	return allow
+}
+
+// firstOperand returns the index of the first argument that is neither an option nor
+// the value of one, or len(args) when there is none. takesValue says which options
+// take the next argument as their value.
+func firstOperand(args []string, takesValue func(string) bool) int {
+	for i := 0; i < len(args); i++ {
+		if !strings.HasPrefix(args[i], "-") {
+			return i
+		}
+		if takesValue(args[i]) {
+			i++
+		}
+	}
+	return len(args)
+}
+
+// oneOf is a takesValue for firstOperand: options written exactly as one of opts.
+func oneOf(opts ...string) func(string) bool {
+	return func(a string) bool { return slices.Contains(opts, a) }
+}
+
+// shortOf is a takesValue for firstOperand: a single-letter option (-p) among letters.
+func shortOf(letters string) func(string) bool {
+	return func(a string) bool { return len(a) == 2 && strings.ContainsRune(letters, rune(a[1])) }
 }
 
 // git blocks commit and push unless the repository is explicitly allowed, written with -C.
@@ -329,7 +361,7 @@ func (p Policy) awsTool(name string, env map[string]string, args []string) Decis
 	if d, unknown := p.listsUnknown(name); unknown {
 		return d
 	}
-	given := firstSet(profileFlag(args, "--profile"), profileFlag(args, "--aws-profile"))
+	given := cmp.Or(profileFlag(args, "--profile"), profileFlag(args, "--aws-profile"))
 	if prof := p.productionProfile(env, given); prof != "" {
 		return Decision{Ask, name + " may run with the production AWS profile " + prof + "; the user confirms first."}
 	}
@@ -339,11 +371,11 @@ func (p Policy) awsTool(name string, env map[string]string, args []string) Decis
 // productionProfile returns the first candidate profile that is production, or "".
 func (p Policy) productionProfile(env map[string]string, given string) string {
 	candidates := []string{given, env["AWS_PROFILE"], env["AWS_DEFAULT_PROFILE"], p.Env["AWS_PROFILE"], p.Env["AWS_DEFAULT_PROFILE"]}
-	if given == "" && firstSet(candidates...) == "" {
+	if given == "" && cmp.Or(candidates...) == "" {
 		candidates = append(candidates, "default")
 	}
 	for _, c := range candidates {
-		if c != "" && contains(p.ProductionAWSProfiles, c) {
+		if c != "" && slices.Contains(p.ProductionAWSProfiles, c) {
 			return c
 		}
 	}
@@ -356,14 +388,7 @@ func (p Policy) awsVault(args []string, stdin string, env map[string]string, dep
 	if len(args) == 0 || args[0] != "exec" {
 		return allow
 	}
-	withValue := map[string]bool{"-d": true, "--duration": true, "--region": true, "-t": true, "--mfa-token": true,
-		"--prompt": true, "--backend": true}
-	i := 1
-	for ; i < len(args) && strings.HasPrefix(args[i], "-"); i++ {
-		if withValue[args[i]] && i+1 < len(args) {
-			i++
-		}
-	}
+	i := 1 + firstOperand(args[1:], oneOf("-d", "--duration", "--region", "-t", "--mfa-token", "--prompt", "--backend"))
 	if i >= len(args) {
 		return allow
 	}
@@ -373,22 +398,17 @@ func (p Policy) awsVault(args []string, stdin string, env map[string]string, dep
 	}
 	inner := allow
 	if len(rest) > 0 {
-		sub := map[string]string{}
-		for k, v := range env {
-			sub[k] = v
-		}
+		sub := maps.Clone(env)
 		sub["AWS_PROFILE"] = prof
-		if inner = p.simple(rest, stdin, sub, depth); inner.Verdict == Deny {
-			return inner
-		}
+		inner = p.simple(rest, stdin, sub, depth)
 	}
-	if d, unknown := p.listsUnknown("aws-vault"); unknown {
-		return d
+	d := allow
+	if u, unknown := p.listsUnknown("aws-vault"); unknown {
+		d = u
+	} else if slices.Contains(p.ProductionAWSProfiles, prof) {
+		d = Decision{Ask, "aws-vault runs this with the production AWS profile " + prof + "; the user confirms first."}
 	}
-	if contains(p.ProductionAWSProfiles, prof) {
-		return Decision{Ask, "aws-vault runs this with the production AWS profile " + prof + "; the user confirms first."}
-	}
-	return inner
+	return worse(d, inner)
 }
 
 // profileFlag returns the value of a --flag value or --flag=value argument.
@@ -402,15 +422,6 @@ func profileFlag(args []string, flag string) string {
 		}
 	}
 	return prof
-}
-
-func firstSet(values ...string) string {
-	for _, v := range values {
-		if v != "" {
-			return v
-		}
-	}
-	return ""
 }
 
 // listsUnknown asks when the configuration could not be read: then the production
@@ -482,81 +493,35 @@ func (p Policy) ssh(args []string, stdin string, env map[string]string, depth in
 	default:
 		d = p.inner(stdin, env, depth) // the remote shell reads stdin
 	}
-	if d.Verdict == Deny {
-		return d
-	}
-	if u, unknown := p.hostUnknown("ssh", host); unknown {
-		return u
-	}
-	if host != "" && p.untouchable(host) {
-		return Decision{Ask, "host " + host + " is marked as untouchable; the user confirms first."}
-	}
-	return d
+	return worse(p.checkHost("ssh", host), d)
 }
 
 // mosh is ssh for unsteady connections: the same checks on its host and its command.
 func (p Policy) mosh(args []string, env map[string]string, depth int) Decision {
-	host, rest := "", []string(nil)
-	for i := 0; i < len(args); i++ {
-		a := args[i]
-		if a == "--" {
-			continue
-		}
-		if strings.HasPrefix(a, "-") {
-			if (a == "-p" || a == "--port" || a == "--ssh" || a == "--server" || a == "--client" || a == "--predict" || a == "--family") && i+1 < len(args) {
-				i++
-			}
-			continue
-		}
-		host, rest = a, args[i+1:]
-		if at := strings.LastIndexByte(host, '@'); at >= 0 {
-			host = host[at+1:]
-		}
-		break
+	i := firstOperand(args, oneOf("-p", "--port", "--ssh", "--server", "--client", "--predict", "--family"))
+	if i >= len(args) {
+		return allow
 	}
+	host, rest := args[i], args[i+1:]
 	if len(rest) > 0 && rest[0] == "--" {
 		rest = rest[1:]
 	}
 	d := allow
 	if len(rest) > 0 {
-		if d = p.simple(rest, "", env, depth); d.Verdict == Deny {
-			return d
-		}
+		d = p.simple(rest, "", env, depth)
 	}
-	if u, unknown := p.hostUnknown("mosh", host); unknown {
-		return u
-	}
-	if host != "" && p.untouchable(host) {
-		return Decision{Ask, "host " + host + " is marked as untouchable; the user confirms first."}
-	}
-	return d
+	return worse(p.checkHost("mosh", host), d)
 }
 
 // sftp reaches the host given as its first argument that is not an option, with or
 // without a :path after it.
 func (p Policy) sftp(args []string) Decision {
-	withValue := "BbcDFiJloPRSs"
-	for i := 0; i < len(args); i++ {
-		a := args[i]
-		if strings.HasPrefix(a, "-") {
-			if len(a) == 2 && strings.ContainsRune(withValue, rune(a[1])) {
-				i++
-			}
-			continue
-		}
-		host, _, _ := strings.Cut(a, ":")
-		if at := strings.LastIndexByte(host, '@'); at >= 0 {
-			host = host[at+1:]
-		}
-		if u, unknown := p.hostUnknown("sftp", host); unknown {
-			return u
-		}
-		if p.untouchable(host) {
-			return Decision{Ask, "sftp reaches " + host + ", marked as untouchable; the user confirms first."}
-		}
+	i := firstOperand(args, shortOf("BbcDFiJloPRSs"))
+	if i >= len(args) {
 		return allow
 	}
-	return allow
+	host, _, _ := strings.Cut(args[i], ":")
+	return p.checkHost("sftp", host)
 }
 
 // dropRedirections takes the redirections out of a command's words (< file, >file,
@@ -625,14 +590,8 @@ func (p Policy) copyHosts(name string, args []string) Decision {
 		if !isRemote {
 			continue
 		}
-		if at := strings.LastIndexByte(hostPart, '@'); at >= 0 {
-			hostPart = hostPart[at+1:]
-		}
-		if u, unknown := p.hostUnknown(name, hostPart); unknown {
-			return u
-		}
-		if p.untouchable(hostPart) {
-			return Decision{Ask, name + " reaches " + hostPart + ", marked as untouchable; the user confirms first."}
+		if d := p.checkHost(name, hostPart); d.Verdict != Allow {
+			return d
 		}
 	}
 	return allow
@@ -657,25 +616,19 @@ func (p Policy) untouchable(host string) bool {
 	return false
 }
 
-// sshTarget returns the host of an ssh command and the remote command after it.
+// sshTarget returns the destination of an ssh command ([user@]host) and the remote
+// command after it. Unlike firstOperand, it takes a lone - as the destination, as ssh
+// does, so the command after it is still checked.
 func sshTarget(args []string) (string, []string) {
-	withValue := "BbcDEeFIiJLlmOoPpQRSWw"
+	takesValue := shortOf("BbcDEeFIiJLlmOoPpQRSWw")
 	for i := 0; i < len(args); i++ {
 		a := args[i]
-		if a == "--" {
-			continue
+		if len(a) < 2 || a[0] != '-' {
+			return a, args[i+1:]
 		}
-		if strings.HasPrefix(a, "-") && len(a) >= 2 {
-			if len(a) == 2 && strings.ContainsRune(withValue, rune(a[1])) {
-				i++
-			}
-			continue
+		if takesValue(a) {
+			i++
 		}
-		host := a
-		if at := strings.LastIndexByte(host, '@'); at >= 0 {
-			host = host[at+1:]
-		}
-		return host, args[i+1:]
 	}
 	return "", nil
 }
@@ -760,13 +713,4 @@ func mainRepo(dir string) string {
 		return ""
 	}
 	return r
-}
-
-func contains(list []string, s string) bool {
-	for _, x := range list {
-		if x == s {
-			return true
-		}
-	}
-	return false
 }
