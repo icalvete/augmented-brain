@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.5.0-alpha
+
+Released 2026-11-02.
 
 - **Notes shared by every space.** What you learn that holds everywhere (how git
   behaves, how you like answers) is saved once, in `shared/` next to your profile, and
