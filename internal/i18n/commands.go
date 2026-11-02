@@ -146,7 +146,7 @@ var commandMessages = map[string]msg{
 		en: `augmented brain: memory, method and a guard for AI coding assistants.
 
 Usage:
-  augmented-brain init         set up augmented brain and your first space
+  augmented-brain init         set up augmented brain: the work and personal spaces and the plugin (--custom: choose them yourself)
   augmented-brain space        show which space this folder belongs to
   augmented-brain space add    add another space (work, personal…)
   augmented-brain check        check the notes of this folder's space and rebuild its index
@@ -165,7 +165,7 @@ Usage:
 		es: `augmented brain: memoria, método y un guardia para asistentes de programación con IA.
 
 Uso:
-  augmented-brain init         prepara augmented brain y tu primer espacio
+  augmented-brain init         prepara augmented brain: los espacios trabajo y personal y el plugin (--custom: elígelos tú)
   augmented-brain space        dice de qué espacio es esta carpeta
   augmented-brain space add    añade otro espacio (trabajo, personal…)
   augmented-brain check        revisa las notas del espacio de esta carpeta y rehace su índice

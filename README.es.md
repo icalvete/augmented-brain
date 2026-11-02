@@ -163,6 +163,7 @@ Claude te lo dice al empezar la siguiente.
 | Comando | Qué hace |
 |---|---|
 | `augmented-brain init` | Lo prepara todo: los espacios `trabajo` y `personal` y el plugin. Lo lanza el instalador; `--custom` para elegir tú |
+| `augmented-brain space` | Dice de qué espacio es esta carpeta |
 | `augmented-brain space add` | Añade otro espacio (personal, un cliente…) |
 | `augmented-brain doctor` | Dice qué falta y cómo arreglarlo |
 | `augmented-brain import <carpeta>` | Trae una memoria que Claude Code ya escribió. Solo enseña lo que haría; `--apply` la escribe ([detalles](docs/guide/how-it-works.es.md#trae-una-memoria-que-ya-tienes)) |

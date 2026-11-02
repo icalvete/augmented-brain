@@ -161,6 +161,7 @@ tells you at the start of the next one.
 | Command | What it does |
 |---|---|
 | `augmented-brain init` | Sets everything up: the `work` and `personal` spaces and the plugin. The installer runs it; `--custom` to choose yourself |
+| `augmented-brain space` | Say which space this folder belongs to |
 | `augmented-brain space add` | Add another space (personal, a client…) |
 | `augmented-brain doctor` | Say what is missing, and how to fix it |
 | `augmented-brain import <folder>` | Bring in a memory Claude Code already wrote. It only shows what it would do; `--apply` writes it ([details](docs/guide/how-it-works.md#bring-in-a-memory-you-already-have)) |
