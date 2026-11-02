@@ -5,23 +5,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
 
 // Steps are the checkboxes of a task's Plan ("- [ ] text"). They live in the body, so
 // they need no field of their own; see memory.Steps.
 
-// stepTexts are the journal lines a change of step writes, per language.
-var stepTexts = map[string]map[string]string{
-	"en": {"done": "Step %d done: %s", "undone": "Step %d not done after all: %s", "added": "Step added to the plan: %s",
-		"noplan": "task %q has no Plan section (a line \"## Plan\") to keep its steps in",
-		"moved":  "step %d no longer says %q: the plan changed since. Look at it again and choose the step once more"},
-	"es": {"done": "Paso %d hecho: %s", "undone": "Paso %d sin hacer, al final: %s", "added": "Paso añadido al plan: %s",
-		"noplan": "la tarea %q no tiene sección Plan (una línea \"## Plan\") donde guardar sus pasos",
-		"moved":  "el paso %d ya no dice %q: el plan ha cambiado desde entonces. Míralo otra vez y vuelve a elegir el paso"},
-}
-
-func (b *Brain) stepText(key string) string { return stepTexts[b.lang()][key] }
+// stepText is a journal line or error about steps, in the user's language.
+func (b *Brain) stepText(key string) string { return i18n.T(b.Language, "step."+key) }
 
 // StepInput ticks or unticks one step of a task, found by its number (1 for the first)
 // or, when Number is 0, by its text. Expect, with a number, is the exact text the step

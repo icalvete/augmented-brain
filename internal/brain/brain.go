@@ -19,6 +19,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/format"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/templates"
 )
@@ -107,25 +108,6 @@ func (b *Brain) get(id, kind string) (*memory.Note, error) {
 		return nil, fmt.Errorf("%q is a %s, not a %s", id, n.Header.Type, kind)
 	}
 	return n, nil
-}
-
-// texts the program writes into notes, per language.
-var texts = map[string]map[string]string{
-	"en": {"next": "Agree on the definition", "status": "Status: %s → %s.", "closed": "Closed: %s",
-		"parked": "Parked. Next: %s", "resumed": "Resumed.",
-		"compacted": "The conversation was compacted; Claude Code's summary is in %s.",
-		"recovered": "Recovered from the panel what was said in a session that did not end (started %s); it is in %s."},
-	"es": {"next": "Acordar la definición", "status": "Estado: %s → %s.", "closed": "Cerrada: %s",
-		"parked": "Aparcada. Siguiente: %s", "resumed": "Retomada.",
-		"compacted": "Se compactó la conversación; el resumen de Claude Code está en %s.",
-		"recovered": "Recuperado desde el panel lo dicho en una sesión que no terminó (empezó %s); está en %s."},
-}
-
-func (b *Brain) text(key string) string {
-	if t, ok := texts[b.Language]; ok {
-		return t[key]
-	}
-	return texts["en"][key]
 }
 
 // ---- tasks ----
@@ -318,8 +300,12 @@ func (b *Brain) Journal(id, entry string) (*memory.Note, error) {
 	return &cp, b.save(&cp)
 }
 
+// text is one of the entries the program writes into notes itself, in the user's
+// language (i18n, "note.<key>").
+func (b *Brain) text(key string) string { return i18n.T(b.Language, "note."+key) }
+
 // JournalText adds to a task's journal one of the entries the program writes itself,
-// in the user's language (texts above).
+// in the user's language.
 func (b *Brain) JournalText(key, id string, args ...any) (*memory.Note, error) {
 	return b.Journal(id, fmt.Sprintf(b.text(key), args...))
 }
@@ -602,9 +588,4 @@ func (b *Brain) brokenID(id string) bool {
 	return false
 }
 
-func (b *Brain) lang() string {
-	if _, ok := texts[b.Language]; ok {
-		return b.Language
-	}
-	return "en"
-}
+func (b *Brain) lang() string { return i18n.Known(b.Language) }

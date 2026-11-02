@@ -12,6 +12,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
@@ -66,11 +67,7 @@ func PostCompact(in io.Reader, cfgDir string) error {
 		return nil
 	}
 	now := Now()
-	head := map[string]string{"en": "# Conversation summary, %s\n\nWritten by Claude Code when it compacted the conversation (%s).",
-		"es": "# Resumen de la conversación, %s\n\nLo escribió Claude Code al compactar la conversación (%s)."}[c.Language]
-	if head == "" {
-		head = "# Conversation summary, %s\n\nWritten by Claude Code when it compacted the conversation (%s)."
-	}
+	head := i18n.T(c.Language, "note.summary.head")
 
 	unlock, err := filelock.Lock(filepath.Join(cfgDir, backup.NotesLock))
 	if err != nil {

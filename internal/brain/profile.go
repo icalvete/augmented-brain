@@ -2,13 +2,13 @@ package brain
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
 
@@ -29,18 +29,6 @@ func ProfileEmpty(cfgDir string) bool {
 	return emptyName.Match(data)
 }
 
-var profileWords = map[string][4]string{
-	// title, summary, about heading, work heading
-	"en": {"Profile", "Who I am and how I like to work", "About me", "How I like to work"},
-	"es": {"Perfil", "Quién soy y cómo me gusta trabajar", "Sobre mí", "Cómo me gusta trabajar"},
-}
-
-// profileErr refuses a heading that would split the profile in the wrong place.
-var profileErr = map[string]string{
-	"en": "the profile already has the heading \"## %s\": write what goes under it in the work style, without the heading",
-	"es": "el perfil ya tiene el encabezado \"## %s\": escribe lo que va debajo en la forma de trabajar, sin el encabezado",
-}
-
 // ProfileInput is what the user says about themselves, in their own words.
 type ProfileInput struct {
 	Name      string
@@ -54,18 +42,11 @@ func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
 	if name == "" {
 		return nil, errors.New("the profile needs the user's name")
 	}
+	word := func(key string) string { return i18n.T(b.Language, "profile."+key) }
 	if workStyleIn(in.About) || workStyleIn(in.WorkStyle) {
-		w := profileWords[b.lang()]
-		return nil, fmt.Errorf(profileErr[b.lang()], w[3])
+		return nil, errors.New(i18n.T(b.Language, "profile.heading", word("work")))
 	}
-	w, ok := profileWords[b.Language]
-	if !ok {
-		w = profileWords["en"]
-	}
-	label := "Name"
-	if b.Language == "es" {
-		label = "Nombre"
-	}
+	label := i18n.T(b.Language, "profile.name")
 	created := b.today()
 	if data, err := os.ReadFile(filepath.Join(b.ConfigDir, ProfileFile)); err == nil {
 		if old, err := memory.Parse(ProfileFile, data); err == nil && old.Header.Created != "" {
@@ -73,17 +54,17 @@ func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
 		}
 	}
 	var body strings.Builder
-	body.WriteString("## " + w[2] + "\n- " + label + ": " + name + "\n")
+	body.WriteString("## " + word("about") + "\n- " + label + ": " + name + "\n")
 	if about := strings.TrimSpace(in.About); about != "" {
 		body.WriteString(about + "\n")
 	}
-	body.WriteString("\n## " + w[3] + "\n")
+	body.WriteString("\n## " + word("work") + "\n")
 	if style := strings.TrimSpace(in.WorkStyle); style != "" {
 		body.WriteString(style + "\n")
 	}
 	n := &memory.Note{
 		Path: ProfileFile,
-		Header: memory.Header{ID: "profile", Type: "profile", Title: w[0], Summary: w[1],
+		Header: memory.Header{ID: "profile", Type: "profile", Title: word("title"), Summary: word("summary"),
 			Created: created, Updated: b.today()},
 		Body: body.String(),
 	}
@@ -93,12 +74,12 @@ func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
 // profileName matches the name line of a profile, in either language.
 var profileName = regexp.MustCompile(`^- (?:Name|Nombre):[ \t]*(.*)$`)
 
-// heading reports whether line is the heading at index k of profileWords (2 for About,
-// 3 for the work style), in either language.
-func heading(line string, k int) bool {
+// heading reports whether line is the profile's heading key ("profile.about",
+// "profile.work"), in either language.
+func heading(line string, key string) bool {
 	l := strings.TrimSpace(line)
-	for _, w := range profileWords {
-		if l == "## "+w[k] {
+	for _, w := range i18n.All(key) {
+		if l == "## "+w {
 			return true
 		}
 	}
@@ -109,7 +90,7 @@ func heading(line string, k int) bool {
 // it would split the profile in the wrong place.
 func workStyleIn(text string) bool {
 	for _, l := range strings.Split(text, "\n") {
-		if heading(l, 3) {
+		if heading(l, "profile.work") {
 			return true
 		}
 	}
@@ -138,7 +119,7 @@ func LoadProfile(cfgDir string) (ProfileInput, error) {
 	rest := lines
 	var in ProfileInput
 	for i, l := range lines {
-		if !heading(l, 3) {
+		if !heading(l, "profile.work") {
 			continue
 		}
 		end := len(lines)
@@ -156,7 +137,7 @@ func LoadProfile(cfgDir string) (ProfileInput, error) {
 	aboutHeading, otherHeading := false, false
 	for _, l := range rest {
 		if strings.HasPrefix(l, "## ") {
-			if !aboutHeading && !otherHeading && heading(l, 2) {
+			if !aboutHeading && !otherHeading && heading(l, "profile.about") {
 				aboutHeading = true
 				continue
 			}

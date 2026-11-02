@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
 
@@ -16,8 +17,6 @@ type PersonInput struct {
 	Role    string   // who they are to the user: "my manager", "client, runs the shop"
 	Notes   string   // anything else worth remembering
 }
-
-var alsoWord = map[string]string{"en": "also", "es": "también"}
 
 // SavePerson creates a person, or updates them when one with the same name exists (see
 // findPerson). The summary carries the role and the other names, so the index alone
@@ -42,10 +41,7 @@ func (b *Brain) SavePerson(in PersonInput) (*memory.Note, error) {
 		}
 	}
 	if len(aliases) > 0 {
-		also := alsoWord[b.Language]
-		if also == "" {
-			also = alsoWord["en"]
-		}
+		also := i18n.T(b.Language, "person.also")
 		if summary != "" {
 			summary += " · "
 		}
@@ -108,7 +104,7 @@ func (b *Brain) findPerson(name string) (n *memory.Note, byAlias bool) {
 
 // aliasesOf reads the other names back from a person's summary ("… · also: A, B").
 func aliasesOf(summary string) []string {
-	for _, also := range alsoWord {
+	for _, also := range i18n.All("person.also") {
 		if i := strings.LastIndex(summary, also+": "); i >= 0 {
 			var out []string
 			for _, a := range strings.Split(summary[i+len(also)+2:], ",") {

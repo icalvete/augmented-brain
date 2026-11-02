@@ -15,53 +15,8 @@ import (
 	"github.com/icalvete/augmented-brain/internal/setup"
 )
 
-var messages = map[string]map[string]string{
-	"en": {
-		"space":    "Space name (one part of your life: work, personal…)",
-		"work":     "Work folder: opening your assistant here selects this space",
-		"memory":   "Memory folder: where this space's notes will live",
-		"created":  "Created:",
-		"config":   "Configuration:",
-		"added":    "Space %q added.",
-		"default":  "%q is now your default space: it is used outside every space's folder, and its backup keeps your profile.",
-		"plugin?":  "Install the Claude Code plugin now? (yes, no)",
-		"yes":      "yes",
-		"plugin":   "Claude Code plugin installed. It loads your space when a session starts, and guards commands and file writes.",
-		"noclaude": "Claude Code was not found. Install it, then add the plugin with:",
-		"later":    "To install the Claude Code plugin later:",
-		"ready":    "augmented brain is ready. Your spaces:",
-		"now":      "Now open Claude in your work space:\n  cd %s && claude\nThe first time, it will ask who you are and how you like to work.",
-		"newterm":  "Now open a new terminal (so it finds what was just installed) and type:\n  cd %s && claude\nThe first time, Claude will ask who you are and how you like to work.",
-		"launch":   "From now on, to work: open a new terminal and type\n  cd %s && claude",
-		"desktop":  "From now on, to work: open the Claude app, go to the Code tab and click + New. Without choosing a folder you work in your personal space; for the work one, pick the folder %s with Choose….\n(Or, in a new terminal: cd %[1]s && claude)",
-	},
-	"es": {
-		"space":    "Nombre del espacio (una parte de tu vida: work, personal…)",
-		"work":     "Carpeta de trabajo: abrir tu asistente aquí elige este espacio",
-		"memory":   "Carpeta de la memoria: donde vivirán las notas de este espacio",
-		"created":  "Creado:",
-		"config":   "Configuración:",
-		"added":    "Espacio %q añadido.",
-		"default":  "%q es ahora tu espacio por defecto: se usa fuera de las carpetas de los espacios, y su copia de seguridad guarda tu perfil.",
-		"plugin?":  "¿Instalo ahora el plugin de Claude Code? (sí, no)",
-		"yes":      "sí",
-		"plugin":   "Plugin de Claude Code instalado. Carga tu espacio al empezar cada sesión y vigila los comandos y las escrituras de ficheros.",
-		"noclaude": "No encuentro Claude Code. Instálalo y después añade el plugin con:",
-		"later":    "Para instalar el plugin de Claude Code más adelante:",
-		"ready":    "augmented brain está listo. Tus espacios:",
-		"now":      "Ahora abre Claude en tu espacio de trabajo:\n  cd %s && claude\nLa primera vez te preguntará quién eres y cómo te gusta trabajar.",
-		"newterm":  "Ahora abre una terminal nueva (para que encuentre lo recién instalado) y escribe:\n  cd %s && claude\nLa primera vez, Claude te preguntará quién eres y cómo te gusta trabajar.",
-		"launch":   "A partir de ahora, para trabajar: abre una terminal nueva y escribe\n  cd %s && claude",
-		"desktop":  "A partir de ahora, para trabajar: abre la app de Claude, ve a la pestaña Code y pulsa + New. Sin elegir carpeta trabajas en tu espacio personal; para el de trabajo, elige con Choose… la carpeta %s.\n(O, en una terminal nueva: cd %[1]s && claude)",
-	},
-}
-
-func msg(lang, key string) string {
-	if m, ok := messages[lang]; ok {
-		return m[key]
-	}
-	return messages["en"][key]
-}
+// msg is one of init's messages, unformatted.
+func msg(lang, key string) string { return i18n.T(lang, "init."+key) }
 
 // asker reads answers from the user, or takes the defaults when interactive is false.
 type asker struct {
@@ -100,18 +55,11 @@ const root = "~/augmented-brain"
 
 // defaultSpaces are the spaces `init` creates when it is not asked anything.
 func defaultSpaces(lang string) []string {
-	if lang == "es" {
-		return []string{"trabajo", "personal"}
-	}
-	return []string{"work", "personal"}
+	return []string{msg(lang, "space.work"), "personal"}
 }
 
-func notesFolder(lang string) string {
-	if lang == "es" {
-		return "notas"
-	}
-	return "notes"
-}
+// notesFolder is the name of the notes folder inside a space's work folder.
+func notesFolder(lang string) string { return msg(lang, "notes") }
 
 // defaults fills in ~/augmented-brain/<space> as the work folder and its notes folder
 // as the memory.

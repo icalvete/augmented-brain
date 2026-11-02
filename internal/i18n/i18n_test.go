@@ -10,21 +10,12 @@ var verb = regexp.MustCompile(`%[-+# 0-9.]*[a-zA-Z]`)
 // Every message exists in every language, with the same placeholders in the same order,
 // so a translation can never swallow or misplace a value.
 func TestCatalog(t *testing.T) {
-	for lang, msgs := range messages {
-		for key := range messages["en"] {
-			if _, ok := msgs[key]; !ok {
-				t.Errorf("%s: missing %q", lang, key)
-			}
+	for key, m := range messages {
+		if m.en == "" || m.es == "" {
+			t.Errorf("%q: a language is empty: %+v", key, m)
 		}
-		for key, f := range msgs {
-			en, ok := messages["en"][key]
-			if !ok {
-				t.Errorf("%s: %q does not exist in English", lang, key)
-				continue
-			}
-			if a, b := verb.FindAllString(en, -1), verb.FindAllString(f, -1); fmtString(a) != fmtString(b) {
-				t.Errorf("%s %q: placeholders %v, English has %v", lang, key, b, a)
-			}
+		if a, b := verb.FindAllString(m.en, -1), verb.FindAllString(m.es, -1); fmtString(a) != fmtString(b) {
+			t.Errorf("%q: placeholders %v in Spanish, %v in English", key, b, a)
 		}
 	}
 }

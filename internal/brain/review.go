@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
@@ -239,7 +240,7 @@ func (b *Brain) SaveReview(summary string) (*memory.Note, error) {
 	if summary == "" {
 		return nil, errors.New("a review needs a summary: what was decided")
 	}
-	title := map[string]string{"en": "Weekly review %s", "es": "Revisión semanal %s"}[b.lang()]
+	title := i18n.T(b.Language, "review.title")
 	title = fmt.Sprintf(title, b.today())
 	first := strings.SplitN(summary, "\n", 2)[0]
 	if len([]rune(first)) > 120 {

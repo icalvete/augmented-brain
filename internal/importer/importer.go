@@ -31,6 +31,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
@@ -504,11 +505,6 @@ var known = map[string]bool{
 	"name": true, "description": true, "metadata": true, "modified": true,
 }
 
-var defaults = map[string]map[string]string{
-	"en": {"next": "Review this imported task and set its next step"},
-	"es": {"next": "Revisar esta tarea importada y poner su siguiente paso"},
-}
-
 // convert turns a source file into a note of augmented brain. It returns the kind
 // "user" for a note about the user, which belongs in the profile.
 func (s *source) convert(titles map[string]string, o Options) (*memory.Note, string, []Issue) {
@@ -606,15 +602,12 @@ func (s *source) taskFields(h *memory.Header, lang string) []Issue {
 		h.Status = "parked"
 		issues = append(issues, Issue{s.rel, TaskDefaults, ""})
 	}
-	if defaults[lang] == nil {
-		lang = "en"
-	}
 	if h.Status != "closed" {
 		if h.WaitingOn == "" {
 			h.WaitingOn = "me"
 		}
 		if h.Next == "" {
-			h.Next = defaults[lang]["next"]
+			h.Next = i18n.T(lang, "note.imported.next")
 		}
 	}
 	h.Watch = s.watch()
