@@ -65,7 +65,8 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
   como él, y `~/code/app-*` vale para cada carpeta `app-<nombre>` junto a `app`. Incluso
   ahí, un push que reescribe o borra lo que hay en el remoto (`--force`, `--delete`,
   `+rama`) te pregunta antes. Y un `rm -r` de tu carpeta personal entera o del disco
-  entero no se ejecuta nunca.
+  entero no se ejecuta nunca, tampoco después de un `cd` (`cd ~ && rm -rf .`). Después
+  de un `cd` que el guardia no puede seguir (`cd "$DIR"`), un `rm -r .` te pregunta.
 
 También mira dentro de `ssh`, de `bash -c`, de los bucles y de lo que una tubería le pasa
 a una shell (`echo 'sudo …' | bash`). Si no puede leer su configuración, te pregunta antes
@@ -246,9 +247,12 @@ augmented-brain backup --all    # todos
    augmented-brain restore https://github.com/tu-usuario/augmented-brain-trabajo.git
    ```
    Sustituye el espacio vacío por el tuyo: notas, tareas, reglas y la configuración del
-   espacio. Tu perfil viene con el espacio por defecto (`personal`). Las listas del
-   guardia (producción, máquinas intocables) no van en ninguna copia, porque pueden
-   nombrar máquinas de tu trabajo: la siguiente sesión te ofrece volver a pedírtelas. Si ese espacio ya tuviera notas tuyas, no lo pisa. Si algo falla a
+   espacio. Tu perfil viene con el espacio por defecto (`personal`), y ese espacio vuelve
+   a ser el de por defecto. Las listas del guardia (producción, máquinas intocables) no
+   van en ninguna copia, porque pueden nombrar máquinas de tu trabajo: `restore` y
+   `doctor` lo dicen, y la siguiente sesión te ofrece volver a pedírtelas. Hasta
+   entonces, nada pregunta antes de tocar producción. Si ese espacio ya tuviera notas
+   tuyas, no lo pisa. Si algo falla a
    medias, el espacio vacío se queda como estaba.
 3. Abre Claude. Sigue donde lo dejaste, y la copia sigue haciéndose sola.
 
@@ -314,9 +318,10 @@ espacio.
 
 Lo demás también viene. Las capturas de tu `inbox.md` antiguo (cada línea `- …`) van al
 buzón del espacio de `*`, con su fecha y nunca dos veces. `archive/` y `docs/<tarea>/` se
-copian tal cual, junto a su nota. Una nota con un secreto escrito (una clave, un token)
-se importa, pero sale en el informe: la copia de seguridad no la sube hasta que se quite.
-`augmented-brain check` también la nombra.
+copian tal cual, junto a su nota, también si vuelves a importar más tarde. Un fichero con
+un secreto escrito (una clave, un token), sea nota o documento, se importa, pero sale en
+el informe: la copia de seguridad no lo sube hasta que se quite. `augmented-brain check`
+también lo nombra.
 
 ## El panel
 

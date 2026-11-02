@@ -30,7 +30,7 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 	yes := flags.Bool("yes", false, "do not ask")
 	withConfig := flags.Bool("config", false, "also remove the configuration and the profile")
 	all := flags.Bool("all", false, "start from scratch: also the configuration, the profile and the notes of every space")
-	if err := flags.Parse(args); err != nil {
+	if _, ok := parseArgs(flags, args, 0, errOut); !ok {
 		return 2
 	}
 	if *all {

@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased
+
+From the second rehearsal of a real migration:
+
+- **A restored machine is the same again.** The space that was the default one is the
+  default again (before, restoring two spaces left none, and then no backup kept the
+  profile). The guard's lists are still in no backup, since they may name work
+  machines: `restore` and `doctor` now say so, until you give them again.
+- **The installer refreshes the package lists before installing git** (`apt-get
+  update`): with old lists, apt failed and the installation stopped.
+- **`import` again puts each file where its note is.** A second `--apply` sent the
+  archive and the documents of notes imported before to the space of `*`. A secret in a
+  document or an archive file is named in the report too, and `check` looks at every
+  file the backup takes, not only the notes.
+- **The guard follows `cd`.** `cd ~ && rm -rf .` is never run, and `git -C` with a
+  relative path counts from where the `cd` went. `rm -rf *` in a folder is no longer
+  taken for the whole disk.
+- **Flags go anywhere** (`import --map m folder --apply`), and an argument too many is
+  an error instead of being ignored.
+
 ## 0.5.2-alpha
 
 Released 2026-11-02.

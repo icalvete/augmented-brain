@@ -24,7 +24,7 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 	fs := flag.NewFlagSet("update", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	pluginOnly := fs.Bool("plugin", false, "update only the Claude Code plugin")
-	if err := fs.Parse(args); err != nil {
+	if _, ok := parseArgs(fs, args, 0, errOut); !ok {
 		return 2
 	}
 	lang := i18n.FromEnv()

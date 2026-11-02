@@ -65,8 +65,14 @@ func TestImportInboxAndDocs(t *testing.T) {
 	if _, problems, err := memory.LoadSpace(c.Spaces["work"].Memory, c.SharedDir()); err != nil || len(problems) > 0 {
 		t.Errorf("work after importing docs/: %v %v", problems, err)
 	}
-	// A second run adds no capture twice.
+	// A second run adds no capture twice, and the files of notes imported before still
+	// go with them, not to the space of the rest.
 	again, _ := MakePlan(src, c, o)
+	for _, it := range again.Items {
+		if it.Source == "docs/task-school/list.csv" && it.Space != "home" {
+			t.Errorf("on a second run, %s goes to %q", it.Source, it.Space)
+		}
+	}
 	if done, _ := Apply(again, c, "en"); done.Inbox["work"] != 0 {
 		t.Errorf("captures added twice: %+v", done)
 	}
@@ -78,17 +84,24 @@ func TestImportFlagsSecrets(t *testing.T) {
 	c, _ := spaces(t)
 	key := "AK" + "IA" + "QWERTYUIOPASDFGH" // built here, so this file holds no key-shaped text
 	src := sourceDir(t, map[string]string{
-		"task-keys.md": "---\nname: task-keys\ndescription: Keys\nmetadata:\n  type: project\n---\nThe key: " + key + "\n",
+		"task-keys.md":             "---\nname: task-keys\ndescription: Keys\nmetadata:\n  type: project\n---\nThe key: " + key + "\n",
+		"docs/task-keys/env.txt":   "KEY=" + key + "\n",
+		"archive/task-keys-old.md": "Old key: " + key + "\n",
 	})
 	p, err := MakePlan(src, c, Options{Map: map[string]string{"*": "work"}, Language: "en"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	found := false
-	for _, is := range p.Issues {
-		found = found || (is.Kind == Secret && is.Source == "task-keys.md" && is.Detail == "an AWS access key")
+	for _, file := range []string{"task-keys.md", "docs/task-keys/env.txt", "archive/task-keys-old.md"} {
+		found := false
+		for _, is := range p.Issues {
+			found = found || (is.Kind == Secret && is.Source == file && is.Detail == "an AWS access key")
+		}
+		if !found {
+			t.Errorf("secret in %s not reported: %+v", file, p.Issues)
+		}
 	}
-	if !found || p.Count()["work"]["task"] != 1 {
-		t.Errorf("secret not reported, or the note not imported: %+v %v", p.Issues, p.Count())
+	if p.Count()["work"]["task"] != 1 {
+		t.Errorf("the note not imported: %v", p.Count())
 	}
 }

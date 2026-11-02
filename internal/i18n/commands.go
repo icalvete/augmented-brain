@@ -134,6 +134,10 @@ var commandMessages = map[string]msg{
 		en: "✓ Space %s restored: its notes are in %s",
 		es: "✓ Espacio %s recuperado: sus notas están en %s",
 	},
+	"restore.nolists": {
+		en: "The guard's lists (production AWS profiles, untouchable hosts) are not in any backup: your first Claude session offers to ask for them again. Until then, nothing asks before touching production.",
+		es: "Las listas del guardia (perfiles de AWS de producción, máquinas intocables) no van en ninguna copia: tu primera sesión de Claude se ofrece a preguntártelas otra vez. Hasta entonces, nada pregunta antes de tocar producción.",
+	},
 	"restore.next": {
 		en: "Now open Claude in it:\n  cd %s && claude",
 		es: "Ahora abre Claude en él:\n  cd %s && claude",
@@ -205,6 +209,10 @@ var commandMessages = map[string]msg{
 	"uninstall.done": {
 		en: "✓ augmented brain removed. To have it back: the same install command; your notes are still there.",
 		es: "✓ augmented brain quitado. Para volver a tenerlo: el mismo comando de instalación; tus notas siguen ahí.",
+	},
+	"args.extra": {
+		en: "This command does not take: %s. Run `augmented-brain help` to see what it takes.",
+		es: "Este comando no lleva: %s. Lanza `augmented-brain help` para ver qué lleva.",
 	},
 	"usage": {
 		en: `augmented brain: memory, method and a guard for AI coding assistants.

@@ -161,7 +161,7 @@ wait_for_xcode() {
 
 git_install() {
   if [ "$os" = darwin ]; then echo "xcode-select --install"; return; fi
-  for pm in "apt-get:sudo apt install -y git" "dnf:sudo dnf install -y git" "pacman:sudo pacman -S --noconfirm git" "zypper:sudo zypper install -y git"; do
+  for pm in "apt-get:sudo apt-get update -q && sudo apt-get install -y git" "dnf:sudo dnf install -y git" "pacman:sudo pacman -S --noconfirm git" "zypper:sudo zypper install -y git"; do
     if command -v "${pm%%:*}" >/dev/null 2>&1; then echo "${pm#*:}"; return; fi
   done
   echo "your system's package manager"

@@ -25,12 +25,22 @@ func TestRmHomeOrDisk(t *testing.T) {
 		"rm -R --no-preserve-root /": Deny,
 		"rm --recursive -- " + filepath.ToSlash(home): Deny, // Bash on Windows takes / too
 		"cd /tmp && rm -rf " + filepath.ToSlash(home): Deny,
-		"rm -rf .":                       Deny, // run in the home folder
-		"rm -rf ~/build":                 Allow,
-		"rm -rf build":                   Allow,
-		"rm ~/notes.txt":                 Allow, // not recursive
-		"rm -rf /tmp/x":                  Allow,
-		"rm -rf ~/build ~/.cache ~ /tmp": Deny,
+		"rm -rf .":                        Deny, // run in the home folder
+		"rm -rf ~/build":                  Allow,
+		"rm -rf build":                    Allow,
+		"rm ~/notes.txt":                  Allow, // not recursive
+		"rm -rf /tmp/x":                   Allow,
+		"rm -rf ~/build ~/.cache ~ /tmp":  Deny,
+		"cd ~ && rm -rf .":                Deny,
+		"cd / ; rm -rf *":                 Deny,
+		"cd && rm -rf ./":                 Deny,
+		"cd ~/build && rm -rf ..":         Deny,
+		"cd ~/build && rm -rf .":          Allow,
+		"cd ~/build && rm -rf *":          Allow,
+		"cd /tmp && cd - && rm -rf .":     Ask, // the guard cannot tell where cd - goes
+		"cd \"$DIR\" && rm -rf *":         Ask,
+		"cd \"$DIR\" && rm -rf build":     Allow,
+		"cd \"$DIR\" && cd ~ && rm -rf .": Deny,
 	} {
 		if got := p.Command(cmd).Verdict; got != want {
 			t.Errorf("%s: %v, want %v", cmd, got, want)
@@ -64,7 +74,11 @@ func TestPushThatRewrites(t *testing.T) {
 		"git -C ~/notes " + push + " origin :old":         Ask,
 		"git -C ~/notes " + push + " --mirror":            Ask,
 		"git -C ~/notes " + push + " --tags":              Allow,
-		"git -C ~/shared-repo " + push:                    Ask, // in both lists: asking wins
+		"git -C ~/shared-repo " + push:                    Ask,   // in both lists: asking wins
+		"cd ~/notes && git -C . " + push:                  Allow, // -C . is where the cd went
+		"cd ~ && git -C notes " + push:                    Allow,
+		"cd /tmp && git -C . " + push:                     Deny,
+		"cd \"$R\" && git -C . " + push:                   Deny, // the guard cannot tell where
 	} {
 		if got := p.Command(cmd).Verdict; got != want {
 			t.Errorf("%s: %v, want %v", cmd, got, want)

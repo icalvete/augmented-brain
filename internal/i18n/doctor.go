@@ -122,6 +122,14 @@ var doctorMessages = map[string]msg{
 		en: "guard: %d production AWS profiles and %d untouchable hosts, for every space on this machine",
 		es: "guardia: %d perfiles de AWS de producción y %d máquinas intocables, para todos los espacios de esta máquina",
 	},
+	"doctor.nolists": {
+		en: "guard: this machine was restored from a backup, and backups do not carry the guard's lists (production AWS profiles, untouchable hosts). Until you give them again, nothing asks before touching production",
+		es: "guardia: esta máquina se recuperó de una copia de seguridad, y las copias no llevan las listas del guardia (perfiles de AWS de producción, máquinas intocables). Hasta que las vuelvas a dar, nada pregunta antes de tocar producción",
+	},
+	"doctor.nolists.fix": {
+		en: "open a Claude session: it offers to ask for them. Or add `production_aws_profiles` and `untouchable_hosts` under `language` in %s",
+		es: "abre una sesión de Claude: se ofrece a preguntártelas. O añade `production_aws_profiles` y `untouchable_hosts` bajo `language` en %s",
+	},
 	"doctor.nodefault": {
 		en: "no default space: no backup keeps your profile, and sessions outside every space's folder load none",
 		es: "no hay espacio por defecto: ninguna copia de seguridad guarda tu perfil, y las sesiones fuera de las carpetas de los espacios no cargan ninguno",

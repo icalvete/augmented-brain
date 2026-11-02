@@ -164,3 +164,25 @@ func TestGuardCheck(t *testing.T) {
 		t.Errorf("silent hook: %+v", c)
 	}
 }
+
+// After a restore that brought no guard lists, doctor warns until they are given again.
+func TestNoListsAfterRestore(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: "~/work", Memory: "~/brain/work"}); err != nil {
+		t.Fatal(err)
+	}
+	run := func() *Check {
+		return find(Run(Env{ConfigDir: cfg, WorkDir: home, LookPath: allTools, Plugin: yes, Hook: denies}), "restored from a backup")
+	}
+	if c := run(); c != nil {
+		t.Errorf("not restored, but doctor says so: %+v", c)
+	}
+	if err := os.WriteFile(filepath.Join(cfg, ".ask-safety"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if c := run(); c == nil || c.Status != Warning {
+		t.Errorf("no warning after a restore without lists: %+v", c)
+	}
+}

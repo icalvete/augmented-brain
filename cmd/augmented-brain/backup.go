@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -40,7 +41,7 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 	all := fs.Bool("all", false, "back up every space, not only this folder's")
 	only := fs.String("space", "", "back up this space, wherever you are")
 	auto := fs.Bool("auto", false, "started by the assistant when a session ends: quiet, never asks for a password")
-	if err := fs.Parse(args); err != nil {
+	if _, ok := parseArgs(fs, args, 0, errOut); !ok {
 		return 2
 	}
 	if *auto {
@@ -104,11 +105,12 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 	o := backup.RestoreOptions{}
 	fs.StringVar(&o.Memory, "memory", "", "where to put the space's notes (default: where they were, inside the work folder)")
 	fs.StringVar(&o.WorkFolder, "work", "", "work folder that selects the space (default: the one saved in the backup)")
-	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
-		o.URL, args = args[0], args[1:]
-	}
-	if err := fs.Parse(args); err != nil {
+	rest, ok := parseArgs(fs, args, 1, errOut)
+	if !ok {
 		return 2
+	}
+	if len(rest) > 0 {
+		o.URL = rest[0]
 	}
 	if o.URL == "" {
 		fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.restore"))
@@ -129,6 +131,9 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 		lang = c.Language
 	}
 	fmt.Fprintln(out, i18n.T(lang, "restore.done", s.Name, paths.Tilde(s.Memory)))
+	if _, err := os.Stat(filepath.Join(dir, config.AskSafetyFile)); err == nil {
+		fmt.Fprintln(out, i18n.T(lang, "restore.nolists"))
+	}
 	// A new machine has no plugin yet: install it, as init does.
 	if ok, err := claudecode.Installed(claudecode.Exec); err == nil && !ok {
 		installPlugin(&asker{out: out}, lang, out, errOut)

@@ -26,16 +26,13 @@ func cmdImport(args []string, out, errOut io.Writer) int {
 	mapFile := fs.String("map", "", "file that says which space each area goes to: lines \"area-x = space\", and \"* = space\" for the rest")
 	base := fs.String("repos-base", "", "folder the repos: paths of the source are relative to")
 	apply := fs.Bool("apply", false, "write the notes (without it, nothing is written)")
-	var src string
-	// The folder may come before or after the flags.
-	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
-		src, args = args[0], args[1:]
-	}
-	if err := fs.Parse(args); err != nil {
+	rest, ok := parseArgs(fs, args, 1, errOut) // the folder may come before, between or after the flags
+	if !ok {
 		return 2
 	}
-	if src == "" && fs.NArg() > 0 {
-		src = fs.Arg(0)
+	var src string
+	if len(rest) > 0 {
+		src = rest[0]
 	}
 	c, ok := loadConfig(errOut)
 	if !ok {

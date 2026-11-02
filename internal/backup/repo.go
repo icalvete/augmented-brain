@@ -105,6 +105,7 @@ func errSecrets(found []string) error {
 type scan struct {
 	big     []bigFile // left out of the backup
 	secrets []string  // "path (what)": they stop the backup
+	found   []Secret  // the same, apart
 	// unread is the first file that could not be read for secrets. It stops the backup
 	// too, but only after the big files are left out, and no later file is read.
 	unread error
@@ -153,6 +154,7 @@ func scanMemory(dir string) (*scan, error) {
 			sc.unread = err
 		case what != "":
 			sc.secrets = append(sc.secrets, fmt.Sprintf("%s (%s)", rel, what))
+			sc.found = append(sc.found, Secret{filepath.ToSlash(rel), what})
 		}
 		return nil
 	})
@@ -160,6 +162,23 @@ func scanMemory(dir string) (*scan, error) {
 		return nil, err
 	}
 	return sc, nil
+}
+
+// Secret is a file of a space with a secret written in it: its path (with forward
+// slashes) and the kind of secret.
+type Secret struct{ Path, Kind string }
+
+// Secrets lists the files of a space that a backup would refuse for a secret: every
+// file it takes (the notes, docs/, the archive, .augmented-brain/), not only the notes.
+func Secrets(dir string) ([]Secret, error) {
+	sc, err := scanMemory(dir)
+	if err != nil {
+		return nil, err
+	}
+	if sc.unread != nil {
+		return nil, sc.unread
+	}
+	return sc.found, nil
 }
 
 // leaveOutLarge keeps the big files out of the backup: it lists them in

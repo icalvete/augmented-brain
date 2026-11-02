@@ -267,6 +267,9 @@ func writeMeta(c *config.Config, s *config.Space) error {
 	}
 	carries := ProfileSpace(c) == s.Name
 	one := &config.Config{Language: c.Language, Spaces: map[string]*config.Space{s.Name: s}, Dir: dir}
+	if carries {
+		one.DefaultSpace = s.Name // so a restore makes it the default space again
+	}
 	if err := one.Save(); err != nil {
 		return err
 	}
@@ -311,7 +314,7 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	}
 	defer os.RemoveAll(tmp)
 	clone := filepath.Join(tmp, "space")
-	lang, s, err := cloneBackup(o.URL, clone)
+	lang, s, wasDefault, err := cloneBackup(o.URL, clone)
 	if err != nil {
 		return nil, err
 	}
@@ -341,6 +344,13 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 		return nil, err
 	}
 	sw.keep()
+	// The space that was the default one is the default again, unless this machine
+	// already has one: otherwise no backup would carry the profile and the shared notes.
+	if wasDefault {
+		if c2, err := config.Load(cfgDir); err == nil && c2.DefaultSpace == "" {
+			_ = config.SetDefaultSpace(cfgDir, s.Name)
+		}
+	}
 	// The untouched space now lives elsewhere: remove it, unless the restored notes went
 	// inside it.
 	if old != nil && !replacing && !paths.Within(mem, old.Memory) {
@@ -370,24 +380,24 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 }
 
 // cloneBackup clones the backup at url into dir and reads the configuration saved in
-// it: the language and the one space it holds.
-func cloneBackup(url, dir string) (string, *config.Space, error) {
+// it: the language, the one space it holds, and whether that was the default space.
+func cloneBackup(url, dir string) (string, *config.Space, bool, error) {
 	if out, err := runGit("clone", "-q", url, dir); err != nil {
-		return "", nil, fmt.Errorf("cloning %s: %v: %s", url, err, strings.TrimSpace(out))
+		return "", nil, false, fmt.Errorf("cloning %s: %v: %s", url, err, strings.TrimSpace(out))
 	}
 	var saved config.Config
 	if _, err := toml.DecodeFile(filepath.Join(dir, MetaDir, config.FileName), &saved); err != nil {
-		return "", nil, fmt.Errorf("%s is not an augmented brain backup: %v", url, err)
+		return "", nil, false, fmt.Errorf("%s is not an augmented brain backup: %v", url, err)
 	}
 	if len(saved.Spaces) != 1 {
-		return "", nil, fmt.Errorf("the backup in %s should hold one space, it holds %d", url, len(saved.Spaces))
+		return "", nil, false, fmt.Errorf("the backup in %s should hold one space, it holds %d", url, len(saved.Spaces))
 	}
 	var s *config.Space
 	for name, sp := range saved.Spaces {
 		s = sp
 		s.Name = name
 	}
-	return saved.Language, s, nil
+	return saved.Language, s, saved.DefaultSpace == s.Name, nil
 }
 
 // openConfig loads the configuration in cfgDir. A machine with none gets a new one, in

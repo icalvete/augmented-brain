@@ -104,7 +104,12 @@ func Run(e Env) []Check {
 	}
 
 	profiles, hosts := c.GuardLists()
-	add(Info, i18n.T(l, "doctor.lists", len(profiles), len(hosts)), "")
+	if _, err := os.Stat(filepath.Join(c.Dir, config.AskSafetyFile)); err == nil && len(profiles)+len(hosts) == 0 {
+		// Restored from a backup, which never carries the lists: say so until they are asked.
+		add(Warning, i18n.T(l, "doctor.nolists"), i18n.T(l, "doctor.nolists.fix", filepath.Join(c.Dir, config.FileName)))
+	} else {
+		add(Info, i18n.T(l, "doctor.lists", len(profiles), len(hosts)), "")
+	}
 
 	for _, name := range c.SpaceNames() {
 		out = append(out, space(c, c.Spaces[name])...)

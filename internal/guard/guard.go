@@ -7,6 +7,7 @@ package guard
 
 import (
 	"cmp"
+	"errors"
 	"maps"
 	"os"
 	"path/filepath"
@@ -51,6 +52,9 @@ type Policy struct {
 	// ConfigProblem, when not empty, says why the configuration could not be read: the
 	// lists above are unknown, so a command they would cover asks the user every time.
 	ConfigProblem string
+	// lost says a cd earlier in the command went somewhere the guard cannot tell
+	// (cd -, cd "$DIR"): relative paths after it are not resolved.
+	lost bool
 }
 
 var allow = Decision{Allow, ""}
@@ -86,6 +90,9 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 			// command further down the pipe (… | tee x | bash) gets it too.
 			cmds[i].stdin = output(cmds[i-1])
 			c.stdin = cmds[i].stdin
+		}
+		if len(c.words) > 0 && (base(c.words[0]) == "cd" || base(c.words[0]) == "pushd") {
+			p = p.cd(c.words[1:]) // the commands after it run there
 		}
 		if len(c.words) > 0 && base(c.words[0]) == "export" {
 			for _, a := range c.words[1:] {
@@ -329,15 +336,42 @@ func (p Policy) rm(args []string) Decision {
 				o = "~" + strings.TrimPrefix(o, v)
 			}
 		}
-		o = strings.TrimRight(strings.TrimSuffix(o, "*"), "/")
-		if o == "" {
+		if o = strings.TrimSuffix(o, "*"); o == "" {
+			o = "." // rm -r * empties the folder it runs in
+		}
+		if o = strings.TrimRight(o, "/"); o == "" {
 			return Decision{Deny, "`rm -r` of the whole disk is never run."}
+		}
+		if p.lost && !filepath.IsAbs(o) && !strings.HasPrefix(o, "~") && strings.Trim(o, "./") == "" {
+			return Decision{Ask, "`rm -r " + o + "` after a cd the guard cannot follow: it cannot tell which folder this deletes. The user confirms it."}
 		}
 		if d, err := p.resolve(o); err == nil && (d == "/" || (home != "" && d == home)) {
 			return Decision{Deny, "`rm -r` of the user's whole home folder (" + paths.Tilde(d) + ") is never run. Delete the files or folders inside it that need to go, one by one."}
 		}
 	}
 	return allow
+}
+
+// cd returns the policy for the commands after a cd (or pushd) with args: no folder is
+// the home folder, and one the guard cannot tell (-, a variable) leaves it lost.
+func (p Policy) cd(args []string) Policy {
+	dir := "~"
+	for _, a := range args {
+		if a == "-" || !strings.HasPrefix(a, "-") {
+			dir = a
+			break
+		}
+	}
+	if dir == "-" || strings.ContainsAny(dir, "$`") {
+		p.Cwd, p.lost = "", true
+		return p
+	}
+	if d, err := p.resolve(dir); err == nil {
+		p.Cwd, p.lost = d, false
+	} else {
+		p.Cwd, p.lost = "", true // not there: the cd fails, and where the rest runs depends on how it is joined
+	}
+	return p
 }
 
 // gitDir is where git -C next goes after the -C options before it, which are in dir.
@@ -722,6 +756,9 @@ func Write(text string) Decision {
 
 // resolve makes a path absolute against the command's folder and resolves symlinks.
 func (p Policy) resolve(path string) (string, error) {
+	if p.lost && !filepath.IsAbs(path) && path != "~" && !strings.HasPrefix(path, "~/") {
+		return "", errors.New("after a cd the guard cannot follow")
+	}
 	if !filepath.IsAbs(path) && path != "~" && !strings.HasPrefix(path, "~/") && p.Cwd != "" {
 		path = filepath.Join(p.Cwd, path)
 	}

@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -19,7 +20,6 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/doctor"
 	"github.com/icalvete/augmented-brain/internal/format"
-	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/hook"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/mcpserver"
@@ -87,6 +87,28 @@ func userLanguage() string {
 		}
 	}
 	return i18n.FromEnv()
+}
+
+// parseArgs reads fs's flags wherever they are among args (Go's flag package stops at
+// the first argument that is not a flag, and would leave the rest unread without a
+// word) and returns the other arguments, up to max of them. More than max is an error,
+// said in errOut: an argument is never ignored in silence.
+func parseArgs(fs *flag.FlagSet, args []string, max int, errOut io.Writer) ([]string, bool) {
+	var rest []string
+	for {
+		if err := fs.Parse(args); err != nil {
+			return nil, false
+		}
+		if fs.NArg() == 0 {
+			break
+		}
+		rest, args = append(rest, fs.Arg(0)), fs.Args()[1:]
+	}
+	if len(rest) > max {
+		fmt.Fprintln(errOut, i18n.T(userLanguage(), "args.extra", strings.Join(rest[max:], " ")))
+		return nil, false
+	}
+	return rest, true
 }
 
 // loadConfig loads the configuration, or says why it cannot (with what to run when
@@ -163,11 +185,10 @@ func cmdCheck(out, errOut io.Writer) int {
 	for _, p := range problems {
 		fmt.Fprintln(out, "  ✗", p.Error())
 	}
-	for _, id := range m.IDs() {
-		if data, err := os.ReadFile(filepath.Join(s.Memory, filepath.FromSlash(m.Notes[id].Path))); err == nil {
-			if what := guard.FindSecret(string(data)); what != "" {
-				fmt.Fprintln(out, "  !", i18n.T(c.Language, "check.secret", m.Notes[id].Path, i18n.T(c.Language, "secret."+what)))
-			}
+	// Every file the backup takes, docs/ and the archive too, not only the notes.
+	if found, err := backup.Secrets(s.Memory); err == nil {
+		for _, f := range found {
+			fmt.Fprintln(out, "  !", i18n.T(c.Language, "check.secret", f.Path, i18n.T(c.Language, "secret."+f.Kind)))
 		}
 	}
 	if b, err := brain.Open(c, s); err == nil {

@@ -83,7 +83,7 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 	fs, o, yes, lang := spaceFlags("init", errOut)
 	noPlugin := fs.Bool("no-plugin", false, "do not install the Claude Code plugin")
 	custom := fs.Bool("custom", false, "ask for the language, the space and its folders")
-	if err := fs.Parse(args); err != nil {
+	if _, ok := parseArgs(fs, args, 0, errOut); !ok {
 		return 2
 	}
 	a := &asker{in: bufio.NewReader(in), out: out, interactive: *custom && !*yes}
@@ -227,16 +227,13 @@ func installPlugin(a *asker, lang string, out, errOut io.Writer) bool {
 // unless --yes.
 func cmdSpaceAdd(args []string, in io.Reader, out, errOut io.Writer) int {
 	fs, o, yes, _ := spaceFlags("space add", errOut)
-	// The name may come first (space add personal --work ~/personal): Go's flag package
-	// stops at the first argument that is not a flag, so take it out before parsing.
-	if len(args) > 0 && !strings.HasPrefix(args[0], "-") {
-		o.Space, args = args[0], args[1:]
-	}
-	if err := fs.Parse(args); err != nil {
+	// The name may come first (space add personal --work ~/personal) or last.
+	rest, ok := parseArgs(fs, args, 1, errOut)
+	if !ok {
 		return 2
 	}
-	if fs.NArg() > 0 && o.Space == "" {
-		o.Space = fs.Arg(0)
+	if len(rest) > 0 && o.Space == "" {
+		o.Space = rest[0]
 	}
 	c, ok := loadConfig(errOut)
 	if !ok {

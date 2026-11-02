@@ -298,10 +298,13 @@ and `db01.example.com`).
 Each space backs up to its own private git repository: the memory folder itself is the
 repository. Every backup also copies this space's part of the configuration into
 `.augmented-brain/` inside the memory folder, so restoring on a new machine needs nothing
-else. The default space's backup (or the only space's) also carries the profile; no
-other backup does, so the personal profile never reaches a work repository. The
+else. The default space's backup (or the only space's) also carries the profile, and says
+`default_space` in its copy of the configuration, so a restore makes it the default
+space again when the machine has none; no other backup does, so the personal profile
+never reaches a work repository. The
 machine-wide guard lists are in no backup (they may name work machines): after a restore
-that leaves them empty, the next session offers to ask for them again. Paths are kept with `~`, so they point to the new machine's home, and
+that leaves them empty, `restore` and `doctor` say so, and the next session offers to ask for them
+again. Paths are kept with `~`, so they point to the new machine's home, and
 the notes go back to the same place inside the work folder. A restore also installs the
 Claude Code plugin when it is missing.
 

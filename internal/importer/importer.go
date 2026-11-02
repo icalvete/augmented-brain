@@ -231,29 +231,25 @@ func (pl *planner) scan(src string) error {
 			}
 			return nil
 		}
-		if strings.HasPrefix(rel, "docs/") && strings.Count(rel, "/") >= 2 {
-			pl.archived = append(pl.archived, rel) // a task's documents, of any kind
-			return nil
-		}
-		if !strings.HasSuffix(rel, ".md") {
-			return nil
-		}
-		if strings.HasPrefix(rel, "archive/") {
-			pl.archived = append(pl.archived, rel)
+		docs := strings.HasPrefix(rel, "docs/") && strings.Count(rel, "/") >= 2 // a task's documents, of any kind
+		if !docs && !strings.HasSuffix(rel, ".md") {
 			return nil
 		}
 		data, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}
+		if docs || strings.HasPrefix(rel, "archive/") {
+			pl.archived = append(pl.archived, rel)
+			pl.secretIn(rel, data) // copied as they are: the backup would refuse them too
+			return nil
+		}
 		if rel == "inbox.md" {
 			pl.inbox = captures(data, pl.o.Today)
 			return nil
 		}
 		pl.linkTitles(rel, data)
-		if what := guard.FindSecret(string(data)); what != "" {
-			pl.p.Issues = append(pl.p.Issues, Issue{rel, Secret, what})
-		}
+		pl.secretIn(rel, data)
 		s, err := read(rel, data)
 		switch {
 		case errors.Is(err, memory.ErrNoHeader):
@@ -268,6 +264,14 @@ func (pl *planner) scan(src string) error {
 		}
 		return nil
 	})
+}
+
+// secretIn names a file with a secret written in it in the report. It is imported all
+// the same: the person decides where the secret goes.
+func (pl *planner) secretIn(rel string, data []byte) {
+	if what := guard.FindSecret(string(data)); what != "" {
+		pl.p.Issues = append(pl.p.Issues, Issue{rel, Secret, what})
+	}
 }
 
 // linkTitles keeps the text of each link in a file as the title of the file it points
@@ -381,9 +385,18 @@ func (pl *planner) placeArchives() {
 			base = strings.Split(rel, "/")[1]
 		}
 		sp, best := "", ""
-		for id, s := range pl.ids {
+		owns := func(id, s string) {
 			if (base == id || strings.HasPrefix(base, id+"-")) && len(id) > len(best) {
 				sp, best = s, id
+			}
+		}
+		for id, s := range pl.ids {
+			owns(id, s)
+		}
+		// A note imported before is not in this plan, but its files still go with it.
+		for s, m := range pl.existing {
+			for id := range m.Notes {
+				owns(id, s)
 			}
 		}
 		if sp == "" {

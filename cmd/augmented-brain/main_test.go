@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"flag"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -71,5 +73,47 @@ func TestUsageLanguage(t *testing.T) {
 	t.Setenv("AB_LANGUAGE", "en")
 	if run([]string{"help"}, nil, &out, &errOut); !strings.Contains(out.String(), "Uso:") {
 		t.Errorf("Spanish configuration:\n%s", out.String())
+	}
+}
+
+// `check` names a secret in any file the backup would take, not only in the notes: a
+// document in docs/ too.
+func TestCheckFindsSecretsInDocs(t *testing.T) {
+	h, _ := home(t)
+	work := filepath.Join(h, "augmented-brain", "trabajo")
+	doc := filepath.Join(work, "notas", "docs", "task-x", "env.txt")
+	if err := os.MkdirAll(filepath.Dir(doc), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	key := "AK" + "IA" + "QWERTYUIOPASDFGH" // built here, so this file holds no key-shaped text
+	if err := os.WriteFile(doc, []byte("KEY="+key+"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	wd, _ := os.Getwd()
+	t.Cleanup(func() { os.Chdir(wd) })
+	if err := os.Chdir(work); err != nil {
+		t.Fatal(err)
+	}
+	var out, errOut bytes.Buffer
+	run([]string{"check"}, nil, &out, &errOut)
+	if !strings.Contains(out.String(), "docs/task-x/env.txt tiene un secreto escrito") {
+		t.Errorf("check:\n%s%s", out.String(), errOut.String())
+	}
+}
+
+// Flags are read wherever they are, and an argument too many is an error, never ignored.
+func TestFlagsAnywhere(t *testing.T) {
+	for _, args := range [][]string{{"--map", "m", "src", "--apply"}, {"src", "--map", "m", "--apply"}, {"--apply", "--map", "m", "src"}} {
+		fs := flag.NewFlagSet("import", flag.ContinueOnError)
+		mapFile, apply := fs.String("map", "", ""), fs.Bool("apply", false, "")
+		rest, ok := parseArgs(fs, args, 1, io.Discard)
+		if !ok || len(rest) != 1 || rest[0] != "src" || *mapFile != "m" || !*apply {
+			t.Errorf("%v: %v %v map=%q apply=%v", args, ok, rest, *mapFile, *apply)
+		}
+	}
+	fs := flag.NewFlagSet("import", flag.ContinueOnError)
+	var errOut bytes.Buffer
+	if _, ok := parseArgs(fs, []string{"src", "other"}, 1, &errOut); ok || !strings.Contains(errOut.String(), "other") {
+		t.Errorf("an argument too many was taken: %q", errOut.String())
 	}
 }

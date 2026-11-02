@@ -147,6 +147,11 @@ func TestProfileOnlyInTheDefaultSpace(t *testing.T) {
 	if c2, err := config.Load(cfg2); err != nil || len(c2.UntouchableHosts) != 0 {
 		t.Errorf("lists after restore: %v %v", c2, err)
 	}
+	// personal was the default space, and is again: its backup goes on carrying the
+	// profile and the shared notes.
+	if c2, err := config.Load(cfg2); err != nil || c2.DefaultSpace != "personal" {
+		t.Errorf("default space after restore: %+v %v", c2, err)
+	}
 }
 
 // Two machines that each captured something in the inbox: both lines are kept, and the

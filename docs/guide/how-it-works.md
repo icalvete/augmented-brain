@@ -64,7 +64,9 @@ session starts from there. Opening, resuming and closing work the same way.
   in any of them. A worktree of a listed repository counts as it, and `~/code/app-*`
   covers every `app-<name>` folder next to `app`. Even there, a push that rewrites or
   deletes what is on the remote (`--force`, `--delete`, `+branch`) asks you first.
-  And `rm -r` of your whole home folder or of the whole disk is never run.
+  And `rm -r` of your whole home folder or of the whole disk is never run, also after a
+  `cd` (`cd ~ && rm -rf .`). After a `cd` the guard cannot follow (`cd "$DIR"`), an
+  `rm -r .` asks you.
 
 It also looks inside `ssh`, `bash -c`, loops, and what a pipe feeds a shell
 (`echo 'sudo …' | bash`). If its configuration cannot be read, it asks you before every
@@ -243,9 +245,11 @@ augmented-brain backup --all    # every space
    augmented-brain restore https://github.com/you/augmented-brain-work.git
    ```
    It replaces the empty space with yours: notes, tasks, rules and the space's settings.
-   Your profile comes with the default space (`personal`). The guard's lists
-   (production, untouchable machines) are in no backup, since they may name your work's
-   machines: the next session offers to ask you for them again. If that
+   Your profile comes with the default space (`personal`), and that space is the
+   default one again. The guard's lists (production, untouchable machines) are in no
+   backup, since they may name your work's machines: `restore` and `doctor` say so,
+   and the next session offers to ask you for them again. Until then, nothing asks
+   before touching production. If that
    space already had notes of yours, it leaves it alone. If anything fails half way, the
    empty space stays as it was.
 3. Open Claude. It carries on where you left off, and the backup keeps running by itself.
@@ -310,9 +314,10 @@ paths are relative to, so they are rewritten relative to the space's work folder
 
 The rest comes along too. The captures of your old `inbox.md` (each `- …` line) go to
 the inbox of the space of `*`, dated, and never twice. `archive/` and `docs/<task>/`
-are copied as they are, next to their note. A note with a secret written in it (a key,
-a token) is imported but named in the report: the backup will not upload it until the
-secret is out. `augmented-brain check` names it too.
+are copied as they are, next to their note, also when you import again later. A file
+with a secret written in it (a key, a token), a note or a document, is imported but
+named in the report: the backup will not upload it until the secret is out.
+`augmented-brain check` names it too.
 
 ## The panel
 
