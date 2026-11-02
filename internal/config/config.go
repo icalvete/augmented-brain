@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 
@@ -115,7 +116,7 @@ func (c *Config) normalize() error {
 	if c.Language == "" {
 		c.Language = "en"
 	}
-	if !contains(Languages, c.Language) {
+	if !slices.Contains(Languages, c.Language) {
 		return fmt.Errorf("language %q is not one of %s", c.Language, strings.Join(Languages, ", "))
 	}
 	if len(c.Spaces) == 0 {
@@ -136,21 +137,23 @@ func (c *Config) normalize() error {
 			return fmt.Errorf("space %q: %w", name, err)
 		}
 		s.Memory = m
-		for i, f := range s.WorkFolders {
-			if s.WorkFolders[i], err = absPath(f); err != nil {
+		for _, list := range [][]string{s.WorkFolders, s.GitAllowedRepos, s.GitAskRepos} {
+			if err := absAll(list); err != nil {
 				return fmt.Errorf("space %q: %w", name, err)
 			}
 		}
-		for i, f := range s.GitAllowedRepos {
-			if s.GitAllowedRepos[i], err = absPath(f); err != nil {
-				return fmt.Errorf("space %q: %w", name, err)
-			}
+	}
+	return nil
+}
+
+// absAll makes every path of list absolute, in place (see absPath).
+func absAll(list []string) error {
+	for i, p := range list {
+		a, err := absPath(p)
+		if err != nil {
+			return err
 		}
-		for i, f := range s.GitAskRepos {
-			if s.GitAskRepos[i], err = absPath(f); err != nil {
-				return fmt.Errorf("space %q: %w", name, err)
-			}
-		}
+		list[i] = a
 	}
 	return nil
 }
@@ -164,20 +167,10 @@ func (c *Config) Save() error {
 	out := Config{Format: c.Format, Language: c.Language, DefaultSpace: c.DefaultSpace, Spaces: map[string]*Space{},
 		ProductionAWSProfiles: c.ProductionAWSProfiles, UntouchableHosts: c.UntouchableHosts}
 	for name, s := range c.Spaces {
-		cp := *s
-		cp.Memory = tilde(s.Memory)
-		cp.WorkFolders = make([]string, len(s.WorkFolders))
-		for i, f := range s.WorkFolders {
-			cp.WorkFolders[i] = tilde(f)
+		cp := s.forFile()
+		if cp.WorkFolders == nil {
+			cp.WorkFolders = []string{} // a whole file always says work_folders, even empty
 		}
-		cp.GitAllowedRepos = make([]string, len(s.GitAllowedRepos))
-		for i, f := range s.GitAllowedRepos {
-			cp.GitAllowedRepos[i] = tilde(f)
-		}
-		if len(cp.GitAllowedRepos) == 0 {
-			cp.GitAllowedRepos = nil
-		}
-		cp.GitAskRepos = tildeAll(s.GitAskRepos)
 		out.Spaces[name] = &cp
 	}
 	var b strings.Builder
@@ -194,89 +187,27 @@ func (c *Config) Save() error {
 	return writeAtomic(filepath.Join(c.Dir, FileName), text)
 }
 
-// writeAtomic replaces the configuration file in one step.
-func writeAtomic(path, text string) error {
-	return paths.WriteAtomic(path, []byte(text), 0o600)
+// forFile returns a copy of the space as it is written to the file: paths under the
+// home folder with ~, and empty lists left out.
+func (s Space) forFile() Space {
+	s.Memory = paths.Tilde(s.Memory)
+	s.WorkFolders = tildeAll(s.WorkFolders)
+	s.GitAllowedRepos = tildeAll(s.GitAllowedRepos)
+	s.GitAskRepos = tildeAll(s.GitAskRepos)
+	return s
 }
 
-// AddSpace appends a space to the configuration file in dir, leaving everything else
-// in the file (comments included) as it is.
-func AddSpace(dir string, s *Space) error {
-	path := filepath.Join(dir, FileName)
-	old, err := os.ReadFile(path)
-	if err != nil {
-		return err
+// tildeAll writes each path under the home folder as ~/…; an empty list becomes nil, so
+// the encoder leaves it out.
+func tildeAll(list []string) []string {
+	if len(list) == 0 {
+		return nil
 	}
-	block := &Config{Spaces: map[string]*Space{s.Name: s}, Dir: dir}
-	var b strings.Builder
-	enc := toml.NewEncoder(&b)
-	enc.Indent = ""
-	cp := *s
-	cp.Memory = tilde(s.Memory)
-	cp.WorkFolders = tildeAll(s.WorkFolders)
-	cp.GitAllowedRepos = tildeAll(s.GitAllowedRepos)
-	cp.GitAskRepos = tildeAll(s.GitAskRepos)
-	block.Spaces[s.Name] = &cp
-	if err := enc.Encode(struct {
-		Spaces map[string]*Space `toml:"spaces"`
-	}{block.Spaces}); err != nil {
-		return err
+	out := make([]string, len(list))
+	for i, p := range list {
+		out[i] = paths.Tilde(p)
 	}
-	text := strings.TrimRight(string(old), "\n") + "\n\n" + strings.TrimSpace(strings.Replace(b.String(), "[spaces]\n", "", 1)) + "\n"
-	return replaceChecked(dir, path, string(old), text)
-}
-
-// SetSpaceKey sets one string setting of a space in the configuration file in dir,
-// changing only that line (or adding it under the space's header).
-func SetSpaceKey(dir, space, key, value string) error {
-	return setSpaceLine(dir, space, key, fmt.Sprintf("%s = %q", key, value))
-}
-
-// SetTopList sets one machine-wide list setting (production_aws_profiles,
-// untouchable_hosts) in the configuration file in dir: it changes only that line, or
-// adds it before the first table, and keeps everything else, comments included.
-func SetTopList(dir, key string, values []string) error {
-	path := filepath.Join(dir, FileName)
-	old, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	line := fmt.Sprintf("%s = [%s]", key, quoteAll(values))
-	lines := strings.Split(string(old), "\n")
-	at := -1
-	for i, l := range lines {
-		t := strings.TrimSpace(l)
-		if strings.HasPrefix(t, "[") {
-			if at < 0 {
-				at = i
-			}
-			break
-		}
-		if strings.HasPrefix(t, key+" ") || strings.HasPrefix(t, key+"=") {
-			lines[i] = line
-			return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
-		}
-	}
-	if at < 0 {
-		at = len(lines)
-	}
-	// Keep a blank line between the top settings and the first table.
-	insert := []string{line}
-	if at > 0 && strings.TrimSpace(lines[at-1]) == "" {
-		at--
-	} else if at < len(lines) {
-		insert = append(insert, "")
-	}
-	lines = append(lines[:at], append(insert, lines[at:]...)...)
-	return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
-}
-
-func quoteAll(values []string) string {
-	quoted := make([]string, len(values))
-	for i, v := range values {
-		quoted[i] = fmt.Sprintf("%q", v)
-	}
-	return strings.Join(quoted, ", ")
+	return out
 }
 
 // GuardLists returns the production AWS profiles and the untouchable hosts the guard
@@ -303,84 +234,6 @@ func unique(list []string) []string {
 	return out
 }
 
-// SetSpaceList sets one list setting of a space (such as untouchable_hosts) the same way.
-func SetSpaceList(dir, space, key string, values []string) error {
-	return setSpaceLine(dir, space, key, fmt.Sprintf("%s = [%s]", key, quoteAll(values)))
-}
-
-// RemoveSpaceKey takes one setting out of a space in the configuration file in dir,
-// changing nothing else. A setting that is not there is fine.
-func RemoveSpaceKey(dir, space, key string) error {
-	return setSpaceLine(dir, space, key, "")
-}
-
-// setSpaceLine puts line in place of the key's line under the space's header, or adds
-// it there. An empty line removes the key.
-func setSpaceLine(dir, space, key, line string) error {
-	path := filepath.Join(dir, FileName)
-	old, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	lines := strings.Split(string(old), "\n")
-	header := -1
-	for i, l := range lines {
-		t := strings.TrimSpace(l)
-		if header < 0 {
-			if t == "[spaces."+space+"]" || t == `[spaces."`+space+`"]` {
-				header = i
-			}
-			continue
-		}
-		if strings.HasPrefix(t, "[") {
-			break // the next table: the key is not there yet
-		}
-		if strings.HasPrefix(t, key+" ") || strings.HasPrefix(t, key+"=") {
-			if line == "" {
-				lines = append(lines[:i], lines[i+1:]...)
-			} else {
-				lines[i] = line
-			}
-			return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
-		}
-	}
-	if header < 0 {
-		return fmt.Errorf("%s has no space %q", path, space)
-	}
-	if line == "" {
-		return nil
-	}
-	lines = append(lines[:header+1], append([]string{line}, lines[header+1:]...)...)
-	return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
-}
-
-// replaceChecked writes the new text and loads it back; if it does not load, the old
-// text is put back and the error returned, so a bad edit never leaves a broken file.
-func replaceChecked(dir, path, old, text string) error {
-	if err := writeAtomic(path, text); err != nil {
-		return err
-	}
-	if _, err := Load(dir); err != nil {
-		_ = writeAtomic(path, old)
-		return fmt.Errorf("the change would break %s, so it was not made: %w", path, err)
-	}
-	return nil
-}
-
-func tildeAll(paths []string) []string {
-	if len(paths) == 0 {
-		return nil
-	}
-	out := make([]string, len(paths))
-	for i, p := range paths {
-		out[i] = tilde(p)
-	}
-	return out
-}
-
-// tilde writes a path under the home folder as ~/…
-func tilde(p string) string { return paths.Tilde(p) }
-
 // SpaceNames returns the declared spaces, sorted.
 func (c *Config) SpaceNames() []string {
 	names := make([]string, 0, len(c.Spaces))
@@ -403,7 +256,7 @@ func (c *Config) SpaceFor(dir string) *Space {
 	for _, name := range c.SpaceNames() {
 		s := c.Spaces[name]
 		for _, f := range s.WorkFolders {
-			if within(d, f) && len(f) > bestLen {
+			if paths.Within(d, f) && len(f) > bestLen {
 				best, bestLen = s, len(f)
 			}
 		}
@@ -423,37 +276,6 @@ func (c *Config) SpaceAt(dir string) (s *Space, isDefault bool) {
 	return nil, false
 }
 
-// SetDefaultSpace writes default_space in the configuration file in dir, right after
-// the language, changing nothing else.
-func SetDefaultSpace(dir, space string) error {
-	path := filepath.Join(dir, FileName)
-	old, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	line := fmt.Sprintf("default_space = %q", space)
-	lines := strings.Split(string(old), "\n")
-	at := -1
-	for i, l := range lines {
-		t := strings.TrimSpace(l)
-		if strings.HasPrefix(t, "[") {
-			break
-		}
-		if strings.HasPrefix(t, "default_space") {
-			lines[i] = line
-			return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
-		}
-		if strings.HasPrefix(t, "language") {
-			at = i + 1
-		}
-	}
-	if at < 0 {
-		at = 0
-	}
-	lines = append(lines[:at], append([]string{line}, lines[at:]...)...)
-	return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
-}
-
 // FormatVersion is the version of the configuration folder: 1 when the file says none.
 func (c *Config) FormatVersion() int {
 	if c.Format < 1 {
@@ -462,49 +284,6 @@ func (c *Config) FormatVersion() int {
 	return c.Format
 }
 
-// SetFormat records the version of the configuration folder, as the first line of the
-// file, keeping everything else as it is. Version 1 is never written: it is what a
-// file that says none means, and releases before versions were written refuse a
-// setting they do not know.
-func SetFormat(dir string, v int) error {
-	if v <= 1 {
-		return nil
-	}
-	path := filepath.Join(dir, FileName)
-	old, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-	line := fmt.Sprintf("format = %d", v)
-	lines := strings.Split(string(old), "\n")
-	for i, l := range lines {
-		t := strings.TrimSpace(l)
-		if strings.HasPrefix(t, "[") {
-			break
-		}
-		if strings.HasPrefix(t, "format ") || strings.HasPrefix(t, "format=") {
-			if t == line {
-				return nil
-			}
-			lines[i] = line
-			return replaceChecked(dir, path, string(old), strings.Join(lines, "\n"))
-		}
-	}
-	return replaceChecked(dir, path, string(old), line+"\n"+string(old))
-}
-
-// within reports whether path is folder itself or inside it.
-func within(path, folder string) bool { return paths.Within(path, folder) }
-
 // absPath expands a leading ~, makes the path absolute and resolves symlinks, also
 // through the part that does not exist yet, so the same folder always compares equal.
 func absPath(p string) (string, error) { return paths.Resolve(p) }
-
-func contains(list []string, s string) bool {
-	for _, x := range list {
-		if x == s {
-			return true
-		}
-	}
-	return false
-}
