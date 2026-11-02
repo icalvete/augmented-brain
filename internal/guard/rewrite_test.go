@@ -15,16 +15,16 @@ func TestRmHomeOrDisk(t *testing.T) {
 	}
 	p := Policy{Cwd: home}
 	for cmd, want := range map[string]Verdict{
-		"rm -rf ~":                       Deny,
-		"rm -rf ~/":                      Deny,
-		"rm -rf ~/*":                     Deny,
-		"rm -r $HOME":                    Deny,
-		"rm -fr ${HOME}/":                Deny,
-		"rm -rf /":                       Deny,
-		"rm -rf /*":                      Deny,
-		"rm -R --no-preserve-root /":     Deny,
-		"rm --recursive -- " + home:      Deny,
-		"cd /tmp && rm -rf " + home:      Deny,
+		"rm -rf ~":                   Deny,
+		"rm -rf ~/":                  Deny,
+		"rm -rf ~/*":                 Deny,
+		"rm -r $HOME":                Deny,
+		"rm -fr ${HOME}/":            Deny,
+		"rm -rf /":                   Deny,
+		"rm -rf /*":                  Deny,
+		"rm -R --no-preserve-root /": Deny,
+		"rm --recursive -- " + filepath.ToSlash(home): Deny, // Bash on Windows takes / too
+		"cd /tmp && rm -rf " + filepath.ToSlash(home): Deny,
 		"rm -rf .":                       Deny, // run in the home folder
 		"rm -rf ~/build":                 Allow,
 		"rm -rf build":                   Allow,
