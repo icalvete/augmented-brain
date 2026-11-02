@@ -234,6 +234,14 @@ func unique(list []string) []string {
 	return out
 }
 
+// SharedFolder is the folder, inside the configuration folder, of the shared notes:
+// the rules and knowledge that apply in every space. It is also the name an import map
+// uses for it, so no space can take it.
+const SharedFolder = "shared"
+
+// SharedDir returns the folder of the shared notes.
+func (c *Config) SharedDir() string { return filepath.Join(c.Dir, SharedFolder) }
+
 // SpaceNames returns the declared spaces, sorted.
 func (c *Config) SpaceNames() []string {
 	names := make([]string, 0, len(c.Spaces))

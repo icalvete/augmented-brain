@@ -34,6 +34,10 @@ var commandMessages = map[string]msg{
 		en: "space %s: %s, %s",
 		es: "espacio %s: %s, %s",
 	},
+	"check.shared": {
+		en: "shared notes (%s): %s, %s",
+		es: "notas compartidas (%s): %s, %s",
+	},
 	"check.rebuilt": {
 		en: "%s rebuilt",
 		es: "%s rehecho",

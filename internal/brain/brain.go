@@ -43,11 +43,31 @@ func Open(c *config.Config, s *config.Space) (*Brain, error) {
 	if err := format.CheckNotes(s.Memory); err != nil {
 		return nil, err // written by a newer program: writing here could break them
 	}
-	m, problems, err := memory.Load(s.Memory)
+	m, problems, err := memory.LoadSpace(s.Memory, c.SharedDir())
 	if err != nil {
 		return nil, err
 	}
 	return &Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: time.Now, Problems: problems}, nil
+}
+
+// Shared opens the shared notes, the rules and knowledge that apply in every space, to
+// write one there. The folder is made the first time.
+func (b *Brain) Shared() (*Brain, error) {
+	dir := filepath.Join(b.ConfigDir, config.SharedFolder)
+	if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
+		if err := format.Write(dir, format.Notes()); err != nil {
+			return nil, err
+		}
+	}
+	if err := format.CheckNotes(dir); err != nil {
+		return nil, err
+	}
+	m, problems, err := memory.LoadShared(dir)
+	if err != nil {
+		return nil, err
+	}
+	s := &config.Space{Name: config.SharedFolder, Memory: dir}
+	return &Brain{Space: s, Language: b.Language, Mem: m, ConfigDir: b.ConfigDir, Now: b.Now, Problems: problems}, nil
 }
 
 // broken reports whether the file at path (relative to the memory folder) is one that
@@ -529,6 +549,24 @@ func (b *Brain) NewKnowledge(kind, title, summary, area, body string) (*memory.N
 	n := &memory.Note{
 		Path:   memory.PathFor(kind, id),
 		Header: memory.Header{ID: id, Type: kind, Title: title, Summary: summary, Area: area, Created: b.today()},
+		Body:   body,
+	}
+	return n, b.save(n)
+}
+
+// NewRule saves a rule: how the assistant must work, loaded at the start of every
+// session.
+func (b *Brain) NewRule(title, summary, body string) (*memory.Note, error) {
+	if strings.TrimSpace(title) == "" || strings.TrimSpace(body) == "" {
+		return nil, errors.New("a rule needs a title and a body: what to do, and why")
+	}
+	id := b.newID("rule", Slug(title))
+	if !strings.HasSuffix(body, "\n") {
+		body += "\n"
+	}
+	n := &memory.Note{
+		Path:   memory.PathFor("rule", id),
+		Header: memory.Header{ID: id, Type: "rule", Title: title, Summary: summary, Created: b.today()},
 		Body:   body,
 	}
 	return n, b.save(n)

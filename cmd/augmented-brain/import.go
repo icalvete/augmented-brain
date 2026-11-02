@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
+	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/importer"
@@ -89,9 +90,9 @@ func cmdImport(args []string, out, errOut io.Writer) int {
 		return 0
 	}
 	done, err := importer.Apply(p, c, lang)
-	for _, sp := range c.SpaceNames() {
+	for _, sp := range append(c.SpaceNames(), config.SharedFolder) {
 		if n := done.Notes[sp] + done.Copies[sp]; n > 0 {
-			fmt.Fprintln(out, i18n.T(lang, "import.done", done.Notes[sp], done.Copies[sp], sp))
+			fmt.Fprintln(out, i18n.T(lang, "import.done", done.Notes[sp], done.Copies[sp], spaceName(lang, sp)))
 		}
 	}
 	if err != nil {
@@ -114,7 +115,7 @@ func shellWords(words []string) string {
 	return strings.Join(q, " ")
 }
 
-// readMap reads "area = space" lines; # starts a comment.
+// readMap reads "area = space" or "note = space" lines; # starts a comment.
 func readMap(path string) (map[string]string, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -159,7 +160,7 @@ func importReport(out io.Writer, lang string, p *importer.Plan) {
 		for _, k := range kinds {
 			parts = append(parts, fmt.Sprintf("%d %s", counts[sp][k], i18n.T(lang, "import.kind."+k)))
 		}
-		fmt.Fprintln(out, i18n.T(lang, "import.space", sp, strings.Join(parts, ", ")))
+		fmt.Fprintln(out, i18n.T(lang, "import.space", spaceName(lang, sp), strings.Join(parts, ", ")))
 	}
 	if n := p.Left(); n > 0 {
 		fmt.Fprintln(out, i18n.T(lang, "import.left", n))
@@ -184,4 +185,12 @@ func importReport(out io.Writer, lang string, p *importer.Plan) {
 		}
 	}
 	fmt.Fprintln(out)
+}
+
+// spaceName is how the report names a space of the plan, the shared notes included.
+func spaceName(lang, sp string) string {
+	if sp == config.SharedFolder {
+		return i18n.T(lang, "import.shared")
+	}
+	return i18n.T(lang, "import.named", sp)
 }

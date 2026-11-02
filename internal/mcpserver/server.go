@@ -50,6 +50,9 @@ as Markdown files. Use these tools instead of editing those files by hand.
   becomes a task, goes to an area or knowledge, or is dropped), then call review_done
   with what was decided and the captures processed.
 - What is worth keeping beyond a task becomes a reference or a lesson (knowledge_new).
+  A way of working the user asks for becomes a rule (rule_new). When it holds in every
+  part of their life (a lesson about a tool, how they like answers), save it as shared:
+  every space sees it.
 - Nothing is ever deleted: tasks are closed, not removed.
 - Who the user is and how they like to work is their profile (profile_save).
 - A space without a backup can lose everything with the machine: offer backup_setup.
@@ -363,11 +366,30 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		Summary string `json:"summary,omitempty"`
 		Area    string `json:"area,omitempty"`
 		Body    string `json:"body,omitempty" jsonschema:"Markdown"`
+		Shared  bool   `json:"shared,omitempty" jsonschema:"true when it holds in every space, whatever part of the user's life (it then has no area)"`
 	}
-	tool(s, locked, "knowledge_new", "Save a reference or a lesson that is worth keeping beyond one task.",
+	tool(s, locked, "knowledge_new", "Save a reference or a lesson that is worth keeping beyond one task: in this space, or shared by every space.",
 		func(b *brain.Brain, in knowledgeIn) (string, error) {
-			n, err := b.NewKnowledge(in.Kind, in.Title, in.Summary, in.Area, in.Body)
-			return header(n, err)
+			b, err := where(b, in.Shared)
+			if err != nil {
+				return "", err
+			}
+			return header(b.NewKnowledge(in.Kind, in.Title, in.Summary, in.Area, in.Body))
+		})
+
+	type ruleIn struct {
+		Title   string `json:"title" jsonschema:"the rule in a few words"`
+		Summary string `json:"summary,omitempty"`
+		Body    string `json:"body" jsonschema:"Markdown: what to do, and why"`
+		Shared  bool   `json:"shared,omitempty" jsonschema:"true when it applies in every space, not only this one"`
+	}
+	tool(s, locked, "rule_new", "Save a rule the user gives on how to work, loaded at the start of every session: in this space, or shared by every space.",
+		func(b *brain.Brain, in ruleIn) (string, error) {
+			b, err := where(b, in.Shared)
+			if err != nil {
+				return "", err
+			}
+			return header(b.NewRule(in.Title, in.Summary, in.Body))
 		})
 
 	type personIn struct {
@@ -490,6 +512,14 @@ func render(n *memory.Note, err error) (string, error) {
 	}
 	data, err := n.Render()
 	return string(data), err
+}
+
+// where is the brain a new note goes to: this space's, or the shared notes'.
+func where(b *brain.Brain, shared bool) (*brain.Brain, error) {
+	if !shared {
+		return b, nil
+	}
+	return b.Shared()
 }
 
 func header(n *memory.Note, err error) (string, error) {

@@ -38,9 +38,10 @@ import (
 
 // Options say how to import.
 type Options struct {
-	// Map sends notes to spaces by area: area id → space name. The key "*" is the space
-	// of a note whose area is not in the map, or that has none. With one space and no
-	// map, everything goes there.
+	// Map sends notes to spaces: a note's own id, or else its area id → space name, or
+	// "shared" for the shared notes (rules and knowledge for every space). The key "*" is
+	// the space of a note that is not in the map by either. With one space and no map,
+	// everything goes there.
 	Map map[string]string
 	// ReposBase is the folder the source's repos: paths are relative to. Each one is
 	// rewritten relative to a work folder of the note's space when it falls inside one.
@@ -72,6 +73,7 @@ const (
 	Unreadable     = "unreadable"       // a header that cannot be read: left out
 	ToProfile      = "to-profile"       // about the user: goes in the profile, by hand
 	NoSpace        = "no-space"         // its area maps to no space: left out
+	NotShared      = "not-shared"       // sent to the shared notes, but a task, area or person: left out
 	Taken          = "taken"            // the id is already a note of the space: left out
 	Duplicate      = "duplicate"        // two source files with the same id: the second is left out
 	CrossLink      = "cross-link"       // related to a note of another space or of none: dropped
@@ -192,7 +194,7 @@ func spaceMap(c *config.Config, m map[string]string) (map[string]string, error) 
 		m = map[string]string{"*": names[0]}
 	}
 	for area, sp := range m {
-		if _, ok := c.Spaces[sp]; !ok {
+		if _, ok := c.Spaces[sp]; !ok && sp != config.SharedFolder {
 			return nil, fmt.Errorf("the map sends %s to space %q, which does not exist", area, sp)
 		}
 	}
@@ -266,6 +268,9 @@ func (pl *planner) loadSpaces() {
 			pl.existing[name] = m
 		}
 	}
+	if m, _, err := memory.LoadShared(pl.c.SharedDir()); err == nil {
+		pl.existing[config.SharedFolder] = m
+	}
 }
 
 // place turns each source into its note and chooses its space. A note about the user,
@@ -285,6 +290,10 @@ func (pl *planner) place() []planned {
 			pl.leave(s.rel, NoSpace, n.Header.Area)
 			continue
 		}
+		if sp == config.SharedFolder && !slices.Contains(memory.SharedTypes, n.Header.Type) {
+			pl.leave(s.rel, NotShared, n.Header.Type)
+			continue
+		}
 		if _, dup := pl.ids[n.Header.ID]; dup {
 			pl.leave(s.rel, Duplicate, n.Header.ID)
 			continue
@@ -301,22 +310,24 @@ func (pl *planner) place() []planned {
 	return all
 }
 
-// fixLinks drops the area and the related notes that are not in the note's space
-// (links only make sense inside one), rewrites its repositories, and adds it to the
-// plan. It runs once every note has its space.
+// fixLinks drops the area and the related notes that are not in the note's space or in
+// the shared notes (links only make sense inside one space), rewrites its repositories,
+// and adds it to the plan. It runs once every note has its space.
 func (pl *planner) fixLinks(n planned) {
 	h := &n.note.Header
-	inSpace := func(id string) bool {
-		if pl.ids[id] == n.sp {
+	in := func(sp, id string) bool {
+		if pl.ids[id] == sp {
 			return true
 		}
-		if m := pl.existing[n.sp]; m != nil {
-			_, ok := m.Notes[id]
-			return ok
+		m := pl.existing[sp]
+		if m == nil {
+			return false
 		}
-		return false
+		_, ok := m.Notes[id]
+		return ok
 	}
-	if h.Area != "" && h.Type != "area" && !inSpace(h.Area) {
+	inSpace := func(id string) bool { return in(n.sp, id) || in(config.SharedFolder, id) }
+	if h.Area != "" && h.Type != "area" && (n.sp == config.SharedFolder || !in(n.sp, h.Area)) {
 		pl.p.Issues = append(pl.p.Issues, Issue{n.src.rel, MissingArea, h.Area})
 		h.Area = ""
 	}
@@ -329,9 +340,13 @@ func (pl *planner) fixLinks(n planned) {
 		}
 	}
 	h.Related = related
-	h.Repos = repos(h.Repos, pl.o.ReposBase, pl.c.Spaces[n.sp], func(r string) {
-		pl.p.Issues = append(pl.p.Issues, Issue{n.src.rel, RepoOutside, r})
-	})
+	if sp := pl.c.Spaces[n.sp]; sp != nil {
+		h.Repos = repos(h.Repos, pl.o.ReposBase, sp, func(r string) {
+			pl.p.Issues = append(pl.p.Issues, Issue{n.src.rel, RepoOutside, r})
+		})
+	} else { // shared: no work folder to be relative to, so full paths
+		h.Repos = repos(h.Repos, pl.o.ReposBase, &config.Space{}, func(string) {})
+	}
 	pl.p.Items = append(pl.p.Items, Item{Source: n.src.rel, Space: n.sp, Note: n.note})
 }
 
@@ -369,6 +384,9 @@ func (p *Plan) sort() {
 }
 
 func spaceOf(n *memory.Note, m map[string]string) string {
+	if sp, ok := m[n.Header.ID]; ok {
+		return sp
+	}
 	area := n.Header.Area
 	if n.Header.Type == "area" {
 		area = n.Header.ID

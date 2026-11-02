@@ -56,6 +56,39 @@ func TestContext(t *testing.T) {
 	}
 }
 
+// The shared notes reach every space: their rules whole, their knowledge listed, and a
+// space note may link to them.
+func TestContextShared(t *testing.T) {
+	c, s := space(t, "en")
+	files := map[string]string{
+		filepath.Join(c.SharedDir(), "rules", "rule-brief.md"):             "---\nid: rule-brief\ntype: rule\ntitle: Answer briefly\n---\nShort answers, one idea each.\n",
+		filepath.Join(c.SharedDir(), "knowledge", "lesson-small-steps.md"): "---\nid: lesson-small-steps\ntype: lesson\ntitle: Small steps win\nsummary: one change at a time\n---\n",
+		filepath.Join(c.SharedDir(), "tasks", "task-lost.md"):              "---\nid: task-lost\ntype: task\ntitle: Lost\nstatus: parked\nwaiting_on: me\nnext: x\n---\n",
+		filepath.Join(s.Memory, "knowledge", "ref-deploy.md"):              "---\nid: ref-deploy\ntype: reference\ntitle: Deploy\nrelated: [lesson-small-steps]\n---\n",
+	}
+	for path, text := range files {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	text := Context(c, s)
+	for _, want := range []string{
+		"## Rules for every space", "### Answer briefly\nShort answers, one idea each.",
+		"## Knowledge for every space", "[Small steps win](" + filepath.Join(c.SharedDir(), "knowledge", "lesson-small-steps.md") + ") — one change at a time",
+		"a task belongs to one space", // a task in the shared folder is reported, not loaded
+	} {
+		if !strings.Contains(text, want) {
+			t.Errorf("context lacks %q:\n%s", want, text)
+		}
+	}
+	if strings.Contains(text, "lesson-small-steps\" does not exist") {
+		t.Errorf("a link to a shared note is reported as broken:\n%s", text)
+	}
+}
+
 func TestContextBudget(t *testing.T) {
 	c, s := space(t, "en")
 	long := strings.Repeat("Explain every step before doing it. ", 60)

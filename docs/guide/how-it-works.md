@@ -189,6 +189,20 @@ Do your projects already live elsewhere, like `~/code`? Add that folder to the
 `work_folders` of the right space. For a new space (a client, say):
 `augmented-brain space add client`.
 
+### Shared notes
+
+Some things you learn hold everywhere: how git behaves, how you like answers, a lesson
+about a tool. Saving them twice, once per space, would leave two copies that drift
+apart. So they go once in the **shared notes**, next to your profile:
+`~/.config/augmented-brain/shared/`. Only rules, references and lessons go there. Tasks,
+areas and people always belong to one space.
+
+Every space sees them. The shared rules are loaded at the start of each session, like
+the space's own. The shared references and lessons are listed one line each, and Claude
+opens the one it needs. You don't move files by hand: tell Claude "this holds
+everywhere" and it saves the note as shared. They travel in the backup of the default
+space, like your profile.
+
 ## The backup
 
 The notes folder of each space is also a git repository. The backup pushes it to a
@@ -276,10 +290,13 @@ from is only read.
 Each file becomes a note of its kind: by its name (`task-…`, `area-…`, `ref-…`,
 `lesson-…`, `rule-…`, `person-…`) or else by what Claude Code says it is. A task with
 no status comes in parked, waiting on you, with "review this imported task" as its next
-step. With more than one space, a small file says which space each area goes to:
+step. With more than one space, a small file says which space each area goes to,
+which notes go somewhere other than their area, and which go to the shared notes:
 
 ```text
 area-family = personal
+task-school-course = work
+lesson-git-small-commits = shared
 * = work
 ```
 

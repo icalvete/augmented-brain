@@ -7,8 +7,16 @@ var importMessages = map[string]msg{
 		es: "uso: augmented-brain import <carpeta> [--map fichero] [--repos-base carpeta] [--apply]",
 	},
 	"import.space": {
-		en: "space %s: %s",
-		es: "espacio %s: %s",
+		en: "%s: %s",
+		es: "%s: %s",
+	},
+	"import.named": {
+		en: "space %s",
+		es: "espacio %s",
+	},
+	"import.shared": {
+		en: "shared notes (every space)",
+		es: "notas compartidas (todos los espacios)",
 	},
 	"import.left": {
 		en: "%d files are left out (see below).",
@@ -19,8 +27,8 @@ var importMessages = map[string]msg{
 		es: "No se ha escrito nada: esto es lo que se importaría. Para escribirlo: augmented-brain %s",
 	},
 	"import.done": {
-		en: "✓ space %[3]s: %[1]d notes and %[2]d archive files written.",
-		es: "✓ espacio %[3]s: %[1]d notas y %[2]d ficheros de archivo escritos.",
+		en: "✓ %[3]s: %[1]d notes and %[2]d archive files written.",
+		es: "✓ %[3]s: %[1]d notas y %[2]d ficheros de archivo escritos.",
 	},
 	"import.kind.task": {
 		en: "tasks",
@@ -65,6 +73,10 @@ var importMessages = map[string]msg{
 	"import.issue.no-space": {
 		en: "No space for their area, left out (%d): add the area to the map, or a line \"* = <space>\".",
 		es: "Sin espacio para su área, se quedan fuera (%d): añade el área a la tabla, o una línea \"* = <espacio>\".",
+	},
+	"import.issue.not-shared": {
+		en: "Sent to the shared notes, but only rules, references and lessons go there; left out (%d):",
+		es: "Enviadas a las notas compartidas, pero ahí solo van reglas, referencias y lecciones; se quedan fuera (%d):",
 	},
 	"import.issue.taken": {
 		en: "Already a note of the space, left out (%d):",

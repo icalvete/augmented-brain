@@ -114,7 +114,7 @@ func Run(e Env) []Check {
 
 func space(c *config.Config, s *config.Space) []Check {
 	l := c.Language
-	m, problems, err := memory.Load(s.Memory)
+	m, problems, err := memory.LoadSpace(s.Memory, c.SharedDir())
 	if err != nil {
 		return []Check{{Failed, i18n.T(l, "doctor.nomemory", s.Name, s.Memory, err),
 			i18n.T(l, "doctor.nomemory.fix", filepath.Join(c.Dir, config.FileName))}}

@@ -84,12 +84,19 @@ func show(t *testing.T, remote, path string) (string, bool) {
 	return string(out), err == nil
 }
 
-// The profile and the machine-wide settings travel only in the default space's backup;
-// restoring another space alone works without them.
+// The profile, the shared notes and the machine-wide settings travel only in the
+// default space's backup; restoring another space alone works without them.
 func TestProfileOnlyInTheDefaultSpace(t *testing.T) {
 	needGit(t)
 	root, _ := filepath.EvalSymlinks(t.TempDir())
 	c, workRemote, personalRemote := twoSpaces(t, root)
+	lesson := filepath.Join(config.SharedFolder, "knowledge", "lesson-small-steps.md")
+	if err := os.MkdirAll(filepath.Dir(filepath.Join(c.Dir, lesson)), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(c.Dir, lesson), []byte("---\nid: lesson-small-steps\ntype: lesson\ntitle: Small steps\n---\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	// An older version left a copy of the profile in the work space.
 	if err := os.MkdirAll(filepath.Join(c.Spaces["work"].Memory, MetaDir), 0o755); err != nil {
 		t.Fatal(err)
@@ -107,6 +114,9 @@ func TestProfileOnlyInTheDefaultSpace(t *testing.T) {
 	}
 	if text, ok := show(t, personalRemote, MetaDir+"/profile.md"); !ok || !strings.Contains(text, "Dana") {
 		t.Errorf("the default space's backup lacks the profile: %s", text)
+	}
+	if !inBackup(t, personalRemote, MetaDir+"/"+filepath.ToSlash(lesson)) || inBackup(t, workRemote, MetaDir+"/"+filepath.ToSlash(lesson)) {
+		t.Error("the shared notes are not only in the default space's backup")
 	}
 	for _, r := range []string{workRemote, personalRemote} {
 		if text, _ := show(t, r, MetaDir+"/config.toml"); strings.Contains(text, "db01") {
@@ -130,6 +140,9 @@ func TestProfileOnlyInTheDefaultSpace(t *testing.T) {
 	}
 	if data, err := os.ReadFile(filepath.Join(cfg2, "profile.md")); err != nil || !strings.Contains(string(data), "Dana") {
 		t.Errorf("profile after restoring the default space: %v %s", err, data)
+	}
+	if _, err := os.Stat(filepath.Join(cfg2, lesson)); err != nil {
+		t.Errorf("shared notes after restoring the default space: %v", err)
 	}
 	if c2, err := config.Load(cfg2); err != nil || len(c2.UntouchableHosts) != 0 {
 		t.Errorf("lists after restore: %v %v", c2, err)

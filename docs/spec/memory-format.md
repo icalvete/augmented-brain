@@ -18,7 +18,7 @@ A **space** keeps one part of your life apart from the others, for example `work
 - its own rules, on top of the common ones;
 - its own backup repository.
 
-The space is chosen by **the folder you open the assistant in**. Spaces never read each other's memory. They share the program, the common rules, the safety hooks and the risk settings (which cloud profiles are production, which hosts must not be touched): those are for the whole machine, so a production profile saved from one space is guarded in all of them.
+The space is chosen by **the folder you open the assistant in**. Spaces never read each other's memory. They share the program, the common rules, the shared notes (below), the safety hooks and the risk settings (which cloud profiles are production, which hosts must not be touched): those are for the whole machine, so a production profile saved from one space is guarded in all of them.
 
 Spaces are declared in the configuration file (see "Configuration" below), not inside the memory.
 
@@ -37,7 +37,7 @@ A session that runs outside every work folder (for example, the scratch folder t
 ├── tasks/             # projects with a beginning and an end (one file each)
 ├── knowledge/         # how things work (reference) and what you learned (lesson)
 ├── people/            # who the user deals with, so a first name finds the right person
-├── rules/             # this space's own rules (the common rules ship with the program)
+├── rules/             # this space's own rules (the common rules ship with the program; shared ones live in the configuration folder)
 ├── reviews/           # one file per weekly review
 ├── docs/              # optional: long documents of a task (plans, analyses, reports); never loaded
 │   └── <task>/
@@ -57,6 +57,17 @@ The shared profile has two sections the program knows by their headings, in Engl
 Spanish: the first ("About me" / "Sobre mí", with the name line) and the work style
 ("How I like to work" / "Cómo me gusta trabajar"). Other sections a person adds by hand
 are kept: the program reads them as part of the first one.
+
+**Shared notes** are the rules, references and lessons that hold in every space (how git
+behaves, how the person likes answers). They live once, next to the configuration, in
+`shared/` inside the configuration folder, laid out like a space but with only
+`rules/` and `knowledge/` (plus the generated `MEMORY.md` and `.augmented-brain/format`).
+A shared note has no area, since areas belong to one space; a task, area, person or
+review there is a problem, reported and left out. Every space sees them: a note of a
+space may name a shared note in `related`, and the session start loads the shared rules
+whole and lists the shared references and lessons. A shared note never links into a
+space. They are migrated like a space's notes, and kept in the backup of the default
+space, under `.augmented-brain/shared/`, like the profile.
 
 ## File header
 
@@ -212,9 +223,10 @@ something to go through, the session start offers a new one.
 
 ## Rules
 
-Rules tell the assistant how to work. There are two levels:
+Rules tell the assistant how to work. There are three levels:
 
 - **common rules**, shipped with the program (answer style, verify before advising, never commit or push unless asked, never escalate to root, never write secrets…);
+- **shared rules**, the person's own for every space, in the shared notes (for example, "answer in short sentences, one idea each");
 - **space rules**, in `rules/`, for what only applies to that space (for example, "hosts db01–db03 are never restarted without explicit permission").
 
 All of them are loaded at the start of every session.
@@ -311,4 +323,5 @@ only through the same code as the MCP tools.
 
 - **A folder per type**, not one flat folder with prefixes: a newcomer sees at a glance what there is and where each thing goes.
 - **One profile for the person**, next to the configuration; each space may add its own `profile.md`.
+- **Shared notes, not spaces that read each other.** What holds everywhere lives once, in the shared notes, rather than copied into each space (copies drift) or by letting a space read another's memory (which would mix work and personal). Only rules and knowledge can be shared; tasks, areas and people stay in their space.
 - **Importing an existing memory** of Claude Code (`augmented-brain import`) reads the header only: a field this format has is kept, at the top or under `metadata`; a person's own conventions are turned into those fields by a step of their own before importing, not by the program. It plans first and writes only with `--apply`, never over an existing note, and never changes the source.

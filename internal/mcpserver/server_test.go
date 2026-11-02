@@ -79,7 +79,14 @@ func space(t *testing.T) Resolver {
 }
 
 func TestTools(t *testing.T) {
-	cs := connect(t, space(t))
+	open := space(t)
+	cs := connect(t, open)
+	b, err := open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	shared := filepath.Join(b.ConfigDir, "shared")
+	exists := func(rel string) bool { _, err := os.Stat(filepath.Join(shared, rel)); return err == nil }
 
 	list, err := cs.ListTools(context.Background(), nil)
 	if err != nil {
@@ -90,7 +97,7 @@ func TestTools(t *testing.T) {
 		names = append(names, tl.Name)
 	}
 	sort.Strings(names)
-	want := "area_new backup_setup capture knowledge_new pending person_save profile_save review_done safety_save session_recover task_close task_get task_journal task_new task_park task_step task_update weekly_review where_am_i"
+	want := "area_new backup_setup capture knowledge_new pending person_save profile_save review_done rule_new safety_save session_recover task_close task_get task_journal task_new task_park task_step task_update weekly_review where_am_i"
 	if got := strings.Join(names, " "); got != want {
 		t.Errorf("tools = %s", got)
 	}
@@ -127,6 +134,21 @@ func TestTools(t *testing.T) {
 	}
 	if _, isErr := call(t, cs, "knowledge_new", map[string]any{"kind": "lesson", "title": "Filters need smudge", "area": "area-platform"}); isErr {
 		t.Error("knowledge_new failed")
+	}
+	// Shared notes go to the configuration folder, for every space; they have no area.
+	if out, isErr := call(t, cs, "knowledge_new", map[string]any{"kind": "lesson", "title": "Small commits win", "shared": true}); isErr ||
+		!exists("knowledge/lesson-small-commits-win.md") {
+		t.Errorf("shared knowledge_new: %s", out)
+	}
+	if out, isErr := call(t, cs, "knowledge_new", map[string]any{"kind": "lesson", "title": "x", "area": "area-platform", "shared": true}); !isErr {
+		t.Errorf("a shared note with an area was saved: %s", out)
+	}
+	if out, isErr := call(t, cs, "rule_new", map[string]any{"title": "Answer briefly", "body": "Short answers.", "shared": true}); isErr ||
+		!exists("rules/rule-answer-briefly.md") {
+		t.Errorf("shared rule_new: %s", out)
+	}
+	if out, isErr := call(t, cs, "rule_new", map[string]any{"title": "Never restart db01", "body": "Ask first."}); isErr || !strings.Contains(out, "rules/rule-never-restart-db01.md") {
+		t.Errorf("rule_new: %s", out)
 	}
 	if _, isErr := call(t, cs, "capture", map[string]any{"text": "look at the runner"}); isErr {
 		t.Error("capture failed")

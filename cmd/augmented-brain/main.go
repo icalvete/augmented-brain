@@ -150,7 +150,11 @@ func cmdCheck(out, errOut io.Writer) int {
 	} else if r.Migrated() {
 		fmt.Fprintln(out, i18n.T(c.Language, "check.format", r.From, r.To, strings.Join(r.Done, "; "), paths.Tilde(r.Copy)))
 	}
-	m, problems, err := memory.Load(s.Memory)
+	shared, fine := checkShared(c, out, errOut)
+	if shared == nil {
+		return 1
+	}
+	m, problems, err := memory.Load(s.Memory, shared)
 	if err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
@@ -165,7 +169,7 @@ func cmdCheck(out, errOut io.Writer) int {
 	}
 	fmt.Fprintln(out, i18n.T(c.Language, "check.summary", s.Name,
 		i18n.Count(c.Language, "notes", len(m.Notes)), i18n.Count(c.Language, "problems", len(problems))))
-	if len(problems) > 0 {
+	if len(problems) > 0 || !fine {
 		return 1
 	}
 	// All notes are valid: bring the index up to date.
@@ -176,6 +180,41 @@ func cmdCheck(out, errOut io.Writer) int {
 		fmt.Fprintln(out, i18n.T(c.Language, "check.rebuilt", memory.IndexFile))
 	}
 	return 0
+}
+
+// checkShared checks the shared notes, when there are any, as check does a space's, and
+// returns them (nil when they cannot be read); fine is false when one is not valid.
+func checkShared(c *config.Config, out, errOut io.Writer) (*memory.Memory, bool) {
+	dir := c.SharedDir()
+	if _, err := os.Stat(dir); err != nil {
+		return &memory.Memory{Dir: dir, Notes: map[string]*memory.Note{}}, true
+	}
+	if r, err := format.EnsureNotes(dir, c.Dir, config.SharedFolder, time.Now()); err != nil {
+		fmt.Fprintln(errOut, err)
+		return nil, false
+	} else if r.Migrated() {
+		fmt.Fprintln(out, i18n.T(c.Language, "check.format", r.From, r.To, strings.Join(r.Done, "; "), paths.Tilde(r.Copy)))
+	}
+	m, problems, err := memory.LoadShared(dir)
+	if err != nil {
+		fmt.Fprintln(errOut, err)
+		return nil, false
+	}
+	for _, p := range problems {
+		fmt.Fprintln(out, "  ✗", p.Error())
+	}
+	fmt.Fprintln(out, i18n.T(c.Language, "check.shared", paths.Tilde(dir),
+		i18n.Count(c.Language, "notes", len(m.Notes)), i18n.Count(c.Language, "problems", len(problems))))
+	if len(problems) > 0 {
+		return m, false
+	}
+	if changed, err := m.WriteIndex(c.Language); err != nil {
+		fmt.Fprintln(errOut, err)
+		return nil, false
+	} else if changed {
+		fmt.Fprintln(out, i18n.T(c.Language, "check.rebuilt", paths.Tilde(filepath.Join(dir, memory.IndexFile))))
+	}
+	return m, true
 }
 
 func cmdDoctor(out, errOut io.Writer) int {

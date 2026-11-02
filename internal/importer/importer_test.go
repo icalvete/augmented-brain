@@ -67,15 +67,18 @@ func TestImport(t *testing.T) {
 		"task-ship.md": "---\nname: task-ship\ndescription: Ship the app\nmetadata:\n  type: project\n  area: area-platform\n  repos: [code/app, code/gone]\n" +
 			"  related: [lesson-small-steps, task-school]\n  originSessionId: abc\n  colour: blue\n---\n## Notes\n- 2026-10-01 — Started.\n",
 		"task-ready.md": "---\nname: task-ready\ndescription: Prepared by a step of the user's own\nstatus: execution\nwaiting_on: nobody\nnext: Deploy\n" +
-			"watch:\n  - {date: 2026-11-08, what: Check the deploy}\nmetadata:\n  area: area-platform\n---\n",
+			"watch:\n  - {date: 2026-11-08, what: Check the deploy}\nrelated: [lesson-git]\nmetadata:\n  area: area-platform\n---\n",
 		"task-school.md":                 "---\nname: task-school\ndescription: School trip\nmetadata:\n  type: project\n  area: area-family\n---\n",
+		"task-course.md":                 "---\nname: task-course\ndescription: A course for work\nmetadata:\n  type: project\n  area: area-family\n---\n",
+		"lesson-git.md":                  "---\nname: lesson-git\ndescription: Small commits win\nmetadata:\n  type: feedback\n  area: area-platform\n---\nBody.\n",
+		"task-everywhere.md":             "---\nname: task-everywhere\ndescription: Not shared\nmetadata:\n  type: project\n---\n",
 		"lesson-small-steps.md":          "---\nname: lesson-small-steps\ndescription: Small steps win\nmetadata:\n  type: feedback\n---\nBody.\n",
 		"prefer-short.md":                "---\nname: prefer-short\ndescription: Short answers\nmetadata:\n  type: feedback\n---\n",
 		"user-me.md":                     "---\nname: user-me\ndescription: Who I am\nmetadata:\n  type: user\n---\n",
 		"broken.md":                      "---\nname: [unclosed\n---\n",
 		"archive/task-ship-journal-1.md": "old entries\n",
 	})
-	o := Options{Map: map[string]string{"area-family": "home", "*": "work"}, ReposBase: filepath.Join(home, "work"),
+	o := Options{Map: map[string]string{"area-family": "home", "task-course": "work", "lesson-git": "shared", "task-everywhere": "shared", "*": "work"}, ReposBase: filepath.Join(home, "work"),
 		Language: "en", Today: time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC)}
 	p, err := MakePlan(src, c, o)
 	if err != nil {
@@ -89,7 +92,7 @@ func TestImport(t *testing.T) {
 			notes[it.Note.Header.ID] = it.Note
 		}
 	}
-	for src, want := range map[string]string{"task-ship.md": "work", "task-school.md": "home", "area-family.md": "home",
+	for src, want := range map[string]string{"task-ship.md": "work", "task-school.md": "home", "task-course.md": "work", "lesson-git.md": "shared", "task-everywhere.md": "", "area-family.md": "home",
 		"lesson-small-steps.md": "work", "archive/task-ship-journal-1.md": "work", "user-me.md": "", "MEMORY.md": "", "broken.md": ""} {
 		if space[src] != want {
 			t.Errorf("%s goes to %q, want %q", src, space[src], want)
@@ -105,6 +108,12 @@ func TestImport(t *testing.T) {
 	if notes["lesson-small-steps"].Header.Type != "lesson" || notes["prefer-short"].Header.Type != "rule" {
 		t.Error("the prefix wins over Claude Code's kind; feedback without a prefix is a rule")
 	}
+	if notes["lesson-git"].Header.Area != "" || strings.Join(notes["task-ready"].Header.Related, ",") != "lesson-git" {
+		t.Errorf("a shared note has no area, and a space note keeps its link to one: %+v %+v", notes["lesson-git"].Header, notes["task-ready"].Header)
+	}
+	if notes["task-course"].Header.Area != "" {
+		t.Error("a note sent away from its area keeps an area of the other space")
+	}
 	ready := notes["task-ready"].Header
 	if ready.Status != "execution" || ready.WaitingOn != "nobody" || ready.Next != "Deploy" || len(ready.Watch) != 1 || ready.Watch[0].Date != "2026-11-08" {
 		t.Errorf("fields of augmented brain in the source are kept: %+v", ready)
@@ -115,7 +124,7 @@ func TestImport(t *testing.T) {
 	}
 	for _, want := range []string{
 		"cross-link task-ship.md task-school", "dropped-field task-ship.md metadata.colour", "to-profile user-me.md ",
-		"not-a-note MEMORY.md ", "task-defaults task-ship.md ",
+		"not-a-note MEMORY.md ", "task-defaults task-ship.md ", "not-shared task-everywhere.md task",
 	} {
 		if !issues[want] {
 			t.Errorf("no issue %q in %v", want, p.Issues)
@@ -138,11 +147,14 @@ func TestImport(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if done.Notes["work"] != 5 || done.Notes["home"] != 2 || done.Copies["work"] != 1 {
+	if done.Notes["work"] != 6 || done.Notes["home"] != 2 || done.Copies["work"] != 1 || done.Notes["shared"] != 1 {
 		t.Errorf("applied: %+v", done)
 	}
+	if _, err := os.Stat(filepath.Join(c.SharedDir(), "knowledge", "lesson-git.md")); err != nil {
+		t.Errorf("the shared lesson was not written: %v", err)
+	}
 	for _, sp := range []string{"work", "home"} {
-		m, problems, err := memory.Load(c.Spaces[sp].Memory)
+		m, problems, err := memory.LoadSpace(c.Spaces[sp].Memory, c.SharedDir())
 		if err != nil || len(problems) > 0 {
 			t.Errorf("space %s after the import: %v %v", sp, problems, err)
 		}

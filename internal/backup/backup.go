@@ -196,7 +196,7 @@ func catchUp(c *config.Config, s *config.Space) error {
 	defer unlock()
 	// Notes that were already not valid do not stop the merge; only new ones do.
 	before := map[string]bool{}
-	if _, problems, err := memory.Load(s.Memory); err == nil {
+	if _, problems, err := memory.LoadSpace(s.Memory, c.SharedDir()); err == nil {
 		for _, p := range problems {
 			before[p.Error()] = true
 		}
@@ -217,7 +217,7 @@ func catchUp(c *config.Config, s *config.Space) error {
 			strings.Join(notes, ", "), s.Memory)
 	}
 	// Only generated files collide: rebuild them and finish the merge.
-	m, problems, err := memory.Load(s.Memory)
+	m, problems, err := memory.LoadSpace(s.Memory, c.SharedDir())
 	var added []string
 	for _, p := range problems {
 		if !before[p.Error()] {
@@ -257,8 +257,8 @@ func ProfileSpace(c *config.Config) string {
 }
 
 // writeMeta copies config.toml (this space only) into MetaDir and, in the space that
-// carries it (ProfileSpace), the profile. Any other space's backup holds no profile: a
-// copy left there by an older version is removed. The machine-wide guard lists are in
+// carries them (ProfileSpace), the profile and the shared notes. Any other space's
+// backup holds neither: a copy left there by an older version is removed. The machine-wide guard lists are in
 // no backup: they may name work machines, and a new machine asks for them again.
 func writeMeta(c *config.Config, s *config.Space) error {
 	dir := filepath.Join(s.Memory, MetaDir)
@@ -271,11 +271,20 @@ func writeMeta(c *config.Config, s *config.Space) error {
 		return err
 	}
 	profile := filepath.Join(dir, "profile.md")
+	shared := filepath.Join(dir, config.SharedFolder)
+	if err := os.RemoveAll(shared); err != nil {
+		return err
+	}
 	if !carries {
 		if err := os.Remove(profile); err != nil && !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 		return nil
+	}
+	if _, err := os.Stat(c.SharedDir()); err == nil {
+		if err := paths.CopyTree(c.SharedDir(), shared); err != nil {
+			return err
+		}
 	}
 	if data, err := os.ReadFile(filepath.Join(c.Dir, "profile.md")); err == nil {
 		return os.WriteFile(profile, data, 0o644)
@@ -350,8 +359,11 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 			return nil, err
 		}
 	}
+	if err := copyShared(filepath.Join(mem, MetaDir), cfgDir); err != nil {
+		return nil, err
+	}
 	// The index is generated: rebuild it for this machine.
-	if m, problems, err := memory.Load(mem); err == nil && len(problems) == 0 {
+	if m, problems, err := memory.LoadSpace(mem, filepath.Join(cfgDir, config.SharedFolder)); err == nil && len(problems) == 0 {
 		_, _ = m.WriteIndex(c.Language)
 	}
 	return s, nil
@@ -405,6 +417,19 @@ func copyProfile(meta, cfgDir string) error {
 		return nil
 	}
 	return os.WriteFile(filepath.Join(cfgDir, "profile.md"), data, 0o644)
+}
+
+// copyShared brings the shared notes kept in a backup's MetaDir meta to cfgDir, when
+// this machine has none yet: the ones here are never written over.
+func copyShared(meta, cfgDir string) error {
+	src, dst := filepath.Join(meta, config.SharedFolder), filepath.Join(cfgDir, config.SharedFolder)
+	if _, err := os.Stat(src); err != nil {
+		return nil
+	}
+	if _, err := os.Stat(dst); err == nil {
+		return nil
+	}
+	return paths.CopyTree(src, dst)
 }
 
 // spaceToReplace returns the space called name that is already here, if any. A new

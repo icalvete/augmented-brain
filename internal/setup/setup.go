@@ -90,6 +90,9 @@ func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
 	if _, dup := c.Spaces[o.Space]; dup {
 		return nil, fmt.Errorf("there is already a space called %q", o.Space)
 	}
+	if o.Space == config.SharedFolder {
+		return nil, fmt.Errorf("space name %q is taken by the notes shared by every space: choose another", o.Space)
+	}
 	work, err := abs(o.WorkFolder)
 	if err != nil {
 		return nil, err
@@ -133,7 +136,7 @@ func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
 			res.Created = append(res.Created, filepath.Join(c.Dir, "profile.md"))
 		}
 	}
-	created, err := createSpace(c.Language, mem, today)
+	created, err := createSpace(c.Language, mem, c.SharedDir(), today)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +156,7 @@ func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
 }
 
 // createSpace makes the space's folders, copies the starter files and writes the index.
-func createSpace(lang, dir string, today string) ([]string, error) {
+func createSpace(lang, dir, sharedDir, today string) ([]string, error) {
 	var created []string
 	// Notes already there keep the version they say (or 1); the next session moves them
 	// on. A new space is written in this program's format.
@@ -185,7 +188,7 @@ func createSpace(lang, dir string, today string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	m, problems, err := memory.Load(dir)
+	m, problems, err := memory.LoadSpace(dir, sharedDir)
 	if err != nil {
 		return nil, err
 	}

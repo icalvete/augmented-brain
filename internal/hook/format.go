@@ -2,6 +2,7 @@ package hook
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -41,5 +42,9 @@ func migrate(c *config.Config, s *config.Space, cfgDir string) string {
 	defer unlock()
 	r, err = format.EnsureNotes(s.Memory, cfgDir, s.Name, now)
 	say("the notes of space "+s.Name, r, err)
+	if _, err := os.Stat(c.SharedDir()); err == nil {
+		r, err = format.EnsureNotes(c.SharedDir(), cfgDir, config.SharedFolder, now)
+		say("the shared notes", r, err)
+	}
 	return out.String()
 }

@@ -20,29 +20,56 @@ import (
 const Budget = 9500
 
 // Context returns the text for a session started in a folder of space s. When the full
-// text does not fit, space rules are listed by title and path for the assistant to read
-// when needed, and if that is still too long the index is cut.
+// text does not fit, the user's rules (shared and of the space) are listed by title and
+// path for the assistant to read when needed, and if that is still too long the index is
+// cut.
 func Context(c *config.Config, s *config.Space) string { return ContextWith(c, s, "") }
 
 // ContextWith is Context with a note for the assistant right after the heading, kept
 // whole when the rest is cut to fit.
 func ContextWith(c *config.Config, s *config.Space, note string) string {
-	m, problems, err := memory.Load(s.Memory)
+	shared, sharedProblems, err := memory.LoadShared(c.SharedDir())
+	if err != nil {
+		return fmt.Sprintf("augmented brain: the shared notes (%s) cannot be read: %v. Run `augmented-brain doctor`.", c.SharedDir(), err)
+	}
+	m, problems, err := memory.Load(s.Memory, shared)
 	if err != nil {
 		return fmt.Sprintf("augmented brain: the memory folder of space %q (%s) cannot be read: %v. Run `augmented-brain doctor`.", s.Name, s.Memory, err)
+	}
+	for _, p := range sharedProblems {
+		problems = append(problems, memory.Problem{Path: filepath.Join(c.SharedDir(), filepath.FromSlash(p.Path)), Err: p.Err})
 	}
 	return fit(parts{
 		head:    heading(c, s, m, problems, note),
 		profile: section("Who the user is", profileText(c, s)),
 		common:  section("Rules", rules.Common(c.Language)),
-		index:   "\n" + m.Index(c.Language),
-	}, c, s, m)
+		index:   "\n" + m.Index(c.Language) + sharedKnowledge(shared),
+	}, c, s, m, shared)
 }
 
 // parts are the pieces of the session text, in the order they are joined.
-type parts struct{ head, profile, common, spaceRules, index string }
+type parts struct{ head, profile, common, userRules, index string }
 
-func (p parts) join() string { return p.head + p.profile + p.common + p.spaceRules + p.index }
+func (p parts) join() string { return p.head + p.profile + p.common + p.userRules + p.index }
+
+// sharedKnowledge lists the shared references and lessons, one line each, for the
+// assistant to open when one bears on the work.
+func sharedKnowledge(shared *memory.Memory) string {
+	var lines []string
+	for _, typ := range []string{"reference", "lesson"} {
+		for _, n := range shared.OfType(typ) {
+			line := fmt.Sprintf("- [%s](%s)", n.Header.Title, filepath.Join(shared.Dir, filepath.FromSlash(n.Path)))
+			if n.Header.Summary != "" {
+				line += " — " + n.Header.Summary
+			}
+			lines = append(lines, line)
+		}
+	}
+	if len(lines) == 0 {
+		return ""
+	}
+	return section("Knowledge for every space (open the file when it bears on the work)", strings.Join(lines, "\n"))
+}
 
 // heading is what always goes whole: where the memory is, the caller's note, broken
 // files, and either the first-session interview or what comes up today.
@@ -60,24 +87,29 @@ func heading(c *config.Config, s *config.Space, m *memory.Memory, problems []mem
 	return head + dueNote(b) + reviewNote(b)
 }
 
-// fit adds the space's rules and returns the text within Budget, giving up detail in
-// steps when it does not fit; the heading is never cut before the last step.
-func fit(p parts, c *config.Config, s *config.Space, m *memory.Memory) string {
-	var full, short []string
-	for _, r := range m.OfType("rule") {
-		full = append(full, "### "+r.Header.Title+"\n"+strings.TrimSpace(r.Body)+"\n")
-		short = append(short, fmt.Sprintf("- %s: %s", r.Header.Title, filepath.Join(s.Memory, filepath.FromSlash(r.Path))))
+// fit adds the user's rules, shared and of the space, and returns the text within
+// Budget, giving up detail in steps when it does not fit; the heading is never cut
+// before the last step.
+func fit(p parts, c *config.Config, s *config.Space, m, shared *memory.Memory) string {
+	var full, short string
+	for _, g := range []struct {
+		title string
+		mem   *memory.Memory
+	}{{"Rules for every space", shared}, {"Rules of this space", m}} {
+		var whole, listed []string
+		for _, r := range g.mem.OfType("rule") {
+			whole = append(whole, "### "+r.Header.Title+"\n"+strings.TrimSpace(r.Body)+"\n")
+			listed = append(listed, fmt.Sprintf("- %s: %s", r.Header.Title, filepath.Join(g.mem.Dir, filepath.FromSlash(r.Path))))
+		}
+		full += section(g.title, strings.Join(whole, "\n"))
+		short += section(g.title+" (read each file before acting on its subject)", strings.Join(listed, "\n"))
 	}
-	if len(full) > 0 {
-		p.spaceRules = section("Rules of this space", strings.Join(full, "\n"))
-	}
+	p.userRules = full
 	if text := p.join(); size(text) <= Budget {
 		return text
 	}
-	// 1. Space rules by title and path, to be read when needed.
-	if len(short) > 0 {
-		p.spaceRules = section("Rules of this space (read each file before acting on its subject)", strings.Join(short, "\n"))
-	}
+	// 1. The user's rules by title and path, to be read when needed.
+	p.userRules = short
 	// 2. A long profile, cut, saying where the whole one is.
 	if size(p.profile) > profileBudget {
 		p.profile = cut(p.profile, profileBudget) + fmt.Sprintf("\n(The profile was cut to fit. Read it whole in %s.)\n", filepath.Join(c.Dir, "profile.md"))
@@ -86,12 +118,16 @@ func fit(p parts, c *config.Config, s *config.Space, m *memory.Memory) string {
 		return text
 	}
 	// 3. The index, cut, saying where the whole one is.
-	cutNote := fmt.Sprintf("\n\n(The index was cut to fit. Read it whole in %s.)\n", filepath.Join(s.Memory, memory.IndexFile))
-	rest := p.head + p.profile + p.common + p.spaceRules
+	where := filepath.Join(s.Memory, memory.IndexFile)
+	if len(shared.Notes) > 0 {
+		where += "; the shared notes are in " + shared.Dir
+	}
+	cutNote := fmt.Sprintf("\n\n(The index was cut to fit. Read it whole in %s.)\n", where)
+	rest := p.head + p.profile + p.common + p.userRules
 	text := rest + cut(p.index, Budget-size(rest+cutNote)) + cutNote
-	// 4. Whatever is left (hundreds of space rules), never over the budget.
+	// 4. Whatever is left (hundreds of rules), never over the budget.
 	if size(text) > Budget {
-		end := "\n(Cut to fit. Read the space's rules and index in " + s.Memory + ".)\n"
+		end := "\n(Cut to fit. Read the rules and index in " + s.Memory + " and the shared notes in " + shared.Dir + ".)\n"
 		text = cut(text, Budget-size(end)) + end
 	}
 	return text

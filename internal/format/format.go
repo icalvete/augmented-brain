@@ -143,7 +143,7 @@ func ensure(dir, cfgDir, name string, v, target int, steps []Migration, now time
 		return r, write(v) // records it when it was only implied; cheap
 	}
 	r.Copy = filepath.Join(cfgDir, CopiesDir, fmt.Sprintf("%s-%d-%s", name, v, now.Format("20060102-150405")))
-	if err := copyTree(dir, r.Copy); err != nil {
+	if err := paths.CopyTree(dir, r.Copy, CopiesDir, "state", ".git"); err != nil { // the machine's state and earlier copies stay out
 		return r, fmt.Errorf("copying %s before moving it to format %d: %w", dir, target, err)
 	}
 	for r.To < target {
@@ -166,33 +166,4 @@ func ensure(dir, cfgDir, name string, v, target int, steps []Migration, now time
 		r.Done = append(r.Done, step.What)
 	}
 	return r, nil
-}
-
-// copyTree copies a folder, files and subfolders, skipping the migrations folder and
-// the machine's state when it copies the configuration folder.
-func copyTree(src, dst string) error {
-	return filepath.WalkDir(src, func(p string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		rel, err := filepath.Rel(src, p)
-		if err != nil {
-			return err
-		}
-		if d.IsDir() && (rel == CopiesDir || rel == "state" || rel == ".git") {
-			return filepath.SkipDir
-		}
-		target := filepath.Join(dst, rel)
-		if d.IsDir() {
-			return os.MkdirAll(target, 0o700)
-		}
-		if !d.Type().IsRegular() {
-			return nil // sockets, links: nothing a migration changes
-		}
-		data, err := os.ReadFile(p)
-		if err != nil {
-			return err
-		}
-		return os.WriteFile(target, data, 0o600)
-	})
 }

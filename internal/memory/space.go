@@ -1,10 +1,12 @@
 package memory
 
 import (
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -27,8 +29,9 @@ type Memory struct {
 }
 
 // Load reads every note of the memory in dir, except archive/. It returns what it could
-// read, and one Problem per file that is not a valid note.
-func Load(dir string) (*Memory, []Problem, error) {
+// read, and one Problem per file that is not a valid note. A note may link (related) to
+// the notes of also: the shared notes, which every space can see.
+func Load(dir string, also ...*Memory) (*Memory, []Problem, error) {
 	info, err := os.Stat(dir)
 	if err != nil {
 		return nil, nil, err
@@ -71,14 +74,57 @@ func Load(dir string) (*Memory, []Problem, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	problems = append(problems, m.checkLinks()...)
+	problems = append(problems, m.checkLinks(also)...)
 	sort.Slice(problems, func(i, j int) bool { return problems[i].Path < problems[j].Path })
 	return m, problems, nil
 }
 
+// SharedTypes are the types of note the shared folder holds: what applies in every
+// space. Tasks, areas and people always belong to one space.
+var SharedTypes = []string{"rule", "reference", "lesson"}
+
+// LoadShared reads the shared notes in dir, which may not exist yet (then there are
+// none). A note of a type that is not shared, or with an area, is a problem.
+func LoadShared(dir string) (*Memory, []Problem, error) {
+	if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
+		return &Memory{Dir: dir, Notes: map[string]*Note{}}, nil, nil
+	}
+	m, problems, err := Load(dir)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, id := range m.IDs() {
+		n := m.Notes[id]
+		var err error
+		switch {
+		case !slices.Contains(SharedTypes, n.Header.Type):
+			err = fmt.Errorf("a %s belongs to one space; the shared notes are rules, references and lessons", n.Header.Type)
+		case n.Header.Area != "":
+			err = fmt.Errorf("area %q: areas belong to one space, so a shared note has none", n.Header.Area)
+		default:
+			continue
+		}
+		problems = append(problems, Problem{n.Path, err})
+		delete(m.Notes, id)
+	}
+	sort.Slice(problems, func(i, j int) bool { return problems[i].Path < problems[j].Path })
+	return m, problems, nil
+}
+
+// LoadSpace loads a space's memory in dir, where notes may link to the shared notes in
+// sharedDir. Shared notes that cannot be read only count as missing here; reading them
+// is checked where they are loaded on their own.
+func LoadSpace(dir, sharedDir string) (*Memory, []Problem, error) {
+	shared, _, err := LoadShared(sharedDir)
+	if err != nil {
+		shared = &Memory{Dir: sharedDir, Notes: map[string]*Note{}}
+	}
+	return Load(dir, shared)
+}
+
 // checkLinks reports areas, parents and related notes that do not exist. These are
 // soft problems: the note itself is valid, is kept and can be written.
-func (m *Memory) checkLinks() []Problem {
+func (m *Memory) checkLinks(also []*Memory) []Problem {
 	var problems []Problem
 	for _, id := range m.IDs() {
 		n := m.Notes[id]
@@ -102,12 +148,21 @@ func (m *Memory) checkLinks() []Problem {
 			}
 		}
 		for _, r := range n.Header.Related {
-			if _, ok := m.Notes[r]; !ok {
+			if _, ok := m.Notes[r]; !ok && !inAny(also, r) {
 				problems = append(problems, Problem{n.Path, fmt.Errorf("related %q does not exist", r)})
 			}
 		}
 	}
 	return problems
+}
+
+func inAny(ms []*Memory, id string) bool {
+	for _, m := range ms {
+		if _, ok := m.Notes[id]; ok {
+			return true
+		}
+	}
+	return false
 }
 
 // parentProblem says why id cannot be a subtask's parent, or nil when it can.

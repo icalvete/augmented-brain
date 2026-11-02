@@ -87,7 +87,7 @@ func TestInitAndAddSpace(t *testing.T) {
 	if err := os.WriteFile(area, []byte("---\nid: area-general\ntype: area\ntitle: Mine\n---\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := createSpace("es", mem, "2026-10-16"); err != nil {
+	if _, err := createSpace("es", mem, filepath.Join(home, "cfg", "shared"), "2026-10-16"); err != nil {
 		t.Fatal(err)
 	}
 	if b, _ := os.ReadFile(area); !strings.Contains(string(b), "title: Mine") {
@@ -134,6 +134,7 @@ func TestAddSpaceErrors(t *testing.T) {
 	}{
 		{Options{Space: "Work!", WorkFolder: "~/work", Memory: "~/m/x"}, "lowercase"},
 		{Options{Space: "work", WorkFolder: "~/work", Memory: "~/m/x"}, "already a space"},
+		{Options{Space: "shared", WorkFolder: "~/shared", Memory: "~/m/shared"}, "shared by every space"},
 		{Options{Space: "x", WorkFolder: "~/m/work/MEMORY.md", Memory: "~/m/x"}, "is a file"},
 		{Options{Space: "x", WorkFolder: "~/work/sub", Memory: "~/m/x"}, "already belongs"},
 		{Options{Space: "x", WorkFolder: "~", Memory: "~/m/work"}, "memory folder"},

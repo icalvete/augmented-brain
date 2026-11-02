@@ -29,7 +29,13 @@ func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 	for _, it := range p.Items {
 		if it.Space != "" && !checked[it.Space] {
 			checked[it.Space] = true
-			if err := format.CheckNotes(c.Spaces[it.Space].Memory); err != nil {
+			mem := memoryOf(c, it.Space)
+			if _, err := os.Stat(mem); errors.Is(err, os.ErrNotExist) && it.Space == config.SharedFolder {
+				if err := format.Write(mem, format.Notes()); err != nil { // the first shared notes
+					return done, err
+				}
+			}
+			if err := format.CheckNotes(mem); err != nil {
 				return done, err
 			}
 		}
@@ -39,7 +45,7 @@ func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 		if it.Space == "" {
 			continue
 		}
-		mem := c.Spaces[it.Space].Memory
+		mem := memoryOf(c, it.Space)
 		var dst string
 		if it.Copy {
 			dst = filepath.Join(mem, filepath.FromSlash(it.Source))
@@ -77,7 +83,7 @@ func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 	}
 	sort.Strings(spaces)
 	for _, sp := range spaces {
-		m, _, err := memory.Load(c.Spaces[sp].Memory)
+		m, _, err := memory.Load(memoryOf(c, sp))
 		if err != nil {
 			return done, err
 		}
@@ -89,4 +95,13 @@ func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 		return done, fmt.Errorf("%d files appeared after the plan was made and were left as they are: %v", len(skipped), skipped)
 	}
 	return done, nil
+}
+
+// memoryOf returns the memory folder of a space of the plan: the shared notes have
+// theirs in the configuration folder.
+func memoryOf(c *config.Config, sp string) string {
+	if sp == config.SharedFolder {
+		return c.SharedDir()
+	}
+	return c.Spaces[sp].Memory
 }

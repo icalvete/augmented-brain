@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **Notes shared by every space.** What you learn that holds everywhere (how git
+  behaves, how you like answers) is saved once, in `shared/` next to your profile, and
+  every space sees it: its rules are loaded at the start of each session, its references
+  and lessons are listed for Claude to open. Tell Claude "this holds everywhere" and it
+  saves the note there. Only rules, references and lessons can be shared. They travel in
+  the default space's backup, like the profile, and `import` can send notes there
+  (`lesson-x = shared` in the map).
+- **Claude can save a rule you give it** (`rule_new`), in the space or shared, instead
+  of you writing the file by hand.
 - **Your repositories stay clean.** A new common rule: a repository only gets what its
   team needs, through a branch. The plans, analyses and reports of a task go to `docs/`
   in the notes folder, next to the task, and are never loaded at the start.
@@ -10,7 +19,8 @@
   would go in your spaces, and what it could not decide: files that are not notes,
   notes about you, links that would cross spaces, ids already taken. Nothing is written
   until you run it again with `--apply`, and the folder you import from is only read.
-  With several spaces, a small file says which space each area goes to (`--map`).
+  With several spaces, a small file says which space each area goes to, which notes
+  go somewhere other than their area, and which go to the shared notes (`--map`).
 - **The guard misses less.** `terraform`, `tofu`, `pulumi`, `eksctl` and `copilot` are
   checked against the production profiles like `aws`, the inherited one included. In
   `find` with several `-exec`, a blocked one is no longer hidden by an earlier one that

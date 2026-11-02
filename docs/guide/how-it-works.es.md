@@ -192,6 +192,21 @@ tienes un solo espacio, es ese. Un espacio añadido con `space add` lo fija si n
 espacio que toque. Para un espacio nuevo (un cliente, por ejemplo):
 `augmented-brain space add cliente`.
 
+### Notas compartidas
+
+Algunas cosas que aprendes valen en todas partes: cómo se porta git, cómo te gustan las
+respuestas, una lección sobre una herramienta. Guardarlas dos veces, una por espacio,
+dejaría dos copias que acaban siendo distintas. Por eso van una sola vez en las **notas
+compartidas**, junto a tu perfil: `~/.config/augmented-brain/shared/`. Ahí solo van
+reglas, referencias y lecciones. Las tareas, las áreas y las personas son siempre de un
+espacio.
+
+Todos los espacios las ven. Las reglas compartidas se cargan al empezar cada sesión, como
+las del espacio. Las referencias y lecciones compartidas salen en una línea cada una, y
+Claude abre la que necesite. No hay que mover ficheros a mano: dile a Claude «esto vale
+para todo» y la guarda como compartida. Viajan en la copia de seguridad del espacio por
+defecto, como tu perfil.
+
 ## La copia de seguridad
 
 La carpeta de notas de cada espacio es también un repositorio git. La copia lo sube a un
@@ -279,10 +294,12 @@ Cada fichero pasa a ser una nota de su tipo: por su nombre (`task-…`, `area-�
 `lesson-…`, `rule-…`, `person-…`) o, si no, por lo que Claude Code dice que es. Una
 tarea sin estado entra aparcada, esperándote, con «revisar esta tarea importada» como
 siguiente paso. Con más de un espacio, un fichero pequeño dice a qué espacio va cada
-área:
+área, qué notas van a otro sitio que su área y cuáles van a las notas compartidas:
 
 ```text
 area-familia = personal
+task-curso-del-cole = trabajo
+lesson-git-commits-pequenos = shared
 * = trabajo
 ```
 
