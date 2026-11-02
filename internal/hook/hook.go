@@ -88,26 +88,42 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 	case s == nil:
 		text = session.NoSpace(c, i.Cwd)
 	default:
-		var note string
-		if _, isDefault := c.SpaceAt(i.Cwd); isDefault {
-			note = session.DefaultNote(c, s, i.Cwd)
-		}
-		if st, ok := backup.LastStatus(cfgDir, s.Name); ok && s.Backup != "" {
-			if !st.OK {
-				note += session.BackupFailedNote(c.Language, s.Name, st.Time, st.Error)
-			} else if st.Warning != "" {
-				note += session.BackupWarningNote(c.Language, s.Name, st.Time, st.Warning)
-			}
-		}
-		if latest := update.Available(cfgDir, version.Version, time.Now(), LatestVersion); latest != "" {
-			note += session.UpdateNote(c.Language, version.Version, latest)
-		}
-		note += migrate(c, s, cfgDir)
-		note += sessionStarted(c, s, i, cfgDir)
-		note += askSafety(c, cfgDir)
-		text = session.ContextWith(c, s, note)
+		text = session.ContextWith(c, s, startNote(c, s, i, cfgDir))
 	}
 	return write(out, output{specific{HookEventName: "SessionStart", AdditionalContext: text}})
+}
+
+// startNote is what this session must hear first, on top of the space's text: the
+// default space was loaded, the backup failed, a new version is out, the notes moved
+// to a new format, a session to recover, the guard's lists to ask for again. It also
+// does the work behind some of them (the migration, recording the session).
+func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string {
+	var note string
+	if _, isDefault := c.SpaceAt(i.Cwd); isDefault {
+		note = session.DefaultNote(c, s, i.Cwd)
+	}
+	note += backupNote(c, s, cfgDir)
+	if latest := update.Available(cfgDir, version.Version, time.Now(), LatestVersion); latest != "" {
+		note += session.UpdateNote(c.Language, version.Version, latest)
+	}
+	note += migrate(c, s, cfgDir)
+	note += sessionStarted(c, s, i, cfgDir)
+	note += askSafety(c, cfgDir)
+	return note
+}
+
+// backupNote says when the space's last backup failed or left files out.
+func backupNote(c *config.Config, s *config.Space, cfgDir string) string {
+	st, ok := backup.LastStatus(cfgDir, s.Name)
+	switch {
+	case !ok || s.Backup == "":
+		return ""
+	case !st.OK:
+		return session.BackupFailedNote(c.Language, s.Name, st.Time, st.Error)
+	case st.Warning != "":
+		return session.BackupWarningNote(c.Language, s.Name, st.Time, st.Warning)
+	}
+	return ""
 }
 
 // PreToolUse runs the guard on a shell command (Bash, or Monitor, which runs a command

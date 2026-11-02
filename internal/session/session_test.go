@@ -192,3 +192,15 @@ func TestContextDueAndReview(t *testing.T) {
 		t.Errorf("the first session must only run the interview:\n%s", text)
 	}
 }
+
+// shorten counts as the budget does (UTF-16 units), never splits a character, and
+// marks only a real cut.
+func TestShorten(t *testing.T) {
+	if got := shorten(strings.Repeat("ñ", 200), 240); got != strings.Repeat("ñ", 200) {
+		t.Errorf("fits in units, longer in bytes: %q", got)
+	}
+	got := shorten(strings.Repeat("😀", 5), 5)
+	if got != "😀😀…" || !utf8.ValidString(got) {
+		t.Errorf("emoji count twice: %q", got)
+	}
+}

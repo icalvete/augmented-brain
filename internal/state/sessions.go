@@ -52,6 +52,23 @@ func (s Space) List(now time.Time) []Listed {
 	return out
 }
 
+// Busy is how recently a transcript must have been written for its session to count as
+// still running (in another window, or the one asking).
+const Busy = 10 * time.Minute
+
+// Unclosed returns the dead sessions of the space (see List) other than current,
+// newest first: they started but never ended, are not running anywhere, and still have
+// a transcript on this machine.
+func (s Space) Unclosed(current string, now time.Time) []Session {
+	var out []Session
+	for _, l := range s.List(now) {
+		if l.Kind == Dead && l.ID != current {
+			out = append(out, l.Session)
+		}
+	}
+	return out
+}
+
 // From is where what may be missing from the notes starts, in a session that did not
 // end: the last write to its task while that session was still alive, or lastEntry
 // (the date of the task's last journal entry), whichever is later; its start when
@@ -70,15 +87,14 @@ func (s Space) From(se Session, lastEntry time.Time) time.Time {
 }
 
 // Dismissed marks a session as dealt with: recovered or reviewed. It is then listed as
-// closed, and no later session offers to recover it.
-func Dismissed(cfgDir, space, id string, now time.Time) error {
-	return Update(cfgDir, space, now, func(s *Space) {
-		for i := range s.Sessions {
-			if s.Sessions[i].ID == id {
-				s.Sessions[i].Closed = true
-			}
-		}
-	})
+// closed, and no later session offers to recover it: to this machine it is as if it
+// had ended normally.
+func Dismissed(cfgDir, space, id string, now time.Time) error { return Ended(cfgDir, space, id, now) }
+
+// Reported records that a later session offered to recover this one, so it is offered
+// once only.
+func Reported(cfgDir, space, id string, now time.Time) error {
+	return changeSession(cfgDir, space, id, now, func(se *Session) { se.Reported = true })
 }
 
 // ErrNotDeletable is returned for a transcript that must not be deleted.
@@ -90,13 +106,8 @@ var ErrNotDeletable = errors.New("only the transcript of a closed session, not w
 // a transcript goes, the file must be named after the session (<id>.jsonl), as Claude
 // Code names them, and must not have been written in the last Busy minutes.
 func DeleteTranscript(cfgDir, space, id string, now time.Time) error {
-	var se *Session
 	st := Read(cfgDir, space)
-	for i := range st.Sessions {
-		if st.Sessions[i].ID == id {
-			se = &st.Sessions[i]
-		}
-	}
+	se := st.find(id)
 	if se == nil || !se.Closed || se.Transcript == "" || id == "" ||
 		filepath.Base(se.Transcript) != id+".jsonl" || strings.ContainsAny(id, `/\`) {
 		return ErrNotDeletable
@@ -118,11 +129,5 @@ func DeleteTranscript(cfgDir, space, id string, now time.Time) error {
 			return err
 		}
 	}
-	return Update(cfgDir, space, now, func(s *Space) {
-		for i := range s.Sessions {
-			if s.Sessions[i].ID == id {
-				s.Sessions[i].Transcript = ""
-			}
-		}
-	})
+	return changeSession(cfgDir, space, id, now, func(se *Session) { se.Transcript = "" })
 }

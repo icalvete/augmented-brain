@@ -6,15 +6,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
 
-// previewMax is how much of a dead session's conversation its card shows; recoverMax,
-// how much a recovery keeps in the archive (the last part, when there is more).
-const (
-	previewMax = 3000
-	recoverMax = 200000
-)
+// previewMax is how much of a dead session's conversation its card shows. A recovery
+// keeps more: brain.RecoverForArchive.
+const previewMax = 3000
 
 type sessionRow struct {
 	ID, Short, Started, Written, Size, TaskID, TaskTitle string
@@ -72,7 +70,7 @@ func (s *Server) sessions(v *view, _ *http.Request) (string, page, error) {
 			r.From = from.Local().Format(stamp)
 			r.Said, _ = state.Conversation(l.Transcript, from, previewMax)
 			d.Dead = append(d.Dead, r)
-		default:
+		case state.Closed:
 			if l.Size == 0 {
 				continue // the transcript is gone: nothing to show or to free
 			}
@@ -88,54 +86,44 @@ func (s *Server) sessions(v *view, _ *http.Request) (string, page, error) {
 	return "sessions", p, nil
 }
 
-// deadSession finds a session of the space that did not end and is not running.
-func (v *view) deadSession(id string) (state.Space, state.Listed, error) {
-	st := state.Read(v.c.Dir, v.b.Space.Name)
-	for _, l := range st.List(time.Now()) {
-		if l.ID == id && l.Kind == state.Dead {
-			return st, l, nil
-		}
-	}
-	return st, state.Listed{}, errors.New(v.t("err.session"))
-}
-
 // sessionRecover keeps what was said in a dead session after the last journal entry of
 // its task: in archive/sessions/, with a line in the task's journal pointing at it.
 // There is no assistant here to sum it up, so the conversation is kept as it was.
 func (s *Server) sessionRecover(v *view, r *http.Request) (string, error) {
-	st, l, err := v.deadSession(field(r, "id"))
-	if err != nil {
-		return "", err
-	}
-	from := st.From(l.Session, v.b.LastEntry(l.Task))
-	text, err := state.Conversation(l.Transcript, from, recoverMax)
-	if err != nil {
-		return "", err
-	}
 	now := time.Now()
-	if text != "" {
-		started := l.Started.Local().Format(stamp)
-		rel, err := v.b.SaveSession("recovered", l.ID, v.t("sessions.archive", started, from.Local().Format(stamp)), text)
+	rec, err := v.b.Recover(field(r, "id"), brain.RecoverForArchive, now)
+	if errors.Is(err, brain.ErrNoDeadSession) {
+		return "", errors.New(v.t("err.session"))
+	}
+	if err != nil {
+		return "", err
+	}
+	se := rec.Session
+	if rec.Text != "" {
+		started := se.Started.Local().Format(stamp)
+		rel, err := v.b.SaveSession("recovered", se.ID, v.t("sessions.archive", started, rec.From.Local().Format(stamp)), rec.Text)
 		if err != nil {
 			return "", err
 		}
-		if _, ok := v.b.Mem.Notes[l.Task]; ok {
-			if _, err := v.b.JournalText("recovered", l.Task, started, rel); err != nil {
+		if _, ok := v.b.Mem.Notes[se.Task]; ok {
+			if _, err := v.b.JournalText("recovered", se.Task, started, rel); err != nil {
 				return "", err
 			}
-			_ = state.Touched(v.c.Dir, v.b.Space.Name, l.Task, now, true)
+			v.b.Touched(se.Task, true)
 		}
 	}
-	return "/sessions", state.Dismissed(v.c.Dir, v.b.Space.Name, l.ID, now)
+	return "/sessions", state.Dismissed(v.c.Dir, v.b.Space.Name, se.ID, now)
 }
 
 // sessionReviewed takes a dead session off the list without keeping anything.
 func (s *Server) sessionReviewed(v *view, r *http.Request) (string, error) {
-	_, l, err := v.deadSession(field(r, "id"))
-	if err != nil {
-		return "", err
+	id, now := field(r, "id"), time.Now()
+	for _, se := range state.Read(v.c.Dir, v.b.Space.Name).Unclosed("", now) {
+		if se.ID == id {
+			return "/sessions", state.Dismissed(v.c.Dir, v.b.Space.Name, id, now)
+		}
 	}
-	return "/sessions", state.Dismissed(v.c.Dir, v.b.Space.Name, l.ID, time.Now())
+	return "", errors.New(v.t("err.session"))
 }
 
 // sessionDelete deletes the transcript of a closed session, once the person has ticked

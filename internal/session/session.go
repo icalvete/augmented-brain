@@ -31,6 +31,22 @@ func ContextWith(c *config.Config, s *config.Space, note string) string {
 	if err != nil {
 		return fmt.Sprintf("augmented brain: the memory folder of space %q (%s) cannot be read: %v. Run `augmented-brain doctor`.", s.Name, s.Memory, err)
 	}
+	return fit(parts{
+		head:    heading(c, s, m, problems, note),
+		profile: section("Who the user is", profileText(c, s)),
+		common:  section("Rules", rules.Common(c.Language)),
+		index:   "\n" + m.Index(c.Language),
+	}, c, s, m)
+}
+
+// parts are the pieces of the session text, in the order they are joined.
+type parts struct{ head, profile, common, spaceRules, index string }
+
+func (p parts) join() string { return p.head + p.profile + p.common + p.spaceRules + p.index }
+
+// heading is what always goes whole: where the memory is, the caller's note, broken
+// files, and either the first-session interview or what comes up today.
+func heading(c *config.Config, s *config.Space, m *memory.Memory, problems []memory.Problem, note string) string {
 	head := fmt.Sprintf("# augmented brain · space %s\n\nThis session works in space %q. Its memory is in %s; use the augmented-brain tools to work with it.\n",
 		s.Name, s.Name, s.Memory)
 	head += note
@@ -38,43 +54,41 @@ func ContextWith(c *config.Config, s *config.Space, note string) string {
 		head += "\nWarning: " + brain.ProblemsNote(problems, 3)
 	}
 	if brain.ProfileEmpty(c.Dir) {
-		head += firstSession(c.Language)
-	} else {
-		b := &brain.Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: Now}
-		head += dueNote(b) + reviewNote(b)
+		return head + firstSession(c.Language)
 	}
-	profile := section("Who the user is", profileText(c, s))
-	common := section("Rules", rules.Common(c.Language))
-	index := "\n" + m.Index(c.Language)
+	b := &brain.Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: Now}
+	return head + dueNote(b) + reviewNote(b)
+}
 
+// fit adds the space's rules and returns the text within Budget, giving up detail in
+// steps when it does not fit; the heading is never cut before the last step.
+func fit(p parts, c *config.Config, s *config.Space, m *memory.Memory) string {
 	var full, short []string
 	for _, r := range m.OfType("rule") {
 		full = append(full, "### "+r.Header.Title+"\n"+strings.TrimSpace(r.Body)+"\n")
 		short = append(short, fmt.Sprintf("- %s: %s", r.Header.Title, filepath.Join(s.Memory, filepath.FromSlash(r.Path))))
 	}
-	spaceRules := ""
 	if len(full) > 0 {
-		spaceRules = section("Rules of this space", strings.Join(full, "\n"))
+		p.spaceRules = section("Rules of this space", strings.Join(full, "\n"))
 	}
-	text := head + profile + common + spaceRules + index
-	if size(text) <= Budget {
+	if text := p.join(); size(text) <= Budget {
 		return text
 	}
 	// 1. Space rules by title and path, to be read when needed.
 	if len(short) > 0 {
-		spaceRules = section("Rules of this space (read each file before acting on its subject)", strings.Join(short, "\n"))
+		p.spaceRules = section("Rules of this space (read each file before acting on its subject)", strings.Join(short, "\n"))
 	}
 	// 2. A long profile, cut, saying where the whole one is.
-	if size(profile) > profileBudget {
-		profile = cut(profile, profileBudget) + fmt.Sprintf("\n(The profile was cut to fit. Read it whole in %s.)\n", filepath.Join(c.Dir, "profile.md"))
+	if size(p.profile) > profileBudget {
+		p.profile = cut(p.profile, profileBudget) + fmt.Sprintf("\n(The profile was cut to fit. Read it whole in %s.)\n", filepath.Join(c.Dir, "profile.md"))
 	}
-	text = head + profile + common + spaceRules + index
-	if size(text) <= Budget {
+	if text := p.join(); size(text) <= Budget {
 		return text
 	}
 	// 3. The index, cut, saying where the whole one is.
 	cutNote := fmt.Sprintf("\n\n(The index was cut to fit. Read it whole in %s.)\n", filepath.Join(s.Memory, memory.IndexFile))
-	text = head + profile + common + spaceRules + cut(index, Budget-size(head+profile+common+spaceRules+cutNote)) + cutNote
+	rest := p.head + p.profile + p.common + p.spaceRules
+	text := rest + cut(p.index, Budget-size(rest+cutNote)) + cutNote
 	// 4. Whatever is left (hundreds of space rules), never over the budget.
 	if size(text) > Budget {
 		end := "\n(Cut to fit. Read the space's rules and index in " + s.Memory + ".)\n"
@@ -170,12 +184,8 @@ func cut(s string, max int) string {
 // firstSession is the interview the assistant runs while the user's profile is blank:
 // a few guided questions, each with its reason, whose answers set everything up.
 func firstSession(lang string) string {
-	language := map[string]string{"es": "Spanish"}[lang]
-	if language == "" {
-		language = "English"
-	}
 	return "\n## First session: get to know the user\n\n" +
-		"The user's profile is blank, so this is their first session. Before anything else, run this short interview, in the language the user writes in (" + language + " if you cannot tell yet), and keep to it.\n\n" +
+		"The user's profile is blank, so this is their first session. Before anything else, run this short interview, in the language the user writes in (" + Language(lang) + " if you cannot tell yet), and keep to it.\n\n" +
 		"Start by saying, in two sentences, what augmented brain does for them (you remember their tasks, decisions and people from one session to the next, " +
 		"and you check risky commands with them first), and that six quick questions will set it up for them: about five minutes, any question can be skipped, " +
 		"and everything can be changed later by asking. Then ask one question at a time. Before each, say in one short sentence why you ask it. " +
@@ -206,12 +216,8 @@ func DefaultNote(c *config.Config, s *config.Space, dir string) string {
 			others = append(others, fmt.Sprintf("%s: %s", name, c.Spaces[name].WorkFolders[0]))
 		}
 	}
-	language := map[string]string{"es": "Spanish"}[c.Language]
-	if language == "" {
-		language = "English"
-	}
 	note := fmt.Sprintf("\nThis session runs in %s, outside every space's folder, so the default space, %s, is loaded. "+
-		"Say so in one short line of your first answer, in the language the user writes in (%s if you cannot tell).", dir, s.Name, language)
+		"Say so in one short line of your first answer, %s.", dir, s.Name, InUserLanguage(c.Language))
 	if len(others) > 0 {
 		note += fmt.Sprintf(" To work in another space, the user opens a session in its folder (%s): in the Claude desktop app, "+
 			"\"+ New\" then \"Choose…\" under the message box; in a terminal, `cd <folder> && claude`.", strings.Join(others, "; "))
@@ -225,41 +231,32 @@ func BackupFailedNote(lang, space string, when time.Time, reason string) string 
 	if i := strings.IndexAny(reason, "\r\n"); i >= 0 {
 		reason = reason[:i]
 	}
-	if len(reason) > 240 {
-		reason = cut(reason, 240) + "…"
-	}
-	language := map[string]string{"es": "Spanish"}[lang]
-	if language == "" {
-		language = "English"
-	}
-	return fmt.Sprintf("\nThe last backup of space %s, at %s, failed: %s. In one short line of your first answer, in the language "+
-		"the user writes in (%s if you cannot tell), tell them their notes are not backed up, and offer to look into it "+
-		"(running `augmented-brain backup` in the space's folder shows the problem).\n", space, when.Format("2006-01-02 15:04"), reason, language)
+	reason = shorten(reason, 240)
+	return fmt.Sprintf("\nThe last backup of space %s, at %s, failed: %s. %stell them their notes are not backed up, and offer to look into it "+
+		"(running `augmented-brain backup` in the space's folder shows the problem).\n", space, when.Format("2006-01-02 15:04"), reason, FirstAnswerLine(lang))
 }
 
 // BackupWarningNote tells the assistant that the last backup of the space went through
 // but left something out (files too big for it).
 func BackupWarningNote(lang, space string, when time.Time, warning string) string {
-	if len(warning) > 400 {
-		warning = cut(warning, 400) + "…"
+	warning = shorten(warning, 400)
+	return fmt.Sprintf("\nThe last backup of space %s, at %s, went through, but %s. %stell them which files are not backed up and why.\n",
+		space, when.Format("2006-01-02 15:04"), warning, FirstAnswerLine(lang))
+}
+
+// shorten keeps the start of s that fits in max units, counted as the budget is, and
+// marks the cut with "…".
+func shorten(s string, max int) string {
+	if size(s) <= max {
+		return s
 	}
-	language := map[string]string{"es": "Spanish"}[lang]
-	if language == "" {
-		language = "English"
-	}
-	return fmt.Sprintf("\nThe last backup of space %s, at %s, went through, but %s. In one short line of your first answer, in the language "+
-		"the user writes in (%s if you cannot tell), tell them which files are not backed up and why.\n", space, when.Format("2006-01-02 15:04"), warning, language)
+	return cut(s, max) + "…"
 }
 
 // UpdateNote tells the assistant that a newer augmented brain is out.
 func UpdateNote(lang, current, latest string) string {
-	language := map[string]string{"es": "Spanish"}[lang]
-	if language == "" {
-		language = "English"
-	}
-	return fmt.Sprintf("\naugmented brain %s is available (this machine has %s). In one short line of your first answer, "+
-		"in the language the user writes in (%s if you cannot tell), tell them and offer to update it: you can run "+
-		"`augmented-brain update` yourself if they say yes. Afterwards they restart Claude to use it.\n", latest, current, language)
+	return fmt.Sprintf("\naugmented brain %s is available (this machine has %s). %stell them and offer to update it: you can run "+
+		"`augmented-brain update` yourself if they say yes. Afterwards they restart Claude to use it.\n", latest, current, FirstAnswerLine(lang))
 }
 
 // NoSpace is the text for a session that starts outside every space. The assistant
@@ -272,16 +269,12 @@ func NoSpace(c *config.Config, dir string) string {
 			where = append(where, fmt.Sprintf("%s: %s", name, f[0]))
 		}
 	}
-	language := map[string]string{"es": "Spanish"}[c.Language]
-	if language == "" {
-		language = "English"
-	}
 	return fmt.Sprintf("augmented brain: this session runs in %s, which is outside the user's spaces, so none of their memory, rules or tasks is loaded.\n\n"+
-		"In your first answer, before anything else, tell the user this in the language they write in (%s if you cannot tell), in one or two short sentences, and how to fix it: "+
+		"In your first answer, before anything else, tell the user this %s, in one or two short sentences, and how to fix it: "+
 		"start a new session in the work folder of one of their spaces (%s). "+
 		"In the Claude desktop app that is \"+ New\", then \"Choose…\" (the folder button under the message box) before writing; in a terminal, `cd <folder> && claude`. "+
 		"If they really want to work here, carry on without memory.",
-		dir, language, strings.Join(where, "; "))
+		dir, InTheirLanguage(c.Language), strings.Join(where, "; "))
 }
 
 // profileText joins the person's profile and the space's own, without their headers.

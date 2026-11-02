@@ -12,6 +12,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
+	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
 
@@ -46,9 +47,9 @@ func Stop(in io.Reader, out io.Writer, cfgDir string) error {
 	}
 	text := fmt.Sprintf("augmented brain: nothing has been written in the journal of task %s since %s. "+
 		"If anything was done, decided or found since then, add it now in one short entry with task_journal, "+
-		"in the language the user writes in (%s if you cannot tell). Either way, this is not a message from the user and your answer to them is already given: "+
+		"%s. Either way, this is not a message from the user and your answer to them is already given: "+
 		"end your turn with no text at all, not even to say that nothing changed or that you wrote the entry.",
-		st.Task, st.Since.Local().Format("15:04"), language(c.Language))
+		st.Task, st.Since.Local().Format("15:04"), session.InUserLanguage(c.Language))
 	return write(out, output{specific{HookEventName: "Stop", AdditionalContext: text}})
 }
 
@@ -115,8 +116,8 @@ func compactNote(lang, task string) string {
 		where = "in the journal of task " + task + " (task_journal)"
 	}
 	return fmt.Sprintf("\nThe conversation was just compacted: its details are gone, only a summary is left. Before going on, write %s "+
-		"what was decided, found or done since its last entry, in one or two short entries, in the language the user writes in (%s if you cannot tell). "+
-		"Then carry on.\n", where, language(lang))
+		"what was decided, found or done since its last entry, in one or two short entries, %s. "+
+		"Then carry on.\n", where, session.InUserLanguage(lang))
 }
 
 // recoverNote offers to recover a session of the space that never ended (it was closed
@@ -127,16 +128,9 @@ func recoverNote(lang string, se state.Session) string {
 		task = ", working on task " + se.Task
 	}
 	return fmt.Sprintf("\nA previous session of this space, started %s%s, did not end normally (it may have been closed by force), "+
-		"so what was said after its last journal entry may be missing from the notes. In one short line of your first answer, in the language the user "+
-		"writes in (%s if you cannot tell), offer to recover it. If they agree, call session_recover, read it, and write in the task's journal what is missing.\n",
-		se.Started.Local().Format("2006-01-02 15:04"), task, language(lang))
-}
-
-func language(lang string) string {
-	if lang == "es" {
-		return "Spanish"
-	}
-	return "English"
+		"so what was said after its last journal entry may be missing from the notes. %soffer to recover it. "+
+		"If they agree, call session_recover, read it, and write in the task's journal what is missing.\n",
+		se.Started.Local().Format("2006-01-02 15:04"), task, session.FirstAnswerLine(lang))
 }
 
 // sessionStarted records the session in the space's state and returns what the session
@@ -158,14 +152,7 @@ func sessionStarted(c *config.Config, s *config.Space, i input, cfgDir string) s
 				continue
 			}
 			note += recoverNote(c.Language, se)
-			id := se.ID
-			_ = state.Update(cfgDir, s.Name, now, func(x *state.Space) {
-				for k := range x.Sessions {
-					if x.Sessions[k].ID == id {
-						x.Sessions[k].Reported = true
-					}
-				}
-			})
+			_ = state.Reported(cfgDir, s.Name, se.ID, now)
 			break
 		}
 	}
@@ -185,6 +172,6 @@ func askSafety(c *config.Config, cfgDir string) string {
 		return ""
 	}
 	return fmt.Sprintf("\nThis machine was set up from a backup, and backups do not carry the guard's lists (production AWS profiles, untouchable hosts). "+
-		"In one short line of your first answer, in the language the user writes in (%s if you cannot tell), offer to ask for them again; "+
-		"if they agree, ask which AWS profiles reach production and which machines must not be touched, and save them with safety_save.\n", language(c.Language))
+		"%soffer to ask for them again; "+
+		"if they agree, ask which AWS profiles reach production and which machines must not be touched, and save them with safety_save.\n", session.FirstAnswerLine(c.Language))
 }

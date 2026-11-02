@@ -10,14 +10,12 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
-	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
@@ -210,7 +208,9 @@ func (s *Server) read(section string, h func(*view, *http.Request) (string, page
 }
 
 // write runs a change and sends the browser to the page it returns, which then shows
-// "saved". The index MEMORY.md is rebuilt after every change, as the MCP tools do.
+// "saved". The index MEMORY.md is rebuilt after every change, not only those that save
+// a note (which rebuild it already): the space page promises that an index left stale
+// by a hand edit is "rebuilt with the next change". It costs one read when nothing changed.
 func (s *Server) write(h func(*view, *http.Request) (string, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		v, release, err := s.open(r)
@@ -463,12 +463,6 @@ func (s *Server) taskJournal(v *view, r *http.Request) (string, error) {
 	return taskPage(id), nil
 }
 
-// released tells the machine's state that the task is no longer the active one, as the
-// MCP tools do when they park or close it; it never fails the change.
-func released(v *view, id string) {
-	_ = state.Released(v.b.ConfigDir, v.b.Space.Name, id, time.Now())
-}
-
 func (s *Server) taskPark(v *view, r *http.Request) (string, error) {
 	if err := required(v, r, "next"); err != nil {
 		return "", err
@@ -478,7 +472,7 @@ func (s *Server) taskPark(v *view, r *http.Request) (string, error) {
 		Essentials: field(r, "essentials"), Someday: r.PostForm.Get("someday") == "1"}); err != nil {
 		return "", err
 	}
-	released(v, id)
+	v.b.Released(id)
 	return taskPage(id), nil
 }
 
@@ -490,7 +484,7 @@ func (s *Server) taskClose(v *view, r *http.Request) (string, error) {
 	if _, err := v.b.Close(id, field(r, "result")); err != nil {
 		return "", err
 	}
-	released(v, id)
+	v.b.Released(id)
 	return taskPage(id), nil
 }
 

@@ -111,14 +111,12 @@ func Started(cfgDir, space, id, transcript string, now time.Time) error {
 		return nil
 	}
 	return Update(cfgDir, space, now, func(s *Space) {
-		for i := range s.Sessions {
-			if s.Sessions[i].ID == id {
-				s.Sessions[i].Closed = false
-				if transcript != "" {
-					s.Sessions[i].Transcript = transcript
-				}
-				return
+		if se := s.find(id); se != nil {
+			se.Closed = false
+			if transcript != "" {
+				se.Transcript = transcript
 			}
+			return
 		}
 		s.Sessions = append(s.Sessions, Session{ID: id, Transcript: transcript, Started: now, Task: s.Task})
 	})
@@ -126,38 +124,28 @@ func Started(cfgDir, space, id, transcript string, now time.Time) error {
 
 // Ended records a session ending normally.
 func Ended(cfgDir, space, id string, now time.Time) error {
+	return changeSession(cfgDir, space, id, now, func(se *Session) { se.Closed = true })
+}
+
+// find is the one way to look a session up by its id; nil when there is none.
+func (s *Space) find(id string) *Session {
+	for i := range s.Sessions {
+		if s.Sessions[i].ID == id {
+			return &s.Sessions[i]
+		}
+	}
+	return nil
+}
+
+// changeSession changes one session under the lock; nothing happens when it is not
+// known (or id is empty, as when Claude Code gives none).
+func changeSession(cfgDir, space, id string, now time.Time, change func(*Session)) error {
 	if id == "" {
 		return nil
 	}
 	return Update(cfgDir, space, now, func(s *Space) {
-		for i := range s.Sessions {
-			if s.Sessions[i].ID == id {
-				s.Sessions[i].Closed = true
-			}
+		if se := s.find(id); se != nil {
+			change(se)
 		}
 	})
-}
-
-// Busy is how recently a transcript must have been written for its session to count as
-// still running (in another window, or the one asking).
-const Busy = 10 * time.Minute
-
-// Unclosed returns the sessions of the space, other than current, that started but
-// never ended, newest first. A session whose transcript was written in the last Busy
-// minutes is still running somewhere and is left out, and so is one with no transcript
-// left on this machine.
-func (s Space) Unclosed(current string, now time.Time) []Session {
-	var out []Session
-	for i := len(s.Sessions) - 1; i >= 0; i-- {
-		se := s.Sessions[i]
-		if se.Closed || se.ID == current || se.Transcript == "" {
-			continue
-		}
-		info, err := os.Stat(se.Transcript)
-		if err != nil || now.Sub(info.ModTime()) < Busy {
-			continue
-		}
-		out = append(out, se)
-	}
-	return out
 }

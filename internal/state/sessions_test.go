@@ -132,3 +132,67 @@ func TestDeleteTranscript(t *testing.T) {
 		}
 	}
 }
+
+// Unclosed is List's dead sessions, without the one asking: the hook that offers a
+// recovery and the panel that lists them never disagree.
+func TestUnclosedIsDead(t *testing.T) {
+	cfg, proj := t.TempDir(), t.TempDir()
+	now := time.Now()
+	old := now.Add(-2 * time.Hour)
+	for _, id := range []string{"a", "b", "live", "closed"} {
+		mod := old
+		if id == "live" {
+			mod = now
+		}
+		if err := Started(cfg, "work", id, transcript(t, proj, id, mod), old); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := Started(cfg, "work", "gone", filepath.Join(proj, "gone.jsonl"), old); err != nil {
+		t.Fatal(err)
+	}
+	if err := Ended(cfg, "work", "closed", now); err != nil {
+		t.Fatal(err)
+	}
+	st := Read(cfg, "work")
+	var dead []string
+	for _, l := range st.List(now) {
+		if l.Kind == Dead && l.ID != "b" {
+			dead = append(dead, l.ID)
+		}
+	}
+	var un []string
+	for _, se := range st.Unclosed("b", now) {
+		un = append(un, se.ID)
+	}
+	if len(un) != 1 || un[0] != "a" || len(dead) != 1 || dead[0] != "a" {
+		t.Errorf("unclosed %v, dead %v; want [a]", un, dead)
+	}
+}
+
+func TestReportedAndDismissed(t *testing.T) {
+	cfg, proj := t.TempDir(), t.TempDir()
+	now := time.Now()
+	old := now.Add(-2 * time.Hour)
+	if err := Started(cfg, "work", "s", transcript(t, proj, "s", old), old); err != nil {
+		t.Fatal(err)
+	}
+	if err := Reported(cfg, "work", "s", now); err != nil {
+		t.Fatal(err)
+	}
+	if un := Read(cfg, "work").Unclosed("", now); len(un) != 1 || !un[0].Reported {
+		t.Errorf("after Reported: %+v", un)
+	}
+	// Unknown or empty ids change nothing and are no error.
+	for _, id := range []string{"", "missing"} {
+		if err := Dismissed(cfg, "work", id, now); err != nil {
+			t.Errorf("%q: %v", id, err)
+		}
+	}
+	if err := Dismissed(cfg, "work", "s", now); err != nil {
+		t.Fatal(err)
+	}
+	if un := Read(cfg, "work").Unclosed("", now); len(un) != 0 {
+		t.Errorf("dismissed, still unclosed: %+v", un)
+	}
+}

@@ -146,7 +146,7 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		func(b *brain.Brain, in newTaskIn) (string, error) {
 			n, err := b.NewTask(brain.NewTaskInput{Title: in.Title, Summary: in.Summary, Area: in.Area, Parent: in.Parent})
 			if err == nil {
-				touched(b, n.Header.ID, true)
+				b.Touched(n.Header.ID, true)
 			}
 			return render(n, err)
 		})
@@ -158,7 +158,7 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		func(b *brain.Brain, in idIn) (string, error) {
 			n, err := b.Task(in.ID)
 			if err == nil {
-				touched(b, in.ID, false)
+				b.Touched(in.ID, false)
 			}
 			out, err := render(n, err)
 			if err != nil {
@@ -200,7 +200,7 @@ func New(open Resolver, lockFile string) *mcp.Server {
 			if err != nil {
 				return "", err
 			}
-			touched(b, in.ID, true)
+			b.Touched(in.ID, true)
 			var out strings.Builder
 			out.WriteString("Steps of " + n.Header.ID + ":\n")
 			for _, st := range memory.Steps(n.Body) {
@@ -236,9 +236,9 @@ func New(open Resolver, lockFile string) *mcp.Server {
 				return "", err
 			}
 			if n.Header.Status == "closed" || n.Header.Status == "parked" || n.Header.Status == "someday" {
-				released(b, in.ID)
+				b.Released(in.ID)
 			} else {
-				touched(b, in.ID, true)
+				b.Touched(in.ID, true)
 			}
 			return header(n, nil)
 		})
@@ -251,7 +251,7 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		func(b *brain.Brain, in journalIn) (string, error) {
 			n, err := b.Journal(in.ID, in.Entry)
 			if err == nil {
-				touched(b, in.ID, true)
+				b.Touched(in.ID, true)
 			}
 			return header(n, err)
 		})
@@ -268,7 +268,7 @@ func New(open Resolver, lockFile string) *mcp.Server {
 			n, err := b.Park(brain.ParkInput{ID: in.ID, Next: in.Next, WaitingOn: in.WaitingOn,
 				Essentials: in.Essentials, Someday: in.Someday})
 			if err == nil {
-				released(b, in.ID)
+				b.Released(in.ID)
 			}
 			return header(n, err)
 		})
@@ -281,7 +281,7 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		func(b *brain.Brain, in closeIn) (string, error) {
 			n, err := b.Close(in.ID, in.Result)
 			if err == nil {
-				released(b, in.ID)
+				b.Released(in.ID)
 			}
 			return header(n, err)
 		})
@@ -421,58 +421,33 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	return s
 }
 
-// touched and released keep the space's state on this machine (state package): which
-// task is active and when it was last written, for the Stop hook's reminder. A failure
-// there never fails the tool.
-func touched(b *brain.Brain, id string, write bool) {
-	if b.ConfigDir != "" {
-		_ = state.Touched(b.ConfigDir, b.Space.Name, id, time.Now(), write)
-	}
-}
-
-func released(b *brain.Brain, id string) {
-	if b.ConfigDir != "" {
-		_ = state.Released(b.ConfigDir, b.Space.Name, id, time.Now())
-	}
-}
-
-// recoverMax is the most text session_recover returns.
-const recoverMax = 20000
-
 // recoverSession returns the conversation of an earlier session that never ended,
-// after the last journal entry of its task, and marks it as dealt with.
+// after the last journal entry of its task, and marks it as dealt with. Without id it
+// is the one the session start offered.
 func recoverSession(b *brain.Brain, id string, now time.Time) (string, error) {
-	st := state.Read(b.ConfigDir, b.Space.Name)
-	var se *state.Session
-	// The session asking is running, so its transcript is fresh and Unclosed leaves it out.
-	unclosed := st.Unclosed("", now)
-	for k := range unclosed {
-		if id != "" && unclosed[k].ID == id || id == "" && unclosed[k].Reported {
-			se = &unclosed[k]
-			break
+	if id == "" {
+		if id = b.Offered(now); id == "" {
+			return "No earlier session of this space is waiting to be recovered.", nil
 		}
 	}
-	if se == nil {
-		if id != "" {
-			return "", fmt.Errorf("there is no earlier session %s of this space to recover", id)
-		}
-		return "No earlier session of this space is waiting to be recovered.", nil
+	rec, err := b.Recover(id, brain.RecoverForAssistant, now)
+	if errors.Is(err, brain.ErrNoDeadSession) {
+		return "", fmt.Errorf("there is no earlier session %s of this space to recover", id)
 	}
-	since := st.From(*se, b.LastEntry(se.Task))
-	text, err := state.Conversation(se.Transcript, since, recoverMax)
 	if err != nil {
 		return "", fmt.Errorf("the transcript of that session cannot be read (%v); Claude Code deletes them after 30 days", err)
 	}
+	se := rec.Session
 	_ = state.Dismissed(b.ConfigDir, b.Space.Name, se.ID, now)
 	task := "the task it worked on"
 	if se.Task != "" {
 		task = "task " + se.Task
 	}
-	if strings.TrimSpace(text) == "" {
+	if strings.TrimSpace(rec.Text) == "" {
 		return fmt.Sprintf("The session started %s has nothing said after the last journal entry of %s.", se.Started.Local().Format("2006-01-02 15:04"), task), nil
 	}
 	return fmt.Sprintf("Session started %s, from %s on (the user's and your messages only). Write in the journal of %s what was done, decided or found that is not there yet, in a few short entries.\n\n%s",
-		se.Started.Local().Format("2006-01-02 15:04"), since.Local().Format("2006-01-02 15:04"), task, text), nil
+		se.Started.Local().Format("2006-01-02 15:04"), rec.From.Local().Format("2006-01-02 15:04"), task, rec.Text), nil
 }
 
 // tool registers a handler that receives the brain of the current space, opened afresh

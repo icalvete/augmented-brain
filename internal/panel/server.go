@@ -42,8 +42,6 @@ type Server struct {
 	last    atomic.Int64 // when the last authorized request came, in Unix nanoseconds
 	stopped chan struct{}
 	stop    sync.Once
-	// now gives the time; tests replace it.
-	now func() time.Time
 }
 
 func random() (string, error) {
@@ -58,7 +56,7 @@ func random() (string, error) {
 // cfgDir, the same one the MCP server takes.
 func New(cfgDir string, port int) (*Server, error) {
 	s := &Server{cfgDir: cfgDir, port: port, writer: filelock.NewWriter(filepath.Join(cfgDir, backup.NotesLock)),
-		stopped: make(chan struct{}), now: time.Now}
+		stopped: make(chan struct{})}
 	var err error
 	for _, v := range []*string{&s.token, &s.csrf} {
 		if *v, err = random(); err != nil {
