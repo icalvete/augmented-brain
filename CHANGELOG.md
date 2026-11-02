@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Your repositories stay clean.** A new common rule: a repository only gets what its
+  team needs, through a branch. The plans, analyses and reports of a task go to `docs/`
+  in the notes folder, next to the task, and are never loaded at the start.
 - **Bring in the memory Claude Code already keeps.** `augmented-brain import <folder>`
   reads a memory written by Claude Code (or shaped like it) and shows where each note
   would go in your spaces, and what it could not decide: files that are not notes,

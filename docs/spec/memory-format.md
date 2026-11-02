@@ -39,9 +39,13 @@ A session that runs outside every work folder (for example, the scratch folder t
 ├── people/            # who the user deals with, so a first name finds the right person
 ├── rules/             # this space's own rules (the common rules ship with the program)
 ├── reviews/           # one file per weekly review
+├── docs/              # optional: long documents of a task (plans, analyses, reports); never loaded
+│   └── <task>/
 └── archive/           # old journals and merged files; never loaded, never deleted
     └── sessions/      # summaries Claude Code wrote when it compacted a conversation
 ```
+
+`docs/` keeps the long documents a task produces, so they stay with the notes and out of the repositories the work touches (a repository only gets what its team needs). Each one sits under the id of its task, is plain Markdown or any other file, has no header, and is linked from the task. The program does not read it.
 
 A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the active task pointing at it.
 
