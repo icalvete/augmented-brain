@@ -13,13 +13,13 @@ var secretPatterns = []struct {
 }{
 	{regexp.MustCompile(`\bAKIA[0-9A-Z]{16}\b`), "an AWS access key"},
 	{regexp.MustCompile(`\bASIA[0-9A-Z]{16}\b`), "an AWS temporary access key"},
-	{regexp.MustCompile(`(?i)aws_secret_access_key\s*[=:]\s*['"]?[A-Za-z0-9/+=]{40}\b`), "an AWS secret key"},
+	{regexp.MustCompile(`(?i)aws_secret_access_key\s*[=:]\s*['"]?[A-Za-z0-9/+=]{40}`), "an AWS secret key"}, // no \b: a key may end in / or +
 	{regexp.MustCompile(`\bgh[pousr]_[A-Za-z0-9]{30,}\b`), "a GitHub token"},
 	{regexp.MustCompile(`\bgithub_pat_[A-Za-z0-9_]{40,}\b`), "a GitHub token"},
 	{regexp.MustCompile(`\bglpat-[A-Za-z0-9_-]{20,}\b`), "a GitLab token"},
 	{regexp.MustCompile(`\bsk-ant-[A-Za-z0-9_-]{20,}`), "an Anthropic API key"},
 	{regexp.MustCompile(`\bsk-(?:proj-)?[A-Za-z0-9_-]{40,}`), "an OpenAI API key"},
-	{regexp.MustCompile(`\bAIza[0-9A-Za-z_-]{35}\b`), "a Google API key"},
+	{regexp.MustCompile(`\bAIza[0-9A-Za-z_-]{35}`), "a Google API key"}, // no \b: a key may end in -
 	{regexp.MustCompile(`\bxox[abprs]-[A-Za-z0-9-]{10,}`), "a Slack token"},
 	{regexp.MustCompile(`\bAQ\.[A-Za-z0-9_-]{40,}`), "a Google AI Studio API key"},
 	{regexp.MustCompile(`\bphx_[A-Za-z0-9]{30,}\b`), "a PostHog personal API key"}, // phc_, the project key, is public

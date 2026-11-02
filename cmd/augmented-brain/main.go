@@ -19,6 +19,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/doctor"
 	"github.com/icalvete/augmented-brain/internal/format"
+	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/hook"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/mcpserver"
@@ -161,6 +162,13 @@ func cmdCheck(out, errOut io.Writer) int {
 	}
 	for _, p := range problems {
 		fmt.Fprintln(out, "  ✗", p.Error())
+	}
+	for _, id := range m.IDs() {
+		if data, err := os.ReadFile(filepath.Join(s.Memory, filepath.FromSlash(m.Notes[id].Path))); err == nil {
+			if what := guard.FindSecret(string(data)); what != "" {
+				fmt.Fprintln(out, "  !", i18n.T(c.Language, "check.secret", m.Notes[id].Path, i18n.T(c.Language, "secret."+what)))
+			}
+		}
 	}
 	if b, err := brain.Open(c, s); err == nil {
 		for _, x := range b.Mismatches() {

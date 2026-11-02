@@ -99,6 +99,14 @@ var noteMessages = map[string]msg{
 		en: "Rules",
 		es: "Reglas",
 	},
+	"index.shared": {
+		en: "Shared notes: they hold in every space. There are no areas or tasks here; those belong to one space.",
+		es: "Notas compartidas: valen en todos los espacios. Aquí no hay áreas ni tareas; esas son de un espacio.",
+	},
+	"index.knowledge": {
+		en: "Knowledge",
+		es: "Conocimiento",
+	},
 	"index.areas": {
 		en: "Areas",
 		es: "Áreas",

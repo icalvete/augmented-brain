@@ -65,7 +65,7 @@ behaves, how the person likes answers). They live once, next to the configuratio
 A shared note has no area, since areas belong to one space; a task, area, person or
 review there is a problem, reported and left out. Every space sees them: a note of a
 space may name a shared note in `related`, and the session start loads the shared rules
-whole and lists the shared references and lessons. A shared note never links into a
+like the space's (see Rules) and lists the shared references and lessons. A shared note never links into a
 space. They are migrated like a space's notes, and kept in the backup of the default
 space, under `.augmented-brain/shared/`, like the profile.
 
@@ -229,7 +229,10 @@ Rules tell the assistant how to work. There are three levels:
 - **shared rules**, the person's own for every space, in the shared notes (for example, "answer in short sentences, one idea each");
 - **space rules**, in `rules/`, for what only applies to that space (for example, "hosts db01–db03 are never restarted without explicit permission").
 
-All of them are loaded at the start of every session.
+All of them are loaded at the start of every session. The shared and space rules go
+whole when everything fits in what a session can take at the start (about 9,500
+characters); when not, each goes as one line, its title and summary, with the path of its
+file. So a rule's summary should say what to do.
 
 ## Format version
 
@@ -279,7 +282,11 @@ backup = "git@github.com:me/brain-personal-private.git"
 
 In `git_allowed_repos` and `git_ask_repos` the last part of a path may hold a `*`, which
 matches one folder (`~/code/website-*` is every `website-<name>` next to `website`), and a
-git worktree of a listed repository counts as that repository, wherever it is.
+git worktree of a listed repository counts as that repository, wherever it is. The guard
+joins the lists of every space, as it does with the production profiles: a repository
+belongs to the person, not to the space a session runs in. A repository in both lists
+asks. Even in an allowed one, a push that rewrites or deletes on the remote (a force, a
+delete, a mirror, or a refspec starting with `+` or `:`) asks.
 
 `production_aws_profiles` and `untouchable_hosts` may also appear inside a space, as older
 versions wrote them: the guard applies the top-level lists and every space's together.

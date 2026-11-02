@@ -99,10 +99,14 @@ func fit(p parts, c *config.Config, s *config.Space, m, shared *memory.Memory) s
 		var whole, listed []string
 		for _, r := range g.mem.OfType("rule") {
 			whole = append(whole, "### "+r.Header.Title+"\n"+strings.TrimSpace(r.Body)+"\n")
-			listed = append(listed, fmt.Sprintf("- %s: %s", r.Header.Title, filepath.Join(g.mem.Dir, filepath.FromSlash(r.Path))))
+			line := "- " + r.Header.Title
+			if r.Header.Summary != "" {
+				line += " — " + r.Header.Summary // the gist, so the rule applies without opening it
+			}
+			listed = append(listed, line+" ("+filepath.Join(g.mem.Dir, filepath.FromSlash(r.Path))+")")
 		}
 		full += section(g.title, strings.Join(whole, "\n"))
-		short += section(g.title+" (read each file before acting on its subject)", strings.Join(listed, "\n"))
+		short += section(g.title+" (each in one line: follow it, and read its file before acting on its subject)", strings.Join(listed, "\n"))
 	}
 	p.userRules = full
 	if text := p.join(); size(text) <= Budget {

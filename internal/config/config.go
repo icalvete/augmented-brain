@@ -222,6 +222,17 @@ func (c *Config) GuardLists() (profiles, hosts []string) {
 	return unique(profiles), unique(hosts)
 }
 
+// GitLists returns the repositories the assistant may commit in, and those where it asks
+// first, of every space: a repository belongs to the user, not to the space a session
+// happens to run in, so it is listed for the whole machine.
+func (c *Config) GitLists() (allowed, ask []string) {
+	for _, name := range c.SpaceNames() {
+		allowed = append(allowed, c.Spaces[name].GitAllowedRepos...)
+		ask = append(ask, c.Spaces[name].GitAskRepos...)
+	}
+	return unique(allowed), unique(ask)
+}
+
 func unique(list []string) []string {
 	var out []string
 	seen := map[string]bool{}

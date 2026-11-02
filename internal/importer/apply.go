@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/format"
@@ -13,9 +14,10 @@ import (
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
-// Applied says what Apply wrote, per space.
+// Applied says what Apply wrote, per space: notes, files copied as they were, and
+// captures added to the inbox.
 type Applied struct {
-	Notes, Copies map[string]int
+	Notes, Copies, Inbox map[string]int
 }
 
 // Apply writes a plan: each note into its space, each archive file into the space's
@@ -23,7 +25,7 @@ type Applied struct {
 // over a file that is already there (one written since the plan was made is left as
 // it is and reported). The caller holds the notes lock.
 func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
-	done := Applied{Notes: map[string]int{}, Copies: map[string]int{}}
+	done := Applied{Notes: map[string]int{}, Copies: map[string]int{}, Inbox: map[string]int{}}
 	// Notes written by a newer program are never written into.
 	checked := map[string]bool{}
 	for _, it := range p.Items {
@@ -46,6 +48,14 @@ func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 			continue
 		}
 		mem := memoryOf(c, it.Space)
+		if it.Inbox != nil {
+			n, err := addCaptures(filepath.Join(mem, "inbox.md"), it.Inbox)
+			if err != nil {
+				return done, err
+			}
+			done.Inbox[it.Space] += n
+			continue
+		}
 		var dst string
 		if it.Copy {
 			dst = filepath.Join(mem, filepath.FromSlash(it.Source))
@@ -87,6 +97,7 @@ func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 		if err != nil {
 			return done, err
 		}
+		m.Shared = sp == config.SharedFolder
 		if _, err := m.WriteIndex(lang); err != nil {
 			return done, err
 		}
@@ -104,4 +115,33 @@ func memoryOf(c *config.Config, sp string) string {
 		return c.SharedDir()
 	}
 	return c.Spaces[sp].Memory
+}
+
+// addCaptures appends to an inbox the captures it does not have yet, so a second import
+// adds nothing, and returns how many it added.
+func addCaptures(path string, lines []string) (int, error) {
+	old, err := os.ReadFile(path)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return 0, err
+	}
+	have := map[string]bool{}
+	for _, l := range strings.Split(string(old), "\n") {
+		have[l] = true
+	}
+	text := string(old)
+	if text != "" && !strings.HasSuffix(text, "\n") {
+		text += "\n"
+	}
+	n := 0
+	for _, l := range lines {
+		if !have[l] {
+			have[l] = true
+			text += l + "\n"
+			n++
+		}
+	}
+	if n == 0 {
+		return 0, nil
+	}
+	return n, paths.WriteAtomic(path, []byte(text), 0o644)
 }

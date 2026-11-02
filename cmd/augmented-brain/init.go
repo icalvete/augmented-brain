@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 
@@ -99,12 +100,20 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
+	plugin := true
 	if !*noPlugin {
-		installPlugin(a, *lang, out, errOut)
+		plugin = installPlugin(a, *lang, out, errOut)
 	}
 	fmt.Fprintf(out, "\n%s\n", msg(*lang, "ready"))
 	for _, sp := range spaces {
 		fmt.Fprintf(out, "  %-10s %s\n", sp.Space, sp.WorkFolder)
+	}
+	if !plugin {
+		warn := msg(*lang, "noplugin")
+		if _, err := exec.LookPath("git"); err != nil {
+			warn += " " + msg(*lang, "nogit")
+		}
+		fmt.Fprintf(out, "\n%s\n", warn)
 	}
 	fmt.Fprintf(out, "\n%s\n", nextStep(*lang, spaces[0].WorkFolder))
 	return 0
@@ -184,25 +193,34 @@ func nextStep(lang, work string) string {
 	return text
 }
 
-// installPlugin offers to install the Claude Code plugin. A failure here does not undo
-// the rest: it says how to install the plugin by hand.
-func installPlugin(a *asker, lang string, out, errOut io.Writer) {
+// installPlugin offers to install the Claude Code plugin and reports whether it is
+// installed now: Claude Code is asked, since an install can end without an error and
+// still leave no plugin (with no git, for one). A failure here does not undo the rest:
+// it says how to install the plugin by hand.
+func installPlugin(a *asker, lang string, out, errOut io.Writer) bool {
 	manual := fmt.Sprintf("  claude plugin marketplace add %s\n  claude plugin install %s --scope user\n",
 		claudecode.Marketplace(), claudecode.Plugin)
 	if !claudecode.Available() {
 		fmt.Fprintf(out, "\n%s\n%s", msg(lang, "noclaude"), manual)
-		return
+		return false
 	}
 	answer := strings.ToLower(a.ask(msg(lang, "plugin?"), msg(lang, "yes")))
 	if !strings.HasPrefix(answer, "y") && !strings.HasPrefix(answer, "s") {
 		fmt.Fprintf(out, "\n%s\n%s", msg(lang, "later"), manual)
-		return
+		return false
 	}
-	if err := claudecode.Install(claudecode.Exec); err != nil {
+	err := claudecode.Install(claudecode.Exec)
+	if err == nil {
+		if ok, lerr := claudecode.Installed(claudecode.Exec); lerr != nil || !ok {
+			err = fmt.Errorf("%s", msg(lang, "notthere"))
+		}
+	}
+	if err != nil {
 		fmt.Fprintf(errOut, "\n%v\n%s\n%s", err, msg(lang, "later"), manual)
-		return
+		return false
 	}
 	fmt.Fprintf(out, "\n%s\n", msg(lang, "plugin"))
+	return true
 }
 
 // cmdSpaceAdd adds one space to the configuration, asking for its name and folders

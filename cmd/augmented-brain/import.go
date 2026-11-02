@@ -94,6 +94,9 @@ func cmdImport(args []string, out, errOut io.Writer) int {
 		if n := done.Notes[sp] + done.Copies[sp]; n > 0 {
 			fmt.Fprintln(out, i18n.T(lang, "import.done", done.Notes[sp], done.Copies[sp], spaceName(lang, sp)))
 		}
+		if n := done.Inbox[sp]; n > 0 {
+			fmt.Fprintln(out, i18n.T(lang, "import.inbox", n, spaceName(lang, sp)))
+		}
 	}
 	if err != nil {
 		fmt.Fprintln(errOut, err)
@@ -177,6 +180,9 @@ func importReport(out io.Writer, lang string, p *importer.Plan) {
 	for _, k := range kinds {
 		fmt.Fprintln(out, "\n"+i18n.T(lang, "import.issue."+k, len(byKind[k])))
 		for _, is := range byKind[k] {
+			if k == importer.Secret {
+				is.Detail = i18n.T(lang, "secret."+is.Detail)
+			}
 			if is.Detail != "" {
 				fmt.Fprintf(out, "  %s · %s\n", is.Source, is.Detail)
 			} else {

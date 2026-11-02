@@ -181,6 +181,8 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 		return p.inner(strings.Join(args, " "), env, depth)
 	case "find":
 		return p.find(args, env, depth)
+	case "rm":
+		return p.rm(args)
 	}
 	// Any other program set to a production profile in the command itself.
 	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE"} {
@@ -258,15 +260,84 @@ func (p Policy) git(env map[string]string, args []string) Decision {
 	}
 	if dir != "" && !elsewhere {
 		if d, err := p.resolve(dir); err == nil {
-			if repoListed(p.GitAllowedRepos, d) {
-				return allow
-			}
+			// Asking wins over allowing: a repository may be in both lists, from two spaces.
 			if repoListed(p.GitAskRepos, d) {
 				return Decision{Ask, "`git " + args[i] + "` in " + paths.Tilde(d) + " needs the user's go-ahead each time. Before asking, show them what would be committed or pushed."}
+			}
+			if repoListed(p.GitAllowedRepos, d) {
+				if args[i] == "push" && rewrites(args[i+1:]) {
+					return Decision{Ask, "this push rewrites or deletes what is on the remote (force, delete or mirror). The user confirms it each time, even in a repository the assistant may push to."}
+				}
+				return allow
 			}
 		}
 	}
 	return Decision{Deny, "`git " + args[i] + "` is for the user. Leave the change ready and checked, show what would be committed, and tell the user it is ready. (To let the assistant commit in a repository, add it to git_allowed_repos in the configuration, or to git_ask_repos to be asked each time, and use `git -C <repo>`.)"}
+}
+
+// rewrites reports whether the arguments of a push change history on the remote rather
+// than add to it: a force, a delete or a mirror, or a refspec that starts with + or :.
+func rewrites(args []string) bool {
+	for _, a := range args {
+		switch {
+		case a == "--":
+			return false
+		case strings.HasPrefix(a, "--force"), a == "--delete", a == "--mirror", a == "--prune":
+			return true
+		case strings.HasPrefix(a, "--"):
+		case strings.HasPrefix(a, "-"):
+			if strings.ContainsAny(a[1:], "fd") {
+				return true
+			}
+		case strings.HasPrefix(a, "+"), strings.HasPrefix(a, ":"):
+			return true
+		}
+	}
+	return false
+}
+
+// rm never deletes, recursively, the whole disk or the user's home: nothing the
+// assistant does needs it, and one wrong variable makes it happen.
+func (p Policy) rm(args []string) Decision {
+	recursive := false
+	var operands []string
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "--":
+			operands = append(operands, args[i+1:]...)
+			i = len(args)
+		case a == "--recursive":
+			recursive = true
+		case strings.HasPrefix(a, "--"):
+		case strings.HasPrefix(a, "-") && len(a) > 1:
+			recursive = recursive || strings.ContainsAny(a, "rR")
+		default:
+			operands = append(operands, a)
+		}
+	}
+	if !recursive {
+		return allow
+	}
+	home, _ := paths.Home()
+	if h, err := paths.Resolve(home); err == nil {
+		home = h
+	}
+	for _, o := range operands {
+		for _, v := range []string{"$HOME", "${HOME}"} {
+			if o == v || strings.HasPrefix(o, v+"/") {
+				o = "~" + strings.TrimPrefix(o, v)
+			}
+		}
+		o = strings.TrimRight(strings.TrimSuffix(o, "*"), "/")
+		if o == "" {
+			return Decision{Deny, "`rm -r` of the whole disk is never run."}
+		}
+		if d, err := p.resolve(o); err == nil && (d == "/" || (home != "" && d == home)) {
+			return Decision{Deny, "`rm -r` of the user's whole home folder (" + paths.Tilde(d) + ") is never run. Delete the files or folders inside it that need to go, one by one."}
+		}
+	}
+	return allow
 }
 
 // gitDir is where git -C next goes after the -C options before it, which are in dir.

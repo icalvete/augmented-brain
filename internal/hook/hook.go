@@ -158,8 +158,8 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 var Getenv = os.Getenv
 
 // policy is what the guard applies to a command run in dir: the production profiles and
-// untouchable hosts of the whole machine (every space's lists too), the repositories the
-// space of dir lets the assistant commit in, and the AWS profile the command inherits.
+// untouchable hosts of the whole machine (every space's lists too), the repositories
+// every space lets the assistant commit in, and the AWS profile the command inherits.
 // When the configuration exists but cannot be read, the guard is told, so it asks
 // before every command those lists would cover instead of letting them through unseen.
 func policy(cfgDir, dir string) guard.Policy {
@@ -169,16 +169,14 @@ func policy(cfgDir, dir string) guard.Policy {
 			p.Env[k] = v
 		}
 	}
-	c, s, err := load(cfgDir, dir)
+	c, _, err := load(cfgDir, dir)
 	switch {
 	case errors.Is(err, config.ErrNotFound):
 	case err != nil:
 		p.ConfigProblem = err.Error()
 	default:
 		p.ProductionAWSProfiles, p.UntouchableHosts = c.GuardLists()
-		if s != nil {
-			p.GitAllowedRepos, p.GitAskRepos = s.GitAllowedRepos, s.GitAskRepos
-		}
+		p.GitAllowedRepos, p.GitAskRepos = c.GitLists()
 	}
 	return p
 }

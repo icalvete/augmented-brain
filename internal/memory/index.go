@@ -39,6 +39,12 @@ func (m *Memory) Index(lang string) string {
 	}
 
 	fmt.Fprintf(&b, "# %s\n\n%s\n", l("title"), l("generated"))
+	if m.Shared {
+		fmt.Fprintf(&b, "\n%s\n", l("shared"))
+		section(l("rules"), m.OfType("rule"))
+		section(l("knowledge"), append(m.OfType("reference"), m.OfType("lesson")...))
+		return b.String()
+	}
 	if p := m.OfType("profile"); len(p) > 0 {
 		section(l("profile"), p)
 	}

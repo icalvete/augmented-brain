@@ -85,6 +85,8 @@ func TestPreToolUse(t *testing.T) {
 		// In Bash a path is written with forward slashes, which git takes on Windows too.
 		{map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": "git -C " + filepath.ToSlash(filepath.Join(work, "repo")) + " push"}}, ""},
 		{map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}}, "ask"},
+		// The repositories of a space are allowed from a session anywhere, like the profiles.
+		{map[string]any{"cwd": "/", "tool_name": "Bash", "tool_input": map[string]any{"command": "git -C " + filepath.ToSlash(filepath.Join(work, "repo")) + " push"}}, ""},
 		{map[string]any{"cwd": work, "tool_name": "PowerShell", "tool_input": map[string]any{"command": "git push origin main"}}, "deny"},
 		{map[string]any{"cwd": work, "tool_name": "PowerShell", "tool_input": map[string]any{"command": "Get-ChildItem"}}, "deny"},
 		{map[string]any{"cwd": "/", "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}}, "ask"}, // machine-wide, outside the space too

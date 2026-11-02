@@ -59,8 +59,12 @@ session starts from there. Opening, resuming and closing work the same way.
   and what publishes like a push: `gh pr merge`, `gh release create`, `glab mr merge`.
   You can let Claude commit and push in a repository of yours, always written as
   `git -C <repo>`: list it in the space's `git_allowed_repos` to let it through, or in
-  `git_ask_repos` to be asked each time. A worktree of a listed repository counts as
-  it, and `~/code/app-*` covers every `app-<name>` folder next to `app`.
+  `git_ask_repos` to be asked each time. Like the production profiles, these lists hold
+  on the whole machine: a repository listed in one space is let through from a session
+  in any of them. A worktree of a listed repository counts as it, and `~/code/app-*`
+  covers every `app-<name>` folder next to `app`. Even there, a push that rewrites or
+  deletes what is on the remote (`--force`, `--delete`, `+branch`) asks you first.
+  And `rm -r` of your whole home folder or of the whole disk is never run.
 
 It also looks inside `ssh`, `bash -c`, loops, and what a pipe feeds a shell
 (`echo 'sudo …' | bash`). If its configuration cannot be read, it asks you before every
@@ -198,7 +202,8 @@ apart. So they go once in the **shared notes**, next to your profile:
 areas and people always belong to one space.
 
 Every space sees them. The shared rules are loaded at the start of each session, like
-the space's own. The shared references and lessons are listed one line each, and Claude
+the space's own: whole when they fit, and otherwise one line each, with their summary,
+for Claude to open the file when it needs the detail. The shared references and lessons are listed one line each, and Claude
 opens the one it needs. You don't move files by hand: tell Claude "this holds
 everywhere" and it saves the note as shared. They travel in the backup of the default
 space, like your profile.
@@ -303,6 +308,12 @@ lesson-git-small-commits = shared
 and goes in with `--map <file>`. `--repos-base <folder>` says what the notes' `repos:`
 paths are relative to, so they are rewritten relative to the space's work folder.
 
+The rest comes along too. The captures of your old `inbox.md` (each `- …` line) go to
+the inbox of the space of `*`, dated, and never twice. `archive/` and `docs/<task>/`
+are copied as they are, next to their note. A note with a secret written in it (a key,
+a token) is imported but named in the report: the backup will not upload it until the
+secret is out. `augmented-brain check` names it too.
+
 ## The panel
 
 The panel is a page in your browser to see and change your spaces without going through
@@ -312,8 +323,9 @@ Claude. Open it with `/brain:panel` in Claude, or from a terminal:
 augmented-brain panel
 ```
 
-It opens your browser. If it cannot (on a computer with no screen, say), it prints an
-address to open yourself. What you find there, space by space:
+It opens your browser, on the space of the folder you ran it in. If it cannot (on a
+computer with no screen, say), it prints an address to open yourself. What you find
+there, space by space:
 
 - **Tasks**: those waiting on you first, with their status and next step. Open one to
   read it whole, write in its journal, change its status or next step, park it or close

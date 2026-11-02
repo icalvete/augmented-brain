@@ -27,8 +27,20 @@ var importMessages = map[string]msg{
 		es: "No se ha escrito nada: esto es lo que se importaría. Para escribirlo: augmented-brain %s",
 	},
 	"import.done": {
-		en: "✓ %[3]s: %[1]d notes and %[2]d archive files written.",
-		es: "✓ %[3]s: %[1]d notas y %[2]d ficheros de archivo escritos.",
+		en: "✓ %[3]s: %[1]d notes written, and %[2]d files copied as they were (archive and documents).",
+		es: "✓ %[3]s: %[1]d notas escritas, y %[2]d ficheros copiados tal cual (archivo y documentos).",
+	},
+	"import.inbox": {
+		en: "✓ %[2]s: %[1]d captures added to the inbox.",
+		es: "✓ %[2]s: %[1]d capturas añadidas al buzón.",
+	},
+	"import.kind.inbox": {
+		en: "inbox captures",
+		es: "capturas del buzón",
+	},
+	"import.kind.docs": {
+		en: "task documents",
+		es: "documentos de tareas",
 	},
 	"import.kind.task": {
 		en: "tasks",
@@ -77,6 +89,10 @@ var importMessages = map[string]msg{
 	"import.issue.not-shared": {
 		en: "Sent to the shared notes, but only rules, references and lessons go there; left out (%d):",
 		es: "Enviadas a las notas compartidas, pero ahí solo van reglas, referencias y lecciones; se quedan fuera (%d):",
+	},
+	"import.issue.secret": {
+		en: "A secret written in them (%d): they are imported, but the backup refuses to upload them until it is taken out. Keep it in your keychain or a secrets manager:",
+		es: "Llevan un secreto escrito (%d): se importan, pero la copia de seguridad no las sube hasta que se quite. Guárdalo en tu llavero o en un gestor de secretos:",
 	},
 	"import.issue.taken": {
 		en: "Already a note of the space, left out (%d):",

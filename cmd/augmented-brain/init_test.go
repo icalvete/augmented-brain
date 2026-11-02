@@ -201,3 +201,34 @@ func TestInitCustomAsks(t *testing.T) {
 		}
 	}
 }
+
+// Without the plugin, init still finishes, but its last words say what is missing.
+func TestInitWarnsWithoutThePlugin(t *testing.T) {
+	emptyHome(t) // no claude and no git on the PATH
+	t.Setenv("AB_LANGUAGE", "en")
+	code, out, _ := runInit(t, "--yes", "--language", "en")
+	if code != 0 || !strings.Contains(out, "the Claude Code plugin is not installed") || !strings.Contains(out, "It needs git") {
+		t.Errorf("init without the plugin: %d\n%s", code, out)
+	}
+	emptyHome(t)
+	code, out, _ = runInit(t, "--yes", "--language", "en", "--no-plugin")
+	if code != 0 || strings.Contains(out, "plugin is not installed") {
+		t.Errorf("--no-plugin was asked for, yet init warns:\n%s", out)
+	}
+}
+
+// The panel opens on the space of the folder it is asked for in.
+func TestPanelAddress(t *testing.T) {
+	h, cfg := home(t)
+	c, err := config.Load(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	base := "http://127.0.0.1:1/s/x/"
+	if got := panelAddress(c, base, filepath.Join(h, "augmented-brain", "trabajo", "web")); got != base+"tasks?s=trabajo" {
+		t.Errorf("in trabajo: %s", got)
+	}
+	if got := panelAddress(c, base, t.TempDir()); got != base {
+		t.Errorf("outside every space: %s", got)
+	}
+}

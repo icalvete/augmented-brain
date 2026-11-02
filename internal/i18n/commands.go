@@ -34,6 +34,66 @@ var commandMessages = map[string]msg{
 		en: "space %s: %s, %s",
 		es: "espacio %s: %s, %s",
 	},
+	"secret.an AWS access key": {
+		en: "an AWS access key",
+		es: "una clave de acceso de AWS",
+	},
+	"secret.an AWS temporary access key": {
+		en: "an AWS temporary access key",
+		es: "una clave temporal de AWS",
+	},
+	"secret.an AWS secret key": {
+		en: "an AWS secret key",
+		es: "una clave secreta de AWS",
+	},
+	"secret.a GitHub token": {
+		en: "a GitHub token",
+		es: "un token de GitHub",
+	},
+	"secret.a GitLab token": {
+		en: "a GitLab token",
+		es: "un token de GitLab",
+	},
+	"secret.an Anthropic API key": {
+		en: "an Anthropic API key",
+		es: "una clave de la API de Anthropic",
+	},
+	"secret.an OpenAI API key": {
+		en: "an OpenAI API key",
+		es: "una clave de la API de OpenAI",
+	},
+	"secret.a Google API key": {
+		en: "a Google API key",
+		es: "una clave de la API de Google",
+	},
+	"secret.a Slack token": {
+		en: "a Slack token",
+		es: "un token de Slack",
+	},
+	"secret.a Google AI Studio API key": {
+		en: "a Google AI Studio API key",
+		es: "una clave de Google AI Studio",
+	},
+	"secret.a PostHog personal API key": {
+		en: "a PostHog personal API key",
+		es: "una clave personal de PostHog",
+	},
+	"secret.an Elasticsearch API key": {
+		en: "an Elasticsearch API key",
+		es: "una clave de la API de Elasticsearch",
+	},
+	"secret.a Telegram bot token": {
+		en: "a Telegram bot token",
+		es: "un token de bot de Telegram",
+	},
+	"secret.a private key": {
+		en: "a private key",
+		es: "una clave privada",
+	},
+	"check.secret": {
+		en: "%s has a secret written in it (%s). The backup refuses to upload it until it is taken out: keep it in your keychain or a secrets manager.",
+		es: "%s tiene un secreto escrito (%s). La copia de seguridad no lo sube hasta que se quite: guárdalo en tu llavero o en un gestor de secretos.",
+	},
 	"check.shared": {
 		en: "shared notes (%s): %s, %s",
 		es: "notas compartidas (%s): %s, %s",

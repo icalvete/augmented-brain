@@ -140,6 +140,9 @@ func TestTools(t *testing.T) {
 		!exists("knowledge/lesson-small-commits-win.md") {
 		t.Errorf("shared knowledge_new: %s", out)
 	}
+	if index, _ := os.ReadFile(filepath.Join(shared, "MEMORY.md")); !strings.Contains(string(index), "## Knowledge\n- [Small commits win]") || strings.Contains(string(index), "## Areas") {
+		t.Errorf("index of the shared notes:\n%s", index)
+	}
 	if out, isErr := call(t, cs, "knowledge_new", map[string]any{"kind": "lesson", "title": "x", "area": "area-platform", "shared": true}); !isErr {
 		t.Errorf("a shared note with an area was saved: %s", out)
 	}

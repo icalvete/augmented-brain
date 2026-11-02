@@ -93,7 +93,7 @@ func TestContextBudget(t *testing.T) {
 	c, s := space(t, "en")
 	long := strings.Repeat("Explain every step before doing it. ", 60)
 	for i := 0; i < 8; i++ {
-		rule := fmt.Sprintf("---\nid: rule-%d\ntype: rule\ntitle: Rule %d\n---\n%s\n", i, i, long)
+		rule := fmt.Sprintf("---\nid: rule-%d\ntype: rule\ntitle: Rule %d\nsummary: step %d first\n---\n%s\n", i, i, i, long)
 		if err := os.WriteFile(filepath.Join(s.Memory, "rules", fmt.Sprintf("rule-%d.md", i)), []byte(rule), 0o644); err != nil {
 			t.Fatal(err)
 		}
@@ -102,8 +102,8 @@ func TestContextBudget(t *testing.T) {
 	if n := utf8.RuneCountInString(text); n > Budget {
 		t.Fatalf("context is %d characters, over the %d budget", n, Budget)
 	}
-	if !strings.Contains(text, "read each file before acting") || !strings.Contains(text, "rule-3.md") {
-		t.Errorf("long rules are not listed by path:\n%s", text)
+	if !strings.Contains(text, "read its file before acting") || !strings.Contains(text, "- Rule 3 — step 3 first (") || !strings.Contains(text, "rule-3.md)") {
+		t.Errorf("long rules are not listed with their summary and path:\n%s", text)
 	}
 	if strings.Contains(text, long) {
 		t.Error("a long rule body is still inlined")

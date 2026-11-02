@@ -31,6 +31,7 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -57,7 +58,8 @@ type Item struct {
 	Source string       // path relative to the source folder, with forward slashes
 	Space  string       // where it goes; empty when it is left out
 	Note   *memory.Note // the note to write (nil for an archive file, copied as it is)
-	Copy   bool         // an archive file, copied untouched into the space's archive/
+	Copy   bool         // an archive or docs/ file, copied untouched into the same place in the space
+	Inbox  []string     // inbox.md: its captures, added to the space's inbox (dated lines)
 }
 
 // Issue is something the importer could not decide, or changed and says so.
@@ -83,6 +85,7 @@ const (
 	RepoOutside    = "repo-outside"     // a repository outside the space's work folders: kept as a full path
 	UnknownType    = "unknown-type"     // no type, prefix or kind to go by: imported as a reference
 	ArchiveNoSpace = "archive-no-space" // an archive file that belongs to no note: left out
+	Secret         = "secret"           // a secret written in the file: imported, but the backup will refuse it
 )
 
 // Plan is what Apply would write, and what it could not decide.
@@ -102,11 +105,16 @@ func (p *Plan) Count() map[string]map[string]int {
 		if out[it.Space] == nil {
 			out[it.Space] = map[string]int{}
 		}
-		kind := "archive"
-		if it.Note != nil {
-			kind = it.Note.Header.Type
+		switch {
+		case it.Note != nil:
+			out[it.Space][it.Note.Header.Type]++
+		case it.Inbox != nil:
+			out[it.Space]["inbox"] += len(it.Inbox)
+		case strings.HasPrefix(it.Source, "docs/"):
+			out[it.Space]["docs"]++
+		default:
+			out[it.Space]["archive"]++
 		}
-		out[it.Space][kind]++
 	}
 	return out
 }
@@ -146,7 +154,8 @@ type planner struct {
 	p        *Plan
 	titles   map[string]string         // file base name → the text of a link to it
 	notes    []*source                 // the source files with a header
-	archived []string                  // the files under archive/
+	archived []string                  // the files under archive/ and docs/
+	inbox    []string                  // the captures of inbox.md, as dated lines
 	ids      map[string]string         // id → space, of the notes being imported
 	existing map[string]*memory.Memory // the notes already in each space
 }
@@ -179,6 +188,7 @@ func MakePlan(src string, c *config.Config, o Options) (*Plan, error) {
 		pl.fixLinks(n)
 	}
 	pl.placeArchives()
+	pl.placeInbox()
 	pl.p.sort()
 	return pl.p, nil
 }
@@ -221,6 +231,10 @@ func (pl *planner) scan(src string) error {
 			}
 			return nil
 		}
+		if strings.HasPrefix(rel, "docs/") && strings.Count(rel, "/") >= 2 {
+			pl.archived = append(pl.archived, rel) // a task's documents, of any kind
+			return nil
+		}
 		if !strings.HasSuffix(rel, ".md") {
 			return nil
 		}
@@ -232,7 +246,14 @@ func (pl *planner) scan(src string) error {
 		if err != nil {
 			return err
 		}
+		if rel == "inbox.md" {
+			pl.inbox = captures(data, pl.o.Today)
+			return nil
+		}
 		pl.linkTitles(rel, data)
+		if what := guard.FindSecret(string(data)); what != "" {
+			pl.p.Issues = append(pl.p.Issues, Issue{rel, Secret, what})
+		}
 		s, err := read(rel, data)
 		switch {
 		case errors.Is(err, memory.ErrNoHeader):
@@ -351,10 +372,14 @@ func (pl *planner) fixLinks(n planned) {
 }
 
 // placeArchives sends each archive file with the note it belongs to: archive/<id>-…
-// goes with <id> (the longest id that fits), or else to the space of the rest.
+// goes with <id> (the longest id that fits), docs/<id>/… with <id>, or else to the
+// space of the rest.
 func (pl *planner) placeArchives() {
 	for _, rel := range pl.archived {
 		base := strings.TrimSuffix(filepath.Base(rel), ".md")
+		if strings.HasPrefix(rel, "docs/") {
+			base = strings.Split(rel, "/")[1]
+		}
 		sp, best := "", ""
 		for id, s := range pl.ids {
 			if (base == id || strings.HasPrefix(base, id+"-")) && len(id) > len(best) {
@@ -370,6 +395,43 @@ func (pl *planner) placeArchives() {
 		}
 		pl.p.Items = append(pl.p.Items, Item{Source: rel, Space: sp, Copy: true})
 	}
+}
+
+// placeInbox sends the captures of inbox.md to the space of the rest ("*"), or else to
+// the default space: the inbox is the person's, not an area's.
+func (pl *planner) placeInbox() {
+	if len(pl.inbox) == 0 {
+		return
+	}
+	sp := pl.o.Map["*"]
+	if sp == "" || sp == config.SharedFolder {
+		sp = pl.c.DefaultSpace
+	}
+	if sp == "" {
+		pl.leave("inbox.md", NoSpace, "inbox")
+		return
+	}
+	pl.p.Items = append(pl.p.Items, Item{Source: "inbox.md", Space: sp, Inbox: pl.inbox})
+}
+
+// captures returns the lines of an inbox that are captures ("- …" at the start of a
+// line), as dated lines: one that has no date gets today's (or the file's day).
+func captures(data []byte, today time.Time) []string {
+	if today.IsZero() {
+		today = time.Now()
+	}
+	var out []string
+	for _, line := range strings.Split(strings.ReplaceAll(string(data), "\r\n", "\n"), "\n") {
+		if !strings.HasPrefix(line, "- ") || strings.TrimSpace(line[2:]) == "" {
+			continue
+		}
+		date, text, ok := memory.ParseDatedLine(line)
+		if !ok {
+			date, text = today.Format(memory.DateLayout), strings.TrimSpace(line[2:])
+		}
+		out = append(out, strings.TrimSuffix(memory.DatedLine(date, text), "\n"))
+	}
+	return out
 }
 
 // sort orders the plan by source file, and each file's issues by kind.

@@ -26,9 +26,13 @@ func (p Problem) Error() string { return fmt.Sprintf("%s: %v", p.Path, p.Err) }
 type Memory struct {
 	Dir   string
 	Notes map[string]*Note // by id
+	// Shared is set for the shared notes, which have no areas, people or tasks: their
+	// index lists rules and knowledge instead.
+	Shared bool
 }
 
-// Load reads every note of the memory in dir, except archive/. It returns what it could
+// Load reads every note of the memory in dir, except archive/ and docs/ (a task's long
+// documents, which are not notes). It returns what it could
 // read, and one Problem per file that is not a valid note. A note may link (related) to
 // the notes of also: the shared notes, which every space can see.
 func Load(dir string, also ...*Memory) (*Memory, []Problem, error) {
@@ -47,7 +51,7 @@ func Load(dir string, also ...*Memory) (*Memory, []Problem, error) {
 		}
 		rel, _ := filepath.Rel(dir, path)
 		if d.IsDir() {
-			if rel == "archive" || (strings.HasPrefix(d.Name(), ".") && rel != ".") {
+			if rel == "archive" || rel == "docs" || (strings.HasPrefix(d.Name(), ".") && rel != ".") {
 				return filepath.SkipDir
 			}
 			return nil
@@ -87,12 +91,13 @@ var SharedTypes = []string{"rule", "reference", "lesson"}
 // none). A note of a type that is not shared, or with an area, is a problem.
 func LoadShared(dir string) (*Memory, []Problem, error) {
 	if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
-		return &Memory{Dir: dir, Notes: map[string]*Note{}}, nil, nil
+		return &Memory{Dir: dir, Notes: map[string]*Note{}, Shared: true}, nil, nil
 	}
 	m, problems, err := Load(dir)
 	if err != nil {
 		return nil, nil, err
 	}
+	m.Shared = true
 	for _, id := range m.IDs() {
 		n := m.Notes[id]
 		var err error

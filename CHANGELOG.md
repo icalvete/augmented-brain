@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+From the first rehearsal of a real migration:
+
+- **A secret key that ends in `/` or `+` is caught.** The guard let an AWS secret key
+  through when its last character was not a letter or a digit (and a Google key ending
+  in `-`). Writes and commands with one are now blocked like the rest.
+- **The repositories you let Claude commit in count from every space**, like the
+  production profiles: a repository listed in `personal` is let through from a `work`
+  session too. A repository in both lists asks.
+- **A push that rewrites the remote asks, always** (`--force`, `--delete`, `--mirror`,
+  `+branch`), even in a repository Claude may push to. **`rm -r` of your whole home
+  folder or of the whole disk is never run.**
+- **Your rules reach every session.** When they do not fit whole at the start, each one
+  goes as its title and summary, not only the path of its file.
+- **`import` brings the rest:** the captures of `inbox.md` go to the inbox, and
+  `docs/<task>/` is copied as it is. A note with a secret written in it is named in the
+  report, and `check` names it too.
+- `docs/` in the notes folder is never read as notes (a document with no header was
+  reported as a broken note). The index of the shared notes lists their rules and
+  knowledge, not areas and tasks they cannot have. `init` warns when the plugin did not
+  install (with no git, say), instead of only saying it is ready. `augmented-brain panel`
+  opens on the space of the folder it is run in.
+
 ## 0.5.1-alpha
 
 Released 2026-11-02.

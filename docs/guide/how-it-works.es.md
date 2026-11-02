@@ -59,9 +59,13 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
   y lo que publica como un push: `gh pr merge`, `gh release create`, `glab mr merge`.
   Puedes dejar que Claude haga commit y push en un repositorio tuyo, siempre escrito
   como `git -C <repo>`: ponlo en `git_allowed_repos` del espacio para que pase, o en
-  `git_ask_repos` para que te pregunte cada vez. Un worktree de un repositorio de la
-  lista cuenta como él, y `~/code/app-*` vale para cada carpeta `app-<nombre>` junto a
-  `app`.
+  `git_ask_repos` para que te pregunte cada vez. Como los perfiles de producción, estas
+  listas valen en toda la máquina: un repositorio de la lista de un espacio pasa desde
+  una sesión de cualquiera de ellos. Un worktree de un repositorio de la lista cuenta
+  como él, y `~/code/app-*` vale para cada carpeta `app-<nombre>` junto a `app`. Incluso
+  ahí, un push que reescribe o borra lo que hay en el remoto (`--force`, `--delete`,
+  `+rama`) te pregunta antes. Y un `rm -r` de tu carpeta personal entera o del disco
+  entero no se ejecuta nunca.
 
 También mira dentro de `ssh`, de `bash -c`, de los bucles y de lo que una tubería le pasa
 a una shell (`echo 'sudo …' | bash`). Si no puede leer su configuración, te pregunta antes
@@ -202,7 +206,8 @@ reglas, referencias y lecciones. Las tareas, las áreas y las personas son siemp
 espacio.
 
 Todos los espacios las ven. Las reglas compartidas se cargan al empezar cada sesión, como
-las del espacio. Las referencias y lecciones compartidas salen en una línea cada una, y
+las del espacio: enteras si caben, y si no, una línea cada una con su resumen, para que
+Claude abra el fichero cuando necesite el detalle. Las referencias y lecciones compartidas salen en una línea cada una, y
 Claude abre la que necesite. No hay que mover ficheros a mano: dile a Claude «esto vale
 para todo» y la guarda como compartida. Viajan en la copia de seguridad del espacio por
 defecto, como tu perfil.
@@ -307,6 +312,12 @@ y se pasa con `--map <fichero>`. `--repos-base <carpeta>` dice respecto a qué c
 están los `repos:` de las notas, para reescribirlos respecto a la carpeta de trabajo del
 espacio.
 
+Lo demás también viene. Las capturas de tu `inbox.md` antiguo (cada línea `- …`) van al
+buzón del espacio de `*`, con su fecha y nunca dos veces. `archive/` y `docs/<tarea>/` se
+copian tal cual, junto a su nota. Una nota con un secreto escrito (una clave, un token)
+se importa, pero sale en el informe: la copia de seguridad no la sube hasta que se quite.
+`augmented-brain check` también la nombra.
+
 ## El panel
 
 El panel es una página en tu navegador para ver y cambiar tus espacios sin pasar por
@@ -316,8 +327,9 @@ Claude. Ábrelo con `/brain:panel` en Claude, o desde una terminal:
 augmented-brain panel
 ```
 
-Abre tu navegador. Si no puede (en un ordenador sin pantalla, por ejemplo), escribe una
-dirección para que la abras tú. Lo que encuentras, espacio por espacio:
+Abre tu navegador, en el espacio de la carpeta desde la que lo lanzas. Si no puede (en un
+ordenador sin pantalla, por ejemplo), escribe una dirección para que la abras tú. Lo que
+encuentras, espacio por espacio:
 
 - **Tareas**: primero las que te esperan a ti, con su estado y su siguiente paso. Abre
   una para leerla entera, escribir en su diario, cambiar su estado o su siguiente paso,

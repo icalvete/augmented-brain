@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/panel"
 )
@@ -67,14 +69,26 @@ func cmdPanel(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
+	wd, _ := os.Getwd()
+	address := panelAddress(c, info.URL(), wd)
 	if started {
-		fmt.Fprintln(out, i18n.T(l, "panel.cli.started", info.URL()))
+		fmt.Fprintln(out, i18n.T(l, "panel.cli.started", address))
 	} else {
-		fmt.Fprintln(out, i18n.T(l, "panel.cli.running", info.URL()))
+		fmt.Fprintln(out, i18n.T(l, "panel.cli.running", address))
 	}
-	if noBrowser || panel.OpenBrowser(info.URL()) != nil {
+	if noBrowser || panel.OpenBrowser(address) != nil {
 		fmt.Fprintln(out, i18n.T(l, "panel.cli.nobrowser"))
 	}
 	fmt.Fprintln(out, i18n.T(l, "panel.cli.idle"))
 	return 0
+}
+
+// panelAddress is the page to open: the tasks of the space of the folder the panel was
+// asked for in (so /brain:panel in a work session shows work), or else the panel's
+// first page, which shows the default space.
+func panelAddress(c *config.Config, base, wd string) string {
+	if s := c.SpaceFor(wd); s != nil {
+		return base + "tasks?s=" + url.QueryEscape(s.Name)
+	}
+	return base
 }
