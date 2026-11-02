@@ -23,6 +23,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // MetaDir is the program's folder inside the memory folder (the backup keeps the
@@ -87,12 +89,7 @@ func Write(memDir string, v int) error {
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
-	path := filepath.Join(dir, File)
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, []byte(strconv.Itoa(v)+"\n"), 0o644); err != nil {
-		return err
-	}
-	return os.Rename(tmp, path)
+	return paths.WriteAtomic(filepath.Join(dir, File), []byte(strconv.Itoa(v)+"\n"), 0o644)
 }
 
 // CheckNotes refuses notes written by a newer program. It reads one small file, so

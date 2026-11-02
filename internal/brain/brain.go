@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -222,9 +223,12 @@ type UpdateInput struct {
 	// tool never sets it (a blank there keeps the field); the panel does, when the
 	// user empties a field. A live task still needs waiting_on and next.
 	Clear []string
+	// WatchDate and WatchWhat add a watch date; WatchDone marks those of that day done.
+	WatchDate, WatchWhat, WatchDone string
 }
 
-// Update changes a task's header. A change of status is written in the journal.
+// Update changes a task's header, all of it or nothing: the note is written once, after
+// every change has been checked. A change of status is written in the journal.
 func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 	n, err := b.Task(in.ID)
 	if err != nil {
@@ -232,6 +236,7 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 	}
 	cp := *n
 	h := &cp.Header
+	h.Watch = slices.Clone(h.Watch) // the note in the index stays as it was until saved
 	old := h.Status
 	if in.Status != "" {
 		h.Status = in.Status
@@ -263,6 +268,28 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 			h.Area = ""
 		default:
 			return nil, fmt.Errorf("%q cannot be cleared", f)
+		}
+	}
+	if in.WatchDate != "" {
+		if err := checkDate(in.WatchDate); err != nil {
+			return nil, err
+		}
+		if strings.TrimSpace(in.WatchWhat) == "" {
+			return nil, errors.New("a watch date needs what to look at")
+		}
+		h.Watch = append(h.Watch, memory.Watch{Date: in.WatchDate, What: strings.TrimSpace(in.WatchWhat)})
+		sort.SliceStable(h.Watch, func(i, j int) bool { return h.Watch[i].Date < h.Watch[j].Date })
+	}
+	if in.WatchDone != "" {
+		hit := false
+		for i := range h.Watch {
+			if h.Watch[i].Date == in.WatchDone && !h.Watch[i].Done {
+				h.Watch[i].Done = true
+				hit = true
+			}
+		}
+		if !hit {
+			return nil, fmt.Errorf("task %s has no open watch date on %s", in.ID, in.WatchDone)
 		}
 	}
 	if h.Status == "closed" && old != "closed" {

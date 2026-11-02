@@ -161,7 +161,7 @@ func (c *Config) Save() error {
 	if err := os.MkdirAll(c.Dir, 0o700); err != nil {
 		return err
 	}
-	out := Config{Language: c.Language, DefaultSpace: c.DefaultSpace, Spaces: map[string]*Space{},
+	out := Config{Format: c.Format, Language: c.Language, DefaultSpace: c.DefaultSpace, Spaces: map[string]*Space{},
 		ProductionAWSProfiles: c.ProductionAWSProfiles, UntouchableHosts: c.UntouchableHosts}
 	for name, s := range c.Spaces {
 		cp := *s
@@ -194,17 +194,9 @@ func (c *Config) Save() error {
 	return writeAtomic(filepath.Join(c.Dir, FileName), text)
 }
 
-// writeAtomic replaces a file in one step (write, then rename). When the path is a
-// symlink, the file it points to is replaced and the link is kept.
+// writeAtomic replaces the configuration file in one step.
 func writeAtomic(path, text string) error {
-	if real, err := filepath.EvalSymlinks(path); err == nil {
-		path = real
-	}
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, []byte(text), 0o600); err != nil {
-		return err
-	}
-	return paths.Rename(tmp, path)
+	return paths.WriteAtomic(path, []byte(text), 0o600)
 }
 
 // AddSpace appends a space to the configuration file in dir, leaving everything else

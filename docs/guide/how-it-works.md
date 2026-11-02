@@ -52,7 +52,9 @@ session starts from there. Opening, resuming and closing work the same way.
 - **Ask you**: production, or a machine you marked as untouchable.
   `aws --profile prod …`, `ssh db01 …`. Those two lists are for the whole machine: they
   apply in every space. An `aws` command is checked against every profile it may use:
-  `--profile`, `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`, or `default` when none is set.
+  `--profile`, `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`, or `default` when none is set. So
+  are the tools that call AWS on their own (`cdk`, `sam`, `serverless`, `terraform`,
+  `tofu`, `pulumi`, `eksctl`, `copilot`).
 - **Stop**: pushing code, root and secrets. `git push`, `sudo …`, a token in a command,
   and what publishes like a push: `gh pr merge`, `gh release create`, `glab mr merge`.
   You can let Claude commit and push in a repository of yours, always written as
@@ -62,8 +64,8 @@ session starts from there. Opening, resuming and closing work the same way.
 
 It also looks inside `ssh`, `bash -c`, loops, and what a pipe feeds a shell
 (`echo 'sudo …' | bash`). If its configuration cannot be read, it asks you before every
-`aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before `cdk`, `sam` or `serverless`
-with a profile, since it cannot tell which ones matter.
+`aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before the tools that call AWS
+on their own, since it cannot tell which ones matter.
 Commands Claude leaves running to watch something (a log, a build) are checked the same
 way, and so are those of the helpers Claude starts (subagents and workflows). If the
 guard cannot run at all, because the program is missing or broken, Claude Code stops

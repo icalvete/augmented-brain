@@ -297,6 +297,11 @@ func TestFormat(t *testing.T) {
 	}
 	if c, err := Load(dir); err != nil || c.FormatVersion() != 2 {
 		t.Errorf("after SetFormat(2): %v %v", c, err)
+	} else if err := c.Save(); err != nil {
+		t.Fatal(err)
+	}
+	if c, err := Load(dir); err != nil || c.FormatVersion() != 2 {
+		t.Errorf("Save lost the format: %v %v", c, err)
 	}
 	if err := SetFormat(dir, 3); err != nil {
 		t.Fatal(err)

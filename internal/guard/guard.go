@@ -76,7 +76,7 @@ func (p Policy) Command(line string) Decision {
 // commands checks a list of commands in order. Exported variables carry over to the
 // commands after them. A deny wins over an ask.
 func (p Policy) commands(cmds []command, exported map[string]string, depth int) Decision {
-	var ask *Decision
+	d := allow
 	for i, c := range cmds {
 		if c.piped && c.stdin == "" && i > 0 {
 			// echo 'sudo id' | bash: bash reads what echo writes. Kept in the list, so a
@@ -91,18 +91,20 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 				}
 			}
 		}
-		d := p.simple(c.words, c.stdin, exported, depth)
-		if d.Verdict == Deny {
+		if d = worse(d, p.simple(c.words, c.stdin, exported, depth)); d.Verdict == Deny {
 			return d
 		}
-		if d.Verdict == Ask && ask == nil {
-			ask = &d
-		}
 	}
-	if ask != nil {
-		return *ask
+	return d
+}
+
+// worse combines two decisions: a deny wins over an ask, and an ask over an allow. Of
+// two asks, the first one's reason is kept.
+func worse(a, b Decision) Decision {
+	if b.Verdict > a.Verdict {
+		return b
 	}
-	return allow
+	return a
 }
 
 // output returns what a command writes when that is known from the command line alone:
@@ -153,14 +155,14 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	}
 	switch name {
 	case "git":
-		return p.git(args)
+		return p.git(env, args)
 	case "sudo", "doas":
 		return p.sudo(name, args, stdin, env, depth)
 	case "su", "run0", "pkexec":
 		return Decision{Deny, "`" + name + "` switches to another user, root by default. " + rootReason}
 	case "aws":
 		return p.aws(env, args)
-	case "cdk", "sam", "serverless", "sls":
+	case "cdk", "sam", "serverless", "sls", "terraform", "tofu", "pulumi", "eksctl", "copilot":
 		return p.awsTool(name, env, args)
 	case "aws-vault":
 		return p.awsVault(args, stdin, env, depth)
@@ -181,8 +183,11 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	case "find":
 		return p.find(args, env, depth)
 	}
-	if prof, ok := env["AWS_PROFILE"]; ok && contains(p.ProductionAWSProfiles, prof) {
-		return Decision{Ask, "this runs with the production AWS profile " + prof + "; the user confirms first."}
+	// Any other program set to a production profile in the command itself.
+	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE"} {
+		if prof, ok := env[k]; ok && contains(p.ProductionAWSProfiles, prof) {
+			return Decision{Ask, "this runs with the production AWS profile " + prof + "; the user confirms first."}
+		}
 	}
 	return allow
 }
@@ -196,15 +201,22 @@ func (p Policy) hostUnknown(name, host string) (Decision, bool) {
 }
 
 // git blocks commit and push unless the repository is explicitly allowed, written with -C.
-func (p Policy) git(args []string) Decision {
+// Each -C is taken from the one before it, as git does. A repository given another way
+// (--git-dir, --work-tree, GIT_DIR, GIT_WORK_TREE) is never taken as listed.
+func (p Policy) git(env map[string]string, args []string) Decision {
 	dir := ""
+	elsewhere := env["GIT_DIR"] != "" || env["GIT_WORK_TREE"] != ""
 	withValue := map[string]bool{"-C": true, "-c": true, "--git-dir": true, "--work-tree": true,
 		"--namespace": true, "--super-prefix": true, "--config-env": true}
 	i := 0
 	for ; i < len(args) && strings.HasPrefix(args[i], "-"); i++ {
+		key, _, _ := strings.Cut(args[i], "=")
+		if key == "--git-dir" || key == "--work-tree" {
+			elsewhere = true
+		}
 		if withValue[args[i]] && i+1 < len(args) {
 			if args[i] == "-C" {
-				dir = args[i+1]
+				dir = gitDir(dir, args[i+1])
 			}
 			i++
 		}
@@ -212,7 +224,7 @@ func (p Policy) git(args []string) Decision {
 	if i >= len(args) || (args[i] != "commit" && args[i] != "push") {
 		return allow
 	}
-	if dir != "" {
+	if dir != "" && !elsewhere {
 		if d, err := p.resolve(dir); err == nil {
 			if repoListed(p.GitAllowedRepos, d) {
 				return allow
@@ -223,6 +235,14 @@ func (p Policy) git(args []string) Decision {
 		}
 	}
 	return Decision{Deny, "`git " + args[i] + "` is for the user. Leave the change ready and checked, show what would be committed, and tell the user it is ready. (To let the assistant commit in a repository, add it to git_allowed_repos in the configuration, or to git_ask_repos to be asked each time, and use `git -C <repo>`.)"}
+}
+
+// gitDir is where git -C next goes after the -C options before it, which are in dir.
+func gitDir(dir, next string) string {
+	if dir == "" || filepath.IsAbs(next) || strings.HasPrefix(next, "~") {
+		return next
+	}
+	return filepath.Join(dir, next)
 }
 
 // sudo allows running as another user, but never as root, and checks the command it
@@ -303,7 +323,8 @@ func (p Policy) aws(env map[string]string, args []string) Decision {
 	return allow
 }
 
-// awsTool does the same for cdk, sam and serverless (whose --aws-profile counts too).
+// awsTool does the same for the tools that call AWS on their own: cdk, sam, serverless
+// (whose --aws-profile counts too), terraform, tofu, pulumi, eksctl and copilot.
 func (p Policy) awsTool(name string, env map[string]string, args []string) Decision {
 	if d, unknown := p.listsUnknown(name); unknown {
 		return d
@@ -576,6 +597,7 @@ func (p Policy) shell(args []string, stdin string, env map[string]string, depth 
 
 // find checks the command of -exec, -execdir, -ok and -okdir.
 func (p Policy) find(args []string, env map[string]string, depth int) Decision {
+	d := allow
 	for i, a := range args {
 		if a == "-exec" || a == "-execdir" || a == "-ok" || a == "-okdir" {
 			var cmd []string
@@ -585,12 +607,12 @@ func (p Policy) find(args []string, env map[string]string, depth int) Decision {
 				}
 				cmd = append(cmd, w)
 			}
-			if d := p.simple(cmd, "", env, depth); d.Verdict != Allow {
+			if d = worse(d, p.simple(cmd, "", env, depth)); d.Verdict == Deny {
 				return d
 			}
 		}
 	}
-	return allow
+	return d
 }
 
 // copyHosts asks before copying to or from an untouchable host (host:path arguments).

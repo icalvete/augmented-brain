@@ -84,7 +84,14 @@ func cmdImport(args []string, out, errOut io.Writer) int {
 	}
 	importReport(out, lang, p)
 	if !*apply {
-		fmt.Fprintln(out, i18n.T(lang, "import.dry", strings.Join(os.Args[1:], " ")+" --apply"))
+		again := []string{"import", src}
+		if *mapFile != "" {
+			again = append(again, "--map", *mapFile)
+		}
+		if *base != "" {
+			again = append(again, "--repos-base", o.ReposBase)
+		}
+		fmt.Fprintln(out, i18n.T(lang, "import.dry", shellWords(append(again, "--apply"))))
 		return 0
 	}
 	done, err := importer.Apply(p, c, lang)
@@ -98,6 +105,19 @@ func cmdImport(args []string, out, errOut io.Writer) int {
 		return 1
 	}
 	return 0
+}
+
+// shellWords joins words into a command line that can be pasted, quoting those with a
+// space or a quote in them.
+func shellWords(words []string) string {
+	q := make([]string, len(words))
+	for i, w := range words {
+		q[i] = w
+		if strings.ContainsAny(w, " \t'\"$`\\") {
+			q[i] = "'" + strings.ReplaceAll(w, "'", `'\''`) + "'"
+		}
+	}
+	return strings.Join(q, " ")
 }
 
 // readMap reads "area = space" lines; # starts a comment.

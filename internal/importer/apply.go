@@ -8,7 +8,9 @@ import (
 	"sort"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/format"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // Applied says what Apply wrote, per space.
@@ -22,6 +24,16 @@ type Applied struct {
 // it is and reported). The caller holds the notes lock.
 func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 	done := Applied{Notes: map[string]int{}, Copies: map[string]int{}}
+	// Notes written by a newer program are never written into.
+	checked := map[string]bool{}
+	for _, it := range p.Items {
+		if it.Space != "" && !checked[it.Space] {
+			checked[it.Space] = true
+			if err := format.CheckNotes(c.Spaces[it.Space].Memory); err != nil {
+				return done, err
+			}
+		}
+	}
 	var skipped []string
 	for _, it := range p.Items {
 		if it.Space == "" {
@@ -48,7 +60,7 @@ func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 			if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
 				return done, err
 			}
-			if err := os.WriteFile(dst, data, 0o644); err != nil {
+			if err := paths.WriteAtomic(dst, data, 0o644); err != nil {
 				return done, err
 			}
 			done.Copies[it.Space]++

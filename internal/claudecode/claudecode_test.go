@@ -100,4 +100,10 @@ func TestUninstall(t *testing.T) {
 	if err := Uninstall(f.run); err != nil {
 		t.Errorf("a plugin already gone must not fail: %v", err)
 	}
+	// Any other failure is one, even with "not" somewhere in it.
+	f = &fake{out: map[string]string{"claude plugin uninstall": "cannot write the settings"},
+		fail: map[string]bool{"claude plugin uninstall": true}}
+	if err := Uninstall(f.run); err == nil {
+		t.Error("a real failure was taken as already gone")
+	}
 }

@@ -63,13 +63,19 @@ func Update(run Runner) error {
 
 // Uninstall removes the plugin and its marketplace. Something already gone is fine.
 func Uninstall(run Runner) error {
-	if out, err := run("claude", "plugin", "uninstall", Plugin); err != nil && !strings.Contains(out, "not") {
+	if out, err := run("claude", "plugin", "uninstall", Plugin); err != nil && !gone(out) {
 		return fmt.Errorf("removing the plugin: %v: %s", err, strings.TrimSpace(out))
 	}
-	if out, err := run("claude", "plugin", "marketplace", "remove", MarketplaceName); err != nil && !strings.Contains(out, "not") {
+	if out, err := run("claude", "plugin", "marketplace", "remove", MarketplaceName); err != nil && !gone(out) {
 		return fmt.Errorf("removing the marketplace: %v: %s", err, strings.TrimSpace(out))
 	}
 	return nil
+}
+
+// gone tells, from what claude printed, that there was nothing to remove ("Plugin …
+// not found in installed plugins", "Marketplace '…' not found").
+func gone(out string) bool {
+	return strings.Contains(out, "not found") || strings.Contains(out, "not installed")
 }
 
 // Install adds the marketplace and installs the plugin for the user. Both steps are

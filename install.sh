@@ -104,7 +104,7 @@ sudo_first() {
 
 # The language, asked first: the system's is the default. AB_LANGUAGE answers it.
 if [ -n "${AB_LANGUAGE:-}" ]; then
-  lang="$AB_LANGUAGE"
+  case "$AB_LANGUAGE" in es*) lang=es ;; *) lang=en ;; esac
 elif [ "${AB_YES:-}" != 1 ] && (exec </dev/tty) 2>/dev/null; then
   printf '%s ' "${on}Language / Idioma: English or español? [en/es] ($lang)${off}" >/dev/tty
   read -r answer </dev/tty || answer=""

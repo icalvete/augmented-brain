@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/guard"
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 var journalDate = regexp.MustCompile(`(?m)^- (\d{4}-\d{2}-\d{2}) — `)
@@ -55,7 +56,7 @@ func (b *Brain) SaveSession(kind, sessionID, heading, text string) (string, erro
 		return "", err
 	}
 	body := strings.TrimRight(heading, "\n") + "\n\n" + guard.RedactSecrets(strings.TrimSpace(text)) + "\n"
-	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
+	if err := paths.WriteAtomic(path, []byte(body), 0o644); err != nil {
 		return "", err
 	}
 	return rel, nil

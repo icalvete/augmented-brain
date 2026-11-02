@@ -47,8 +47,6 @@ func setupBackup(b *brain.Brain, url string, run backup.Runner) (string, error) 
 	if err := backup.Setup(c, s, url); err != nil {
 		return "", err
 	}
-	// No one can type a password into the server: git must fail instead of waiting.
-	os.Setenv("GIT_TERMINAL_PROMPT", "0")
 	host, _ := os.Hostname()
 	res, err := backup.Run(c, s, host)
 	backup.RecordStatusWarning(c.Dir, s.Name, err, res.Warning(), time.Now())

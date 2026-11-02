@@ -8,6 +8,18 @@
   notes about you, links that would cross spaces, ids already taken. Nothing is written
   until you run it again with `--apply`, and the folder you import from is only read.
   With several spaces, a small file says which space each area goes to (`--map`).
+- **The guard misses less.** `terraform`, `tofu`, `pulumi`, `eksctl` and `copilot` are
+  checked against the production profiles like `aws`, the inherited one included. In
+  `find` with several `-exec`, a blocked one is no longer hidden by an earlier one that
+  only asks. `git -C a -C b` is read as git reads it, and a commit that names another
+  repository (`--git-dir`, `--work-tree`, `GIT_DIR`) never counts as an allowed one.
+- **A change to a task is saved whole or not at all.** A task update with a bad watch
+  date used to save the rest of the change and then fail.
+- Smaller fixes: the configuration keeps its format version when rewritten; `import`
+  refuses to write into notes of a newer version and prints a command that can be
+  pasted; every small file the program rewrites (the inbox too) is replaced in one step;
+  an unknown `AB_LANGUAGE` no longer stops the installer; `uninstall` no longer takes
+  any error that says "not" as "already gone".
 
 ## 0.4.0-alpha
 

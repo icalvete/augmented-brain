@@ -226,26 +226,14 @@ func New(open Resolver, lockFile string) *mcp.Server {
 	}
 	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal.",
 		func(b *brain.Brain, in updateIn) (string, error) {
-			var n *memory.Note
-			var err error
-			if in.Status != "" || in.WaitingOn != "" || in.Next != "" || in.Summary != "" || in.Area != "" {
-				if n, err = b.Update(brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn,
-					Next: in.Next, Summary: in.Summary, Area: in.Area}); err != nil {
-					return "", err
-				}
-			}
-			if in.WatchDate != "" {
-				if n, err = b.AddWatch(in.ID, in.WatchDate, in.WatchWhat); err != nil {
-					return "", err
-				}
-			}
-			if in.WatchDone != "" {
-				if n, err = b.WatchDone(in.ID, in.WatchDone); err != nil {
-					return "", err
-				}
-			}
-			if n == nil {
+			u := brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn, Next: in.Next,
+				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone}
+			if in.Status+in.WaitingOn+in.Next+in.Summary+in.Area+in.WatchDate+in.WatchDone == "" {
 				return "", errors.New("nothing to change: give at least one field")
+			}
+			n, err := b.Update(u)
+			if err != nil {
+				return "", err
 			}
 			if n.Header.Status == "closed" || n.Header.Status == "parked" || n.Header.Status == "someday" {
 				released(b, in.ID)

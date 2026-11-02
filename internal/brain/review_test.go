@@ -133,3 +133,26 @@ func (b *Brain) writeWithoutTouching(n *memory.Note) error {
 	b.Mem.Notes[n.Header.ID] = n
 	return memory.Save(b.Mem.Dir, n)
 }
+
+// A change that fails in any part writes nothing: not the status, not the note in memory.
+func TestUpdateAllOrNothing(t *testing.T) {
+	b := open(t, "en")
+	task, _ := b.NewTask(NewTaskInput{Title: "Certificates"})
+	id := task.Header.ID
+	if _, err := b.AddWatch(id, "2026-11-16", "renewed?"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := b.Update(UpdateInput{ID: id, Status: "analysis", WatchDate: "16/11", WatchWhat: "x"}); err == nil {
+		t.Fatal("a bad watch date was accepted")
+	}
+	if _, err := b.Update(UpdateInput{ID: id, Status: "analysis", WatchDone: "2026-01-01"}); err == nil {
+		t.Fatal("a watch date that does not exist was closed")
+	}
+	n, _ := b.Task(id)
+	if n.Header.Status != "definition" || len(n.Header.Watch) != 1 || n.Header.Watch[0].Done {
+		t.Errorf("a failed change left something behind: %+v", n.Header)
+	}
+	if strings.Contains(read(t, b, n.Path), "analysis") {
+		t.Error("a failed change was written")
+	}
+}

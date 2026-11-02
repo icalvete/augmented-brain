@@ -80,12 +80,7 @@ func Update(cfgDir, space string, now time.Time, change func(*Space)) error {
 	if err != nil {
 		return err
 	}
-	path := file(cfgDir, space)
-	tmp := path + ".tmp"
-	if err := os.WriteFile(tmp, data, 0o600); err != nil {
-		return err
-	}
-	return paths.Rename(tmp, path)
+	return paths.WriteAtomic(file(cfgDir, space), data, 0o600)
 }
 
 // Touched records that a task was opened, read or written: it becomes the active one.

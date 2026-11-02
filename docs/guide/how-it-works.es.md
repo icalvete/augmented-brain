@@ -52,7 +52,9 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
 - **Te pregunta**: producción, o una máquina que marcaste como intocable.
   `aws --profile prod …`, `ssh db01 …`. Esas dos listas son de toda la máquina: valen en
   todos los espacios. Un `aws` se mira con todos los perfiles que puede usar: `--profile`,
-  `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`, o `default` si no hay ninguno.
+  `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`, o `default` si no hay ninguno. Igual las
+  herramientas que llaman a AWS por su cuenta (`cdk`, `sam`, `serverless`, `terraform`,
+  `tofu`, `pulumi`, `eksctl`, `copilot`).
 - **Lo para**: subir código, root y secretos. `git push`, `sudo …`, un token en un comando,
   y lo que publica como un push: `gh pr merge`, `gh release create`, `glab mr merge`.
   Puedes dejar que Claude haga commit y push en un repositorio tuyo, siempre escrito
@@ -63,8 +65,8 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
 
 También mira dentro de `ssh`, de `bash -c`, de los bucles y de lo que una tubería le pasa
 a una shell (`echo 'sudo …' | bash`). Si no puede leer su configuración, te pregunta antes
-de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`, y antes de `cdk`, `sam` o
-`serverless` con un perfil, porque no sabe cuáles importan.
+de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`, y antes de las herramientas que
+llaman a AWS por su cuenta, porque no sabe cuáles importan.
 Los comandos que Claude deja en marcha para vigilar algo (un registro, una compilación)
 se miran igual, y también los de los ayudantes que Claude lanza (subagentes y flujos de
 trabajo). Si el guardia no puede ni arrancar, porque falta el programa o está roto,

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/format"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/setup"
 )
@@ -175,5 +176,24 @@ func TestImportNeedsAMapWithSeveralSpaces(t *testing.T) {
 	}
 	if _, err := MakePlan(sourceDir(t, nil), c, Options{Map: map[string]string{"*": "nowhere"}}); err == nil {
 		t.Error("a map to a space that does not exist was taken")
+	}
+}
+
+// Notes written by a newer program are never written into.
+func TestImportRefusesNewerNotes(t *testing.T) {
+	c, _ := spaces(t)
+	if err := format.Write(c.Spaces["work"].Memory, format.Notes()+1); err != nil {
+		t.Fatal(err)
+	}
+	src := sourceDir(t, map[string]string{"task-ship.md": "---\nname: task-ship\ndescription: Ship it\nmetadata:\n  type: project\n---\n"})
+	p, err := MakePlan(src, c, Options{Map: map[string]string{"*": "work"}, Language: "en"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Apply(p, c, "en"); err == nil {
+		t.Fatal("notes of a newer format were written into")
+	}
+	if _, err := os.Stat(filepath.Join(c.Spaces["work"].Memory, "tasks", "task-ship.md")); err == nil {
+		t.Error("task-ship was written")
 	}
 }

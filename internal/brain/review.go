@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // ---- inbox ----
@@ -75,7 +76,7 @@ func (b *Brain) InboxDone(items []string) ([]string, error) {
 		}
 	}
 	sort.Strings(missing)
-	return missing, os.WriteFile(b.inboxPath(), []byte(strings.Join(keep, "\n")), 0o644)
+	return missing, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(keep, "\n")), 0o644)
 }
 
 // InboxDoneEntry takes one capture out of the inbox: the first with that date and
@@ -93,7 +94,7 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 	for i, l := range lines {
 		if m := inboxLine.FindStringSubmatch(l); m != nil && m[1] == date && m[2] == text {
 			lines = append(lines[:i], lines[i+1:]...)
-			return true, os.WriteFile(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o644)
+			return true, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o644)
 		}
 	}
 	return false, nil
@@ -110,38 +111,12 @@ func checkDate(d string) error {
 
 // AddWatch adds a date to a task to look at something again.
 func (b *Brain) AddWatch(id, date, what string) (*memory.Note, error) {
-	n, err := b.Task(id)
-	if err != nil {
-		return nil, err
-	}
-	if err := checkDate(date); err != nil {
-		return nil, err
-	}
-	if strings.TrimSpace(what) == "" {
-		return nil, errors.New("a watch date needs what to look at")
-	}
-	n.Header.Watch = append(n.Header.Watch, memory.Watch{Date: date, What: strings.TrimSpace(what)})
-	sort.SliceStable(n.Header.Watch, func(i, j int) bool { return n.Header.Watch[i].Date < n.Header.Watch[j].Date })
-	return n, b.save(n)
+	return b.Update(UpdateInput{ID: id, WatchDate: date, WatchWhat: what})
 }
 
 // WatchDone marks the task's watch dates on that day as done. They are kept.
 func (b *Brain) WatchDone(id, date string) (*memory.Note, error) {
-	n, err := b.Task(id)
-	if err != nil {
-		return nil, err
-	}
-	hit := false
-	for i := range n.Header.Watch {
-		if n.Header.Watch[i].Date == date && !n.Header.Watch[i].Done {
-			n.Header.Watch[i].Done = true
-			hit = true
-		}
-	}
-	if !hit {
-		return nil, fmt.Errorf("task %s has no open watch date on %s", id, date)
-	}
-	return n, b.save(n)
+	return b.Update(UpdateInput{ID: id, WatchDone: date})
 }
 
 // ---- what is due ----

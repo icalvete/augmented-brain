@@ -104,7 +104,7 @@ function AddToPath([string]$d) {
 
 try {
   # The language, asked first: the system's is the default. AB_LANGUAGE answers it.
-  if ($env:AB_LANGUAGE) { $lang = $env:AB_LANGUAGE }
+  if ($env:AB_LANGUAGE) { $lang = if ($env:AB_LANGUAGE -match '^es') { 'es' } else { 'en' } }
   elseif ($interactive -and $env:AB_YES -ne '1') {
     $a = Read-Host "Language / Idioma: English or espa$([char]0xF1)ol? [en/es] ($lang)"
     if ($a -match '^\s*(es|sp|ca)') { $lang = 'es' } elseif ($a -match '^\s*(en|in)') { $lang = 'en' }
