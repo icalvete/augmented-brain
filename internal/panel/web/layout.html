@@ -31,10 +31,13 @@
 </aside>
 <main>
 {{if .OK}}<p class="flash ok" role="status">{{t "saved"}}</p>{{end}}
-{{if .Error}}<p class="flash err" role="alert">{{.Error}}</p>{{end}}
 {{if .Problems}}<p class="flash warn">{{tf "problems" .Problems}} <a href="{{$.Base}}/space?s={{.Space}}">{{t "see"}}</a></p>{{end}}
 {{template "content" .}}
 </main>
 </div>
 </body>
 </html>{{end}}
+
+{{/* fields writes the hidden inputs of a form: {{template "fields" (fields $ "id" .ID)}}.
+     Every form sends the CSRF token and the space; the rest are the form's own. */}}
+{{define "fields"}}<input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="s" value="{{.Space}}">{{range .Own}}<input type="hidden" name="{{.Name}}" value="{{.Value}}">{{end}}{{end}}

@@ -89,8 +89,7 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 		return nil, err
 	}
 	out := map[string]map[string]*template.Template{}
-	for _, lang := range []string{"en", "es"} {
-		l := lang
+	for _, l := range []string{"en", "es"} {
 		funcs := template.FuncMap{
 			"t":  func(key string) string { return i18n.T(l, "panel."+key) },
 			"tf": func(key string, args ...any) string { return i18n.T(l, "panel."+key, args...) },
@@ -104,6 +103,7 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 					return i18n.T(l, "panel.days.in", d)
 				}
 			},
+			"fields": fields,
 		}
 		out[l] = map[string]*template.Template{}
 		for _, n := range names {
@@ -295,8 +295,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleStop(w http.ResponseWriter, r *http.Request) {
 	lang := s.lang()
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	s.render(w, r, http.StatusOK, "message", page{Lang: lang, Title: i18n.T(lang, "panel.stopped"), Section: "tasks",
+	s.render(w, http.StatusOK, "message", page{Lang: lang, Title: i18n.T(lang, "panel.stopped"), Section: "tasks",
 		D: message{Heading: i18n.T(lang, "panel.stopped"), Text: i18n.T(lang, "panel.stopped.text")}})
 	s.stop.Do(func() { close(s.stopped) })
 }

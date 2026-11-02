@@ -8,7 +8,7 @@
 <details class="box">
   <summary>{{t "area.new"}}</summary>
   <form method="post" action="{{$.Base}}/area/new" class="stack">
-    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}">
+    {{template "fields" (fields $)}}
     <label>{{t "f.title"}} <input name="title" required maxlength="200"></label>
     <label>{{t "f.summary"}} <input name="summary" maxlength="500"></label>
     <button type="submit">{{t "create"}}</button>

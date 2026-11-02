@@ -18,7 +18,7 @@
 <details class="box">
   <summary>{{t "task.new"}}</summary>
   <form method="post" action="{{$.Base}}/task/new" class="stack">
-    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}">
+    {{template "fields" (fields $)}}
     <label>{{t "f.title"}} <input name="title" required maxlength="200"></label>
     <label>{{t "f.summary"}} <input name="summary" maxlength="500"></label>
     <label>{{t "f.area"}} <select name="area">{{range .Areas}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>

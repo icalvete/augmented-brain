@@ -10,8 +10,8 @@
   <div class="meta"><span class="badge">{{.Short}}</span><span>{{tf "sessions.started" .Started}}</span><span>{{tf "sessions.written" .Written}}</span>{{if .Size}}<span>{{.Size}}</span>{{end}}</div>
   {{if .Said}}<details class="said"><summary>{{tf "sessions.said" .From}}</summary><pre class="body">{{.Said}}</pre></details>{{else}}<p class="hint">{{tf "sessions.said.none" .From}}</p>{{end}}
   <div class="actions">
-    <form method="post" action="{{$.Base}}/session/recover" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}"><input type="hidden" name="id" value="{{.ID}}"><button type="submit" class="small">{{t "sessions.recover"}}</button></form>
-    <form method="post" action="{{$.Base}}/session/reviewed" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}"><input type="hidden" name="id" value="{{.ID}}"><button type="submit" class="link">{{t "sessions.reviewed"}}</button></form>
+    <form method="post" action="{{$.Base}}/session/recover" class="inline">{{template "fields" (fields $ "id" .ID)}}<button type="submit" class="small">{{t "sessions.recover"}}</button></form>
+    <form method="post" action="{{$.Base}}/session/reviewed" class="inline">{{template "fields" (fields $ "id" .ID)}}<button type="submit" class="link">{{t "sessions.reviewed"}}</button></form>
   </div>
 </li>{{end}}
 </ul>{{else}}<p class="empty">{{t "sessions.dead.none"}}</p>{{end}}
@@ -32,7 +32,7 @@
   <div class="meta"><span class="badge">{{.Short}}</span><span>{{tf "sessions.started" .Started}}</span><span>{{.Size}}</span></div>
   <details class="said"><summary>{{t "sessions.delete"}}</summary>
     <form method="post" action="{{$.Base}}/session/delete" class="stack">
-      <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$.Space}}"><input type="hidden" name="id" value="{{.ID}}">
+      {{template "fields" (fields $ "id" .ID)}}
       <label class="check"><input type="checkbox" name="confirm" value="yes" required> {{t "sessions.delete.confirm"}}</label>
       <button type="submit" class="small">{{t "sessions.delete"}}</button>
     </form>

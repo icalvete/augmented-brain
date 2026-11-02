@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"cmp"
 	"flag"
 	"fmt"
 	"io"
@@ -37,6 +38,8 @@ func (a *asker) ask(question, def string) string {
 	return def
 }
 
+// spaceFlags are the flags init and space add share: a space and its folders, --yes
+// and --language.
 func spaceFlags(name string, errOut io.Writer) (*flag.FlagSet, *setup.Options, *bool, *string) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(errOut)
@@ -90,48 +93,11 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, i18n.T(i18n.FromEnv(), "init.language", *lang))
 		return 2
 	}
-	var spaces []setup.Options
-	if *custom || o.Space != "" || o.WorkFolder != "" || o.Memory != "" {
-		o.Space = a.ask(msg(*lang, "space"), firstNonEmpty(o.Space, defaultSpaces(*lang)[0]))
-		defaults(o, *lang)
-		o.WorkFolder = a.ask(msg(*lang, "work"), o.WorkFolder)
-		o.Memory = a.ask(msg(*lang, "memory"), o.Memory)
-		spaces = append(spaces, *o)
-	} else {
-		for _, name := range defaultSpaces(*lang) {
-			sp := setup.Options{Space: name}
-			defaults(&sp, *lang)
-			spaces = append(spaces, sp)
-		}
-	}
-
-	dir, err := config.Dir()
-	if err != nil {
+	oneSpace := *custom || o.Space != "" || o.WorkFolder != "" || o.Memory != ""
+	spaces := initSpaces(a, o, *lang, oneSpace)
+	if err := createSpaces(spaces, *lang, *custom, out); err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
-	}
-	for i, sp := range spaces {
-		sp.Language = *lang
-		var res *setup.Result
-		if i == 0 {
-			res, err = setup.Init(dir, sp)
-		} else {
-			res, err = setup.AddSpace(dir, sp)
-		}
-		if err != nil {
-			fmt.Fprintln(errOut, err)
-			return 1
-		}
-		if *custom {
-			report(out, *lang, res)
-		}
-	}
-	if len(spaces) > 1 {
-		// Sessions outside every folder (the desktop app's scratch folder) use personal.
-		if err := config.SetDefaultSpace(dir, "personal"); err != nil {
-			fmt.Fprintln(errOut, err)
-			return 1
-		}
 	}
 	if !*noPlugin {
 		installPlugin(a, *lang, out, errOut)
@@ -140,6 +106,67 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 	for _, sp := range spaces {
 		fmt.Fprintf(out, "  %-10s %s\n", sp.Space, sp.WorkFolder)
 	}
+	fmt.Fprintf(out, "\n%s\n", nextStep(*lang, spaces[0].WorkFolder))
+	return 0
+}
+
+// initSpaces are the spaces init creates, in the language lang: the one in o, asking
+// for what it lacks, when oneSpace; otherwise the default spaces in ~/augmented-brain.
+func initSpaces(a *asker, o *setup.Options, lang string, oneSpace bool) []setup.Options {
+	if oneSpace {
+		askSpace(a, o, lang, cmp.Or(o.Space, defaultSpaces(lang)[0]))
+		o.Language = lang
+		return []setup.Options{*o}
+	}
+	var spaces []setup.Options
+	for _, name := range defaultSpaces(lang) {
+		sp := setup.Options{Space: name, Language: lang}
+		defaults(&sp, lang)
+		spaces = append(spaces, sp)
+	}
+	return spaces
+}
+
+// askSpace asks for a space's name (def by default) and then its folders, which
+// default to those under ~/augmented-brain.
+func askSpace(a *asker, o *setup.Options, lang, def string) {
+	o.Space = a.ask(msg(lang, "space"), def)
+	defaults(o, lang)
+	o.WorkFolder = a.ask(msg(lang, "work"), o.WorkFolder)
+	o.Memory = a.ask(msg(lang, "memory"), o.Memory)
+}
+
+// createSpaces writes the configuration with the first space and adds the others,
+// saying what it created when verbose. With more than one, personal becomes the
+// default space.
+func createSpaces(spaces []setup.Options, lang string, verbose bool, out io.Writer) error {
+	dir, err := config.Dir()
+	if err != nil {
+		return err
+	}
+	for i, sp := range spaces {
+		create := setup.AddSpace
+		if i == 0 {
+			create = setup.Init
+		}
+		res, err := create(dir, sp)
+		if err != nil {
+			return err
+		}
+		if verbose {
+			report(out, lang, res)
+		}
+	}
+	if len(spaces) > 1 {
+		// Sessions outside every folder (the desktop app's scratch folder) use personal.
+		return config.SetDefaultSpace(dir, "personal")
+	}
+	return nil
+}
+
+// nextStep is init's last message: how to start working in the folder work. The
+// installer says, through the environment, what fits this machine.
+func nextStep(lang, work string) string {
 	next := "now"
 	switch {
 	case os.Getenv("AB_DESKTOP") == "1": // install.sh found the Claude desktop app
@@ -149,13 +176,12 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 	case os.Getenv("AB_NEW_TERMINAL") == "1": // set by install.sh when it changed the PATH
 		next = "newterm"
 	}
-	text := fmt.Sprintf(msg(*lang, next), spaces[0].WorkFolder)
+	text := fmt.Sprintf(msg(lang, next), work)
 	if runtime.GOOS == "windows" {
 		// Windows PowerShell 5.1, the one that comes with Windows, has no &&.
 		text = strings.ReplaceAll(text, " && claude", "; claude")
 	}
-	fmt.Fprintf(out, "\n%s\n", text)
-	return 0
+	return text
 }
 
 // installPlugin offers to install the Claude Code plugin. A failure here does not undo
@@ -179,6 +205,8 @@ func installPlugin(a *asker, lang string, out, errOut io.Writer) {
 	fmt.Fprintf(out, "\n%s\n", msg(lang, "plugin"))
 }
 
+// cmdSpaceAdd adds one space to the configuration, asking for its name and folders
+// unless --yes.
 func cmdSpaceAdd(args []string, in io.Reader, out, errOut io.Writer) int {
 	fs, o, yes, _ := spaceFlags("space add", errOut)
 	// The name may come first (space add personal --work ~/personal): Go's flag package
@@ -196,13 +224,10 @@ func cmdSpaceAdd(args []string, in io.Reader, out, errOut io.Writer) int {
 	if !ok {
 		return 1
 	}
-	dir, lang := c.Dir, c.Language
+	lang := c.Language
 	a := &asker{in: bufio.NewReader(in), out: out, interactive: !*yes}
-	o.Space = a.ask(msg(lang, "space"), o.Space)
-	defaults(o, lang)
-	o.WorkFolder = a.ask(msg(lang, "work"), o.WorkFolder)
-	o.Memory = a.ask(msg(lang, "memory"), o.Memory)
-	res, err := setup.AddSpace(dir, *o)
+	askSpace(a, o, lang, o.Space)
+	res, err := setup.AddSpace(c.Dir, *o)
 	if err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
@@ -215,16 +240,10 @@ func cmdSpaceAdd(args []string, in io.Reader, out, errOut io.Writer) int {
 	return 0
 }
 
+// report says where the configuration is and what was created.
 func report(out io.Writer, lang string, res *setup.Result) {
 	fmt.Fprintf(out, "\n%s %s\n%s\n", msg(lang, "config"), res.ConfigPath, msg(lang, "created"))
 	for _, p := range res.Created {
 		fmt.Fprintf(out, "  + %s\n", p)
 	}
-}
-
-func firstNonEmpty(a, b string) string {
-	if a != "" {
-		return a
-	}
-	return b
 }
