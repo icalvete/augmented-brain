@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.5.2-alpha
+
+Released 2026-11-02.
 
 From the first rehearsal of a real migration:
 
