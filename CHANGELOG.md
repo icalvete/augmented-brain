@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.5.9-alpha
+
+Released 2026-11-03.
 
 From a deep review of the code (architecture, the guard, and the rest of the security):
 
