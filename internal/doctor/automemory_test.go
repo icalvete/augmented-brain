@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/icalvete/augmented-brain/internal/claudecode"
+	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/setup"
 )
 
@@ -24,7 +25,11 @@ func TestAutoMemory(t *testing.T) {
 	if c := find(Run(env), "memory of its own"); c != nil {
 		t.Errorf("warned with no second memory: %+v", c)
 	}
-	if err := os.MkdirAll(filepath.Join(claude, "projects", claudecode.ProjectSlug(work), "memory"), 0o700); err != nil {
+	c, err := config.Load(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(claude, "projects", claudecode.ProjectSlug(c.Spaces["work"].WorkFolders[0]), "memory"), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	if c := find(Run(env), "memory of its own"); c == nil || c.Status != Warning {

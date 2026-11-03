@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"time"
 
@@ -301,9 +302,17 @@ func autoMemory(e Env, c *config.Config) []Check {
 	var found []string
 	for _, name := range c.SpaceNames() {
 		for _, w := range c.Spaces[name].WorkFolders {
-			mem := filepath.Join(dir, "projects", claudecode.ProjectSlug(w), "memory")
-			if _, err := os.Stat(mem); err == nil {
-				found = append(found, paths.Tilde(mem))
+			// Claude Code names the folder after the path it was opened with, which may
+			// or may not have its links resolved (/var and /private/var on macOS).
+			ways := []string{w}
+			if real, err := filepath.EvalSymlinks(w); err == nil && real != w {
+				ways = append(ways, real)
+			}
+			for _, p := range ways {
+				mem := filepath.Join(dir, "projects", claudecode.ProjectSlug(p), "memory")
+				if _, err := os.Stat(mem); err == nil && !slices.Contains(found, paths.Tilde(mem)) {
+					found = append(found, paths.Tilde(mem))
+				}
 			}
 		}
 	}
