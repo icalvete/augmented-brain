@@ -116,13 +116,13 @@ func TestAccess(t *testing.T) {
 			t.Errorf("%s: %d", p, w.Code)
 		}
 	}
-	// The session's address: its root goes to the tasks, and no cookie is ever set
+	// The session's address: its root goes to today, and no cookie is ever set
 	// (cookies of 127.0.0.1 would reach every other local port).
 	if w := s.do(t, req{path: s.base()}); w.Code != http.StatusSeeOther || w.Header().Get("Location") != s.base()+"/" {
 		t.Errorf("bare session: %d %q", w.Code, w.Header().Get("Location"))
 	}
 	w := s.do(t, req{path: s.base() + "/"})
-	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != s.base()+"/tasks" {
+	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != s.base()+"/today" {
 		t.Fatalf("root: %d %q", w.Code, w.Header().Get("Location"))
 	}
 	w = s.get(t, "/tasks?s=home")

@@ -27,6 +27,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode"
 
 	"gopkg.in/yaml.v3"
 
@@ -87,6 +88,7 @@ const (
 	ArchiveNoSpace = "archive-no-space" // an archive file that belongs to no note: left out
 	Present        = "present"          // an archive or docs/ file the space already has: left as it is
 	Secret         = "secret"           // a secret written in the file: imported, but the backup will refuse it
+	People         = "people"           // knowledge that lists people: imported as it is; each can become a person
 )
 
 // Plan is what Apply would write, and what it could not decide.
@@ -331,6 +333,9 @@ func (pl *planner) place() []planned {
 			}
 		}
 		pl.ids[n.Header.ID] = sp
+		if names := peopleIn(n); len(names) > 0 {
+			pl.p.Issues = append(pl.p.Issues, Issue{s.rel, People, strings.Join(names, ", ")})
+		}
 		all = append(all, planned{s, n, sp})
 	}
 	return all
@@ -779,4 +784,36 @@ func firstLine(s string, max int) string {
 		line = strings.TrimSpace(string(r[:max-1])) + "…"
 	}
 	return line
+}
+
+// peopleWords, in an id or a title, say a note is about people.
+var peopleWords = []string{"people", "persons", "contacts", "team", "personas", "contactos", "equipo", "gente"}
+
+// peopleIn returns the names in a piece of knowledge that lists people, one level-2
+// section each ("## Ana Ruiz"), when its id or title says it is about people. The
+// import keeps it as it is: people are notes of their own (person_save), and the report
+// names them so the assistant can save each one. Memories written before people had
+// notes kept them this way.
+func peopleIn(n *memory.Note) []string {
+	if n.Header.Type != "reference" && n.Header.Type != "lesson" {
+		return nil
+	}
+	// Whole words only: "personal" or "steam" say nothing about people.
+	words := strings.FieldsFunc(strings.ToLower(n.Header.ID+" "+n.Header.Title), func(r rune) bool {
+		return !unicode.IsLetter(r)
+	})
+	if !slices.ContainsFunc(words, func(w string) bool { return slices.Contains(peopleWords, w) }) {
+		return nil
+	}
+	lines := strings.Split(n.Body, "\n")
+	var names []string
+	for _, i := range memory.Headings(lines) {
+		if name := strings.TrimSpace(strings.TrimPrefix(lines[i], "## ")); name != "" {
+			names = append(names, name)
+		}
+	}
+	if len(names) < 2 {
+		return nil
+	}
+	return names
 }

@@ -102,6 +102,26 @@ func (b *Brain) findPerson(name string) (n *memory.Note, byAlias bool) {
 	return found, found != nil
 }
 
+// PersonParts reads a person's role and other names back from their summary, as
+// SavePerson wrote them: what an edit form starts from.
+func PersonParts(n *memory.Note) (role string, aliases []string) {
+	role = n.Header.Summary
+	for _, also := range i18n.All("person.also") {
+		if i := strings.LastIndex(role, also+": "); i >= 0 {
+			role = strings.TrimSuffix(strings.TrimSpace(role[:i]), "·")
+			break
+		}
+	}
+	return strings.TrimSpace(role), aliasesOf(n.Header.Summary)
+}
+
+// PersonNamed returns the person a name points at (their name or another of theirs,
+// in any case), when only one does.
+func (b *Brain) PersonNamed(name string) *memory.Note {
+	n, _ := b.findPerson(strings.TrimSpace(name))
+	return n
+}
+
 // aliasesOf reads the other names back from a person's summary ("… · also: A, B").
 func aliasesOf(summary string) []string {
 	for _, also := range i18n.All("person.also") {

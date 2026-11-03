@@ -603,6 +603,23 @@ func (b *Brain) NewArea(title, summary string) (*memory.Note, error) {
 	return n, b.save(n)
 }
 
+// UpdateArea changes an area's title and summary; an empty one keeps what it says. The
+// id stays, so every task in the area stays in it.
+func (b *Brain) UpdateArea(id, title, summary string) (*memory.Note, error) {
+	old, err := b.get(id, "area")
+	if err != nil {
+		return nil, err
+	}
+	cp := *old
+	if t := strings.TrimSpace(title); t != "" {
+		cp.Header.Title = t
+	}
+	if s := strings.TrimSpace(summary); s != "" {
+		cp.Header.Summary = s
+	}
+	return &cp, b.save(&cp)
+}
+
 // NewKnowledge saves a reference (how something works) or a lesson (what was learned).
 func (b *Brain) NewKnowledge(kind, title, summary, area, body string) (*memory.Note, error) {
 	if kind != "reference" && kind != "lesson" {

@@ -53,6 +53,25 @@ func (b *Brain) MissingRepos(n *memory.Note) []string {
 	return out
 }
 
+// RepoPath returns where a repository of a note is on this computer: the absolute or ~
+// path as it is, or the first work folder that has it. ok is false when it is in none.
+func (b *Brain) RepoPath(r string) (string, bool) {
+	r = strings.TrimSpace(r)
+	if r == "" {
+		return "", false
+	}
+	if strings.HasPrefix(r, "~") || filepath.IsAbs(r) {
+		p, err := paths.Resolve(r)
+		return p, err == nil && isDir(p)
+	}
+	for _, wf := range b.Space.WorkFolders {
+		if p := filepath.Join(wf, filepath.FromSlash(r)); isDir(p) {
+			return p, true
+		}
+	}
+	return "", false
+}
+
 func (b *Brain) repoHere(r string) bool {
 	if strings.HasPrefix(r, "~") || filepath.IsAbs(r) {
 		p, err := paths.Resolve(r)

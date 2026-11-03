@@ -438,8 +438,8 @@ func pickDue(due []brain.Reminder, max int) ([]brain.Reminder, int) {
 // mentioned too, so it can be prepared.
 const soonDays = 7
 
-// dueNote lists what comes up today: watch dates and inbox reminders due today or
-// tomorrow, and those already past.
+// dueNote lists what comes up: watch dates and inbox reminders due in the next
+// soonDays days, and those already past.
 func dueNote(b *brain.Brain) string {
 	due := b.Reminders(soonDays)
 	if len(due) == 0 {

@@ -3,6 +3,10 @@ package i18n
 // What the program writes into the notes themselves: journal lines, the profile's
 // headings, the index MEMORY.md. They follow the user's language when written.
 var noteMessages = map[string]msg{
+	"note.journal": {
+		en: "Journal",
+		es: "Diario",
+	},
 	"note.next": {
 		en: "Agree on the definition",
 		es: "Acordar la definición",

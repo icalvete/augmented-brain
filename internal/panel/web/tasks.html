@@ -1,19 +1,24 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "tasks"}}</h1>
-{{if .Live}}
+<nav class="filters">{{range .Filters}}<a href="{{$.Base}}/tasks?s={{$.Space}}{{if .Key}}&amp;f={{.Key}}{{end}}"{{if .On}} aria-current="true"{{end}}>{{.Label}}</a>{{end}}</nav>
+{{if .People}}<nav class="filters people"><span class="hint">{{t "filter.waits"}}</span>{{range .People}}<a href="{{$.Base}}/tasks?s={{$.Space}}&amp;who={{.Key}}"{{if .On}} aria-current="true"{{end}}>{{.Label}}</a>{{end}}</nav>{{end}}
+{{if lt .Shown .Total}}<p class="hint">{{tf "filter.shown" .Shown .Total}}</p>{{end}}
+{{if .Groups}}{{range .Groups}}
+<h2>{{.Title}} <span class="hint">· {{len .Tasks}}</span></h2>
 <ul class="cards">
-{{range .Live}}
+{{range .Tasks}}
   <li class="card{{if .Mine}} mine{{end}}{{if .Sub}} sub{{end}}">
     <a class="title" href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
     <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span>
-      {{if .Mine}}<span class="badge you">{{t "waits.you"}}</span>{{else if .WaitingOn}}<span>{{t "waits"}}: {{.WaitingOn}}</span>{{end}}
+      {{if .Mine}}<span class="badge you">{{t "waits.you"}}</span>{{else if .WaitingOn}}<span>{{t "waits"}}: {{if eq .WaitingOn "nobody"}}{{t "nobody"}}{{else if .PersonID}}<a href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.PersonID}}">{{.WaitingOn}}</a>{{else}}{{.WaitingOn}}{{end}}</span>{{end}}
+      {{if .Stale}}<span class="badge warn">{{tf "stale" .Stale}}</span>{{end}}
       {{if .Steps}}<span>{{.Steps}}</span>{{end}}
-      {{if .PartOf}}<span>{{t "partof"}}: {{.PartOf}}</span>{{else if not .Sub}}{{if .AreaTitle}}<span>{{.AreaTitle}}</span>{{end}}{{end}}</div>
-    {{if .Next}}<div class="next">{{t "next"}}: {{.Next}}</div>{{end}}
+      {{if .PartOf}}<span>{{t "partof"}}: {{.PartOf}}</span>{{end}}</div>
+    {{if .Next}}<div class="next">{{t "next"}}: {{inline .Next}}</div>{{end}}
   </li>
 {{end}}
 </ul>
-{{else}}<p class="empty">{{t "tasks.none"}}</p>{{end}}
+{{end}}{{else}}<p class="empty">{{t "tasks.none"}}</p>{{end}}
 
 <details class="box">
   <summary>{{t "task.new"}}</summary>

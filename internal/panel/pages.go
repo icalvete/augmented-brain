@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -17,9 +18,10 @@ import (
 func (s *Server) routes() *http.ServeMux {
 	m := http.NewServeMux()
 	m.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, s.base()+"/tasks", http.StatusSeeOther)
+		http.Redirect(w, r, s.base()+"/today", http.StatusSeeOther)
 	})
 	m.Handle("GET /static/", s.static)
+	m.HandleFunc("GET /today", s.read("today", s.today))
 	m.HandleFunc("GET /tasks", s.read("tasks", s.tasks))
 	m.HandleFunc("GET /task", s.read("tasks", s.task))
 	m.HandleFunc("GET /reminders", s.read("reminders", s.reminders))
@@ -29,6 +31,10 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("GET /rules", s.read("rules", s.rules))
 	m.HandleFunc("GET /people", s.read("people", s.people))
 	m.HandleFunc("GET /note", s.read("", s.note))
+	m.HandleFunc("GET /stamp", s.stamp)
+	m.HandleFunc("GET /search", s.read("search", s.search))
+	m.HandleFunc("GET /review", s.read("review", s.review))
+	m.HandleFunc("GET /secrets", s.read("secrets", s.secrets))
 	m.HandleFunc("GET /profile", s.read("profile", s.profile))
 	m.HandleFunc("GET /space", s.read("space", s.space))
 	m.HandleFunc("GET /sessions", s.read("sessions", s.sessions))
@@ -44,6 +50,13 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /inbox/capture", s.write(s.capture))
 	m.HandleFunc("POST /inbox/done", s.write(s.inboxDone))
 	m.HandleFunc("POST /area/new", s.write(s.areaNew))
+	m.HandleFunc("POST /area/update", s.write(s.areaUpdate))
+	m.HandleFunc("POST /person", s.write(s.personSave))
+	m.HandleFunc("POST /secret", s.write(s.secretSave))
+	m.HandleFunc("POST /secret/forget", s.write(s.secretForget))
+	m.HandleFunc("POST /review/capture", s.write(s.reviewCapture))
+	m.HandleFunc("POST /review/task", s.write(s.reviewTask))
+	m.HandleFunc("POST /review/done", s.write(s.reviewDone))
 	m.HandleFunc("POST /profile", s.write(s.profileSave))
 	m.HandleFunc("POST /session/recover", s.write(s.sessionRecover))
 	m.HandleFunc("POST /session/reviewed", s.write(s.sessionReviewed))
@@ -117,7 +130,7 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 		p.Lang = "en"
 	}
 	p.CSRF, p.Base = s.csrf, s.base()
-	for _, sec := range []string{"tasks", "reminders", "inbox", "areas", "knowledge", "rules", "people", "sessions", "space"} {
+	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "secrets", "sessions", "space"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
 	}
 	var buf bytes.Buffer
@@ -136,6 +149,10 @@ type view struct {
 	b      *brain.Brain
 	shared *memory.Memory // the notes every space sees: shown, never written here
 	lang   string
+	// unlock lets the notes go before the page is done: a page that then runs slow
+	// commands (git, the keychain) no longer makes Claude wait. Calling it again, or
+	// the handler's own release after it, does nothing.
+	unlock func()
 }
 
 var errNoSpace = errors.New("no such space")
@@ -174,7 +191,8 @@ func (s *Server) open(r *http.Request) (*view, func(), error) {
 	if err != nil {
 		shared = &memory.Memory{Dir: c.SharedDir(), Notes: map[string]*memory.Note{}}
 	}
-	return &view{c: c, b: b, shared: shared, lang: c.Language}, release, nil
+	once := sync.OnceFunc(release)
+	return &view{c: c, b: b, shared: shared, lang: c.Language, unlock: once}, once, nil
 }
 
 func (v *view) t(key string, args ...any) string { return i18n.T(v.lang, "panel."+key, args...) }
@@ -218,8 +236,12 @@ func (s *Server) read(section string, h func(*view, *http.Request) (string, page
 			s.fail(w, r, v, http.StatusBadRequest, err)
 			return
 		}
-		name, p, err := h(v, r)
-		release()
+		var name string
+		var p page
+		func() {
+			defer release() // a handler that fails half way never keeps the notes locked
+			name, p, err = h(v, r)
+		}()
 		if err != nil {
 			s.fail(w, r, v, http.StatusNotFound, err)
 			return
@@ -243,11 +265,14 @@ func (s *Server) write(h func(*view, *http.Request) (string, error)) http.Handle
 			s.fail(w, r, v, http.StatusBadRequest, err)
 			return
 		}
-		to, err := h(v, r)
-		if err == nil {
-			_, err = v.b.Mem.WriteIndex(v.lang)
-		}
-		release()
+		var to string
+		func() {
+			defer release()
+			to, err = h(v, r)
+			if err == nil {
+				_, err = v.b.Mem.WriteIndex(v.lang)
+			}
+		}()
 		if err != nil {
 			s.fail(w, r, v, http.StatusBadRequest, err)
 			return

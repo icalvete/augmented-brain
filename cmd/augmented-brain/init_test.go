@@ -225,7 +225,7 @@ func TestPanelAddress(t *testing.T) {
 		t.Fatal(err)
 	}
 	base := "http://127.0.0.1:1/s/x/"
-	if got := panelAddress(c, base, filepath.Join(h, "augmented-brain", "trabajo", "web")); got != base+"tasks?s=trabajo" {
+	if got := panelAddress(c, base, filepath.Join(h, "augmented-brain", "trabajo", "web")); got != base+"today?s=trabajo" {
 		t.Errorf("in trabajo: %s", got)
 	}
 	if got := panelAddress(c, base, t.TempDir()); got != base {

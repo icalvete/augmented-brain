@@ -2,6 +2,390 @@ package i18n
 
 // The panel's pages.
 var panelMessages = map[string]msg{
+	"panel.today": {
+		en: "Today",
+		es: "Hoy",
+	},
+	"panel.today.hint": {
+		en: "What every space asks of you now, and the work that is only on this computer.",
+		es: "Lo que te pide cada espacio ahora, y el trabajo que solo está en este ordenador.",
+	},
+	"panel.today.nothing": {
+		en: "Nothing asks for you today.",
+		es: "Hoy no hay nada que te espere.",
+	},
+	"panel.today.space": {
+		en: "Space %s",
+		es: "Espacio %s",
+	},
+	"panel.today.counts": {
+		en: "%d under way, %d parked",
+		es: "%d en marcha, %d aparcadas",
+	},
+	"panel.today.inbox": {
+		en: "%d in the inbox",
+		es: "%d en el buzón",
+	},
+	"panel.today.review": {
+		en: "weekly review due (%d days)",
+		es: "toca la revisión semanal (%d días)",
+	},
+	"panel.today.dead": {
+		en: "%d sessions cut off",
+		es: "%d sesiones cortadas",
+	},
+	"panel.today.reminders": {
+		en: "Due this week",
+		es: "Avisos de esta semana",
+	},
+	"panel.today.mine": {
+		en: "Waiting on you",
+		es: "Te esperan a ti",
+	},
+	"panel.repos": {
+		en: "Repositories",
+		es: "Repositorios",
+	},
+	"panel.repos.hint": {
+		en: "The repositories your open tasks name (their repos:), when they hold changes not committed or commits not pushed. Read only: commit and push stay with git.",
+		es: "Los repositorios que nombran tus tareas abiertas (su repos:), cuando tienen cambios sin commit o commits sin subir. Solo se leen: el commit y el push siguen en git.",
+	},
+	"panel.repos.none": {
+		en: "No repository holds work that is only here.",
+		es: "Ningún repositorio tiene trabajo que solo esté aquí.",
+	},
+	"panel.repos.clean": {
+		en: "%d more, with nothing pending.",
+		es: "%d más, sin nada pendiente.",
+	},
+	"panel.repos.forgotten": {
+		en: "forgotten?",
+		es: "¿olvidado?",
+	},
+	"panel.repos.changed": {
+		en: "%d files changed",
+		es: "%d ficheros cambiados",
+	},
+	"panel.repos.ahead": {
+		en: "%d commits not pushed",
+		es: "%d commits sin subir",
+	},
+	"panel.repos.noupstream": {
+		en: "branch never pushed",
+		es: "rama nunca subida",
+	},
+	"panel.repos.unreadable": {
+		en: "git could not read it",
+		es: "git no ha podido leerlo",
+	},
+	"panel.filter.all": {
+		en: "All",
+		es: "Todas",
+	},
+	"panel.filter.me": {
+		en: "Waiting on you",
+		es: "Te esperan",
+	},
+	"panel.filter.active": {
+		en: "Under way",
+		es: "En marcha",
+	},
+	"panel.filter.parked": {
+		en: "Parked",
+		es: "Aparcadas",
+	},
+	"panel.filter.stale": {
+		en: "Untouched",
+		es: "Paradas",
+	},
+	"panel.filter.waits": {
+		en: "Waiting on:",
+		es: "Esperan a:",
+	},
+	"panel.filter.shown": {
+		en: "Showing %d of %d.",
+		es: "Se ven %d de %d.",
+	},
+	"panel.stale": {
+		en: "untouched %d days",
+		es: "parada %d días",
+	},
+	"panel.person.new": {
+		en: "New person",
+		es: "Nueva persona",
+	},
+	"panel.person.hint": {
+		en: "So that a first name, in a task or in what you tell Claude, leads to the right person.",
+		es: "Para que un nombre de pila, en una tarea o en lo que le dices a Claude, lleve a la persona que es.",
+	},
+	"panel.person.edit": {
+		en: "Change",
+		es: "Cambiar",
+	},
+	"panel.person.edit.hint": {
+		en: "The name stays: a new name would be a new person. Left empty, the notes keep what they say.",
+		es: "El nombre se queda: un nombre nuevo sería otra persona. Si dejas las notas vacías, siguen como están.",
+	},
+	"panel.person.waiting": {
+		en: "Waiting on them",
+		es: "Le esperan",
+	},
+	"panel.person.named": {
+		en: "Tasks that name them",
+		es: "Tareas que la nombran",
+	},
+	"panel.people.waiting": {
+		en: "%d tasks wait on them",
+		es: "le esperan %d tareas",
+	},
+	"panel.f.aliases": {
+		en: "Other names",
+		es: "Otros nombres",
+	},
+	"panel.f.aliases.hint": {
+		en: "separated by commas",
+		es: "separados por comas",
+	},
+	"panel.f.role": {
+		en: "Who they are to you",
+		es: "Quién es para ti",
+	},
+	"panel.f.notes": {
+		en: "Notes",
+		es: "Notas",
+	},
+	"panel.nobody": {
+		en: "nobody",
+		es: "nadie",
+	},
+	"panel.search": {
+		en: "Search",
+		es: "Buscar",
+	},
+	"panel.search.side": {
+		en: "Search the notes…",
+		es: "Buscar en las notas…",
+	},
+	"panel.search.hint": {
+		en: "Words in a title, a summary or the text",
+		es: "Palabras de un título, un resumen o el texto",
+	},
+	"panel.search.go": {
+		en: "Search",
+		es: "Buscar",
+	},
+	"panel.search.found": {
+		en: "%d notes hold every word.",
+		es: "%d notas tienen todas las palabras.",
+	},
+	"panel.search.more": {
+		en: "And %d more: add a word to narrow it.",
+		es: "Y %d más: añade una palabra para afinar.",
+	},
+	"panel.search.none": {
+		en: "No note holds every word.",
+		es: "Ninguna nota tiene todas las palabras.",
+	},
+	"panel.review": {
+		en: "Weekly review",
+		es: "Revisión semanal",
+	},
+	"panel.review.last": {
+		en: "Last one: %s",
+		es: "La última: %s",
+	},
+	"panel.review.never": {
+		en: "There has been none yet.",
+		es: "Aún no se ha hecho ninguna.",
+	},
+	"panel.review.hint": {
+		en: "About ten minutes: each capture becomes a task or knowledge, or is dropped; each task untouched for two weeks goes on, waits for some day, or you open it to close it.",
+		es: "Unos diez minutos: cada captura pasa a tarea o a conocimiento, o se descarta; cada tarea sin tocar dos semanas sigue, pasa a algún día, o la abres para cerrarla.",
+	},
+	"panel.review.as.task": {
+		en: "New task",
+		es: "Tarea nueva",
+	},
+	"panel.review.as.reference": {
+		en: "Reference",
+		es: "Referencia",
+	},
+	"panel.review.as.lesson": {
+		en: "Lesson",
+		es: "Lección",
+	},
+	"panel.review.as.drop": {
+		en: "Drop it",
+		es: "Descartar",
+	},
+	"panel.review.title.hint": {
+		en: "Title (the capture, if empty)",
+		es: "Título (la captura, si lo dejas vacío)",
+	},
+	"panel.review.do": {
+		en: "Do it",
+		es: "Hecho",
+	},
+	"panel.review.stale": {
+		en: "Untouched for two weeks or more",
+		es: "Paradas: dos semanas o más sin tocar",
+	},
+	"panel.review.stale.none": {
+		en: "Every live task was touched in the last two weeks.",
+		es: "Todas las tareas vivas se han tocado en las dos últimas semanas.",
+	},
+	"panel.review.updated": {
+		en: "last change %s",
+		es: "último cambio %s",
+	},
+	"panel.review.keep": {
+		en: "Goes on",
+		es: "Sigue",
+	},
+	"panel.review.someday": {
+		en: "Some day",
+		es: "Algún día",
+	},
+	"panel.review.open": {
+		en: "Open it to close it",
+		es: "Abrirla para cerrarla",
+	},
+	"panel.review.kept": {
+		en: "Looked at in the weekly review: it goes on as it is.",
+		es: "Repasada en la revisión semanal: sigue como está.",
+	},
+	"panel.review.someday.next": {
+		en: "look at it again when there is time",
+		es: "volver a mirarla cuando haya tiempo",
+	},
+	"panel.review.finish": {
+		en: "Finish",
+		es: "Terminar",
+	},
+	"panel.review.draft": {
+		en: "Decided so far, kept with the review when you finish:",
+		es: "Lo decidido hasta ahora, que se guarda con la revisión al terminar:",
+	},
+	"panel.review.summary": {
+		en: "Anything to add (optional)",
+		es: "Algo que añadir (opcional)",
+	},
+	"panel.review.summary.default": {
+		en: "Weekly review, done in the panel.",
+		es: "Revisión semanal, hecha en el panel.",
+	},
+	"panel.review.done": {
+		en: "Finish the review",
+		es: "Terminar la revisión",
+	},
+	"panel.review.line.task": {
+		en: "Capture → task %s (%s)",
+		es: "Captura → tarea %s (%s)",
+	},
+	"panel.review.line.knowledge": {
+		en: "Capture → knowledge %s (%s)",
+		es: "Captura → conocimiento %s (%s)",
+	},
+	"panel.review.line.drop": {
+		en: "Capture dropped: %s",
+		es: "Captura descartada: %s",
+	},
+	"panel.review.line.keep": {
+		en: "%s goes on",
+		es: "%s sigue",
+	},
+	"panel.review.line.someday": {
+		en: "%s → some day",
+		es: "%s → algún día",
+	},
+	"panel.f.as": {
+		en: "What it becomes",
+		es: "En qué se convierte",
+	},
+	"panel.inbox.totask": {
+		en: "Make it a task",
+		es: "Convertir en tarea",
+	},
+	"panel.changed": {
+		en: "This note changed since the page opened.",
+		es: "Esta nota ha cambiado desde que abriste la página.",
+	},
+	"panel.changed.reload": {
+		en: "See it as it is now",
+		es: "Verla como está ahora",
+	},
+	"panel.area.edit": {
+		en: "Change",
+		es: "Cambiar",
+	},
+	"panel.secrets": {
+		en: "Secrets",
+		es: "Secretos",
+	},
+	"panel.secrets.hint": {
+		en: "The secrets you keep in this computer's keychain, by name: never their values. So you know which there are and what each is for, and a new machine knows which to ask you for. The same list in every space.",
+		es: "Los secretos que guardas en el llavero de este ordenador, por su nombre: nunca su valor. Para saber cuáles hay y para qué sirve cada uno, y que una máquina nueva sepa cuáles pedirte. La misma lista en todos los espacios.",
+	},
+	"panel.secrets.none": {
+		en: "No secret is named yet.",
+		es: "Aún no hay ningún secreto apuntado.",
+	},
+	"panel.secrets.bad": {
+		en: "%d entries of the list cannot be read: they are written as service/name: what it is for.",
+		es: "%d entradas de la lista no se pueden leer: se escriben servicio/nombre: para qué sirve.",
+	},
+	"panel.secrets.check": {
+		en: "Check the keychain",
+		es: "Comprobar en el llavero",
+	},
+	"panel.secrets.check.hint": {
+		en: "asks whether each one is there, without reading it; a locked keychain asks for its password",
+		es: "pregunta si está cada uno, sin leerlo; si el llavero está bloqueado, el sistema pide su contraseña",
+	},
+	"panel.secrets.present": {
+		en: "in the keychain",
+		es: "en el llavero",
+	},
+	"panel.secrets.missing": {
+		en: "not on this computer",
+		es: "no está en este ordenador",
+	},
+	"panel.secrets.unknown": {
+		en: "cannot tell here",
+		es: "aquí no se puede saber",
+	},
+	"panel.secrets.used": {
+		en: "Named in:",
+		es: "Lo nombran:",
+	},
+	"panel.secrets.forget": {
+		en: "Take it off the list",
+		es: "Quitarlo de la lista",
+	},
+	"panel.secrets.forget.confirm": {
+		en: "Only its name leaves the list: the secret stays in the keychain.",
+		es: "Solo sale su nombre de la lista: el secreto sigue en el llavero.",
+	},
+	"panel.secrets.add": {
+		en: "Name a secret",
+		es: "Apuntar un secreto",
+	},
+	"panel.secrets.add.hint": {
+		en: "Its service and name in the keychain, and what it is for. Never its value: that stays in the keychain.",
+		es: "Su servicio y su nombre en el llavero, y para qué sirve. Nunca su valor: ese se queda en el llavero.",
+	},
+	"panel.f.service": {
+		en: "Service",
+		es: "Servicio",
+	},
+	"panel.err.secretname": {
+		en: "Service and name are one word each (letters, digits, . _ @ + -, not starting with -), and what it is for is one line of plain text.",
+		es: "Servicio y nombre son una palabra cada uno (letras, cifras, . _ @ + -, sin empezar por -), y para qué sirve, una línea de texto sencillo.",
+	},
+	"panel.err.secretvalue": {
+		en: "That looks like the secret itself. Write only its name and what it is for.",
+		es: "Eso parece el secreto mismo. Escribe solo su nombre y para qué sirve.",
+	},
 	"panel.tasks": {
 		en: "Tasks",
 		es: "Tareas",
@@ -186,6 +570,14 @@ var panelMessages = map[string]msg{
 		en: "Open the subtask",
 		es: "Abrir la subtarea",
 	},
+	"panel.journal.count": {
+		en: "%d entries",
+		es: "%d entradas",
+	},
+	"panel.journal.newest": {
+		en: "newest first",
+		es: "lo último primero",
+	},
 	"panel.task.body": {
 		en: "The whole task",
 		es: "La tarea entera",
@@ -303,8 +695,8 @@ var panelMessages = map[string]msg{
 		es: "Apuntar",
 	},
 	"panel.inbox.hint": {
-		en: "The weekly review goes through the inbox: each capture becomes a task, goes to an area or knowledge, or is dropped. Mark one as dealt with when it is.",
-		es: "La revisión semanal repasa el buzón: cada apunte se convierte en tarea, va a un área o al conocimiento, o se descarta. Márcalo como resuelto cuando lo esté.",
+		en: "The weekly review goes through the inbox: each capture becomes a task or knowledge, or is dropped. Make one a task here, or mark it as dealt with when it is.",
+		es: "La revisión semanal repasa el buzón: cada apunte se convierte en tarea o en conocimiento, o se descarta. Aquí puedes convertirlo en tarea, o marcarlo como resuelto cuando lo esté.",
 	},
 	"panel.inbox.done": {
 		en: "Dealt with",
@@ -573,6 +965,22 @@ var panelMessages = map[string]msg{
 	"panel.days.today": {
 		en: "today",
 		es: "hoy",
+	},
+	"panel.days.tomorrow": {
+		en: "tomorrow",
+		es: "mañana",
+	},
+	"panel.days.yesterday": {
+		en: "1 day late",
+		es: "1 día de retraso",
+	},
+	"panel.today.dead1": {
+		en: "1 session cut off",
+		es: "1 sesión cortada",
+	},
+	"panel.today.parkedmine": {
+		en: "Parked, waiting on a decision of yours:",
+		es: "Aparcadas, a la espera de una decisión tuya:",
 	},
 	"panel.days.late": {
 		en: "%d days late",

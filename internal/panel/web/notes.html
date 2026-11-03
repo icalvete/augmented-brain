@@ -3,6 +3,18 @@
 <p class="hint">{{.Hint}}</p>
 {{if .Rows}}<ul class="cards">
 {{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
-  <div class="meta">{{if .Kind}}<span class="badge">{{.Kind}}</span>{{end}}{{if .Shared}}<span class="badge">{{t "shared"}}</span>{{end}}{{if .Summary}}<span>{{.Summary}}</span>{{end}}</div></li>{{end}}
+  <div class="meta">{{if .Kind}}<span class="badge">{{.Kind}}</span>{{end}}{{if .Shared}}<span class="badge">{{t "shared"}}</span>{{end}}{{if .Summary}}<span>{{inline .Summary}}</span>{{end}}</div></li>{{end}}
 </ul>{{else}}<p class="empty">{{.Empty}}</p>{{end}}
+{{if .NewPerson}}<details class="box">
+  <summary>{{t "person.new"}}</summary>
+  <form method="post" action="{{$.Base}}/person" class="stack">
+    {{template "fields" (fields $)}}
+    <label>{{t "f.name"}} <input name="name" required maxlength="200"></label>
+    <label>{{t "f.aliases"}} <input name="aliases" maxlength="500" placeholder="{{t "f.aliases.hint"}}"></label>
+    <label>{{t "f.role"}} <input name="role" maxlength="300"></label>
+    <label>{{t "f.notes"}} <textarea name="notes" rows="4" maxlength="8000"></textarea></label>
+    <p class="hint">{{t "person.hint"}}</p>
+    <button type="submit">{{t "create"}}</button>
+  </form>
+</details>{{end}}
 {{end}}{{end}}

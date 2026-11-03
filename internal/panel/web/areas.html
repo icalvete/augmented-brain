@@ -3,7 +3,7 @@
 <p class="hint">{{t "areas.hint"}}</p>
 {{if .Rows}}<ul class="cards">
 {{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
-  <div class="meta">{{if .Summary}}<span>{{.Summary}}</span>{{end}}<span class="badge">{{tf "areas.tasks" .Count}}</span></div></li>{{end}}
+  <div class="meta">{{if .Summary}}<span>{{inline .Summary}}</span>{{end}}<span class="badge">{{tf "areas.tasks" .Count}}</span></div></li>{{end}}
 </ul>{{else}}<p class="empty">{{t "areas.none"}}</p>{{end}}
 <details class="box">
   <summary>{{t "area.new"}}</summary>

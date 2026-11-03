@@ -4,6 +4,9 @@ import (
 	"errors"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
+	"strconv"
 
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
@@ -31,6 +34,42 @@ func (s *Server) areas(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("areas", v.t("areas"))
 	p.D = struct{ Rows []row }{rows}
 	return "areas", p, nil
+}
+
+func (s *Server) areaUpdate(v *view, r *http.Request) (string, error) {
+	id := field(r, "id")
+	if _, err := v.b.UpdateArea(id, field(r, "title"), field(r, "summary")); err != nil {
+		return "", err
+	}
+	return "/note?id=" + url.QueryEscape(id), nil
+}
+
+// stamp says when a note last changed on disk, so an open page can tell it is behind.
+// It is what the page's script asks for now and then; asking does not count as using
+// the panel (see ServeHTTP), so an open tab never keeps it running.
+func (s *Server) stamp(w http.ResponseWriter, r *http.Request) {
+	v, release, err := s.open(r)
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	defer release()
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	_, _ = w.Write([]byte(v.stampOf(r.FormValue("id"))))
+}
+
+// stampOf is the time a note of the space was last written, in nanoseconds; "" when
+// there is no such note.
+func (v *view) stampOf(id string) string {
+	n, ok := v.b.Mem.Notes[id]
+	if !ok {
+		return ""
+	}
+	info, err := os.Stat(filepath.Join(v.b.Mem.Dir, filepath.FromSlash(n.Path)))
+	if err != nil {
+		return ""
+	}
+	return strconv.FormatInt(info.ModTime().UnixNano(), 10)
 }
 
 func (s *Server) areaNew(v *view, r *http.Request) (string, error) {
@@ -65,23 +104,33 @@ func (v *view) list(types ...string) []noteRow {
 type notesData struct {
 	Heading, Hint, Empty string
 	Rows                 []noteRow
+	NewPerson            bool // the people page: a form to add one
 }
 
 func (s *Server) knowledge(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("knowledge", v.t("knowledge"))
-	p.D = notesData{v.t("knowledge"), v.t("knowledge.hint"), v.t("knowledge.none"), v.list("reference", "lesson")}
+	p.D = notesData{v.t("knowledge"), v.t("knowledge.hint"), v.t("knowledge.none"), v.list("reference", "lesson"), false}
 	return "notes", p, nil
 }
 
 func (s *Server) rules(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("rules", v.t("rules"))
-	p.D = notesData{v.t("rules"), v.t("rules.hint"), v.t("rules.none"), v.list("rule")}
+	p.D = notesData{v.t("rules"), v.t("rules.hint"), v.t("rules.none"), v.list("rule"), false}
 	return "notes", p, nil
 }
 
 func (s *Server) people(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("people", v.t("people"))
-	p.D = notesData{v.t("people"), v.t("people.hint"), v.t("people.none"), v.list("person")}
+	rows := v.list("person")
+	// Each person says how many live tasks wait on them.
+	for i := range rows {
+		if n, ok := v.b.Mem.Notes[rows[i].ID]; ok {
+			if w := len(v.person(n).Waiting); w > 0 {
+				rows[i].Kind = v.t("people.waiting", w)
+			}
+		}
+	}
+	p.D = notesData{v.t("people"), v.t("people.hint"), v.t("people.none"), rows, true}
 	return "notes", p, nil
 }
 
@@ -112,6 +161,11 @@ func (s *Server) note(v *view, r *http.Request) (string, page, error) {
 			}
 		}
 	}
+	var person *personData
+	if n.Header.Type == "person" && !shared {
+		d := v.person(n)
+		person = &d
+	}
 	p := v.frame(section, n.Header.Title)
 	p.D = struct {
 		H                     memory.Header
@@ -119,6 +173,10 @@ func (s *Server) note(v *view, r *http.Request) (string, page, error) {
 		Back                  string
 		Tasks                 []taskRow
 		Shared                bool
-	}{n.Header, n.Body, v.t("kind." + n.Header.Type), v.areaTitle(n.Header.Area), v.t(section), tasks, shared}
+		Sections              []bodySection
+		Person                *personData
+		Stamp                 string
+	}{n.Header, n.Body, v.t("kind." + n.Header.Type), v.areaTitle(n.Header.Area), v.t(section), tasks, shared,
+		v.sections(n.Body, false), person, v.stampOf(id)}
 	return "note", p, nil
 }

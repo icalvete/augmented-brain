@@ -51,6 +51,9 @@ func twoSpaces(t *testing.T, root string) (*config.Config, string, string) {
 	if err := config.SetTopList(cfg, "untouchable_hosts", []string{"db01"}); err != nil {
 		t.Fatal(err)
 	}
+	if err := config.SetTopList(cfg, "secrets", []string{"mail/smtp: sending mail"}); err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(filepath.Join(cfg, "profile.md"), []byte("---\nid: profile\ntype: profile\ntitle: Profile\n---\n- Name: Dana\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -146,6 +149,13 @@ func TestProfileOnlyInTheDefaultSpace(t *testing.T) {
 	}
 	if c2, err := config.Load(cfg2); err != nil || len(c2.UntouchableHosts) != 0 {
 		t.Errorf("lists after restore: %v %v", c2, err)
+	}
+	// The names of the secrets come with the default space; never with another one.
+	if text, _ := show(t, workRemote, MetaDir+"/config.toml"); strings.Contains(text, "mail/smtp") {
+		t.Error("the work backup holds the secrets list")
+	}
+	if c2, err := config.Load(cfg2); err != nil || strings.Join(c2.Secrets, "|") != "mail/smtp: sending mail" {
+		t.Errorf("secrets after restoring the default space: %v %v", c2.Secrets, err)
 	}
 	// personal was the default space, and is again: its backup goes on carrying the
 	// profile and the shared notes.

@@ -416,6 +416,16 @@ func New(open Resolver, lockFile string) *mcp.Server {
 			return b.SaveSafety(brain.SafetyInput{ProductionAWSProfiles: in.ProductionAWSProfiles, UntouchableHosts: in.UntouchableHosts})
 		})
 
+	type secretIn struct {
+		Service string `json:"service" jsonschema:"the service the secret is kept under in the system keychain, e.g. telegram"`
+		Name    string `json:"name" jsonschema:"its name under that service, e.g. alerts-bot"`
+		What    string `json:"what,omitempty" jsonschema:"what it is for, in a few words"`
+	}
+	tool(s, locked, "secret_name_save", "Write down the name of a secret the user keeps in the system keychain (service and name) and what it is for, so they and a new machine know which secrets there are. Never its value: a value is refused. Use it when the user stores a new secret. Saving a name that is listed changes what it is for. The list is the same in every space; the panel shows it.",
+		func(b *brain.Brain, in secretIn) (string, error) {
+			return b.SaveSecretName(brain.SecretName{Service: in.Service, Name: in.Name, What: in.What})
+		})
+
 	type backupIn struct {
 		RepoURL string `json:"repo_url,omitempty" jsonschema:"a private git repository the user can push to; leave it out to create one in their GitHub account"`
 	}

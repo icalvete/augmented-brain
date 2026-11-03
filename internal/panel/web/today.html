@@ -1,0 +1,49 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "today"}}</h1>
+<p class="hint">{{t "today.hint"}}</p>
+{{if .Nothing}}<p class="empty">{{t "today.nothing"}}</p>{{end}}
+
+{{range .Spaces}}{{$sp := .Name}}
+<section class="space-block">
+  <h2>{{tf "today.space" .Name}} <span class="hint">· {{tf "today.counts" .Live .Parked}}</span></h2>
+  <ul class="pills">
+    {{if .Inbox}}<li><a href="{{$.Base}}/inbox?s={{$sp}}">{{tf "today.inbox" .Inbox}}</a></li>{{end}}
+    {{if .ReviewDue}}<li class="warn"><a href="{{$.Base}}/review?s={{$sp}}">{{tf "today.review" .ReviewDays}}</a></li>{{end}}
+    {{if .Dead}}<li class="warn"><a href="{{$.Base}}/sessions?s={{$sp}}">{{if eq .Dead 1}}{{t "today.dead1"}}{{else}}{{tf "today.dead" .Dead}}{{end}}</a></li>{{end}}
+    {{if .Problems}}<li class="bad"><a href="{{$.Base}}/space?s={{$sp}}">{{tf "problems" .Problems}}</a></li>{{end}}
+  </ul>
+  {{if .Reminders}}<h3>{{t "today.reminders"}}</h3><ul class="cards">
+  {{range .Reminders}}<li class="card{{if le .Days 0}} mine{{end}}">
+    <div class="title">{{inline .What}}</div>
+    <div class="meta"><span class="badge">{{days .Days}}</span>
+    {{if .TaskID}}<a href="{{$.Base}}/task?s={{$sp}}&amp;id={{.TaskID}}">{{.TaskTitle}}</a>{{else}}<a href="{{$.Base}}/inbox?s={{$sp}}">{{t "inbox"}}</a>{{end}}</div>
+  </li>{{end}}</ul>{{end}}
+  {{if or .Mine .MineParked}}<h3>{{t "today.mine"}}</h3>{{end}}
+  {{if .Mine}}<ul class="cards">
+  {{range .Mine}}<li class="card mine">
+    <a class="title" href="{{$.Base}}/task?s={{$sp}}&amp;id={{.ID}}">{{.Title}}</a>
+    <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span>{{if .Steps}}<span>{{.Steps}}</span>{{end}}</div>
+    {{if .Next}}<div class="next">{{t "next"}}: {{inline .Next}}</div>{{end}}
+  </li>{{end}}</ul>{{end}}
+  {{if .MineParked}}<p class="hint">{{t "today.parkedmine"}} {{range $i, $t := .MineParked}}{{if $i}} · {{end}}<a href="{{$.Base}}/task?s={{$sp}}&amp;id={{$t.ID}}">{{$t.Title}}</a>{{end}}</p>{{end}}
+</section>
+{{end}}
+
+<section class="space-block">
+<h2>{{t "repos"}}</h2>
+<p class="hint">{{t "repos.hint"}}</p>
+{{if .Repos}}<ul class="cards">
+{{range .Repos}}<li class="card{{if .Forgotten}} mine{{end}}">
+  <div class="title">{{.Name}} {{if .Branch}}<span class="badge">{{.Branch}}</span>{{end}}{{if .Forgotten}} <span class="badge warn">{{t "repos.forgotten"}}</span>{{end}}</div>
+  <div class="meta">
+    {{if .Err}}<span>{{t "repos.unreadable"}}</span>{{else}}
+    {{if .Changed}}<span>{{tf "repos.changed" .Changed}}</span>{{end}}
+    {{if .Ahead}}{{if .Upstream}}<span>{{tf "repos.ahead" .Ahead}}</span>{{else}}<span>{{t "repos.noupstream"}}</span>{{end}}{{end}}{{end}}
+    <code>{{.Path}}</code>
+  </div>
+  <div class="next">{{range $i, $t := .Tasks}}{{if $i}} · {{end}}<a href="{{$.Base}}/task?s={{$t.Space}}&amp;id={{$t.ID}}">{{$t.Title}}</a>{{end}}</div>
+</li>{{end}}
+</ul>{{else}}<p class="empty">{{t "repos.none"}}</p>{{end}}
+{{if .CleanRepos}}<p class="hint">{{tf "repos.clean" .CleanRepos}}</p>{{end}}
+</section>
+{{end}}{{end}}

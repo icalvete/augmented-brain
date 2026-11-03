@@ -91,12 +91,18 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 	out := map[string]map[string]*template.Template{}
 	for _, l := range []string{"en", "es"} {
 		funcs := template.FuncMap{
-			"t":  func(key string) string { return i18n.T(l, "panel."+key) },
-			"tf": func(key string, args ...any) string { return i18n.T(l, "panel."+key, args...) },
+			"t": func(key string) string { return i18n.T(l, "panel."+key) },
+			// inline renders one line of a note (a next step, a summary) with its marks.
+			"inline": func(text string) template.HTML { return inlineHTML(text) },
+			"tf":     func(key string, args ...any) string { return i18n.T(l, "panel."+key, args...) },
 			"days": func(d int) string {
 				switch {
 				case d == 0:
 					return i18n.T(l, "panel.days.today")
+				case d == 1:
+					return i18n.T(l, "panel.days.tomorrow")
+				case d == -1:
+					return i18n.T(l, "panel.days.yesterday")
 				case d < 0:
 					return i18n.T(l, "panel.days.late", -d)
 				default:
@@ -237,7 +243,7 @@ func forbidden(w http.ResponseWriter) { http.Error(w, "forbidden", http.StatusFo
 // the address or the token, the method, and for writes where they come from.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h := w.Header()
-	h.Set("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'")
+	h.Set("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'")
 	h.Set("X-Content-Type-Options", "nosniff")
 	// same-origin, not no-referrer: with no-referrer, browsers send "Origin: null" on
 	// form posts, and the panel could not tell its own forms from anyone else's. Nothing
@@ -268,7 +274,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		forbidden(w)
 		return
 	}
-	s.last.Store(time.Now().UnixNano())
+	// The open pages' check for changes is not a person using the panel: it must
+	// not keep it running.
+	if r.URL.Path != "/stamp" {
+		s.last.Store(time.Now().UnixNano())
+	}
 	switch r.Method {
 	case http.MethodGet, http.MethodHead:
 	case http.MethodPost:

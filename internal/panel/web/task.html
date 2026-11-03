@@ -1,19 +1,21 @@
 {{define "content"}}{{with .D}}
 <p class="crumbs"><a href="{{$.Base}}/tasks?s={{$.Space}}">← {{t "tasks"}}</a>{{with .Parent}} · {{t "partof"}}: <a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>{{end}}</p>
+{{if .Stamp}}<p class="flash warn" id="changed" hidden data-stamp="{{.Stamp}}" data-url="stamp?s={{$.Space}}&amp;id={{.H.ID}}">{{t "changed"}} <a href="">{{t "changed.reload"}}</a></p>{{end}}
 <h1>{{.H.Title}}</h1>
 <dl class="facts">
   <dt>{{t "f.status"}}</dt><dd><span class="badge s-{{.H.Status}}">{{.StatusLabel}}</span></dd>
-  {{if .H.WaitingOn}}<dt>{{t "waits"}}</dt><dd>{{if eq .H.WaitingOn "me"}}{{t "you"}}{{else}}{{.H.WaitingOn}}{{end}}</dd>{{end}}
-  {{if .H.Next}}<dt>{{t "next"}}</dt><dd>{{.H.Next}}</dd>{{end}}
-  {{if .H.Summary}}<dt>{{t "f.summary"}}</dt><dd>{{.H.Summary}}</dd>{{end}}
+  {{if .H.WaitingOn}}<dt>{{t "waits"}}</dt><dd>{{if eq .H.WaitingOn "me"}}{{t "you"}}{{else if eq .H.WaitingOn "nobody"}}{{t "nobody"}}{{else if .PersonID}}<a href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.PersonID}}">{{.H.WaitingOn}}</a>{{else}}{{.H.WaitingOn}}{{end}}</dd>{{end}}
+  {{if .H.Next}}<dt>{{t "next"}}</dt><dd>{{inline .H.Next}}</dd>{{end}}
+  {{if .H.Summary}}<dt>{{t "f.summary"}}</dt><dd>{{inline .H.Summary}}</dd>{{end}}
   {{if .AreaTitle}}<dt>{{t "f.area"}}</dt><dd>{{.AreaTitle}}</dd>{{end}}
   <dt>{{t "f.dates"}}</dt><dd>{{tf "dates" .H.Created .H.Updated}}</dd>
   <dt>{{t "f.id"}}</dt><dd><code>{{.H.ID}}</code></dd>
 </dl>
+{{template "sections" .Essentials}}
 {{if .MissingRepos}}<p class="flash warn">{{range $i, $r := .MissingRepos}}{{if $i}}, {{end}}<code>{{$r}}</code>{{end}}: {{t "repos.missing"}}</p>{{end}}
 
 {{if .Watch}}<h2>{{t "watch"}}</h2><ul class="plain">
-{{range .Watch}}<li>{{if .Done}}<s>{{.Date}} · {{.What}}</s>{{else}}{{.Date}} · {{.What}}
+{{range .Watch}}<li>{{if .Done}}<s>{{.Date}} · {{inline .What}}</s>{{else}}{{.Date}} · {{inline .What}}
   <form method="post" action="{{$.Base}}/watch/done" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "date" .Date)}}<button type="submit" class="small">{{t "done"}}</button></form>{{end}}</li>
 {{end}}</ul>{{end}}
 
@@ -21,7 +23,7 @@
 <p class="hint">{{t "steps.hint"}}</p>
 {{if .Steps}}<ul class="steps">
 {{range .Steps}}<li>{{if $.D.Live}}<form method="post" action="{{$.Base}}/task/step" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "n" .N "text" .Text "done" .Next)}}<button type="submit" class="tick{{if .Done}} on{{end}}" title="{{if .Done}}{{t "step.untick"}}{{else}}{{t "step.tick"}}{{end}}" aria-label="{{if .Done}}{{t "step.untick"}}{{else}}{{t "step.tick"}}{{end}}: {{.Text}}">{{if .Done}}☑{{else}}☐{{end}}</button></form>{{else}}<span class="tick">{{if .Done}}☑{{else}}☐{{end}}</span>{{end}}
-  {{if .Done}}<s>{{.Text}}</s>{{else}}{{.Text}}{{end}}</li>
+  {{if .Done}}<s>{{inline .Text}}</s>{{else}}{{inline .Text}}{{end}}</li>
 {{end}}</ul>{{end}}
 {{if .Live}}<form method="post" action="{{$.Base}}/task/step" class="row">
   {{template "fields" (fields $ "id" .H.ID)}}
@@ -36,14 +38,13 @@
     <a class="title" href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
     <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span>
       {{if .Steps}}<span>{{.Steps}}</span>{{end}}
-      {{if .Mine}}<span class="badge you">{{t "waits.you"}}</span>{{else if .WaitingOn}}<span>{{t "waits"}}: {{.WaitingOn}}</span>{{end}}</div>
-    {{if .Next}}<div class="next">{{t "next"}}: {{.Next}}</div>{{end}}
+      {{if .Mine}}<span class="badge you">{{t "waits.you"}}</span>{{else if .WaitingOn}}<span>{{t "waits"}}: {{if eq .WaitingOn "nobody"}}{{t "nobody"}}{{else}}{{.WaitingOn}}{{end}}</span>{{end}}</div>
+    {{if .Next}}<div class="next">{{t "next"}}: {{inline .Next}}</div>{{end}}
   </li>
 {{end}}
 </ul>{{end}}
 
-<h2>{{t "task.body"}}</h2>
-<pre class="body">{{.Body}}</pre>
+{{template "sections" .Sections}}
 
 {{if .Live}}
 <details class="box" open>

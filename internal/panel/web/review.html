@@ -1,0 +1,52 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "review"}}</h1>
+<p class="hint">{{if .Last}}{{tf "review.last" .Last}}{{else}}{{t "review.never"}}{{end}}{{if .Due}} · {{tf "today.review" .Days}}{{end}}</p>
+<p class="hint">{{t "review.hint"}}</p>
+
+<h2>{{t "inbox"}} <span class="hint">· {{len .Inbox}}</span></h2>
+{{if .Inbox}}<ul class="cards">
+{{range .Inbox}}<li class="card">
+  <div class="title">{{inline .Text}}</div>
+  <div class="meta"><span>{{.Date}}</span>{{if .Remind}}<span class="badge">{{t "f.remind"}}: {{.Remind}}</span>{{end}}</div>
+  <form method="post" action="{{$.Base}}/review/capture" class="row wrap">
+    {{template "fields" (fields $ "date" .Date "text" .Text)}}
+    <select name="as" aria-label="{{t "f.as"}}">
+      <option value="task">{{t "review.as.task"}}</option>
+      <option value="reference">{{t "review.as.reference"}}</option>
+      <option value="lesson">{{t "review.as.lesson"}}</option>
+      <option value="drop">{{t "review.as.drop"}}</option>
+    </select>
+    <select name="area" aria-label="{{t "f.area"}}">{{range $.D.Areas}}<option value="{{.Value}}">{{.Label}}</option>{{end}}</select>
+    <input name="title" maxlength="200" aria-label="{{t "f.title"}}" placeholder="{{t "review.title.hint"}}">
+    <button type="submit" class="small">{{t "review.do"}}</button>
+  </form>
+</li>{{end}}
+</ul>{{else}}<p class="empty">{{t "inbox.none"}}</p>{{end}}
+
+<h2>{{t "review.stale"}} <span class="hint">· {{len .Stale}}</span></h2>
+{{if .Stale}}<ul class="cards">
+{{range .Stale}}<li class="card">
+  <a class="title" href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
+  <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span><span>{{tf "review.updated" .Updated}}</span>
+    {{if .WaitingOn}}<span>{{t "waits"}}: {{if eq .WaitingOn "me"}}{{t "you"}}{{else if eq .WaitingOn "nobody"}}{{t "nobody"}}{{else}}{{.WaitingOn}}{{end}}</span>{{end}}</div>
+  {{if .Next}}<div class="next">{{t "next"}}: {{inline .Next}}</div>{{end}}
+  <div class="actions">
+    <form method="post" action="{{$.Base}}/review/task" class="inline">{{template "fields" (fields $ "id" .ID "as" "keep")}}<button type="submit" class="small">{{t "review.keep"}}</button></form>
+    <form method="post" action="{{$.Base}}/review/task" class="inline">{{template "fields" (fields $ "id" .ID "as" "someday")}}<button type="submit" class="small">{{t "review.someday"}}</button></form>
+    <a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{t "review.open"}}</a>
+  </div>
+</li>{{end}}
+</ul>{{else}}<p class="empty">{{t "review.stale.none"}}</p>{{end}}
+
+{{if .Reminders}}<h2>{{t "today.reminders"}}</h2><ul class="plain">
+{{range .Reminders}}<li>{{days .Days}} · {{inline .What}}{{if .TaskID}} · <a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.TaskID}}">{{.TaskTitle}}</a>{{end}}</li>{{end}}
+</ul>{{end}}
+
+<h2>{{t "review.finish"}}</h2>
+{{if .Draft}}<p class="hint">{{t "review.draft"}}</p><pre class="body">{{.Draft}}</pre>{{end}}
+<form method="post" action="{{$.Base}}/review/done" class="stack">
+  {{template "fields" (fields $)}}
+  <label>{{t "review.summary"}} <textarea name="summary" rows="3" maxlength="4000"></textarea></label>
+  <button type="submit">{{t "review.done"}}</button>
+</form>
+{{end}}{{end}}

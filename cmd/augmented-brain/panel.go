@@ -83,12 +83,12 @@ func cmdPanel(args []string, out, errOut io.Writer) int {
 	return 0
 }
 
-// panelAddress is the page to open: the tasks of the space of the folder the panel was
+// panelAddress is the page to open: Today, on the space of the folder the panel was
 // asked for in (so /brain:panel in a work session shows work), or else the panel's
 // first page, which shows the default space.
 func panelAddress(c *config.Config, base, wd string) string {
 	if s := c.SpaceFor(wd); s != nil {
-		return base + "tasks?s=" + url.QueryEscape(s.Name)
+		return base + "today?s=" + url.QueryEscape(s.Name)
 	}
 	return base
 }

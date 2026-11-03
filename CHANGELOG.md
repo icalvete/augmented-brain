@@ -2,6 +2,40 @@
 
 ## Unreleased
 
+The panel, grown into the place to see everything at a glance:
+
+- **Today** is its first page: every space at once, with what is due in the next week,
+  the tasks waiting on you, the inbox, whether the weekly review is due and the sessions
+  cut off. Below, **Repositories**: those your open tasks name in `repos:` that hold
+  changes not committed or commits not pushed, marked "forgotten?" when every task that
+  names them is parked or left for some day. Read only; git runs without taking locks and never asks for a
+  password.
+- **Notes read as text**, not as raw Markdown: headings, lists, tables, code and links,
+  and `[[links]]` lead to their note. A task shows its essentials first, the rest folded,
+  and its journal newest first. A small renderer of its own, with no dependency: a note
+  can never put HTML or scripts in the page.
+- **Tasks by area**, with filters (waiting on you, under way, parked, untouched, by
+  person) and a mark on those untouched for two weeks.
+- **People** can be added and changed in the panel. A person's page shows the tasks that
+  wait on them and those that link to them; "waits on" leads to the person.
+- **Search** every note of the space and the shared ones, with or without accents.
+- **The weekly review** on a page: each capture becomes a task, a reference or a lesson,
+  or is dropped; each untouched task goes on or waits for some day. What was decided is
+  kept with the review. The inbox has a "make it a task" button.
+- A note's page says when the note changed elsewhere since it opened. Areas can be
+  renamed and their summary changed.
+- **Secrets**, by name only: the secrets you keep in the system keychain, what each is
+  for, which tasks name it, and, when you ask, whether this computer's keychain has it.
+  Never a value: one is refused. Kept in `config.toml` as `secrets`; Claude adds one with
+  the new MCP tool `secret_name_save`; the list travels in the default space's backup,
+  and a restore brings it to a machine that has none.
+
+Also:
+
+- `import` names the knowledge that lists people (one section each), so each can be
+  saved as a person: in the first real migration, people stayed as a reference and the
+  panel's People was empty.
+
 From the rehearsal of 0.5.10 on the real machine:
 
 - The parts of the session start count only those with something: "part 3 of 6",

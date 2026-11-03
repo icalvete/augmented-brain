@@ -98,6 +98,10 @@ var importMessages = map[string]msg{
 		en: "A secret written in them (%d): they are imported, but the backup refuses to upload them until it is taken out. Keep it in your keychain or a secrets manager:",
 		es: "Llevan un secreto escrito (%d): se importan, pero la copia de seguridad no las sube hasta que se quite. Guárdalo en tu llavero o en un gestor de secretos:",
 	},
+	"import.issue.people": {
+		en: "Knowledge that lists people, imported as it is (%d). People are notes of their own: ask Claude to save each one as a person (the panel shows them under People):",
+		es: "Conocimiento que es una lista de personas, importado tal cual (%d). Las personas son notas propias: pide a Claude que guarde cada una como persona (el panel las enseña en Personas):",
+	},
 	"import.issue.taken": {
 		en: "Already a note of the space, left out (%d):",
 		es: "Ya son notas del espacio, se quedan fuera (%d):",

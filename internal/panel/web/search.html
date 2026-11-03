@@ -1,0 +1,15 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "search"}}</h1>
+<form method="get" action="{{$.Base}}/search" class="row">
+  <input type="hidden" name="s" value="{{$.Space}}">
+  <input type="search" name="q" value="{{.Q}}" aria-label="{{t "search"}}" placeholder="{{t "search.hint"}}" autofocus maxlength="200">
+  <button type="submit">{{t "search.go"}}</button>
+</form>
+{{if .Asked}}{{if .Hits}}<p class="hint">{{tf "search.found" (len .Hits)}}</p>
+<ul class="cards">
+{{range .Hits}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
+  <div class="meta">{{if .Kind}}<span class="badge">{{.Kind}}</span>{{end}}{{if .Shared}}<span class="badge">{{t "shared"}}</span>{{end}}</div>
+  {{if .Snippet}}<div class="next">{{inline .Snippet}}</div>{{end}}</li>{{end}}
+</ul>{{if .More}}<p class="hint">{{tf "search.more" .More}}</p>{{end}}
+{{else}}<p class="empty">{{t "search.none"}}</p>{{end}}{{end}}
+{{end}}{{end}}

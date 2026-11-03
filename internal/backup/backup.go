@@ -308,6 +308,7 @@ func writeMeta(c *config.Config, s *config.Space) error {
 	one := &config.Config{Language: c.Language, Spaces: map[string]*config.Space{s.Name: s}, Dir: dir}
 	if carries {
 		one.DefaultSpace = s.Name // so a restore makes it the default space again
+		one.Secrets = c.Secrets   // the names of the user's secrets travel with the profile
 	}
 	if err := one.Save(); err != nil {
 		return err
@@ -415,6 +416,15 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	}
 	if err := copyShared(filepath.Join(mem, MetaDir), cfgDir); err != nil {
 		return nil, err
+	}
+	// The names of the user's secrets (never their values), when this machine has none.
+	// An entry that cannot be read is left out: it never stops the restore.
+	if saved, err := config.Load(filepath.Join(mem, MetaDir)); err == nil {
+		if list := brain.CleanSecretNames(saved.Secrets); len(list) > 0 {
+			if here, err := config.Load(cfgDir); err == nil && len(here.Secrets) == 0 {
+				_ = config.SetTopList(cfgDir, "secrets", list)
+			}
+		}
 	}
 	// The index is generated: rebuild it for this machine.
 	if m, problems, err := memory.LoadSpace(mem, filepath.Join(cfgDir, config.SharedFolder)); err == nil && len(problems) == 0 {

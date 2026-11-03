@@ -12,7 +12,7 @@
 <body>
 <div class="app">
 <aside class="side">
-  <a class="brand" href="{{$.Base}}/tasks?s={{.Space}}"><img src="{{$.Base}}/static/logo.svg" alt="augmented brain" width="148" height="122"></a>
+  <a class="brand" href="{{$.Base}}/today?s={{.Space}}"><img src="{{$.Base}}/static/logo.svg" alt="augmented brain" width="148" height="122"></a>
   <a class="me" href="{{$.Base}}/profile?s={{.Space}}"{{if eq .Section "profile"}} aria-current="page"{{end}}>{{t "profile"}}<small>{{t "profile.all"}}</small></a>
   <form class="spaces" method="get" action="{{$.Base}}/{{.Section}}">
     <label for="space">{{t "space.select"}}</label>
@@ -20,6 +20,10 @@
       {{range .Spaces}}<option value="{{.}}"{{if eq . $.Space}} selected{{end}}>{{.}}</option>{{end}}
     </select>
     <button type="submit" class="nojs">{{t "go"}}</button>
+  </form>
+  <form class="find" method="get" action="{{$.Base}}/search" role="search">
+    <input type="hidden" name="s" value="{{.Space}}">
+    <input type="search" name="q" aria-label="{{t "search"}}" placeholder="{{t "search.side"}}" maxlength="200">
   </form>
   <nav class="sections">
     {{range .Nav}}<a href="{{$.Base}}/{{.Path}}?s={{$.Space}}"{{if eq .Path $.Section}} aria-current="page"{{end}}>{{.Label}}</a>{{end}}
@@ -41,3 +45,11 @@
 {{/* fields writes the hidden inputs of a form: {{template "fields" (fields $ "id" .ID)}}.
      Every form sends the CSRF token and the space; the rest are the form's own. */}}
 {{define "fields"}}<input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="s" value="{{.Space}}">{{range .Own}}<input type="hidden" name="{{.Name}}" value="{{.Value}}">{{end}}{{end}}
+
+
+{{/* sections writes a note's body, rendered, one level-2 section each: open ones as
+     they are, the rest folded under their heading. A journal says how many entries. */}}
+{{define "sections"}}<div class="doc">{{range .}}{{if .Title}}<details class="sec{{if .Journal}} journal{{end}}"{{if .Open}} open{{end}}>
+<summary><h2>{{.Title}}</h2>{{if .Journal}}<span class="hint"> · {{tf "journal.count" .Entries}} · {{t "journal.newest"}}</span>{{end}}</summary>
+<div class="md">{{.HTML}}</div></details>{{else}}<div class="md">{{.HTML}}</div>{{end}}
+{{end}}</div>{{end}}

@@ -58,7 +58,10 @@ type Config struct {
 	ProductionAWSProfiles []string `toml:"production_aws_profiles,omitempty"`
 	UntouchableHosts      []string `toml:"untouchable_hosts,omitempty"`
 	// RootAsk are temporary exceptions for root, "<host> until <date>" (see RootAsk).
-	RootAsk []string          `toml:"root_ask,omitempty"`
+	RootAsk []string `toml:"root_ask,omitempty"`
+	// Secrets names the secrets the user keeps in the system keychain, never their
+	// values: "<service>/<name>: what it is for" (see brain.SecretNames).
+	Secrets []string          `toml:"secrets,omitempty"`
 	Spaces  map[string]*Space `toml:"spaces"`
 
 	// Dir is the folder the configuration was read from.
@@ -170,7 +173,7 @@ func (c *Config) Save() error {
 		return err
 	}
 	out := Config{Format: c.Format, Language: c.Language, DefaultSpace: c.DefaultSpace, Spaces: map[string]*Space{},
-		ProductionAWSProfiles: c.ProductionAWSProfiles, UntouchableHosts: c.UntouchableHosts, RootAsk: c.RootAsk}
+		ProductionAWSProfiles: c.ProductionAWSProfiles, UntouchableHosts: c.UntouchableHosts, RootAsk: c.RootAsk, Secrets: c.Secrets}
 	for name, s := range c.Spaces {
 		cp := s.forFile()
 		if cp.WorkFolders == nil {

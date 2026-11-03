@@ -31,3 +31,24 @@ func TestRead(t *testing.T) {
 		t.Errorf("not closed: %v", err)
 	}
 }
+
+// A piece of knowledge that lists people, one section each, is named in the report so
+// each can become a person; other notes with sections are not.
+func TestPeopleIn(t *testing.T) {
+	n := func(id, title, body string) *memory.Note {
+		return &memory.Note{Header: memory.Header{ID: id, Type: "reference", Title: title}, Body: body}
+	}
+	got := peopleIn(n("ref-team-people", "People I work with", "intro\n\n## Ana Ruiz\n- baker\n\n## Leo\n- driver\n"))
+	if len(got) != 2 || got[0] != "Ana Ruiz" || got[1] != "Leo" {
+		t.Errorf("people: %q", got)
+	}
+	if got := peopleIn(n("ref-oven", "How the oven works", "## Heat\n\n## Steam\n")); got != nil {
+		t.Errorf("not about people: %q", got)
+	}
+	if got := peopleIn(n("ref-personal-setup", "My personal setup", "## Laptop\n\n## Phone\n")); got != nil {
+		t.Errorf("personal is not people: %q", got)
+	}
+	if got := peopleIn(n("ref-equipo", "Equipo", "## Ana\n")); got != nil {
+		t.Errorf("a single section is no list: %q", got)
+	}
+}

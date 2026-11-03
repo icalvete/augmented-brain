@@ -5,7 +5,10 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"sort"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/memory"
@@ -19,6 +22,9 @@ type taskRow struct {
 	ID, Title, Status, StatusLabel, WaitingOn, Next, AreaTitle string
 	PartOf, Steps                                              string // the parent's title, when not listed under it; "2/5 steps"
 	Mine, Sub                                                  bool
+	Stale                                                      int    // days untouched, when the weekly review would bring it up
+	PersonID                                                   string // the person "waits on" names, when one does
+	Updated                                                    string // the date of the last change, where it is shown
 }
 
 func (v *view) steps(done, total int) string {
@@ -56,21 +62,102 @@ func (v *view) areaOptions(selected string) []option {
 	return out
 }
 
-func (s *Server) tasks(v *view, _ *http.Request) (string, page, error) {
+// taskGroup is the live tasks of one area, in the order of the pending report.
+type taskGroup struct {
+	ID, Title string
+	Tasks     []taskRow
+}
+
+// filter is one of the ways to narrow the task list, with its address.
+type filter struct {
+	Key, Label string
+	On         bool
+}
+
+func (s *Server) tasks(v *view, r *http.Request) (string, page, error) {
 	items, _ := v.b.Pending(0)
 	type data struct {
-		Live, Someday, Closed []taskRow
-		Areas                 []option
+		Groups          []taskGroup
+		Filters, People []filter
+		Shown, Total    int
+		Someday, Closed []taskRow
+		Areas           []option
 	}
 	var d data
+	f := r.FormValue("f")     // me, active, parked, stale
+	who := r.FormValue("who") // a waiting_on value
+	today := time.Now().Format(memory.DateLayout)
+	groups := map[string]*taskGroup{}
+	var order []string
+	waits := map[string]bool{}
+	group := ""
 	for _, i := range items {
 		row := taskRow{ID: i.ID, Title: i.Title, Status: i.Status, StatusLabel: v.status(i.Status),
 			WaitingOn: i.WaitingOn, Next: i.Next, AreaTitle: v.areaTitle(i.Area), Mine: i.WaitingOn == "me",
-			Sub: i.Sub, Steps: v.steps(i.StepsDone, i.StepsTotal)}
+			Sub: i.Sub, Steps: v.steps(i.StepsDone, i.StepsTotal), PersonID: v.personLink(i.WaitingOn)}
 		if !i.Sub {
 			row.PartOf = i.ParentTitle
+			group = i.Area
 		}
-		d.Live = append(d.Live, row)
+		if n, ok := v.b.Mem.Notes[i.ID]; ok {
+			if days, ok := memory.DaysBetween(n.Header.Updated, today); ok && days >= brain.StaleDays {
+				row.Stale = days
+			}
+		}
+		if w := i.WaitingOn; w != "" && w != "me" && w != "nobody" && !strings.HasPrefix(w, "task-") {
+			waits[w] = true
+		}
+		d.Total++
+		keep := true
+		switch f {
+		case "me":
+			keep = row.Mine
+		case "active":
+			keep = i.Status != "parked"
+		case "parked":
+			keep = i.Status == "parked"
+		case "stale":
+			keep = row.Stale > 0
+		}
+		if who != "" {
+			keep = keep && i.WaitingOn == who
+		}
+		if !keep {
+			continue
+		}
+		d.Shown++
+		g := groups[group]
+		if g == nil {
+			title := v.areaTitle(group)
+			if title == "" {
+				title = v.t("area.none")
+			}
+			g = &taskGroup{ID: group, Title: title}
+			groups[group] = g
+			order = append(order, group)
+		}
+		g.Tasks = append(g.Tasks, row)
+	}
+	// Areas in the order of the index (their titles), tasks with no area last.
+	sort.SliceStable(order, func(a, b int) bool {
+		if (order[a] == "") != (order[b] == "") {
+			return order[b] == ""
+		}
+		return groups[order[a]].Title < groups[order[b]].Title
+	})
+	for _, id := range order {
+		d.Groups = append(d.Groups, *groups[id])
+	}
+	for _, k := range []string{"", "me", "active", "parked", "stale"} {
+		d.Filters = append(d.Filters, filter{k, v.t("filter." + map[string]string{"": "all"}[k] + k), f == k && who == ""})
+	}
+	var names []string
+	for w := range waits {
+		names = append(names, w)
+	}
+	sort.Strings(names)
+	for _, w := range names {
+		d.People = append(d.People, filter{w, w, who == w})
 	}
 	for _, n := range v.b.Mem.OfType("task") {
 		row := taskRow{ID: n.Header.ID, Title: n.Header.Title}
@@ -130,6 +217,16 @@ func (s *Server) task(v *view, r *http.Request) (string, page, error) {
 	if pn := v.b.Mem.ParentOf(n); pn != nil {
 		parent = &taskRow{ID: pn.Header.ID, Title: pn.Header.Title}
 	}
+	// The first section (the essentials) goes under the facts; the rest, below the steps.
+	// Text before the first heading, if any, goes with them.
+	essentials, rest := v.sections(n.Body, true), []bodySection(nil)
+	cut := 1
+	if len(essentials) > 1 && essentials[0].Title == "" {
+		cut = 2
+	}
+	if len(essentials) > cut {
+		essentials, rest = essentials[:cut], essentials[cut:]
+	}
 	p := v.frame("tasks", h.Title)
 	p.D = struct {
 		H                    memory.Header
@@ -142,8 +239,10 @@ func (s *Server) task(v *view, r *http.Request) (string, page, error) {
 		Parent               *taskRow
 		Live, CanHaveSubs    bool
 		MissingRepos         []string
+		Essentials, Sections []bodySection
+		PersonID, Stamp      string
 	}{h, n.Body, v.status(h.Status), v.areaTitle(h.Area), v.steps(done, len(steps)), v.areaOptions(h.Area), ph, h.Watch,
-		steps, kids, parent, live, live && h.Parent == "", v.b.MissingRepos(n)}
+		steps, kids, parent, live, live && h.Parent == "", v.b.MissingRepos(n), essentials, rest, v.personLink(h.WaitingOn), v.stampOf(h.ID)}
 	return "task", p, nil
 }
 
