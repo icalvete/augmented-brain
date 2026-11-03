@@ -140,14 +140,17 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		})
 
 	type newTaskIn struct {
-		Title   string `json:"title" jsonschema:"short name of the task"`
-		Summary string `json:"summary,omitempty" jsonschema:"one line: what it is"`
-		Area    string `json:"area,omitempty" jsonschema:"id of its area; default the parent's area, or area-general"`
-		Parent  string `json:"parent,omitempty" jsonschema:"id of the task this one is a part of, making it a subtask; one level only"`
+		Title    string `json:"title" jsonschema:"short name of the task"`
+		Summary  string `json:"summary,omitempty" jsonschema:"one line: what it is"`
+		Area     string `json:"area,omitempty" jsonschema:"id of its area; default the parent's area, or area-general"`
+		Parent   string `json:"parent,omitempty" jsonschema:"id of the task this one is a part of, making it a subtask; one level only"`
+		Goal     string `json:"goal,omitempty" jsonschema:"one line: what the task is for; goes into its Definition"`
+		DoneWhen string `json:"done_when,omitempty" jsonschema:"one line: how we will know it worked; goes into its Definition"`
 	}
 	tool(s, locked, "task_new", "Open a new task, in the definition phase and waiting on the user. Returns the new task. With parent it is a subtask: a part with its own status and next step, for a part that waits on someone else or goes at its own pace; the parent cannot close while it is open.",
 		func(b *brain.Brain, in newTaskIn) (string, error) {
-			n, err := b.NewTask(brain.NewTaskInput{Title: in.Title, Summary: in.Summary, Area: in.Area, Parent: in.Parent})
+			n, err := b.NewTask(brain.NewTaskInput{Title: in.Title, Summary: in.Summary, Area: in.Area, Parent: in.Parent,
+				Goal: in.Goal, DoneWhen: in.DoneWhen})
 			if err == nil {
 				b.Touched(n.Header.ID, true)
 			}
@@ -263,7 +266,7 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		ID         string `json:"id"`
 		Next       string `json:"next" jsonschema:"exactly how to resume: a command, a file or a decision"`
 		WaitingOn  string `json:"waiting_on,omitempty"`
-		Essentials string `json:"essentials,omitempty" jsonschema:"3 to 6 lines that are enough to resume the task; replaces its first section"`
+		Essentials string `json:"essentials,omitempty" jsonschema:"pass it: 3 to 6 lines that are enough to resume the task without its journal (what it is, where it is, what was decided, the next step); replaces its first section. Without it only 'where it is' and 'next' are updated"`
 		Someday    bool   `json:"someday,omitempty" jsonschema:"true when it will not be touched for weeks"`
 	}
 	tool(s, locked, "task_park", "Pause a task without losing anything, before switching to other work.",

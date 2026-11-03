@@ -282,7 +282,8 @@ Lo que te da:
 - **No sube secretos.** Si una nota tiene algo que parece una contraseña o un token, la
   copia se para y te dice en qué fichero.
 - **No pisa nada.** Si dos máquinas cambiaron la misma nota, se para sin tocar nada y te
-  explica cómo resolverlo. El índice, que es generado, se rehace solo, y las capturas del
+  explica cómo resolverlo. Si cada una solo le añadió entradas de diario (líneas con
+  fecha), se juntan solas, por fecha. El índice, que es generado, se rehace solo, y las capturas del
   buzón hechas en dos máquinas se guardan las dos. Un detalle: una captura que
   procesaste en una máquina puede volver si la otra apuntó algo a la vez. Sale otra vez
   en la siguiente revisión, sin más.

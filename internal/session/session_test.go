@@ -199,6 +199,12 @@ func TestContextDueAndReview(t *testing.T) {
 	if err := b.Capture("call the insurance", "2026-10-21"); err != nil {
 		t.Fatal(err)
 	}
+	if err := b.Capture("renew the domain", "2026-10-25"); err != nil {
+		t.Fatal(err)
+	}
+	if err := b.Capture("too far to mention", "2026-10-30"); err != nil {
+		t.Fatal(err)
+	}
 
 	// A file that is not a valid note is named, and the rest keeps working.
 	if err := os.WriteFile(filepath.Join(s.Memory, "tasks", "task-broken.md"), []byte("no header here\n"), 0o644); err != nil {
@@ -212,11 +218,15 @@ func TestContextDueAndReview(t *testing.T) {
 		"## Due",
 		"- 2026-10-18 (2 days overdue): renewed? [" + task.Header.ID + "]",
 		"- 2026-10-21 (tomorrow): call the insurance [inbox]",
-		"The weekly review is due: 10 days since the last one, with 1 captures in the inbox",
+		"- 2026-10-25 (in 5 days): renew the domain [inbox]",
+		"The weekly review is due: 10 days since the last one, with 3 captures in the inbox",
 	} {
 		if !strings.Contains(text, want) {
 			t.Errorf("context lacks %q:\n%s", want, text)
 		}
+	}
+	if strings.Contains(text, "too far to mention") {
+		t.Errorf("a reminder 10 days ahead is mentioned:\n%s", text)
 	}
 
 	// A blank profile means the first session: the interview, nothing else.
@@ -266,7 +276,7 @@ func TestParts(t *testing.T) {
 		}
 		all += p
 	}
-	for _, want := range []string{"NOTE FOR TODAY", "Who the user is", "### How we work", "Task number 000", "Task number 079", "- Rule 5 — step 5 first ("} {
+	for _, want := range []string{"NOTE FOR TODAY", "Who the user is", "### How we work", "Task number 000", "Task number 079", "### Rule 5"} {
 		if !strings.Contains(all, want) {
 			t.Errorf("the parts lack %q", want)
 		}
@@ -274,13 +284,39 @@ func TestParts(t *testing.T) {
 	if strings.Contains(all, "was cut") || strings.Count(all, "NOTE FOR TODAY") != 1 {
 		t.Errorf("80 tasks and 6 rules should fit whole, the note once:\n%s", all)
 	}
-	if !strings.Contains(Part(c, s, "", 3), "part 3 of 5") {
+	if !strings.Contains(Part(c, s, "", 3), "part 3 of 9") {
 		t.Error("part 3 does not say which part it is")
+	}
+
+	// A rule's History stays in its file; rules beyond three parts go one line each.
+	hist := "---\nid: rule-00-hist\ntype: rule\ntitle: With history\nsummary: keep it short\n---\nKeep answers short.\n\n## History\nAsked on a Monday.\n"
+	if err := os.WriteFile(filepath.Join(s.Memory, "rules", "rule-00-hist.md"), []byte(hist), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	for i := 6; i < 30; i++ {
+		rule := fmt.Sprintf("---\nid: rule-%d\ntype: rule\ntitle: Rule %d\nsummary: step %d first\n---\n%s\n", i, i, i, long)
+		if err := os.WriteFile(filepath.Join(s.Memory, "rules", fmt.Sprintf("rule-%d.md", i)), []byte(rule), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	rulesText := ""
+	for n := 2 + indexParts; n <= Parts; n++ {
+		p := Part(c, s, "", n)
+		if size(p) > Budget {
+			t.Errorf("rules part %d is %d units", n, size(p))
+		}
+		rulesText += p
+	}
+	if !strings.Contains(rulesText, "Keep answers short.") || strings.Contains(rulesText, "Asked on a Monday") || !strings.Contains(rulesText, "Its History is in") {
+		t.Errorf("the History section is not left in the file:\n%s", rulesText)
+	}
+	if !strings.Contains(rulesText, "did not fit whole") || !strings.Contains(rulesText, "- Rule 9 — step 9 first (") {
+		t.Errorf("rules beyond three parts are not listed in one line:\n%s", rulesText)
 	}
 
 	// A space too big even for the parts: the index says where the whole one is.
 	write(400)
-	if p := Part(c, s, "", Parts-1); size(p) > Budget || !strings.Contains(p, "The index was cut") {
+	if p := Part(c, s, "", 1+indexParts); size(p) > Budget || !strings.Contains(p, "The index was cut") {
 		t.Errorf("400 tasks: %d units, cut note: %v", size(p), strings.Contains(p, "The index was cut"))
 	}
 }

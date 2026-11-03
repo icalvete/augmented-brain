@@ -148,7 +148,7 @@ augmented-brain backup                                         # by hand, if you
   lists travel in none: on a new machine, Claude asks for them again.
 - **No secrets go up.** If a note seems to hold a password or a token, it stops.
 - **Nothing gets overwritten.** If two machines changed the same note, it stops and tells
-  you what to do. Captures in the inbox from two machines are both kept (a capture
+  you what to do; journal entries added on each are joined by themselves. Captures in the inbox from two machines are both kept (a capture
   already processed on one machine may come back once, at the next review).
 - **Big files stay out.** A file over 50 MB in the notes folder is left out of the
   backup (GitHub refuses them), and Claude tells you which one.

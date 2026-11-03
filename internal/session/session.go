@@ -43,10 +43,14 @@ func ContextWith(c *config.Config, s *config.Space, note string) string {
 // Parts is how many SessionStart hooks share the session text. Claude Code cuts each
 // hook's text at 10,000 characters, so one hook cannot carry the index of a big space;
 // each part has a Budget of its own.
-const Parts = 5
+const Parts = 1 + indexParts + rulesParts
+
+// indexParts carry the index (parts 2 to 4), rulesParts the user's rules (5 to 9),
+// whole: in real sessions the assistant does not open a rule's file before acting.
+const indexParts, rulesParts = 3, 5
 
 // Part returns part n (1 to Parts) of the session text: 1 is the heading with note, the
-// profile and the common rules; the last the user's rules; the ones between, the index. Each part is
+// profile and the common rules; then the index; then the user's rules. Each part is
 // built on its own, so the hooks can run at the same time, in any order. A part with
 // nothing to say is "".
 func Part(c *config.Config, s *config.Space, note string, n int) string {
@@ -67,7 +71,7 @@ func Part(c *config.Config, s *config.Space, note string, n int) string {
 			profile = cut(profile, profileBudget) + fmt.Sprintf("\n(The profile was cut to fit. Read it whole in %s.)\n", filepath.Join(c.Dir, "profile.md"))
 		}
 		return within(head+profile+common, "\n(Cut to fit. Read the profile in "+filepath.Join(c.Dir, "profile.md")+".)\n")
-	case n > 1 && n < Parts:
+	case n > 1 && n <= 1+indexParts:
 		where := filepath.Join(s.Memory, memory.IndexFile)
 		if len(shared.Notes) > 0 {
 			where += "; the shared notes are in " + shared.Dir
@@ -78,21 +82,143 @@ func Part(c *config.Config, s *config.Space, note string, n int) string {
 			return ""
 		}
 		text := tag + chunks[n-2]
-		if n == Parts-1 && len(chunks) > Parts-2 {
+		if n == 1+indexParts && len(chunks) > indexParts {
 			text += cutNote
 		}
 		return text
-	case n == Parts:
-		full, short := userRules(m, shared)
-		if strings.TrimSpace(full) == "" {
+	case n > 1+indexParts && n <= Parts:
+		end := "\n(Cut to fit. Read the rules in " + s.Memory + " and the shared notes in " + shared.Dir + ".)\n"
+		pieces := rulePieces(m, shared, Budget-size(tag+end))
+		k := n - 2 - indexParts
+		if k >= len(pieces) {
 			return ""
 		}
-		if size(tag+full) <= Budget {
-			return tag + full
-		}
-		return within(tag+short, "\n(Cut to fit. Read the rules in "+s.Memory+" and the shared notes in "+shared.Dir+".)\n")
+		return within(tag+pieces[k], end)
 	}
 	return ""
+}
+
+// rulePieces packs the user's rules, shared and of the space, into at most rulesParts
+// pieces of max units: each whole, without its History section, in the first piece
+// with room, and one longer than a piece across pieces of its own. A rule that cannot
+// go whole goes in one line, with the path of its file.
+func rulePieces(m, shared *memory.Memory, max int) []string {
+	type item struct {
+		group         int
+		whole, line   string
+		listed, split bool
+	}
+	titles := []string{"Rules for every space", "Rules of this space"}
+	var items []*item
+	for g, mem := range []*memory.Memory{shared, m} {
+		for _, r := range mem.OfType("rule") {
+			path := filepath.Join(mem.Dir, filepath.FromSlash(r.Path))
+			body, cutHistory := withoutHistory(strings.TrimSpace(r.Body))
+			it := &item{group: g, whole: "### " + r.Header.Title + "\n" + body + "\n"}
+			if cutHistory {
+				it.whole += "(Its History is in " + path + ".)\n"
+			}
+			it.whole += "\n"
+			it.line = "- " + r.Header.Title
+			if r.Header.Summary != "" {
+				it.line += " — " + r.Header.Summary // the gist, so the rule applies without opening it
+			}
+			it.line += " (" + path + ")\n"
+			items = append(items, it)
+		}
+	}
+	render := func(p []*item) string {
+		var out strings.Builder
+		for _, listed := range []bool{false, true} {
+			group := -1
+			for _, it := range p {
+				if it.listed != listed {
+					continue
+				}
+				if listed && group == -1 {
+					out.WriteString(listedNote)
+				}
+				if it.group != group {
+					group = it.group
+					out.WriteString("\n## " + titles[group] + "\n\n")
+				}
+				if listed {
+					out.WriteString(it.line)
+				} else {
+					out.WriteString(it.whole)
+				}
+			}
+		}
+		return out.String()
+	}
+	var pieces [][]*item
+	var raw []string // a rule longer than a piece, cut in pieces of its own
+	slots := func() int { return rulesParts - len(pieces) - len(raw) }
+	place := func(it *item) bool {
+		for i, p := range pieces {
+			if size(render(append(p[:len(p):len(p)], it))) <= max {
+				pieces[i] = append(p, it)
+				return true
+			}
+		}
+		if slots() > 0 && size(render([]*item{it})) <= max {
+			pieces = append(pieces, []*item{it})
+			return true
+		}
+		return false
+	}
+	for _, it := range items {
+		if place(it) {
+			continue
+		}
+		head := "\n## " + titles[it.group] + "\n\n"
+		if chunks := lines(head+it.whole, max); size(head+it.whole) > max && len(chunks) <= slots()-1 {
+			raw = append(raw, chunks...) // one slot stays for the rules that go in a line
+			continue
+		}
+		it.listed = true
+	}
+	var out, dropped []string
+	for _, it := range items {
+		if it.listed && !place(it) {
+			dropped = append(dropped, it.line)
+		}
+	}
+	for _, p := range pieces {
+		out = append(out, render(p))
+	}
+	out = append(out, raw...)
+	if len(dropped) > 0 && len(out) > 0 {
+		out[len(out)-1] += fmt.Sprintf("\n(%d more rules did not fit; their files are in the rules folders of the space and the shared notes.)\n", len(dropped))
+	}
+	return out
+}
+
+// listedNote heads the rules that go in one line each.
+const listedNote = "\n(The rules below did not fit whole, so each goes in one line: follow it, and read its file before acting on its subject.)\n"
+
+// withoutHistory drops a rule's History section (## History or ## Historia, to the next
+// heading of its level), which tells how the rule came to be, not what to do.
+func withoutHistory(body string) (string, bool) {
+	var out []string
+	skip, level, cut := false, 0, false
+	for _, l := range strings.Split(body, "\n") {
+		if h := strings.TrimLeft(l, "#"); h != l && strings.HasPrefix(h, " ") {
+			lv := len(l) - len(h)
+			title := strings.ToLower(strings.TrimSpace(h))
+			switch {
+			case title == "history" || title == "historia":
+				skip, level, cut = true, lv, true
+				continue
+			case skip && lv <= level:
+				skip = false
+			}
+		}
+		if !skip {
+			out = append(out, l)
+		}
+	}
+	return strings.TrimSpace(strings.Join(out, "\n")), cut
 }
 
 // loadSpace reads space s with the shared notes; failed is the text for the assistant
@@ -243,17 +369,21 @@ func userRules(m, shared *memory.Memory) (full, short string) {
 var Now = time.Now
 
 // maxDue is how many due items the session start lists; the rest are counted.
-const maxDue = 8
+const maxDue = 15
+
+// soonDays is how far ahead the session start looks: what is due in the next week is
+// mentioned too, so it can be prepared.
+const soonDays = 7
 
 // dueNote lists what comes up today: watch dates and inbox reminders due today or
 // tomorrow, and those already past.
 func dueNote(b *brain.Brain) string {
-	due := b.Reminders(1)
+	due := b.Reminders(soonDays)
 	if len(due) == 0 {
 		return ""
 	}
 	var out strings.Builder
-	out.WriteString("\n## Due\n\nMention these in your first answer, briefly, before anything else:\n")
+	out.WriteString("\n## Due\n\nMention these in your first answer, briefly, before anything else (overdue first, then what comes in the next days):\n")
 	for i, d := range due {
 		if i == maxDue {
 			fmt.Fprintf(&out, "- and %d more: see the pending tool\n", len(due)-maxDue)
@@ -263,6 +393,8 @@ func dueNote(b *brain.Brain) string {
 		switch {
 		case d.Days == 1:
 			when = "tomorrow"
+		case d.Days > 1:
+			when = fmt.Sprintf("in %d days", d.Days)
 		case d.Days < 0:
 			when = fmt.Sprintf("%d days overdue", -d.Days)
 		}

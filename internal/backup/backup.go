@@ -207,14 +207,14 @@ func catchUp(c *config.Config, s *config.Space) error {
 	out, _ := git(s.Memory, "diff", "--name-only", "--diff-filter=U")
 	var notes []string
 	for _, f := range strings.Fields(out) {
-		if f != memory.IndexFile && !strings.HasPrefix(f, MetaDir+"/") {
+		// A note each machine only added to (a journal entry each) joins by itself.
+		if f != memory.IndexFile && !strings.HasPrefix(f, MetaDir+"/") && !joinAdditions(s.Memory, f) {
 			notes = append(notes, f)
 		}
 	}
 	if len(notes) > 0 {
 		_, _ = git(s.Memory, "merge", "--abort")
-		return fmt.Errorf("nothing was backed up: another machine changed the same notes (%s). Open %s, run `git merge origin/main`, keep the right version of each, commit, and back up again",
-			strings.Join(notes, ", "), s.Memory)
+		return &ConflictError{Notes: notes, Dir: s.Memory}
 	}
 	// Only generated files collide: rebuild them and finish the merge.
 	m, problems, err := memory.LoadSpace(s.Memory, c.SharedDir())

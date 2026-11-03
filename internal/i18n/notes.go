@@ -19,6 +19,34 @@ var noteMessages = map[string]msg{
 		en: "Parked. Next: %s",
 		es: "Aparcada. Siguiente: %s",
 	},
+	"note.label.where": {
+		en: "Where it is",
+		es: "Dónde está",
+	},
+	"note.label.next": {
+		en: "Next",
+		es: "Siguiente",
+	},
+	"note.label.goal": {
+		en: "Goal",
+		es: "Objetivo",
+	},
+	"note.label.done": {
+		en: "Done when",
+		es: "Hecho cuando",
+	},
+	"note.where.parked": {
+		en: "parked on %s.",
+		es: "aparcada el %s.",
+	},
+	"note.where.closed": {
+		en: "closed on %s: %s",
+		es: "cerrada el %s: %s",
+	},
+	"note.next.closed": {
+		en: "nothing: it is closed.",
+		es: "nada: está cerrada.",
+	},
 	"note.resumed": {
 		en: "Resumed.",
 		es: "Retomada.",

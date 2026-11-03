@@ -19,6 +19,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/format"
+	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/templates"
@@ -110,6 +111,9 @@ func (b *Brain) save(n *memory.Note) error {
 	if b.broken(n.Path) {
 		return fmt.Errorf("%s is not a valid note, so it is not written over; fix it first (`augmented-brain check` says what is wrong)", n.Path)
 	}
+	if err := noNewSecret(n, b.Mem.Notes[n.Header.ID]); err != nil {
+		return err
+	}
 	n.Header.Updated = b.today()
 	if err := memory.Save(b.Mem.Dir, n); err != nil {
 		return err
@@ -117,6 +121,31 @@ func (b *Brain) save(n *memory.Note) error {
 	b.Mem.Notes[n.Header.ID] = n
 	_, err := b.Mem.WriteIndex(b.Language)
 	return err
+}
+
+// noNewSecret refuses a note that would hold a secret its old version (nil: none) did
+// not: the backup would refuse the whole space for it. A note that already held one, as
+// an import may leave, can still be changed, so it can be fixed.
+func noNewSecret(n, old *memory.Note) error {
+	data, err := n.Render()
+	if err != nil {
+		return err
+	}
+	what := guard.FindSecret(string(data))
+	if what == "" {
+		return nil
+	}
+	if old != nil {
+		if before, err := old.Render(); err == nil && guard.FindSecret(string(before)) != "" {
+			return nil
+		}
+	}
+	return secretError(what)
+}
+
+// secretError is why a write with a secret in it is refused, worded as the guard's.
+func secretError(what string) error {
+	return fmt.Errorf("nothing was saved: the text has %s in it. Secrets never go into notes, and the backup would refuse the whole space: keep it in the system keychain or a secrets manager, and write down only where it is", what)
 }
 
 func (b *Brain) get(id, kind string) (*memory.Note, error) {
@@ -138,6 +167,8 @@ type NewTaskInput struct {
 	Summary string
 	Area    string // area id; empty means the parent's area, or area-general when it exists
 	Parent  string // optional: the id of the task this one is a part of (a subtask)
+	// Goal and DoneWhen go into the Definition, when given.
+	Goal, DoneWhen string
 }
 
 // NewTask opens a task in the definition phase, waiting on the user.
@@ -170,6 +201,12 @@ func (b *Brain) NewTask(in NewTaskInput) (*memory.Note, error) {
 	}
 	next := b.text("next")
 	body := strings.NewReplacer("{{SUMMARY}}", in.Summary, "{{NEXT}}", next, "{{DATE}}", b.today()).Replace(string(tmpl))
+	if g := oneLine(in.Goal); g != "" {
+		body = setLine(body, "goal", g)
+	}
+	if d := oneLine(in.DoneWhen); d != "" {
+		body = setLine(body, "done", d)
+	}
 	n := &memory.Note{
 		Path: memory.PathFor("task", id),
 		Header: memory.Header{
@@ -366,7 +403,11 @@ func (b *Brain) Park(in ParkInput) (*memory.Note, error) {
 		cp.Header.WaitingOn = in.WaitingOn
 	}
 	entry := fmt.Sprintf(b.text("parked"), in.Next)
-	if in.Essentials != "" {
+	if in.Essentials == "" {
+		// Without new essentials, at least where it is and the next step are current.
+		cp.Body = setLine(cp.Body, "where", fmt.Sprintf(b.text("where.parked"), b.today()))
+		cp.Body = setLine(cp.Body, "next", oneLine(in.Next))
+	} else {
 		if body, ok := replaceFirstSection(cp.Body, in.Essentials); ok {
 			cp.Body = body
 		} else {
@@ -394,9 +435,33 @@ func (b *Brain) Close(id, result string) (*memory.Note, error) {
 	cp.Header.Status = "closed"
 	cp.Header.Next = ""
 	cp.Header.WaitingOn = ""
+	cp.Body = setLine(cp.Body, "where", fmt.Sprintf(b.text("where.closed"), b.today(), oneLine(result)))
+	cp.Body = setLine(cp.Body, "next", b.text("next.closed"))
 	cp.Body = b.journalLine(cp.Body, fmt.Sprintf(b.text("closed"), result))
 	return &cp, b.save(&cp)
 }
+
+// setLine writes value after the first "- <label>:" line of body, with the label in
+// either language (Essentials and Definition); a body without one is left as it is.
+func setLine(body, key, value string) string {
+	lines := strings.SplitAfter(body, "\n")
+	for i, l := range lines {
+		for _, label := range i18n.All("note.label." + key) {
+			if strings.HasPrefix(l, "- "+label+":") {
+				end := ""
+				if strings.HasSuffix(l, "\n") {
+					end = "\n"
+				}
+				lines[i] = "- " + label + ": " + value + end
+				return strings.Join(lines, "")
+			}
+		}
+	}
+	return body
+}
+
+// oneLine joins text into one line.
+func oneLine(text string) string { return strings.Join(strings.Fields(text), " ") }
 
 // replaceFirstSection swaps the text under the first level-2 heading ("## " at the start
 // of a line, outside code blocks) for text. It only does so when another level-2
@@ -505,6 +570,9 @@ func (b *Brain) Capture(text, remind string) error {
 			return err
 		}
 		text += " (remind: " + remind + ")"
+	}
+	if what := guard.FindSecret(text); what != "" {
+		return secretError(what)
 	}
 	f, err := os.OpenFile(b.inboxPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {

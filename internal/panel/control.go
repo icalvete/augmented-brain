@@ -125,7 +125,7 @@ func writeInfo(cfgDir string, i Info) error {
 // server that stops never removes the file of a newer one.
 func removeInfo(cfgDir string, pid int) {
 	if i, ok := ReadInfo(cfgDir); ok && i.PID == pid {
-		_ = os.Remove(filepath.Join(cfgDir, InfoFile))
+		_ = paths.Remove(filepath.Join(cfgDir, InfoFile)) // Stop may be reading it right now
 	}
 }
 

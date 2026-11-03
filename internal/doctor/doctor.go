@@ -119,7 +119,7 @@ func Run(e Env) []Check {
 		if time.Now().Before(r.Until) {
 			add(Info, i18n.T(l, "doctor.rootask", r.Host, until), "")
 		} else {
-			add(Info, i18n.T(l, "doctor.rootask.expired", r.Host, until), i18n.T(l, "doctor.rootask.fix", filepath.Join(c.Dir, config.FileName)))
+			add(Info, i18n.T(l, "doctor.rootask.expired", r.Host, until), i18n.T(l, "doctor.rootask.expired.fix", filepath.Join(c.Dir, config.FileName)))
 		}
 	}
 

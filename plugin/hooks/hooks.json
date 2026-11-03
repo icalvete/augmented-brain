@@ -28,6 +28,26 @@
             "type": "command",
             "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 5",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 6",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 7",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 8",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 9",
+            "timeout": 10
           }
         ]
       }

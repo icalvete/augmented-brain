@@ -202,6 +202,49 @@ func TestTwoMachines(t *testing.T) {
 	if out, _ := exec.Command("git", "-C", s2.Memory, "status", "--porcelain").Output(); strings.Contains(string(out), "UU") {
 		t.Errorf("a merge was left half done:\n%s", out)
 	}
+	var ce *ConflictError
+	if !errors.As(err, &ce) || len(ce.Notes) != 1 {
+		t.Errorf("the conflict is not named for the command to translate: %v", err)
+	}
+
+	// Found in the rehearsal of 0.5.6: a journal entry on each machine in the same task
+	// joins by itself, with both entries and the later date.
+	note(s2.Memory, "lesson-shared", "version one") // machine two takes one's version
+	task := func(dir, updated, journal string) {
+		t.Helper()
+		text := "---\nid: task-x\ntype: task\ntitle: X\nstatus: execution\nwaiting_on: me\nnext: go on\ncreated: 2026-10-01\nupdated: " + updated +
+			"\n---\n## Journal\n- 2026-10-01 — Task opened.\n" + journal
+		if err := os.WriteFile(filepath.Join(dir, "tasks", "task-x.md"), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	task(s2.Memory, "2026-10-01", "")
+	if _, err := Run(c2, s2, "two"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Run(c1, s1, "one"); err != nil {
+		t.Fatal(err)
+	}
+	task(s1.Memory, "2026-10-02", "- 2026-10-02 — On machine one.\n")
+	if _, err := Run(c1, s1, "one"); err != nil {
+		t.Fatal(err)
+	}
+	task(s2.Memory, "2026-10-03", "- 2026-10-03 — On machine two.\n")
+	if _, err := Run(c2, s2, "two"); err != nil {
+		t.Fatalf("two journal entries did not join: %v", err)
+	}
+	got, _ := os.ReadFile(filepath.Join(s2.Memory, "tasks", "task-x.md"))
+	for _, want := range []string{"On machine one.", "On machine two.", "updated: 2026-10-03"} {
+		if !strings.Contains(string(got), want) {
+			t.Errorf("joined task lacks %q:\n%s", want, got)
+		}
+	}
+	if strings.Index(string(got), "On machine one.") > strings.Index(string(got), "On machine two.") {
+		t.Errorf("joined entries are not in date order:\n%s", got)
+	}
+	if strings.Contains(string(got), "<<<<") || strings.Count(string(got), "updated:") != 1 {
+		t.Errorf("joined task:\n%s", got)
+	}
 }
 
 func TestSetupKeepsAForeignOrigin(t *testing.T) {

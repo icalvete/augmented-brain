@@ -87,7 +87,11 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.leftout", s.Name, strings.Join(res.LeftOut, ", "), backup.MaxFileSize>>20))
 		}
 		var se *backup.SecretsError
+		var ce *backup.ConflictError
 		switch {
+		case errors.As(err, &ce):
+			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.conflict", s.Name, strings.Join(ce.Notes, ", "), ce.Dir))
+			code = 1
 		case errors.As(err, &se):
 			var l []string
 			for _, f := range se.Found {

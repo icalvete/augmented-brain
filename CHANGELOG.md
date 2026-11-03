@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased
+
+From the rehearsal of 0.5.6:
+
+- **Your rules arrive whole.** In real sessions the assistant never opened a rule's
+  file before acting, so the details in it were lost (a `glab api` without its
+  `--hostname`). The start now has five parts for your rules, nine parts in all, and
+  each rule goes whole, without its `History` section. Only a rule that does not fit
+  goes in one line.
+- **No secrets through the tools.** A task, a journal entry, a capture, the profile or
+  any note the assistant writes is refused when it holds a secret (an AWS key, a token),
+  so it never lands in a note that the backup would then refuse. A note that already
+  held one, as an import may leave, can still be changed, to fix it.
+- **Two machines, the same task.** When each machine only added journal entries (dated
+  lines) to the same note, the backup joins them by itself, in date order. Anything
+  else still stops it, with a message in your language.
+- The session start also mentions what is due in the next 7 days, after what is overdue.
+- A task keeps up: `task_new` takes the goal and "done when" into the Definition, and
+  parking or closing updates "where it is" and "next" in the Essentials.
+- `doctor`: an ended root exception says to remove it or give it a new date.
+- Windows: removing the panel's file waits for whoever is reading it.
+
 ## 0.5.6-alpha
 
 Released 2026-11-03.

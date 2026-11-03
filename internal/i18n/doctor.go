@@ -130,6 +130,10 @@ var doctorMessages = map[string]msg{
 		en: "guard: the root exception for %s ended on %s UTC: it no longer does anything",
 		es: "guardia: la excepción de root de %s terminó el %s UTC: ya no hace nada",
 	},
+	"doctor.rootask.expired.fix": {
+		en: "remove it from root_ask in %s, or give it a new date",
+		es: "quítala de root_ask en %s, o ponle otra fecha",
+	},
 	"doctor.rootask.bad": {
 		en: "guard: the root exception %q cannot be read, so it grants nothing",
 		es: "guardia: la excepción de root %q no se puede leer, así que no permite nada",

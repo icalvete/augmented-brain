@@ -278,7 +278,8 @@ What you get:
 - **No secrets go up.** If a note holds something that looks like a password or a token,
   the backup stops and tells you which file.
 - **Nothing gets overwritten.** If two machines changed the same note, it stops without
-  touching anything and explains how to sort it out. The index, being generated, is
+  touching anything and explains how to sort it out. When each only added journal
+  entries (dated lines) to it, they are joined by themselves, in date order. The index, being generated, is
   rebuilt by itself, and captures in the inbox from two machines are both kept. One
   catch: a capture you processed on one machine can come back if the other machine
   captured something at the same time. It just shows up again at the next review.

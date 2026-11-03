@@ -149,7 +149,8 @@ augmented-brain backup                                                   # a man
   trabajo. Las listas del guardia no viajan en ninguna: en una máquina nueva, Claude te
   las vuelve a pedir.
 - **No sube secretos.** Si una nota parece tener una contraseña o un token, se para.
-- **No pisa nada.** Si dos máquinas cambiaron la misma nota, se para y te explica qué hacer.
+- **No pisa nada.** Si dos máquinas cambiaron la misma nota, se para y te explica qué hacer;
+  las entradas de diario añadidas en cada una se juntan solas.
   Las capturas del buzón hechas en dos máquinas se guardan las dos (una ya procesada en
   una máquina puede volver una vez, en la siguiente revisión).
 - **Los ficheros grandes se quedan fuera.** Un fichero de más de 50 MB en la carpeta de

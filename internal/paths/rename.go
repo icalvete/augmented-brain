@@ -25,3 +25,17 @@ func Rename(from, to string) error {
 	}
 	return err
 }
+
+// Remove deletes a file; one already gone is not an error. On Windows a file cannot be
+// deleted while another process reads it, so it tries again briefly there, as Rename.
+func Remove(path string) error {
+	err := os.Remove(path)
+	for i := 1; err != nil && !os.IsNotExist(err) && runtime.GOOS == "windows" && i < renameTries; i++ {
+		time.Sleep(time.Duration(i) * 10 * time.Millisecond)
+		err = os.Remove(path)
+	}
+	if os.IsNotExist(err) {
+		return nil
+	}
+	return err
+}

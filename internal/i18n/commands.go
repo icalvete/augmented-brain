@@ -130,6 +130,10 @@ var commandMessages = map[string]msg{
 		en: "✗ %s: nothing was backed up: these files hold secrets, remove them first: %s",
 		es: "✗ %s: no se ha copiado nada: estos ficheros tienen secretos, quítalos primero: %s",
 	},
+	"backup.conflict": {
+		en: "✗ %s: nothing was backed up: another machine changed the same notes (%s). Open %s, run `git merge origin/main`, keep the right version of each, commit, and back up again",
+		es: "✗ %s: no se ha copiado nada: otra máquina cambió las mismas notas (%s). Abre %s, lanza `git merge origin/main`, quédate con la versión buena de cada una, haz commit y vuelve a copiar",
+	},
 	"backup.leftout": {
 		en: "! %s: left out of the backup, bigger than %[3]d MB: %[2]s. Move them out of the notes folder.",
 		es: "! %s: fuera de la copia, de más de %[3]d MB: %[2]s. Sácalos de la carpeta de notas.",

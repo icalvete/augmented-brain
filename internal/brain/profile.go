@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
@@ -67,6 +68,9 @@ func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
 		Header: memory.Header{ID: "profile", Type: "profile", Title: word("title"), Summary: word("summary"),
 			Created: created, Updated: b.today()},
 		Body: body.String(),
+	}
+	if what := guard.FindSecret(n.Body); what != "" {
+		return nil, secretError(what)
 	}
 	return n, memory.Save(b.ConfigDir, n)
 }
