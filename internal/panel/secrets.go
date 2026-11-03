@@ -15,6 +15,7 @@ import (
 type secretRow struct {
 	brain.SecretName
 	State string // "", "present", "missing", "unknown"
+	How   string // when missing: the command that stores it, asking for its value
 	Used  []taskLink
 }
 
@@ -23,7 +24,7 @@ type secretRow struct {
 func (s *Server) secrets(v *view, r *http.Request) (string, page, error) {
 	check := r.FormValue("check") == "1"
 	var rows []secretRow
-	names := brain.SecretNames(v.c)
+	names, bad := brain.SecretNames(v.c.Dir)
 	// The notes of every space, to find which tasks name each secret.
 	type noteText struct {
 		link taskLink
@@ -53,6 +54,9 @@ func (s *Server) secrets(v *view, r *http.Request) (string, page, error) {
 		row := secretRow{SecretName: sn}
 		if check {
 			row.State = map[keyring.State]string{keyring.Present: "present", keyring.Missing: "missing", keyring.Unknown: "unknown"}[keyring.Has(sn.Service, sn.Name)]
+			if row.State == "missing" {
+				row.How = keyring.HowToStore(sn.Service, sn.Name)
+			}
 		}
 		for _, n := range notes {
 			if namesKey(n.text, sn.Key()) {
@@ -66,7 +70,7 @@ func (s *Server) secrets(v *view, r *http.Request) (string, page, error) {
 		Rows    []secretRow
 		Checked bool
 		Bad     int
-	}{rows, check, len(v.c.Secrets) - len(names)}
+	}{rows, check, bad}
 	return "secrets", p, nil
 }
 

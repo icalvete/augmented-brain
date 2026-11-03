@@ -440,12 +440,15 @@ y enlaces, y un `[[enlace]]` a otra nota te lleva a ella. Si una nota cambia en 
 mientras tienes abierta su página (Claude escribió en ella, por ejemplo), la página te lo
 dice, con un enlace para verla como está ahora.
 
-La lista de secretos es la misma en todos los espacios. Vive en el fichero de
-configuración, como `secrets = ["telegram/alertas-bot: avisos al móvil"]`. Puedes apuntar
-un nombre en el panel, o quitar uno de la lista (el secreto sigue en el llavero). O dile
-a Claude que has guardado un secreto nuevo, y apunta el nombre. Lo que parezca un valor
-se rechaza. La lista viaja en la copia del espacio por defecto, y un restore la trae a
-una máquina nueva que no tenga ninguna.
+La lista de secretos es la misma en todos los espacios. Vive en su propio fichero,
+`secrets.toml`, junto al de configuración, como
+`secrets = ["telegram/alertas-bot: avisos al móvil"]`. Puedes apuntar un nombre en el
+panel, o quitar uno de la lista (el secreto sigue en el llavero). O dile a Claude que has
+guardado un secreto nuevo, y apunta el nombre. Lo que parezca un valor se rechaza. Si al
+llavero le falta uno, el panel enseña el comando que lo guarda (te pide el valor). La
+lista viaja en la copia del espacio por defecto. Un restore la trae a una máquina nueva
+que no tenga ninguna, y nombra los secretos que su llavero aún no tiene, cada uno con el
+comando para guardarlo.
 
 Cambia tus notas igual que Claude, con el mismo programa, y se esperan el uno al otro:
 puedes tener los dos abiertos a la vez.
@@ -489,7 +492,9 @@ augmented-brain update
 ```
 
 Actualiza el programa y el plugin de Claude. Después, cierra y abre Claude para que use
-la versión nueva. Tus notas y tu configuración se quedan como están, salvo que la versión
+la versión nueva: una sesión que estaba abierta sigue con la vieja hasta que lo hagas, y
+sus herramientas de augmented brain pueden fallar. `augmented-brain doctor` y el
+arranque de una sesión nueva te dicen cuántas sesiones siguen con la versión vieja. Tus notas y tu configuración se quedan como están, salvo que la versión
 nueva las escriba de otra manera: entonces la primera sesión las pasa a la manera nueva,
 después de guardar una copia completa en la carpeta `migrations/` de la configuración, y
 Claude te lo dice. Una versión más vieja se niega a abrir notas escritas por una más

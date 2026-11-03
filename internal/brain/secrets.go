@@ -3,12 +3,16 @@ package brain
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode/utf8"
 
+	"github.com/BurntSushi/toml"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/guard"
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // SecretName is a secret the user keeps in the system keychain: where it is, and what
@@ -36,16 +40,71 @@ func ParseSecretName(entry string) (SecretName, bool) {
 	return SecretName{service, name, strings.TrimSpace(what)}, true
 }
 
-// SecretNames returns the secrets the configuration names, in its order; entries it
-// cannot read are left out.
-func SecretNames(c *config.Config) []SecretName {
+// SecretList returns the entries of the secrets list, as written: those of its file,
+// then any 0.6.0 left in config.toml that the file does not have yet.
+func SecretList(cfgDir string) []string {
+	var f struct {
+		Secrets []string `toml:"secrets"`
+	}
+	_, _ = toml.DecodeFile(filepath.Join(cfgDir, config.SecretsFile), &f)
+	out := f.Secrets
+	if c, err := config.Load(cfgDir); err == nil {
+		for _, e := range c.Secrets {
+			if !slices.Contains(out, e) {
+				out = append(out, e)
+			}
+		}
+	}
+	return out
+}
+
+// SecretNames returns the secrets the list names, in its order, and how many of its
+// entries cannot be read.
+func SecretNames(cfgDir string) ([]SecretName, int) {
 	var out []SecretName
-	for _, e := range c.Secrets {
+	list := SecretList(cfgDir)
+	for _, e := range list {
 		if s, ok := ParseSecretName(e); ok {
 			out = append(out, s)
 		}
 	}
-	return out
+	return out, len(list) - len(out)
+}
+
+// writeSecrets writes the list to its file. Every entry is plain text (plainLine), so
+// quoting it is enough for TOML.
+func writeSecrets(cfgDir string, list []string) error {
+	var b strings.Builder
+	b.WriteString("# The names of the secrets you keep in the system keychain, and what each is for.\n")
+	b.WriteString("# Never their values. augmented brain writes this file; the panel shows it.\n")
+	b.WriteString("secrets = [\n")
+	for _, e := range list {
+		b.WriteString("  \"" + e + "\",\n")
+	}
+	b.WriteString("]\n")
+	return paths.WriteAtomic(filepath.Join(cfgDir, config.SecretsFile), []byte(b.String()), 0o600)
+}
+
+// SaveSecretList writes a whole list, as a restore brings it.
+func SaveSecretList(cfgDir string, list []string) error {
+	if len(list) == 0 {
+		return nil
+	}
+	return writeSecrets(cfgDir, list)
+}
+
+// MoveSecrets takes the list 0.6.0 kept in config.toml to its own file, so programs
+// before 0.6.0, which refuse a setting they do not know, can read the configuration.
+// Safe to repeat; nothing to do when config.toml has none.
+func MoveSecrets(cfgDir string) error {
+	c, err := config.Load(cfgDir)
+	if err != nil || len(c.Secrets) == 0 {
+		return err
+	}
+	if err := writeSecrets(cfgDir, CleanSecretNames(SecretList(cfgDir))); err != nil {
+		return err
+	}
+	return config.RemoveTopKey(cfgDir, "secrets")
 }
 
 // ErrSecretName is a service or a name that is not one plain word, or a description
@@ -65,8 +124,7 @@ func (b *Brain) SaveSecretName(in SecretName) (string, error) {
 	if kind := guard.FindSecret(in.Key() + " " + in.What); kind != "" {
 		return "", ErrSecretValue
 	}
-	c, err := config.Load(b.ConfigDir)
-	if err != nil {
+	if err := MoveSecrets(b.ConfigDir); err != nil {
 		return "", err
 	}
 	entry := in.Key()
@@ -75,7 +133,7 @@ func (b *Brain) SaveSecretName(in SecretName) (string, error) {
 	}
 	var list []string
 	found := false
-	for _, e := range c.Secrets {
+	for _, e := range CleanSecretNames(SecretList(b.ConfigDir)) {
 		if s, ok := ParseSecretName(e); ok && s.Key() == in.Key() {
 			if !found {
 				list = append(list, entry)
@@ -88,7 +146,7 @@ func (b *Brain) SaveSecretName(in SecretName) (string, error) {
 	if !found {
 		list = append(list, entry)
 	}
-	if err := config.SetTopList(b.ConfigDir, "secrets", list); err != nil {
+	if err := writeSecrets(b.ConfigDir, list); err != nil {
 		return "", err
 	}
 	return "secrets: " + entry, nil
@@ -97,22 +155,22 @@ func (b *Brain) SaveSecretName(in SecretName) (string, error) {
 // ForgetSecretName takes a secret's name out of the list. The secret itself, in the
 // keychain, is not touched.
 func (b *Brain) ForgetSecretName(service, name string) error {
-	c, err := config.Load(b.ConfigDir)
-	if err != nil {
+	if err := MoveSecrets(b.ConfigDir); err != nil {
 		return err
 	}
 	key := service + "/" + name
+	all := SecretList(b.ConfigDir)
 	var list []string
-	for _, e := range c.Secrets {
+	for _, e := range all {
 		if s, ok := ParseSecretName(e); ok && s.Key() == key {
 			continue
 		}
 		list = append(list, e)
 	}
-	if len(list) == len(c.Secrets) {
+	if len(list) == len(all) {
 		return fmt.Errorf("there is no secret %s in the list", key)
 	}
-	return config.SetTopList(b.ConfigDir, "secrets", list)
+	return writeSecrets(b.ConfigDir, list)
 }
 
 // plainLine says whether text is one line of printable text, which the configuration

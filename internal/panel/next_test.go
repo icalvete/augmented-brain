@@ -112,7 +112,7 @@ func TestPeople(t *testing.T) {
 	if idIn(loc) != "person-ana-ruiz" {
 		t.Fatalf("went to %q", loc)
 	}
-	saved(t, s.post(t, "/person", url.Values{"s": {"work"}, "name": {"Ana Ruiz"}, "aliases": {"Ana"}, "role": {"head baker"}, "notes": {""}}), "change person")
+	saved(t, s.post(t, "/person", url.Values{"s": {"work"}, "name": {"Ana Ruiz"}, "aliases": {"Ana"}, "role": {"head baker"}, "notes": {""}}), "change person, notes kept")
 	p := openSpace(t, cfg, "work").Mem.Notes["person-ana-ruiz"]
 	role, aliases := brain.PersonParts(p)
 	if role != "head baker" || strings.Join(aliases, ",") != "Ana" || !strings.Contains(p.Body, "Starts at six.") {
@@ -123,6 +123,11 @@ func TestPeople(t *testing.T) {
 	page := s.get(t, "/note?s=work&id=person-ana-ruiz").Body.String()
 	if !strings.Contains(page, "Flour order") || !strings.Contains(page, `value="head baker"`) {
 		t.Errorf("person page:\n%s", page)
+	}
+	// From the page's own form (replace=1), the notes are what it sends, empty too.
+	saved(t, s.post(t, "/person", url.Values{"s": {"work"}, "name": {"Ana Ruiz"}, "aliases": {"Ana"}, "role": {"head baker"}, "notes": {""}, "replace": {"1"}}), "empty notes")
+	if p := openSpace(t, cfg, "work").Mem.Notes["person-ana-ruiz"]; strings.TrimSpace(p.Body) != "" {
+		t.Errorf("notes not emptied: %q", p.Body)
 	}
 	if tasks := s.get(t, "/tasks?s=work").Body.String(); !strings.Contains(tasks, `id=person-ana-ruiz">Ana</a>`) {
 		t.Error("the task list does not lead from the wait to the person")
@@ -198,6 +203,11 @@ func TestStampAndArea(t *testing.T) {
 	a := openSpace(t, cfg, "work").Mem.Notes[area]
 	if a.Header.Title != "Bakery" || a.Header.Summary != "Bread and cakes" {
 		t.Errorf("area: %+v", a.Header)
+	}
+	saved(t, s.post(t, "/area/update", url.Values{"s": {"work"}, "id": {area}, "title": {""}, "summary": {""}}), "area emptied")
+	a = openSpace(t, cfg, "work").Mem.Notes[area]
+	if a.Header.Title != "Bakery" || a.Header.Summary != "" {
+		t.Errorf("area after emptying: %+v", a.Header)
 	}
 }
 

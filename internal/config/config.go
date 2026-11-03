@@ -15,8 +15,14 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/icalvete/augmented-brain/internal/format"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
+
+// SecretsFile, in the configuration folder, names the secrets the user keeps in the
+// system keychain, never their values. A file of its own, not a setting of
+// config.toml: a program that does not know it never reads it.
+const SecretsFile = "secrets.toml"
 
 // FileName is the configuration file inside the configuration folder.
 const FileName = "config.toml"
@@ -59,8 +65,9 @@ type Config struct {
 	UntouchableHosts      []string `toml:"untouchable_hosts,omitempty"`
 	// RootAsk are temporary exceptions for root, "<host> until <date>" (see RootAsk).
 	RootAsk []string `toml:"root_ask,omitempty"`
-	// Secrets names the secrets the user keeps in the system keychain, never their
-	// values: "<service>/<name>: what it is for" (see brain.SecretNames).
+	// Secrets is where 0.6.0 kept the names of the user's secrets. Earlier versions
+	// refuse a configuration with it, so they now live in their own file (SecretsFile,
+	// see brain.SecretNames); it is only read here, to move them there.
 	Secrets []string          `toml:"secrets,omitempty"`
 	Spaces  map[string]*Space `toml:"spaces"`
 
@@ -107,6 +114,11 @@ func Load(dir string) (*Config, error) {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
 	if extra := md.Undecoded(); len(extra) > 0 {
+		// A configuration written by a newer program may hold settings this one does
+		// not know: then the thing to say is to update, not that the file is wrong.
+		if c.Format > format.Config() {
+			return nil, &format.NewerError{What: dir, Version: c.Format, Known: format.Config()}
+		}
 		keys := make([]string, len(extra))
 		for i, k := range extra {
 			keys[i] = k.String()
@@ -173,7 +185,7 @@ func (c *Config) Save() error {
 		return err
 	}
 	out := Config{Format: c.Format, Language: c.Language, DefaultSpace: c.DefaultSpace, Spaces: map[string]*Space{},
-		ProductionAWSProfiles: c.ProductionAWSProfiles, UntouchableHosts: c.UntouchableHosts, RootAsk: c.RootAsk, Secrets: c.Secrets}
+		ProductionAWSProfiles: c.ProductionAWSProfiles, UntouchableHosts: c.UntouchableHosts, RootAsk: c.RootAsk}
 	for name, s := range c.Spaces {
 		cp := s.forFile()
 		if cp.WorkFolders == nil {

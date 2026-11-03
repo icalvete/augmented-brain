@@ -30,6 +30,7 @@ func TestMarkdownBlocks(t *testing.T) {
 		{"```\n<b>x</b>\n```", "<pre><code>&lt;b&gt;x&lt;/b&gt;</code></pre>"},
 		{"| a | b |\n|---|---|\n| 1 | 2 |", "<th>a</th><th>b</th>"},
 		{"| a | b |\n|---|---|\n| 1 | 2 |", "<td>1</td><td>2</td>"},
+		{"| a | b |\n|---|---|\n| `x|y` | 2 |", "<td><code>x|y</code></td><td>2</td>"},
 		{"> quoted", "<blockquote><p>quoted</p>\n</blockquote>"},
 		{"---", "<hr>"},
 	}

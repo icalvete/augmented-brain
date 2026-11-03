@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/setup"
@@ -51,7 +52,7 @@ func twoSpaces(t *testing.T, root string) (*config.Config, string, string) {
 	if err := config.SetTopList(cfg, "untouchable_hosts", []string{"db01"}); err != nil {
 		t.Fatal(err)
 	}
-	if err := config.SetTopList(cfg, "secrets", []string{"mail/smtp: sending mail"}); err != nil {
+	if err := brain.SaveSecretList(cfg, []string{"mail/smtp: sending mail"}); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(cfg, "profile.md"), []byte("---\nid: profile\ntype: profile\ntitle: Profile\n---\n- Name: Dana\n"), 0o644); err != nil {
@@ -151,11 +152,14 @@ func TestProfileOnlyInTheDefaultSpace(t *testing.T) {
 		t.Errorf("lists after restore: %v %v", c2, err)
 	}
 	// The names of the secrets come with the default space; never with another one.
-	if text, _ := show(t, workRemote, MetaDir+"/config.toml"); strings.Contains(text, "mail/smtp") {
-		t.Error("the work backup holds the secrets list")
+	if inBackup(t, workRemote, MetaDir+"/"+config.SecretsFile) || !inBackup(t, personalRemote, MetaDir+"/"+config.SecretsFile) {
+		t.Error("the secrets list is not only in the default space's backup")
 	}
-	if c2, err := config.Load(cfg2); err != nil || strings.Join(c2.Secrets, "|") != "mail/smtp: sending mail" {
-		t.Errorf("secrets after restoring the default space: %v %v", c2.Secrets, err)
+	if text, _ := show(t, personalRemote, MetaDir+"/config.toml"); strings.Contains(text, "mail/smtp") {
+		t.Error("the backup's config.toml holds the secrets list: programs before 0.6.0 refuse it")
+	}
+	if l := brain.SecretList(cfg2); strings.Join(l, "|") != "mail/smtp: sending mail" {
+		t.Errorf("secrets after restoring the default space: %q", l)
 	}
 	// personal was the default space, and is again: its backup goes on carrying the
 	// profile and the shared notes.

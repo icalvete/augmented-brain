@@ -74,7 +74,7 @@ func (s *Server) personSave(v *view, r *http.Request) (string, error) {
 		}
 	}
 	n, err := v.b.SavePerson(brain.PersonInput{Name: field(r, "name"), Aliases: aliases,
-		Role: field(r, "role"), Notes: field(r, "notes")})
+		Role: field(r, "role"), Notes: field(r, "notes"), ReplaceNotes: r.PostForm.Has("notes") && r.PostForm.Get("replace") == "1"})
 	if err != nil {
 		return "", err
 	}

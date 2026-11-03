@@ -603,8 +603,8 @@ func (b *Brain) NewArea(title, summary string) (*memory.Note, error) {
 	return n, b.save(n)
 }
 
-// UpdateArea changes an area's title and summary; an empty one keeps what it says. The
-// id stays, so every task in the area stays in it.
+// UpdateArea changes an area's title (empty keeps it: an area always has one) and its
+// summary (empty clears it). The id stays, so every task in the area stays in it.
 func (b *Brain) UpdateArea(id, title, summary string) (*memory.Note, error) {
 	old, err := b.get(id, "area")
 	if err != nil {
@@ -614,9 +614,7 @@ func (b *Brain) UpdateArea(id, title, summary string) (*memory.Note, error) {
 	if t := strings.TrimSpace(title); t != "" {
 		cp.Header.Title = t
 	}
-	if s := strings.TrimSpace(summary); s != "" {
-		cp.Header.Summary = s
-	}
+	cp.Header.Summary = strings.TrimSpace(summary)
 	return &cp, b.save(&cp)
 }
 

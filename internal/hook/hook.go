@@ -139,6 +139,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string
 	note += sessionStarted(c, s, i, cfgDir)
 	note += askSafety(c, cfgDir)
 	note += rootNote(c)
+	note += oldServersNote(c)
 	return note
 }
 

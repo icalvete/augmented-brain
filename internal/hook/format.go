@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
+	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/format"
@@ -35,6 +36,11 @@ func migrate(c *config.Config, s *config.Space, cfgDir string) string {
 	}
 	if unlock, err := filelock.LockWithin(filepath.Join(cfgDir, backup.NotesLock), LockWait); err == nil {
 		r, err := format.EnsureConfig(cfgDir, c.FormatVersion(), func(v int) error { return config.SetFormat(cfgDir, v) }, now)
+		if err == nil {
+			// 0.6.0 kept the secrets' names in config.toml, which earlier programs
+			// refuse: they go to their own file.
+			err = brain.MoveSecrets(cfgDir)
+		}
 		unlock()
 		say("its configuration and profile", r, err)
 	}

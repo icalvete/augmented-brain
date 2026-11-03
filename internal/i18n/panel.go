@@ -123,8 +123,8 @@ var panelMessages = map[string]msg{
 		es: "Cambiar",
 	},
 	"panel.person.edit.hint": {
-		en: "The name stays: a new name would be a new person. Left empty, the notes keep what they say.",
-		es: "El nombre se queda: un nombre nuevo sería otra persona. Si dejas las notas vacías, siguen como están.",
+		en: "The name stays: a new name would be a new person. What you write here replaces the notes.",
+		es: "El nombre se queda: un nombre nuevo sería otra persona. Lo que escribas aquí sustituye las notas.",
 	},
 	"panel.person.waiting": {
 		en: "Waiting on them",
@@ -353,6 +353,10 @@ var panelMessages = map[string]msg{
 	"panel.secrets.unknown": {
 		en: "cannot tell here",
 		es: "aquí no se puede saber",
+	},
+	"panel.secrets.how": {
+		en: "To store it here (it asks for the value):",
+		es: "Para guardarlo aquí (te pide el valor):",
 	},
 	"panel.secrets.used": {
 		en: "Named in:",

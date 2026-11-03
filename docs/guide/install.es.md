@@ -148,7 +148,8 @@ augmented-brain update
 ```
 
 Actualiza el programa y el plugin de Claude Code; tus notas y tus ajustes se quedan. Claude
-te avisa cuando hay una versión nueva. Volver a lanzar el comando de instalación hace lo
+te avisa cuando hay una versión nueva. Cierra y vuelve a abrir las sesiones de Claude que
+tuvieras abiertas, para que también la usen. Volver a lanzar el comando de instalación hace lo
 mismo.
 
 ## Desinstalar

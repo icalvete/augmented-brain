@@ -308,21 +308,32 @@ func writeMeta(c *config.Config, s *config.Space) error {
 	one := &config.Config{Language: c.Language, Spaces: map[string]*config.Space{s.Name: s}, Dir: dir}
 	if carries {
 		one.DefaultSpace = s.Name // so a restore makes it the default space again
-		one.Secrets = c.Secrets   // the names of the user's secrets travel with the profile
 	}
 	if err := one.Save(); err != nil {
 		return err
 	}
 	profile := filepath.Join(dir, "profile.md")
+	secrets := filepath.Join(dir, config.SecretsFile)
 	shared := filepath.Join(dir, config.SharedFolder)
 	if err := os.RemoveAll(shared); err != nil {
 		return err
 	}
 	if !carries {
-		if err := os.Remove(profile); err != nil && !errors.Is(err, os.ErrNotExist) {
-			return err
+		for _, f := range []string{profile, secrets} {
+			if err := os.Remove(f); err != nil && !errors.Is(err, os.ErrNotExist) {
+				return err
+			}
 		}
 		return nil
+	}
+	// The names of the user's secrets travel with the profile, in their own file: a
+	// program before 0.6.0 restoring this backup never reads it.
+	if data, err := os.ReadFile(filepath.Join(c.Dir, config.SecretsFile)); err == nil {
+		if err := os.WriteFile(secrets, data, 0o600); err != nil {
+			return err
+		}
+	} else if err := os.Remove(secrets); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
 	}
 	if _, err := os.Stat(c.SharedDir()); err == nil {
 		if err := paths.CopyTree(c.SharedDir(), shared); err != nil {
@@ -417,13 +428,14 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	if err := copyShared(filepath.Join(mem, MetaDir), cfgDir); err != nil {
 		return nil, err
 	}
-	// The names of the user's secrets (never their values), when this machine has none.
-	// An entry that cannot be read is left out: it never stops the restore.
-	if saved, err := config.Load(filepath.Join(mem, MetaDir)); err == nil {
-		if list := brain.CleanSecretNames(saved.Secrets); len(list) > 0 {
-			if here, err := config.Load(cfgDir); err == nil && len(here.Secrets) == 0 {
-				_ = config.SetTopList(cfgDir, "secrets", list)
-			}
+	// The names of the user's secrets (never their values), when this machine has none:
+	// from their file, or from the configuration a 0.6.0 backup kept them in. An entry
+	// that cannot be read is left out: it never stops the restore.
+	if len(brain.SecretList(cfgDir)) == 0 {
+		meta := filepath.Join(mem, MetaDir)
+		list := brain.SecretList(meta)
+		if len(list) > 0 {
+			_ = brain.SaveSecretList(cfgDir, brain.CleanSecretNames(list))
 		}
 	}
 	// The index is generated: rebuild it for this machine.

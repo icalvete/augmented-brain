@@ -20,6 +20,8 @@ import (
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/state"
+	"github.com/icalvete/augmented-brain/internal/version"
 )
 
 // Status of one check.
@@ -130,6 +132,9 @@ func Run(e Env) []Check {
 		out = append(out, space(c, c.Spaces[name])...)
 	}
 	out = append(out, autoMemory(e, c)...)
+	if old := state.OldServers(c.Dir, version.Version); len(old) > 0 {
+		add(Warning, i18n.T(l, "doctor.oldservers", len(old), version.Version), i18n.T(l, "doctor.oldservers.fix"))
+	}
 	return append(out, tools(e)...)
 }
 

@@ -11,9 +11,11 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
+	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/keyring"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
@@ -150,6 +152,7 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 	if len(s.NotRestored) > 0 {
 		fmt.Fprintln(out, i18n.T(lang, "restore.norepos", strings.Join(tildes(s.NotRestored), ", "), filepath.Join(dir, config.FileName)))
 	}
+	missingSecrets(lang, dir, out)
 	// A new machine has no plugin yet: install it, as init does.
 	if ok, err := claudecode.Installed(claudecode.Exec); err == nil && !ok {
 		installPlugin(&asker{out: out}, lang, out, errOut)
@@ -158,4 +161,30 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(out, i18n.T(lang, "restore.next", paths.Tilde(s.WorkFolders[0])))
 	}
 	return 0
+}
+
+// missingSecrets names the secrets of the list that this machine's keychain does not
+// have, and how to store each: the backup brings their names, never their values.
+func missingSecrets(lang, dir string, out io.Writer) {
+	names, _ := brain.SecretNames(dir)
+	var missing []brain.SecretName
+	for _, n := range names {
+		if keyring.Has(n.Service, n.Name) == keyring.Missing {
+			missing = append(missing, n)
+		}
+	}
+	if len(missing) == 0 {
+		return
+	}
+	fmt.Fprintln(out, i18n.T(lang, "restore.secrets", len(missing)))
+	for _, n := range missing {
+		line := "  " + n.Key()
+		if n.What != "" {
+			line += " · " + n.What
+		}
+		fmt.Fprintln(out, line)
+		if how := keyring.HowToStore(n.Service, n.Name); how != "" {
+			fmt.Fprintln(out, "    "+how)
+		}
+	}
 }

@@ -16,6 +16,9 @@ type PersonInput struct {
 	Aliases []string // other names the user uses: "Marcos", "Marquitos"
 	Role    string   // who they are to the user: "my manager", "client, runs the shop"
 	Notes   string   // anything else worth remembering
+	// ReplaceNotes makes Notes the person's notes even when empty (the panel's form,
+	// which shows them whole); otherwise empty Notes keep what they say.
+	ReplaceNotes bool
 }
 
 // SavePerson creates a person, or updates them when one with the same name exists (see
@@ -55,7 +58,7 @@ func (b *Brain) SavePerson(in PersonInput) (*memory.Note, error) {
 		cp := *old // the note in the index stays as it was until saved
 		cp.Header.Title = title
 		cp.Header.Summary = summary
-		if body != "" {
+		if body != "" || in.ReplaceNotes {
 			cp.Body = body
 		}
 		return &cp, b.save(&cp)

@@ -277,7 +277,6 @@ default_space = "personal"       # used outside every work folder (optional)
 production_aws_profiles = ["prod", "prod-eu"]   # every space: the user confirms first
 untouchable_hosts = ["db01", "db02", "db03"]    # ssh, scp, sftp, mosh to them: the user confirms first
 root_ask = ["db01 until 2026-10-31"]            # root there asks instead of being refused, until then
-secrets = ["telegram/alerts-bot: alerts to my phone"]   # names of secrets in the system keychain, never values
 
 [spaces.work]
 memory = "~/augmented-brain/work/notes"
@@ -315,9 +314,13 @@ date the entry does nothing, and `augmented-brain doctor` says it can be removed
 session start tells the assistant which exceptions are in force, and names those that
 cannot be read (they grant nothing); `doctor` names those too.
 
-`secrets` names the secrets the user keeps in the system keychain, one each:
-`"<service>/<name>: what it is for"`. The service and the name are single words (letters,
-digits, `. _ @ + -`), as the keychain knows them (`secret-tool` attributes `service` and
+`secrets.toml`, next to `config.toml`, names the secrets the user keeps in the system
+keychain: `secrets = ["<service>/<name>: what it is for", …]`. It is a file of its own,
+not a setting of `config.toml`, because programs before 0.6.0 refuse a setting they do
+not know; 0.6.0 kept the list in `config.toml`, and 0.6.1 moves it here at the start of
+a session or with `check`. The service and the name are single words (letters, digits,
+`. _ @ + -`, not starting with `-`), and what it is for is one line of plain text (no
+quotes, backslashes or control characters), as the keychain knows them (`secret-tool` attributes `service` and
 `name` on Linux; a generic password's service and account on macOS). It never holds a
 value: anything that looks like one is refused. It is the same list in every space. The
 assistant adds to it with the MCP tool `secret_name_save` (saving a listed name changes
@@ -330,10 +333,11 @@ be read is left out and counted on the panel's page.
 Each space backs up to its own private git repository: the memory folder itself is the
 repository. Every backup also copies this space's part of the configuration into
 `.augmented-brain/` inside the memory folder, so restoring on a new machine needs nothing
-else. The default space's backup (or the only space's) also carries the profile, the
-`secrets` list, and says `default_space` in its copy of the configuration, so a restore
-makes it the default space again when the machine has none, and brings the `secrets`
-list when the machine's is empty; no other backup does, so the personal profile
+else. The default space's backup (or the only space's) also carries the profile and
+`secrets.toml`, and says `default_space` in its copy of the configuration, so a restore
+makes it the default space again when the machine has none, and brings the secrets'
+names when the machine has none (also from a 0.6.0 backup, which kept them in its copy
+of the configuration), then names those this machine's keychain lacks; no other backup does, so the personal profile
 never reaches a work repository. The
 machine-wide guard lists are in no backup (they may name work machines): after a restore
 that leaves them empty, `restore` and `doctor` say so, and the next session offers to ask for them

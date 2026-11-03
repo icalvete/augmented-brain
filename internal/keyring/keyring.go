@@ -51,3 +51,16 @@ func Has(service, name string) State {
 	}
 	return Unknown
 }
+
+// HowToStore is the command that stores the secret service/name in this computer's
+// keychain, asking for its value (never written in the command), or "" where it is not
+// known.
+func HowToStore(service, name string) string {
+	switch runtime.GOOS {
+	case "linux", "freebsd", "openbsd":
+		return "secret-tool store --label=" + service + "/" + name + " service " + service + " name " + name
+	case "darwin":
+		return "security add-generic-password -s " + service + " -a " + name + " -w"
+	}
+	return ""
+}

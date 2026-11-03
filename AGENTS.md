@@ -18,7 +18,7 @@ it feels to a newcomer.
 | Path | What |
 |---|---|
 | `cmd/augmented-brain/` | The commands: `init`, `space add`, `doctor`, `check`, `import`, `backup`, `restore`, `panel`, `update`, `uninstall`, `version`, `mcp`, `hook`. `loadConfig` and `currentSpace` (main.go) are how a command gets the configuration and its space. |
-| `internal/config` | The configuration file: spaces, `default_space`, the machine-wide guard lists (`root_ask` parsed in `rootask.go`), the names of the user's secrets (`secrets`). Edits keep the user's comments: every one goes through the line editor in `edit.go` (`AddSpace`, `SetSpaceKey`, `SetSpaceList`, `SetTopList`, `SetDefaultSpace`, `SetFormat`), which loads the file back before the change stays. |
+| `internal/config` | The configuration file: spaces, `default_space`, the machine-wide guard lists (`root_ask` parsed in `rootask.go`), `SecretsFile` (`secrets.toml`: the names of the user's secrets, a file of its own because earlier programs refuse an unknown setting of `config.toml`). `Load` says "update" when a newer format holds settings it does not know. Edits keep the user's comments: every one goes through the line editor in `edit.go` (`AddSpace`, `SetSpaceKey`, `SetSpaceList`, `SetTopList`, `SetDefaultSpace`, `SetFormat`), which loads the file back before the change stays. |
 | `internal/memory` | Reads and checks notes (headers only), builds the index `MEMORY.md`. The one place for what a note looks like: `Types` (folder and id prefix of each type, `PathFor`), the dated line `- date — text` (`dated.go`), `## ` headings (`Headings`), dates (`ParseDate`, `DaysBetween`), the header (`SplitHeader`). `LoadSpace` loads a space with the shared notes it may link to; `LoadShared` the shared notes alone (`<config>/shared/`: rules and knowledge for every space). |
 | `internal/brain` | Everything that writes notes: tasks, areas, knowledge, people, the profile, safety settings, recovered sessions (`Recover`), the list of secret names (`secrets.go`: names only, a value is refused). A change copies the note, checks everything, then writes once (`Update` takes the watch dates too), so a failed change leaves nothing behind. |
 | `internal/mcpserver` | The MCP tools, thin layers over `brain`. Calls run one at a time (`filelock.Writer`: a mutex plus the notes lock file). |
@@ -29,7 +29,7 @@ it feels to a newcomer.
 | `internal/hook`, `internal/session` | The SessionStart, PreToolUse, Stop, PostCompact and SessionEnd hooks (SessionEnd starts the automatic backup); what the assistant reads at the start, in up to `session.Parts` (9) hooks of 9,500 UTF-16 units each (Claude Code cuts each hook's text at 10,000); only the parts that have something are sent and counted ("part 2 of 3"): part 1 alone does the work behind the notes. How the hooks ask the assistant to pass news on in the user's language is worded once, in `session/say.go`. |
 | `internal/format` | The version of each space's notes (`.augmented-brain/format`) and of the configuration folder (`format =` in `config.toml`, never written while it is 1), and the migrations that move them forward at the start of a session or in `check`, after a full copy. Notes of a newer version are refused, never written. |
 | `internal/importer` | `augmented-brain import`: a memory of Claude Code into the spaces. `MakePlan` decides (and reports what it cannot), `Apply` writes, never over a note that exists; the source is only read. |
-| `internal/state` | What this machine knows about each space's sessions (active task, last write, sessions that did not end), in the configuration folder, never backed up; and the reader of Claude Code's transcripts for `session_recover`. |
+| `internal/state` | What this machine knows about each space's sessions (active task, last write, sessions that did not end), in the configuration folder, never backed up; the reader of Claude Code's transcripts for `session_recover`; and the MCP servers running (`servers/<pid>`, with their version), so `doctor` and the session start can say which open sessions still run an earlier program after an update (on Linux also those of versions that kept no note: their program was replaced on disk). |
 | `internal/guard` | The command guard: a small shell parser and the policy (push, root and its dated exceptions in `root_ask`, secrets, production profiles, untouchable hosts). |
 | `internal/setup`, `internal/doctor`, `internal/backup`, `internal/claudecode`, `internal/update` | Creating spaces, the health check, backup and restore, installing the plugin, the new-version check. |
 | `internal/i18n` | Every message a person reads, and every text the program writes into notes, in one catalogue: a file per subject (`doctor.go`, `commands.go`, `panel.go`, `import.go`, `init.go`, `notes.go`), each message with its English and Spanish side by side. `T` formats one; `All` gives both, to read back text written in either. |
@@ -59,6 +59,12 @@ Heavier checks, before a release or when you touch what they cover:
   result (13 with the desktop app). It installs Claude Code for whoever runs it, so use
   `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on macOS and Ubuntu on
   every push that touches the installer, the plugin or the code (`install.yml`).
+- `scripts/compat-check.sh`: what this version writes (tasks, people, secrets' names,
+  captures, rules, a backup), the last two releases must still read: their `doctor`,
+  `check`, MCP tools, session start and restore. After an update, open Claude sessions
+  keep the old program, and other machines may not be updated yet. CI runs it on every
+  push (`compat` in `ci.yml`). By hand: `COMPAT_DIR=<folder> scripts/compat-check.sh
+  <new binary> [versions]`; it leaves the folder for you to delete.
 - `scripts/install-check-mac.sh`: what only a Mac can get wrong in the installer (the PATH
   file for zsh and bash, macOS 13 or later, Apple's stub git), with fakes for `sw_vers`
   and `xcode-select`. CI runs it on every Mac row; on a Mac without Go, give it a built
@@ -119,6 +125,9 @@ Heavier checks, before a release or when you touch what they cover:
 - Small commits that stand on their own, with a message that says why. Nothing is pushed
   to `main` that the website should not show yet: Pages publishes `main` right away, so
   try work on a branch (CI's install check runs on any branch).
+- Before a release, the rehearsal in the VMs (Ubuntu and Windows, from `clean`), with
+  the release built by `scripts/release-build.sh`; a new version is installed on a
+  real machine only after it.
 - A release: set `VERSION`, rename the `## Unreleased` section of `CHANGELOG.md` to
   `## <version>` with its date, commit, tag `v<version>`, push both. `release.yml` builds
   the archives, checksums and `install.sh` and publishes them; the installer always takes

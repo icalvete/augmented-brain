@@ -166,6 +166,10 @@ var commandMessages = map[string]msg{
 		en: "✓ Space %s restored: its notes are in %s",
 		es: "✓ Espacio %s recuperado: sus notas están en %s",
 	},
+	"restore.secrets": {
+		en: "The backup names %d secrets this computer's keychain does not have (only their names travel, never their values). Store each one with the command under it, which asks for the value:",
+		es: "La copia nombra %d secretos que el llavero de este ordenador no tiene (solo viajan sus nombres, nunca su valor). Guarda cada uno con el comando que va debajo, que te pide el valor:",
+	},
 	"restore.norepos": {
 		en: "The backup let Claude commit and push (or ask you first) in %s. A restore never brings that back, since someone else may have changed the backup: if you still want it, add them to git_allowed_repos (or git_ask_repos) of the space in %s.",
 		es: "La copia dejaba a Claude hacer commit y push (o preguntarte antes) en %s. Un restore nunca lo trae, porque alguien podría haber cambiado la copia: si lo sigues queriendo, añádelos a git_allowed_repos (o git_ask_repos) del espacio en %s.",

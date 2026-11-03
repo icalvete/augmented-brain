@@ -142,6 +142,14 @@ var doctorMessages = map[string]msg{
 		en: "remove it from root_ask in %s, or write it as \"<host> until <date>\" (2026-10-31, or 2026-10-31T23:59Z)",
 		es: "quítala de root_ask en %s, o escríbela como \"<máquina> until <fecha>\" (2026-10-31, o 2026-10-31T23:59Z)",
 	},
+	"doctor.oldservers": {
+		en: "%d Claude sessions open on this computer still run an earlier augmented brain (from before the update to %s): their augmented brain tools may fail",
+		es: "%d sesiones de Claude abiertas en este ordenador siguen con un augmented brain anterior (de antes de actualizar a la %s): sus herramientas de augmented brain pueden fallar",
+	},
+	"doctor.oldservers.fix": {
+		en: "close and open those sessions again when it suits you",
+		es: "cierra y vuelve a abrir esas sesiones cuando te venga bien",
+	},
 	"doctor.automemory": {
 		en: "Claude Code keeps a memory of its own for these folders too (%s): a second memory, next to the space's, that loads at the start and drifts from it",
 		es: "Claude Code guarda además una memoria propia para estas carpetas (%s): una segunda memoria, junto a la del espacio, que se carga al empezar y se desvía de ella",

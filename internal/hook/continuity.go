@@ -15,6 +15,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
+	"github.com/icalvete/augmented-brain/internal/version"
 )
 
 // Now gives the time; tests replace it.
@@ -192,4 +193,16 @@ func rootNote(c *config.Config) string {
 		return bad
 	}
 	return bad + "\nTemporary root exceptions (root_ask): " + strings.Join(in, "; ") + ". On those machines, and only while they last, a command as root (sudo, also through ssh) is not refused: the guard asks the user to confirm each one. Use it only for what the user asked, and say first what the command does.\n"
+}
+
+// oldServersNote says when other Claude sessions on this machine still run an earlier
+// augmented brain (they started before an update): their tools may fail on what this
+// one writes until they are restarted.
+func oldServersNote(c *config.Config) string {
+	old := state.OldServers(c.Dir, version.Version)
+	if len(old) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("\n%d other Claude sessions on this machine still run an earlier augmented brain: they started before it was updated to %s, and their augmented-brain tools may fail until they are restarted. %smention it in one line: close and open those sessions again when it suits them.\n",
+		len(old), version.Version, session.FirstAnswerLine(c.Language))
 }

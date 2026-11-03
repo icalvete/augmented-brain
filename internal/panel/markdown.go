@@ -188,11 +188,22 @@ func (r *mdRenderer) table(lines []string, i int) int {
 	cells := func(l string) []string {
 		l = strings.TrimSpace(l)
 		l = strings.TrimSuffix(strings.TrimPrefix(l, "|"), "|")
-		parts := strings.Split(l, "|")
-		for k := range parts {
-			parts[k] = strings.TrimSpace(parts[k])
+		// Split at each | outside a code span: `a|b` stays in one cell.
+		var parts []string
+		var cur strings.Builder
+		code := false
+		for _, r := range l {
+			switch {
+			case r == '`':
+				code = !code
+			case r == '|' && !code:
+				parts = append(parts, strings.TrimSpace(cur.String()))
+				cur.Reset()
+				continue
+			}
+			cur.WriteRune(r)
 		}
-		return parts
+		return append(parts, strings.TrimSpace(cur.String()))
 	}
 	r.out.WriteString(`<div class="table"><table><thead><tr>`)
 	for _, c := range cells(lines[i]) {

@@ -28,6 +28,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/session"
+	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
@@ -177,6 +178,9 @@ func cmdCheck(out, errOut io.Writer) int {
 		return 1
 	}
 	defer unlock()
+	if err := brain.MoveSecrets(c.Dir); err != nil {
+		fmt.Fprintln(errOut, err)
+	}
 	if paths.Exposed(s.Memory) {
 		if err := paths.Private(s.Memory); err != nil {
 			fmt.Fprintln(errOut, err)
@@ -293,6 +297,10 @@ func cmdMCP(errOut io.Writer) int {
 			return nil, err
 		}
 		c, err := config.Load(dir)
+		var newer *format.NewerError
+		if errors.As(err, &newer) {
+			return nil, err // it says to update; init would not help
+		}
 		if err != nil {
 			return nil, fmt.Errorf("%w; run `augmented-brain init`", err)
 		}
@@ -309,6 +317,8 @@ func cmdMCP(errOut io.Writer) int {
 	lockFile := ""
 	if dir, err := config.Dir(); err == nil {
 		lockFile = filepath.Join(dir, backup.NotesLock)
+		// Noted, so a newer program can tell which sessions still run this one.
+		defer state.RegisterServer(dir, version.Version)()
 	}
 	if err := mcpserver.New(open, lockFile).Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		fmt.Fprintln(errOut, err)

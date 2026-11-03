@@ -27,6 +27,23 @@ jobs:
       - name: Build every release target
         run: scripts/release-build.sh 0.0.0-ci /tmp/dist
 
+  # What this version writes, the last two releases must still read: after an update,
+  # open Claude sessions keep the old program, and other machines may not be updated.
+  compat:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Earlier releases read what this one writes
+        run: |
+          go build -o /tmp/ab-new ./cmd/augmented-brain
+          scripts/compat-check.sh /tmp/ab-new
+
   privacy:
     runs-on: ubuntu-latest
     steps:

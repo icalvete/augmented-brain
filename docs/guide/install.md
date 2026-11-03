@@ -145,7 +145,8 @@ augmented-brain update
 ```
 
 It updates the program and the Claude Code plugin; your notes and settings stay. Claude
-tells you when a new version is out. Running the install command again does the same.
+tells you when a new version is out. Close and open the Claude sessions you had open, so
+they use it too. Running the install command again does the same.
 
 ## Uninstalling
 

@@ -101,6 +101,22 @@ func SetTopList(dir, key string, values []string) error {
 	return f.save()
 }
 
+// RemoveTopKey takes a top-level setting out of the configuration file in dir,
+// changing nothing else. A key that is not there is no error.
+func RemoveTopKey(dir, key string) error {
+	f, err := openLines(dir)
+	if err != nil {
+		return err
+	}
+	_, end, _ := f.table("")
+	i := f.find(0, end, key)
+	if i < 0 {
+		return nil
+	}
+	f.lines = append(f.lines[:i], f.lines[i+1:]...)
+	return f.save()
+}
+
 // SetDefaultSpace writes default_space in the configuration file in dir, right after
 // the language, changing nothing else.
 func SetDefaultSpace(dir, space string) error {

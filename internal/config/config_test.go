@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/icalvete/augmented-brain/internal/format"
 )
 
 func write(t *testing.T, dir, body string) {
@@ -332,5 +334,25 @@ func TestGitAskRepos(t *testing.T) {
 	data, _ := os.ReadFile(filepath.Join(dir, FileName))
 	if !strings.Contains(string(data), `git_ask_repos = ["~/w/infra"]`) || !strings.Contains(string(data), `git_allowed_repos = ["~/w/app-*"]`) {
 		t.Errorf("saved:\n%s", data)
+	}
+}
+
+// A configuration from a newer program, with a setting this one does not know, says
+// to update; the same setting in a configuration of this version is an error in it.
+func TestNewerConfigSaysUpdate(t *testing.T) {
+	dir := t.TempDir()
+	write := func(text string) {
+		if err := os.WriteFile(filepath.Join(dir, FileName), []byte(text), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("format = 99\nlanguage = \"en\"\nfuture_thing = 1\n\n[spaces]\n")
+	var newer *format.NewerError
+	if _, err := Load(dir); !errors.As(err, &newer) {
+		t.Errorf("newer configuration: %v", err)
+	}
+	write("language = \"en\"\nfuture_thing = 1\n\n[spaces]\n")
+	if _, err := Load(dir); err == nil || !strings.Contains(err.Error(), "unknown settings: future_thing") {
+		t.Errorf("unknown setting: %v", err)
 	}
 }

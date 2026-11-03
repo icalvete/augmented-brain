@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/setup"
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 func setupSpace(t *testing.T) (cfgDir, work string) {
@@ -154,6 +156,7 @@ func TestSessionStartBrokenConfig(t *testing.T) {
 // No test asks GitHub: the latest version is whatever each test says.
 func TestMain(m *testing.M) {
 	LatestVersion = func() (string, error) { return "", nil }
+	state.ScanProc = false // the Claude sessions open on the machine running the tests are not theirs
 	os.Exit(m.Run())
 }
 
@@ -278,5 +281,26 @@ func TestPreToolUseMachineWide(t *testing.T) {
 	}
 	if got := decide(work, "ls"); got != "" {
 		t.Errorf("broken configuration, ls: %q", got)
+	}
+}
+
+// A session open since before an update still runs the old program: the start of a
+// new one asks the assistant to say so.
+func TestSessionStartOldServers(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	sd := filepath.Join(cfgDir, state.ServersDir)
+	if err := os.MkdirAll(sd, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(sd, strconv.Itoa(os.Getppid())), []byte("0.5.10-alpha\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	in := bytes.NewReader([]byte(`{"session_id":"s1","cwd":"` + filepath.ToSlash(work) + `"}`))
+	if err := SessionStart(in, &out, cfgDir); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "1 other Claude sessions on this machine still run an earlier augmented brain") {
+		t.Errorf("no word of the old session:\n%s", out.String())
 	}
 }

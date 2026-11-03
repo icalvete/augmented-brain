@@ -28,7 +28,7 @@
 {{with .Person}}<details class="box">
   <summary>{{t "person.edit"}}</summary>
   <form method="post" action="{{$.Base}}/person" class="stack">
-    {{template "fields" (fields $ "name" $.D.H.Title)}}
+    {{template "fields" (fields $ "name" $.D.H.Title "replace" "1")}}
     <label>{{t "f.aliases"}} <input name="aliases" value="{{.Aliases}}" maxlength="500" placeholder="{{t "f.aliases.hint"}}"></label>
     <label>{{t "f.role"}} <input name="role" value="{{.Role}}" maxlength="300"></label>
     <label>{{t "f.notes"}} <textarea name="notes" rows="6" maxlength="8000">{{$.D.Body}}</textarea></label>

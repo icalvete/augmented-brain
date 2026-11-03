@@ -1,5 +1,31 @@
 # Changelog
 
+## Unreleased
+
+From 0.6.0 on a real machine: programs before 0.6.0 refuse a setting of `config.toml`
+they do not know, and 0.6.0 added one. Every Claude session open since before the
+update kept the old program, and lost its augmented brain tools.
+
+- The names of the secrets live in a file of their own, `secrets.toml`, which earlier
+  programs never read. The list 0.6.0 left in `config.toml` moves there at the start of
+  a session or with `check`, and a backup carries the file, as it does the profile.
+- A configuration from a newer program, with settings this one does not know, says to
+  update, not that the file is wrong.
+- `doctor` and the start of a session say how many Claude sessions on this computer
+  still run an earlier augmented brain, and to close and open them again. Each session's
+  server notes its version when it starts; on Linux, those of earlier versions are found
+  too.
+- A restore names the secrets the new machine's keychain does not have, each with the
+  command that stores it; the panel's Secrets page shows that command too.
+- CI checks that the last two releases read what this one writes (`compat-check.sh`):
+  their `doctor`, `check`, MCP tools, session start and restore. It would have caught
+  0.6.0.
+
+Also, from the review of 0.6.0:
+
+- In a table, a `|` inside code no longer splits the cell.
+- The panel can empty a person's notes and an area's summary.
+
 ## 0.6.0-alpha
 
 Released 2026-11-03.

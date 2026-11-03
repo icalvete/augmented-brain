@@ -425,12 +425,15 @@ Notes read as text, not as raw Markdown: headings, lists, tables, code and links
 `[[link]]` to another note takes you to it. If a note changes on disk while its page is
 open (Claude wrote in it, say), the page tells you, with a link to see it as it is now.
 
-The list of secrets is the same in every space. It lives in the configuration file, as
+The list of secrets is the same in every space. It lives in a file of its own,
+`secrets.toml`, next to the configuration file, as
 `secrets = ["telegram/alerts-bot: alerts to my phone"]`. You can add a name in the panel,
 or take one off the list (the secret stays in the keychain). Or tell Claude you stored a
-new secret, and it notes the name. Anything that looks like a value is refused. The list
-travels in the default space's backup, and a restore brings it to a new machine that has
-none.
+new secret, and it notes the name. Anything that looks like a value is refused. When the
+keychain lacks one, the panel shows the command that stores it (it asks for the value).
+The list travels in the default space's backup. A restore brings it to a new machine
+that has none, and names the secrets that machine's keychain does not have yet, each
+with the command to store it.
 
 It changes your notes the same way Claude does, with the same program, and they wait for
 each other: you can have both open at once.
@@ -474,7 +477,9 @@ augmented-brain update
 ```
 
 It updates the program and the Claude plugin. Then close and open Claude so it uses the
-new version. Your notes and your configuration stay as they are, unless the new version
+new version: a session that was open keeps the old one until you do, and its augmented
+brain tools may fail. `augmented-brain doctor` and the start of a new session tell you
+how many sessions still run the old version. Your notes and your configuration stay as they are, unless the new version
 writes them in a different way: then the first session moves them to the new way, after
 keeping a full copy in the `migrations/` folder of the configuration, and Claude tells
 you. An older version refuses notes a newer one wrote, instead of breaking them: update

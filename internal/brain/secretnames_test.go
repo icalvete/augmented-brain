@@ -28,11 +28,7 @@ func TestSecretNames(t *testing.T) {
 			t.Errorf("%+v was kept", bad)
 		}
 	}
-	c, err := config.Load(b.ConfigDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	got := SecretNames(c)
+	got, _ := SecretNames(b.ConfigDir)
 	if len(got) != 2 || got[0].Key() != "telegram/alerts-bot" || got[0].What != "the alerts bot" || got[1].Key() != "mail/smtp" {
 		t.Fatalf("secrets: %+v", got)
 	}
@@ -42,9 +38,12 @@ func TestSecretNames(t *testing.T) {
 	if err := b.ForgetSecretName("mail", "smtp"); err == nil {
 		t.Error("forgot one that was not there")
 	}
-	c, _ = config.Load(b.ConfigDir)
-	if strings.Join(c.Secrets, "|") != "telegram/alerts-bot: the alerts bot" {
-		t.Errorf("list: %q", c.Secrets)
+	if l := SecretList(b.ConfigDir); strings.Join(l, "|") != "telegram/alerts-bot: the alerts bot" {
+		t.Errorf("list: %q", l)
+	}
+	// Never in config.toml: programs before 0.6.0 refuse a setting they do not know.
+	if c, err := config.Load(b.ConfigDir); err != nil || len(c.Secrets) != 0 {
+		t.Errorf("config.toml: %v %v", c.Secrets, err)
 	}
 }
 
@@ -60,5 +59,25 @@ func TestSecretNamesPlain(t *testing.T) {
 	got := CleanSecretNames([]string{"a/b: fine", "c/d: bell\a", "not an entry", "e/f"})
 	if strings.Join(got, "|") != "a/b: fine|e/f" {
 		t.Errorf("clean: %q", got)
+	}
+}
+
+// 0.6.0 kept the list in config.toml: it moves to its own file, once, and the
+// configuration is left as earlier programs can read it.
+func TestMoveSecrets(t *testing.T) {
+	b := open(t, "en")
+	if err := config.SetTopList(b.ConfigDir, "secrets", []string{"mail/smtp: sending mail", "bad entry"}); err != nil {
+		t.Fatal(err)
+	}
+	for range 2 {
+		if err := MoveSecrets(b.ConfigDir); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if c, err := config.Load(b.ConfigDir); err != nil || len(c.Secrets) != 0 {
+		t.Errorf("config.toml still has the list: %v %v", c, err)
+	}
+	if l := SecretList(b.ConfigDir); strings.Join(l, "|") != "mail/smtp: sending mail" {
+		t.Errorf("file: %q", l)
 	}
 }
