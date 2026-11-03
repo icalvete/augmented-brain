@@ -25,7 +25,10 @@ case "$(uname -m)" in x86_64|amd64) arch=amd64 ;; arm64|aarch64) arch=arm64 ;; *
 
 if [ $# -eq 0 ]; then
   # The last two published releases.
-  set -- $(curl -fsSL "https://api.github.com/repos/$REPO/releases?per_page=2" |
+  # With a token (CI passes GH_TOKEN), GitHub's API does not hit the low limit of
+  # anonymous calls, which runners share and which answered 403 on macOS.
+  if [ -n "${GH_TOKEN:-}" ]; then auth="Authorization: Bearer $GH_TOKEN"; else auth="Accept: application/json"; fi
+  set -- $(curl -fsSL -H "$auth" "https://api.github.com/repos/$REPO/releases?per_page=2" |
     python3 -c 'import json,sys; print(" ".join(r["tag_name"].lstrip("v") for r in json.load(sys.stdin)))')
 fi
 if [ $# -eq 0 ]; then
