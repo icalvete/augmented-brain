@@ -10,6 +10,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/format"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
@@ -103,7 +104,7 @@ func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 		}
 	}
 	if len(skipped) > 0 {
-		return done, fmt.Errorf("%d files appeared after the plan was made and were left as they are: %v", len(skipped), skipped)
+		return done, errors.New(i18n.T(lang, "import.appeared", len(skipped), strings.Join(skipped, ", ")))
 	}
 	return done, nil
 }

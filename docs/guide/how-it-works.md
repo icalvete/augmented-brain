@@ -65,7 +65,8 @@ session starts from there. Opening, resuming and closing work the same way.
   covers every `app-<name>` folder next to `app`. Even there, a push that rewrites or
   deletes what is on the remote (`--force`, `--delete`, `+branch`) asks you first.
   And `rm -r` of your whole home folder or of the whole disk is never run, also after a
-  `cd` (`cd ~ && rm -rf .`). After a `cd` the guard cannot follow (`cd "$DIR"`), an
+  `cd` (`cd ~ && rm -rf .`), and on Windows however the path is written (`/c/Users/…`, as
+  Git Bash does, `C:/Users/…` or `$USERPROFILE`). After a `cd` the guard cannot follow (`cd "$DIR"`), an
   `rm -r .` asks you.
 
 It also looks inside `ssh`, `vagrant ssh -c`, `docker exec`, `kubectl exec`, `bash -c`,

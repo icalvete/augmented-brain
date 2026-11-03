@@ -144,6 +144,26 @@ try {
       Say "Update it later with: claude update" "Actual\u00edzalo m\u00e1s tarde con: claude update"
     }
   }
+  # GitFromGitHub: Git for Windows straight from its GitHub release, for when winget is
+  # missing or broken (an old App Installer whose source does not open). The download
+  # must match the release's checksum and carry a valid signature before it runs.
+  function GitFromGitHub {
+    try {
+      $rel = Invoke-RestMethod -Uri 'https://api.github.com/repos/git-for-windows/git/releases/latest' -TimeoutSec 30 -ErrorAction Stop
+      $suffix = if ($arch -eq 'arm64') { '-arm64.exe' } else { '-64-bit.exe' }
+      $asset = $rel.assets | Where-Object { $_.name -like 'Git-*' -and $_.name -like "*$suffix" -and $_.name -notlike '*rc*' } | Select-Object -First 1
+      if (-not $asset) { return $false }
+      $exe = Join-Path ([IO.Path]::GetTempPath()) $asset.name
+      (New-Object Net.WebClient).DownloadFile($asset.browser_download_url, $exe)
+      if ($asset.digest -and $asset.digest -like 'sha256:*') {
+        if ((Get-FileHash -Algorithm SHA256 $exe).Hash -ne $asset.digest.Substring(7)) { Remove-Item $exe; return $false }
+      }
+      if ((Get-AuthenticodeSignature $exe).Status -ne 'Valid') { Remove-Item $exe; return $false }
+      $p = Start-Process -FilePath $exe -ArgumentList '/VERYSILENT', '/NORESTART', '/NOCANCEL', '/SP-', '/SUPPRESSMSGBOXES' -Wait -PassThru
+      Remove-Item $exe -ErrorAction SilentlyContinue
+      return $p.ExitCode -eq 0
+    } catch { return $false }
+  }
   function DesktopApp { Get-StartApps -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'Claude' } | Select-Object -First 1 }
 
   # --- 1. What it needs ---------------------------------------------------------------
@@ -151,17 +171,18 @@ try {
     if (-not (HasGit)) {
       Say "augmented brain needs Git for Windows: for the history and backup of your notes, and for Git Bash, where Claude runs commands safely." `
           "augmented brain necesita Git for Windows: para el historial y la copia de tus notas, y por Git Bash, donde Claude ejecuta los comandos con seguridad."
-      $cmd = 'winget install --id Git.Git -e --source winget'
-      if (-not $winget) {
-        Say "Install it from https://git-scm.com/download/win, then run this installer again." "Inst\u00e1lalo desde https://git-scm.com/download/win y vuelve a lanzar este instalador."
-        return
-      }
-      if (-not (Ask (Text "Install it now with: $cmd ? Windows may ask for permission." "\u00bfLo instalo ahora con: $cmd ? Windows puede pedirte permiso."))) {
+      $cmd = if ($winget) { 'winget install --id Git.Git -e --source winget' } else { 'https://git-scm.com/download/win' }
+      if (-not (Ask (Text "Install it now? Windows may ask for permission." "\u00bfLo instalo ahora? Windows puede pedirte permiso."))) {
         Say "Install it with this, then run this installer again:" "Inst\u00e1lalo con esto y vuelve a lanzar este instalador:"
         Write-Host "  $cmd"; return
       }
       Say "Installing Git for Windows..." "Instalando Git for Windows..."
-      if (-not (Quiet { winget install --id Git.Git -e --source winget --silent --accept-source-agreements --accept-package-agreements --disable-interactivity })) { Fail (Text 'Git was not installed.' 'Git no se ha instalado.') }
+      $ok = $winget -and (Quiet { winget install --id Git.Git -e --source winget --silent --accept-source-agreements --accept-package-agreements --disable-interactivity })
+      if (-not $ok) {
+        # No winget, or one that cannot reach its source: Git's own release, checked.
+        if ($winget) { Say "winget could not install it; downloading it from Git for Windows' own page instead..." "winget no ha podido instalarlo; lo descargo de la p\u00e1gina de Git for Windows..." }
+        if (-not (GitFromGitHub)) { Fail (Text 'Git was not installed. Install it from https://git-scm.com/download/win, then run this installer again.' 'Git no se ha instalado. Inst\u00e1lalo desde https://git-scm.com/download/win y vuelve a lanzar este instalador.') }
+      }
       $env:Path = "$gitCmd;$env:Path"
       if (-not (HasGit)) { Fail (Text 'Git was installed but cannot be found; open a new terminal and run this installer again.' 'Git se instal\u00f3, pero no lo encuentro; abre una terminal nueva y vuelve a lanzar este instalador.') }
       Say "+ Git for Windows installed" "+ Git for Windows instalado"

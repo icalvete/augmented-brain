@@ -69,9 +69,18 @@ func TestImportInboxAndDocs(t *testing.T) {
 	// go with them, not to the space of the rest.
 	again, _ := MakePlan(src, c, o)
 	for _, it := range again.Items {
-		if it.Source == "docs/task-school/list.csv" && it.Space != "home" {
-			t.Errorf("on a second run, %s goes to %q", it.Source, it.Space)
+		if it.Copy {
+			t.Errorf("on a second run, %s is copied again (to %q)", it.Source, it.Space)
 		}
+	}
+	present := map[string]string{}
+	for _, is := range again.Issues {
+		if is.Kind == Present {
+			present[is.Source] = is.Detail
+		}
+	}
+	if present["docs/task-school/list.csv"] != "home" || present["docs/task-ship/plan.md"] != "work" {
+		t.Errorf("on a second run, the files already there: %v", present)
 	}
 	if done, _ := Apply(again, c, "en"); done.Inbox["work"] != 0 {
 		t.Errorf("captures added twice: %+v", done)

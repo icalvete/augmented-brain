@@ -11,6 +11,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 
@@ -335,7 +336,7 @@ func (p Policy) rm(args []string) Decision {
 		home = h
 	}
 	for _, o := range operands {
-		for _, v := range []string{"$HOME", "${HOME}"} {
+		for _, v := range []string{"$HOME", "${HOME}", "$USERPROFILE", "${USERPROFILE}"} {
 			if o == v || strings.HasPrefix(o, v+"/") {
 				o = "~" + strings.TrimPrefix(o, v)
 			}
@@ -349,7 +350,7 @@ func (p Policy) rm(args []string) Decision {
 		if p.lost && !filepath.IsAbs(o) && !strings.HasPrefix(o, "~") && strings.Trim(o, "./") == "" {
 			return Decision{Ask, "`rm -r " + o + "` after a cd the guard cannot follow: it cannot tell which folder this deletes. The user confirms it."}
 		}
-		if d, err := p.resolve(o); err == nil && (d == "/" || (home != "" && d == home)) {
+		if d, err := p.resolve(o); err == nil && (filepath.Dir(d) == d || (home != "" && d == home)) {
 			return Decision{Deny, "`rm -r` of the user's whole home folder (" + paths.Tilde(d) + ") is never run. Delete the files or folders inside it that need to go, one by one."}
 		}
 	}
@@ -798,8 +799,22 @@ func Write(text string) Decision {
 	return allow
 }
 
+// bashPath turns a path as Git Bash writes it on Windows (/c/Users/ana) into the one
+// Windows knows (C:/Users/ana). On other systems, and for any other path, it is unchanged.
+func bashPath(path, goos string) string {
+	if goos != "windows" || len(path) < 2 || path[0] != '/' || !(path[1] >= 'a' && path[1] <= 'z' || path[1] >= 'A' && path[1] <= 'Z') {
+		return path
+	}
+	if len(path) > 2 && path[2] != '/' {
+		return path // /cygdrive, /usr: not a drive
+	}
+	return strings.ToUpper(path[1:2]) + ":/" + strings.TrimPrefix(path[2:], "/")
+}
+
 // resolve makes a path absolute against the command's folder and resolves symlinks.
+// Claude runs commands in Git Bash on Windows, so /c/… is the C: drive.
 func (p Policy) resolve(path string) (string, error) {
+	path = bashPath(path, runtime.GOOS)
 	if p.lost && !filepath.IsAbs(path) && path != "~" && !strings.HasPrefix(path, "~/") {
 		return "", errors.New("after a cd the guard cannot follow")
 	}

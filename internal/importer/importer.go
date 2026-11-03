@@ -85,6 +85,7 @@ const (
 	RepoOutside    = "repo-outside"     // a repository outside the space's work folders: kept as a full path
 	UnknownType    = "unknown-type"     // no type, prefix or kind to go by: imported as a reference
 	ArchiveNoSpace = "archive-no-space" // an archive file that belongs to no note: left out
+	Present        = "present"          // an archive or docs/ file the space already has: left as it is
 	Secret         = "secret"           // a secret written in the file: imported, but the backup will refuse it
 )
 
@@ -405,6 +406,12 @@ func (pl *planner) placeArchives() {
 		if sp == "" {
 			pl.leave(rel, ArchiveNoSpace, "")
 			continue
+		}
+		if pl.c.Spaces[sp] != nil || sp == config.SharedFolder {
+			if _, err := os.Stat(filepath.Join(memoryOf(pl.c, sp), filepath.FromSlash(rel))); err == nil {
+				pl.leave(rel, Present, sp) // imported before: never written over
+				continue
+			}
 		}
 		pl.p.Items = append(pl.p.Items, Item{Source: rel, Space: sp, Copy: true})
 	}

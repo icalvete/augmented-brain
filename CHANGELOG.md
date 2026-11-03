@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+From the rehearsal on Windows 11:
+
+- **The guard reads paths as Git Bash writes them** (`/c/Users/ana`), which is where Claude
+  runs commands on Windows. `rm -rf /c/Users/<you>`, `rm -rf "$USERPROFILE"` and
+  `rm -rf /c/` were let through; now they are never run. And `git -C /c/…` of a repository
+  in `git_allowed_repos` counts as that repository.
+- **The Windows installer gets Git even when winget is broken** (an old App Installer whose
+  source does not open): it downloads Git for Windows from its own release, checks its
+  checksum and signature, and installs it.
+- A second `import` no longer copies the archive and `docs/` again: the files the space
+  already has are listed as such, and the message about files that appeared after the plan
+  is in your language.
+
 ## 0.5.3-alpha
 
 Released 2026-11-02.

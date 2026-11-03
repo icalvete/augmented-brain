@@ -175,9 +175,10 @@ delete itself.
   the install command again.
 - **Linux: no desktop app offered.** It is only for Ubuntu and Debian; use Claude in the
   terminal.
-- **Windows: "winget is not recognized".** Install "App Installer" from the Microsoft Store,
-  or install Git from [git-scm.com](https://git-scm.com/download/win), and run the command
-  again.
+- **Windows: "Git was not installed".** The installer tries winget first and then Git's own
+  download. If both fail, install Git from [git-scm.com](https://git-scm.com/download/win)
+  and run the command again. The desktop app needs winget: update "App Installer" from the
+  Microsoft Store.
 - **Claude asks for a paid plan.** Claude Code needs Pro or above.
 - **Something else.** Tell us in [the project's issues](https://github.com/icalvete/augmented-brain/issues),
   with what showed up on screen.

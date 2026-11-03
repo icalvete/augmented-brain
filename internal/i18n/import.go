@@ -34,6 +34,10 @@ var importMessages = map[string]msg{
 		en: "✓ %[2]s: %[1]d captures added to the inbox.",
 		es: "✓ %[2]s: %[1]d capturas añadidas al buzón.",
 	},
+	"import.appeared": {
+		en: "%d files appeared after the plan was made and were left as they are: %s",
+		es: "%d ficheros aparecieron después de hacer el plan y se han dejado como estaban: %s",
+	},
 	"import.kind.inbox": {
 		en: "inbox captures",
 		es: "capturas del buzón",
@@ -125,6 +129,10 @@ var importMessages = map[string]msg{
 	"import.issue.unknown-type": {
 		en: "No type to go by, imported as references (%d):",
 		es: "Sin tipo del que fiarse, importadas como referencias (%d):",
+	},
+	"import.issue.present": {
+		en: "Archive and docs/ files the space already has, left as they are (%d):",
+		es: "Ficheros de archivo y de docs/ que el espacio ya tiene, se quedan como están (%d):",
 	},
 	"import.issue.archive-no-space": {
 		en: "Archive files that belong to no note and no space, left out (%d):",

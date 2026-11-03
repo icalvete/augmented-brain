@@ -65,7 +65,9 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
   como él, y `~/code/app-*` vale para cada carpeta `app-<nombre>` junto a `app`. Incluso
   ahí, un push que reescribe o borra lo que hay en el remoto (`--force`, `--delete`,
   `+rama`) te pregunta antes. Y un `rm -r` de tu carpeta personal entera o del disco
-  entero no se ejecuta nunca, tampoco después de un `cd` (`cd ~ && rm -rf .`). Después
+  entero no se ejecuta nunca, tampoco después de un `cd` (`cd ~ && rm -rf .`), y en Windows
+  se escriba como se escriba la ruta (`/c/Users/…`, como hace Git Bash, `C:/Users/…` o
+  `$USERPROFILE`). Después
   de un `cd` que el guardia no puede seguir (`cd "$DIR"`), un `rm -r .` te pregunta.
 
 También mira dentro de `ssh`, de `vagrant ssh -c`, de `docker exec`, de `kubectl exec`, de

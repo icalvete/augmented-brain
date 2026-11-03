@@ -179,9 +179,10 @@ un programa en marcha se borre a sí mismo.
   `xcode-select --install` y luego otra vez el comando de instalación.
 - **Linux: no te ofrece la app de escritorio.** Solo está para Ubuntu y Debian; usa Claude en
   la terminal.
-- **Windows: "winget no se reconoce".** Instala "Instalador de aplicaciones" desde la
-  Microsoft Store, o instala Git desde [git-scm.com](https://git-scm.com/download/win), y
-  vuelve a lanzar el comando.
+- **Windows: "Git no se ha instalado".** El instalador prueba primero con winget y luego con
+  la descarga del propio Git. Si fallan las dos, instala Git desde
+  [git-scm.com](https://git-scm.com/download/win) y vuelve a lanzar el comando. La app de
+  escritorio necesita winget: actualiza "Instalador de aplicaciones" desde la Microsoft Store.
 - **Claude te pide un plan de pago.** Claude Code necesita Pro o superior.
 - **Otra cosa.** Cuéntanoslo en [las incidencias del proyecto](https://github.com/icalvete/augmented-brain/issues),
   con lo que salió en pantalla.
