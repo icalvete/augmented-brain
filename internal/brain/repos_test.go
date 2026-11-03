@@ -6,10 +6,79 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/setup"
 )
+
+// A work folder reached through a link (as /var is /private/var on macOS, or a folder
+// the user linked into their home) still holds its repositories, whichever way their
+// path is written; a link inside a work folder that leads out of it does not.
+func TestDescribeRepoThroughLinks(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symbolic links need privileges on Windows")
+	}
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	real := filepath.Join(home, "disk", "work")
+	outside := filepath.Join(home, "elsewhere")
+	for _, d := range []string{filepath.Join(real, "site", ".git"), filepath.Join(outside, ".git")} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	work := filepath.Join(home, "work")
+	if err := os.Symlink(real, work); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(real, "out")); err != nil {
+		t.Fatal(err)
+	}
+	cfgDir := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfgDir, setup.Options{Language: "en", Space: "work", WorkFolder: work,
+		Memory: "~/brain", Today: "2026-10-15"}); err != nil {
+		t.Fatal(err)
+	}
+	c, err := config.Load(cfgDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := Open(c, c.Spaces["work"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	b.Now = func() time.Time { return time.Date(2026, 10, 15, 9, 0, 0, 0, time.UTC) }
+
+	if _, err := b.DescribeRepo(filepath.Join(work, "site"), "The site"); err != nil {
+		t.Fatalf("through the link: %v", err)
+	}
+	for _, p := range []string{filepath.Join(work, "site"), filepath.Join(real, "site")} {
+		if got := b.RepoDescriptionOf(p); got != "The site" {
+			t.Errorf("RepoDescriptionOf(%s) = %q", p, got)
+		}
+	}
+	if _, err := b.DescribeRepo("site", "The site, by name"); err != nil {
+		t.Fatal(err)
+	}
+	if got := b.RepoDescriptionOf(filepath.Join(work, "site")); got != "The site, by name" {
+		t.Errorf("by name: %q", got)
+	}
+	if n := strings.Count(read(t, b, memory.PathFor("reference", RepoNoteID)), "site` —"); n != 1 {
+		t.Errorf("the repository has %d lines, written two ways", n)
+	}
+	// "out" is a link in the work folder to a folder outside it.
+	if p, ok := b.RepoPath("out"); !ok || paths.Within(p, real) {
+		t.Errorf("RepoPath(out) = %q, %v: it should be where the link leads", p, ok)
+	}
+	for _, r := range []string{"out", filepath.Join(work, "out")} {
+		if _, err := b.DescribeRepo(r, "not in the work folder"); err == nil || !strings.Contains(err.Error(), "outside") {
+			t.Errorf("DescribeRepo(%s) through a link out: %v", r, err)
+		}
+	}
+}
 
 // mkRepo makes a folder inside the space's first work folder.
 func mkRepo(t *testing.T, b *Brain, rel string) string {

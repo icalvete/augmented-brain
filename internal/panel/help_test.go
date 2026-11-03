@@ -35,10 +35,10 @@ func redactorFixture(t *testing.T) (*redactor, string) {
 func TestRedact(t *testing.T) {
 	r, home := redactorFixture(t)
 	for _, tc := range []struct{ in, want string }{
-		{"Configuration: " + filepath.Join(home, ".config", "ab", "config.toml"), "Configuration: ~/.config/ab/config.toml"},
+		{"Configuration: " + filepath.Join(home, ".config", "ab", "config.toml"), "Configuration: " + filepath.FromSlash("~/.config/ab/config.toml")},
 		{"Space acme: 12 notes, valid", "Space [space]: 12 notes, valid"},
 		{"Space acme-two stays", "Space acme-two stays"},
-		{"notes in " + filepath.Join(home, "acme-notes", "tasks"), "notes in [notes folder]/tasks"},
+		{"notes in " + filepath.Join(home, "acme-notes", "tasks"), "notes in " + filepath.Join("[notes folder]", "tasks")},
 		{"notes in ~/acme-notes", "notes in [notes folder]"},
 		{"work in " + filepath.Join(home, "code", "acme"), "work in [work folder]"},
 		{"write to jane.doe+x@mail.example.org now", "write to [e-mail] now"},
@@ -68,7 +68,7 @@ func TestDiagnostics(t *testing.T) {
 		{Status: doctor.Info, What: strings.Repeat("x", 1000)},
 	}
 	d := diagnostics("en", checks, r)
-	for _, want := range []string{"augmented brain ", "System: ", "[ok]   Configuration: ~/cfg/config.toml", "[warn] Space [space]: index out of date", "[fail] Claude Code: not found"} {
+	for _, want := range []string{"augmented brain ", "System: ", "[ok]   Configuration: " + filepath.FromSlash("~/cfg/config.toml"), "[warn] Space [space]: index out of date", "[fail] Claude Code: not found"} {
 		if !strings.Contains(d, want) {
 			t.Errorf("no %q in\n%s", want, d)
 		}
@@ -152,7 +152,7 @@ func TestHelpPage(t *testing.T) {
 	if q.Get("template") != "problem.yml" || !q.Has("what") || q.Get("what") != "" {
 		t.Errorf("query %v", q)
 	}
-	for _, want := range []string{"augmented brain ", "Sistema: ", "[ok]   Configuración: ~/cfg/config.toml",
+	for _, want := range []string{"augmented brain ", "Sistema: ", "[ok]   Configuración: " + filepath.FromSlash("~/cfg/config.toml"),
 		"[warn] Espacio [espacio]: <b>índice</b> viejo", "[se dejó fuera una línea"} {
 		if !strings.Contains(d, want) {
 			t.Errorf("no %q in\n%s", want, d)

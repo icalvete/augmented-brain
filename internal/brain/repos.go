@@ -44,8 +44,13 @@ func (b *Brain) RepoDescriptions() []RepoDescription {
 	return out
 }
 
-// RepoDescriptionOf returns the description of the repository at path (resolved), or "".
+// RepoDescriptionOf returns the description of the repository at path, or "". The path
+// is resolved first (links, ~), as the note's are, so the same folder reached through a
+// link (/var and /private/var on macOS) matches.
 func (b *Brain) RepoDescriptionOf(path string) string {
+	if real, err := paths.Resolve(path); err == nil {
+		path = real
+	}
 	for _, d := range b.RepoDescriptions() {
 		if d.Path != "" && paths.Same(d.Path, path) {
 			return d.Text

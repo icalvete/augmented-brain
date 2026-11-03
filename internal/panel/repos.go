@@ -46,7 +46,7 @@ func (s *Server) repos(v *view, _ *http.Request) (string, page, error) {
 		extra   []string // repositories that tasks name, in the order met
 	}
 	var plans []*plan
-	var notes []string // every space's notes folder: the notes are not one of the user's repositories
+	var notes []string // every space's notes folder, and the configuration's: not repositories of the user's
 	for _, name := range v.c.SpaceNames() {
 		b := v.b
 		if name != v.b.Space.Name {
@@ -77,8 +77,15 @@ func (s *Server) repos(v *view, _ *http.Request) (string, page, error) {
 	}
 	v.unlock() // the search and git can take seconds: not with the notes locked
 
+	// The walk gives resolved paths (the work folders are): compare with these resolved too.
+	notes = append(notes, v.c.Dir)
+	for i, m := range notes {
+		if real, err := paths.Resolve(m); err == nil {
+			notes[i] = real
+		}
+	}
 	skip := func(p string) bool {
-		return slices.ContainsFunc(notes, func(m string) bool { return paths.Within(p, m) }) || paths.Within(p, v.c.Dir)
+		return slices.ContainsFunc(notes, func(m string) bool { return paths.Within(p, m) })
 	}
 	type found struct {
 		pl    *plan

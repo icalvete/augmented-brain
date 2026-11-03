@@ -5,8 +5,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/icalvete/augmented-brain/internal/setup"
 )
 
 func gitInit(t *testing.T, dir string, args ...string) {
@@ -37,7 +40,13 @@ func TestReposPage(t *testing.T) {
 	}
 	gitInit(t, filepath.Join(work, "group", "alpha"))
 	gitInit(t, filepath.Join(work, "node_modules", "dep"))
-	gitInit(t, filepath.Join(work, "<b>odd</b>"))
+	// A folder whose name would be markup if it were not escaped. Windows allows no < >
+	// in a name: there, & and ' have to be escaped instead.
+	odd, oddShown := "<b>odd</b>", "&lt;b&gt;odd&lt;/b&gt;"
+	if runtime.GOOS == "windows" {
+		odd, oddShown = "a&b'odd", "a&amp;b&#39;odd"
+	}
+	gitInit(t, filepath.Join(work, odd))
 	gitInit(t, filepath.Join(home, "home", "garden"))
 	gitInit(t, filepath.Join(home, "elsewhere")) // in no work folder
 
@@ -62,13 +71,13 @@ func TestReposPage(t *testing.T) {
 		"Space work", "Space home", ">garden ", ">alpha ",
 		"example.com/ana/zeta", "1 file changed", "~/work/group/alpha",
 		`value="First &lt;script&gt;alert(1)&lt;/script&gt;"`,
-		"Ship &lt;zeta&gt;", "&lt;b&gt;odd&lt;/b&gt;", `placeholder="describe it"`,
+		"Ship &lt;zeta&gt;", oddShown, `placeholder="describe it"`,
 	} {
 		if !strings.Contains(page, want) {
 			t.Errorf("the page lacks %q", want)
 		}
 	}
-	for _, bad := range []string{"s3cret", "ana@", "<script>", "<b>odd", "node_modules", "elsewhere", "brain-work"} {
+	for _, bad := range []string{"s3cret", "ana@", "<script>", odd, "node_modules", "elsewhere", "brain-work"} {
 		if strings.Contains(page, bad) {
 			t.Errorf("the page shows %q", bad)
 		}
@@ -92,6 +101,61 @@ func TestReposPage(t *testing.T) {
 	// A folder outside the work folders cannot be described from the panel either.
 	if w := s.post(t, "/repo/describe", url.Values{"s": {"work"}, "repo": {filepath.Join(home, "elsewhere")}, "text": {"no"}}); w.Code != 400 {
 		t.Errorf("describing a folder outside: %d", w.Code)
+	}
+}
+
+// A work folder reached through a link (macOS's /var is /private/var; or one the user
+// linked into their home) still shows its repositories and keeps what is said of them.
+// A link inside it to a repository elsewhere is followed neither by the search nor for
+// a task that names it.
+func TestReposThroughLinks(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("no git")
+	}
+	if runtime.GOOS == "windows" {
+		t.Skip("symbolic links need privileges on Windows")
+	}
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	real := filepath.Join(home, "disk", "work")
+	gitInit(t, filepath.Join(real, "site"))
+	gitInit(t, filepath.Join(home, "outside-repo"))
+	work := filepath.Join(home, "work")
+	if err := os.Symlink(real, work); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(filepath.Join(home, "outside-repo"), filepath.Join(real, "linked")); err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Language: "en", Space: "work", WorkFolder: work, Memory: "~/brain", Today: "2026-10-15"}); err != nil {
+		t.Fatal(err)
+	}
+	s, err := New(cfg, port)
+	if err != nil {
+		t.Fatal(err)
+	}
+	id := idIn(saved(t, s.post(t, "/task/new", url.Values{"s": {"work"}, "title": {"Linked"}}), "new task"))
+	path := filepath.Join(home, "brain", "tasks", id+".md")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	with := strings.Replace(string(data), "\ntype: task\n", "\ntype: task\nrepos:\n  - linked\n  - site\n", 1)
+	if err := os.WriteFile(path, []byte(with), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	saved(t, s.post(t, "/repo/describe", url.Values{"s": {"work"}, "repo": {filepath.Join(work, "site")}, "text": {"The site"}}), "describe")
+	page := s.get(t, "/repos?s=work").Body.String()
+	for _, want := range []string{">site ", `value="The site"`, ">Linked<"} {
+		if !strings.Contains(page, want) {
+			t.Errorf("the page lacks %q", want)
+		}
+	}
+	for _, bad := range []string{"outside-repo", ">linked "} {
+		if strings.Contains(page, bad) {
+			t.Errorf("the page shows %q: a link led out of the work folder", bad)
+		}
 	}
 }
 
