@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.5.6-alpha
+
+Released 2026-11-03.
 
 - **Temporary root exceptions.** `root_ask = ["db01 until 2026-10-31"]` in the
   configuration: until that date, a command as root on that machine (here, or through
