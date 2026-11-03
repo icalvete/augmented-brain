@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.0-alpha
+
+Released 2026-11-03.
 
 - The panel has a **Repositories** page, a map of your repositories: every git
   repository in the work folders of each space (up to three folders down), grouped by
