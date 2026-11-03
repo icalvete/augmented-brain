@@ -66,6 +66,12 @@ func (b *Brain) RepoPath(r string) (string, bool) {
 	}
 	for _, wf := range b.Space.WorkFolders {
 		if p := filepath.Join(wf, filepath.FromSlash(r)); isDir(p) {
+			// Resolved, like the work folders: whether it is inside one of them is told
+			// by where it really is, so a link in a work folder that leads elsewhere is
+			// never taken for a folder inside it.
+			if real, err := paths.Resolve(p); err == nil {
+				p = real
+			}
 			return p, true
 		}
 	}
