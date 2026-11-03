@@ -310,7 +310,7 @@
       </div>
       <div class="term" role="img" aria-label="Examples of commands the guard stops or asks about">
         <div class="line"><code>git push origin main</code><span class="tag stop">stopped</span><span class="why">only you push, unless you allow a repository</span></div>
-        <div class="line"><code>sudo apt remove nginx</code><span class="tag stop">stopped</span><span class="why">never as root</span></div>
+        <div class="line"><code>sudo apt remove nginx</code><span class="tag stop">stopped</span><span class="why">never as root, unless you allow it on one machine until a date</span></div>
         <div class="line"><code>export API_KEY=sk-…</code><span class="tag stop">stopped</span><span class="why">no secrets in commands or files</span></div>
         <div class="line"><code>aws --profile prod s3 rm …</code><span class="tag ask">asks you</span><span class="why">production is marked as yours to approve</span></div>
         <div class="line"><code>ssh db01 "systemctl restart …"</code><span class="tag ask">asks you</span><span class="why">a host you said not to touch</span></div>
@@ -349,13 +349,13 @@ Name, email and message, sent by email.
       </div>
       <div class="backup">
         <ul class="pros">
-          <li><b>A new machine in minutes.</b> <code>augmented-brain restore</code> brings the whole drawer back: notes, tasks, rules, your profile and its settings. Open Claude and carry on.</li>
+          <li><b>A new machine in minutes.</b> <code>augmented-brain restore</code> brings the whole drawer back: notes, tasks, rules, your profile and its settings. Only the repositories where Claude may commit stay out: it names them, for you to add again. Open Claude and carry on.</li>
           <li><b>Several machines, one brain.</b> Laptop and desktop? Each backup first fetches what the other machine did, and merges it.</li>
           <li><b>Full history.</b> Every backup is a git commit, with the machine and the time. See what changed, and go back to any day.</li>
           <li><b>Your place, not ours.</b> GitHub, GitLab or your own server: you pick the repository. augmented brain has no cloud.</li>
           <li><b>One repository per drawer.</b> Work can live in your company's git, and personal in yours.</li>
-          <li><b>No secrets go up.</b> If a note holds something that looks like a password or a token, the backup stops and tells you where.</li>
-          <li><b>Nothing gets overwritten.</b> If two machines changed the same note, it stops without touching anything and tells you how to fix it.</li>
+          <li><b>No secrets go up.</b> Claude's tools refuse to write a password or a token into a note. If one gets in anyway, the backup stops and tells you where.</li>
+          <li><b>Nothing gets overwritten.</b> If two machines changed the same note, it stops without touching anything and tells you how to fix it. If each machine only added journal entries, they are joined by themselves.</li>
         </ul>
         <div class="howto">
           <p class="label">Set it up once</p>
@@ -399,14 +399,17 @@ Name, email and message, sent by email.
           <table>
             <tbody>
               <tr><td><code>augmented-brain init</code></td><td>Sets everything up: the work and personal spaces and the plugin (the installer runs it; <code>--custom</code> to choose yourself)</td></tr>
+              <tr><td><code>augmented-brain space</code></td><td>Say which space this folder belongs to</td></tr>
               <tr><td><code>augmented-brain space add</code></td><td>Add another space: personal, a client…</td></tr>
               <tr><td><code>augmented-brain doctor</code></td><td>Say what is missing, and how to fix it</td></tr>
+              <tr><td><code>augmented-brain import &lt;folder&gt;</code></td><td>Bring in a memory Claude Code already wrote. It only shows what it would do; <code>--apply</code> writes it</td></tr>
               <tr><td><code>augmented-brain check</code></td><td>Check this folder's notes and rebuild their index</td></tr>
               <tr><td><code>augmented-brain backup setup &lt;url&gt;</code></td><td>Back up this space to a private git repository</td></tr>
               <tr><td><code>augmented-brain backup</code></td><td>Save the latest changes (<code>--all</code> for every space)</td></tr>
               <tr><td><code>augmented-brain restore &lt;url&gt;</code></td><td>Bring a space back on a new machine</td></tr>
+              <tr><td><code>augmented-brain panel</code></td><td>Open the panel in your browser: today at a glance, and every section of your spaces to see and edit (<code>panel stop</code> to stop it)</td></tr>
               <tr><td><code>augmented-brain update</code></td><td>Update augmented brain and its Claude Code plugin (Claude tells you when there is a new version)</td></tr>
-              <tr><td><code>augmented-brain uninstall</code></td><td>Remove the program and the plugin; your notes stay (<code>--all</code> to start from scratch)</td></tr>
+              <tr><td><code>augmented-brain uninstall</code></td><td>Remove the program and the plugin; your notes stay (<code>--config</code> removes the configuration too, <code>--all</code> starts from scratch)</td></tr>
             </tbody>
           </table>
         </div>

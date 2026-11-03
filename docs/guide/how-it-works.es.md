@@ -14,7 +14,7 @@ augmented brain es un programa pequeño y una carpeta de notas. Así encajan las
 | Capa | Qué es | Dónde vive |
 |---|---|---|
 | **3 · Tú y tu asistente** | Hablas con Claude Code como siempre. No hay comandos nuevos que aprender. | Tu terminal |
-| **2 · El plugin** | Las puertas por las que Claude entra al programa: dos hooks y un servidor MCP. | Dentro de Claude Code, que lo instala |
+| **2 · El plugin** | Las puertas por las que Claude entra al programa: varios hooks y un servidor MCP. | Dentro de Claude Code, que lo instala |
 | **1 · El programa** | `augmented-brain`, un solo fichero. Vigila los comandos, lleva las tareas, rehace el índice y hace la copia. | `~/.local/bin/augmented-brain` |
 | **0 · Tus ficheros** | Texto normal: la configuración, tus notas y, si quieres, su copia. | `~/.config/augmented-brain/`, `~/augmented-brain/` y tu repo git |
 
@@ -25,8 +25,11 @@ escribe en el cuaderno.
 Dos palabras que salen mucho:
 
 - **Hook**: un aviso que Claude Code lanza en un momento concreto. Aquí, al empezar la
-  sesión y antes de cada comando. En cada aviso, Claude Code arranca el programa, le
-  pregunta y el programa termina. No queda nada funcionando de fondo.
+  sesión, antes de cada comando y cada cambio de fichero, después de cada respuesta de
+  Claude, cuando una conversación larga se compacta y cuando la sesión termina. En cada
+  aviso, Claude Code arranca el programa, le pregunta y el programa termina. Solo dos
+  cosas siguen un rato por su cuenta: la copia de seguridad que lanza el final de una
+  sesión, y el panel mientras lo usas.
 - **MCP** (Model Context Protocol): un estándar abierto para dar herramientas a un
   asistente. El programa ofrece las suyas ("abre una tarea", "apárcala") y Claude las usa.
   Al ser un estándar, otros asistentes podrán usar las mismas.
@@ -75,14 +78,20 @@ Si necesitas que Claude haga algo como root en una máquina durante un tiempo, a
 2026-10-31"]`. Hasta entonces, root ahí te pregunta cada vez en vez de pararse; después,
 vuelve a pararse solo.
 
-También mira dentro de `ssh`, de `vagrant ssh -c`, de `docker exec`, de `kubectl exec`, de
+Al empezar cada sesión, a Claude se le dice qué excepciones están vigentes, y cuáles no
+se pueden leer (esas no dan nada). `augmented-brain doctor` te avisa cuando una ha
+caducado y se puede quitar, o cuando no se puede leer.
+
+También mira dentro de `ssh`, de `vagrant ssh -c`, de `docker exec`, de `podman exec`, de `kubectl exec`, de
 `bash -c`, de los bucles, de lo que una tubería le pasa a una shell
 (`echo 'sudo …' | bash`) y de un script corto que lance Claude (`bash deploy.sh`,
 `./deploy.sh`). `ssh root@…` cuenta como hacerse root. Cuando no puede saber qué se va a
 ejecutar (un programa dado como variable, un comando anidado demasiado hondo,
 `rm -rf "$DIR/"*` con una variable que puede estar vacía), te pregunta. Y Claude nunca
 cambia por su cuenta la configuración de augmented brain ni la de Claude Code, donde una
-línea podría apagar una comprobación: te pregunta antes. Si no puede leer su configuración, te pregunta antes
+línea podría apagar una comprobación: te pregunta antes. Cuando Claude te guarda un
+perfil de producción o una máquina intocable, solo añade a las listas: para quitar uno,
+editas tú la configuración. Si no puede leer su configuración, te pregunta antes
 de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`, y antes de las herramientas que
 llaman a AWS por su cuenta, porque no sabe cuáles importan.
 Los comandos que Claude deja en marcha para vigilar algo (un registro, una compilación)
@@ -94,8 +103,11 @@ Code 2.1.295 o posterior).
 así que para también cualquier comando de PowerShell, y Claude lo hace en Bash. Es una
 red contra despistes, no un muro de seguridad: lee el [aviso legal](../../DISCLAIMER.md#aviso-legal).
 
-**Lo que vence ese día.** Si una tarea tiene una fecha de aviso para hoy o mañana, o
-algo apuntado con "recuérdamelo el jueves", Claude te lo dice nada más empezar. Y si hace
+**Lo que vence pronto.** Si una tarea tiene una fecha de aviso en los próximos 7 días,
+o ya pasada, Claude te lo dice nada más empezar (también en una tarea cerrada: al cerrar
+es cuando se apuntan las comprobaciones de después). Lo mismo con lo apuntado con
+"recuérdamelo el jueves": sale desde una semana antes, y cada día después, hasta que la
+revisión semanal lo resuelve. Y si hace
 una semana o más de la última revisión y hay cosas en el buzón o tareas paradas, te ofrece
 la revisión semanal: unos diez minutos repasando contigo cada cosa.
 
@@ -143,6 +155,10 @@ que abres Claude, te hace seis preguntas rápidas, explicándote el porqué de c
 tus respuestas guarda el perfil, crea tus áreas, le dice al guardia (para todos los espacios) qué es producción y
 qué máquinas no se tocan, y apunta a las personas con las que trabajas. Para cambiar
 cualquier cosa, díselo.
+
+Las **reglas** son cómo quieres que trabaje Claude. Dile "a partir de ahora, …" y Claude
+lo guarda como regla, en `rules/` del espacio, o en las notas compartidas (abajo) si vale
+para todo. Cada sesión las carga.
 
 Una tarea es un fichero de texto. Arriba, entre las líneas `---`, los datos que usa el
 programa. Debajo, lo que escribís tú y Claude:
@@ -260,8 +276,12 @@ augmented-brain backup --all    # todos
    augmented-brain restore https://github.com/tu-usuario/augmented-brain-trabajo.git
    ```
    Sustituye el espacio vacío por el tuyo: notas, tareas, reglas y la configuración del
-   espacio. Tu perfil viene con el espacio por defecto (`personal`), y ese espacio vuelve
-   a ser el de por defecto. Las listas del guardia (producción, máquinas intocables) no
+   espacio, que solo puedes leer tú. Lo único que no trae son los repositorios donde
+   Claude puede hacer commit y push: alguien podría haber cambiado la copia, así que
+   `restore` los nombra y los vuelves a añadir si lo sigues queriendo. Tu perfil viene
+   con el espacio por defecto (`personal`), y ese espacio vuelve a ser el de por
+   defecto, con la lista de los nombres de tus secretos (mira «El panel», más abajo)
+   si esta máquina no tiene ninguna. Las listas del guardia (producción, máquinas intocables) no
    van en ninguna copia, porque pueden nombrar máquinas de tu trabajo: `restore` y
    `doctor` lo dicen, y la siguiente sesión te ofrece volver a pedírtelas. Hasta
    entonces, nada pregunta antes de tocar producción. Si ese espacio ya tuviera notas
@@ -284,8 +304,9 @@ Lo que te da:
 - **Un repositorio por espacio.** El del trabajo puede ir al git de la empresa y el
   personal al tuyo. Tu perfil solo viaja en la copia del espacio por defecto, nunca en la
   del trabajo.
-- **No sube secretos.** Si una nota tiene algo que parece una contraseña o un token, la
-  copia se para y te dice en qué fichero.
+- **No sube secretos.** Las herramientas de Claude se niegan a escribir una contraseña o
+  un token en una nota. Si aun así entra uno (a mano, por ejemplo), la copia se para y te
+  dice en qué fichero.
 - **No pisa nada.** Si dos máquinas cambiaron la misma nota, se para sin tocar nada y te
   explica cómo resolverlo. Si cada una solo le añadió entradas de diario (líneas con
   fecha), se juntan solas, por fecha. El índice, que es generado, se rehace solo, y las capturas del
@@ -335,7 +356,16 @@ buzón del espacio de `*`, con su fecha y nunca dos veces. `archive/` y `docs/<t
 copian tal cual, junto a su nota, también si vuelves a importar más tarde. Un fichero con
 un secreto escrito (una clave, un token), sea nota o documento, se importa, pero sale en
 el informe: la copia de seguridad no lo sube hasta que se quite. `augmented-brain check`
-también lo nombra.
+también lo nombra. Una referencia o lección que es una lista de personas (una sección
+`## Nombre` por cada una, con una palabra como "personas" o "equipo" en su id o su
+título) entra tal cual, y el informe la nombra: las personas son notas propias, así que
+pide a Claude que guarde cada una como persona.
+
+¿Claude Code llevaba esa memoria por su cuenta? Entonces la sigue llevando para las
+carpetas de tus espacios: una segunda memoria, junto a la del espacio, que se desvía de
+ella. `augmented-brain doctor` te avisa, y te dice cómo apagarla:
+`"autoMemoryEnabled": false` en los ajustes de Claude Code. Lo que ya tiene se queda,
+listo para importar.
 
 ## El panel
 
@@ -346,19 +376,48 @@ Claude. Ábrelo con `/brain:panel` en Claude, o desde una terminal:
 augmented-brain panel
 ```
 
-Abre tu navegador, en el espacio de la carpeta desde la que lo lanzas. Si no puede (en un
-ordenador sin pantalla, por ejemplo), escribe una dirección para que la abras tú. Lo que
-encuentras, espacio por espacio:
+Abre tu navegador en **Hoy**, con el espacio de la carpeta desde la que lo lanzas. Si no
+puede (en un ordenador sin pantalla, por ejemplo), escribe una dirección para que la
+abras tú. Lo que encuentras:
 
-- **Tareas**: primero las que te esperan a ti, con su estado y su siguiente paso. Abre
-  una para leerla entera, escribir en su diario, cambiar su estado o su siguiente paso,
-  aparcarla o cerrarla. También puedes abrir tareas nuevas.
-- **Recordatorios**: las fechas para revisar de tus tareas y los recordatorios del
-  buzón, primero lo atrasado. Añade uno, o márcalo como hecho.
-- **Buzón**: apunta una idea, o marca una como resuelta.
-- **Áreas**, **conocimiento**, **reglas** y **personas**: para leer, y para crear
-  áreas. Conocimiento y reglas enseñan las del espacio y las compartidas, marcadas
-  «compartida».
+- **Hoy**, la primera página: todos los espacios a la vez. De cada uno, lo que vence en
+  los próximos 7 días, las tareas que te esperan (las aparcadas, en una línea), cuántas
+  capturas esperan en el buzón, si toca la revisión semanal, las sesiones que se
+  cortaron y las notas con problemas. Debajo, **Repositorios**: los que tus tareas
+  abiertas nombran en `repos:` y tienen cambios sin commit o commits sin subir, es decir,
+  trabajo que solo está en este ordenador. Si todas sus tareas están aparcadas (o para
+  algún día), sale marcado «¿olvidado?». El panel solo los lee: git funciona sin coger bloqueos, así que
+  nunca te estorba, y nunca pide una contraseña. Una rama que nunca se subió solo cuenta
+  si el repositorio tiene un remoto al que subirla.
+- **Tareas**, agrupadas por área, primero las que te esperan a ti, con su estado y su
+  siguiente paso. Los filtros enseñan solo las que te esperan, las que están en marcha,
+  las aparcadas, las paradas, o las que esperan a una persona. Una tarea que nadie ha
+  cambiado en 14 días sale marcada «parada N días»: la revisión semanal también la
+  saca. Abre una: primero lo esencial, las demás secciones plegadas, y el diario con lo
+  último arriba. Escribe en su diario, cambia su estado o su siguiente paso, apárcala o
+  ciérrala. También puedes abrir tareas nuevas. Si una tarea espera a una persona de la
+  que tienes nota, «espera a» te lleva a ella.
+- **Recordatorios**: las fechas para revisar de tus tareas (también de las cerradas) y
+  los recordatorios del buzón, primero lo atrasado y luego los próximos 30 días. Añade
+  uno, o márcalo como hecho.
+- **Buzón**: apunta una idea, márcala como resuelta, o conviértela en tarea.
+- **Revisión semanal**, en una página. Cada captura pasa a tarea, a referencia o a
+  lección, o se descarta. Cada tarea sin tocar dos semanas sigue como está, o pasa a
+  algún día (o la abres para cerrarla). Lo que decides se va apuntando, y se guarda en
+  el registro de la revisión al terminar.
+- **Áreas**, **conocimiento**, **reglas** y **personas**. Conocimiento y reglas enseñan
+  las del espacio y las compartidas, marcadas «compartida». Puedes crear áreas y
+  cambiar el título y el resumen de un área. Puedes añadir personas y cambiarlas: sus
+  otros nombres, su papel y sus notas. El nombre se queda: un nombre nuevo sería otra
+  persona. La página de una persona enseña las tareas que le esperan y las que la
+  enlazan.
+- **Secretos**: los nombres de los secretos que guardas en el llavero del sistema (donde
+  tu ordenador guarda las contraseñas), nunca su valor. Cada uno como
+  `servicio/nombre`, para qué sirve, y qué tareas lo nombran. Así sabes cuáles hay, y una
+  máquina nueva sabe cuáles pedirte. **Comprobar en el llavero** dice si cada uno está en
+  este ordenador (se lo pregunta a `secret-tool` en Linux y a `security` en macOS; en
+  otros sistemas no lo puede saber). Solo pregunta cuando pulsas, porque un llavero
+  bloqueado te pide su contraseña. Más abajo, el resto.
 - **Sesiones**: tus sesiones de Claude en este ordenador, de los últimos 30 días. Las que
   no terminaron (cerradas a la fuerza, o cortadas al apagarse el ordenador) muestran lo
   dicho después de la última anotación del diario: guárdalo en las notas (va a
@@ -367,9 +426,26 @@ encuentras, espacio por espacio:
   ficheros donde Claude Code guarda cada conversación). Puedes borrar la transcripción
   de una sesión terminada; esa sesión ya no se podrá retomar.
 - **Perfil**: quién eres y cómo te gusta trabajar, el mismo para todos los espacios.
-- **Estado**: notas que no son válidas, repositorios a los que apuntan las notas y que ya
-  no están en este ordenador, el índice, la última copia de seguridad y la última
+- **Salud**: la carpeta de notas y las carpetas de trabajo del espacio, si es el espacio
+  por defecto, notas que no son válidas, repositorios a los que apuntan las notas y que
+  ya no están en este ordenador, el índice, la última copia de seguridad y la última
   revisión semanal.
+
+El cuadro de **búsqueda** del lateral busca en las notas del espacio y en las
+compartidas: títulos, resúmenes y texto. Sale una nota cuando tiene todas las palabras,
+en mayúsculas o minúsculas, con tildes o sin ellas.
+
+Las notas se leen como texto, no como Markdown en crudo: títulos, listas, tablas, código
+y enlaces, y un `[[enlace]]` a otra nota te lleva a ella. Si una nota cambia en el disco
+mientras tienes abierta su página (Claude escribió en ella, por ejemplo), la página te lo
+dice, con un enlace para verla como está ahora.
+
+La lista de secretos es la misma en todos los espacios. Vive en el fichero de
+configuración, como `secrets = ["telegram/alertas-bot: avisos al móvil"]`. Puedes apuntar
+un nombre en el panel, o quitar uno de la lista (el secreto sigue en el llavero). O dile
+a Claude que has guardado un secreto nuevo, y apunta el nombre. Lo que parezca un valor
+se rechaza. La lista viaja en la copia del espacio por defecto, y un restore la trae a
+una máquina nueva que no tenga ninguna.
 
 Cambia tus notas igual que Claude, con el mismo programa, y se esperan el uno al otro:
 puedes tener los dos abiertos a la vez.
@@ -386,12 +462,15 @@ Está hecho para que siga siendo solo tuyo:
 - Al guardar una tarea, solo se guarda lo que cambiaste en la página: si Claude cambió
   otra cosa mientras tanto, se queda. Un paso solo se marca si sigue diciendo lo que
   mostraba la página.
-- No carga **nada de internet**: ni fuentes ni estadísticas. Funciona sin conexión.
+- No carga **nada de internet**: ni fuentes ni estadísticas. Funciona sin conexión. Una
+  nota tampoco puede meter HTML ni scripts propios en la página.
+- Mirar si una nota ha cambiado no cuenta como usar el panel: una pestaña abierta no lo
+  mantiene en marcha.
 
 ## Lo que no hace
 
 - **No hay servidor ni cuenta.** Si Claude no está abierto, no funciona nada, salvo el
-  panel mientras lo usas.
+  panel mientras lo usas y la copia de seguridad que lanza el final de una sesión.
 - **No envía tus datos a nadie.** Solo la copia, si la configuras, habla con tu
   repositorio. Aparte, una vez al día, pregunta a GitHub cuál es la última versión, sin
   mandar nada tuyo. `AB_NO_UPDATE_CHECK=1` lo apaga.

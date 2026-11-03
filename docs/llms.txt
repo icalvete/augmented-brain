@@ -1,18 +1,23 @@
 # augmented brain
 
-> Your brain, augmented with AI. augmented brain gives an AI assistant (Claude Code today) memory, a method and a guard: it remembers your tasks, decisions and people from one session to the next, works through tasks with a method, and asks before touching anything risky. Everything is plain Markdown files of yours, backed up to your own git. Free, MIT, alpha; Linux and macOS.
+> Your brain, augmented with AI. augmented brain gives an AI assistant (Claude Code today) memory, a method and a guard: it remembers your tasks, decisions and people from one session to the next, works through tasks with a method, and asks before touching anything risky. Everything is plain Markdown files of yours, backed up to your own git. Free, MIT, alpha; Linux, macOS and Windows.
 
 Install with one command, which asks the language, offers to install what is missing (git, Claude Code, the Claude desktop app), creates two spaces (work and personal) in ~/augmented-brain and opens Claude:
 
     curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh
 
-The first session is a short guided interview. A session outside every space's folder (such as a new session in the Claude desktop app with no folder chosen) uses the personal space.
+On Windows, in PowerShell:
+
+    irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
+
+The first session is a short guided interview. A local web panel (`augmented-brain panel`, or `/brain:panel` in Claude Code) shows today at a glance across every space and lets you see and edit tasks, reminders, the inbox, the weekly review, areas, knowledge, rules, people, the names of your secrets (never their values), sessions and the profile. A session outside every space's folder (such as a new session in the Claude desktop app with no folder chosen) uses the personal space.
 
 ## Docs
 
 - [README](https://raw.githubusercontent.com/icalvete/augmented-brain/main/README.md): what it does, getting started, commands, backup
 - [Getting started](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/getting-started.md): from nothing to the first session for people new to the terminal; what you need (a paid Claude plan), phrases for the first week, a glossary, common problems
-- [How it works](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.md): the four layers, a session step by step, where every file lives, spaces, backup
+- [Installing](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/install.md): what the installer does on Linux, macOS and Windows, where it puts things, updating and uninstalling
+- [How it works](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.md): the four layers, a session step by step, where every file lives, spaces, backup, importing an existing memory, the panel
 - [Connect your services](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.md): calendar, mail, documents and Jira through MCP
 - [Memory format](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/spec/memory-format.md): folders, note headers, configuration, backup
 
@@ -20,6 +25,7 @@ The first session is a short guided interview. A session outside every space's f
 
 - [README en español](https://raw.githubusercontent.com/icalvete/augmented-brain/main/README.es.md)
 - [Primeros pasos](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/getting-started.es.md)
+- [Instalación](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/install.es.md)
 - [Cómo funciona](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.es.md)
 - [Conecta tus servicios](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.es.md)
 

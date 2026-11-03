@@ -113,8 +113,8 @@ fiarse de ella.
   validar y cerrar. Aparcas una tarea y la retomas días después, en cualquier sesión.
 - **Áreas** que agrupan las tareas y el conocimiento de cada responsabilidad.
 - **Reglas cargadas en cada sesión**, y las importantes vigiladas por un guardia: nada
-  de commit ni push salvo que lo permitas, nunca root, ningún secreto en comandos ni
-  ficheros. Los perfiles de AWS de producción y los hosts que marques como intocables
+  de commit ni push salvo que lo permitas, nunca root (salvo que lo permitas en una máquina
+  hasta una fecha), ningún secreto en comandos ni ficheros. Los perfiles de AWS de producción y los hosts que marques como intocables
   te piden confirmación, también por `ssh`, en todos los espacios.
 - **Trabajo y personal, separados**: cada *espacio* tiene su memoria, sus reglas y su
   copia de seguridad. La carpeta en la que abres el asistente elige el espacio.
@@ -137,7 +137,8 @@ augmented-brain backup                                                   # a man
 
 - **Una máquina nueva en minutos.** Instala augmented brain y lanza
   `augmented-brain restore <url>`: sustituye el espacio vacío por el tuyo, con notas,
-  tareas, reglas, tu perfil y su configuración. Paso a paso, en
+  tareas, reglas, tu perfil y su configuración (salvo los repositorios donde Claude puede
+  hacer commit: `restore` los nombra, para que los vuelvas a añadir). Paso a paso, en
   [Cómo funciona](docs/guide/how-it-works.es.md#en-una-máquina-nueva).
 - **Varias máquinas, un solo cerebro.** Antes de subir, trae lo que hizo tu otra máquina
   y lo mezcla.
@@ -146,9 +147,11 @@ augmented-brain backup                                                   # a man
 - **En tu sitio.** GitHub, GitLab o tu servidor. augmented brain no tiene nube.
 - **Un repositorio por espacio.** El del trabajo puede ir al git de la empresa. Tu
   perfil solo viaja en la copia del espacio por defecto (`personal`), nunca en la del
-  trabajo. Las listas del guardia no viajan en ninguna: en una máquina nueva, Claude te
-  las vuelve a pedir.
-- **No sube secretos.** Si una nota parece tener una contraseña o un token, se para.
+  trabajo. Las listas del guardia, y los repositorios donde Claude puede hacer commit, no
+  viajan en ninguna: en una máquina nueva, Claude te vuelve a pedir las listas, y los
+  repositorios los añades tú.
+- **No sube secretos.** Las herramientas de Claude se niegan a escribir una contraseña o
+  un token en una nota, y si aun así una parece tener uno, la copia se para.
 - **No pisa nada.** Si dos máquinas cambiaron la misma nota, se para y te explica qué hacer;
   las entradas de diario añadidas en cada una se juntan solas.
   Las capturas del buzón hechas en dos máquinas se guardan las dos (una ya procesada en
@@ -166,15 +169,15 @@ Claude te lo dice al empezar la siguiente.
 | `augmented-brain init` | Lo prepara todo: los espacios `trabajo` y `personal` y el plugin. Lo lanza el instalador; `--custom` para elegir tú |
 | `augmented-brain space` | Dice de qué espacio es esta carpeta |
 | `augmented-brain space add` | Añade otro espacio (personal, un cliente…) |
-| `augmented-brain doctor` | Dice qué falta y cómo arreglarlo |
+| `augmented-brain doctor` | Dice qué falta y cómo arreglarlo (también si Claude Code lleva una segunda memoria propia junto a la del espacio) |
 | `augmented-brain import <carpeta>` | Trae una memoria que Claude Code ya escribió. Solo enseña lo que haría; `--apply` la escribe ([detalles](docs/guide/how-it-works.es.md#trae-una-memoria-que-ya-tienes)) |
 | `augmented-brain check` | Revisa las notas del espacio de esta carpeta y rehace su índice; también avisa de los repositorios de las notas que ya no están en este ordenador |
 | `augmented-brain backup setup <url>` | Conecta este espacio a un repositorio git privado |
 | `augmented-brain backup` | Guarda los últimos cambios (`--all` para todos los espacios) |
 | `augmented-brain restore <url>` | Recupera un espacio en una máquina nueva |
-| `augmented-brain panel` | Abre el panel en tu navegador: ve y edita tus tareas, recordatorios, buzón y perfil (`panel stop` para pararlo) |
+| `augmented-brain panel` | Abre el panel en tu navegador: el día de un vistazo, y cada sección de tus espacios para ver y editar (`panel stop` para pararlo) |
 | `augmented-brain update` | Actualiza augmented brain y su plugin de Claude Code (Claude te avisa cuando hay versión nueva) |
-| `augmented-brain uninstall` | Quita el programa y el plugin; tus notas se quedan (`--all` para empezar de cero) |
+| `augmented-brain uninstall` | Quita el programa y el plugin; tus notas se quedan (`--config` quita también la configuración, `--all` empieza de cero) |
 
 El trabajo de cada día ocurre dentro de Claude Code, con tus palabras: "nueva tarea…",
 "¿qué tengo pendiente?", "apárcala", "apunta esto en el buzón".
@@ -183,9 +186,14 @@ El trabajo de cada día ocurre dentro de Claude Code, con tus palabras: "nueva t
 
 Para verlo todo de un vistazo, o cambiar algo sin pedírselo a Claude, abre el panel:
 escribe `/brain:panel` en Claude, o lanza `augmented-brain panel`. Abre una página en tu
-navegador con tus tareas, recordatorios, buzón, áreas, conocimiento, reglas, personas, sesiones y perfil,
-espacio por espacio. Solo funciona en tu ordenador y solo mientras lo usas: tras 30
-minutos sin uso se para solo. Más detalles: [El panel](docs/guide/how-it-works.es.md#el-panel).
+navegador en **Hoy**: todos los espacios a la vez, con lo que vence esta semana, las
+tareas que te esperan, el buzón, si toca la revisión semanal, y los repositorios de tus
+tareas con trabajo sin commit o sin subir. Desde ahí, espacio por espacio: tareas por
+área con filtros, recordatorios, el buzón, la revisión semanal, áreas, conocimiento,
+reglas, personas, tus secretos (solo por su nombre, nunca su valor), sesiones, perfil y
+salud. Un cuadro de búsqueda encuentra cualquier nota. Las notas se leen como texto, con
+sus enlaces. Solo funciona en tu ordenador y solo mientras lo usas: tras 30 minutos sin
+uso se para solo. Más detalles: [El panel](docs/guide/how-it-works.es.md#el-panel).
 
 ## Cómo funciona
 
@@ -196,7 +204,9 @@ minutos sin uso se para solo. Más detalles: [El panel](docs/guide/how-it-works.
 - **Un servidor MCP** da a tu asistente las herramientas del método, así que otros
   asistentes también pueden usarlo. Claude Code es el primero.
 - **Un plugin de Claude Code** carga tu espacio al empezar cada sesión y pasa el guardia
-  antes de cada comando y cada escritura de fichero. Si el guardia no puede arrancar,
+  antes de cada comando y cada escritura de fichero. También le recuerda a Claude que
+  escriba en el diario de la tarea, guarda el resumen cuando una conversación larga se
+  compacta, y lanza la copia de seguridad al terminar la sesión. Si el guardia no puede arrancar,
   el comando o la escritura tampoco se hacen. El guardia es una red contra errores, no
   una barrera de seguridad.
 

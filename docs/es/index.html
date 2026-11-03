@@ -299,7 +299,7 @@
       </div>
       <div class="term" role="img" aria-label="Ejemplos de comandos que el guardia para o consulta">
         <div class="line"><code>git push origin main</code><span class="tag stop">parado</span><span class="why">solo subes tú, salvo en los repos que permitas</span></div>
-        <div class="line"><code>sudo apt remove nginx</code><span class="tag stop">parado</span><span class="why">nunca como root</span></div>
+        <div class="line"><code>sudo apt remove nginx</code><span class="tag stop">parado</span><span class="why">nunca como root, salvo que lo permitas en una máquina hasta una fecha</span></div>
         <div class="line"><code>export API_KEY=sk-…</code><span class="tag stop">parado</span><span class="why">ningún secreto en comandos ni ficheros</span></div>
         <div class="line"><code>aws --profile prod s3 rm …</code><span class="tag ask">te pregunta</span><span class="why">producción la apruebas tú</span></div>
         <div class="line"><code>ssh db01 "systemctl restart …"</code><span class="tag ask">te pregunta</span><span class="why">una máquina que marcaste como intocable</span></div>
@@ -338,13 +338,13 @@ Nombre, correo y mensaje, enviado por email.
       </div>
       <div class="backup">
         <ul class="pros">
-          <li><b>Una máquina nueva en minutos.</b> <code>augmented-brain restore</code> trae el cajón entero: notas, tareas, reglas, tu perfil y su configuración. Abres Claude y sigue donde lo dejaste.</li>
+          <li><b>Una máquina nueva en minutos.</b> <code>augmented-brain restore</code> trae el cajón entero: notas, tareas, reglas, tu perfil y su configuración. Solo se quedan fuera los repositorios donde Claude puede hacer commit: te los nombra, para que los vuelvas a añadir. Abres Claude y sigue donde lo dejaste.</li>
           <li><b>Varias máquinas, un solo cerebro.</b> ¿Portátil y sobremesa? Cada copia trae primero lo que hizo la otra máquina y lo mezcla.</li>
           <li><b>Todo el historial.</b> Cada copia es un commit de git, con la máquina y la hora. Puedes ver qué cambió y volver a cualquier día.</li>
           <li><b>En tu sitio, no en el nuestro.</b> GitHub, GitLab o tu servidor: el repositorio lo eliges tú. augmented brain no tiene nube.</li>
           <li><b>Un repositorio por cajón.</b> Lo del trabajo puede vivir en el git de la empresa, y lo personal en el tuyo.</li>
-          <li><b>No sube secretos.</b> Si una nota tiene algo que parece una contraseña o un token, la copia se para y te dice dónde.</li>
-          <li><b>No pisa nada.</b> Si dos máquinas cambiaron la misma nota, se para sin tocar nada y te dice cómo arreglarlo.</li>
+          <li><b>No sube secretos.</b> Las herramientas de Claude se niegan a escribir una contraseña o un token en una nota. Si aun así entra uno, la copia se para y te dice dónde.</li>
+          <li><b>No pisa nada.</b> Si dos máquinas cambiaron la misma nota, se para sin tocar nada y te dice cómo arreglarlo. Si cada máquina solo añadió entradas de diario, se juntan solas.</li>
         </ul>
         <div class="howto">
           <p class="label">Se monta una vez</p>
@@ -388,14 +388,17 @@ Nombre, correo y mensaje, enviado por email.
           <table>
             <tbody>
               <tr><td><code>augmented-brain init</code></td><td>Lo prepara todo: los espacios trabajo y personal y el plugin (lo lanza el instalador; <code>--custom</code> para elegir tú)</td></tr>
+              <tr><td><code>augmented-brain space</code></td><td>Dice de qué espacio es esta carpeta</td></tr>
               <tr><td><code>augmented-brain space add</code></td><td>Añade otro espacio: personal, un cliente…</td></tr>
               <tr><td><code>augmented-brain doctor</code></td><td>Dice qué falta y cómo arreglarlo</td></tr>
+              <tr><td><code>augmented-brain import &lt;carpeta&gt;</code></td><td>Trae una memoria que Claude Code ya escribió. Solo enseña lo que haría; <code>--apply</code> la escribe</td></tr>
               <tr><td><code>augmented-brain check</code></td><td>Revisa las notas de esta carpeta y rehace su índice</td></tr>
               <tr><td><code>augmented-brain backup setup &lt;url&gt;</code></td><td>Copia este espacio en un repositorio git privado</td></tr>
               <tr><td><code>augmented-brain backup</code></td><td>Guarda los últimos cambios (<code>--all</code> para todos los espacios)</td></tr>
               <tr><td><code>augmented-brain restore &lt;url&gt;</code></td><td>Recupera un espacio en una máquina nueva</td></tr>
+              <tr><td><code>augmented-brain panel</code></td><td>Abre el panel en tu navegador: el día de un vistazo, y cada sección de tus espacios para ver y editar (<code>panel stop</code> para pararlo)</td></tr>
               <tr><td><code>augmented-brain update</code></td><td>Actualiza augmented brain y su plugin de Claude Code (Claude te avisa cuando hay versión nueva)</td></tr>
-              <tr><td><code>augmented-brain uninstall</code></td><td>Quita el programa y el plugin; tus notas se quedan (<code>--all</code> para empezar de cero)</td></tr>
+              <tr><td><code>augmented-brain uninstall</code></td><td>Quita el programa y el plugin; tus notas se quedan (<code>--config</code> quita también la configuración, <code>--all</code> empieza de cero)</td></tr>
             </tbody>
           </table>
         </div>

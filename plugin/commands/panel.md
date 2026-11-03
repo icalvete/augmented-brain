@@ -1,5 +1,5 @@
 ---
-description: Open the panel in the browser to see and edit tasks, reminders, inbox, areas and profile · Abre el panel en el navegador para ver y editar tareas, recordatorios, buzón, áreas y perfil
+description: Open the panel in the browser to see today at a glance and your tasks, reminders, inbox, weekly review, areas, knowledge, rules, people, secrets, sessions, profile and health · Abre el panel en el navegador para ver el día de un vistazo y tus tareas, recordatorios, buzón, revisión semanal, áreas, conocimiento, reglas, personas, secretos, sesiones, perfil y salud
 argument-hint: "[stop]"
 allowed-tools: Bash(augmented-brain panel:*), Bash(~/.local/bin/augmented-brain panel:*)
 ---

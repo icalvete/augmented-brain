@@ -153,8 +153,8 @@ tells you when a new version is out. Running the install command again does the 
 augmented-brain uninstall
 ```
 
-It removes the program, the Claude Code plugin and what Claude Code keeps of it (its cache
-and its server's logs). **Your notes stay**, and so does the configuration unless you add
+It removes the program, the Claude Code plugin and what Claude Code keeps of it (its cache,
+its data and its server's logs). **Your notes stay**, and so does the configuration unless you add
 `--config`. To start from scratch, `--all` removes the configuration, your profile and
 every space's notes too, after showing what and asking. Claude Code, its desktop app, git and the PATH
 entry stay too: Claude Code lives in that same folder. On Windows the program file
@@ -166,7 +166,8 @@ delete itself.
 - **The terminal cannot find a command** (`command not found`, or "not recognized" on
   Windows). Open a new terminal: the one you used does not see the new PATH yet.
 - **Anything else after installing.** Run `augmented-brain doctor`: it says what is missing
-  and how to fix it.
+  and how to fix it. It also warns you when Claude Code keeps a second memory of its own
+  for your spaces' folders, and when other users of the computer could read your notes.
 - **"This system is not supported yet".** It works on Linux, macOS and Windows, on 64-bit PCs
   and Arm.
 - **macOS: "Claude Code needs macOS 13".** Update the Mac in System Settings → General →

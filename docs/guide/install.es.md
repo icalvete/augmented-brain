@@ -157,8 +157,8 @@ mismo.
 augmented-brain uninstall
 ```
 
-Quita el programa, el plugin de Claude Code y lo que Claude Code guarda de él (su caché y
-los registros de su servidor). **Tus notas se quedan**, y la configuración también, salvo que
+Quita el programa, el plugin de Claude Code y lo que Claude Code guarda de él (su caché,
+sus datos y los registros de su servidor). **Tus notas se quedan**, y la configuración también, salvo que
 añadas `--config`. Para empezar de cero, `--all` borra también la configuración, tu perfil y
 las notas de cada espacio, después de enseñarte qué y preguntarte. Claude Code, su app de escritorio, git
 y la entrada del PATH también se quedan: Claude Code vive en esa misma carpeta. En Windows
@@ -170,7 +170,9 @@ un programa en marcha se borre a sí mismo.
 - **La terminal no encuentra una orden** (`command not found`, o "no se reconoce" en
   Windows). Abre una terminal nueva: la que usaste todavía no ve el PATH nuevo.
 - **Cualquier otra cosa después de instalar.** Lanza `augmented-brain doctor`: te dice qué
-  falta y cómo arreglarlo.
+  falta y cómo arreglarlo. También te avisa si Claude Code lleva una segunda memoria
+  propia para las carpetas de tus espacios, y si otros usuarios del ordenador podrían
+  leer tus notas.
 - **"Este sistema aún no está soportado".** Funciona en Linux, macOS y Windows, en PC de 64
   bits y Arm.
 - **macOS: "Claude Code necesita macOS 13".** Actualiza el Mac en Ajustes del Sistema →

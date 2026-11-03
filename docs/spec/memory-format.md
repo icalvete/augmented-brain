@@ -1,13 +1,13 @@
 # Memory format
 
-**Status: v0.1, the format the 0.1 release implements.** This document defines how augmented brain stores what you and your assistant know: what files exist, what goes in each, and which fields the program reads. Everything is plain Markdown that you can open, edit and search with any tool.
+**Status: format version 1** (see "Format version" below). This document defines how augmented brain stores what you and your assistant know: what files exist, what goes in each, and which fields the program reads. Everything is plain Markdown that you can open, edit and search with any tool.
 
 ## Principles
 
 1. **Plain files, yours.** One folder of Markdown per space. No database, no hosted service.
 2. **The program reads fields, never prose.** Anything the program needs (a task's status, who it waits on, its next step) lives in the file's header. The body is free text, in any language.
 3. **Indexes are generated.** You never edit an index by hand; the program rebuilds it after every change. Hand-kept indexes drift.
-4. **Nothing is deleted.** Closed tasks stay, marked closed. Old journal entries move to `archive/`.
+4. **Nothing is deleted.** Closed tasks stay, marked closed. What is no longer needed day to day can go to `archive/`, which is never loaded.
 5. **Short at the top, detail below.** The file loaded at the start of every session stays small; detail lives one link away.
 
 ## Spaces
@@ -49,7 +49,7 @@ A session that runs outside every work folder (for example, the scratch folder t
 
 A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the active task pointing at it.
 
-`MEMORY.md` is the name Claude Code loads automatically from the memory folder; only its first 200 lines (or 25 KB) are read, so the program keeps it well under that.
+`MEMORY.md` is what the session start hands the assistant: it comes in up to three parts of the start (see "Rules"). An index too long for them is cut, and the assistant is told where to read it whole.
 
 **Your profile** (who you are, your language, how you like answers) is the same person in every space, so it lives once, next to the configuration: `profile.md` in the configuration folder. A space's own `profile.md` only adds what applies there.
 
@@ -107,8 +107,9 @@ watch:                           # optional: dates to look at something again
     done: false
 ```
 
-A watch date that is due today or tomorrow, or already past and not `done`, is brought up
-at the start of the session.
+A watch date that is not `done` and falls in the next 7 days, or is already past, is
+brought up at the start of the session. This holds for closed tasks too: closing is when
+the checks for later are written down, so they come up until they are marked `done`.
 
 ### Subtasks
 
@@ -179,7 +180,7 @@ The body uses these sections, in your language (the templates write the headings
 2. **Definition**, **Analysis**, **Plan**, **Validation**, **Closing**: one per phase.
 3. **Journal**: dated lines, `- YYYY-MM-DD — what happened`. Always the last section.
 
-The program never searches the prose. It relies on two positions only: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. The one exception is the checkboxes of the Plan section (see "Steps"). When a task file passes about 10 KB, its oldest journal entries move to `archive/` and the task links to them.
+The program never searches the prose. It relies on two positions only: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. The one exception is the checkboxes of the Plan section (see "Steps"). The program never moves journal entries: a task whose journal grows long can have its oldest entries moved to `archive/` by hand, with a link from the task.
 
 ## Areas
 
@@ -198,7 +199,8 @@ A person is someone the user deals with: `people/person-<name>.md`. The title is
 and the summary says who they are to the user and the other names the user calls them
 ("my manager · also: Marcos"), so the index alone tells the assistant who "Marcos" is. The
 body keeps anything else worth remembering. People belong to a space: work contacts stay
-in the work space.
+in the work space. The panel reads the role and the other names back from the summary
+when it changes a person; the name (title and id) stays.
 
 ## Inbox
 
@@ -209,8 +211,9 @@ in the work space.
 - 2026-10-17 — Call the insurance (remind: 2026-10-22)
 ```
 
-A capture ending in `(remind: YYYY-MM-DD)` is brought up at the start of the session on
-that day. Any other line (the heading, a paragraph) is left alone.
+A capture ending in `(remind: YYYY-MM-DD)` is brought up at the start of the session from
+7 days before that date, and every day after it, until the capture is processed (in the
+weekly review, or marked as dealt with). Any other line (the heading, a paragraph) is left alone.
 
 ## Reviews
 
@@ -219,7 +222,10 @@ knowledge, or is dropped), the live tasks untouched for 14 days or more, and the
 in the coming week. Processed captures leave the inbox, and the review is kept as
 `reviews/review-<date>.md` (`type: review`), with what was decided as its body and the
 first line as its summary. When the last review is 7 days old or more and there is
-something to go through, the session start offers a new one.
+something to go through, the session start offers a new one. A review done in the
+panel keeps one line per decision while it goes on in a draft on this machine
+(`review-<space>.draft` in the configuration folder, never in the notes), and writes
+those lines into the review's body when it is finished.
 
 ## Rules
 
@@ -229,9 +235,11 @@ Rules tell the assistant how to work. There are three levels:
 - **shared rules**, the person's own for every space, in the shared notes (for example, "answer in short sentences, one idea each");
 - **space rules**, in `rules/`, for what only applies to that space (for example, "hosts db01–db03 are never restarted without explicit permission").
 
-All of them are loaded at the start of every session, whole. The start comes in nine
-parts, each of about 9,500 characters at most: the heading with the profile and the
-common rules, the index (three parts), and the shared and space rules (five parts). A
+All of them are loaded at the start of every session, whole. The start comes in up to
+nine parts, each of about 9,500 characters at most: the heading with the profile and the
+common rules, the index (up to three parts), and the shared and space rules (up to five
+parts). Only the parts that have something are sent, and they are counted that way
+("part 2 of 3"). A
 rule's section titled `History` (or `Historia`) stays in its file: it tells how the rule
 came to be, not what to do. A rule that does not fit whole goes as one line, its title
 and summary, with the path of its file; so a rule's summary should say what to do.
@@ -269,6 +277,7 @@ default_space = "personal"       # used outside every work folder (optional)
 production_aws_profiles = ["prod", "prod-eu"]   # every space: the user confirms first
 untouchable_hosts = ["db01", "db02", "db03"]    # ssh, scp, sftp, mosh to them: the user confirms first
 root_ask = ["db01 until 2026-10-31"]            # root there asks instead of being refused, until then
+secrets = ["telegram/alerts-bot: alerts to my phone"]   # names of secrets in the system keychain, never values
 
 [spaces.work]
 memory = "~/augmented-brain/work/notes"
@@ -302,32 +311,55 @@ The date is a day (the exception lasts to its end, in UTC) or a time
 lasts, a command that would run as root on that machine (`sudo`, `su`, also inside
 `ssh <host> '…'`) asks the user instead of being refused; the command it runs is still
 checked. The host is matched as ssh names it, or against this machine's name. After the
-date the entry does nothing, and `augmented-brain doctor` says it can be removed.
+date the entry does nothing, and `augmented-brain doctor` says it can be removed. The
+session start tells the assistant which exceptions are in force, and names those that
+cannot be read (they grant nothing); `doctor` names those too.
+
+`secrets` names the secrets the user keeps in the system keychain, one each:
+`"<service>/<name>: what it is for"`. The service and the name are single words (letters,
+digits, `. _ @ + -`), as the keychain knows them (`secret-tool` attributes `service` and
+`name` on Linux; a generic password's service and account on macOS). It never holds a
+value: anything that looks like one is refused. It is the same list in every space. The
+assistant adds to it with the MCP tool `secret_name_save` (saving a listed name changes
+what it is for); the panel lists it, adds and removes names, says which tasks name each
+one, and, only when asked, whether this computer's keychain has it. An entry that cannot
+be read is left out and counted on the panel's page.
 
 ## Backup
 
 Each space backs up to its own private git repository: the memory folder itself is the
 repository. Every backup also copies this space's part of the configuration into
 `.augmented-brain/` inside the memory folder, so restoring on a new machine needs nothing
-else. The default space's backup (or the only space's) also carries the profile, and says
-`default_space` in its copy of the configuration, so a restore makes it the default
-space again when the machine has none; no other backup does, so the personal profile
+else. The default space's backup (or the only space's) also carries the profile, the
+`secrets` list, and says `default_space` in its copy of the configuration, so a restore
+makes it the default space again when the machine has none, and brings the `secrets`
+list when the machine's is empty; no other backup does, so the personal profile
 never reaches a work repository. The
 machine-wide guard lists are in no backup (they may name work machines): after a restore
 that leaves them empty, `restore` and `doctor` say so, and the next session offers to ask for them
 again. A restore never brings `git_allowed_repos` or `git_ask_repos` either, since someone
 else may have changed the backup: they are given again on the new machine. A backup that
 holds a symbolic link is never restored, nor merged with another machine's, since
-augmented brain never writes one. Notes are written readable by their owner only. Paths are kept with `~`, so they point to the new machine's home, and
+augmented brain never writes one. Notes are written readable by their owner only (files
+0600, folders 0700); a restore makes the restored notes so, `augmented-brain check` fixes
+a space whose notes others could read, and `augmented-brain doctor` warns about it. Paths are kept with `~`, so they point to the new machine's home, and
 the notes go back to the same place inside the work folder. A restore also installs the
 Claude Code plugin when it is missing.
 
 A backup is refused while any file of the memory holds a secret (the made-up keys of
-AWS's documentation are not secrets). Files over 50 MB are left out, and the user is told.
+AWS's documentation are not secrets). The tools refuse to write one in the first place:
+a note may not hold more secrets than its old version did, so a note that already holds
+one (as an import may leave it) can still be changed to take it out. Files over 50 MB are left out, and the user is told.
 The repository gets a `.gitattributes` (`inbox.md merge=union`: captures from two machines
 are both kept, so one processed on one machine may come back if the other captured at the
 same time) and a `.gitignore` (`*.tmp`, `.DS_Store`, `Thumbs.db`, `desktop.ini`); lines
 the user adds to them stay. The generated index is rebuilt after a restore.
+
+When another machine changed the same notes, the backup merges before pushing. A note
+that each machine changed only by adding journal entries (dated lines) and moving its
+`updated` date is joined by itself: every entry either added, in date order, and the
+later date. Any other conflict stops the backup without pushing, naming the notes to
+merge by hand.
 
 ## State of this machine
 

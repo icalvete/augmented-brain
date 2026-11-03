@@ -112,7 +112,8 @@ trusting it.
   close. Park a task and resume it days later, in any session.
 - **Areas** that group the tasks and the knowledge of each responsibility.
 - **Rules loaded in every session**, and the important ones enforced by a guard: no
-  commit or push unless you allow it, never root, no secrets in commands or files.
+  commit or push unless you allow it, never root (unless you allow it on one machine until
+  a date), no secrets in commands or files.
   Production AWS profiles and hosts you mark as untouchable ask you first, also over
   `ssh`, in every space.
 - **Work and personal apart**: each *space* has its own memory, rules and backup. The
@@ -136,7 +137,8 @@ augmented-brain backup                                         # by hand, if you
 
 - **A new machine in minutes.** Install augmented brain and run
   `augmented-brain restore <url>`: it replaces the empty space with yours, with notes,
-  tasks, rules, your profile and its settings. Step by step, in
+  tasks, rules, your profile and its settings (except the repositories where Claude may
+  commit: `restore` names them, for you to add again). Step by step, in
   [How it works](docs/guide/how-it-works.md#on-a-new-machine).
 - **Several machines, one brain.** Before pushing, it fetches what your other machine did
   and merges it.
@@ -145,8 +147,10 @@ augmented-brain backup                                         # by hand, if you
 - **Your place.** GitHub, GitLab or your own server. augmented brain has no cloud.
 - **One repository per space.** Work can go to your company's git. Your profile only
   travels in the default space's backup (`personal`), never in the work one. The guard's
-  lists travel in none: on a new machine, Claude asks for them again.
-- **No secrets go up.** If a note seems to hold a password or a token, it stops.
+  lists, and the repositories where Claude may commit, travel in none: on a new machine,
+  Claude asks for the lists again, and you add the repositories yourself.
+- **No secrets go up.** Claude's tools refuse to write a password or a token into a note,
+  and if a note seems to hold one anyway, the backup stops.
 - **Nothing gets overwritten.** If two machines changed the same note, it stops and tells
   you what to do; journal entries added on each are joined by themselves. Captures in the inbox from two machines are both kept (a capture
   already processed on one machine may come back once, at the next review).
@@ -163,15 +167,15 @@ tells you at the start of the next one.
 | `augmented-brain init` | Sets everything up: the `work` and `personal` spaces and the plugin. The installer runs it; `--custom` to choose yourself |
 | `augmented-brain space` | Say which space this folder belongs to |
 | `augmented-brain space add` | Add another space (personal, a client…) |
-| `augmented-brain doctor` | Say what is missing, and how to fix it |
+| `augmented-brain doctor` | Say what is missing, and how to fix it (also when Claude Code keeps a second memory of its own next to the space's) |
 | `augmented-brain import <folder>` | Bring in a memory Claude Code already wrote. It only shows what it would do; `--apply` writes it ([details](docs/guide/how-it-works.md#bring-in-a-memory-you-already-have)) |
 | `augmented-brain check` | Check the notes of this folder's space and rebuild its index; it also warns of repositories in notes that are no longer on this computer |
 | `augmented-brain backup setup <url>` | Back up this space to a private git repository |
 | `augmented-brain backup` | Save the latest changes (`--all` for every space) |
 | `augmented-brain restore <url>` | Bring a space back on a new machine |
-| `augmented-brain panel` | Open the panel in your browser: see and edit your tasks, reminders, inbox and profile (`panel stop` to stop it) |
+| `augmented-brain panel` | Open the panel in your browser: today at a glance, and every section of your spaces to see and edit (`panel stop` to stop it) |
 | `augmented-brain update` | Update augmented brain and its Claude Code plugin (Claude tells you when there is a new version) |
-| `augmented-brain uninstall` | Remove the program and the plugin; your notes stay (`--all` to start from scratch) |
+| `augmented-brain uninstall` | Remove the program and the plugin; your notes stay (`--config` removes the configuration too, `--all` starts from scratch) |
 
 Everyday work happens inside Claude Code, in plain words: "new task…", "what is
 pending?", "park it", "note this in the inbox".
@@ -180,9 +184,14 @@ pending?", "park it", "note this in the inbox".
 
 To see everything at a glance, or change something without asking Claude, open the
 panel: type `/brain:panel` in Claude, or run `augmented-brain panel`. It opens a page in
-your browser with your tasks, reminders, inbox, areas, knowledge, rules, people, sessions and profile,
-space by space. It runs only on your computer and only while you use it: after 30
-minutes without use it stops by itself. Details: [The panel](docs/guide/how-it-works.md#the-panel).
+your browser on **Today**: every space at once, with what is due this week, the tasks
+waiting on you, the inbox, whether the weekly review is due, and the repositories of
+your tasks with work not yet committed or pushed. From there, space by space: tasks by
+area with filters, reminders, the inbox, the weekly review, areas, knowledge, rules,
+people, your secrets (by name only, never their values), sessions, profile and health. A
+search box finds any note. Notes read as text, with their links. It runs only on your
+computer and only while you use it: after 30 minutes without use it stops by itself.
+Details: [The panel](docs/guide/how-it-works.md#the-panel).
 
 ## How it works
 
@@ -193,7 +202,9 @@ minutes without use it stops by itself. Details: [The panel](docs/guide/how-it-w
 - **An MCP server** gives your assistant the tools of the method, so other assistants
   can use it too. Claude Code is the first one supported.
 - **A Claude Code plugin** loads your space when a session starts and runs the guard
-  before every command and file write. If the guard cannot run, the command or the
+  before every command and file write. It also reminds Claude to write in the task's
+  journal, keeps the summary when a long conversation is compacted, and starts the
+  backup when a session ends. If the guard cannot run, the command or the
   write does not happen either. The guard is a safety net against mistakes, not a
   security boundary.
 

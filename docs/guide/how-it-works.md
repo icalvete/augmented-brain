@@ -14,7 +14,7 @@ augmented brain is one small program and a folder of notes. This is how the piec
 | Layer | What it is | Where it lives |
 |---|---|---|
 | **3 · You and your assistant** | You talk to Claude Code as usual. No new commands to learn. | Your terminal |
-| **2 · The plugin** | The doors Claude uses to reach the program: two hooks and an MCP server. | Inside Claude Code, which installs it |
+| **2 · The plugin** | The doors Claude uses to reach the program: a few hooks and an MCP server. | Inside Claude Code, which installs it |
 | **1 · The program** | `augmented-brain`, a single file. It guards commands, keeps tasks, rebuilds the index and runs the backup. | `~/.local/bin/augmented-brain` |
 | **0 · Your files** | Plain text: the configuration, your notes and, if you want, their backup. | `~/.config/augmented-brain/`, `~/augmented-brain/` and your git repo |
 
@@ -24,9 +24,11 @@ program writes in the notebook.
 
 Two words that come up a lot:
 
-- **Hook**: a call Claude Code makes at a given moment. Here, when a session starts and
-  before every command. Each time, Claude Code starts the program, asks it, and the
-  program exits. Nothing keeps running in the background.
+- **Hook**: a call Claude Code makes at a given moment. Here, when a session starts,
+  before every command and file change, after each answer of Claude, when a long
+  conversation is compacted, and when the session ends. Each time, Claude Code starts the
+  program, asks it, and the program exits. Only two things go on a while by themselves:
+  the backup that the end of a session starts, and the panel while you use it.
 - **MCP** (Model Context Protocol): an open standard to give tools to an assistant. The
   program offers its own ("open a task", "park it") and Claude uses them. Since it is a
   standard, other assistants will be able to use the same ones.
@@ -74,13 +76,19 @@ If you need Claude to do something as root on a machine for a while, add it to
 2026-10-31"]`. Until then, root there asks you each time instead of being refused; after
 it, root is refused again by itself.
 
-It also looks inside `ssh`, `vagrant ssh -c`, `docker exec`, `kubectl exec`, `bash -c`,
+At the start of each session, Claude is told which of these exceptions are in force,
+and which cannot be read (those grant nothing). `augmented-brain doctor` tells you when
+one has ended and can be removed, or cannot be read.
+
+It also looks inside `ssh`, `vagrant ssh -c`, `docker exec`, `podman exec`, `kubectl exec`, `bash -c`,
 loops, what a pipe feeds a shell (`echo 'sudo …' | bash`), and a short script Claude
 runs (`bash deploy.sh`, `./deploy.sh`). `ssh root@…` counts as becoming root. When it
 cannot tell what will run (a program given as a variable, a command nested too deep,
 `rm -rf "$DIR/"*` with a variable that may be empty), it asks you. And Claude never
 changes, on its own, augmented brain's configuration or Claude Code's settings, where
-a line could switch a check off: it asks you first. If its configuration cannot be read, it asks you before every
+a line could switch a check off: it asks you first. When Claude saves a production
+profile or an untouchable machine for you, it only adds to the lists: to take one out,
+you edit the configuration yourself. If its configuration cannot be read, it asks you before every
 `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before the tools that call AWS
 on their own, since it cannot tell which ones matter.
 Commands Claude leaves running to watch something (a log, a build) are checked the same
@@ -92,8 +100,11 @@ later).
 stops every PowerShell command too, and Claude runs it in Bash instead. It is a net
 against slips, not a security wall: read the [disclaimer](../../DISCLAIMER.md).
 
-**What is due that day.** If a task has a watch date for today or tomorrow, or you said
-"remind me on Thursday" about something, Claude tells you as soon as you start. And when
+**What is due soon.** If a task has a watch date in the next 7 days, or already past,
+Claude tells you as soon as you start (also on a closed task: closing is when the checks
+for later are written down). The same with what you said "remind me on Thursday" about:
+it comes up from a week before, and every day after, until the weekly review deals with
+it. And when
 the last review is a week old or more and there are captures in the inbox or stalled
 tasks, it offers the weekly review: about ten minutes going through each of them with you.
 
@@ -140,6 +151,10 @@ open Claude, it asks six quick questions, saying why it asks each one. With your
 it saves the profile, creates your areas, tells the guard what is production and which
 machines must not be touched (for every space), and notes the people you work with. To change anything,
 tell it.
+
+**Rules** are how you want Claude to work. Say "from now on, …" and Claude saves it as a
+rule, in `rules/` of the space, or in the shared notes (below) when it holds everywhere.
+Every session loads them.
 
 A task is a text file. At the top, between the `---` lines, the data the program uses.
 Below, what you and Claude write:
@@ -255,9 +270,12 @@ augmented-brain backup --all    # every space
    ```bash
    augmented-brain restore https://github.com/you/augmented-brain-work.git
    ```
-   It replaces the empty space with yours: notes, tasks, rules and the space's settings.
-   Your profile comes with the default space (`personal`), and that space is the
-   default one again. The guard's lists (production, untouchable machines) are in no
+   It replaces the empty space with yours: notes, tasks, rules and the space's settings,
+   readable by you only. The one setting left out is the repositories where Claude may
+   commit and push: someone else may have changed the backup, so `restore` names them
+   and you add them again if you still want to. Your profile comes with the default
+   space (`personal`), and that space is the default one again, with the list of your
+   secrets' names (see "The panel", below) when this machine has none. The guard's lists (production, untouchable machines) are in no
    backup, since they may name your work's machines: `restore` and `doctor` say so,
    and the next session offers to ask you for them again. Until then, nothing asks
    before touching production. If that
@@ -279,8 +297,8 @@ What you get:
   brain has no cloud.
 - **One repository per space.** Work can go to your company's git, and personal to yours.
   Your profile only travels in the default space's backup, never in the work one.
-- **No secrets go up.** If a note holds something that looks like a password or a token,
-  the backup stops and tells you which file.
+- **No secrets go up.** Claude's tools refuse to write a password or a token into a
+  note. If one gets in anyway (by hand, say), the backup stops and tells you which file.
 - **Nothing gets overwritten.** If two machines changed the same note, it stops without
   touching anything and explains how to sort it out. When each only added journal
   entries (dated lines) to it, they are joined by themselves, in date order. The index, being generated, is
@@ -329,7 +347,15 @@ the inbox of the space of `*`, dated, and never twice. `archive/` and `docs/<tas
 are copied as they are, next to their note, also when you import again later. A file
 with a secret written in it (a key, a token), a note or a document, is imported but
 named in the report: the backup will not upload it until the secret is out.
-`augmented-brain check` names it too.
+`augmented-brain check` names it too. A reference or lesson that is a list of people (one
+`## Name` section each, with a word like "people" or "team" in its id or title) comes in as it is,
+and the report names it: people are notes of their own, so ask Claude to save each one
+as a person.
+
+Has Claude Code been keeping that memory by itself? Then it goes on keeping it for your
+spaces' folders: a second memory, next to the space's, that drifts from it.
+`augmented-brain doctor` tells you, and how to turn it off: `"autoMemoryEnabled": false`
+in Claude Code's settings. What it already has stays, ready to import.
 
 ## The panel
 
@@ -340,18 +366,45 @@ Claude. Open it with `/brain:panel` in Claude, or from a terminal:
 augmented-brain panel
 ```
 
-It opens your browser, on the space of the folder you ran it in. If it cannot (on a
-computer with no screen, say), it prints an address to open yourself. What you find
-there, space by space:
+It opens your browser on **Today**, with the space of the folder you ran it in. If it
+cannot (on a computer with no screen, say), it prints an address to open yourself. What
+you find there:
 
-- **Tasks**: those waiting on you first, with their status and next step. Open one to
-  read it whole, write in its journal, change its status or next step, park it or close
-  it. You can open new ones too.
-- **Reminders**: the watch dates of your tasks and the inbox reminders, overdue first.
-  Add one, or mark it done.
-- **Inbox**: capture an idea, or mark one as dealt with.
-- **Areas**, **knowledge**, **rules** and **people**: to read, and to create areas.
-  Knowledge and rules show the space's own and the shared ones, marked "shared".
+- **Today**, the first page: every space at once. For each one, what is due in the next
+  7 days, the tasks waiting on you (the parked ones in one line), how many captures wait
+  in the inbox, whether the weekly review is due, the sessions that were cut off, and
+  notes with problems. Below, **Repositories**: those your open tasks name in `repos:`
+  that hold changes not committed or commits not pushed, that is, work that is only on
+  this computer. One whose tasks are all parked (or left for some day) is marked "forgotten?". The panel only
+  reads them: git runs without taking locks, so it never gets in your way, and never
+  asks for a password. A branch never pushed counts only if the repository has a remote
+  to push it to.
+- **Tasks**, grouped by area, those waiting on you first, with their status and next
+  step. Filters show only those waiting on you, under way, parked, untouched, or waiting
+  on one person. A task nobody has changed for 14 days is marked "untouched N days": the
+  weekly review brings it up too. Open one: its essentials come first, the other
+  sections folded, and the journal newest first. Write in its journal, change its status
+  or next step, park it or close it. You can open new ones too. When a task waits on a
+  person you have a note of, "waits on" leads to them.
+- **Reminders**: the watch dates of your tasks (closed ones too) and the inbox
+  reminders, overdue first, then the next 30 days. Add one, or mark it done.
+- **Inbox**: capture an idea, mark one as dealt with, or make it a task.
+- **Weekly review**, on a page. Each capture becomes a task, a reference or a lesson,
+  or is dropped. Each task untouched for two weeks goes on as it is, or goes to some
+  day (or you open it to close it). What you decide is noted as you go, and kept in the
+  review's record when you finish.
+- **Areas**, **knowledge**, **rules** and **people**. Knowledge and rules show the
+  space's own and the shared ones, marked "shared". You can create areas and change an
+  area's title and summary. You can add people and change them: their other names,
+  their role and notes. The name stays: a new name would be a new person. A person's
+  page shows the tasks that wait on them and those that link to them.
+- **Secrets**: the names of the secrets you keep in your system keychain (where your
+  computer keeps passwords), never their values. Each one as `service/name`, what it is
+  for, and which tasks name it. So you know which there are, and a new machine knows
+  which to ask you for. **Check the keychain** says whether each one is on this computer
+  (it asks `secret-tool` on Linux and `security` on macOS; elsewhere it cannot tell). It
+  asks only when you click, because a locked keychain asks you for its password. More
+  below.
 - **Sessions**: your Claude sessions on this computer, from the last 30 days. Those that
   did not end (closed by force, or cut off when the computer went down) show what was
   said after the last journal entry: keep it in the notes (it goes to `archive/sessions/`
@@ -360,8 +413,24 @@ there, space by space:
   keeps each conversation). You can delete the transcript of an ended session; that
   session can then no longer be resumed.
 - **Profile**: who you are and how you like to work, the same one every space uses.
-- **Health**: notes that are not valid, repositories that notes point at and that are no
+- **Health**: the space's notes folder and work folders, whether it is the default
+  space, notes that are not valid, repositories that notes point at and that are no
   longer on this computer, the index, the last backup and the last weekly review.
+
+The **search** box at the side looks through the notes of the space and the shared ones:
+titles, summaries and text. A note shows up when it holds every word, in any case, with
+accents or without.
+
+Notes read as text, not as raw Markdown: headings, lists, tables, code and links, and a
+`[[link]]` to another note takes you to it. If a note changes on disk while its page is
+open (Claude wrote in it, say), the page tells you, with a link to see it as it is now.
+
+The list of secrets is the same in every space. It lives in the configuration file, as
+`secrets = ["telegram/alerts-bot: alerts to my phone"]`. You can add a name in the panel,
+or take one off the list (the secret stays in the keychain). Or tell Claude you stored a
+new secret, and it notes the name. Anything that looks like a value is refused. The list
+travels in the default space's backup, and a restore brings it to a new machine that has
+none.
 
 It changes your notes the same way Claude does, with the same program, and they wait for
 each other: you can have both open at once.
@@ -378,12 +447,15 @@ It is made to stay yours:
 - When you save a task, only what you changed on the page is saved: if Claude changed
   something else in the meantime, that stays. A step is ticked only if it still says
   what the page showed.
-- It loads **nothing from the internet**: no fonts, no statistics. It works offline.
+- It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
+  note cannot put HTML or scripts of its own in the page either.
+- Checking whether a note changed does not count as using the panel: a tab left open
+  does not keep it running.
 
 ## What it does not do
 
 - **No server and no account.** If Claude is not open, nothing runs, except the panel
-  while you use it.
+  while you use it and the backup that the end of a session starts.
 - **It sends your data to no one.** Only the backup, if you set it up, talks to your
   repository. Apart from that, once a day, it asks GitHub which version is the latest,
   sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns it off.
