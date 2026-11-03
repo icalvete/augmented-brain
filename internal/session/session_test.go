@@ -310,8 +310,13 @@ func TestParts(t *testing.T) {
 	if !strings.Contains(rulesText, "Keep answers short.") || strings.Contains(rulesText, "Asked on a Monday") || !strings.Contains(rulesText, "Its History is in") {
 		t.Errorf("the History section is not left in the file:\n%s", rulesText)
 	}
-	if !strings.Contains(rulesText, "did not fit whole") || !strings.Contains(rulesText, "- Rule 9 — step 9 first (") {
-		t.Errorf("rules beyond three parts are not listed in one line:\n%s", rulesText)
+	if !strings.Contains(rulesText, "did not fit whole") || strings.Contains(rulesText, "more rules did not fit") {
+		t.Errorf("rules beyond the parts are not listed in one line:\n%s", rulesText)
+	}
+	for i := 0; i < 30; i++ {
+		if !strings.Contains(rulesText, fmt.Sprintf("### Rule %d\n", i)) && !strings.Contains(rulesText, fmt.Sprintf("- Rule %d — step %d first (", i, i)) {
+			t.Errorf("rule %d is neither whole nor in a line", i)
+		}
 	}
 
 	// A space too big even for the parts: the index says where the whole one is.

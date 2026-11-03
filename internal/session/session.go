@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 
@@ -178,12 +179,34 @@ func rulePieces(m, shared *memory.Memory, max int) []string {
 		}
 		it.listed = true
 	}
-	var out, dropped []string
-	for _, it := range items {
-		if it.listed && !place(it) {
-			dropped = append(dropped, it.line)
+	// The rules that go in a line: when some find no room, the last whole rule makes
+	// room for them, going in a line itself, until all fit or none is whole.
+	var dropped []string
+	for {
+		for i, p := range pieces {
+			pieces[i] = slices.DeleteFunc(p, func(it *item) bool { return it.listed })
+		}
+		dropped = nil
+		for _, it := range items {
+			if it.listed && !place(it) {
+				dropped = append(dropped, it.line)
+			}
+		}
+		k := len(pieces) - 1
+		for k >= 0 && !slices.ContainsFunc(pieces[k], func(it *item) bool { return !it.listed }) {
+			k--
+		}
+		if len(dropped) == 0 || k < 0 {
+			break
+		}
+		for j := len(pieces[k]) - 1; j >= 0; j-- {
+			if !pieces[k][j].listed {
+				pieces[k][j].listed = true
+				break
+			}
 		}
 	}
+	var out []string
 	for _, p := range pieces {
 		out = append(out, render(p))
 	}
