@@ -60,7 +60,7 @@ func TestReposPage(t *testing.T) {
 	page := s.get(t, "/repos?s=work").Body.String()
 	for _, want := range []string{
 		"Space work", "Space home", ">garden ", ">alpha ",
-		"example.com/ana/zeta", "1 files changed", "~/work/group/alpha",
+		"example.com/ana/zeta", "1 file changed", "~/work/group/alpha",
 		`value="First &lt;script&gt;alert(1)&lt;/script&gt;"`,
 		"Ship &lt;zeta&gt;", "&lt;b&gt;odd&lt;/b&gt;", `placeholder="describe it"`,
 	} {

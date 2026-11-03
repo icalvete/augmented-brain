@@ -87,7 +87,7 @@ func TestToday(t *testing.T) {
 		t.Fatal(err)
 	}
 	page = s.get(t, "/today?s=work").Body.String()
-	if !strings.Contains(page, "1 files changed") || !strings.Contains(page, ">Shop site<") {
+	if !strings.Contains(page, "1 file changed") || !strings.Contains(page, ">Shop site<") {
 		t.Errorf("today does not show the repository:\n%s", page)
 	}
 }

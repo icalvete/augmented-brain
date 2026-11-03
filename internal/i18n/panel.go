@@ -70,6 +70,14 @@ var panelMessages = map[string]msg{
 		en: "%d commits not pushed",
 		es: "%d commits sin subir",
 	},
+	"panel.repos.changed1": {
+		en: "1 file changed",
+		es: "1 fichero cambiado",
+	},
+	"panel.repos.ahead1": {
+		en: "1 commit not pushed",
+		es: "1 commit sin subir",
+	},
 	"panel.repos.noupstream": {
 		en: "branch never pushed",
 		es: "rama nunca subida",

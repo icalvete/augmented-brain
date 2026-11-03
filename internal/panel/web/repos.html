@@ -12,8 +12,8 @@
     <div class="title">{{.Name}} {{if .Branch}}<span class="badge">{{.Branch}}</span>{{end}}{{if .Forgotten}} <span class="badge warn">{{t "repos.forgotten"}}</span>{{end}}</div>
     <div class="meta">
       {{if .Err}}<span>{{t "repos.unreadable"}}</span>{{else}}
-      {{if .Changed}}<span>{{tf "repos.changed" .Changed}}</span>{{end}}
-      {{if .Ahead}}{{if .Upstream}}<span>{{tf "repos.ahead" .Ahead}}</span>{{else}}<span>{{t "repos.noupstream"}}</span>{{end}}{{end}}
+      {{if .Changed}}<span>{{if eq .Changed 1}}{{t "repos.changed1"}}{{else}}{{tf "repos.changed" .Changed}}{{end}}</span>{{end}}
+      {{if .Ahead}}{{if .Upstream}}<span>{{if eq .Ahead 1}}{{t "repos.ahead1"}}{{else}}{{tf "repos.ahead" .Ahead}}{{end}}</span>{{else}}<span>{{t "repos.noupstream"}}</span>{{end}}{{end}}
       {{if not .Pending}}<span>{{t "repos.uptodate"}}</span>{{end}}{{end}}
       <code>{{.Shown}}</code>
       {{if .Origin}}<span>{{.Origin}}</span>{{else}}<span>{{t "repos.noremote"}}</span>{{end}}
