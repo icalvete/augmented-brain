@@ -86,10 +86,10 @@ func Of(memDir string) (int, error) {
 // Write records the version of a memory folder.
 func Write(memDir string, v int) error {
 	dir := filepath.Join(memDir, MetaDir)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
-	return paths.WriteAtomic(filepath.Join(dir, File), []byte(strconv.Itoa(v)+"\n"), 0o644)
+	return paths.WriteAtomic(filepath.Join(dir, File), []byte(strconv.Itoa(v)+"\n"), 0o600)
 }
 
 // CheckNotes refuses notes written by a newer program. It reads one small file, so

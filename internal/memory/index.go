@@ -128,5 +128,5 @@ func (m *Memory) WriteIndex(lang string) (bool, error) {
 	if old, err := os.ReadFile(path); err == nil && string(old) == text {
 		return false, nil
 	}
-	return true, paths.WriteAtomic(path, []byte(text), 0o644)
+	return true, paths.WriteAtomic(path, []byte(text), 0o600)
 }

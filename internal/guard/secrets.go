@@ -18,6 +18,12 @@ var secretPatterns = []struct {
 	{regexp.MustCompile(`\bgh[pousr]_[A-Za-z0-9]{30,}\b`), "a GitHub token"},
 	{regexp.MustCompile(`\bgithub_pat_[A-Za-z0-9_]{40,}\b`), "a GitHub token"},
 	{regexp.MustCompile(`\bglpat-[A-Za-z0-9_-]{20,}\b`), "a GitLab token"},
+	{regexp.MustCompile(`\bgl(?:rt|dt|ptt|cbt|soat|ft)-[A-Za-z0-9_-]{20,}\b`), "a GitLab token"},
+	{regexp.MustCompile(`\b[rs]k_live_[0-9A-Za-z]{20,}\b`), "a Stripe secret key"},
+	{regexp.MustCompile(`\bnpm_[A-Za-z0-9]{36}\b`), "an npm token"},
+	{regexp.MustCompile(`\bhf_[A-Za-z0-9]{30,}\b`), "a Hugging Face token"},
+	{regexp.MustCompile(`\bdckr_pat_[A-Za-z0-9_-]{20,}\b`), "a Docker Hub token"},
+	{regexp.MustCompile(`\bSG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}\b`), "a SendGrid API key"},
 	{regexp.MustCompile(`\bsk-ant-[A-Za-z0-9_-]{20,}`), "an Anthropic API key"},
 	{regexp.MustCompile(`\bsk-(?:proj-)?[A-Za-z0-9_-]{40,}`), "an OpenAI API key"},
 	{regexp.MustCompile(`\bAIza[0-9A-Za-z_-]{35}`), "a Google API key"}, // no \b: a key may end in -
@@ -86,6 +92,11 @@ func FindSecret(text string) string {
 		return elasticKey
 	}
 	return ""
+}
+
+// CountSecrets returns how many secrets text holds (AWS's examples apart).
+func CountSecrets(text string) int {
+	return strings.Count(RedactSecrets(text), " removed]") - strings.Count(text, " removed]")
 }
 
 // RedactSecrets replaces each secret in text (AWS's examples apart) with a marker, for

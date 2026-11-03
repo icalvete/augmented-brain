@@ -130,9 +130,9 @@ func TestPreToolUse(t *testing.T) {
 		}
 	}
 
-	// Broken input never breaks the assistant.
+	// Broken input is refused, never let through unchecked, and is no error.
 	var out bytes.Buffer
-	if err := PreToolUse(strings.NewReader("not json"), &out, cfgDir); err != nil || out.Len() != 0 {
+	if err := PreToolUse(strings.NewReader("not json"), &out, cfgDir); err != nil || !strings.Contains(out.String(), `"deny"`) {
 		t.Errorf("broken input: err=%v out=%q", err, out.String())
 	}
 }

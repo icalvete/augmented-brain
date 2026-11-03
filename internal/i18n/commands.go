@@ -86,6 +86,26 @@ var commandMessages = map[string]msg{
 		en: "a Telegram bot token",
 		es: "un token de bot de Telegram",
 	},
+	"secret.a Stripe secret key": {
+		en: "a Stripe secret key",
+		es: "una clave secreta de Stripe",
+	},
+	"secret.an npm token": {
+		en: "an npm token",
+		es: "un token de npm",
+	},
+	"secret.a Hugging Face token": {
+		en: "a Hugging Face token",
+		es: "un token de Hugging Face",
+	},
+	"secret.a Docker Hub token": {
+		en: "a Docker Hub token",
+		es: "un token de Docker Hub",
+	},
+	"secret.a SendGrid API key": {
+		en: "a SendGrid API key",
+		es: "una clave de API de SendGrid",
+	},
 	"secret.a private key": {
 		en: "a private key",
 		es: "una clave privada",

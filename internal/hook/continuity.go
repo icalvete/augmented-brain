@@ -176,7 +176,12 @@ func askSafety(c *config.Config, cfgDir string) string {
 // rootNote names the root exceptions in force, so the assistant knows that there,
 // and only there, a command as root goes to the user instead of being refused.
 func rootNote(c *config.Config) string {
-	roots, _ := c.RootExceptions()
+	roots, unread := c.RootExceptions()
+	bad := ""
+	if len(unread) > 0 {
+		bad = "\nThese root exceptions (root_ask) cannot be read, so they grant nothing: " + strings.Join(unread, "; ") +
+			`. Each is "<host> until <date>". ` + session.TellUserLine(c.Language) + ".\n"
+	}
 	var in []string
 	for _, r := range roots {
 		if session.Now().Before(r.Until) {
@@ -184,7 +189,7 @@ func rootNote(c *config.Config) string {
 		}
 	}
 	if len(in) == 0 {
-		return ""
+		return bad
 	}
-	return "\nTemporary root exceptions (root_ask): " + strings.Join(in, "; ") + ". On those machines, and only while they last, a command as root (sudo, also through ssh) is not refused: the guard asks the user to confirm each one. Use it only for what the user asked, and say first what the command does.\n"
+	return bad + "\nTemporary root exceptions (root_ask): " + strings.Join(in, "; ") + ". On those machines, and only while they last, a command as root (sudo, also through ssh) is not refused: the guard asks the user to confirm each one. Use it only for what the user asked, and say first what the command does.\n"
 }

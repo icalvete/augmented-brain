@@ -76,8 +76,13 @@ Si necesitas que Claude haga algo como root en una máquina durante un tiempo, a
 vuelve a pararse solo.
 
 También mira dentro de `ssh`, de `vagrant ssh -c`, de `docker exec`, de `kubectl exec`, de
-`bash -c`, de los bucles y de lo que una tubería le pasa
-a una shell (`echo 'sudo …' | bash`). Si no puede leer su configuración, te pregunta antes
+`bash -c`, de los bucles, de lo que una tubería le pasa a una shell
+(`echo 'sudo …' | bash`) y de un script corto que lance Claude (`bash deploy.sh`,
+`./deploy.sh`). `ssh root@…` cuenta como hacerse root. Cuando no puede saber qué se va a
+ejecutar (un programa dado como variable, un comando anidado demasiado hondo,
+`rm -rf "$DIR/"*` con una variable que puede estar vacía), te pregunta. Y Claude nunca
+cambia por su cuenta la configuración de augmented brain ni la de Claude Code, donde una
+línea podría apagar una comprobación: te pregunta antes. Si no puede leer su configuración, te pregunta antes
 de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`, y antes de las herramientas que
 llaman a AWS por su cuenta, porque no sabe cuáles importan.
 Los comandos que Claude deja en marcha para vigilar algo (un registro, una compilación)

@@ -155,10 +155,11 @@ try {
       if (-not $asset) { return $false }
       $exe = Join-Path ([IO.Path]::GetTempPath()) $asset.name
       (New-Object Net.WebClient).DownloadFile($asset.browser_download_url, $exe)
-      if ($asset.digest -and $asset.digest -like 'sha256:*') {
-        if ((Get-FileHash -Algorithm SHA256 $exe).Hash -ne $asset.digest.Substring(7)) { Remove-Item $exe; return $false }
-      }
-      if ((Get-AuthenticodeSignature $exe).Status -ne 'Valid') { Remove-Item $exe; return $false }
+      # Its checksum from the release, and the signature of Git for Windows itself: an
+      # installer that cannot show both is not run.
+      if (-not ($asset.digest -like 'sha256:*') -or (Get-FileHash -Algorithm SHA256 $exe).Hash -ne $asset.digest.Substring(7)) { Remove-Item $exe; return $false }
+      $sig = Get-AuthenticodeSignature $exe
+      if ($sig.Status -ne 'Valid' -or $sig.SignerCertificate.Subject -notlike '*Johannes Schindelin*') { Remove-Item $exe; return $false }
       $p = Start-Process -FilePath $exe -ArgumentList '/VERYSILENT', '/NORESTART', '/NOCANCEL', '/SP-', '/SUPPRESSMSGBOXES' -Wait -PassThru
       Remove-Item $exe -ErrorAction SilentlyContinue
       return $p.ExitCode -eq 0

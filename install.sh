@@ -21,6 +21,9 @@
 # init).
 set -eu
 
+# Everything runs from main, called on the last line: a download cut short runs nothing.
+main() {
+
 REPO="icalvete/augmented-brain"
 VERSION="${AB_VERSION:-latest}"
 DIR="${AB_INSTALL_DIR:-$HOME/.local/bin}"
@@ -491,3 +494,6 @@ if [ "$desktop" = 1 ]; then
 elif ask "$(say "Open Claude now in your work space?" "¿Abro Claude ahora en tu espacio de trabajo?") $(yn)"; then
   cd "$work" && exec claude </dev/tty >/dev/tty 2>&1
 fi
+}
+
+main "$@"

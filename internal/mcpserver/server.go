@@ -408,10 +408,10 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		})
 
 	type safetyIn struct {
-		ProductionAWSProfiles []string `json:"production_aws_profiles,omitempty" jsonschema:"AWS CLI profiles that reach production; the guard asks before commands that use them. Replaces the list."`
-		UntouchableHosts      []string `json:"untouchable_hosts,omitempty" jsonschema:"hosts that must not be touched without asking (ssh names as the user types them). Replaces the list."`
+		ProductionAWSProfiles []string `json:"production_aws_profiles,omitempty" jsonschema:"AWS CLI profiles that reach production, to add; the guard asks before commands that use them"`
+		UntouchableHosts      []string `json:"untouchable_hosts,omitempty" jsonschema:"hosts that must not be touched without asking (ssh names as the user types them), to add"`
 	}
-	tool(s, locked, "safety_save", "Set what the guard must ask the user about: production AWS profiles and hosts not to touch. They apply on this whole machine, in every space and outside them. Use it in the first session and when the user names a new one; each list given replaces the old one (the answer shows what was there), so include what should stay.",
+	tool(s, locked, "safety_save", "Add to what the guard must ask the user about: production AWS profiles and hosts not to touch. They apply on this whole machine, in every space and outside them. Use it in the first session and when the user names a new one. It only adds: to take one out, the user edits the configuration file themselves (the answer says where).",
 		func(b *brain.Brain, in safetyIn) (string, error) {
 			return b.SaveSafety(brain.SafetyInput{ProductionAWSProfiles: in.ProductionAWSProfiles, UntouchableHosts: in.UntouchableHosts})
 		})

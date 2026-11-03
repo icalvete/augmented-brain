@@ -167,7 +167,7 @@ func createSpace(lang, dir, sharedDir, today string) ([]string, error) {
 	for _, f := range spaceFolders {
 		p := filepath.Join(dir, f)
 		if _, err := os.Stat(p); errors.Is(err, os.ErrNotExist) {
-			if err := os.MkdirAll(p, 0o755); err != nil {
+			if err := os.MkdirAll(p, 0o700); err != nil {
 				return nil, err
 			}
 			created = append(created, p+string(filepath.Separator))
@@ -212,7 +212,7 @@ func createSpace(lang, dir, sharedDir, today string) ([]string, error) {
 // folders, so a restored space needs them back.
 func EnsureFolders(dir string) error {
 	for _, f := range spaceFolders {
-		if err := os.MkdirAll(filepath.Join(dir, f), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Join(dir, f), 0o700); err != nil {
 			return err
 		}
 	}
@@ -229,11 +229,11 @@ func copyTemplate(lang, name, dst, today string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return false, err
 	}
 	text := strings.ReplaceAll(string(data), "{{DATE}}", today)
-	return true, os.WriteFile(dst, []byte(text), 0o644)
+	return true, os.WriteFile(dst, []byte(text), 0o600)
 }
 
 func abs(p string) (string, error) {

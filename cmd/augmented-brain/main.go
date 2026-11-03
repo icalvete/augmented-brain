@@ -20,6 +20,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/doctor"
+	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/format"
 	"github.com/icalvete/augmented-brain/internal/hook"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -169,6 +170,13 @@ func cmdCheck(out, errOut io.Writer) int {
 	if !ok {
 		return 1
 	}
+	// It may move notes to a new format and rebuild indexes: not while a session writes.
+	unlock, err := filelock.Lock(filepath.Join(c.Dir, backup.NotesLock))
+	if err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	}
+	defer unlock()
 	if r, err := format.EnsureNotes(s.Memory, c.Dir, s.Name, time.Now()); err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
@@ -308,9 +316,15 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 	part := 0 // session-start N: part N of the session text
 	if len(args) == 2 && args[0] == "session-start" {
 		n, err := strconv.Atoi(args[1])
-		if err != nil || n < 1 || n > session.Parts {
+		if err != nil || n < 1 {
 			fmt.Fprintf(errOut, "usage: augmented-brain hook session-start [1-%d]\n", session.Parts)
 			return 2
+		}
+		if n > session.Parts {
+			// A plugin newer than this program asks for a part it does not have: an
+			// empty one, so the session still starts with the others.
+			fmt.Fprintln(out, `{"hookSpecificOutput":{"hookEventName":"SessionStart"}}`)
+			return 0
 		}
 		part, args = n, args[:1]
 	}

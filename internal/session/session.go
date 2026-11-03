@@ -394,6 +394,28 @@ var Now = time.Now
 // maxDue is how many due items the session start lists; the rest are counted.
 const maxDue = 15
 
+// pickDue chooses at most max of due (in date order, overdue first) to list, keeping
+// room for today and the coming days, which a long overdue list would push out: about
+// a third of the places, more when there are fewer overdue. It returns them in date
+// order, and how many are left out.
+func pickDue(due []brain.Reminder, max int) ([]brain.Reminder, int) {
+	if len(due) <= max {
+		return due, 0
+	}
+	var late, soon []brain.Reminder
+	for _, d := range due {
+		if d.Days < 0 {
+			late = append(late, d)
+		} else {
+			soon = append(soon, d)
+		}
+	}
+	keepSoon := min(len(soon), max/3)
+	keepLate := min(len(late), max-keepSoon)
+	keepSoon = min(len(soon), max-keepLate)
+	return append(late[:keepLate:keepLate], soon[:keepSoon]...), len(due) - keepLate - keepSoon
+}
+
 // soonDays is how far ahead the session start looks: what is due in the next week is
 // mentioned too, so it can be prepared.
 const soonDays = 7
@@ -405,13 +427,10 @@ func dueNote(b *brain.Brain) string {
 	if len(due) == 0 {
 		return ""
 	}
+	shown, more := pickDue(due, maxDue)
 	var out strings.Builder
 	out.WriteString("\n## Due\n\nMention these in your first answer, briefly, before anything else (overdue first, then what comes in the next days):\n")
-	for i, d := range due {
-		if i == maxDue {
-			fmt.Fprintf(&out, "- and %d more: see the pending tool\n", len(due)-maxDue)
-			break
-		}
+	for _, d := range shown {
 		when := "today"
 		switch {
 		case d.Days == 1:
@@ -429,6 +448,9 @@ func dueNote(b *brain.Brain) string {
 			where = d.TaskID
 		}
 		fmt.Fprintf(&out, "- %s (%s): %s [%s]\n", d.Date, when, d.What, where)
+	}
+	if more > 0 {
+		fmt.Fprintf(&out, "- and %d more: see the pending tool\n", more)
 	}
 	out.WriteString("When one is dealt with, mark it: task_update with watch_done for a task, or take the capture out in the weekly review.\n")
 	return out.String()

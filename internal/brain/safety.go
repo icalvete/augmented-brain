@@ -4,23 +4,25 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 )
 
-// SafetyInput is what the guard must ask the user about, on this whole machine. A nil
-// list leaves that setting as it is; an empty one clears it.
+// SafetyInput is what the guard must ask the user about, on this whole machine. Its
+// entries are added to the lists; nothing is taken out (see SaveSafety).
 type SafetyInput struct {
 	ProductionAWSProfiles []string
 	UntouchableHosts      []string
 }
 
-// SaveSafety writes the risk settings in the configuration file, changing only those
+// SaveSafety adds to the risk settings in the configuration file, changing only those
 // lines. They are machine-wide: the guard applies them in every space, and outside every
-// space, from the next command on. The list given replaces the old one, including any
-// list a space kept of its own (older configurations had them per space); the answer
-// shows what was there before, so nothing is dropped unseen.
+// space, from the next command on. It only adds: what makes the guard ask is never
+// taken out by a tool the assistant may be talked into using; the user takes an entry
+// out by editing the configuration. A list a space kept of its own (older
+// configurations had them per space) moves into the machine-wide one.
 func (b *Brain) SaveSafety(in SafetyInput) (string, error) {
 	var oldProfiles, oldHosts []string
 	if c, err := config.Load(b.ConfigDir); err == nil {
@@ -38,9 +40,9 @@ func (b *Brain) SaveSafety(in SafetyInput) (string, error) {
 		if s.values == nil {
 			continue
 		}
-		var clean []string
+		clean := append([]string{}, before[s.key]...)
 		for _, v := range s.values {
-			if v = strings.TrimSpace(v); v != "" {
+			if v = strings.TrimSpace(v); v != "" && !slices.Contains(clean, v) {
 				clean = append(clean, v)
 			}
 		}

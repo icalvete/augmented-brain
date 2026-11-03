@@ -315,7 +315,10 @@ space again when the machine has none; no other backup does, so the personal pro
 never reaches a work repository. The
 machine-wide guard lists are in no backup (they may name work machines): after a restore
 that leaves them empty, `restore` and `doctor` say so, and the next session offers to ask for them
-again. Paths are kept with `~`, so they point to the new machine's home, and
+again. A restore never brings `git_allowed_repos` or `git_ask_repos` either, since someone
+else may have changed the backup: they are given again on the new machine. A backup that
+holds a symbolic link is never restored, nor merged with another machine's, since
+augmented brain never writes one. Notes are written readable by their owner only. Paths are kept with `~`, so they point to the new machine's home, and
 the notes go back to the same place inside the work folder. A restore also installs the
 Claude Code plugin when it is missing.
 

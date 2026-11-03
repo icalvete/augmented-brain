@@ -119,11 +119,11 @@ func (b *Brain) SaveSession(kind, sessionID, heading, text string) (string, erro
 	}
 	rel := "archive/sessions/" + name + ".md"
 	path := filepath.Join(b.Space.Memory, filepath.FromSlash(rel))
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return "", err
 	}
 	body := strings.TrimRight(heading, "\n") + "\n\n" + guard.RedactSecrets(strings.TrimSpace(text)) + "\n"
-	if err := paths.WriteAtomic(path, []byte(body), 0o644); err != nil {
+	if err := paths.WriteAtomic(path, []byte(body), 0o600); err != nil {
 		return "", err
 	}
 	return rel, nil

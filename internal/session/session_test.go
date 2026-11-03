@@ -338,3 +338,23 @@ func TestLines(t *testing.T) {
 		}
 	}
 }
+
+// Found in the rehearsal of 0.5.8: with many overdue reminders, today's and the coming
+// days' were pushed out. A third of the places stay for them.
+func TestPickDue(t *testing.T) {
+	var due []brain.Reminder
+	for i := 0; i < 20; i++ {
+		due = append(due, brain.Reminder{Date: fmt.Sprintf("2026-10-%02d", i+1), Days: -30 + i})
+	}
+	due = append(due, brain.Reminder{Date: "2026-11-03", Days: 0}, brain.Reminder{Date: "2026-11-06", Days: 3})
+	shown, more := pickDue(due, 15)
+	if len(shown) != 15 || more != 7 {
+		t.Fatalf("shown %d, more %d", len(shown), more)
+	}
+	if shown[13].Date != "2026-11-03" || shown[14].Date != "2026-11-06" {
+		t.Errorf("today and the coming days are not kept: %+v", shown[12:])
+	}
+	if shown, more := pickDue(due[:3], 15); len(shown) != 3 || more != 0 {
+		t.Errorf("few: %d %d", len(shown), more)
+	}
+}

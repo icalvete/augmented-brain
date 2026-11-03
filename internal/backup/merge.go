@@ -67,16 +67,31 @@ func joinAdditions(dir, rel string) bool {
 	if _, err := memory.Parse(rel, []byte(joined)); err != nil {
 		return false
 	}
-	if err := paths.WriteAtomic(filepath.Join(dir, filepath.FromSlash(rel)), []byte(joined), 0o644); err != nil {
+	if err := paths.WriteAtomic(filepath.Join(dir, filepath.FromSlash(rel)), []byte(joined), 0o600); err != nil {
 		return false
 	}
 	_, err = git(dir, "add", "--", rel)
 	return err == nil
 }
 
-// updatedOf returns the note's `updated:` date, or "".
+// headerEnd is the index of the line that closes the note's header (the second ---),
+// or 0 when it has none.
+func headerEnd(lines []string) int {
+	if len(lines) == 0 || strings.TrimSpace(lines[0]) != "---" {
+		return 0
+	}
+	for i := 1; i < len(lines); i++ {
+		if strings.TrimSpace(lines[i]) == "---" {
+			return i
+		}
+	}
+	return 0
+}
+
+// updatedOf returns the `updated:` date of the note's header, or "".
 func updatedOf(note string) string {
-	for _, l := range strings.Split(note, "\n") {
+	lines := strings.Split(note, "\n")
+	for _, l := range lines[:headerEnd(lines)] {
 		if v, ok := strings.CutPrefix(l, "updated:"); ok {
 			return strings.TrimSpace(v)
 		}
@@ -84,10 +99,10 @@ func updatedOf(note string) string {
 	return ""
 }
 
-// withUpdated sets the note's `updated:` date, when it has one.
+// withUpdated sets the `updated:` date of the note's header, when it has one.
 func withUpdated(note, date string) string {
 	lines := strings.Split(note, "\n")
-	for i, l := range lines {
+	for i, l := range lines[:headerEnd(lines)] {
 		if strings.HasPrefix(l, "updated:") {
 			lines[i] = "updated: " + date
 			break
@@ -126,14 +141,19 @@ func onlyAddsDated(before, after string) bool {
 	return true
 }
 
-// byDate orders each run of dated lines by date, keeping the order of the same day.
+// byDate orders each run of dated lines of the journal (its last section) by date,
+// keeping the order of the same day; the rest of the note stays as it was.
 func byDate(text string) string {
 	lines := strings.Split(text, "\n")
+	start := 0
+	if heads := memory.Headings(lines); len(heads) > 0 {
+		start = heads[len(heads)-1]
+	}
 	date := func(l string) (string, bool) {
 		d, _, ok := memory.ParseDatedLine(l)
 		return d, ok
 	}
-	for i := 0; i < len(lines); {
+	for i := start; i < len(lines); {
 		if _, ok := date(lines[i]); !ok {
 			i++
 			continue

@@ -38,8 +38,8 @@ func Save(dir string, n *Note) error {
 		return err
 	}
 	path := filepath.Join(dir, filepath.FromSlash(n.Path))
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	return paths.WriteAtomic(path, data, 0o644)
+	return paths.WriteAtomic(path, data, 0o600)
 }

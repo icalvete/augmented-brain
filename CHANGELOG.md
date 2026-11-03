@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased
+
+From a deep review of the code (architecture, the guard, and the rest of the security):
+
+- **The guard catches more mistakes.** A redirection next to a word (`git push>log`,
+  `2>/dev/null sudo …`), `powershell -Command` or `cmd /c` from Bash, `git.exe`, a short
+  script run with `bash x.sh` or `./x.sh`, `ssh root@…`, `rm -rf "$DIR/"*` with a variable
+  that may be empty, `rm -rf ~/..`, `find ~ -delete`, `git submodule foreach`, `git
+  subtree push`, `gh api` calls that merge, `ssh -J`, `bash -o pipefail -c …`, and
+  sudoedit, runuser, systemd-run and machinectl. A command nested too deep asks instead
+  of passing, and so does a program given as a variable. More token shapes are secrets
+  (Stripe, npm, Hugging Face, Docker Hub, SendGrid, more GitLab ones).
+- **Claude cannot switch the guard off on its own.** Changing augmented brain's
+  configuration or Claude Code's settings asks you. `safety_save` only adds to the
+  guard's lists, and `backup_setup` never moves an existing backup elsewhere.
+- **A changed backup cannot reach outside the notes.** A backup holding a symbolic link
+  is neither restored nor merged; a restore no longer brings the repositories Claude may
+  commit in; git runs with only the usual protocols, and an address is never an option.
+- Notes are written readable by you only (0600, in 0700 folders), and every replaced
+  file goes through a temporary file with a name nobody can guess.
+- install.sh runs nothing when its download is cut short; on Windows, Git's installer
+  needs its checksum and the signature of Git for Windows itself.
+- The session start: a plugin newer than the program gets an empty part instead of an
+  error; part 1 waits for the notes at most 3 seconds, and the others wait for it;
+  `check` takes the notes lock; a root exception that cannot be read is named; today's
+  and the coming days' reminders keep their room among many overdue ones.
+
 ## 0.5.8-alpha
 
 Released 2026-11-03.

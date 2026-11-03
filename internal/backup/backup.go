@@ -35,7 +35,10 @@ const MetaDir = ".augmented-brain"
 // terminal).
 func runGit(args ...string) (string, error) {
 	cmd := exec.Command("git", args...)
-	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
+	// Never wait for a password; only the usual ways to reach a repository (no ext::);
+	// never take a folder above the temporary one for a repository.
+	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0", "GIT_ALLOW_PROTOCOL=file:git:https:ssh",
+		"GIT_CEILING_DIRECTORIES="+os.TempDir())
 	out, err := cmd.CombinedOutput()
 	return string(out), err
 }
@@ -50,11 +53,42 @@ func git(dir string, args ...string) (string, error) {
 	return out, nil
 }
 
+// checkURL refuses what cannot be a repository's address: nothing, or something git
+// would read as one of its options.
+func checkURL(url string) error {
+	switch {
+	case strings.TrimSpace(url) == "":
+		return errors.New("the backup needs the URL of a private repository")
+	case strings.HasPrefix(strings.TrimSpace(url), "-"):
+		return fmt.Errorf("%q is not the address of a repository", url)
+	}
+	return nil
+}
+
+// links returns the symbolic links in the tree of rev in the repository at dir. A
+// backup never holds one: augmented brain writes none, and one in a backup could make
+// a write of a note land outside the notes, or a read take a file from elsewhere.
+func links(dir, rev string) ([]string, error) {
+	out, err := git(dir, "ls-tree", "-r", rev)
+	if err != nil {
+		return nil, err
+	}
+	var found []string
+	for _, line := range strings.Split(out, "\n") {
+		if mode, rest, ok := strings.Cut(line, " "); ok && mode == "120000" {
+			if _, path, ok := strings.Cut(rest, "\t"); ok {
+				found = append(found, path)
+			}
+		}
+	}
+	return found, nil
+}
+
 // Setup makes the space's memory folder a git repository that backs up to url, and
 // saves url in the configuration.
 func Setup(c *config.Config, s *config.Space, url string) error {
-	if strings.TrimSpace(url) == "" {
-		return errors.New("the backup needs the URL of a private repository")
+	if err := checkURL(url); err != nil {
+		return err
 	}
 	if _, err := os.Stat(filepath.Join(s.Memory, ".git")); errors.Is(err, os.ErrNotExist) {
 		if _, err := git(s.Memory, "init", "-q", "-b", "main"); err != nil {
@@ -188,6 +222,11 @@ func catchUp(c *config.Config, s *config.Space) error {
 	if _, err := git(s.Memory, "merge-base", "--is-ancestor", "origin/main", "HEAD"); err == nil {
 		return nil // nothing new over there
 	}
+	if found, err := links(s.Memory, "origin/main"); err != nil {
+		return err
+	} else if len(found) > 0 {
+		return fmt.Errorf("nothing was backed up: the backup in %s holds symbolic links (%s), which augmented brain never writes. Someone changed it by hand: look at it before going on", s.Backup, strings.Join(found, ", "))
+	}
 	// The merge writes notes: not while the assistant writes them too.
 	unlock, err := lockNotes(c.Dir)
 	if err != nil {
@@ -262,7 +301,7 @@ func ProfileSpace(c *config.Config) string {
 // no backup: they may name work machines, and a new machine asks for them again.
 func writeMeta(c *config.Config, s *config.Space) error {
 	dir := filepath.Join(s.Memory, MetaDir)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
 	carries := ProfileSpace(c) == s.Name
@@ -290,7 +329,7 @@ func writeMeta(c *config.Config, s *config.Space) error {
 		}
 	}
 	if data, err := os.ReadFile(filepath.Join(c.Dir, "profile.md")); err == nil {
-		return os.WriteFile(profile, data, 0o644)
+		return os.WriteFile(profile, data, 0o600)
 	}
 	return nil
 }
@@ -382,8 +421,16 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 // cloneBackup clones the backup at url into dir and reads the configuration saved in
 // it: the language, the one space it holds, and whether that was the default space.
 func cloneBackup(url, dir string) (string, *config.Space, bool, error) {
-	if out, err := runGit("clone", "-q", url, dir); err != nil {
+	if err := checkURL(url); err != nil {
+		return "", nil, false, err
+	}
+	if out, err := runGit("-c", "core.symlinks=false", "clone", "-q", "--", url, dir); err != nil {
 		return "", nil, false, fmt.Errorf("cloning %s: %v: %s", url, err, strings.TrimSpace(out))
+	}
+	if found, err := links(dir, "HEAD"); err != nil {
+		return "", nil, false, err
+	} else if len(found) > 0 {
+		return "", nil, false, fmt.Errorf("the backup in %s holds symbolic links (%s), which augmented brain never writes; it is not restored", url, strings.Join(found, ", "))
 	}
 	var saved config.Config
 	if _, err := toml.DecodeFile(filepath.Join(dir, MetaDir, config.FileName), &saved); err != nil {
@@ -426,7 +473,7 @@ func copyProfile(meta, cfgDir string) error {
 	if err != nil {
 		return nil
 	}
-	return os.WriteFile(filepath.Join(cfgDir, "profile.md"), data, 0o644)
+	return os.WriteFile(filepath.Join(cfgDir, "profile.md"), data, 0o600)
 }
 
 // copyShared brings the shared notes kept in a backup's MetaDir meta to cfgDir, when
@@ -507,12 +554,12 @@ func (sw *swap) keep() {
 // when that copy is complete moves what was at mem (an empty folder, or the untouched
 // space) aside and the copy in.
 func swapIn(clone, mem, url string) (*swap, error) {
-	if err := os.MkdirAll(filepath.Dir(mem), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(mem), 0o700); err != nil {
 		return nil, err
 	}
 	staging := filepath.Join(filepath.Dir(mem), "."+filepath.Base(mem)+".restoring")
 	_ = os.RemoveAll(staging)
-	if out, err := runGit("clone", "-q", clone, staging); err != nil {
+	if out, err := runGit("-c", "core.symlinks=false", "clone", "-q", "--", clone, staging); err != nil {
 		return nil, fmt.Errorf("copying the backup next to %s: %v: %s", mem, err, strings.TrimSpace(out))
 	}
 	if _, err := git(staging, "remote", "set-url", "origin", url); err != nil {
@@ -545,6 +592,10 @@ func swapIn(clone, mem, url string) (*swap, error) {
 func placeSpace(s *config.Space, mem, url, work string) error {
 	s.Memory = mem
 	s.Backup = url
+	// Lists that let the assistant do more never come from a backup, which someone
+	// else may have changed: the user gives them again on this machine. Lists that make
+	// it ask (production profiles, untouchable hosts) do come.
+	s.GitAllowedRepos, s.GitAskRepos = nil, nil
 	if work != "" {
 		s.WorkFolders = []string{work}
 	}
@@ -630,8 +681,6 @@ func updateSpace(cfgDir string, s *config.Space) error {
 		"work_folders":            work,
 		"production_aws_profiles": s.ProductionAWSProfiles,
 		"untouchable_hosts":       s.UntouchableHosts,
-		"git_allowed_repos":       s.GitAllowedRepos,
-		"git_ask_repos":           s.GitAskRepos,
 	} {
 		if len(values) == 0 && key != "work_folders" {
 			continue

@@ -88,7 +88,7 @@ func (b *Brain) InboxDone(items []string) ([]string, error) {
 		}
 	}
 	sort.Strings(missing)
-	return missing, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(keep, "\n")), 0o644)
+	return missing, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(keep, "\n")), 0o600)
 }
 
 // InboxDoneEntry takes one capture out of the inbox: the first with that date and
@@ -106,7 +106,7 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 	for i, l := range lines {
 		if e, ok := parseInboxLine(l); ok && e.Date == date && e.Text == text {
 			lines = append(lines[:i], lines[i+1:]...)
-			return true, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o644)
+			return true, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o600)
 		}
 	}
 	return false, nil

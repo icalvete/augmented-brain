@@ -5,9 +5,10 @@ import "strings"
 // command is one simple command: its words, with quotes removed, and the text it
 // reads from a heredoc or a here-string, if any.
 type command struct {
-	words []string
-	stdin string
-	piped bool // reads the output of the command before it (a | b)
+	words     []string
+	stdin     string
+	piped     bool     // reads the output of the command before it (a | b)
+	redirects []string // the files of its redirections (> f, 2>>f, < f), not arguments
 }
 
 // parse splits a shell command line into simple commands. It understands quotes,
@@ -41,6 +42,8 @@ type parser struct {
 	cur        strings.Builder
 	inWord     bool
 	hereString bool // the word being read is the text of a <<<, not an argument
+	redirect   bool // the word being read is the file of a redirection
+	redirects  []string
 
 	subs    []string  // substitutions, parsed once the line is done
 	pending []heredoc // heredocs whose body starts on the next line
@@ -69,9 +72,11 @@ func (p *parser) step() {
 		p.doubleQuoted()
 	case (r == '$' || r == '<' || r == '>') && ahead(1) == '(':
 		p.substitution(i + 2)
+		p.cur.WriteRune(subst)
 		p.inWord = true
 	case r == '`':
 		p.backquote(i + 1)
+		p.cur.WriteRune(subst)
 		p.inWord = true
 	case r == '<' && ahead(1) == '<' && ahead(2) == '<':
 		p.endWord()
@@ -83,6 +88,8 @@ func (p *parser) step() {
 		h, p.i = readDelimiter(rs, i+2)
 		h.cmd = len(p.out) // the command being read now
 		p.pending = append(p.pending, h)
+	case r == '<' || r == '>' || r == '&' && ahead(1) == '>':
+		p.redirection()
 	case r == '\n':
 		p.endCommand()
 		p.piped = false
@@ -114,6 +121,30 @@ func (p *parser) step() {
 	}
 }
 
+// redirection reads an operator such as >, >>, 2>, &>, >&2, <, <> or >| at p.i. It is
+// never part of a word: in "git status>log" the word is status. A number just before
+// it is the file descriptor, not an argument; the word after it is the file, kept apart.
+func (p *parser) redirection() {
+	if p.inWord && isDigits(p.cur.String()) {
+		p.cur.Reset()
+		p.inWord = false
+	}
+	p.endWord()
+	for p.i+1 < len(p.rs) && strings.ContainsRune("<>&|", p.rs[p.i+1]) && !(p.rs[p.i+1] == '|' && p.rs[p.i] != '>') {
+		p.i++
+	}
+	p.redirect = true
+}
+
+func isDigits(s string) bool {
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	return s != ""
+}
+
 // singleQuoted reads '…', where every rune stands for itself.
 func (p *parser) singleQuoted() {
 	p.inWord = true
@@ -134,8 +165,10 @@ func (p *parser) doubleQuoted() {
 			p.cur.WriteRune(rs[p.i])
 		case rs[i] == '$' && i+1 < len(rs) && rs[i+1] == '(':
 			p.substitution(i + 2)
+			p.cur.WriteRune(subst)
 		case rs[i] == '`':
 			p.backquote(i + 1)
+			p.cur.WriteRune(subst)
 		default:
 			p.cur.WriteRune(rs[i])
 		}
@@ -174,9 +207,12 @@ func (p *parser) endWord() {
 	if !p.inWord {
 		return
 	}
-	if p.hereString {
+	switch {
+	case p.hereString:
 		p.stdin, p.hereString = p.cur.String(), false
-	} else {
+	case p.redirect:
+		p.redirects, p.redirect = append(p.redirects, p.cur.String()), false
+	default:
 		p.words = append(p.words, p.cur.String())
 	}
 	p.cur.Reset()
@@ -186,11 +222,12 @@ func (p *parser) endWord() {
 // endCommand ends the command being read, if it has anything in it.
 func (p *parser) endCommand() {
 	p.endWord()
-	if len(p.words) > 0 || p.stdin != "" {
-		p.out = append(p.out, command{words: p.words, stdin: p.stdin, piped: p.piped})
+	p.redirect = false
+	if len(p.words) > 0 || p.stdin != "" || len(p.redirects) > 0 {
+		p.out = append(p.out, command{words: p.words, stdin: p.stdin, piped: p.piped, redirects: p.redirects})
 		p.piped = false
 	}
-	p.words, p.stdin = nil, ""
+	p.words, p.stdin, p.redirects = nil, "", nil
 }
 
 // balanced returns the text up to the parenthesis that closes one opened just before
@@ -296,7 +333,8 @@ var reserved = map[string]bool{
 var wrappers = map[string]string{
 	"env": "uCS", "nohup": "", "exec": "a", "command": "", "nice": "n",
 	"timeout": "ks", "xargs": "nIPLsdEa", "watch": "ndg", "stdbuf": "ioe", "builtin": "",
-	"ionice": "cnp", "chrt": "", "taskset": "", "setsid": "", "unbuffer": "", "caffeinate": "", "npx": "pc",
+	"ionice": "cnp", "chrt": "p", "taskset": "", "setsid": "", "unbuffer": "", "caffeinate": "", "npx": "pc",
+	"time": "fo", "flock": "wEc", "busybox": "", "sshpass": "pfdP", "doas": "", "proxychains": "f", "torsocks": "",
 }
 
 // program strips variable assignments (NAME=value), reserved words and wrappers from
@@ -313,6 +351,9 @@ func program(words []string) (env map[string]string, name string, args []string)
 		}
 		if reserved[w] {
 			i++
+			if w == "time" && i < len(words) && words[i] == "-p" {
+				i++ // time -p: the POSIX output format
+			}
 			continue
 		}
 		opts, isWrapper := wrappers[base(w)]
@@ -337,8 +378,11 @@ func program(words []string) (env map[string]string, name string, args []string)
 		if wrapper == "timeout" && i < len(words) {
 			i++ // the duration
 		}
-		if wrapper == "taskset" && i < len(words) {
-			i++ // the CPU mask
+		if (wrapper == "taskset" || wrapper == "flock") && i < len(words) {
+			i++ // the CPU mask, the lock file
+		}
+		if wrapper == "chrt" && i < len(words) {
+			i++ // the priority
 		}
 		if wrapper == "env" { // env NAME=value … program
 			for i < len(words) {
@@ -366,11 +410,13 @@ func isName(s string) bool {
 	return s != ""
 }
 
-// base returns the program name without its path or a leading backslash.
+// base returns the program name without its path, a leading backslash or a Windows
+// .exe, in lower case: on Windows GIT.exe is git.
 func base(p string) string {
 	p = strings.TrimPrefix(p, `\`)
-	if i := strings.LastIndexByte(p, '/'); i >= 0 {
-		return p[i+1:]
+	if i := strings.LastIndexAny(p, `/\`); i >= 0 {
+		p = p[i+1:]
 	}
-	return p
+	p = strings.ToLower(p)
+	return strings.TrimSuffix(p, ".exe")
 }

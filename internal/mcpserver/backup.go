@@ -34,6 +34,11 @@ func setupBackup(b *brain.Brain, url string, run backup.Runner) (string, error) 
 		}
 		return msg, nil
 	}
+	if s.Backup != "" && url != s.Backup {
+		// Moving a backup sends every note somewhere else: only the person does it, by
+		// hand, never a tool the assistant may be talked into using.
+		return "", fmt.Errorf("space %s already backs up to %s. Changing where it backs up is for the user: they run `augmented-brain backup setup <url>` in a terminal, in a folder of the space", s.Name, s.Backup)
+	}
 	if url == "" {
 		url, err = backup.GitHubRepo(s.Name, run)
 		var steps *backup.ErrNoGitHub

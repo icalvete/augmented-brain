@@ -123,9 +123,9 @@ func (b *Brain) save(n *memory.Note) error {
 	return err
 }
 
-// noNewSecret refuses a note that would hold a secret its old version (nil: none) did
-// not: the backup would refuse the whole space for it. A note that already held one, as
-// an import may leave, can still be changed, so it can be fixed.
+// noNewSecret refuses a note that would hold more secrets than its old version (nil:
+// none): the backup would refuse the whole space for it. A note that already held one,
+// as an import may leave, can still be changed, so it can be fixed.
 func noNewSecret(n, old *memory.Note) error {
 	data, err := n.Render()
 	if err != nil {
@@ -136,8 +136,8 @@ func noNewSecret(n, old *memory.Note) error {
 		return nil
 	}
 	if old != nil {
-		if before, err := old.Render(); err == nil && guard.FindSecret(string(before)) != "" {
-			return nil
+		if before, err := old.Render(); err == nil && guard.CountSecrets(string(data)) <= guard.CountSecrets(string(before)) {
+			return nil // no new one: the note can be fixed
 		}
 	}
 	return secretError(what)
@@ -445,7 +445,11 @@ func (b *Brain) Close(id, result string) (*memory.Note, error) {
 // either language (Essentials and Definition); a body without one is left as it is.
 func setLine(body, key, value string) string {
 	lines := strings.SplitAfter(body, "\n")
-	for i, l := range lines {
+	end := len(lines)
+	if heads := memory.Headings(lines); len(heads) > 2 {
+		end = heads[2] // the first two sections only
+	}
+	for i, l := range lines[:end] {
 		for _, label := range i18n.All("note.label." + key) {
 			if strings.HasPrefix(l, "- "+label+":") {
 				end := ""
@@ -573,7 +577,10 @@ func (b *Brain) Capture(text, remind string) error {
 	if what := guard.FindSecret(text); what != "" {
 		return secretError(what)
 	}
-	f, err := os.OpenFile(b.inboxPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+	if fi, err := os.Lstat(b.inboxPath()); err == nil && fi.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("%s is a symbolic link, which augmented brain never writes through; replace it with a plain file", b.inboxPath())
+	}
+	f, err := os.OpenFile(b.inboxPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
 	if err != nil {
 		return err
 	}

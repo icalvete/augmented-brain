@@ -6,11 +6,13 @@
 package guard
 
 import (
+	"bytes"
 	"cmp"
 	"errors"
 	"maps"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"slices"
 	"strings"
@@ -51,6 +53,10 @@ type Policy struct {
 	// an aws command with no profile of its own is checked against the one it will use.
 	// The hook passes it in; the guard never reads the environment itself.
 	Env map[string]string
+	// Protected are files the assistant must not change on its own: the guard's
+	// configuration and Claude Code's settings, which could switch the guard off.
+	// Absolute paths; writing one asks the user.
+	Protected []string
 	// ConfigProblem, when not empty, says why the configuration could not be read: the
 	// lists above are unknown, so a command they would cover asks the user every time.
 	ConfigProblem string
@@ -62,6 +68,9 @@ type Policy struct {
 	Now      time.Time
 	// host is the machine the command runs on, as ssh names it; "" is this one.
 	host string
+	// inScript says the commands come from a script file, where "$@" or "$1" as the
+	// program is how scripts are written: those are not asked about there.
+	inScript bool
 	// lost says a cd earlier in the command went somewhere the guard cannot tell
 	// (cd -, cd "$DIR"): relative paths after it are not resolved.
 	lost bool
@@ -91,7 +100,7 @@ func (p Policy) root(reason string) Decision {
 			continue
 		}
 		for _, n := range names {
-			if n != "" && sameHost(n, e.Host) {
+			if n != "" && rootHost(n, e.Host) {
 				return Decision{Ask, "this would run as root on " + where + ", which has a temporary root exception until " + e.Until.UTC().Format("2006-01-02 15:04") + " UTC (root_ask). The user confirms each command: say first what it does and why."}
 			}
 		}
@@ -134,11 +143,22 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 		if len(c.words) > 0 && (base(c.words[0]) == "cd" || base(c.words[0]) == "pushd") {
 			p = p.cd(c.words[1:]) // the commands after it run there
 		}
+		if len(c.words) > 0 && base(c.words[0]) == "popd" {
+			p.Cwd, p.lost = "", true // back to a folder the guard did not keep
+		}
 		if len(c.words) > 0 && base(c.words[0]) == "export" {
 			for _, a := range c.words[1:] {
 				if eq := strings.IndexByte(a, '='); eq > 0 && isName(a[:eq]) {
 					exported[a[:eq]] = a[eq+1:]
 				}
+			}
+		}
+		for _, r := range c.redirects {
+			d = worse(d, p.protected(r))
+		}
+		if _, name, args := program(c.words); slices.Contains([]string{"sed", "perl", "tee", "cp", "mv", "ln", "rm", "truncate", "install", "dd"}, name) {
+			for _, a := range args {
+				d = worse(d, p.protected(strings.TrimPrefix(a, "of=")))
 			}
 		}
 		if d = worse(d, p.simple(c.words, c.stdin, exported, depth)); d.Verdict == Deny {
@@ -178,8 +198,11 @@ func output(c command) string {
 
 // inner checks a command line run by another command (ssh, sh -c, a heredoc for bash).
 func (p Policy) inner(line string, exported map[string]string, depth int) Decision {
-	if depth >= maxDepth || strings.TrimSpace(line) == "" {
+	if strings.TrimSpace(line) == "" {
 		return allow
+	}
+	if depth >= maxDepth {
+		return Decision{Ask, "the command runs commands nested too deep for augmented brain to check; the user confirms it."}
 	}
 	if what := FindSecret(line); what != "" {
 		return Decision{Deny, "the command has " + what + " written in it."}
@@ -189,6 +212,10 @@ func (p Policy) inner(line string, exported map[string]string, depth int) Decisi
 
 func (p Policy) simple(words []string, stdin string, exported map[string]string, depth int) Decision {
 	env, name, args := program(words)
+	raw := ""
+	if name != "" {
+		raw = words[len(words)-len(args)-1] // the program as written, with its path
+	}
 	for k, v := range exported {
 		if _, set := env[k]; !set {
 			env[k] = v
@@ -199,9 +226,44 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 			return Decision{Deny, "the command sets " + k + " with a value written in it. Use an AWS profile (--profile or AWS_PROFILE) instead of keys on the command line."}
 		}
 	}
+	if (strings.HasPrefix(name, "$") || strings.ContainsRune(name, subst)) && !p.inScript {
+		return Decision{Ask, "the program this runs is only known when it runs (`" + strings.ReplaceAll(raw, string(subst), "$(…)") + "`), so augmented brain cannot check it; the user confirms it."}
+	}
 	switch name {
 	case "git":
 		return p.git(env, args)
+	case "powershell", "pwsh", "cmd":
+		return PowerShell()
+	case "gsudo", "runas", "sudoedit":
+		return p.root("`" + name + "` runs as root (or as the administrator). " + rootReason)
+	case "runuser":
+		if u := optValue(args, "-u", "--user"); u != "" && u != "root" && u != "0" {
+			return p.simple(afterOptions(args, "u"), stdin, env, depth)
+		}
+		return p.root("`runuser` runs as root unless given another user. " + rootReason)
+	case "systemd-run":
+		if !slices.Contains(args, "--user") {
+			return p.root("`systemd-run` starts the command as a system service, as root unless --user. " + rootReason)
+		}
+	case "machinectl":
+		if len(args) > 0 && (args[0] == "shell" || args[0] == "login") {
+			if len(args) < 2 || !strings.Contains(args[1], "@") || strings.HasPrefix(args[1], "root@") || strings.HasPrefix(args[1], "@") {
+				return p.root("`machinectl " + args[0] + "` opens a shell as root unless given another user. " + rootReason)
+			}
+		}
+	case "source", ".":
+		if len(args) > 0 {
+			return p.script(args[0], env, depth)
+		}
+	case "script": // script -qc 'command' [file]: -c may come last in a cluster
+		for i, a := range args {
+			if (a == "--command" || len(a) > 1 && a[0] == '-' && a[1] != '-' && strings.HasSuffix(a, "c")) && i+1 < len(args) {
+				return p.inner(args[i+1], env, depth)
+			}
+			if c, ok := strings.CutPrefix(a, "--command="); ok {
+				return p.inner(c, env, depth)
+			}
+		}
 	case "sudo", "doas":
 		return p.sudo(name, args, stdin, env, depth)
 	case "su", "run0", "pkexec":
@@ -233,7 +295,16 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	case "vagrant":
 		return p.vagrant(args, env, depth)
 	case "docker", "podman", "kubectl":
+		if len(args) > 1 && args[0] == "compose" { // docker compose exec <service> <command>
+			args = args[1:]
+		}
 		return p.exec(name, args, env, depth)
+	default:
+		if strings.Contains(raw, "/") {
+			if d := p.script(raw, env, depth); d.Verdict != Allow {
+				return d // ./deploy.sh: what the script runs
+			}
+		}
 	}
 	// Any other program set to a production profile in the command itself.
 	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE"} {
@@ -258,6 +329,71 @@ func (p Policy) checkHost(name, target string) Decision {
 		return Decision{Ask, name + " reaches " + host + ", marked as untouchable; the user confirms first."}
 	}
 	return allow
+}
+
+// subst stands, in a word, for the text of a $(…) or `…`: the word is only known when
+// the command runs.
+const subst = '\uFFFC'
+
+// optValue returns the value of the first of opts in args (-u app, --user=app, -uapp).
+func optValue(args []string, opts ...string) string {
+	for i, a := range args {
+		for _, o := range opts {
+			switch {
+			case a == o && i+1 < len(args):
+				return args[i+1]
+			case strings.HasPrefix(o, "--") && strings.HasPrefix(a, o+"="):
+				return strings.TrimPrefix(a, o+"=")
+			case len(o) == 2 && !strings.HasPrefix(a, "--") && strings.HasPrefix(a, o) && len(a) > 2:
+				return a[2:]
+			}
+		}
+	}
+	return ""
+}
+
+// afterOptions returns the command after the options of a wrapper whose short options
+// in withValue take a value.
+func afterOptions(args []string, withValue string) []string {
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "--":
+			return args[i+1:]
+		case !strings.HasPrefix(a, "-"):
+			return args[i:]
+		case len(a) == 2 && strings.ContainsRune(withValue, rune(a[1])):
+			i++
+		}
+	}
+	return nil
+}
+
+// maxScript is the largest script the guard reads to check what it runs.
+const maxScript = 64 << 10
+
+// script checks what a shell script would run (bash deploy.sh, ./deploy.sh, source
+// env.sh) when it is a small text file already on disk; a script it cannot read is
+// let through, as before.
+func (p Policy) script(path string, env map[string]string, depth int) Decision {
+	d, err := p.resolve(path)
+	if err != nil {
+		return allow
+	}
+	info, err := os.Stat(d)
+	if err != nil || !info.Mode().IsRegular() || info.Size() > maxScript {
+		return allow
+	}
+	data, err := os.ReadFile(d)
+	if err != nil || bytes.IndexByte(data, 0) >= 0 {
+		return allow // a program, not a script
+	}
+	p.inScript = true
+	inner := p.inner(string(data), env, depth)
+	if inner.Verdict != Allow {
+		inner.Reason = "the script " + paths.Tilde(d) + " runs a command that needs it: " + inner.Reason
+	}
+	return inner
 }
 
 // firstOperand returns the index of the first argument that is neither an option nor
@@ -306,6 +442,35 @@ func (p Policy) git(env map[string]string, args []string) Decision {
 			i++
 		}
 	}
+	for j := 1; j < i; j++ {
+		if args[j-1] != "-c" {
+			continue
+		}
+		if k, _, _ := strings.Cut(strings.ToLower(args[j]), "="); strings.HasPrefix(k, "alias.") ||
+			slices.Contains([]string{"core.sshcommand", "core.pager", "core.editor", "core.hookspath", "core.fsmonitor", "sequence.editor", "credential.helper"}, k) {
+			return Decision{Ask, "`git -c " + args[j] + "` makes git run a command of its own, which augmented brain cannot check; the user confirms it."}
+		}
+	}
+	if i < len(args) {
+		switch sub := args[i]; {
+		case sub == "submodule" && i+2 < len(args) && args[i+1] == "foreach":
+			cmd := args[i+2:]
+			for len(cmd) > 0 && strings.HasPrefix(cmd[0], "-") {
+				cmd = cmd[1:]
+			}
+			return p.inner(strings.Join(cmd, " "), env, 0)
+		case sub == "rebase" || sub == "bisect":
+			if c := optValue(args[i+1:], "-x", "--exec"); c != "" {
+				return p.inner(c, env, 0)
+			}
+			if sub == "bisect" && i+2 < len(args) && args[i+1] == "run" {
+				return p.simple(args[i+2:], "", env, 0)
+			}
+		case sub == "send-pack" || sub == "subtree" && i+1 < len(args) && args[i+1] == "push" ||
+			sub == "svn" && i+1 < len(args) && args[i+1] == "dcommit":
+			return Decision{Deny, "`git " + sub + "` publishes like a git push, so it is for the user. Leave the change ready and checked, and give the user the exact command to run themselves."}
+		}
+	}
 	if i >= len(args) || (args[i] != "commit" && args[i] != "push") {
 		return allow
 	}
@@ -323,7 +488,7 @@ func (p Policy) git(env map[string]string, args []string) Decision {
 			}
 		}
 	}
-	return Decision{Deny, "`git " + args[i] + "` is for the user. Leave the change ready and checked, show what would be committed, and tell the user it is ready. (To let the assistant commit in a repository, add it to git_allowed_repos in the configuration, or to git_ask_repos to be asked each time, and use `git -C <repo>`.)"}
+	return Decision{Deny, "`git " + args[i] + "` is for the user. Leave the change ready and checked, show what would be committed, and tell the user it is ready. (The user, not the assistant, can let the assistant commit in a repository by adding it to git_allowed_repos, or to git_ask_repos to be asked each time; then use `git -C <repo>`.)"}
 }
 
 // rewrites reports whether the arguments of a push change history on the remote rather
@@ -375,9 +540,11 @@ func (p Policy) rm(args []string) Decision {
 		home = h
 	}
 	for _, o := range operands {
-		for _, v := range []string{"$HOME", "${HOME}", "$USERPROFILE", "${USERPROFILE}"} {
-			if o == v || strings.HasPrefix(o, v+"/") {
-				o = "~" + strings.TrimPrefix(o, v)
+		o = homeVar.ReplaceAllString(o, "~")
+		if v := leadingVar.FindString(o); v != "" && !strings.HasPrefix(o, "~") {
+			rest := strings.Trim(strings.TrimPrefix(o, v), "/*")
+			if rest == "" {
+				return Decision{Ask, "`rm -r " + o + "`: if " + v + " is empty or unset, this deletes from the disk root or the current folder. Check the variable first (for example ${VAR:?}), or the user confirms it."}
 			}
 		}
 		if o = strings.TrimSuffix(o, "*"); o == "" {
@@ -391,12 +558,21 @@ func (p Policy) rm(args []string) Decision {
 		}
 		if d, err := p.resolve(o); err == nil && filepath.Dir(d) == d {
 			return Decision{Deny, "`rm -r` of a whole disk (" + d + ") is never run."}
+		} else if err == nil && home != "" && d != home && paths.Within(home, d) {
+			return Decision{Deny, "`rm -r` of " + d + " would delete the user's home folder with it; it is never run."}
 		} else if err == nil && home != "" && d == home {
 			return Decision{Deny, "`rm -r` of the user's whole home folder (" + paths.Tilde(d) + ") is never run. Delete the files or folders inside it that need to go, one by one."}
 		}
 	}
 	return allow
 }
+
+// homeVar is the home folder written as a variable: $HOME, ${HOME}, ${HOME:?…},
+// ${HOME:-…}, and the same with USERPROFILE (Windows).
+var homeVar = regexp.MustCompile(`^(\$(HOME|USERPROFILE)\b|\$\{(HOME|USERPROFILE)(:?[-?=+][^}]*)?\})`)
+
+// leadingVar is a variable at the start of a path: $DIR, ${DIR}, ${DIR:-x}.
+var leadingVar = regexp.MustCompile(`^(\$[A-Za-z_][A-Za-z0-9_]*|\$\{[^}]*\})`)
 
 // cd returns the policy for the commands after a cd (or pushd) with args: no folder is
 // the home folder, and one the guard cannot tell (-, a variable) leaves it lost.
@@ -408,7 +584,7 @@ func (p Policy) cd(args []string) Policy {
 			break
 		}
 	}
-	if dir == "-" || strings.ContainsAny(dir, "$`") {
+	if dir == "-" || strings.ContainsAny(dir, "$`") || strings.ContainsRune(dir, subst) {
 		p.Cwd, p.lost = "", true
 		return p
 	}
@@ -496,12 +672,24 @@ func (p Policy) sudo(name string, args []string, stdin string, env map[string]st
 	return p.simple(rest, stdin, env, depth)
 }
 
+// unknownProfile asks when a profile is a variable and production profiles exist: the
+// guard cannot tell which one it will be.
+func (p Policy) unknownProfile(prof string) (Decision, bool) {
+	if len(p.ProductionAWSProfiles) > 0 && (strings.HasPrefix(prof, "$") || strings.ContainsRune(prof, subst)) {
+		return Decision{Ask, "the AWS profile (" + prof + ") is only known when the command runs, and it may be a production one; the user confirms first."}, true
+	}
+	return Decision{}, false
+}
+
 // aws asks before a command that may use a production profile. Which one it uses
 // depends on the AWS CLI's version and on what is set, so every candidate counts: the
 // one given with --profile, AWS_PROFILE and AWS_DEFAULT_PROFILE (set in the command or
 // inherited), and "default" when nothing is set.
 func (p Policy) aws(env map[string]string, args []string) Decision {
 	if d, unknown := p.listsUnknown("this AWS command"); unknown {
+		return d
+	}
+	if d, unknown := p.unknownProfile(profileFlag(args, "--profile")); unknown {
 		return d
 	}
 	if prof := p.productionProfile(env, profileFlag(args, "--profile")); prof != "" {
@@ -517,6 +705,9 @@ func (p Policy) awsTool(name string, env map[string]string, args []string) Decis
 		return d
 	}
 	given := cmp.Or(profileFlag(args, "--profile"), profileFlag(args, "--aws-profile"))
+	if d, unknown := p.unknownProfile(given); unknown {
+		return d
+	}
 	if prof := p.productionProfile(env, given); prof != "" {
 		return Decision{Ask, name + " may run with the production AWS profile " + prof + "; the user confirms first."}
 	}
@@ -611,17 +802,33 @@ func syncDestination(args []string) bool {
 // publish blocks the gh and glab commands that publish or merge, as it blocks a push.
 func publish(name string, args []string) Decision {
 	var words []string
-	for _, a := range args {
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if slices.Contains([]string{"-R", "--repo", "-X", "--method", "-H", "--header", "-f", "-F", "--field", "--raw-field", "--hostname"}, a) {
+			i++ // the option's value
+			continue
+		}
 		if !strings.HasPrefix(a, "-") {
 			words = append(words, a)
 		}
+	}
+	if len(words) >= 2 && words[0] == "api" {
+		method := strings.ToUpper(optValue(args, "-X", "--method"))
+		path := strings.ToLower(words[1])
+		writes := method != "" && method != "GET" || slices.ContainsFunc(args, func(a string) bool {
+			return a == "-f" || a == "-F" || a == "--field" || a == "--raw-field"
+		})
+		if writes && (strings.Contains(path, "/merge") || strings.Contains(path, "/releases") || strings.Contains(path, "/git/refs")) {
+			return Decision{Deny, "`" + name + " api` with this call merges, releases or moves a branch, like a git push, so it is for the user. Give the user the exact command to run themselves."}
+		}
+		return allow
 	}
 	if len(words) < 2 {
 		return allow
 	}
 	blocked := map[string]map[string]bool{
 		"gh":   {"pr merge": true, "release create": true, "release upload": true, "release edit": true},
-		"glab": {"mr merge": true, "mr accept": true, "release create": true, "release upload": true},
+		"glab": {"mr merge": true, "mr accept": true, "release create": true, "release upload": true, "release update": true, "release edit": true},
 	}[name]
 	what := words[0] + " " + words[1]
 	// gh repo sync with no repository only updates the local clone; with one, it updates
@@ -639,7 +846,19 @@ func publish(name string, args []string) Decision {
 // it sends to the remote shell through stdin.
 func (p Policy) ssh(args []string, stdin string, env map[string]string, depth int) Decision {
 	host, rest := sshTarget(dropRedirections(args))
+	host = strings.TrimPrefix(host, "ssh://")
 	p.host = host[strings.LastIndexByte(host, '@')+1:] // the remote command runs there
+	jumps := allow
+	for _, j := range sshJumps(args) {
+		jumps = worse(jumps, p.checkHost("ssh", j))
+	}
+	if sshUser(args, host) == "root" {
+		if d := p.root("this logs in to " + p.host + " as root. " + rootReason); d.Verdict == Deny {
+			return d
+		} else {
+			jumps = worse(jumps, d)
+		}
+	}
 	var d Decision
 	switch {
 	case len(rest) > 0 && isShell(base(rest[0])):
@@ -649,7 +868,50 @@ func (p Policy) ssh(args []string, stdin string, env map[string]string, depth in
 	default:
 		d = p.inner(stdin, env, depth) // the remote shell reads stdin
 	}
-	return worse(p.checkHost("ssh", host), d)
+	return worse(worse(p.checkHost("ssh", host), jumps), d)
+}
+
+// sshUser is the user ssh logs in as: user@host, -l user or -o User=user; "" when the
+// command does not say.
+func sshUser(args []string, host string) string {
+	if at := strings.LastIndexByte(host, '@'); at >= 0 {
+		return host[:at]
+	}
+	if u := optValue(args, "-l"); u != "" {
+		return u
+	}
+	for i, a := range args {
+		if a == "-o" && i+1 < len(args) {
+			if k, v, ok := strings.Cut(args[i+1], "="); ok && strings.EqualFold(strings.TrimSpace(k), "User") {
+				return strings.TrimSpace(v)
+			}
+		}
+	}
+	return ""
+}
+
+// sshJumps are the hosts an ssh command goes through first (-J, ProxyJump).
+func sshJumps(args []string) []string {
+	var out []string
+	add := func(list string) {
+		for _, h := range strings.Split(list, ",") {
+			if h = strings.TrimPrefix(strings.TrimSpace(h), "ssh://"); h != "" {
+				h, _, _ = strings.Cut(h, ":") // host:port
+				out = append(out, h)
+			}
+		}
+	}
+	for i, a := range args {
+		switch {
+		case a == "-J" && i+1 < len(args):
+			add(args[i+1])
+		case a == "-o" && i+1 < len(args):
+			if k, v, ok := strings.Cut(args[i+1], "="); ok && strings.EqualFold(strings.TrimSpace(k), "ProxyJump") {
+				add(v)
+			}
+		}
+	}
+	return out
 }
 
 // vagrant ssh -c runs its command in the virtual machine: it is checked as ssh's is.
@@ -657,6 +919,7 @@ func (p Policy) vagrant(args []string, env map[string]string, depth int) Decisio
 	if len(args) == 0 || args[0] != "ssh" {
 		return allow
 	}
+	p.host = "(virtual machine)" // a root exception for this machine does not reach it
 	d := allow
 	for i := 1; i < len(args); i++ {
 		switch a := args[i]; {
@@ -676,6 +939,7 @@ func (p Policy) exec(name string, args []string, env map[string]string, depth in
 	if len(args) == 0 || args[0] != "exec" || depth >= maxDepth {
 		return allow
 	}
+	p.host = "(container)" // a root exception for this machine does not reach it
 	args = args[1:]
 	if name == "kubectl" {
 		// kubectl exec <pod> [options] -- <command>
@@ -718,7 +982,8 @@ func (p Policy) sftp(args []string) Decision {
 	if i >= len(args) {
 		return allow
 	}
-	host, _, _ := strings.Cut(args[i], ":")
+	host, _, _ := strings.Cut(strings.TrimPrefix(args[i], "sftp://"), ":")
+	host, _, _ = strings.Cut(host, "/")
 	return p.checkHost("sftp", host)
 }
 
@@ -743,16 +1008,18 @@ func dropRedirections(args []string) []string {
 // or what it reads from stdin when it runs no script.
 func (p Policy) shell(args []string, stdin string, env map[string]string, depth int) Decision {
 	wantsC := false
-	for _, a := range args {
-		if wantsC && !strings.HasPrefix(a, "-") {
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if wantsC && !strings.HasPrefix(a, "-") && !strings.HasPrefix(a, "+") {
 			return p.inner(a, env, depth)
 		}
-		if strings.HasPrefix(a, "-") && !strings.HasPrefix(a, "--") && strings.ContainsRune(a[1:], 'c') {
+		switch {
+		case a == "-o" || a == "+o" || a == "-O" || a == "+O" || a == "--rcfile" || a == "--init-file":
+			i++ // the option's value: pipefail, extglob, a file
+		case strings.HasPrefix(a, "-") && !strings.HasPrefix(a, "--") && strings.ContainsRune(a[1:], 'c'):
 			wantsC = true
-			continue
-		}
-		if !strings.HasPrefix(a, "-") {
-			return allow // runs a script file: its content is not known here
+		case !strings.HasPrefix(a, "-") && !strings.HasPrefix(a, "+"):
+			return p.script(a, env, depth) // runs a script file
 		}
 	}
 	return p.inner(stdin, env, depth)
@@ -761,6 +1028,36 @@ func (p Policy) shell(args []string, stdin string, env map[string]string, depth 
 // find checks the command of -exec, -execdir, -ok and -okdir.
 func (p Policy) find(args []string, env map[string]string, depth int) Decision {
 	d := allow
+	var roots []string
+	for _, a := range args {
+		if strings.HasPrefix(a, "-") || a == "(" || a == "!" {
+			break
+		}
+		roots = append(roots, a)
+	}
+	if len(roots) == 0 {
+		roots = []string{"."}
+	}
+	// Deleting everything under a root, with no test to pick what (find ~ -delete), is
+	// rm -r of that root; with -name, -type or another test it deletes only some.
+	deletes, picks := slices.Contains(args, "-delete"), false
+	for i, a := range args {
+		if (a == "-exec" || a == "-execdir") && i+1 < len(args) && base(args[i+1]) == "rm" {
+			deletes = true
+		}
+		if strings.HasPrefix(a, "-") && !slices.Contains([]string{"-delete", "-exec", "-execdir", "-depth", "-mindepth", "-maxdepth", "-xdev", "-mount", "-follow", "-print", "-print0", "-L", "-P", "-H"}, a) {
+			picks = true
+		}
+		if a == "-exec" || a == "-execdir" {
+			break // what follows is the command, not tests
+		}
+	}
+	if deletes && !picks {
+		if r := p.rm(append([]string{"-r"}, roots...)); r.Verdict != Allow {
+			r.Reason = "`find` deletes everything it finds there: " + r.Reason
+			return r
+		}
+	}
 	for i, a := range args {
 		if a == "-exec" || a == "-execdir" || a == "-ok" || a == "-okdir" {
 			var cmd []string
@@ -784,6 +1081,9 @@ func (p Policy) copyHosts(name string, args []string) Decision {
 		if strings.HasPrefix(a, "-") || strings.HasPrefix(a, "/") || strings.HasPrefix(a, ".") {
 			continue
 		}
+		if u, ok := strings.CutPrefix(a, "scp://"); ok {
+			a = strings.Replace(u, "/", ":", 1) // scp://host/path is host:path
+		}
 		hostPart, _, isRemote := strings.Cut(strings.TrimPrefix(a, "rsync://"), ":")
 		if !isRemote {
 			continue
@@ -804,6 +1104,24 @@ func (p Policy) untouchable(host string) bool {
 		}
 	}
 	return false
+}
+
+// rootHost matches a host to a root exception: the same name, or a short name and a
+// full one that starts with it; two full names must be equal (web01 matches
+// web01.example.com, but web01.example.com never matches web01.other.net).
+func rootHost(host, saved string) bool {
+	norm := func(h string) string {
+		h = strings.TrimSpace(h)
+		return strings.TrimSuffix(strings.ToLower(h[strings.LastIndexByte(h, '@')+1:]), ".")
+	}
+	host, saved = norm(host), norm(saved)
+	if host == "" || saved == "" {
+		return false
+	}
+	if strings.Contains(host, ".") && strings.Contains(saved, ".") {
+		return host == saved
+	}
+	return sameHost(host, saved)
 }
 
 // sameHost matches two host names ignoring case, or by the short name either way. A
@@ -847,6 +1165,32 @@ func isShell(name string) bool {
 func Write(text string) Decision {
 	if what := FindSecret(text); what != "" {
 		return Decision{Deny, "the text has " + what + " in it. Secrets never go into files: the code reads them from an environment variable, the system keychain or a secrets manager."}
+	}
+	return allow
+}
+
+// WriteFile checks a write of text into the file at path: Write, and a protected file
+// asks the user.
+func (p Policy) WriteFile(path, text string) Decision {
+	if d := Write(text); d.Verdict == Deny {
+		return d
+	}
+	return p.protected(path)
+}
+
+// protected asks before the assistant changes a file in Protected.
+func (p Policy) protected(path string) Decision {
+	if path == "" || len(p.Protected) == 0 {
+		return allow
+	}
+	d, err := p.resolve(path)
+	if err != nil {
+		return allow
+	}
+	for _, f := range p.Protected {
+		if paths.Same(d, f) {
+			return Decision{Ask, paths.Tilde(d) + " holds the guard's settings (or Claude Code's): changing it can switch a check off. Only the user changes it; ask them, showing the change."}
+		}
 	}
 	return allow
 }

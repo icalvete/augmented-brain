@@ -10,12 +10,15 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path/filepath"
 	"sort"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/guard"
+	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/update"
 	"github.com/icalvete/augmented-brain/internal/version"
@@ -52,12 +55,19 @@ type output struct {
 }
 
 func read(in io.Reader) input {
+	i, _ := readChecked(in)
+	return i
+}
+
+// readChecked is read, saying whether the input could be decoded: the guard refuses a
+// tool call it cannot read rather than let it through.
+func readChecked(in io.Reader) (input, bool) {
 	var i input
-	_ = json.NewDecoder(in).Decode(&i)
+	err := json.NewDecoder(in).Decode(&i)
 	if i.Cwd == "" {
 		i.Cwd, _ = os.Getwd()
 	}
-	return i
+	return i, err == nil
 }
 
 func write(out io.Writer, o output) error {
@@ -99,6 +109,10 @@ func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 	case s == nil:
 		text = session.NoSpace(c, i.Cwd)
 	case n > 1:
+		// Part 1 may be moving the notes to a new format: wait for it, briefly.
+		if unlock, err := filelock.LockWithin(filepath.Join(cfgDir, backup.NotesLock), LockWait); err == nil {
+			unlock()
+		}
 		text = session.Part(c, s, "", n)
 	case n == 1:
 		text = session.Part(c, s, startNote(c, s, i, cfgDir), 1)
@@ -147,8 +161,25 @@ func backupNote(c *config.Config, s *config.Space, cfgDir string) string {
 // blocks PowerShell commands, which the guard cannot read. A Monitor that opens a
 // WebSocket has no command and runs no program, so it goes through.
 func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
-	i := read(in)
+	i, ok := readChecked(in)
 	p := policy(cfgDir, i.Cwd)
+	var d guard.Decision
+	switch {
+	case !ok:
+		d = guard.Decision{Verdict: guard.Deny, Reason: "the tool call could not be read, so it was not checked; try again."}
+	default:
+		d = toolDecision(p, i)
+	}
+	decision := map[guard.Verdict]string{guard.Deny: "deny", guard.Ask: "ask"}[d.Verdict]
+	if decision == "" {
+		return nil
+	}
+	return write(out, output{specific{HookEventName: "PreToolUse",
+		PermissionDecision: decision, PermissionDecisionReason: "augmented brain: " + d.Reason}})
+}
+
+// toolDecision is the guard's answer to one tool call.
+func toolDecision(p guard.Policy, i input) guard.Decision {
 	var d guard.Decision
 	switch i.ToolName {
 	case "Bash", "Monitor":
@@ -157,16 +188,13 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	case "PowerShell":
 		d = guard.PowerShell()
 	case "Write", "Edit", "MultiEdit", "NotebookEdit":
-		d = guard.Write(written(i.ToolInput))
-	default:
-		return nil
+		path, _ := i.ToolInput["file_path"].(string)
+		if path == "" {
+			path, _ = i.ToolInput["notebook_path"].(string)
+		}
+		d = p.WriteFile(path, written(i.ToolInput))
 	}
-	decision := map[guard.Verdict]string{guard.Deny: "deny", guard.Ask: "ask"}[d.Verdict]
-	if decision == "" {
-		return nil
-	}
-	return write(out, output{specific{HookEventName: "PreToolUse",
-		PermissionDecision: decision, PermissionDecisionReason: "augmented brain: " + d.Reason}})
+	return d
 }
 
 // Getenv reads the hook's environment, which the assistant's commands inherit; tests
@@ -199,6 +227,7 @@ func policy(cfgDir, dir string) guard.Policy {
 		}
 		p.Hostname, _ = os.Hostname()
 	}
+	p.Protected = protectedFiles(cfgDir, dir)
 	return p
 }
 
@@ -234,4 +263,25 @@ func written(v any) string {
 		out += p + "\n"
 	}
 	return out
+}
+
+// protectedFiles are the files the assistant does not change on its own: the guard's
+// configuration, and Claude Code's settings (yours and the project's), where a line can
+// switch the plugin, and so the guard, off.
+func protectedFiles(cfgDir, dir string) []string {
+	list := []string{filepath.Join(cfgDir, config.FileName)}
+	if home, err := paths.Home(); err == nil {
+		for _, f := range []string{"settings.json", "settings.local.json"} {
+			list = append(list, filepath.Join(home, ".claude", f))
+		}
+	}
+	for _, f := range []string{"settings.json", "settings.local.json"} {
+		list = append(list, filepath.Join(dir, ".claude", f))
+	}
+	for i, f := range list {
+		if r, err := paths.Resolve(f); err == nil {
+			list[i] = r
+		}
+	}
+	return list
 }

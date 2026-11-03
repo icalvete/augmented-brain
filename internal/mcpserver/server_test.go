@@ -281,14 +281,16 @@ func TestSafetySave(t *testing.T) {
 	} else if !strings.Contains(out, "before: [old01]") {
 		t.Errorf("the answer does not say what was there before: %s", out)
 	}
-	if out, isErr := call(t, cs, "safety_save", map[string]any{"untouchable_hosts": []string{"db01", "db02"}}); isErr {
+	// Found in the review of 2026-11-03: the tool only adds, so an assistant talked into
+	// it can never empty what makes the guard ask.
+	if out, isErr := call(t, cs, "safety_save", map[string]any{"untouchable_hosts": []string{"db02"}, "production_aws_profiles": []string{}}); isErr {
 		t.Fatal(out)
 	}
 	c, err := config.Load(cfgDir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Join(c.ProductionAWSProfiles, ",") != "prod" || strings.Join(c.UntouchableHosts, ",") != "db01,db02" {
+	if strings.Join(c.ProductionAWSProfiles, ",") != "prod" || strings.Join(c.UntouchableHosts, ",") != "old01,db01,db02" {
 		t.Errorf("machine-wide settings: %v %v", c.ProductionAWSProfiles, c.UntouchableHosts)
 	}
 	if w := c.Spaces["work"]; len(w.ProductionAWSProfiles)+len(w.UntouchableHosts) != 0 {
@@ -313,6 +315,10 @@ func TestBackupSetup(t *testing.T) {
 	}
 	if log, err := exec.Command("git", "--git-dir", remote, "log", "--oneline", "main").CombinedOutput(); err != nil || len(log) == 0 {
 		t.Errorf("nothing pushed: %v %s", err, log)
+	}
+	// Found in the review of 2026-11-03: the tool never moves a backup somewhere else.
+	if out, isErr := call(t, cs, "backup_setup", map[string]any{"repo_url": remote + "-other"}); !isErr || !strings.Contains(out, "is for the user") {
+		t.Errorf("moving the backup through the tool: %s", out)
 	}
 	if out, _ := call(t, cs, "backup_setup", map[string]any{}); !strings.Contains(out, "already backs up to "+remote) {
 		t.Errorf("second call: %s", out)

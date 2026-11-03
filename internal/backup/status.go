@@ -2,6 +2,7 @@ package backup
 
 import (
 	"encoding/json"
+	"github.com/icalvete/augmented-brain/internal/paths"
 	"os"
 	"path/filepath"
 	"time"
@@ -32,7 +33,7 @@ func RecordStatusWarning(cfgDir, space string, err error, warning string, now ti
 	}
 	all[space] = st
 	if data, e := json.MarshalIndent(all, "", "  "); e == nil {
-		_ = os.WriteFile(filepath.Join(cfgDir, statusFile), data, 0o600)
+		_ = paths.WriteAtomic(filepath.Join(cfgDir, statusFile), data, 0o600)
 	}
 }
 

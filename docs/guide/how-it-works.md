@@ -75,8 +75,12 @@ If you need Claude to do something as root on a machine for a while, add it to
 it, root is refused again by itself.
 
 It also looks inside `ssh`, `vagrant ssh -c`, `docker exec`, `kubectl exec`, `bash -c`,
-loops, and what a pipe feeds a shell
-(`echo 'sudo …' | bash`). If its configuration cannot be read, it asks you before every
+loops, what a pipe feeds a shell (`echo 'sudo …' | bash`), and a short script Claude
+runs (`bash deploy.sh`, `./deploy.sh`). `ssh root@…` counts as becoming root. When it
+cannot tell what will run (a program given as a variable, a command nested too deep,
+`rm -rf "$DIR/"*` with a variable that may be empty), it asks you. And Claude never
+changes, on its own, augmented brain's configuration or Claude Code's settings, where
+a line could switch a check off: it asks you first. If its configuration cannot be read, it asks you before every
 `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before the tools that call AWS
 on their own, since it cannot tell which ones matter.
 Commands Claude leaves running to watch something (a log, a build) are checked the same
