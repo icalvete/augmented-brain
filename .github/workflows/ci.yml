@@ -40,6 +40,8 @@ jobs:
         with:
           go-version-file: go.mod
       - name: Earlier releases read what this one writes
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           go build -o /tmp/ab-new ./cmd/augmented-brain
           scripts/compat-check.sh /tmp/ab-new
@@ -47,7 +49,11 @@ jobs:
   privacy:
     runs-on: ubuntu-latest
     steps:
+      # In a pull request, the branch's own last commit, not the merge commit GitHub makes
+      # up to test it: that one carries the GitHub profile's name, and is never pushed.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: No secrets in the repository
         run: scripts/privacy-check.sh --all
       # The maintainer's personal data, by keyed fingerprints (the denylist itself is not
