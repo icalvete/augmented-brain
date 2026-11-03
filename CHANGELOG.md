@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.6.1-alpha
+
+Released 2026-11-03.
 
 From 0.6.0 on a real machine: programs before 0.6.0 refuse a setting of `config.toml`
 they do not know, and 0.6.0 added one. Every Claude session open since before the
