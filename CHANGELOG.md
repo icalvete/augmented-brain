@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.5.7-alpha
+
+Released 2026-11-03.
 
 From the rehearsal of 0.5.6:
 
