@@ -89,6 +89,10 @@ Heavier checks, before a release or when you touch what they cover:
 
 - **Nothing personal, no secrets.** The repo is public. `scripts/privacy-check.sh` runs as
   the pre-commit hook (`git config core.hooksPath .githooks`) and in CI. Never bypass it.
+  Its denylist of the maintainer's personal data lives outside the repo; CI checks it by
+  keyed fingerprints (`scripts/privacy-hashed.py`, `scripts/privacy-hashes`, the key in the
+  `AB_PRIVACY_KEY` secret). After changing the denylist, run `scripts/privacy-hashed.py build`
+  and commit the fingerprints.
 - **Two languages, always in step.** Everything a person reads exists in English and
   Spanish: a new message goes in `internal/i18n`, in the file of its subject, with both
   languages (`TestCatalog` checks they have the same placeholders); no package keeps a
@@ -128,7 +132,11 @@ Heavier checks, before a release or when you touch what they cover:
 - Before a release, the rehearsal in the VMs (Ubuntu and Windows, from `clean`), with
   the release built by `scripts/release-build.sh`; a new version is installed on a
   real machine only after it.
-- A release: set `VERSION`, rename the `## Unreleased` section of `CHANGELOG.md` to
-  `## <version>` with its date, commit, tag `v<version>`, push both. `release.yml` builds
+- `main` takes changes only through a pull request whose CI is green and up to date with
+  `main` (a GitHub ruleset; no force push, no deletion, no one bypasses it). Tags `v*`
+  cannot be moved or deleted once pushed.
+- A release: on a branch, set `VERSION`, rename the `## Unreleased` section of
+  `CHANGELOG.md` to `## <version>` with its date, commit, open a pull request and merge it
+  when CI is green; then tag `v<version>` on that commit of `main` and push the tag. `release.yml` builds
   the archives, checksums and `install.sh` and publishes them; the installer always takes
   the latest release.

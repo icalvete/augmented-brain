@@ -11,6 +11,7 @@
 #      OUTSIDE the repo on purpose: it contains the very data it protects. If it is missing,
 #      this check is skipped with a warning (contributors and CI do not have it).
 #   3. Commit identity: with --staged, the author name and email must not match the denylist.
+#   CI, which has no denylist, checks it by keyed fingerprints instead: scripts/privacy-hashed.py.
 #
 # Exceptions: exact literal strings in $AB_ALLOW (default: next to the denylist, "allow") are
 # removed before the denylist is applied, e.g. the repo URL or the maintainer's public identity.
@@ -62,6 +63,10 @@ EOF
 
 # Denylist without comments or blank lines.
 if [ -f "$DENYLIST" ]; then
+  # CI checks the denylist by its fingerprints (scripts/privacy-hashed.py): keep them current.
+  if [ "$DENYLIST" -nt "$(dirname "$0")/privacy-hashes" ]; then
+    echo "privacy-check: the denylist changed after scripts/privacy-hashes; run scripts/privacy-hashed.py build." >&2
+  fi
   grep -v -e '^[[:space:]]*#' -e '^[[:space:]]*$' "$DENYLIST" > "$TMP/deny"
 else
   echo "privacy-check: no denylist at $DENYLIST; checking secrets only." >&2
@@ -85,7 +90,8 @@ while IFS= read -r f; do
   fi
   # The denylist has short words that show up by chance inside images and fonts, so it
   # only looks at text files (and at every file name).
-  if [ -s "$TMP/deny" ]; then
+  # scripts/privacy-hashes is only hex fingerprints: a short entry turns up there by chance.
+  if [ -s "$TMP/deny" ] && [ "$f" != "scripts/privacy-hashes" ]; then
     if printf '%s\n' "$f" | grep -q -i -F -f "$TMP/deny"; then
       echo "  PERSONAL  $f (file name)"; found=1
     fi
