@@ -58,3 +58,18 @@ func RemoveLeftovers() error {
 	}
 	return first
 }
+
+// ProjectSlug is the name Claude Code gives the folder of a project under projects/:
+// its absolute path with every character that is not a letter or a digit as "-"
+// (/home/ana/work is -home-ana-work).
+func ProjectSlug(dir string) string {
+	var b []rune
+	for _, r := range dir {
+		if r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' {
+			b = append(b, r)
+		} else {
+			b = append(b, '-')
+		}
+	}
+	return string(b)
+}

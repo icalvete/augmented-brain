@@ -51,6 +51,8 @@ type Env struct {
 	// Hook runs the PreToolUse hook as Claude Code does, with input on stdin, and returns
 	// what it prints; nil means run the installed program.
 	Hook func(input []byte) ([]byte, error)
+	// ClaudeDir is Claude Code's folder (settings, projects); "" means its usual one.
+	ClaudeDir string
 }
 
 // Run returns every check, in the order they are shown. Later checks are skipped when
@@ -126,6 +128,7 @@ func Run(e Env) []Check {
 	for _, name := range c.SpaceNames() {
 		out = append(out, space(c, c.Spaces[name])...)
 	}
+	out = append(out, autoMemory(e, c)...)
 	return append(out, tools(e)...)
 }
 
@@ -275,4 +278,38 @@ func Worst(checks []Check) Status {
 		}
 	}
 	return w
+}
+
+// autoMemory warns when Claude Code keeps a memory of its own for a work folder: its
+// auto memory, a second memory next to the space's, which loads at the start too and
+// drifts from it. It is off with "autoMemoryEnabled": false in Claude Code's settings.
+func autoMemory(e Env, c *config.Config) []Check {
+	dir := e.ClaudeDir
+	if dir == "" {
+		dir = claudecode.ConfigDir()
+	}
+	if dir == "" {
+		return nil
+	}
+	var settings map[string]any
+	if data, err := os.ReadFile(filepath.Join(dir, "settings.json")); err == nil {
+		_ = json.Unmarshal(data, &settings)
+	}
+	if on, ok := settings["autoMemoryEnabled"].(bool); ok && !on {
+		return nil
+	}
+	var found []string
+	for _, name := range c.SpaceNames() {
+		for _, w := range c.Spaces[name].WorkFolders {
+			mem := filepath.Join(dir, "projects", claudecode.ProjectSlug(w), "memory")
+			if _, err := os.Stat(mem); err == nil {
+				found = append(found, paths.Tilde(mem))
+			}
+		}
+	}
+	if len(found) == 0 {
+		return nil
+	}
+	return []Check{{Warning, i18n.T(c.Language, "doctor.automemory", strings.Join(found, ", ")),
+		i18n.T(c.Language, "doctor.automemory.fix", filepath.Join(dir, "settings.json"))}}
 }

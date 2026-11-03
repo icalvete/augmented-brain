@@ -53,7 +53,9 @@ const indexParts, rulesParts = 3, 5
 // Part returns part n (1 to Parts) of the session text: 1 is the heading with note, the
 // profile and the common rules; then the index; then the user's rules. Each part is
 // built on its own, so the hooks can run at the same time, in any order. A part with
-// nothing to say is "".
+// nothing to say is "", and the others count only those with something: "part 3 of
+// 6" when three slots are empty, so the assistant never waits for a part that is not
+// coming.
 func Part(c *config.Config, s *config.Space, note string, n int) string {
 	m, shared, problems, failed := loadSpace(c, s)
 	if failed != "" {
@@ -62,10 +64,28 @@ func Part(c *config.Config, s *config.Space, note string, n int) string {
 		}
 		return ""
 	}
-	tag := fmt.Sprintf("# augmented brain · space %s · part %d of %d\n\nThe start of this session comes in %d parts, which may arrive in any order: read them together.\n", s.Name, n, Parts, Parts)
+	// Every part works out the same pieces, so each knows how many there are and its own
+	// number. Parts has one digit, so the tag measured with it is as long as any.
+	where := filepath.Join(s.Memory, memory.IndexFile)
+	if len(shared.Notes) > 0 {
+		where += "; the shared notes are in " + shared.Dir
+	}
+	cutNote := fmt.Sprintf("\n\n(The index was cut to fit. Read it whole in %s.)\n", where)
+	rulesEnd := "\n(Cut to fit. Read the rules in " + s.Memory + " and the shared notes in " + shared.Dir + ".)\n"
+	room := Budget - size(partTag(s.Name, Parts, Parts))
+	chunks := lines("\n"+m.Index(c.Language)+sharedKnowledge(shared), room-size(cutNote))
+	indexCut := len(chunks) > indexParts
+	if indexCut {
+		chunks = chunks[:indexParts]
+	}
+	pieces := rulePieces(m, shared, room-size(rulesEnd))
+	total := 1 + len(chunks) + len(pieces)
 	switch {
 	case n == 1:
-		head := heading(c, s, m, problems, note) + fmt.Sprintf("\n(This is part 1 of %d: the index of the space and the user's rules come in the other parts.)\n", Parts)
+		head := heading(c, s, m, problems, note)
+		if total > 1 {
+			head += fmt.Sprintf("\n(This is part 1 of %d: the index of the space and the user's rules come in the other parts.)\n", total)
+		}
 		profile := section("Who the user is", profileText(c, s))
 		common := section("Rules", rules.Common(c.Language))
 		if size(head+profile+common) > Budget && size(profile) > profileBudget {
@@ -73,30 +93,28 @@ func Part(c *config.Config, s *config.Space, note string, n int) string {
 		}
 		return within(head+profile+common, "\n(Cut to fit. Read the profile in "+filepath.Join(c.Dir, "profile.md")+".)\n")
 	case n > 1 && n <= 1+indexParts:
-		where := filepath.Join(s.Memory, memory.IndexFile)
-		if len(shared.Notes) > 0 {
-			where += "; the shared notes are in " + shared.Dir
-		}
-		cutNote := fmt.Sprintf("\n\n(The index was cut to fit. Read it whole in %s.)\n", where)
-		chunks := lines("\n"+m.Index(c.Language)+sharedKnowledge(shared), Budget-size(tag+cutNote))
-		if n-2 >= len(chunks) {
+		k := n - 2
+		if k >= len(chunks) {
 			return ""
 		}
-		text := tag + chunks[n-2]
-		if n == 1+indexParts && len(chunks) > indexParts {
+		text := partTag(s.Name, 2+k, total) + chunks[k]
+		if indexCut && k == len(chunks)-1 {
 			text += cutNote
 		}
 		return text
 	case n > 1+indexParts && n <= Parts:
-		end := "\n(Cut to fit. Read the rules in " + s.Memory + " and the shared notes in " + shared.Dir + ".)\n"
-		pieces := rulePieces(m, shared, Budget-size(tag+end))
 		k := n - 2 - indexParts
 		if k >= len(pieces) {
 			return ""
 		}
-		return within(tag+pieces[k], end)
+		return within(partTag(s.Name, 2+len(chunks)+k, total)+pieces[k], rulesEnd)
 	}
 	return ""
+}
+
+// partTag heads part n of total.
+func partTag(space string, n, total int) string {
+	return fmt.Sprintf("# augmented brain · space %s · part %d of %d\n\nThe start of this session comes in %d parts, which may arrive in any order: read them together.\n", space, n, total, total)
 }
 
 // rulePieces packs the user's rules, shared and of the space, into at most rulesParts

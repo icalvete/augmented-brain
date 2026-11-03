@@ -284,8 +284,25 @@ func TestParts(t *testing.T) {
 	if strings.Contains(all, "was cut") || strings.Count(all, "NOTE FOR TODAY") != 1 {
 		t.Errorf("80 tasks and 6 rules should fit whole, the note once:\n%s", all)
 	}
-	if !strings.Contains(Part(c, s, "", 3), "part 3 of 9") {
-		t.Error("part 3 does not say which part it is")
+	// Found in the rehearsal of 0.5.10: empty parts made the assistant wait for parts
+	// that were not coming. The parts with something count only themselves, 1 to total.
+	full, seen := 0, map[string]bool{}
+	for n := 1; n <= Parts; n++ {
+		if Part(c, s, "", n) != "" {
+			full++
+		}
+	}
+	for n := 2; n <= Parts; n++ {
+		if p := Part(c, s, "", n); p != "" {
+			tag := strings.SplitN(p, "\n", 2)[0]
+			if !strings.HasSuffix(tag, fmt.Sprintf(" of %d", full)) || seen[tag] {
+				t.Errorf("part %d says %q, with %d parts that have something", n, tag, full)
+			}
+			seen[tag] = true
+		}
+	}
+	if !strings.Contains(Part(c, s, "", 1), fmt.Sprintf("This is part 1 of %d", full)) {
+		t.Error("part 1 does not say how many parts there are")
 	}
 
 	// A rule's History stays in its file; rules beyond three parts go one line each.

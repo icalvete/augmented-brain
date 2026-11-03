@@ -142,6 +142,14 @@ var doctorMessages = map[string]msg{
 		en: "remove it from root_ask in %s, or write it as \"<host> until <date>\" (2026-10-31, or 2026-10-31T23:59Z)",
 		es: "quítala de root_ask en %s, o escríbela como \"<máquina> until <fecha>\" (2026-10-31, o 2026-10-31T23:59Z)",
 	},
+	"doctor.automemory": {
+		en: "Claude Code keeps a memory of its own for these folders too (%s): a second memory, next to the space's, that loads at the start and drifts from it",
+		es: "Claude Code guarda además una memoria propia para estas carpetas (%s): una segunda memoria, junto a la del espacio, que se carga al empezar y se desvía de ella",
+	},
+	"doctor.automemory.fix": {
+		en: "turn it off: add \"autoMemoryEnabled\": false to %s (what is already in it stays, and you can bring it into the space with `augmented-brain import`)",
+		es: "apágala: añade \"autoMemoryEnabled\": false a %s (lo que ya tiene se queda, y puedes traerlo al espacio con `augmented-brain import`)",
+	},
 	"doctor.exposed": {
 		en: "space %s: other users of this computer can read its notes (%s)",
 		es: "espacio %s: otros usuarios de este ordenador pueden leer sus notas (%s)",

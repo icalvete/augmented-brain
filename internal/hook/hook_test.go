@@ -69,10 +69,10 @@ func TestSessionStart(t *testing.T) {
 	part := func(n int) func(*bytes.Reader, *bytes.Buffer) error {
 		return func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStartPart(in, out, cfgDir, n) }
 	}
-	if o := run(t, part(1), map[string]any{"cwd": filepath.Join(work, "repo")}); !strings.Contains(o["additionalContext"].(string), "part 1 of 9") {
+	if o := run(t, part(1), map[string]any{"cwd": filepath.Join(work, "repo")}); !strings.Contains(o["additionalContext"].(string), "part 1 of 2") {
 		t.Errorf("part 1: %v", o)
 	}
-	if o := run(t, part(2), map[string]any{"cwd": filepath.Join(work, "repo")}); !strings.Contains(o["additionalContext"].(string), "part 2 of 9") {
+	if o := run(t, part(2), map[string]any{"cwd": filepath.Join(work, "repo")}); !strings.Contains(o["additionalContext"].(string), "part 2 of 2") {
 		t.Errorf("part 2: %v", o)
 	}
 	if o := run(t, part(2), map[string]any{"cwd": "/"}); o["additionalContext"] != nil {

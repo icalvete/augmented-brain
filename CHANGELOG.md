@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+From the rehearsal of 0.5.10 on the real machine:
+
+- The parts of the session start count only those with something: "part 3 of 6",
+  never "of 9" with three that do not come, which made the assistant think some were
+  lost.
+- `doctor` warns when Claude Code keeps a memory of its own for a work folder (its auto
+  memory, a second memory next to the space's), and says how to turn it off.
 - The restore's note on repositories says some only asked before committing.
 
 ## 0.5.10-alpha
