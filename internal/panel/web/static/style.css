@@ -267,3 +267,10 @@ form.row button { flex: none; }
 form.row.wrap { flex-wrap: wrap; margin-top: .5rem; }
 form.row.wrap select { width: auto; flex: none; }
 form.row.wrap input { min-width: 10rem; }
+
+/* Help: a link that looks like a button (it opens GitHub in a new tab) */
+a.button {
+  justify-self: start; display: inline-block; padding: .5rem .95rem; border-radius: 6px;
+  background: var(--accent); color: var(--on-accent); font-weight: 500; font-size: .88rem;
+}
+a.button:hover { opacity: .85; text-decoration: none; }

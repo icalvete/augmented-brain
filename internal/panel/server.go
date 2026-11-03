@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
+	"github.com/icalvete/augmented-brain/internal/doctor"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 )
@@ -42,6 +43,8 @@ type Server struct {
 	last    atomic.Int64 // when the last authorized request came, in Unix nanoseconds
 	stopped chan struct{}
 	stop    sync.Once
+
+	diagnose func(lang string) []doctor.Check // the Help page's health check; nil: doctor.Run
 }
 
 func random() (string, error) {
@@ -247,7 +250,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.Set("X-Content-Type-Options", "nosniff")
 	// same-origin, not no-referrer: with no-referrer, browsers send "Origin: null" on
 	// form posts, and the panel could not tell its own forms from anyone else's. Nothing
-	// leaves for another site either way: no page links or loads anything outside.
+	// leaves for another site either way: no page loads anything outside, and the Help
+	// page's links out (rel="noreferrer" too) never send the address, which holds the key.
 	h.Set("Referrer-Policy", "same-origin")
 	h.Set("X-Frame-Options", "DENY")
 	h.Set("Cross-Origin-Opener-Policy", "same-origin")

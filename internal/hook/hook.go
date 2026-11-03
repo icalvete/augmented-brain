@@ -204,12 +204,14 @@ var Getenv = os.Getenv
 
 // policy is what the guard applies to a command run in dir: the production profiles and
 // untouchable hosts of the whole machine (every space's lists too), the repositories
-// every space lets the assistant commit in, and the AWS profile the command inherits.
+// every space lets the assistant commit in, the AWS profile the command inherits, and
+// what else it inherits that changes which repository gh or glab work on.
 // When the configuration exists but cannot be read, the guard is told, so it asks
 // before every command those lists would cover instead of letting them through unseen.
 func policy(cfgDir, dir string) guard.Policy {
 	p := guard.Policy{Cwd: dir, Env: map[string]string{}}
-	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE"} {
+	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE",
+		"GH_REPO", "GH_HOST", "GITLAB_REPO", "GITLAB_HOST", "GIT_DIR", "GIT_WORK_TREE"} {
 		if v := Getenv(k); v != "" {
 			p.Env[k] = v
 		}
@@ -227,6 +229,7 @@ func policy(cfgDir, dir string) guard.Policy {
 			p.RootAsk = append(p.RootAsk, guard.RootException{Host: r.Host, Until: r.Until})
 		}
 		p.Hostname, _ = os.Hostname()
+		p.Lang = c.Language
 	}
 	p.Protected = protectedFiles(cfgDir, dir)
 	return p

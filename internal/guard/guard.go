@@ -50,8 +50,8 @@ type Policy struct {
 	UntouchableHosts      []string // hosts that need the user's confirmation for ssh, scp, rsync
 	Cwd                   string   // the folder the command runs in, for relative paths
 	// Env is the environment the command inherits (AWS_PROFILE, AWS_DEFAULT_PROFILE), so
-	// an aws command with no profile of its own is checked against the one it will use.
-	// The hook passes it in; the guard never reads the environment itself.
+	// an aws command with no profile of its own is checked against the one it will use,
+	// and gh or glab against the repository it will merge in (GH_REPO, GIT_DIR). The hook passes it in; the guard never reads the environment itself.
 	Env map[string]string
 	// Protected are files the assistant must not change on its own: the guard's
 	// configuration and Claude Code's settings, which could switch the guard off.
@@ -66,6 +66,8 @@ type Policy struct {
 	RootAsk  []RootException
 	Hostname string
 	Now      time.Time
+	// Lang is the user's language, for the reasons the user reads when asked (en, es).
+	Lang string
 	// host is the machine the command runs on, as ssh names it; "" is this one.
 	host string
 	// inScript says the commands come from a script file, where "$@" or "$1" as the
@@ -74,6 +76,9 @@ type Policy struct {
 	// lost says a cd earlier in the command went somewhere the guard cannot tell
 	// (cd -, cd "$DIR"): relative paths after it are not resolved.
 	lost bool
+	// cdNamed says Cwd is a folder a cd earlier in the command named, not the session's:
+	// what gh and glab, which have no -C, take as the repository to merge in.
+	cdNamed bool
 }
 
 var allow = Decision{Allow, ""}
@@ -144,7 +149,7 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 			p = p.cd(c.words[1:]) // the commands after it run there
 		}
 		if len(c.words) > 0 && base(c.words[0]) == "popd" {
-			p.Cwd, p.lost = "", true // back to a folder the guard did not keep
+			p.Cwd, p.lost, p.cdNamed = "", true, false // back to a folder the guard did not keep
 		}
 		if len(c.words) > 0 && base(c.words[0]) == "export" {
 			for _, a := range c.words[1:] {
@@ -275,7 +280,7 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	case "aws-vault":
 		return p.awsVault(args, stdin, env, depth)
 	case "gh", "glab":
-		return publish(name, args)
+		return p.publish(name, env, args)
 	case "ssh":
 		return p.ssh(args, stdin, env, depth)
 	case "mosh":
@@ -476,11 +481,10 @@ func (p Policy) git(env map[string]string, args []string) Decision {
 	}
 	if dir != "" && !elsewhere {
 		if d, err := p.resolve(dir); err == nil {
-			// Asking wins over allowing: a repository may be in both lists, from two spaces.
-			if repoListed(p.GitAskRepos, d) {
+			switch p.repoVerdict(d) {
+			case Ask:
 				return Decision{Ask, "`git " + args[i] + "` in " + paths.Tilde(d) + " needs the user's go-ahead each time. Before asking, show them what would be committed or pushed."}
-			}
-			if repoListed(p.GitAllowedRepos, d) {
+			case Allow:
 				if args[i] == "push" && rewrites(args[i+1:]) {
 					return Decision{Ask, "this push rewrites or deletes what is on the remote (force, delete or mirror). The user confirms it each time, even in a repository the assistant may push to."}
 				}
@@ -577,19 +581,20 @@ var leadingVar = regexp.MustCompile(`^(\$[A-Za-z_][A-Za-z0-9_]*|\$\{[^}]*\})`)
 // cd returns the policy for the commands after a cd (or pushd) with args: no folder is
 // the home folder, and one the guard cannot tell (-, a variable) leaves it lost.
 func (p Policy) cd(args []string) Policy {
-	dir := "~"
+	dir, named := "~", false
 	for _, a := range args {
 		if a == "-" || !strings.HasPrefix(a, "-") {
-			dir = a
+			dir, named = a, true
 			break
 		}
 	}
+	p.cdNamed = false
 	if dir == "-" || strings.ContainsAny(dir, "$`") || strings.ContainsRune(dir, subst) {
 		p.Cwd, p.lost = "", true
 		return p
 	}
 	if d, err := p.resolve(dir); err == nil {
-		p.Cwd, p.lost = d, false
+		p.Cwd, p.lost, p.cdNamed = d, false, named
 	} else {
 		p.Cwd, p.lost = "", true // not there: the cd fails, and where the rest runs depends on how it is joined
 	}
@@ -799,8 +804,10 @@ func syncDestination(args []string) bool {
 	return false
 }
 
-// publish blocks the gh and glab commands that publish or merge, as it blocks a push.
-func publish(name string, args []string) Decision {
+// publish blocks the gh and glab commands that publish, as it blocks a push. Merging a
+// pull request is a push to the branch it goes into, so it goes by the repository lists
+// as a push does (merge).
+func (p Policy) publish(name string, env map[string]string, args []string) Decision {
 	var words []string
 	for i := 0; i < len(args); i++ {
 		a := args[i]
@@ -839,6 +846,15 @@ func publish(name string, args []string) Decision {
 	if !blocked[what] {
 		return allow
 	}
+	if what == "pr merge" || what == "mr merge" || what == "mr accept" {
+		return p.merge(name, what, env, args)
+	}
+	return publishDeny(name, what)
+}
+
+// publishDeny is the answer to a gh or glab command that publishes or merges where the
+// assistant may not.
+func publishDeny(name, what string) Decision {
 	return Decision{Deny, "`" + name + " " + what + "` publishes or merges, like a git push, so it is for the user. Leave the change ready and checked, and give the user the exact command to run themselves."}
 }
 
@@ -1218,6 +1234,20 @@ func (p Policy) resolve(path string) (string, error) {
 		path = filepath.Join(p.Cwd, path)
 	}
 	return paths.Resolve(path)
+}
+
+// repoVerdict is what the repository lists say of the repository at dir (resolved):
+// Ask in git_ask_repos, Allow in git_allowed_repos, Deny in neither. Asking wins over
+// allowing: a repository may be in both lists, from two spaces. A push and the merge
+// of a pull request (gh pr merge, glab mr merge) go by the same answer.
+func (p Policy) repoVerdict(dir string) Verdict {
+	if repoListed(p.GitAskRepos, dir) {
+		return Ask
+	}
+	if repoListed(p.GitAllowedRepos, dir) {
+		return Allow
+	}
+	return Deny
 }
 
 // repoListed reports whether the repository at dir (resolved) is in list: the same

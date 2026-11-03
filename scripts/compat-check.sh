@@ -6,7 +6,7 @@
 # A machine runs the old program for a while after an update: the Claude sessions that
 # were open keep it until restarted, and other machines may not be updated yet. So the
 # new program writes everything it can (tasks, people, secrets' names, captures, rules,
-# a backup), and each old release, downloaded from GitHub, must read it all: doctor,
+# what a repository is, a backup), and each old release, downloaded from GitHub, must read it all: doctor,
 # check, its MCP tools, the session start, and a restore of the backup. With no version
 # given, the last two releases. Needs git, python3, curl and tar. Linux and macOS.
 set -eu
@@ -75,6 +75,8 @@ git config --global user.name compat
 git config --global init.defaultBranch main
 "$NEW" init --yes >/dev/null
 WORKDIR="$HOME/augmented-brain/work"
+# A repository of the user's, for repo_describe (its note is an ordinary reference).
+mkdir -p "$WORKDIR/code/site"
 cat > "$WORK/write.json" <<'EOF'
 [
  ["task_new", {"title": "Bake bread", "summary": "for the shop"}],
@@ -86,7 +88,8 @@ cat > "$WORK/write.json" <<'EOF'
  ["knowledge_new", {"kind": "lesson", "title": "Bread needs time", "body": "Let it rest."}],
  ["rule_new", {"title": "Short answers", "summary": "one idea each", "body": "Answer in short sentences.", "shared": true}],
  ["secret_name_save", {"service": "mail", "name": "smtp", "what": "sending mail"}],
- ["safety_save", {"untouchable_hosts": ["db01"]}]
+ ["safety_save", {"untouchable_hosts": ["db01"]}],
+ ["repo_describe", {"repo": "code/site", "text": "The shop's website"}]
 ]
 EOF
 echo "new program ($("$NEW" version)) writes:"

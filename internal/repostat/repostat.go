@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -24,6 +25,7 @@ type Status struct {
 	Ahead    int    // commits on the branch that its upstream does not have
 	Upstream bool   // whether the branch follows a remote one
 	Remote   bool   // whether the repository has any remote to push to
+	Origin   string // where it pushes, as host/owner/name (CleanRemote): origin, or else the first remote
 	NotRepo  bool   // the folder is not a git repository: nothing to say about it
 	Err      string // git could not read it: it took too long, or failed
 }
@@ -60,6 +62,15 @@ func Read(path string) Status {
 	}
 	remotes, _ := git("remote")
 	st.Remote = strings.TrimSpace(remotes) != ""
+	if names := strings.Fields(remotes); len(names) > 0 {
+		name := names[0]
+		if slices.Contains(names, "origin") {
+			name = "origin"
+		}
+		// The address as written (no insteadOf), cleaned of any user and password.
+		raw, _ := git("config", "--get", "remote."+name+".url")
+		st.Origin = CleanRemote(raw)
+	}
 	out, err := git("status", "--porcelain=v2", "--branch", "--untracked-files=normal")
 	if ctx.Err() != nil {
 		st.Err = "timeout"

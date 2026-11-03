@@ -38,6 +38,9 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("GET /profile", s.read("profile", s.profile))
 	m.HandleFunc("GET /space", s.read("space", s.space))
 	m.HandleFunc("GET /sessions", s.read("sessions", s.sessions))
+	m.HandleFunc("GET /repos", s.read("repos", s.repos))
+	m.HandleFunc("GET /help", s.read("help", s.help))
+	m.HandleFunc("GET /help/report", s.helpReport)
 
 	m.HandleFunc("POST /task/new", s.write(s.taskNew))
 	m.HandleFunc("POST /task/update", s.write(s.taskUpdate))
@@ -61,6 +64,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /session/recover", s.write(s.sessionRecover))
 	m.HandleFunc("POST /session/reviewed", s.write(s.sessionReviewed))
 	m.HandleFunc("POST /session/delete", s.write(s.sessionDelete))
+	m.HandleFunc("POST /repo/describe", s.write(s.repoDescribe))
 	m.HandleFunc("POST /stop", s.handleStop)
 	return m
 }
@@ -130,7 +134,7 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 		p.Lang = "en"
 	}
 	p.CSRF, p.Base = s.csrf, s.base()
-	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "secrets", "sessions", "space"} {
+	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "sessions", "space", "help"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
 	}
 	var buf bytes.Buffer

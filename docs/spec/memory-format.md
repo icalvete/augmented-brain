@@ -202,6 +202,25 @@ body keeps anything else worth remembering. People belong to a space: work conta
 in the work space. The panel reads the role and the other names back from the summary
 when it changes a person; the name (title and id) stays.
 
+## Repositories
+
+What each of the user's git repositories is lives in one reference of the space,
+`knowledge/ref-repositories.md` (`type: reference`, no area), so it is backed up with
+the notes. It is an ordinary reference: releases that know nothing of it read it as
+one, and it needs no new field. Its body has one line per repository:
+
+```
+- `~/code/website` — The public website, built with Hugo
+```
+
+The path is written with `~` when it is under the home folder (otherwise absolute), or,
+by hand, relative to a work folder of the space, as `repos:` writes it. The text after
+the dash (` — `, or ` - ` by hand) is one line of plain text, at most 300 characters,
+and may not hold a secret. Any other line (a paragraph of your own, a heading) is left
+alone. The panel's Repositories page and the MCP tool `repo_describe` write it, only for
+folders inside the space's work folders: a new description replaces the line of that
+repository, and an empty one takes it out. The note is made the first time.
+
 ## Inbox
 
 `inbox.md` has no header. Each capture is one line, with the date it was captured:
@@ -298,6 +317,16 @@ joins the lists of every space, as it does with the production profiles: a repos
 belongs to the person, not to the space a session runs in. A repository in both lists
 asks. Even in an allowed one, a push that rewrites or deletes on the remote (a force, a
 delete, a mirror, or a refspec starting with `+` or `:`) asks.
+
+The same lists decide on merging a pull request (`gh pr merge`, `glab mr merge`, `glab mr
+accept`), which pushes to the branch it goes into. As a push counts only a repository
+written with `git -C`, a merge counts only one written in the command with a `cd` before
+it (`cd <repo> && gh pr merge 12`), never the session's folder alone: the listed folder
+itself or a worktree of it, not a folder inside it. A repository the command
+names (`-R`/`--repo`, `GH_REPO`, `GITLAB_REPO`, the pull request's address) must be one
+of that repository's remotes, read from its `.git/config` (includes are not followed); a
+name with no host is on `github.com` or `gitlab.com` (or `GH_HOST`, `GITLAB_HOST`).
+`gh pr merge --admin` always asks. Publishing a release stays for the user.
 
 `production_aws_profiles` and `untouchable_hosts` may also appear inside a space, as older
 versions wrote them: the guard applies the top-level lists and every space's together.

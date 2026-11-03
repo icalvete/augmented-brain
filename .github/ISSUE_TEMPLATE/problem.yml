@@ -1,0 +1,32 @@
+# A problem report. The panel's Help page fills it in through the address: each field
+# by its id (what, diagnostics), which is how GitHub prefills an issue form. Keep the
+# ids in step with internal/panel/help.go.
+name: Report a problem · Avisa de un problema
+description: Something does not work as you expected. · Algo no funciona como esperabas.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for telling us. Write in English or Spanish, as you prefer.
+        Gracias por contárnoslo. Escribe en inglés o en español, como prefieras.
+
+        Before you send it, read what is below: take out anything you prefer not to share.
+        Antes de enviarlo, lee lo que hay abajo: quita lo que prefieras no compartir.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected · Qué pasó, y qué esperabas
+      description: What you did, what you saw, and what you expected to see. · Qué hiciste, qué viste y qué esperabas ver.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: About this computer · Sobre este ordenador
+      description: |
+        The panel's Help page fills this in (version, system and health check). Without the panel, paste what `augmented-brain version` and `augmented-brain doctor` print.
+        La página Ayuda del panel lo rellena (versión, sistema y revisión de salud). Sin el panel, pega lo que escriben `augmented-brain version` y `augmented-brain doctor`.
+      render: text
+    validations:
+      required: false

@@ -112,7 +112,7 @@ trusting it.
   close. Park a task and resume it days later, in any session.
 - **Areas** that group the tasks and the knowledge of each responsibility.
 - **Rules loaded in every session**, and the important ones enforced by a guard: no
-  commit or push unless you allow it, never root (unless you allow it on one machine until
+  commit, push or merge unless you allow it, never root (unless you allow it on one machine until
   a date), no secrets in commands or files.
   Production AWS profiles and hosts you mark as untouchable ask you first, also over
   `ssh`, in every space.
