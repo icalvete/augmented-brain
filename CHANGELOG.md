@@ -4,6 +4,7 @@
 
 Released 2026-11-03.
 
+- The panel says "1 file changed" and "1 commit not pushed", not "1 files", "1 commits".
 - The panel has a **Repositories** page, a map of your repositories: every git
   repository in the work folders of each space (up to three folders down), grouped by
   space, those with work pending first. Each one says its branch, where it pushes (with
