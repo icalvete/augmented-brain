@@ -19,10 +19,10 @@ func TestRootAsk(t *testing.T) {
 		"ssh ubuntu@db01 '" + su + " git -C /etc/x pull'": Ask,
 		"ssh db01.example.com " + su + " -i":              Ask,
 		"ssh db01 '" + su + " git " + push + "'":          Deny, // what runs as root is checked too
-		"ssh other '" + su + " id'":                          Deny,
-		"ssh old '" + su + " id'":                            Deny, // expired
-		su + " apt update":                                   Ask,  // this machine, laptop1
-		"su -":                                               Ask,
+		"ssh other '" + su + " id'":                       Deny,
+		"ssh old '" + su + " id'":                         Deny, // expired
+		su + " apt update":                                Ask,  // this machine, laptop1
+		"su -":                                            Ask,
 		"ssh db01 '" + su + " -u app id'":                 Allow,
 	} {
 		if got := p.Command(cmd); got.Verdict != want {
