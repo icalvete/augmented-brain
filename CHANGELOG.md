@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.5.4-alpha
+
+Released 2026-11-03.
 
 From the rehearsal on Windows 11:
 
