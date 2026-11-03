@@ -29,6 +29,8 @@ func TestReviewBypasses(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg := filepath.Join(home, "cfg", "config.toml")
+	// In a shell command a path is written with / (Git Bash too): a \ would escape.
+	scriptCmd, cfgCmd := filepath.ToSlash(script), filepath.ToSlash(cfg)
 	p := Policy{Cwd: home, GitAllowedRepos: []string{repo}, UntouchableHosts: []string{"db01"},
 		ProductionAWSProfiles: []string{"prod"}, Protected: []string{cfg}, Hostname: "here",
 		Now: time.Now()}
@@ -49,7 +51,7 @@ func TestReviewBypasses(t *testing.T) {
 		"GIT " + push:                            Deny,
 		"gsudo id":                               Deny,
 		// scripts
-		"bash " + script:                      Deny,
+		"bash " + scriptCmd:                   Deny,
 		"sh ./deploy.sh":                      Deny,
 		"./deploy.sh":                         Deny,
 		"source deploy.sh":                    Deny,
@@ -110,9 +112,9 @@ func TestReviewBypasses(t *testing.T) {
 		// nesting too deep asks, never allows
 		`bash -c "bash -c \"bash -c 'bash -c \\\"bash -c id\\\"'\""`: Ask,
 		// the guard's own settings
-		"echo 'git_allowed_repos = [\"~\"]' >> " + cfg: Ask,
-		"sed -i s/a/b/ " + cfg:                         Ask,
-		"cat " + cfg:                                   Allow,
+		"echo 'git_allowed_repos = [\"~\"]' >> " + cfgCmd: Ask,
+		"sed -i s/a/b/ " + cfgCmd:                         Ask,
+		"cat " + cfgCmd:                                   Allow,
 	} {
 		if runtime.GOOS == "windows" && (cmd == "./deploy.sh" || cmd == "./build.sh") {
 			continue
