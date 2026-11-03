@@ -79,7 +79,10 @@ func TestImportInboxAndDocs(t *testing.T) {
 			present[is.Source] = is.Detail
 		}
 	}
-	if present["docs/task-school/list.csv"] != "home" || present["docs/task-ship/plan.md"] != "work" {
+	if n := again.Count()["work"]["inbox"]; n != 0 {
+		t.Errorf("on a second run, the plan counts %d captures to add", n)
+	}
+	if present["docs/task-school/list.csv"] != "home" || present["docs/task-ship/plan.md"] != "work" || present["inbox.md"] != "work" {
 		t.Errorf("on a second run, the files already there: %v", present)
 	}
 	if done, _ := Apply(again, c, "en"); done.Inbox["work"] != 0 {

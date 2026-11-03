@@ -237,3 +237,63 @@ func TestShorten(t *testing.T) {
 		t.Errorf("emoji count twice: %q", got)
 	}
 }
+
+// Found in the rehearsal of 0.5.4: one hook's text could not hold the index of a space
+// with 43 tasks. In parts, every task of such a space arrives, each part within Budget.
+func TestParts(t *testing.T) {
+	c, s := space(t, "en")
+	long := strings.Repeat("Explain every step before doing it. ", 60)
+	for i := 0; i < 6; i++ {
+		rule := fmt.Sprintf("---\nid: rule-%d\ntype: rule\ntitle: Rule %d\nsummary: step %d first\n---\n%s\n", i, i, i, long)
+		if err := os.WriteFile(filepath.Join(s.Memory, "rules", fmt.Sprintf("rule-%d.md", i)), []byte(rule), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write := func(n int) {
+		for i := 0; i < n; i++ {
+			task := fmt.Sprintf("---\nid: task-%03d\ntype: task\ntitle: Task number %03d with a long title\nstatus: plan\nwaiting_on: me\nnext: do the next thing for task %03d, which takes a sentence to say\n---\n", i, i, i)
+			if err := os.WriteFile(filepath.Join(s.Memory, "tasks", fmt.Sprintf("task-%03d.md", i)), []byte(task), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	write(80)
+	all := ""
+	for n := 1; n <= Parts; n++ {
+		p := Part(c, s, "NOTE FOR TODAY\n", n)
+		if size(p) > Budget {
+			t.Errorf("part %d is %d units, over %d", n, size(p), Budget)
+		}
+		all += p
+	}
+	for _, want := range []string{"NOTE FOR TODAY", "Who the user is", "### How we work", "Task number 000", "Task number 079", "- Rule 5 — step 5 first ("} {
+		if !strings.Contains(all, want) {
+			t.Errorf("the parts lack %q", want)
+		}
+	}
+	if strings.Contains(all, "was cut") || strings.Count(all, "NOTE FOR TODAY") != 1 {
+		t.Errorf("80 tasks and 6 rules should fit whole, the note once:\n%s", all)
+	}
+	if !strings.Contains(Part(c, s, "", 3), "part 3 of 5") {
+		t.Error("part 3 does not say which part it is")
+	}
+
+	// A space too big even for the parts: the index says where the whole one is.
+	write(400)
+	if p := Part(c, s, "", Parts-1); size(p) > Budget || !strings.Contains(p, "The index was cut") {
+		t.Errorf("400 tasks: %d units, cut note: %v", size(p), strings.Contains(p, "The index was cut"))
+	}
+}
+
+func TestLines(t *testing.T) {
+	text := "a\nbb\nccc\n" + strings.Repeat("x", 12) + "\n"
+	got := lines(text, 5)
+	if strings.Join(got, "") != text {
+		t.Errorf("pieces lose text: %q", got)
+	}
+	for _, p := range got {
+		if size(p) > 5 {
+			t.Errorf("piece %q over 5", p)
+		}
+	}
+}

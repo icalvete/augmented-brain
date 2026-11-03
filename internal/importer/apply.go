@@ -118,6 +118,28 @@ func memoryOf(c *config.Config, sp string) string {
 	return c.Spaces[sp].Memory
 }
 
+// newCaptures returns the lines the inbox at path does not have yet: the plan shows
+// only what an import would add.
+func newCaptures(path string, lines []string) []string {
+	old, _ := os.ReadFile(path)
+	have := lineSet(old)
+	var out []string
+	for _, l := range lines {
+		if !have[l] {
+			out = append(out, l)
+		}
+	}
+	return out
+}
+
+func lineSet(data []byte) map[string]bool {
+	have := map[string]bool{}
+	for _, l := range strings.Split(string(data), "\n") {
+		have[l] = true
+	}
+	return have
+}
+
 // addCaptures appends to an inbox the captures it does not have yet, so a second import
 // adds nothing, and returns how many it added.
 func addCaptures(path string, lines []string) (int, error) {
@@ -125,10 +147,7 @@ func addCaptures(path string, lines []string) (int, error) {
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return 0, err
 	}
-	have := map[string]bool{}
-	for _, l := range strings.Split(string(old), "\n") {
-		have[l] = true
-	}
+	have := lineSet(old)
 	text := string(old)
 	if text != "" && !strings.HasSuffix(text, "\n") {
 		text += "\n"

@@ -350,7 +350,9 @@ func (p Policy) rm(args []string) Decision {
 		if p.lost && !filepath.IsAbs(o) && !strings.HasPrefix(o, "~") && strings.Trim(o, "./") == "" {
 			return Decision{Ask, "`rm -r " + o + "` after a cd the guard cannot follow: it cannot tell which folder this deletes. The user confirms it."}
 		}
-		if d, err := p.resolve(o); err == nil && (filepath.Dir(d) == d || (home != "" && d == home)) {
+		if d, err := p.resolve(o); err == nil && filepath.Dir(d) == d {
+			return Decision{Deny, "`rm -r` of a whole disk (" + d + ") is never run."}
+		} else if err == nil && home != "" && d == home {
 			return Decision{Deny, "`rm -r` of the user's whole home folder (" + paths.Tilde(d) + ") is never run. Delete the files or folders inside it that need to go, one by one."}
 		}
 	}

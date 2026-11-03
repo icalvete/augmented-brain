@@ -65,6 +65,19 @@ func TestSessionStart(t *testing.T) {
 	if !strings.Contains(o["additionalContext"].(string), "outside the user's spaces") {
 		t.Errorf("outside: %v", o)
 	}
+	// In parts: 1 has the heading, the others say nothing outside a space.
+	part := func(n int) func(*bytes.Reader, *bytes.Buffer) error {
+		return func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStartPart(in, out, cfgDir, n) }
+	}
+	if o := run(t, part(1), map[string]any{"cwd": filepath.Join(work, "repo")}); !strings.Contains(o["additionalContext"].(string), "part 1 of 5") {
+		t.Errorf("part 1: %v", o)
+	}
+	if o := run(t, part(2), map[string]any{"cwd": filepath.Join(work, "repo")}); !strings.Contains(o["additionalContext"].(string), "part 2 of 5") {
+		t.Errorf("part 2: %v", o)
+	}
+	if o := run(t, part(2), map[string]any{"cwd": "/"}); o["additionalContext"] != nil {
+		t.Errorf("part 2 outside the spaces: %v", o)
+	}
 	none := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, t.TempDir()) }
 	if o := run(t, none, map[string]any{"cwd": "/"}); !strings.Contains(o["additionalContext"].(string), "augmented-brain init") {
 		t.Errorf("not set up: %v", o)

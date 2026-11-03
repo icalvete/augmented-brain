@@ -229,10 +229,11 @@ Rules tell the assistant how to work. There are three levels:
 - **shared rules**, the person's own for every space, in the shared notes (for example, "answer in short sentences, one idea each");
 - **space rules**, in `rules/`, for what only applies to that space (for example, "hosts db01–db03 are never restarted without explicit permission").
 
-All of them are loaded at the start of every session. The shared and space rules go
-whole when everything fits in what a session can take at the start (about 9,500
-characters); when not, each goes as one line, its title and summary, with the path of its
-file. So a rule's summary should say what to do.
+All of them are loaded at the start of every session. The start comes in five parts,
+each of about 9,500 characters at most: the heading with the profile and the common
+rules, the index (three parts), and the shared and space rules. Those rules go whole when
+they fit in their part; when not, each goes as one line, its title and summary, with the
+path of its file. So a rule's summary should say what to do.
 
 ## Format version
 

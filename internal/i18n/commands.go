@@ -126,6 +126,10 @@ var commandMessages = map[string]msg{
 		en: "✗ %s: %v",
 		es: "✗ %s: %v",
 	},
+	"backup.secrets": {
+		en: "✗ %s: nothing was backed up: these files hold secrets, remove them first: %s",
+		es: "✗ %s: no se ha copiado nada: estos ficheros tienen secretos, quítalos primero: %s",
+	},
 	"backup.leftout": {
 		en: "! %s: left out of the backup, bigger than %[3]d MB: %[2]s. Move them out of the notes folder.",
 		es: "! %s: fuera de la copia, de más de %[3]d MB: %[2]s. Sácalos de la carpeta de notas.",

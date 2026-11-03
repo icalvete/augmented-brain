@@ -96,16 +96,22 @@ func secretIn(p string) (string, error) {
 	return guard.FindSecret(string(data)), nil
 }
 
-// errSecrets stops a backup because of the files in found, each "path (what)".
-func errSecrets(found []string) error {
-	return fmt.Errorf("nothing was backed up: these files hold secrets, remove them first: %s", strings.Join(found, ", "))
+// SecretsError stops a backup because of the files in Found. Its text is in English;
+// the command says it in the user's language.
+type SecretsError struct{ Found []Secret }
+
+func (e *SecretsError) Error() string {
+	var l []string
+	for _, s := range e.Found {
+		l = append(l, s.Path+" ("+s.Kind+")")
+	}
+	return "nothing was backed up: these files hold secrets, remove them first: " + strings.Join(l, ", ")
 }
 
 // scan is what one walk over the memory found that a backup must not take.
 type scan struct {
-	big     []bigFile // left out of the backup
-	secrets []string  // "path (what)": they stop the backup
-	found   []Secret  // the same, apart
+	big   []bigFile // left out of the backup
+	found []Secret  // they stop the backup
 	// unread is the first file that could not be read for secrets. It stops the backup
 	// too, but only after the big files are left out, and no later file is read.
 	unread error
@@ -116,8 +122,8 @@ func (sc *scan) refusal() error {
 	if sc.unread != nil {
 		return sc.unread
 	}
-	if len(sc.secrets) > 0 {
-		return errSecrets(sc.secrets)
+	if len(sc.found) > 0 {
+		return &SecretsError{sc.found}
 	}
 	return nil
 }
@@ -153,7 +159,6 @@ func scanMemory(dir string) (*scan, error) {
 		case err != nil:
 			sc.unread = err
 		case what != "":
-			sc.secrets = append(sc.secrets, fmt.Sprintf("%s (%s)", rel, what))
 			sc.found = append(sc.found, Secret{filepath.ToSlash(rel), what})
 		}
 		return nil
@@ -257,7 +262,8 @@ func checkStaged(dir string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	var big, found []string
+	var big []string
+	var found []Secret
 	for _, rel := range strings.Split(out, "\x00") {
 		if rel == "" {
 			continue
@@ -275,11 +281,11 @@ func checkStaged(dir string) ([]string, error) {
 			continue
 		}
 		if what, err := secretIn(p); err == nil && what != "" {
-			found = append(found, fmt.Sprintf("%s (%s)", rel, what))
+			found = append(found, Secret{rel, what})
 		}
 	}
 	if len(found) > 0 {
-		return nil, errSecrets(found)
+		return nil, &SecretsError{found}
 	}
 	return big, nil
 }

@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -25,6 +26,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/mcpserver"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
@@ -303,6 +305,15 @@ func cmdMCP(errOut io.Writer) int {
 // cmdHook answers a Claude Code hook. A hook must never break the assistant, so it
 // always exits 0 and reports problems on stderr.
 func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
+	part := 0 // session-start N: part N of the session text
+	if len(args) == 2 && args[0] == "session-start" {
+		n, err := strconv.Atoi(args[1])
+		if err != nil || n < 1 || n > session.Parts {
+			fmt.Fprintf(errOut, "usage: augmented-brain hook session-start [1-%d]\n", session.Parts)
+			return 2
+		}
+		part, args = n, args[:1]
+	}
 	if len(args) != 1 {
 		fmt.Fprintln(errOut, "usage: augmented-brain hook session-start|pre-tool-use|stop|post-compact|session-end")
 		return 2
@@ -311,7 +322,7 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 	var err error
 	switch args[0] {
 	case "session-start":
-		err = hook.SessionStart(in, out, dir)
+		err = hook.SessionStartPart(in, out, dir, part)
 	case "pre-tool-use":
 		err = hook.PreToolUse(in, out, dir)
 	case "session-end":

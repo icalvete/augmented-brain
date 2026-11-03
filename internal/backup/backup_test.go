@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -60,8 +61,10 @@ func TestBackupAndRestore(t *testing.T) {
 	if err := os.WriteFile(leak, []byte(secret), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := Run(c, s, "one"); err == nil || !strings.Contains(err.Error(), "leak.md") {
-		t.Errorf("a secret was not stopped: %v", err)
+	_, err = Run(c, s, "one")
+	var se *SecretsError
+	if !errors.As(err, &se) || len(se.Found) != 1 || se.Found[0] != (Secret{"knowledge/leak.md", "a private key"}) {
+		t.Errorf("a secret was not stopped, or not named for the command to translate: %v", err)
 	}
 	os.Remove(leak)
 

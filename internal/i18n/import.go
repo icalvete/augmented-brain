@@ -131,8 +131,8 @@ var importMessages = map[string]msg{
 		es: "Sin tipo del que fiarse, importadas como referencias (%d):",
 	},
 	"import.issue.present": {
-		en: "Archive and docs/ files the space already has, left as they are (%d):",
-		es: "Ficheros de archivo y de docs/ que el espacio ya tiene, se quedan como están (%d):",
+		en: "Files the space already has, from an earlier import, left as they are (%d):",
+		es: "Ficheros que el espacio ya tiene, de una importación anterior, se quedan como están (%d):",
 	},
 	"import.issue.archive-no-space": {
 		en: "Archive files that belong to no note and no space, left out (%d):",

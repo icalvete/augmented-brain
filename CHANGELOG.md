@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+From the rehearsal of 0.5.4:
+
+- **The start of a session holds the index of a big space.** Claude Code cuts each hook's
+  text at 10,000 characters, so a space with 43 tasks started with none of them listed.
+  The plugin now loads the start in five parts, each within that limit: the heading with
+  your profile and the common rules, the index in three parts, and your rules.
+- A second `import` no longer counts the inbox captures again: when the inbox has them
+  all, the plan lists `inbox.md` with the files the space already has.
+- A backup stopped by a secret says so in your language, the kind of secret included.
+- The guard's reason for `rm -rf /c/` (or `/`) speaks of a whole disk, not of the home
+  folder.
+
 ## 0.5.4-alpha
 
 Released 2026-11-03.

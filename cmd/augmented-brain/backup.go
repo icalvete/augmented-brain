@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -85,7 +86,15 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 		if w := res.Warning(c.Language); w != "" && err == nil {
 			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.leftout", s.Name, strings.Join(res.LeftOut, ", "), backup.MaxFileSize>>20))
 		}
+		var se *backup.SecretsError
 		switch {
+		case errors.As(err, &se):
+			var l []string
+			for _, f := range se.Found {
+				l = append(l, f.Path+" ("+i18n.T(c.Language, "secret."+f.Kind)+")")
+			}
+			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.secrets", s.Name, strings.Join(l, ", ")))
+			code = 1
 		case err != nil:
 			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.failed", s.Name, err))
 			code = 1

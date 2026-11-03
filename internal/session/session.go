@@ -28,16 +28,9 @@ func Context(c *config.Config, s *config.Space) string { return ContextWith(c, s
 // ContextWith is Context with a note for the assistant right after the heading, kept
 // whole when the rest is cut to fit.
 func ContextWith(c *config.Config, s *config.Space, note string) string {
-	shared, sharedProblems, err := memory.LoadShared(c.SharedDir())
-	if err != nil {
-		return fmt.Sprintf("augmented brain: the shared notes (%s) cannot be read: %v. Run `augmented-brain doctor`.", c.SharedDir(), err)
-	}
-	m, problems, err := memory.Load(s.Memory, shared)
-	if err != nil {
-		return fmt.Sprintf("augmented brain: the memory folder of space %q (%s) cannot be read: %v. Run `augmented-brain doctor`.", s.Name, s.Memory, err)
-	}
-	for _, p := range sharedProblems {
-		problems = append(problems, memory.Problem{Path: filepath.Join(c.SharedDir(), filepath.FromSlash(p.Path)), Err: p.Err})
+	m, shared, problems, failed := loadSpace(c, s)
+	if failed != "" {
+		return failed
 	}
 	return fit(parts{
 		head:    heading(c, s, m, problems, note),
@@ -45,6 +38,109 @@ func ContextWith(c *config.Config, s *config.Space, note string) string {
 		common:  section("Rules", rules.Common(c.Language)),
 		index:   "\n" + m.Index(c.Language) + sharedKnowledge(shared),
 	}, c, s, m, shared)
+}
+
+// Parts is how many SessionStart hooks share the session text. Claude Code cuts each
+// hook's text at 10,000 characters, so one hook cannot carry the index of a big space;
+// each part has a Budget of its own.
+const Parts = 5
+
+// Part returns part n (1 to Parts) of the session text: 1 is the heading with note, the
+// profile and the common rules; the last the user's rules; the ones between, the index. Each part is
+// built on its own, so the hooks can run at the same time, in any order. A part with
+// nothing to say is "".
+func Part(c *config.Config, s *config.Space, note string, n int) string {
+	m, shared, problems, failed := loadSpace(c, s)
+	if failed != "" {
+		if n == 1 {
+			return failed
+		}
+		return ""
+	}
+	tag := fmt.Sprintf("# augmented brain · space %s · part %d of %d\n\nThe start of this session comes in %d parts, which may arrive in any order: read them together.\n", s.Name, n, Parts, Parts)
+	switch {
+	case n == 1:
+		head := heading(c, s, m, problems, note) + fmt.Sprintf("\n(This is part 1 of %d: the index of the space and the user's rules come in the other parts.)\n", Parts)
+		profile := section("Who the user is", profileText(c, s))
+		common := section("Rules", rules.Common(c.Language))
+		if size(head+profile+common) > Budget && size(profile) > profileBudget {
+			profile = cut(profile, profileBudget) + fmt.Sprintf("\n(The profile was cut to fit. Read it whole in %s.)\n", filepath.Join(c.Dir, "profile.md"))
+		}
+		return within(head+profile+common, "\n(Cut to fit. Read the profile in "+filepath.Join(c.Dir, "profile.md")+".)\n")
+	case n > 1 && n < Parts:
+		where := filepath.Join(s.Memory, memory.IndexFile)
+		if len(shared.Notes) > 0 {
+			where += "; the shared notes are in " + shared.Dir
+		}
+		cutNote := fmt.Sprintf("\n\n(The index was cut to fit. Read it whole in %s.)\n", where)
+		chunks := lines("\n"+m.Index(c.Language)+sharedKnowledge(shared), Budget-size(tag+cutNote))
+		if n-2 >= len(chunks) {
+			return ""
+		}
+		text := tag + chunks[n-2]
+		if n == Parts-1 && len(chunks) > Parts-2 {
+			text += cutNote
+		}
+		return text
+	case n == Parts:
+		full, short := userRules(m, shared)
+		if strings.TrimSpace(full) == "" {
+			return ""
+		}
+		if size(tag+full) <= Budget {
+			return tag + full
+		}
+		return within(tag+short, "\n(Cut to fit. Read the rules in "+s.Memory+" and the shared notes in "+shared.Dir+".)\n")
+	}
+	return ""
+}
+
+// loadSpace reads space s with the shared notes; failed is the text for the assistant
+// when they cannot be read.
+func loadSpace(c *config.Config, s *config.Space) (m, shared *memory.Memory, problems []memory.Problem, failed string) {
+	shared, sharedProblems, err := memory.LoadShared(c.SharedDir())
+	if err != nil {
+		return nil, nil, nil, fmt.Sprintf("augmented brain: the shared notes (%s) cannot be read: %v. Run `augmented-brain doctor`.", c.SharedDir(), err)
+	}
+	m, problems, err = memory.Load(s.Memory, shared)
+	if err != nil {
+		return nil, nil, nil, fmt.Sprintf("augmented brain: the memory folder of space %q (%s) cannot be read: %v. Run `augmented-brain doctor`.", s.Name, s.Memory, err)
+	}
+	for _, p := range sharedProblems {
+		problems = append(problems, memory.Problem{Path: filepath.Join(c.SharedDir(), filepath.FromSlash(p.Path)), Err: p.Err})
+	}
+	return m, shared, problems, ""
+}
+
+// within returns text, or its start and end when it is over Budget.
+func within(text, end string) string {
+	if size(text) <= Budget {
+		return text
+	}
+	return cut(text, Budget-size(end)) + end
+}
+
+// lines splits text into pieces of at most max units, at line ends when it can.
+func lines(text string, max int) []string {
+	var out []string
+	cur := ""
+	for _, l := range strings.SplitAfter(text, "\n") {
+		for size(l) > max { // a line longer than a piece: cut it
+			if cur != "" {
+				out, cur = append(out, cur), ""
+			}
+			head := cut(l, max)
+			out, l = append(out, head), l[len(head):]
+		}
+		if size(cur+l) > max {
+			out, cur = append(out, cur), ""
+		}
+		cur += l
+	}
+	if strings.TrimSpace(cur) != "" {
+		out = append(out, cur)
+	}
+	return out
 }
 
 // parts are the pieces of the session text, in the order they are joined.
@@ -91,23 +187,7 @@ func heading(c *config.Config, s *config.Space, m *memory.Memory, problems []mem
 // Budget, giving up detail in steps when it does not fit; the heading is never cut
 // before the last step.
 func fit(p parts, c *config.Config, s *config.Space, m, shared *memory.Memory) string {
-	var full, short string
-	for _, g := range []struct {
-		title string
-		mem   *memory.Memory
-	}{{"Rules for every space", shared}, {"Rules of this space", m}} {
-		var whole, listed []string
-		for _, r := range g.mem.OfType("rule") {
-			whole = append(whole, "### "+r.Header.Title+"\n"+strings.TrimSpace(r.Body)+"\n")
-			line := "- " + r.Header.Title
-			if r.Header.Summary != "" {
-				line += " — " + r.Header.Summary // the gist, so the rule applies without opening it
-			}
-			listed = append(listed, line+" ("+filepath.Join(g.mem.Dir, filepath.FromSlash(r.Path))+")")
-		}
-		full += section(g.title, strings.Join(whole, "\n"))
-		short += section(g.title+" (each in one line: follow it, and read its file before acting on its subject)", strings.Join(listed, "\n"))
-	}
+	full, short := userRules(m, shared)
 	p.userRules = full
 	if text := p.join(); size(text) <= Budget {
 		return text
@@ -135,6 +215,28 @@ func fit(p parts, c *config.Config, s *config.Space, m, shared *memory.Memory) s
 		text = cut(text, Budget-size(end)) + end
 	}
 	return text
+}
+
+// userRules is the user's rules, shared and of the space: full, with their text, and
+// short, one line each with its summary and path.
+func userRules(m, shared *memory.Memory) (full, short string) {
+	for _, g := range []struct {
+		title string
+		mem   *memory.Memory
+	}{{"Rules for every space", shared}, {"Rules of this space", m}} {
+		var whole, listed []string
+		for _, r := range g.mem.OfType("rule") {
+			whole = append(whole, "### "+r.Header.Title+"\n"+strings.TrimSpace(r.Body)+"\n")
+			line := "- " + r.Header.Title
+			if r.Header.Summary != "" {
+				line += " — " + r.Header.Summary // the gist, so the rule applies without opening it
+			}
+			listed = append(listed, line+" ("+filepath.Join(g.mem.Dir, filepath.FromSlash(r.Path))+")")
+		}
+		full += section(g.title, strings.Join(whole, "\n"))
+		short += section(g.title+" (each in one line: follow it, and read its file before acting on its subject)", strings.Join(listed, "\n"))
+	}
+	return full, short
 }
 
 // Now gives today's date; tests replace it.

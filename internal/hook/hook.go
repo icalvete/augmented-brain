@@ -75,10 +75,21 @@ func load(cfgDir, dir string) (*config.Config, *config.Space, error) {
 	return c, s, nil
 }
 
-// SessionStart adds the space's profile, rules and index to the session.
+// SessionStart adds the space's profile, rules and index to the session, in one text
+// within session.Budget (plugins before 0.5.5 call it so).
 func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
+	return SessionStartPart(in, out, cfgDir, 0)
+}
+
+// SessionStartPart adds part n of the session text (1 to session.Parts; 0 for all of
+// it in one). The plugin runs one hook per part, at the same time: only part 1 says
+// what is wrong and does the work behind the notes (a migration, recording the session).
+func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 	i := read(in)
 	c, s, err := load(cfgDir, i.Cwd)
+	if n > 1 && (err != nil || s == nil) {
+		return write(out, output{specific{HookEventName: "SessionStart"}})
+	}
 	var text string
 	switch {
 	case errors.Is(err, config.ErrNotFound):
@@ -87,6 +98,10 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 		text = "augmented brain cannot read its configuration, so no memory is loaded, and until it is fixed the guard asks the user before every aws, ssh, scp, rsync, sftp and mosh command (it cannot tell production profiles and untouchable hosts). Tell the user: " + err.Error() + ". `augmented-brain doctor` shows the problem."
 	case s == nil:
 		text = session.NoSpace(c, i.Cwd)
+	case n > 1:
+		text = session.Part(c, s, "", n)
+	case n == 1:
+		text = session.Part(c, s, startNote(c, s, i, cfgDir), 1)
 	default:
 		text = session.ContextWith(c, s, startNote(c, s, i, cfgDir))
 	}

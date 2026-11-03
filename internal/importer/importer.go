@@ -431,7 +431,15 @@ func (pl *planner) placeInbox() {
 		pl.leave("inbox.md", NoSpace, "inbox")
 		return
 	}
-	pl.p.Items = append(pl.p.Items, Item{Source: "inbox.md", Space: sp, Inbox: pl.inbox})
+	lines := pl.inbox
+	if pl.c.Spaces[sp] != nil {
+		lines = newCaptures(filepath.Join(memoryOf(pl.c, sp), "inbox.md"), lines)
+	}
+	if len(lines) == 0 {
+		pl.leave("inbox.md", Present, sp) // imported before: every capture is there
+		return
+	}
+	pl.p.Items = append(pl.p.Items, Item{Source: "inbox.md", Space: sp, Inbox: lines})
 }
 
 // captures returns the lines of an inbox that are captures ("- …" at the start of a
