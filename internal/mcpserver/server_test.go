@@ -97,7 +97,7 @@ func TestTools(t *testing.T) {
 		names = append(names, tl.Name)
 	}
 	sort.Strings(names)
-	want := "area_new backup_setup capture knowledge_new pending person_save profile_save review_done rule_new safety_save secret_name_save session_recover task_close task_get task_journal task_new task_park task_step task_update weekly_review where_am_i"
+	want := "area_new backup_setup capture knowledge_new pending person_save profile_save repo_describe review_done rule_new safety_save secret_name_save session_recover task_close task_get task_journal task_new task_park task_step task_update weekly_review where_am_i"
 	if got := strings.Join(names, " "); got != want {
 		t.Errorf("tools = %s", got)
 	}
@@ -473,5 +473,33 @@ func TestTaskGetMissingRepo(t *testing.T) {
 	out, isErr := call(t, cs, "task_get", map[string]any{"id": "task-ship-it"})
 	if isErr || !strings.Contains(out, "Not on this computer: repos gone of this task") || strings.Contains(out, "repos app,") {
 		t.Errorf("task_get:\n%s", out)
+	}
+}
+
+// repo_describe writes what a repository is in the space's notes, by its name as a
+// task's repos: writes it or by its path, and refuses one outside the work folders.
+func TestRepoDescribe(t *testing.T) {
+	open := space(t)
+	cs := connect(t, open)
+	b, err := open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	repo := filepath.Join(b.Space.WorkFolders[0], "code", "site")
+	if err := os.MkdirAll(repo, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if out, isErr := call(t, cs, "repo_describe", map[string]any{"repo": "code/site", "text": "The public website"}); isErr ||
+		!strings.Contains(out, "~/work/code/site described in knowledge/ref-repositories.md") {
+		t.Fatalf("repo_describe: %s", out)
+	}
+	if b, _ = open(); b.RepoDescriptionOf(repo) != "The public website" {
+		t.Errorf("not kept: %q", b.RepoDescriptionOf(repo))
+	}
+	if out, isErr := call(t, cs, "repo_describe", map[string]any{"repo": "~/work/code/site", "text": ""}); isErr || !strings.Contains(out, "no description now") {
+		t.Errorf("taking it out: %s", out)
+	}
+	if out, isErr := call(t, cs, "repo_describe", map[string]any{"repo": filepath.Dir(b.Space.WorkFolders[0]), "text": "home"}); !isErr {
+		t.Errorf("a folder outside the work folders was described: %s", out)
 	}
 }

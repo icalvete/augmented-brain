@@ -58,7 +58,7 @@ session starts from there. Opening, resuming and closing work the same way.
   are the tools that call AWS on their own (`cdk`, `sam`, `serverless`, `terraform`,
   `tofu`, `pulumi`, `eksctl`, `copilot`).
 - **Stop**: pushing code, root and secrets. `git push`, `sudo …`, a token in a command,
-  and what publishes like a push: `gh pr merge`, `gh release create`, `glab mr merge`.
+  and what publishes like a push: `gh release create`, `glab release create`.
   You can let Claude commit and push in a repository of yours, always written as
   `git -C <repo>`: list it in the space's `git_allowed_repos` to let it through, or in
   `git_ask_repos` to be asked each time. Like the production profiles, these lists hold
@@ -66,6 +66,12 @@ session starts from there. Opening, resuming and closing work the same way.
   in any of them. A worktree of a listed repository counts as it, and `~/code/app-*`
   covers every `app-<name>` folder next to `app`. Even there, a push that rewrites or
   deletes what is on the remote (`--force`, `--delete`, `+branch`) asks you first.
+  Merging a pull request is a push too: `gh pr merge` and `glab mr merge` go by the same
+  lists. gh and glab have no `-C`, so a merge is always written as `cd <repo> && gh pr
+  merge 12`: the folder in that `cd` is the repository, the listed folder itself or a
+  worktree of it. The folder the session is in does not count alone. A repository the command names (`-R owner/name`, the pull request's address) must
+  be one of that repository's remotes, or the merge is blocked. `--admin`, which skips
+  the branch's protection, always asks you.
   And `rm -r` of your whole home folder or of the whole disk is never run, also after a
   `cd` (`cd ~ && rm -rf .`), and on Windows however the path is written (`/c/Users/…`, as
   Git Bash does, `C:/Users/…` or `$USERPROFILE`). After a `cd` the guard cannot follow (`cd "$DIR"`), an
@@ -378,7 +384,7 @@ you find there:
   this computer. One whose tasks are all parked (or left for some day) is marked "forgotten?". The panel only
   reads them: git runs without taking locks, so it never gets in your way, and never
   asks for a password. A branch never pushed counts only if the repository has a remote
-  to push it to.
+  to push it to. **See all repositories** leads to the whole map.
 - **Tasks**, grouped by area, those waiting on you first, with their status and next
   step. Filters show only those waiting on you, under way, parked, untouched, or waiting
   on one person. A task nobody has changed for 14 days is marked "untouched N days": the
@@ -398,6 +404,15 @@ you find there:
   area's title and summary. You can add people and change them: their other names,
   their role and notes. The name stays: a new name would be a new person. A person's
   page shows the tasks that wait on them and those that link to them.
+- **Repositories**: your map of repositories. Every git repository in the work folders
+  of each space, up to three folders down (not inside another repository, and not in
+  hidden folders, `node_modules` or `vendor`), grouped by space, those with work pending
+  first. For each one: its branch, where it pushes (as `host/owner/name`, never with a
+  password), files changed, commits not pushed, the open tasks that name it, and one
+  line of yours on what it is. Write that line right there. It is kept in the space's
+  notes, in the reference "Repositories" (`knowledge/ref-repositories.md`, a line per
+  repository), so the backup keeps it; Claude can write it too. Git only ever runs
+  inside the work folders, and links to folders outside them are not followed.
 - **Secrets**: the names of the secrets you keep in your system keychain (where your
   computer keeps passwords), never their values. Each one as `service/name`, what it is
   for, and which tasks name it. So you know which there are, and a new machine knows
@@ -416,6 +431,18 @@ you find there:
 - **Health**: the space's notes folder and work folders, whether it is the default
   space, notes that are not valid, repositories that notes point at and that are no
   longer on this computer, the index, the last backup and the last weekly review.
+- **Help**: links to the answers on this website, in your language, and a way to tell
+  us about a problem or propose an idea on GitHub (the website where the project
+  lives; you need a free account there). Click **Report a problem on GitHub** and the
+  panel runs the health check (what `augmented-brain doctor` says) at that moment, then
+  opens GitHub's form in a new tab with the version, your system and that check filled
+  in. Before it opens, the panel takes out your home folder (shown as `~`), your notes
+  and work folders, e-mail addresses, the names of your spaces, untouchable machines and
+  production AWS profiles, and any line that looks like a password or a key. You write
+  what happened there, and read the rest: change or delete what you prefer not to
+  share. Nothing is sent until you press GitHub's submit button. To be honest about it:
+  the text travels to GitHub inside the page's address as soon as it opens, so GitHub
+  can see it then, even if you never submit.
 
 The **search** box at the side looks through the notes of the space and the shared ones:
 titles, summaries and text. A note shows up when it holds every word, in any case, with
@@ -451,7 +478,8 @@ It is made to stay yours:
   something else in the meantime, that stays. A step is ticked only if it still says
   what the page showed.
 - It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
-  note cannot put HTML or scripts of its own in the page either.
+  note cannot put HTML or scripts of its own in the page either. The links of the Help
+  page go to the website only when you click them.
 - Checking whether a note changed does not count as using the panel: a tab left open
   does not keep it running.
 

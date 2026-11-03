@@ -41,9 +41,11 @@
     {{if .Ahead}}{{if .Upstream}}<span>{{tf "repos.ahead" .Ahead}}</span>{{else}}<span>{{t "repos.noupstream"}}</span>{{end}}{{end}}{{end}}
     <code>{{.Path}}</code>
   </div>
+  {{if .Description}}<div class="next">{{.Description}}</div>{{else}}<div class="next"><a href="{{$.Base}}/repos?s={{.Space}}">{{t "repos.describe"}}</a></div>{{end}}
   <div class="next">{{range $i, $t := .Tasks}}{{if $i}} · {{end}}<a href="{{$.Base}}/task?s={{$t.Space}}&amp;id={{$t.ID}}">{{$t.Title}}</a>{{end}}</div>
 </li>{{end}}
 </ul>{{else}}<p class="empty">{{t "repos.none"}}</p>{{end}}
 {{if .CleanRepos}}<p class="hint">{{tf "repos.clean" .CleanRepos}}</p>{{end}}
+<p><a href="{{$.Base}}/repos?s={{$.Space}}">{{t "repos.all"}}</a></p>
 </section>
 {{end}}{{end}}

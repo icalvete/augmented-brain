@@ -1,5 +1,37 @@
 # Changelog
 
+## Unreleased
+
+- The panel has a **Repositories** page, a map of your repositories: every git
+  repository in the work folders of each space (up to three folders down), grouped by
+  space, those with work pending first. Each one says its branch, where it pushes (with
+  no user or password), files changed, commits not pushed, the open tasks that name it,
+  and one line of yours on what it is, which you write right there.
+- That line is kept in the space's notes, in the reference "Repositories"
+  (`knowledge/ref-repositories.md`), so the backup keeps it, and earlier releases read
+  it as any other reference. The new MCP tool `repo_describe` lets Claude write it too.
+- Today's Repositories block links to the new page, and asks to describe a repository
+  that has no line yet.
+- The panel has a **Help** page: links to the website's questions and guides, in your
+  language, and links to report a problem or propose an idea on GitHub. The problem
+  link runs the health check when you click it and opens GitHub's form with the
+  version, the system and that check filled in, with what is personal taken out (home
+  folder, notes and work folders, e-mails, space names, untouchable machines,
+  production AWS profiles, lines that look like a secret). Nothing is sent until you
+  press GitHub's submit button, though the text reaches GitHub in the address as soon
+  as the form opens.
+- Issue forms on GitHub for a problem and an idea, and a link to the questions.
+- **Merging a pull request is a push.** `gh pr merge`, `glab mr merge` and `glab mr accept`
+  now go by `git_allowed_repos` and `git_ask_repos`, as `git push` does: let through in a
+  repository Claude may push to, asked in one where it asks, blocked elsewhere as
+  before. With `main` protected so that changes only go in through a pull request, a
+  merge no longer has to be run by hand. gh and glab have no `-C`, so the command names
+  the repository with a `cd`, as a push does with `git -C`: `cd <repo> && gh pr merge
+  12`. The session's folder alone does not count. A repository
+  the command names (`-R`, `GH_REPO`, the pull request's address) must be one of that
+  repository's remotes, or the merge is blocked. `gh pr merge --admin`, which skips the
+  branch's protection, always asks. Releases (`gh release create`, …) stay for you.
+
 ## 0.6.1-alpha
 
 Released 2026-11-03.

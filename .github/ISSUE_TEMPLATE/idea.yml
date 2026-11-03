@@ -1,0 +1,17 @@
+# An idea. The panel's Help page fills it in through the address: the field by its id
+# (idea), which is how GitHub prefills an issue form. Keep the id in step with
+# internal/panel/help.go.
+name: Propose an idea · Propón una idea
+description: Something you miss, or something that could be simpler. · Algo que echas de menos, o algo que podría ser más sencillo.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Write in English or Spanish, as you prefer. · Escribe en inglés o en español, como prefieras.
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea, and what it would help you with · Tu idea, y en qué te ayudaría
+    validations:
+      required: true

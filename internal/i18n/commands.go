@@ -34,6 +34,20 @@ var commandMessages = map[string]msg{
 		en: "space %s: %s, %s",
 		es: "espacio %s: %s, %s",
 	},
+	// What the guard says when merging a pull request needs the user's go-ahead: the
+	// command, then the repository.
+	"guard.merge.ask": {
+		en: "`%s` merges a pull request in %s, a repository where that needs the user's go-ahead each time (git_ask_repos). Before asking, show them which pull request it merges and what it changes.",
+		es: "`%s` fusiona una pull request en %s, un repositorio donde eso necesita el visto bueno del usuario cada vez (git_ask_repos). Antes de preguntar, enséñale qué pull request fusiona y qué cambia.",
+	},
+	"guard.merge.cd": {
+		en: "`%s` merges a pull request, and goes by git_allowed_repos and git_ask_repos only when the command names the repository, as `git -C` does for a push: write it as `cd <repo> && %s …`, with the repository's path. As it is, it is for the user.",
+		es: "`%s` fusiona una pull request, y va por git_allowed_repos y git_ask_repos solo cuando el comando nombra el repositorio, como `git -C` en un push: escríbelo como `cd <repo> && %s …`, con la ruta del repositorio. Tal como está, es para el usuario.",
+	},
+	"guard.merge.admin": {
+		en: "`%s --admin` merges a pull request in %s skipping the branch's protection (its required checks and reviews). The user confirms it each time, even in a repository the assistant may merge in.",
+		es: "`%s --admin` fusiona una pull request en %s saltándose la protección de la rama (sus comprobaciones y revisiones obligatorias). El usuario lo confirma cada vez, también en un repositorio donde el asistente puede fusionar.",
+	},
 	"secret.an AWS access key": {
 		en: "an AWS access key",
 		es: "una clave de acceso de AWS",

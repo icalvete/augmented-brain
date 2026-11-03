@@ -426,6 +426,22 @@ func New(open Resolver, lockFile string) *mcp.Server {
 			return b.SaveSecretName(brain.SecretName{Service: in.Service, Name: in.Name, What: in.What})
 		})
 
+	type repoIn struct {
+		Repo string `json:"repo" jsonschema:"the repository: its path (~/… or absolute), or its name as a task's repos: writes it, relative to a work folder"`
+		Text string `json:"text" jsonschema:"what it is, in one line, in the user's words; empty takes the description out"`
+	}
+	tool(s, locked, "repo_describe", "Write down, in one line, what one of the user's git repositories is, so the panel's Repositories page (their map of repositories) says it. Only repositories inside this space's work folders. It is kept in the space's notes, in the reference ref-repositories, one line per repository; saving one that has a line replaces it.",
+		func(b *brain.Brain, in repoIn) (string, error) {
+			where, err := b.DescribeRepo(in.Repo, in.Text)
+			if err != nil {
+				return "", err
+			}
+			if strings.TrimSpace(in.Text) == "" {
+				return fmt.Sprintf("%s has no description now (%s).", where, memory.PathFor("reference", brain.RepoNoteID)), nil
+			}
+			return fmt.Sprintf("%s described in %s.", where, memory.PathFor("reference", brain.RepoNoteID)), nil
+		})
+
 	type backupIn struct {
 		RepoURL string `json:"repo_url,omitempty" jsonschema:"a private git repository the user can push to; leave it out to create one in their GitHub account"`
 	}

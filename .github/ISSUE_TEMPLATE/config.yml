@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions people ask
+    url: https://icalvete.github.io/augmented-brain/#faq
+    about: Short answers, before you write. The panel's Help page links here too.
+  - name: Preguntas frecuentes
+    url: https://icalvete.github.io/augmented-brain/es/#faq
+    about: Respuestas cortas, antes de escribir. La página Ayuda del panel también enlaza aquí.

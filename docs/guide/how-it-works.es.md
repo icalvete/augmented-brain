@@ -59,7 +59,7 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
   herramientas que llaman a AWS por su cuenta (`cdk`, `sam`, `serverless`, `terraform`,
   `tofu`, `pulumi`, `eksctl`, `copilot`).
 - **Lo para**: subir código, root y secretos. `git push`, `sudo …`, un token en un comando,
-  y lo que publica como un push: `gh pr merge`, `gh release create`, `glab mr merge`.
+  y lo que publica como un push: `gh release create`, `glab release create`.
   Puedes dejar que Claude haga commit y push en un repositorio tuyo, siempre escrito
   como `git -C <repo>`: ponlo en `git_allowed_repos` del espacio para que pase, o en
   `git_ask_repos` para que te pregunte cada vez. Como los perfiles de producción, estas
@@ -67,7 +67,15 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
   una sesión de cualquiera de ellos. Un worktree de un repositorio de la lista cuenta
   como él, y `~/code/app-*` vale para cada carpeta `app-<nombre>` junto a `app`. Incluso
   ahí, un push que reescribe o borra lo que hay en el remoto (`--force`, `--delete`,
-  `+rama`) te pregunta antes. Y un `rm -r` de tu carpeta personal entera o del disco
+  `+rama`) te pregunta antes.
+  Fusionar una pull request también es un push: `gh pr merge` y `glab mr merge` van por
+  las mismas listas. gh y glab no tienen `-C`, así que una fusión se escribe siempre como
+  `cd <repo> && gh pr merge 12`: la carpeta de ese `cd` es el repositorio, la carpeta de
+  la lista o un worktree suyo. La carpeta de la sesión sola no cuenta. Un repositorio que nombre el comando (`-R dueño/nombre`, la
+  dirección de la pull request) tiene que ser uno de los remotos de ese repositorio, o la
+  fusión se bloquea. `--admin`, que se salta la protección de la rama, te pregunta
+  siempre.
+  Y un `rm -r` de tu carpeta personal entera o del disco
   entero no se ejecuta nunca, tampoco después de un `cd` (`cd ~ && rm -rf .`), y en Windows
   se escriba como se escriba la ruta (`/c/Users/…`, como hace Git Bash, `C:/Users/…` o
   `$USERPROFILE`). Después
@@ -388,7 +396,8 @@ abras tú. Lo que encuentras:
   trabajo que solo está en este ordenador. Si todas sus tareas están aparcadas (o para
   algún día), sale marcado «¿olvidado?». El panel solo los lee: git funciona sin coger bloqueos, así que
   nunca te estorba, y nunca pide una contraseña. Una rama que nunca se subió solo cuenta
-  si el repositorio tiene un remoto al que subirla.
+  si el repositorio tiene un remoto al que subirla. **Ver todos los repositorios** lleva
+  al mapa completo.
 - **Tareas**, agrupadas por área, primero las que te esperan a ti, con su estado y su
   siguiente paso. Los filtros enseñan solo las que te esperan, las que están en marcha,
   las aparcadas, las paradas, o las que esperan a una persona. Una tarea que nadie ha
@@ -411,6 +420,16 @@ abras tú. Lo que encuentras:
   otros nombres, su papel y sus notas. El nombre se queda: un nombre nuevo sería otra
   persona. La página de una persona enseña las tareas que le esperan y las que la
   enlazan.
+- **Repositorios**: tu mapa de repositorios. Todos los repositorios git de las carpetas
+  de trabajo de cada espacio, hasta tres carpetas por debajo (no dentro de otro
+  repositorio, ni en carpetas ocultas, `node_modules` o `vendor`), agrupados por espacio,
+  primero los que tienen trabajo pendiente. De cada uno: su rama, adónde sube (como
+  `servidor/dueño/nombre`, nunca con contraseña), los ficheros cambiados, los commits sin
+  subir, las tareas abiertas que lo nombran, y una línea tuya sobre qué es. Esa línea se
+  escribe ahí mismo. Se guarda en las notas del espacio, en la referencia «Repositorios»
+  (`knowledge/ref-repositories.md`, una línea por repositorio), así que la copia de
+  seguridad la guarda; Claude también puede escribirla. Git solo se ejecuta dentro de
+  las carpetas de trabajo, y los enlaces a carpetas de fuera no se siguen.
 - **Secretos**: los nombres de los secretos que guardas en el llavero del sistema (donde
   tu ordenador guarda las contraseñas), nunca su valor. Cada uno como
   `servicio/nombre`, para qué sirve, y qué tareas lo nombran. Así sabes cuáles hay, y una
@@ -430,6 +449,19 @@ abras tú. Lo que encuentras:
   por defecto, notas que no son válidas, repositorios a los que apuntan las notas y que
   ya no están en este ordenador, el índice, la última copia de seguridad y la última
   revisión semanal.
+- **Ayuda**: enlaces a las respuestas de esta web, en tu idioma, y una forma de
+  contarnos un problema o proponer una idea en GitHub (la web donde vive el proyecto;
+  necesitas una cuenta gratuita allí). Pulsa **Avisa de un problema en GitHub** y el
+  panel hace la revisión de salud (lo que dice `augmented-brain doctor`) en ese momento;
+  luego abre el formulario de GitHub en otra pestaña con la versión, tu sistema y esa
+  revisión ya escritos. Antes de abrirlo, el panel quita tu carpeta personal (sale como
+  `~`), tus carpetas de notas y de trabajo, las direcciones de correo, los nombres de tus
+  espacios, las máquinas intocables y los perfiles de AWS de producción, y cualquier
+  línea que parezca una contraseña o una clave. Allí cuentas qué pasó y lees el resto:
+  cambia o borra lo que prefieras no compartir. Nada se envía hasta que pulsas el botón
+  de enviar de GitHub. Para ser claros: el texto viaja a GitHub dentro de la dirección
+  de la página en cuanto se abre, así que GitHub puede verlo entonces, aunque no lo
+  envíes.
 
 El cuadro de **búsqueda** del lateral busca en las notas del espacio y en las
 compartidas: títulos, resúmenes y texto. Sale una nota cuando tiene todas las palabras,
@@ -466,7 +498,8 @@ Está hecho para que siga siendo solo tuyo:
   otra cosa mientras tanto, se queda. Un paso solo se marca si sigue diciendo lo que
   mostraba la página.
 - No carga **nada de internet**: ni fuentes ni estadísticas. Funciona sin conexión. Una
-  nota tampoco puede meter HTML ni scripts propios en la página.
+  nota tampoco puede meter HTML ni scripts propios en la página. Los enlaces de la
+  página Ayuda van a la web solo cuando los pulsas.
 - Mirar si una nota ha cambiado no cuenta como usar el panel: una pestaña abierta no lo
   mantiene en marcha.
 

@@ -1,0 +1,26 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "help.title"}}</h1>
+<p class="hint">{{t "help.hint"}}</p>
+
+<h2>{{t "help.answers"}}</h2>
+<ul class="cards">
+{{range .Answers}}<li class="card">
+  <a class="title" href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{.Label}}</a>
+  <div class="meta"><span>{{.Hint}}</span></div>
+</li>{{end}}
+</ul>
+
+<h2 id="report">{{t "help.report"}}</h2>
+<p class="hint">{{t "help.report.hint"}}</p>
+<p class="hint">{{t "help.removed"}}</p>
+<p><a class="button" href="{{$.Base}}/help/report" target="_blank" rel="noopener noreferrer">{{t "help.report.open"}}</a></p>
+<p class="hint">{{t "help.report.sent"}}</p>
+
+<h2 id="idea">{{t "help.idea"}}</h2>
+<p class="hint">{{t "help.idea.hint"}}</p>
+<p><a class="button" href="{{.Idea}}" target="_blank" rel="noopener noreferrer">{{t "help.idea.open"}}</a></p>
+<p><a href="{{.Issues}}" target="_blank" rel="noopener noreferrer">{{t "help.issues"}}</a></p>
+
+<h2>{{t "help.support"}}</h2>
+<p>{{t "help.sponsor"}} <a href="{{.Sponsor}}" target="_blank" rel="noopener noreferrer">{{t "help.sponsor.link"}}</a></p>
+{{end}}{{end}}

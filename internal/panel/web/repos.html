@@ -1,0 +1,33 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "repos"}}</h1>
+<p class="hint">{{t "repos.page.hint"}}</p>
+
+{{range .Spaces}}{{$sp := .Name}}
+<section class="space-block">
+  <h2>{{tf "today.space" .Name}} <span class="hint">· {{len .Repos}}</span></h2>
+  {{if .NoFolders}}<p class="empty">{{t "repos.nofolders"}}</p>
+  {{else if not .Repos}}<p class="empty">{{t "repos.empty"}}</p>{{end}}
+  {{if .Repos}}<ul class="cards">
+  {{range .Repos}}<li class="card{{if .Forgotten}} mine{{end}}">
+    <div class="title">{{.Name}} {{if .Branch}}<span class="badge">{{.Branch}}</span>{{end}}{{if .Forgotten}} <span class="badge warn">{{t "repos.forgotten"}}</span>{{end}}</div>
+    <div class="meta">
+      {{if .Err}}<span>{{t "repos.unreadable"}}</span>{{else}}
+      {{if .Changed}}<span>{{tf "repos.changed" .Changed}}</span>{{end}}
+      {{if .Ahead}}{{if .Upstream}}<span>{{tf "repos.ahead" .Ahead}}</span>{{else}}<span>{{t "repos.noupstream"}}</span>{{end}}{{end}}
+      {{if not .Pending}}<span>{{t "repos.uptodate"}}</span>{{end}}{{end}}
+      <code>{{.Shown}}</code>
+      {{if .Origin}}<span>{{.Origin}}</span>{{else}}<span>{{t "repos.noremote"}}</span>{{end}}
+    </div>
+    {{if .Tasks}}<div class="next">{{range $i, $t := .Tasks}}{{if $i}} · {{end}}<a href="{{$.Base}}/task?s={{$t.Space}}&amp;id={{$t.ID}}">{{$t.Title}}</a>{{end}}</div>{{end}}
+    <form method="post" action="{{$.Base}}/repo/describe" class="row">
+      <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}"><input type="hidden" name="repo" value="{{.Shown}}">
+      <input name="text" value="{{.Description}}" maxlength="300" aria-label="{{t "repos.describe.what"}}: {{.Name}}" placeholder="{{if .Description}}{{t "repos.describe.what"}}{{else}}{{t "repos.describe"}}{{end}}">
+      <button type="submit" class="small">{{t "save"}}</button>
+    </form>
+  </li>{{end}}
+  </ul>{{end}}
+  {{if .More}}<p class="hint">{{t "repos.more"}}</p>{{end}}
+</section>
+{{end}}
+<p class="hint">{{t "repos.describe.hint"}}</p>
+{{end}}{{end}}

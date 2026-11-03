@@ -113,7 +113,7 @@ fiarse de ella.
   validar y cerrar. Aparcas una tarea y la retomas días después, en cualquier sesión.
 - **Áreas** que agrupan las tareas y el conocimiento de cada responsabilidad.
 - **Reglas cargadas en cada sesión**, y las importantes vigiladas por un guardia: nada
-  de commit ni push salvo que lo permitas, nunca root (salvo que lo permitas en una máquina
+  de commit, push ni merge salvo que lo permitas, nunca root (salvo que lo permitas en una máquina
   hasta una fecha), ningún secreto en comandos ni ficheros. Los perfiles de AWS de producción y los hosts que marques como intocables
   te piden confirmación, también por `ssh`, en todos los espacios.
 - **Trabajo y personal, separados**: cada *espacio* tiene su memoria, sus reglas y su

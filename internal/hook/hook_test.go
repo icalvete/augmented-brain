@@ -269,6 +269,27 @@ func TestPreToolUseMachineWide(t *testing.T) {
 	if got := decide(other, "aws s3 ls"); got != "ask" {
 		t.Errorf("inherited AWS_PROFILE=prod: %q", got)
 	}
+	// Merging a pull request in a repository the assistant may push to, unless what the
+	// command inherits points gh at another repository.
+	repo := filepath.Join(work, "repo")
+	if err := os.MkdirAll(filepath.Join(repo, ".git"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(repo, ".git", "config"), []byte("[remote \"origin\"]\n\turl = git@github.com:acme/repo.git\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	Getenv = func(string) string { return "" }
+	merge := "cd " + filepath.ToSlash(repo) + " && gh pr merge 1 --squash"
+	if got := decide(work, merge); got != "" {
+		t.Errorf("merge in an allowed repository: %q", got)
+	}
+	if got := decide(repo, "gh pr merge 1 --squash"); got != "deny" {
+		t.Errorf("merge without the repository written in the command: %q", got)
+	}
+	Getenv = func(k string) string { return map[string]string{"GH_REPO": "acme/other"}[k] }
+	if got := decide(work, merge); got != "deny" {
+		t.Errorf("inherited GH_REPO of another repository: %q", got)
+	}
 	Getenv = func(string) string { return "" }
 
 	broken := t.TempDir()

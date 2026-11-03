@@ -1122,4 +1122,49 @@ var panelMessages = map[string]msg{
 		en: "They are in none of the space's work folders: moved, renamed or deleted. Nothing is changed by itself; fix repos: in each note, or ask your assistant to.",
 		es: "No están en ninguna carpeta de trabajo del espacio: se movieron, cambiaron de nombre o se borraron. Nada se cambia solo; corrige repos: en cada nota, o pídeselo a tu asistente.",
 	},
+	// The Repositories page (repos.go).
+	"panel.repos.page.hint": {
+		en: "Every git repository in the work folders of your spaces, up to three folders down: what is pending in it, the open tasks that name it, and what it is, in your own words. Read only: commit and push stay with git.",
+		es: "Todos los repositorios git de las carpetas de trabajo de tus espacios, hasta tres carpetas por debajo: qué tienen pendiente, las tareas abiertas que los nombran y qué son, con tus palabras. Solo se leen: el commit y el push siguen en git.",
+	},
+	"panel.repos.all": {
+		en: "See all repositories",
+		es: "Ver todos los repositorios",
+	},
+	"panel.repos.describe": {
+		en: "describe it",
+		es: "descríbelo",
+	},
+	"panel.repos.describe.what": {
+		en: "What it is, in one line",
+		es: "Qué es, en una línea",
+	},
+	"panel.repos.describe.hint": {
+		en: "It is kept in this space's notes (the note Repositories, in knowledge), so the backup keeps it too. Leave it empty and save to take it out.",
+		es: "Se guarda en las notas de este espacio (la nota Repositorios, en conocimiento), así que la copia de seguridad también la guarda. Déjalo vacío y guarda para quitarla.",
+	},
+	"panel.repos.uptodate": {
+		en: "nothing pending",
+		es: "nada pendiente",
+	},
+	"panel.repos.noremote": {
+		en: "no remote",
+		es: "sin remoto",
+	},
+	"panel.repos.empty": {
+		en: "No git repository in the work folders of this space.",
+		es: "No hay ningún repositorio git en las carpetas de trabajo de este espacio.",
+	},
+	"panel.repos.nofolders": {
+		en: "This space has no work folders, so there is nowhere to look.",
+		es: "Este espacio no tiene carpetas de trabajo, así que no hay dónde buscar.",
+	},
+	"panel.repos.more": {
+		en: "The search stopped before the end (too many folders or repositories): some may be missing.",
+		es: "La búsqueda paró antes de acabar (demasiadas carpetas o repositorios): puede faltar alguno.",
+	},
+	"panel.f.repo": {
+		en: "Repository",
+		es: "Repositorio",
+	},
 }

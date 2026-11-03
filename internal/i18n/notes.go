@@ -183,4 +183,17 @@ var noteMessages = map[string]msg{
 		en: "Name",
 		es: "Nombre",
 	},
+	// The reference that says what each repository is (brain.DescribeRepo).
+	"note.repos.title": {
+		en: "Repositories",
+		es: "Repositorios",
+	},
+	"note.repos.summary": {
+		en: "What each repository of this space is, one line each",
+		es: "Qué es cada repositorio de este espacio, una línea cada uno",
+	},
+	"note.repos.intro": {
+		en: "One line per repository: what it is. The panel's Repositories page and the assistant keep it; you can also edit it by hand, keeping each line as ``- `path` — what it is``.",
+		es: "Una línea por repositorio: qué es. La página Repositorios del panel y el asistente la mantienen; también puedes editarla a mano, con cada línea como ``- `ruta` — qué es``.",
+	},
 }

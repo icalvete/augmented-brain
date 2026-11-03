@@ -38,9 +38,11 @@ type taskLink struct{ Space, ID, Title, Status string }
 // elsewhere: changes not committed, or commits not pushed.
 type repoRow struct {
 	repostat.Status
-	Name      string
-	Tasks     []taskLink
-	Forgotten bool // every task that names it is parked: nobody is on it
+	Name        string
+	Tasks       []taskLink
+	Forgotten   bool   // every task that names it is parked: nobody is on it
+	Description string // what it is, from the space's repositories note; empty: not described yet
+	Space       string // the space whose work folders hold it
 }
 
 // today is the first page: what every space asks of the user now, and the
@@ -53,8 +55,8 @@ func (s *Server) today(v *view, _ *http.Request) (string, page, error) {
 		Nothing    bool
 	}
 	type repoUse struct {
-		name  string
-		tasks []taskLink
+		name, desc, space string
+		tasks             []taskLink
 	}
 	uses := map[string]*repoUse{}
 	var order []string
@@ -110,7 +112,7 @@ func (s *Server) today(v *view, _ *http.Request) (string, page, error) {
 				}
 				u := uses[p]
 				if u == nil {
-					u = &repoUse{name: filepath.Base(p)}
+					u = &repoUse{name: filepath.Base(p), desc: b.RepoDescriptionOf(p), space: name}
 					uses[p] = u
 					order = append(order, p)
 				}
@@ -129,7 +131,8 @@ func (s *Server) today(v *view, _ *http.Request) (string, page, error) {
 			continue
 		}
 		forgotten := !slices.ContainsFunc(u.tasks, func(t taskLink) bool { return t.Status != "parked" && t.Status != "someday" })
-		d.Repos = append(d.Repos, repoRow{Status: st, Name: u.name, Tasks: u.tasks, Forgotten: forgotten})
+		d.Repos = append(d.Repos, repoRow{Status: st, Name: u.name, Tasks: u.tasks, Forgotten: forgotten,
+			Description: u.desc, Space: u.space})
 	}
 	sort.SliceStable(d.Repos, func(i, j int) bool {
 		if d.Repos[i].Forgotten != d.Repos[j].Forgotten {
