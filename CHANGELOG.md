@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+From the rehearsal of 0.5.9:
+
+- A restore leaves the notes readable by you only, whatever the umask; `check` does the
+  same for notes written before 0.5.9, and `doctor` says when other users can read them.
+- A restore names the repositories the backup let Claude commit in, which it does not
+  bring back, and where to add them again; `doctor` and the first session say so too.
+
 ## 0.5.9-alpha
 
 Released 2026-11-03.

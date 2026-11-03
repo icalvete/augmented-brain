@@ -177,6 +177,13 @@ func cmdCheck(out, errOut io.Writer) int {
 		return 1
 	}
 	defer unlock()
+	if paths.Exposed(s.Memory) {
+		if err := paths.Private(s.Memory); err != nil {
+			fmt.Fprintln(errOut, err)
+		} else {
+			fmt.Fprintln(out, i18n.T(c.Language, "check.private", paths.Tilde(s.Memory)))
+		}
+	}
 	if r, err := format.EnsureNotes(s.Memory, c.Dir, s.Name, time.Now()); err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1

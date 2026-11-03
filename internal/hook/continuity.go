@@ -168,7 +168,7 @@ func askSafety(c *config.Config, cfgDir string) string {
 	if profiles, hosts := c.GuardLists(); len(profiles)+len(hosts) > 0 {
 		return ""
 	}
-	return fmt.Sprintf("\nThis machine was set up from a backup, and backups do not carry the guard's lists (production AWS profiles, untouchable hosts). "+
+	return fmt.Sprintf("\nThis machine was set up from a backup, and backups do not carry the guard's lists (production AWS profiles, untouchable hosts), nor the repositories you may commit in (git_allowed_repos: the user adds those to the configuration). "+
 		"%soffer to ask for them again; "+
 		"if they agree, ask which AWS profiles reach production and which machines must not be touched, and save them with safety_save.\n", session.FirstAnswerLine(c.Language))
 }

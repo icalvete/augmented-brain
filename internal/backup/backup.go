@@ -383,6 +383,11 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 		return nil, err
 	}
 	sw.keep()
+	// A clone follows the umask: the restored notes become the owner's only, as notes
+	// written here are.
+	if err := paths.Private(mem); err != nil {
+		return nil, err
+	}
 	// The space that was the default one is the default again, unless this machine
 	// already has one: otherwise no backup would carry the profile and the shared notes.
 	if wasDefault {
@@ -595,6 +600,7 @@ func placeSpace(s *config.Space, mem, url, work string) error {
 	// Lists that let the assistant do more never come from a backup, which someone
 	// else may have changed: the user gives them again on this machine. Lists that make
 	// it ask (production profiles, untouchable hosts) do come.
+	s.NotRestored = append(append([]string{}, s.GitAllowedRepos...), s.GitAskRepos...)
 	s.GitAllowedRepos, s.GitAskRepos = nil, nil
 	if work != "" {
 		s.WorkFolders = []string{work}

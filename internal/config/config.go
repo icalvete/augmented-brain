@@ -38,6 +38,9 @@ type Space struct {
 	UntouchableHosts      []string `toml:"untouchable_hosts,omitempty"`
 	GitAllowedRepos       []string `toml:"git_allowed_repos,omitempty"`
 	GitAskRepos           []string `toml:"git_ask_repos,omitempty"`
+	// NotRestored are the repositories a restored backup listed for the assistant to
+	// commit in, which a restore never brings back; never written.
+	NotRestored []string `toml:"-"`
 }
 
 // Config is the whole configuration file.

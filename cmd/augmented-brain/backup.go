@@ -147,6 +147,9 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 	if _, err := os.Stat(filepath.Join(dir, config.AskSafetyFile)); err == nil {
 		fmt.Fprintln(out, i18n.T(lang, "restore.nolists"))
 	}
+	if len(s.NotRestored) > 0 {
+		fmt.Fprintln(out, i18n.T(lang, "restore.norepos", strings.Join(tildes(s.NotRestored), ", "), filepath.Join(dir, config.FileName)))
+	}
 	// A new machine has no plugin yet: install it, as init does.
 	if ok, err := claudecode.Installed(claudecode.Exec); err == nil && !ok {
 		installPlugin(&asker{out: out}, lang, out, errOut)

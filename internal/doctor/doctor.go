@@ -131,6 +131,10 @@ func Run(e Env) []Check {
 
 func space(c *config.Config, s *config.Space) []Check {
 	l := c.Language
+	var private []Check
+	if paths.Exposed(s.Memory) {
+		private = append(private, Check{Warning, i18n.T(l, "doctor.exposed", s.Name, paths.Tilde(s.Memory)), i18n.T(l, "doctor.exposed.fix")})
+	}
 	m, problems, err := memory.LoadSpace(s.Memory, c.SharedDir())
 	if err != nil {
 		return []Check{{Failed, i18n.T(l, "doctor.nomemory", s.Name, s.Memory, err),
@@ -144,7 +148,7 @@ func space(c *config.Config, s *config.Space) []Check {
 	if string(current) != m.Index(c.Language) {
 		checks = append(checks, Check{Warning, i18n.T(l, "doctor.stale", s.Name, memory.IndexFile), i18n.T(l, "doctor.stale.fix")})
 	}
-	return checks
+	return append(checks, private...)
 }
 
 func tools(e Env) []Check {

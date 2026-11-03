@@ -110,6 +110,10 @@ var commandMessages = map[string]msg{
 		en: "a private key",
 		es: "una clave privada",
 	},
+	"check.private": {
+		en: "  ✓ %s is now readable by you only (it was readable by other users of this computer)",
+		es: "  ✓ %s ya solo lo puedes leer tú (lo podían leer otros usuarios de este ordenador)",
+	},
 	"check.secret": {
 		en: "%s has a secret written in it (%s). The backup refuses to upload it until it is taken out: keep it in your keychain or a secrets manager.",
 		es: "%s tiene un secreto escrito (%s). La copia de seguridad no lo sube hasta que se quite: guárdalo en tu llavero o en un gestor de secretos.",
@@ -162,9 +166,13 @@ var commandMessages = map[string]msg{
 		en: "✓ Space %s restored: its notes are in %s",
 		es: "✓ Espacio %s recuperado: sus notas están en %s",
 	},
+	"restore.norepos": {
+		en: "The backup let Claude commit and push in %s. A restore never brings that back, since someone else may have changed the backup: if you still want it, add them to git_allowed_repos (or git_ask_repos) of the space in %s.",
+		es: "La copia dejaba a Claude hacer commit y push en %s. Un restore nunca lo trae, porque alguien podría haber cambiado la copia: si lo sigues queriendo, añádelos a git_allowed_repos (o git_ask_repos) del espacio en %s.",
+	},
 	"restore.nolists": {
-		en: "The guard's lists (production AWS profiles, untouchable hosts) are not in any backup: your first Claude session offers to ask for them again. Until then, nothing asks before touching production.",
-		es: "Las listas del guardia (perfiles de AWS de producción, máquinas intocables) no van en ninguna copia: tu primera sesión de Claude se ofrece a preguntártelas otra vez. Hasta entonces, nada pregunta antes de tocar producción.",
+		en: "The guard's lists (production AWS profiles, untouchable hosts) and the repositories Claude may commit in are not in any backup: your first Claude session offers to ask for the lists again. Until then, nothing asks before touching production.",
+		es: "Las listas del guardia (perfiles de AWS de producción, máquinas intocables) y los repositorios donde Claude puede hacer commit no van en ninguna copia: tu primera sesión de Claude se ofrece a preguntarte las listas otra vez. Hasta entonces, nada pregunta antes de tocar producción.",
 	},
 	"restore.next": {
 		en: "Now open Claude in it:\n  cd %s && claude",

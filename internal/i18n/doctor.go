@@ -142,13 +142,21 @@ var doctorMessages = map[string]msg{
 		en: "remove it from root_ask in %s, or write it as \"<host> until <date>\" (2026-10-31, or 2026-10-31T23:59Z)",
 		es: "quítala de root_ask en %s, o escríbela como \"<máquina> until <fecha>\" (2026-10-31, o 2026-10-31T23:59Z)",
 	},
+	"doctor.exposed": {
+		en: "space %s: other users of this computer can read its notes (%s)",
+		es: "espacio %s: otros usuarios de este ordenador pueden leer sus notas (%s)",
+	},
+	"doctor.exposed.fix": {
+		en: "run `augmented-brain check` in a folder of the space: it makes them yours only",
+		es: "lanza `augmented-brain check` en una carpeta del espacio: las deja solo para ti",
+	},
 	"doctor.nolists": {
-		en: "guard: this machine was restored from a backup, and backups do not carry the guard's lists (production AWS profiles, untouchable hosts). Until you give them again, nothing asks before touching production",
-		es: "guardia: esta máquina se recuperó de una copia de seguridad, y las copias no llevan las listas del guardia (perfiles de AWS de producción, máquinas intocables). Hasta que las vuelvas a dar, nada pregunta antes de tocar producción",
+		en: "guard: this machine was restored from a backup, and backups do not carry the guard's lists (production AWS profiles, untouchable hosts) nor the repositories Claude may commit in. Until you give them again, nothing asks before touching production, and Claude commits nowhere",
+		es: "guardia: esta máquina se recuperó de una copia de seguridad, y las copias no llevan las listas del guardia (perfiles de AWS de producción, máquinas intocables) ni los repositorios donde Claude puede hacer commit. Hasta que los vuelvas a dar, nada pregunta antes de tocar producción, y Claude no hace commit en ninguno",
 	},
 	"doctor.nolists.fix": {
-		en: "open a Claude session: it offers to ask for them. Or add `production_aws_profiles` and `untouchable_hosts` under `language` in %s",
-		es: "abre una sesión de Claude: se ofrece a preguntártelas. O añade `production_aws_profiles` y `untouchable_hosts` bajo `language` en %s",
+		en: "open a Claude session: it offers to ask for them. Or add `production_aws_profiles` and `untouchable_hosts` under `language`, and `git_allowed_repos` in each space, in %s",
+		es: "abre una sesión de Claude: se ofrece a preguntártelas. O añade `production_aws_profiles` y `untouchable_hosts` bajo `language`, y `git_allowed_repos` en cada espacio, en %s",
 	},
 	"doctor.nodefault": {
 		en: "no default space: no backup keeps your profile, and sessions outside every space's folder load none",
