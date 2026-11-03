@@ -28,6 +28,11 @@ if [ $# -eq 0 ]; then
   set -- $(curl -fsSL "https://api.github.com/repos/$REPO/releases?per_page=2" |
     python3 -c 'import json,sys; print(" ".join(r["tag_name"].lstrip("v") for r in json.load(sys.stdin)))')
 fi
+if [ $# -eq 0 ]; then
+  # Checking against nothing would pass without checking anything.
+  echo "compat-check: no earlier release to check against (GitHub did not answer?)"
+  exit 1
+fi
 
 # mcp <binary> <folder> <calls.json>: runs MCP tools as Claude Code would; fails on a
 # tool error.
