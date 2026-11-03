@@ -167,8 +167,8 @@ var commandMessages = map[string]msg{
 		es: "✓ Espacio %s recuperado: sus notas están en %s",
 	},
 	"restore.norepos": {
-		en: "The backup let Claude commit and push in %s. A restore never brings that back, since someone else may have changed the backup: if you still want it, add them to git_allowed_repos (or git_ask_repos) of the space in %s.",
-		es: "La copia dejaba a Claude hacer commit y push en %s. Un restore nunca lo trae, porque alguien podría haber cambiado la copia: si lo sigues queriendo, añádelos a git_allowed_repos (o git_ask_repos) del espacio en %s.",
+		en: "The backup let Claude commit and push (or ask you first) in %s. A restore never brings that back, since someone else may have changed the backup: if you still want it, add them to git_allowed_repos (or git_ask_repos) of the space in %s.",
+		es: "La copia dejaba a Claude hacer commit y push (o preguntarte antes) en %s. Un restore nunca lo trae, porque alguien podría haber cambiado la copia: si lo sigues queriendo, añádelos a git_allowed_repos (o git_ask_repos) del espacio en %s.",
 	},
 	"restore.nolists": {
 		en: "The guard's lists (production AWS profiles, untouchable hosts) and the repositories Claude may commit in are not in any backup: your first Claude session offers to ask for the lists again. Until then, nothing asks before touching production.",

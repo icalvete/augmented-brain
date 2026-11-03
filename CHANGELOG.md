@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- The restore's note on repositories says some only asked before committing.
+
 ## 0.5.10-alpha
 
 Released 2026-11-03.
