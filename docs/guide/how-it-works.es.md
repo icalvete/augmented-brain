@@ -70,6 +70,11 @@ próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.
   `$USERPROFILE`). Después
   de un `cd` que el guardia no puede seguir (`cd "$DIR"`), un `rm -r .` te pregunta.
 
+Si necesitas que Claude haga algo como root en una máquina durante un tiempo, añádela a
+`root_ask` en la configuración con una fecha de fin, como `root_ask = ["db01 until
+2026-10-31"]`. Hasta entonces, root ahí te pregunta cada vez en vez de pararse; después,
+vuelve a pararse solo.
+
 También mira dentro de `ssh`, de `vagrant ssh -c`, de `docker exec`, de `kubectl exec`, de
 `bash -c`, de los bucles y de lo que una tubería le pasa
 a una shell (`echo 'sudo …' | bash`). Si no puede leer su configuración, te pregunta antes

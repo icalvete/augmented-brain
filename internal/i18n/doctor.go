@@ -122,6 +122,22 @@ var doctorMessages = map[string]msg{
 		en: "guard: %d production AWS profiles and %d untouchable hosts, for every space on this machine",
 		es: "guardia: %d perfiles de AWS de producción y %d máquinas intocables, para todos los espacios de esta máquina",
 	},
+	"doctor.rootask": {
+		en: "guard: root on %s asks you, until %s UTC (root_ask)",
+		es: "guardia: root en %s te pregunta, hasta el %s UTC (root_ask)",
+	},
+	"doctor.rootask.expired": {
+		en: "guard: the root exception for %s ended on %s UTC: it no longer does anything",
+		es: "guardia: la excepción de root de %s terminó el %s UTC: ya no hace nada",
+	},
+	"doctor.rootask.bad": {
+		en: "guard: the root exception %q cannot be read, so it grants nothing",
+		es: "guardia: la excepción de root %q no se puede leer, así que no permite nada",
+	},
+	"doctor.rootask.fix": {
+		en: "remove it from root_ask in %s, or write it as \"<host> until <date>\" (2026-10-31, or 2026-10-31T23:59Z)",
+		es: "quítala de root_ask en %s, o escríbela como \"<máquina> until <fecha>\" (2026-10-31, o 2026-10-31T23:59Z)",
+	},
 	"doctor.nolists": {
 		en: "guard: this machine was restored from a backup, and backups do not carry the guard's lists (production AWS profiles, untouchable hosts). Until you give them again, nothing asks before touching production",
 		es: "guardia: esta máquina se recuperó de una copia de seguridad, y las copias no llevan las listas del guardia (perfiles de AWS de producción, máquinas intocables). Hasta que las vuelvas a dar, nada pregunta antes de tocar producción",

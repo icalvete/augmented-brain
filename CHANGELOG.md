@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **Temporary root exceptions.** `root_ask = ["db01 until 2026-10-31"]` in the
+  configuration: until that date, a command as root on that machine (here, or through
+  `ssh`) asks you instead of being refused, and the session start names the exceptions
+  in force. The date is required; after it, root is refused again by itself, and
+  `doctor` says the entry can go.
+- The install guide explains Claude Code's question about trusting a folder, and broken
+  accents in Windows PowerShell 5.1 (the text is right; PowerShell misreads it).
+
 ## 0.5.5-alpha
 
 Released 2026-11-03.

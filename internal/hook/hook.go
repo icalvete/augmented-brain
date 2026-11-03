@@ -124,6 +124,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string
 	note += migrate(c, s, cfgDir)
 	note += sessionStarted(c, s, i, cfgDir)
 	note += askSafety(c, cfgDir)
+	note += rootNote(c)
 	return note
 }
 
@@ -192,6 +193,11 @@ func policy(cfgDir, dir string) guard.Policy {
 	default:
 		p.ProductionAWSProfiles, p.UntouchableHosts = c.GuardLists()
 		p.GitAllowedRepos, p.GitAskRepos = c.GitLists()
+		roots, _ := c.RootExceptions()
+		for _, r := range roots {
+			p.RootAsk = append(p.RootAsk, guard.RootException{Host: r.Host, Until: r.Until})
+		}
+		p.Hostname, _ = os.Hostname()
 	}
 	return p
 }

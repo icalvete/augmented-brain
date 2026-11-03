@@ -183,6 +183,12 @@ un programa en marcha se borre a sí mismo.
   la descarga del propio Git. Si fallan las dos, instala Git desde
   [git-scm.com](https://git-scm.com/download/win) y vuelve a lanzar el comando. La app de
   escritorio necesita winget: actualiza "Instalador de aplicaciones" desde la Microsoft Store.
+- **Claude pregunta si te fías de la carpeta.** La primera vez que abres Claude en una
+  carpeta, Claude Code lo pregunta antes de cargar nada. Di que sí en tu carpeta de
+  trabajo: hasta entonces, augmented brain no puede cargar tus notas.
+- **Windows: los acentos salen rotos (`sesiÃ³n`).** Windows PowerShell 5.1 lee mal lo que
+  escriben otros programas cuando lo recoge (una redirección, una sesión remota). El texto
+  está bien: en Git Bash, o en una ventana, se ve bien.
 - **Claude te pide un plan de pago.** Claude Code necesita Pro o superior.
 - **Otra cosa.** Cuéntanoslo en [las incidencias del proyecto](https://github.com/icalvete/augmented-brain/issues),
   con lo que salió en pantalla.

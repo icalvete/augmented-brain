@@ -52,9 +52,11 @@ type Config struct {
 	// ProductionAWSProfiles and UntouchableHosts are machine-wide: the guard applies them
 	// in every space and outside every space, together with any list a space still has
 	// of its own (older configurations kept them per space).
-	ProductionAWSProfiles []string          `toml:"production_aws_profiles,omitempty"`
-	UntouchableHosts      []string          `toml:"untouchable_hosts,omitempty"`
-	Spaces                map[string]*Space `toml:"spaces"`
+	ProductionAWSProfiles []string `toml:"production_aws_profiles,omitempty"`
+	UntouchableHosts      []string `toml:"untouchable_hosts,omitempty"`
+	// RootAsk are temporary exceptions for root, "<host> until <date>" (see RootAsk).
+	RootAsk []string          `toml:"root_ask,omitempty"`
+	Spaces  map[string]*Space `toml:"spaces"`
 
 	// Dir is the folder the configuration was read from.
 	Dir string `toml:"-"`
@@ -165,7 +167,7 @@ func (c *Config) Save() error {
 		return err
 	}
 	out := Config{Format: c.Format, Language: c.Language, DefaultSpace: c.DefaultSpace, Spaces: map[string]*Space{},
-		ProductionAWSProfiles: c.ProductionAWSProfiles, UntouchableHosts: c.UntouchableHosts}
+		ProductionAWSProfiles: c.ProductionAWSProfiles, UntouchableHosts: c.UntouchableHosts, RootAsk: c.RootAsk}
 	for name, s := range c.Spaces {
 		cp := s.forFile()
 		if cp.WorkFolders == nil {

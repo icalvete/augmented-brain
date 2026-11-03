@@ -69,6 +69,11 @@ session starts from there. Opening, resuming and closing work the same way.
   Git Bash does, `C:/Users/…` or `$USERPROFILE`). After a `cd` the guard cannot follow (`cd "$DIR"`), an
   `rm -r .` asks you.
 
+If you need Claude to do something as root on a machine for a while, add it to
+`root_ask` in the configuration with an end date, such as `root_ask = ["db01 until
+2026-10-31"]`. Until then, root there asks you each time instead of being refused; after
+it, root is refused again by itself.
+
 It also looks inside `ssh`, `vagrant ssh -c`, `docker exec`, `kubectl exec`, `bash -c`,
 loops, and what a pipe feeds a shell
 (`echo 'sudo …' | bash`). If its configuration cannot be read, it asks you before every

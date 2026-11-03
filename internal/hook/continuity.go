@@ -172,3 +172,19 @@ func askSafety(c *config.Config, cfgDir string) string {
 		"%soffer to ask for them again; "+
 		"if they agree, ask which AWS profiles reach production and which machines must not be touched, and save them with safety_save.\n", session.FirstAnswerLine(c.Language))
 }
+
+// rootNote names the root exceptions in force, so the assistant knows that there,
+// and only there, a command as root goes to the user instead of being refused.
+func rootNote(c *config.Config) string {
+	roots, _ := c.RootExceptions()
+	var in []string
+	for _, r := range roots {
+		if session.Now().Before(r.Until) {
+			in = append(in, r.Host+" until "+r.Until.Format("2006-01-02 15:04")+" UTC")
+		}
+	}
+	if len(in) == 0 {
+		return ""
+	}
+	return "\nTemporary root exceptions (root_ask): " + strings.Join(in, "; ") + ". On those machines, and only while they last, a command as root (sudo, also through ssh) is not refused: the guard asks the user to confirm each one. Use it only for what the user asked, and say first what the command does.\n"
+}

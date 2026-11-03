@@ -179,6 +179,12 @@ delete itself.
   download. If both fail, install Git from [git-scm.com](https://git-scm.com/download/win)
   and run the command again. The desktop app needs winget: update "App Installer" from the
   Microsoft Store.
+- **Claude asks whether you trust the folder.** The first time you open Claude in a
+  folder, Claude Code asks this before loading anything. Say yes in your work folder: until
+  then, augmented brain cannot load your notes.
+- **Windows: accents look broken (`sesiÃ³n`).** Windows PowerShell 5.1 misreads what
+  other programs write when it captures it (a redirection, a remote session). The text is
+  right: in Git Bash, or in a window, it shows well.
 - **Claude asks for a paid plan.** Claude Code needs Pro or above.
 - **Something else.** Tell us in [the project's issues](https://github.com/icalvete/augmented-brain/issues),
   with what showed up on screen.

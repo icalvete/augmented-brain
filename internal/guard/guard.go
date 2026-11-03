@@ -14,6 +14,7 @@ import (
 	"runtime"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
@@ -53,12 +54,50 @@ type Policy struct {
 	// ConfigProblem, when not empty, says why the configuration could not be read: the
 	// lists above are unknown, so a command they would cover asks the user every time.
 	ConfigProblem string
+	// RootAsk are the machines where becoming root asks the user instead of being denied,
+	// each until a time; Hostname is this machine's name, for an exception for it. Now
+	// is the time to compare with (zero: the clock).
+	RootAsk  []RootException
+	Hostname string
+	Now      time.Time
+	// host is the machine the command runs on, as ssh names it; "" is this one.
+	host string
 	// lost says a cd earlier in the command went somewhere the guard cannot tell
 	// (cd -, cd "$DIR"): relative paths after it are not resolved.
 	lost bool
 }
 
 var allow = Decision{Allow, ""}
+
+// RootException lets a command run as root on Host ask the user, until Until.
+type RootException struct {
+	Host  string
+	Until time.Time
+}
+
+// root is the answer to a command that would run as root: denied, unless the machine
+// it runs on has a root exception in force, and then the user confirms it.
+func (p Policy) root(reason string) Decision {
+	now := p.Now
+	if now.IsZero() {
+		now = time.Now()
+	}
+	where, names := p.host, []string{p.host}
+	if where == "" {
+		where, names = "this machine", []string{p.Hostname, "localhost"}
+	}
+	for _, e := range p.RootAsk {
+		if !now.Before(e.Until) {
+			continue
+		}
+		for _, n := range names {
+			if n != "" && sameHost(n, e.Host) {
+				return Decision{Ask, "this would run as root on " + where + ", which has a temporary root exception until " + e.Until.UTC().Format("2006-01-02 15:04") + " UTC (root_ask). The user confirms each command: say first what it does and why."}
+			}
+		}
+	}
+	return Decision{Deny, reason}
+}
 
 // PowerShell is the answer to any command for Claude Code's PowerShell tool, the main
 // one on Windows. The guard reads POSIX shell, not PowerShell, so it cannot tell a safe
@@ -166,7 +205,7 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	case "sudo", "doas":
 		return p.sudo(name, args, stdin, env, depth)
 	case "su", "run0", "pkexec":
-		return Decision{Deny, "`" + name + "` switches to another user, root by default. " + rootReason}
+		return p.root("`" + name + "` switches to another user, root by default. " + rootReason)
 	case "aws":
 		return p.aws(env, args)
 	case "cdk", "sam", "serverless", "sls", "terraform", "tofu", "pulumi", "eksctl", "copilot":
@@ -445,7 +484,11 @@ func (p Policy) sudo(name string, args []string, stdin string, env map[string]st
 		return allow // sudo -l, sudo -v: nothing runs
 	}
 	if user == "" || user == "root" || user == "0" || user == "#0" {
-		return Decision{Deny, rootReason}
+		d := p.root(rootReason)
+		if d.Verdict == Deny || len(rest) == 0 {
+			return d
+		}
+		return worse(d, p.simple(rest, stdin, env, depth)) // what runs as root is checked too
 	}
 	if len(rest) == 0 {
 		return allow
@@ -596,6 +639,7 @@ func publish(name string, args []string) Decision {
 // it sends to the remote shell through stdin.
 func (p Policy) ssh(args []string, stdin string, env map[string]string, depth int) Decision {
 	host, rest := sshTarget(dropRedirections(args))
+	p.host = host[strings.LastIndexByte(host, '@')+1:] // the remote command runs there
 	var d Decision
 	switch {
 	case len(rest) > 0 && isShell(base(rest[0])):
@@ -660,7 +704,9 @@ func (p Policy) mosh(args []string, env map[string]string, depth int) Decision {
 	}
 	d := allow
 	if len(rest) > 0 {
-		d = p.simple(rest, "", env, depth)
+		q := p
+		q.host = host[strings.LastIndexByte(host, '@')+1:]
+		d = q.simple(rest, "", env, depth)
 	}
 	return worse(p.checkHost("mosh", host), d)
 }
@@ -752,20 +798,24 @@ func (p Policy) copyHosts(name string, args []string) Decision {
 // untouchable matches a host by its name, ignoring case, or by its short name either
 // way: a saved db01 matches db01.example.com, and a saved db01.example.com matches db01.
 func (p Policy) untouchable(host string) bool {
-	host = strings.TrimSuffix(strings.ToLower(host), ".")
-	if host == "" {
-		return false
-	}
 	for _, h := range p.UntouchableHosts {
-		h = strings.TrimSuffix(strings.ToLower(strings.TrimSpace(h)), ".")
-		if h == "" {
-			continue
-		}
-		if host == h || strings.HasPrefix(host, h+".") || strings.HasPrefix(h, host+".") {
+		if sameHost(host, h) {
 			return true
 		}
 	}
 	return false
+}
+
+// sameHost matches two host names ignoring case, or by the short name either way. A
+// user@ in the saved one is left out: the exception is for the machine.
+func sameHost(host, saved string) bool {
+	host = strings.TrimSuffix(strings.ToLower(host), ".")
+	saved = strings.TrimSpace(saved)
+	saved = strings.TrimSuffix(strings.ToLower(saved[strings.LastIndexByte(saved, '@')+1:]), ".")
+	if host == "" || saved == "" {
+		return false
+	}
+	return host == saved || strings.HasPrefix(host, saved+".") || strings.HasPrefix(saved, host+".")
 }
 
 // sshTarget returns the destination of an ssh command ([user@]host) and the remote

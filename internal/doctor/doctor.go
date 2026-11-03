@@ -110,6 +110,18 @@ func Run(e Env) []Check {
 	} else {
 		add(Info, i18n.T(l, "doctor.lists", len(profiles), len(hosts)), "")
 	}
+	roots, bad := c.RootExceptions()
+	for _, b := range bad {
+		add(Warning, i18n.T(l, "doctor.rootask.bad", b), i18n.T(l, "doctor.rootask.fix", filepath.Join(c.Dir, config.FileName)))
+	}
+	for _, r := range roots {
+		until := r.Until.Format("2006-01-02 15:04")
+		if time.Now().Before(r.Until) {
+			add(Info, i18n.T(l, "doctor.rootask", r.Host, until), "")
+		} else {
+			add(Info, i18n.T(l, "doctor.rootask.expired", r.Host, until), i18n.T(l, "doctor.rootask.fix", filepath.Join(c.Dir, config.FileName)))
+		}
+	}
 
 	for _, name := range c.SpaceNames() {
 		out = append(out, space(c, c.Spaces[name])...)

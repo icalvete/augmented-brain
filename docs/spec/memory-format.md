@@ -267,6 +267,7 @@ language = "en"                  # en | es: the language the program speaks to y
 default_space = "personal"       # used outside every work folder (optional)
 production_aws_profiles = ["prod", "prod-eu"]   # every space: the user confirms first
 untouchable_hosts = ["db01", "db02", "db03"]    # ssh, scp, sftp, mosh to them: the user confirms first
+root_ask = ["db01 until 2026-10-31"]            # root there asks instead of being refused, until then
 
 [spaces.work]
 memory = "~/augmented-brain/work/notes"
@@ -293,6 +294,14 @@ delete, a mirror, or a refspec starting with `+` or `:`) asks.
 versions wrote them: the guard applies the top-level lists and every space's together.
 Host names match ignoring case, and a short name matches the full one either way (`db01`
 and `db01.example.com`).
+
+`root_ask` holds temporary exceptions for root, one machine each: `"<host> until <date>"`.
+The date is a day (the exception lasts to its end, in UTC) or a time
+(`2026-10-31T23:59Z`), and it is required, so no exception is left behind. While it
+lasts, a command that would run as root on that machine (`sudo`, `su`, also inside
+`ssh <host> '…'`) asks the user instead of being refused; the command it runs is still
+checked. The host is matched as ssh names it, or against this machine's name. After the
+date the entry does nothing, and `augmented-brain doctor` says it can be removed.
 
 ## Backup
 
