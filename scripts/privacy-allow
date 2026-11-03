@@ -1,0 +1,10 @@
+# Exact literals removed before the fingerprint check (scripts/privacy-hashed.py), as the
+# local allow list does for scripts/privacy-check.sh: the maintainer's public identity
+# and the repo's own addresses. Public on purpose; nothing else belongs here.
+github.com/icalvete/augmented-brain
+icalvete/augmented-brain
+icalvete.github.io/augmented-brain
+icalvete <icalvete@gmail.com>
+Copyright (c) 2026 icalvete
+sponsors/icalvete
+github: icalvete
