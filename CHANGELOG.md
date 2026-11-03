@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.6.0-alpha
+
+Released 2026-11-03.
 
 The panel, grown into the place to see everything at a glance:
 
