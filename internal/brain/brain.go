@@ -507,10 +507,9 @@ func (b *Brain) Pending(within int) ([]Item, []Due) {
 	today := b.today()
 	for _, n := range b.Mem.OfType("task") {
 		h := n.Header
-		if h.Status == "closed" {
-			continue
-		}
-		if h.Status != "someday" {
+		// A closed task is no longer pending, but its watch dates still are: closing
+		// is when the checks for later are written down.
+		if h.Status != "someday" && h.Status != "closed" {
 			it := Item{ID: h.ID, Title: h.Title, Area: h.Area, Status: h.Status, WaitingOn: h.WaitingOn, Next: h.Next,
 				Parent: h.Parent, Sub: b.Mem.Nested(n)}
 			if p := b.Mem.ParentOf(n); p != nil {

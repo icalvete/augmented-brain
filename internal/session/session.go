@@ -420,6 +420,9 @@ func dueNote(b *brain.Brain) string {
 			when = fmt.Sprintf("in %d days", d.Days)
 		case d.Days < 0:
 			when = fmt.Sprintf("%d days overdue", -d.Days)
+			if d.Days == -1 {
+				when = "1 day overdue"
+			}
 		}
 		where := "inbox"
 		if d.TaskID != "" {

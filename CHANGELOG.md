@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+From the rehearsal of 0.5.7:
+
+- **A closed task's watch dates still come up.** Closing is when the checks for later
+  are written down, so they are mentioned at the start of a session until they are
+  marked done, as those of a live task. The task itself is no longer pending.
+- "1 day overdue", not "1 days".
+
 ## 0.5.7-alpha
 
 Released 2026-11-03.

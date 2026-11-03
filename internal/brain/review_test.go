@@ -79,6 +79,27 @@ func TestWatchDates(t *testing.T) {
 	if _, err := b.WatchDone(id, "2026-10-14"); err == nil {
 		t.Error("closing it twice must say there is nothing open")
 	}
+
+	// Found in the rehearsal of 0.5.7: the checks for after a task closes are its watch
+	// dates, so they still come up once it is closed, until they are done.
+	if _, err := b.AddWatch(id, "2026-10-16", "still renewed after closing?"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := b.Close(id, "renewed"); err != nil {
+		t.Fatal(err)
+	}
+	if r := b.Reminders(1); len(r) != 1 || r[0].TaskID != id || r[0].Date != "2026-10-16" {
+		t.Errorf("the watch date of a closed task: %+v", r)
+	}
+	if items, _ := b.Pending(1); len(items) != 0 {
+		t.Errorf("a closed task is listed as pending: %+v", items)
+	}
+	if _, err := b.WatchDone(id, "2026-10-16"); err != nil {
+		t.Errorf("a closed task's watch date cannot be marked done: %v", err)
+	}
+	if r := b.Reminders(1); len(r) != 0 {
+		t.Errorf("a done watch date of a closed task still comes up: %+v", r)
+	}
 }
 
 func TestWeeklyReview(t *testing.T) {
