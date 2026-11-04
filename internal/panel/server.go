@@ -98,6 +98,8 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 			// inline renders one line of a note (a next step, a summary) with its marks.
 			"inline": func(text string) template.HTML { return inlineHTML(text) },
 			"tf":     func(key string, args ...any) string { return i18n.T(l, "panel."+key, args...) },
+			// tc says a count with its noun: key.1 for one, key.n for the rest.
+			"tc": func(key string, n int) string { return i18n.Count(l, "panel."+key, n) },
 			"days": func(d int) string {
 				switch {
 				case d == 0:

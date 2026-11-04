@@ -19,8 +19,16 @@ var panelMessages = map[string]msg{
 		es: "Espacio %s",
 	},
 	"panel.today.counts": {
-		en: "%d under way, %d parked",
-		es: "%d en marcha, %d aparcadas",
+		en: "%d under way, %s",
+		es: "%d en marcha, %s",
+	},
+	"panel.today.parked.1": {
+		en: "1 parked",
+		es: "1 aparcada",
+	},
+	"panel.today.parked.n": {
+		en: "%d parked",
+		es: "%d aparcadas",
 	},
 	"panel.today.inbox": {
 		en: "%d in the inbox",
