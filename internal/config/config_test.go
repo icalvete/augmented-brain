@@ -369,9 +369,20 @@ func TestNewerConfigSaysUpdate(t *testing.T) {
 	if _, err := Load(dir); err == nil || !strings.Contains(err.Error(), "unknown settings: future_thing") {
 		t.Errorf("unknown setting: %v", err)
 	}
-	// It comes before the configuration's language is known: the system's.
+	// In the file's language, whatever the system's.
+	t.Setenv("AB_LANGUAGE", "es")
+	if _, err := Load(dir); err == nil || !strings.Contains(err.Error(), "unknown settings: future_thing") {
+		t.Errorf("unknown setting, file in English, system in Spanish: %v", err)
+	}
+	write("language = \"es\"\nfuture_thing = 1\n\n[spaces]\n")
+	t.Setenv("AB_LANGUAGE", "en")
+	if _, err := Load(dir); err == nil || !strings.Contains(err.Error(), "ajustes desconocidos: future_thing") {
+		t.Errorf("unknown setting, file in Spanish: %v", err)
+	}
+	// A file with no valid language: the system's.
+	write("language = \"xx\"\nfuture_thing = 1\n\n[spaces]\n")
 	t.Setenv("AB_LANGUAGE", "es")
 	if _, err := Load(dir); err == nil || !strings.Contains(err.Error(), "ajustes desconocidos: future_thing") {
-		t.Errorf("unknown setting, in Spanish: %v", err)
+		t.Errorf("unknown setting, no valid language: %v", err)
 	}
 }
