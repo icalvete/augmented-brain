@@ -12,6 +12,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
+	"github.com/icalvete/augmented-brain/internal/hostmem"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
@@ -30,29 +31,86 @@ var RemindAfter = 20 * time.Minute
 // what was done since, so a session that dies loses little. It never reminds twice
 // without a write in between, never while already continuing because of a Stop hook,
 // and it reads one small file: it takes milliseconds.
+//
+// It also looks at the memory of the process that hosts the session (memoryNote), and
+// has the assistant warn the user when it has grown far past normal.
 func Stop(in io.Reader, out io.Writer, cfgDir string) error {
 	i := read(in)
 	if i.StopHookActive {
 		return nil
 	}
-	c, s := ownSpace(cfgDir, i.Cwd)
-	if s == nil {
+	c, err := config.Load(cfgDir)
+	if err != nil {
 		return nil
+	}
+	mem := memoryNote(c.Language, cfgDir)
+	journal, err := journalNote(c, cfgDir, i.Cwd, mem != "")
+	if err != nil {
+		return err
+	}
+	text := strings.TrimSpace(journal + "\n\n" + mem)
+	if text == "" {
+		return nil
+	}
+	return write(out, output{specific{HookEventName: "Stop", AdditionalContext: text}})
+}
+
+// journalNote is the reminder to write in the active task's journal, when it is due,
+// and records that it was given. With more, another note follows it that the
+// assistant must pass on, so it is not asked to end its turn in silence.
+func journalNote(c *config.Config, cfgDir, dir string, more bool) (string, error) {
+	s := c.SpaceFor(dir)
+	if s == nil {
+		return "", nil
 	}
 	now := Now()
 	st := state.Read(cfgDir, s.Name)
 	if st.Task == "" || now.Sub(st.Since) < RemindAfter || !st.Reminded.Before(st.Since) {
-		return nil
+		return "", nil
 	}
 	if err := state.Update(cfgDir, s.Name, now, func(x *state.Space) { x.Reminded = now }); err != nil {
-		return err
+		return "", err
 	}
-	text := fmt.Sprintf("augmented brain: nothing has been written in the journal of task %s since %s. "+
+	end := "Either way, this is not a message from the user and your answer to them is already given: " +
+		"end your turn with no text at all, not even to say that nothing changed or that you wrote the entry."
+	if more {
+		end = "Either way, this is not a message from the user: say nothing about the journal, not even that you wrote the entry; only pass on the note that follows."
+	}
+	return fmt.Sprintf("augmented brain: nothing has been written in the journal of task %s since %s. "+
 		"If anything was done, decided or found since then, add it now in one short entry with task_journal, "+
-		"%s. Either way, this is not a message from the user and your answer to them is already given: "+
-		"end your turn with no text at all, not even to say that nothing changed or that you wrote the entry.",
-		st.Task, st.Since.Local().Format("15:04"), session.InUserLanguage(c.Language))
-	return write(out, output{specific{HookEventName: "Stop", AdditionalContext: text}})
+		"%s. %s", st.Task, st.Since.Local().Format("15:04"), session.InUserLanguage(c.Language), end), nil
+}
+
+// Processes is the machine whose processes memoryNote looks at; tests replace it.
+var Processes = hostmem.Local
+
+// ParentPID is the hook's parent process, where the walk up to claude starts; tests
+// replace it.
+var ParentPID = os.Getppid
+
+// memoryNote asks the assistant to warn the user when the process that hosts this
+// session (VS Code's extension host, or claude in a terminal) has crossed a step of
+// hostmem.Steps it was not warned about yet. A host is named by its pid and start, so
+// a reused pid is a new host. The warning is given only once its mark is written, so a
+// state that cannot be written never repeats it after every answer. On Linux it reads
+// a few small files of /proc: well under a millisecond.
+func memoryNote(lang, cfgDir string) string {
+	if Processes == nil {
+		return ""
+	}
+	h, ok := hostmem.Find(Processes, ParentPID())
+	if !ok {
+		return ""
+	}
+	step := hostmem.Due(h.RSS, state.MemoryWarned(cfgDir, h.Key()), hostmem.Steps(Getenv))
+	if step == 0 {
+		return ""
+	}
+	alive := func(key string) bool { return hostmem.Alive(Processes, key) }
+	if err := state.MarkMemory(cfgDir, h.Key(), step, alive); err != nil {
+		return ""
+	}
+	return i18n.T(lang, "hook.memory."+h.Kind, hostmem.GB(h.RSS, lang))
 }
 
 // PostCompact keeps the summary Claude Code wrote when it compacted the conversation:

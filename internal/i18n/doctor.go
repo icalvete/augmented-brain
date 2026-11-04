@@ -150,6 +150,22 @@ var doctorMessages = map[string]msg{
 		en: "close and open those sessions again when it suits you",
 		es: "cierra y vuelve a abrir esas sesiones cuando te venga bien",
 	},
+	"doctor.memory": {
+		en: "a Claude window on this computer is using %s GB of memory (%s, process %d); normal is about 0.5 GB, and if it keeps growing the system may close it, with every Claude session in it",
+		es: "una ventana de Claude en este ordenador usa %s GB de memoria (%s, proceso %d); lo normal es unos 0,5 GB, y si sigue creciendo el sistema puede cerrarla, con todas sus sesiones de Claude",
+	},
+	"doctor.memory.fix": {
+		en: "in that window, park the task in progress and go on in a new one",
+		es: "en esa ventana, aparca la tarea en curso y sigue en una nueva",
+	},
+	"doctor.memory.vscode": {
+		en: "VS Code's extension host",
+		es: "el host de extensiones de VS Code",
+	},
+	"doctor.memory.claude": {
+		en: "Claude in a terminal",
+		es: "Claude en un terminal",
+	},
 	"doctor.automemory": {
 		en: "Claude Code keeps a memory of its own for these folders too (%s): a second memory, next to the space's, that loads at the start and drifts from it",
 		es: "Claude Code guarda además una memoria propia para estas carpetas (%s): una segunda memoria, junto a la del espacio, que se carga al empezar y se desvía de ella",

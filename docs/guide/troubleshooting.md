@@ -125,6 +125,23 @@ The window was closed by force, or the computer went down. The next session offe
 recover it. Say yes, or go to the panel's Sessions page. Claude Code keeps each
 conversation for 30 days.
 
+### The window uses a lot of memory
+
+Claude says that the window uses a lot of memory, or `doctor` warns about a Claude window
+of several GB. The process that holds the window's sessions has grown far past normal:
+VS Code's extension host (the program inside VS Code that runs Claude and the other
+extensions), or Claude itself in a terminal. It normally stays near 0.5 GB for days.
+Now and then one grows without stopping, and the system ends up closing it, with every
+Claude session of the window. The length of the conversation has nothing to do with it.
+
+What to do, as soon as you see it:
+
+1. Ask Claude to park the task ("park it"). Where you were and what comes next are kept.
+2. Open a new VS Code window (or a new terminal session) and resume the task there.
+3. Close the old window when you are done with it: that frees the memory.
+
+Claude warns at 2 GB, then at 4 and 8 GB, once each. On Windows it does not look.
+
 ### After a restore, nothing asks before production
 
 Backups do not carry the guard's lists. Open a Claude session: it offers to ask you for

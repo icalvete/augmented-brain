@@ -299,7 +299,11 @@ Los eventos:
 - `pre-tool-use`: antes de cada comando y de cada cambio de fichero. Es el
   [guardia](guard.es.md). Si no puede ejecutarse, Claude Code para el comando.
 - `stop`: después de cada respuesta. Le recuerda a Claude que escriba en el diario de la
-  tarea, una vez, después de 20 minutos sin escribir.
+  tarea, una vez, después de 20 minutos sin escribir. También mira cuánta memoria usa la
+  ventana (el host de extensiones de VS Code, o el propio Claude en un terminal), y hace
+  que Claude te avise cuando pasa de 2 GB, luego de 4 y de 8 GB, una vez cada uno. En
+  Linux y macOS; tarda una fracción de milisegundo. Mira
+  [Problemas](troubleshooting.es.md#la-ventana-usa-mucha-memoria).
 - `post-compact`: después de que Claude Code compacte una conversación larga. Guarda el
   resumen en `archive/sessions/` y el diario de la tarea apunta a él.
 - `session-end`: acaba la sesión. Apunta que acabó bien, y lanza la copia de seguridad

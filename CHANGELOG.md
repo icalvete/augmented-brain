@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- **A warning before a window runs out of memory.** Now and then the process that holds
+  a window's Claude sessions (VS Code's extension host, or Claude itself in a terminal)
+  grows without stopping, from its usual half a gigabyte to many, until the system kills
+  it with every session of the window. After each answer, the Stop hook now looks at its
+  memory, and past 2 GB (then 4 and 8 GB, once each) Claude tells you and suggests
+  parking the task and going on in a new window. `doctor` says it too, for every Claude
+  window on the computer. On Linux and macOS; it adds a fraction of a millisecond. See
+  Troubleshooting, "The window uses a lot of memory".
+- The landing pages show the panel: a picture of its Today page, what it is for, and a
+  link to its guide page, with a Panel link in the top menu.
+- The panel says "1 aparcada" in Spanish, in the singular, instead of "1 aparcadas".
+
 ## 0.8.0-alpha
 
 Released 2026-11-04.

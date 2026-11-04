@@ -1,5 +1,5 @@
 {
-  "description": "augmented brain: load the space when a session starts, guard commands and file writes (and block them when the guard cannot run), remind the assistant to keep the task's journal, keep the summary when the conversation is compacted, and back the space up when a session ends.",
+  "description": "augmented brain: load the space when a session starts, guard commands and file writes (and block them when the guard cannot run), remind the assistant to keep the task's journal and warn when the window uses too much memory, keep the summary when the conversation is compacted, and back the space up when a session ends.",
   "hooks": {
     "SessionStart": [
       {

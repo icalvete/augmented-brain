@@ -123,6 +123,11 @@
   <p>On a computer with no screen, <code>augmented-brain panel</code> prints the address to open yourself. The address carries a key that changes each time the panel starts, and the panel stops after 30 minutes without use. Run <code>augmented-brain panel</code> again for a new address.</p>
   <h3 id="a-session-was-cut-off">A session was cut off</h3>
   <p>The window was closed by force, or the computer went down. The next session offers to recover it. Say yes, or go to the panel's Sessions page. Claude Code keeps each conversation for 30 days.</p>
+  <h3 id="the-window-uses-a-lot-of-memory">The window uses a lot of memory</h3>
+  <p>Claude says that the window uses a lot of memory, or <code>doctor</code> warns about a Claude window of several GB. The process that holds the window's sessions has grown far past normal: VS Code's extension host (the program inside VS Code that runs Claude and the other extensions), or Claude itself in a terminal. It normally stays near 0.5 GB for days. Now and then one grows without stopping, and the system ends up closing it, with every Claude session of the window. The length of the conversation has nothing to do with it.</p>
+  <p>What to do, as soon as you see it:</p>
+  <ol><li>Ask Claude to park the task (“park it”). Where you were and what comes next are kept.</li><li>Open a new VS Code window (or a new terminal session) and resume the task there.</li><li>Close the old window when you are done with it: that frees the memory.</li></ol>
+  <p>Claude warns at 2 GB, then at 4 and 8 GB, once each. On Windows it does not look.</p>
   <h3 id="after-a-restore-nothing-asks-before-production">After a restore, nothing asks before production</h3>
   <p>Backups do not carry the guard's lists. Open a Claude session: it offers to ask you for them. Or add <code>production_aws_profiles</code> and <code>untouchable_hosts</code> to the configuration yourself.</p>
   <h3 id="windows-accents-look-broken-sesiã³n">Windows: accents look broken (<code>sesiÃ³n</code>)</h3>

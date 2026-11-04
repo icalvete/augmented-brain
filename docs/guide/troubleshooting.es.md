@@ -126,6 +126,27 @@ La ventana se cerró a la fuerza, o el ordenador se apagó. La siguiente sesión
 recuperarla. Di que sí, o ve a la página Sesiones del panel. Claude Code guarda cada
 conversación 30 días.
 
+### La ventana usa mucha memoria
+
+Claude te dice que la ventana usa mucha memoria, o `doctor` avisa de una ventana de
+Claude de varios GB. El proceso que lleva las sesiones de la ventana ha crecido mucho
+más de lo normal: el host de extensiones de VS Code (el programa dentro de VS Code que
+ejecuta Claude y las demás extensiones), o el propio Claude en un terminal. Lo normal es
+que se quede cerca de 0,5 GB durante días. De vez en cuando uno crece sin parar, y el
+sistema acaba cerrándolo, con todas las sesiones de Claude de la ventana. La longitud de
+la conversación no tiene nada que ver.
+
+Qué hacer, en cuanto lo veas:
+
+1. Pídele a Claude que aparque la tarea ("apárcala"). Se guarda dónde estabas y lo que
+   viene después.
+2. Abre una ventana nueva de VS Code (o una sesión nueva en el terminal) y retoma la
+   tarea allí.
+3. Cierra la ventana vieja cuando acabes con ella: así se libera la memoria.
+
+Claude avisa a los 2 GB, luego a los 4 y a los 8 GB, una vez cada uno. En Windows no
+lo mira.
+
 ### Después de recuperar una copia, nada pregunta antes de tocar producción
 
 Las copias de seguridad no llevan las listas del guardia. Abre una sesión de Claude: se

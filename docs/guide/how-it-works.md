@@ -57,7 +57,10 @@ resuming and closing work the same way. See [Tasks](tasks.md).
 through, asks you, or stops it. See [The guard](guard.md).
 
 **4. Claude finishes an answer.** If a task is open and nothing was written in it for 20
-minutes, a hook reminds Claude to write in its journal, once.
+minutes, a hook reminds Claude to write in its journal, once. The same hook looks at the
+memory of the window: if it has grown far past normal, Claude tells you, so you can park
+the task before the system closes the window. See
+[Troubleshooting](troubleshooting.md#the-window-uses-a-lot-of-memory).
 
 **5. You close the session.** The end hook notes that the session ended well. It starts
 the [backup](backup.md) of the space in the background, if you set one up. You wait for
