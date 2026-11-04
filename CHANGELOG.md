@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.8.0-alpha
+
+Released 2026-11-04.
 
 - **`space add` no longer takes `--language`.** It never did anything: the language is
   the same for every space on a computer, the `language` setting that `init` sets. A

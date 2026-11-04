@@ -123,8 +123,12 @@ func Load(dir string) (*Config, error) {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
 	if extra := md.Undecoded(); len(extra) > 0 {
-		// The configuration did not load, so its language is unknown: the system's.
+		// The file was read, so its language is known when it names a valid one; if
+		// not, the system's.
 		lang := i18n.FromEnv()
+		if slices.Contains(Languages, c.Language) {
+			lang = c.Language
+		}
 		// A configuration written by a newer program may hold settings this one does
 		// not know: then the thing to say is to update, not that the file is wrong.
 		if c.Format > format.Config() {

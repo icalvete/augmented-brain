@@ -105,10 +105,11 @@ Para quitar cualquier cosa, edita tú el fichero.
 
 Si el fichero tiene un error, el programa dice en qué línea. Un ajuste que no conoce
 también es un error, y el mensaje lo nombra. Si el fichero lo escribió una versión más
-nueva, el programa te dice que actualices. Estos mensajes salen en el idioma del sistema
-(o en el de `AB_LANGUAGE`): el `language` del propio fichero aún no se puede leer. Un
-fichero que se lee pero dice algo mal (un espacio sin `memory`, un `default_space` que no
-es un espacio) se cuenta en su `language`.
+nueva, el programa te dice que actualices. Un fichero con un error se cuenta en el idioma
+del sistema (o en el de `AB_LANGUAGE`), porque su propio `language` no se puede leer. Todo
+lo demás se cuenta en el `language` del fichero: un ajuste que no conoce, una versión más
+nueva, un espacio sin `memory`, un `default_space` que no es un espacio. Si el propio
+`language` está mal, en el del sistema.
 
 Mientras no se puede leer el fichero, el guardia no conoce tus listas. Así que te
 pregunta antes de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`.
