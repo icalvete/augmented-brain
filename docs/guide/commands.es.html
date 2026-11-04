@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comandos · augmented brain</title>
+<meta name="description" content="Todos los comandos de augmented brain, con todas sus opciones: init, space, check, doctor, import, backup, restore, panel, update, uninstall, mcp, hook, version y help.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/commands.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/commands.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/commands.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/commands.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Comandos · augmented brain">
+<meta property="og:description" content="Cada comando y opción del programa, y sus hooks.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/commands.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Comandos · augmented brain">
+<meta name="twitter:description" content="Cada comando y opción del programa, y sus hooks.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="commands.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html" aria-current="page">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Comandos</h1>
+  <p>Todos los comandos del programa, con todas sus opciones. En el día a día no te hacen falta: hablas con Claude. Sirven para preparar, comprobar y pasar a un ordenador nuevo.</p>
+  <p>Se lanzan en una terminal. Casi todos trabajan con <strong>el espacio de la carpeta en la que estás</strong>. Fuera de las carpetas de tus espacios, usan el espacio por defecto.</p>
+  <pre><code>cd ~/augmented-brain/trabajo
+augmented-brain check</code></pre>
+  <p>Las opciones van antes o después del resto de argumentos, con uno o dos guiones (<code>--all</code> o <code>-all</code>). Si un comando recibe un argumento que no admite, lo dice y no hace nada.</p>
+  <p>Hay tres comandos que lanza Claude Code, no tú: <code>mcp</code>, <code>hook</code> y <code>panel serve</code>. Están aquí para que sepas qué son.</p>
+  <p>Dentro de Claude Code hay un comando con barra: <code>/brain:panel</code> abre el panel, igual que <code>augmented-brain panel</code>.</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#augmented-brain-init">augmented-brain init</a></li><li><a href="#augmented-brain-space">augmented-brain space</a></li><li><a href="#augmented-brain-space-add">augmented-brain space add</a></li><li><a href="#augmented-brain-check">augmented-brain check</a></li><li><a href="#augmented-brain-doctor">augmented-brain doctor</a></li><li><a href="#augmented-brain-import">augmented-brain import</a></li><li><a href="#augmented-brain-backup">augmented-brain backup</a></li><li><a href="#augmented-brain-backup-setup">augmented-brain backup setup</a></li><li><a href="#augmented-brain-restore">augmented-brain restore</a></li><li><a href="#augmented-brain-panel">augmented-brain panel</a></li><li><a href="#augmented-brain-panel-stop">augmented-brain panel stop</a></li><li><a href="#augmented-brain-panel-serve">augmented-brain panel serve</a></li><li><a href="#augmented-brain-update">augmented-brain update</a></li><li><a href="#augmented-brain-uninstall">augmented-brain uninstall</a></li><li><a href="#augmented-brain-mcp">augmented-brain mcp</a></li><li><a href="#augmented-brain-hook">augmented-brain hook</a></li><li><a href="#augmented-brain-version">augmented-brain version</a></li><li><a href="#augmented-brain-help">augmented-brain help</a></li></ul></nav>
+  <h2 id="augmented-brain-init">augmented-brain init</h2>
+  <p>Prepara todo: los espacios, la configuración y el plugin de Claude Code. El instalador lo lanza por ti la primera vez.</p>
+  <pre><code>augmented-brain init</code></pre>
+  <p>Sin opciones no pregunta nada. Toma el idioma del sistema y crea dos espacios en <code>~/augmented-brain</code>: <code>trabajo</code> y <code>personal</code> (<code>work</code> y <code>personal</code> en inglés), con <code>personal</code> como espacio por defecto. Después instala el plugin. Si no hay Claude Code, escribe los dos comandos para instalar el plugin más tarde.</p>
+  <p>Si ya hay configuración, se para y no cambia nada. Para añadir un espacio, usa <code>space add</code>.</p>
+  <ul><li><code>--custom</code>: te pregunta el idioma, el espacio y sus carpetas, para hacer un solo espacio a tu manera.</li><li><code>--language</code>: el idioma, <code>en</code> o <code>es</code>. Sin ella, el del sistema (o <code>AB_LANGUAGE</code>).</li><li><code>--space</code>: el nombre del único espacio que se crea (minúsculas, cifras y guiones, empezando por una letra).</li><li><code>--work</code>: su carpeta de trabajo. Por defecto, <code>~/augmented-brain/&lt;espacio&gt;</code>.</li><li><code>--memory</code>: su carpeta de notas. Por defecto, <code>notas</code> dentro de la carpeta de trabajo.</li><li><code>--yes</code>: no pregunta; usa las opciones que le des y lo que hay por defecto.</li><li><code>--no-plugin</code>: no instala el plugin de Claude Code.</li></ul>
+  <p>Con <code>--space</code>, <code>--work</code> o <code>--memory</code> se crea un solo espacio en vez de los dos.</p>
+  <pre><code>augmented-brain init --space cliente --work ~/clientes/acme --language es</code></pre>
+  <h2 id="augmented-brain-space">augmented-brain space</h2>
+  <p>Dice de qué espacio es esta carpeta, y dónde están sus notas.</p>
+  <pre><code>augmented-brain space</code></pre>
+  <p>Fuera de las carpetas de tus espacios, dice cuál es el espacio por defecto. Si no hay espacio por defecto, lo dice y lista los espacios. No tiene opciones.</p>
+  <h2 id="augmented-brain-space-add">augmented-brain space add</h2>
+  <p>Añade otro espacio: un cliente, un proyecto aparte, un voluntariado.</p>
+  <pre><code>augmented-brain space add cliente</code></pre>
+  <p>El nombre va como argumento (el primero o el último) o con <code>--space</code>. Te pregunta la carpeta de trabajo y la de notas, y te propone <code>~/augmented-brain/&lt;nombre&gt;</code> y su carpeta <code>notas</code>. Si aún no había espacio por defecto, pone uno: <code>personal</code> si hay un espacio con ese nombre, y si no, el espacio que ya estaba.</p>
+  <ul><li><code>--space</code>: el nombre del espacio nuevo.</li><li><code>--work</code>: su carpeta de trabajo.</li><li><code>--memory</code>: su carpeta de notas.</li><li><code>--yes</code>: no pregunta; usa las opciones que le des y lo que hay por defecto.</li><li><code>--language</code>: se admite, pero aquí no hace nada. Un espacio nuevo habla el idioma de la configuración.</li></ul>
+  <pre><code>augmented-brain space add cliente --work ~/clientes/acme --yes</code></pre>
+  <p>Lo tienes en <a href="spaces.es.html">Espacios</a>.</p>
+  <h2 id="augmented-brain-check">augmented-brain check</h2>
+  <p>Revisa las notas del espacio de esta carpeta, y rehace su índice si todas son válidas.</p>
+  <pre><code>augmented-brain check</code></pre>
+  <p>Además:</p>
+  <ul><li>pasa las notas a un formato nuevo cuando una versión nueva lo necesita, después de hacer una copia completa;</li><li>revisa las notas compartidas, y rehace su índice;</li><li>nombra cada fichero que guarda un secreto (la copia de seguridad lo rechaza hasta que lo quites);</li><li>nombra los repositorios a los que apuntan las notas y que no están en este ordenador;</li><li>deja las notas solo para ti, si otros usuarios podían leerlas;</li><li>pasa la lista de nombres de secretos a <code>secrets.toml</code>, desde <code>config.toml</code>, donde la guardaba la 0.6.0.</li></ul>
+  <p>Lánzalo después de editar notas a mano. Acaba con error si una nota no es válida. No tiene opciones.</p>
+  <h2 id="augmented-brain-doctor">augmented-brain doctor</h2>
+  <p>Dice qué falta y cómo arreglarlo.</p>
+  <pre><code>augmented-brain doctor</code></pre>
+  <p>Cada línea empieza con una marca: <code>✓</code> bien, <code>·</code> para que lo sepas, <code>!</code> un aviso, <code>✗</code> algo que falla. Debajo de una línea que pide arreglo, <code>→</code> dice qué hacer. Revisa:</p>
+  <ul><li>la configuración, el perfil y en qué espacio está esta carpeta;</li><li>la carpeta de notas de cada espacio, sus notas y su índice;</li><li>Claude Code, git y el plugin;</li><li>el guardia, de verdad, con un comando que tiene que parar;</li><li>las listas del guardia, las excepciones de root en <code>root_ask</code> y las que ya han terminado;</li><li>las sesiones de Claude que siguen con una versión anterior después de actualizar;</li><li>una segunda memoria que Claude Code guarda por su cuenta para tus carpetas;</li><li>las notas que otros usuarios del ordenador podrían leer;</li><li>si hay espacio por defecto, y si una recuperación dejó vacías las listas del guardia.</li></ul>
+  <p>Acaba con error si algo falla. No tiene opciones. Lo tienes en <a href="troubleshooting.es.html">Si algo falla</a>.</p>
+  <h2 id="augmented-brain-import">augmented-brain import</h2>
+  <p>Trae una memoria que Claude Code ya escribió. Sin <code>--apply</code>, solo enseña lo que haría.</p>
+  <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory</code></pre>
+  <ul><li><code>--apply</code>: escribe las notas. Sin ella, no se escribe nada.</li><li><code>--map</code>: un fichero que dice a qué espacio va cada área o nota: líneas <code>area-x = espacio</code>, <code>task-y = espacio</code>, <code>lesson-z = shared</code>, y <code>* = espacio</code> para el resto.</li><li><code>--repos-base</code>: la carpeta respecto a la que van las rutas <code>repos:</code> del origen.</li></ul>
+  <p>Nunca escribe encima de una nota que ya existe, y el origen solo lo lee. Lo tienes en <a href="import.es.html">Traer una memoria</a>.</p>
+  <h2 id="augmented-brain-backup">augmented-brain backup</h2>
+  <p>Guarda los últimos cambios del espacio de esta carpeta en su repositorio privado. También se lanza solo cuando acaba una sesión de Claude.</p>
+  <pre><code>augmented-brain backup</code></pre>
+  <ul><li><code>--all</code>: copia todos los espacios, no solo el de esta carpeta.</li><li><code>--space</code>: copia este espacio, estés donde estés: <code>--space trabajo</code>.</li><li><code>--auto</code>: así lo lanza el final de una sesión, por detrás. No dice nada y nunca espera una contraseña. No te hace falta.</li></ul>
+  <p>Se para sin subir nada si una nota guarda un secreto, o si otra máquina cambió la misma nota de otra forma, y dice cuál. Lo tienes en <a href="backup.es.html">Copia de seguridad y recuperación</a>.</p>
+  <h2 id="augmented-brain-backup-setup">augmented-brain backup setup</h2>
+  <p>Conecta el espacio de esta carpeta a un repositorio git privado, y hace la primera copia.</p>
+  <pre><code>augmented-brain backup setup git@gitlab.com:lucia/brain-trabajo.git</code></pre>
+  <p>Recibe un argumento, la dirección del repositorio, y no tiene opciones. Para que te cree el repositorio en tu cuenta de GitHub, pídeselo a Claude: “monta la copia de seguridad”.</p>
+  <h2 id="augmented-brain-restore">augmented-brain restore</h2>
+  <p>Recupera un espacio de su copia de seguridad, en una máquina nueva.</p>
+  <pre><code>augmented-brain restore https://github.com/lucia/augmented-brain-trabajo.git</code></pre>
+  <p>Cambia el espacio vacío del mismo nombre por el tuyo. Un espacio que ya tiene notas lo deja como está. Si falta el plugin de Claude Code, lo instala. Después nombra lo que no ha traído: las listas del guardia, los repositorios donde Claude puede hacer commit y los secretos que faltan en el llavero de esta máquina, cada uno con el comando para guardarlo.</p>
+  <ul><li><code>--memory</code>: dónde poner las notas del espacio. Por defecto, donde estaban, dentro de la carpeta de trabajo.</li><li><code>--work</code>: la carpeta de trabajo que elige el espacio. Por defecto, la que se guardó en la copia.</li></ul>
+  <h2 id="augmented-brain-panel">augmented-brain panel</h2>
+  <p>Abre el panel en el navegador: el día de un vistazo, y todas las páginas de tus espacios para verlas y cambiarlas.</p>
+  <pre><code>augmented-brain panel</code></pre>
+  <p>Arranca el panel por detrás, o encuentra el que ya está en marcha, y abre el navegador en Hoy, con el espacio de esta carpeta. Vuelve enseguida. El panel se para solo después de 30 minutos sin usarlo.</p>
+  <ul><li><code>--no-browser</code>: solo escribe la dirección, sin abrir el navegador. <code>AB_NO_BROWSER=1</code> hace lo mismo.</li></ul>
+  <p>Lo tienes en <a href="panel.es.html">El panel</a>.</p>
+  <h2 id="augmented-brain-panel-stop">augmented-brain panel stop</h2>
+  <p>Para el panel ahora.</p>
+  <pre><code>augmented-brain panel stop</code></pre>
+  <p>Dice si había un panel en marcha. El enlace del pie de cada página del panel hace lo mismo.</p>
+  <h2 id="augmented-brain-panel-serve">augmented-brain panel serve</h2>
+  <p>El panel en sí, funcionando por detrás. Lo arranca <code>augmented-brain panel</code>; nunca lo lanzas a mano. Se para solo después de 30 minutos sin usarlo.</p>
+  <h2 id="augmented-brain-update">augmented-brain update</h2>
+  <p>Actualiza augmented brain y su plugin de Claude Code.</p>
+  <pre><code>augmented-brain update</code></pre>
+  <p>Si hay una versión más nueva, lanza el instalador publicado, que cambia el programa y después actualiza el plugin. Si no, solo actualiza el plugin. Después cierra Claude y vuelve a abrirlo, para que las sesiones usen la versión nueva.</p>
+  <ul><li><code>--plugin</code>: actualiza solo el plugin de Claude Code. Lo usa el instalador.</li></ul>
+  <h2 id="augmented-brain-uninstall">augmented-brain uninstall</h2>
+  <p>Quita el programa y el plugin de Claude Code. Tus notas se quedan.</p>
+  <pre><code>augmented-brain uninstall</code></pre>
+  <p>Antes enseña lo que va a quitar y te pregunta.</p>
+  <ul><li><code>--config</code>: quita también la configuración y el perfil.</li><li><code>--all</code>: empezar de cero: también la configuración, el perfil y las notas de todos los espacios. Enseña cada carpeta de notas con cuántas notas tiene. Tus copias de seguridad no se tocan.</li><li><code>--yes</code>: no pregunta.</li></ul>
+  <p>Lo tienes en <a href="install.es.html#desinstalar">Instalación</a>.</p>
+  <h2 id="augmented-brain-mcp">augmented-brain mcp</h2>
+  <p>Arranca el servidor MCP: las herramientas que usa Claude para llevar tus tareas y tus notas. <strong>Lo arranca Claude Code</strong>, a través del plugin; tú no.</p>
+  <p>Habla por su entrada y su salida. En cada llamada vuelve a buscar el espacio, por la carpeta en la que trabaja Claude. Las herramientas están en <a href="mcp-tools.es.html">Herramientas MCP</a>. No tiene opciones.</p>
+  <h2 id="augmented-brain-hook">augmented-brain hook</h2>
+  <p>Responde a un hook de Claude Code: un aviso que Claude Code lanza en un momento concreto. <strong>Lo lanza Claude Code</strong>, a través del plugin; tú no. Lee lo que Claude Code le manda por su entrada, y nunca hace fallar a Claude: un problema va a su salida de errores.</p>
+  <pre><code>augmented-brain hook session-start 1</code></pre>
+  <p>Los eventos:</p>
+  <ul><li><code>session-start</code>: empieza una sesión. Le pasa a Claude el perfil, las reglas, el índice de tareas y lo que vence. Llega en hasta nueve partes, de <code>session-start 1</code> a <code>session-start 9</code>, porque Claude Code corta el texto de cada hook a los 10.000 caracteres. Solo se mandan las partes que tienen algo.</li><li><code>pre-tool-use</code>: antes de cada comando y de cada cambio de fichero. Es el <a href="guard.es.html">guardia</a>. Si no puede ejecutarse, Claude Code para el comando.</li><li><code>stop</code>: después de cada respuesta. Le recuerda a Claude que escriba en el diario de la tarea, una vez, después de 20 minutos sin escribir.</li><li><code>post-compact</code>: después de que Claude Code compacte una conversación larga. Guarda el resumen en <code>archive/sessions/</code> y el diario de la tarea apunta a él.</li><li><code>session-end</code>: acaba la sesión. Apunta que acabó bien, y lanza la copia de seguridad por detrás.</li></ul>
+  <h2 id="augmented-brain-version">augmented-brain version</h2>
+  <p>Muestra la versión del programa.</p>
+  <pre><code>augmented-brain version</code></pre>
+  <p><code>--version</code> y <code>-v</code> hacen lo mismo.</p>
+  <h2 id="augmented-brain-help">augmented-brain help</h2>
+  <p>Muestra la lista de comandos, en tu idioma.</p>
+  <pre><code>augmented-brain help</code></pre>
+  <p><code>--help</code> y <code>-h</code> hacen lo mismo. Lanzar <code>augmented-brain</code> sin nada también muestra la lista.</p>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="import.es.html"><span>← Anterior</span>Trae una memoria que ya tienes</a>
+    <a class="next" href="mcp-tools.es.html"><span>Siguiente →</span>Herramientas MCP</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

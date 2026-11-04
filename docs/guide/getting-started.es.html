@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Primeros pasos · augmented brain</title>
-<meta name="description" content="Instala augmented brain desde cero, paso a paso, aunque nunca hayas abierto una terminal: qué necesitas, el instalador, la primera sesión y qué decir la primera semana.">
+<meta name="description" content="Qué es augmented brain y cómo instalarlo desde cero, paso a paso, aunque nunca hayas abierto una terminal: qué necesitas, el instalador, la primera sesión y qué decir la primera semana.">
 <link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/getting-started.es.html">
 <link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/getting-started.html">
 <link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/getting-started.es.html">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="augmented brain">
 <meta property="og:title" content="Primeros pasos · augmented brain">
-<meta property="og:description" content="De cero a tu primera sesión, paso a paso, sin saber de terminales.">
+<meta property="og:description" content="Qué es, y de cero a tu primera sesión, sin saber de terminales.">
 <meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/getting-started.es.html">
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Primeros pasos · augmented brain">
-<meta name="twitter:description" content="De cero a tu primera sesión, paso a paso, sin saber de terminales.">
+<meta name="twitter:description" content="Qué es, y de cero a tu primera sesión, sin saber de terminales.">
 <meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
 <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,50 +33,108 @@
 <link rel="stylesheet" href="../site.css">
 </head>
 <body>
+<a class="skip" href="#main">Saltar al contenido</a>
 <header class="wrap top">
   <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
     <a href="getting-started.html" hreflang="en" data-lang="en">English</a>
     <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
   </nav>
 </header>
 
-<main class="wrap prose">
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html" aria-current="page">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
   <h1>Primeros pasos</h1>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#qué-es">Qué es</a></li><li><a href="#lo-que-necesitas">Lo que necesitas</a></li><li><a href="#1-abre-la-terminal">1. Abre la terminal</a></li><li><a href="#2-pega-el-comando-de-instalación">2. Pega el comando de instalación</a></li><li><a href="#3-contesta-al-instalador">3. Contesta al instalador</a></li><li><a href="#4-entra-en-claude">4. Entra en Claude</a></li><li><a href="#5-contesta-a-la-entrevista">5. Contesta a la entrevista</a></li><li><a href="#tu-primera-semana">Tu primera semana</a></li><li><a href="#palabras-que-vas-a-oír">Palabras que vas a oír</a></li><li><a href="#si-algo-falla">Si algo falla</a></li><li><a href="#por-dónde-seguir">Por dónde seguir</a></li></ul></nav>
+  <h2 id="qué-es">Qué es</h2>
+  <p>augmented brain le da a tu asistente de IA una memoria, un método y un guardia. Hoy el asistente es Claude Code.</p>
+  <ul><li><strong>Una memoria.</strong> Tus tareas, decisiones, personas y reglas se guardan como ficheros de texto normal en tu ordenador. Cada sesión nueva empieza leyéndolos, así que nunca explicas dos veces lo mismo.</li><li><strong>Un método.</strong> Cada trabajo es una tarea que va de la idea a cerrada en seis fases. Puedes parar una tarea hoy y retomarla la semana que viene, en cualquier sesión.</li><li><strong>Un guardia.</strong> Antes de que Claude ejecute un comando, augmented brain lo lee. Subir código, hacerse root o escribir una contraseña se para. Tocar producción te pregunta antes.</li></ul>
+  <p>No aprendes comandos nuevos. Hablas con Claude como siempre: “nueva tarea…”, “apárcala”, “¿en qué estábamos?”.</p>
+  <p>Es gratis y de código abierto (MIT). También es alfa: una versión temprana que puede cambiar.</p>
   <p>Esta guía es para empezar de cero, aunque nunca hayas abierto una terminal. Son unos diez minutos.</p>
-  <h2>Lo que necesitas</h2>
+  <h2 id="lo-que-necesitas">Lo que necesitas</h2>
   <ul><li><strong>Un ordenador con Linux, macOS o Windows.</strong> En Mac, macOS 13 (Ventura) o posterior: lo ves en el menú de la manzana → Acerca de este Mac. En Windows, Windows 10 u 11. Lo que cambia en cada sistema está en <a href="install.es.html">Instalación</a>.</li><li><strong>Una cuenta de Claude de pago</strong>: Pro o superior. augmented brain es gratis, pero trabaja con Claude Code, y Claude Code no entra en el plan gratuito. Los planes, en <a href="https://claude.com/pricing">claude.com/pricing</a>.</li><li><strong>La contraseña de tu ordenador</strong>, por si hay que instalar algo que falta.</li></ul>
-  <h2>1. Abre la terminal</h2>
+  <h2 id="1-abre-la-terminal">1. Abre la terminal</h2>
   <p>La terminal es una ventana en la que escribes órdenes en vez de pulsar botones. Solo la necesitas para instalar.</p>
   <ul><li><strong>En Mac:</strong> pulsa <code>Cmd + Espacio</code>, escribe <code>Terminal</code> y pulsa Enter.</li><li><strong>En Ubuntu:</strong> pulsa <code>Ctrl + Alt + T</code>.</li><li><strong>En Windows:</strong> pulsa la tecla de Windows, escribe <code>PowerShell</code> y pulsa Enter.</li></ul>
-  <h2>2. Pega el comando de instalación</h2>
+  <h2 id="2-pega-el-comando-de-instalación">2. Pega el comando de instalación</h2>
   <p>Copia esta línea, en Mac o Linux:</p>
   <pre><code>curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code></pre>
   <p>O esta, en Windows:</p>
   <pre><code>irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex</code></pre>
   <p>Pégala en la terminal (<code>Cmd + V</code> en Mac, <code>Ctrl + Shift + V</code> en Ubuntu, clic derecho en Windows) y pulsa Enter.</p>
-  <h2>3. Contesta al instalador</h2>
+  <h2 id="3-contesta-al-instalador">3. Contesta al instalador</h2>
   <p>Te hace unas pocas preguntas. Para aceptar lo que te propone, basta con pulsar Enter.</p>
   <ol><li><strong>El idioma.</strong> Español o inglés.</li><li><strong>Lo que falte</strong>, si falta algo: git (guarda el historial de tus notas), Claude Code y la app de escritorio de Claude. Te dice para qué es cada cosa antes de instalarla. Si ya tenías Claude Code pero está atrasado, te ofrece actualizarlo.</li><li><strong>¿Abro ahora la app de Claude?</strong> Di que sí.</li></ol>
   <p>Si te pide la contraseña, escríbela aunque no veas nada: la terminal no la enseña, ni siquiera con asteriscos. Pulsa Enter al acabar.</p>
   <p>En Mac, si falta git, se abre una ventana para instalar las herramientas de desarrollo de Apple. Pulsa <strong>Instalar</strong> y acepta. Tarda unos minutos; el instalador espera y sigue solo.</p>
   <p>En Windows no hay contraseña que escribir: al instalar Git, Windows enseña una ventana que pide permiso. Pulsa <strong>Sí</strong>.</p>
-  <h2>4. Entra en Claude</h2>
+  <h2 id="4-entra-en-claude">4. Entra en Claude</h2>
   <p>En la app de Claude:</p>
   <ol><li>Entra con tu cuenta.</li><li>Abre la pestaña <strong>Code</strong>.</li><li>Pulsa <strong>+ New</strong> y escribe “Hola”.</li></ol>
-  <p>Sin elegir carpeta, trabajas en tu espacio personal. Para el de trabajo, elige con <strong>Choose…</strong> la carpeta <code>~/augmented-brain/trabajo</code>.</p>
-  <h2>5. Contesta a la entrevista</h2>
+  <p>Sin elegir carpeta, trabajas en tu espacio personal. Para el de trabajo, elige con <strong>Choose…</strong> la carpeta <code>~/augmented-brain/trabajo</code>. Un <strong>espacio</strong> es un cajón separado de notas: te lo cuenta <a href="spaces.es.html">Espacios</a>.</p>
+  <h2 id="5-contesta-a-la-entrevista">5. Contesta a la entrevista</h2>
   <p>La primera vez, Claude se presenta y te hace seis preguntas, una cada vez, diciéndote para qué sirve cada una: quién eres, qué cuidas, cómo quieres las respuestas, qué no se toca, qué herramientas usas y con quién trabajas. Puedes saltarte cualquiera.</p>
   <p>Al final te enseña lo que ha guardado y te ofrece montar la copia de seguridad. Dile que sí: tus notas quedan en un repositorio privado tuyo, y si pierdes el ordenador no pierdes nada.</p>
-  <h2>Tu primera semana</h2>
+  <h2 id="tu-primera-semana">Tu primera semana</h2>
   <p>Háblale como siempre. Estas frases te sacan partido desde el primer día:</p>
-  <div class="table-wrap"><table><thead><tr><th>Dices</th><th>Qué hace</th></tr></thead><tbody><tr><td>“Nueva tarea: preparar la reunión del jueves.”</td><td>Abre una tarea y te pregunta lo necesario para definirla</td></tr><tr><td>“Apárcala, mañana seguimos.”</td><td>Apunta dónde lo dejáis y qué viene después</td></tr><tr><td>“¿En qué estábamos?”</td><td>Te lista tus tareas vivas con su siguiente paso</td></tr><tr><td>“Seguimos con la reunión del jueves.”</td><td>Retoma la tarea donde la dejaste, en cualquier sesión</td></tr><tr><td>“Apunta: llamar al seguro.”</td><td>Lo deja en el buzón, sin abrir tarea</td></tr><tr><td>“Vamos con el proveedor B, que es más barato.”</td><td>Lo apunta en el diario de la tarea, con fecha</td></tr><tr><td>“Guárdalo como lección.”</td><td>Lo aprendido queda en una nota propia</td></tr><tr><td>“Cierra la tarea.”</td><td>La cierra; no se borra nunca</td></tr><tr><td>“Marta es mi jefa, la llamo Martita.”</td><td>La guarda, y la próxima vez sabe quién es</td></tr><tr><td>“¿Por qué elegimos el proveedor B?”</td><td>Lo busca en tus notas y te da la decisión, con fecha y porqué</td></tr></tbody></table></div>
-  <h2>Palabras que vas a oír</h2>
-  <ul><li><strong>Espacio:</strong> un cajón separado, con sus notas y sus reglas. Vienen dos, <code>trabajo</code> y <code>personal</code>. La carpeta en la que abres Claude decide en cuál estás.</li><li><strong>Tarea:</strong> algo con principio y fin. Pasa por seis fases, de la idea a cerrada.</li><li><strong>Área:</strong> algo que cuidas siempre (la web, la casa, un equipo). Agrupa sus tareas.</li><li><strong>Buzón:</strong> donde van las ideas sueltas hasta que las ordenas.</li><li><strong>Guardia:</strong> el control que para o te pregunta antes de un comando arriesgado.</li><li><strong>Copia de seguridad:</strong> tus notas, subidas a un repositorio git privado tuyo después de cada sesión.</li><li><strong>Plugin:</strong> la pieza que conecta augmented brain con Claude Code. La instala el instalador.</li></ul>
-  <h2>Si algo falla</h2>
-  <ul><li><strong>Claude no se presenta ni te hace la entrevista.</strong> Empieza una sesión nueva. Si sigue igual, abre la terminal y escribe <code>augmented-brain doctor</code>: te dice qué falta y cómo arreglarlo.</li><li><strong>La terminal dice que no encuentra una orden</strong> (<code>command not found</code>, o “no se reconoce” en Windows). Cierra la terminal y abre otra: la nueva ya encuentra los programas recién instalados.</li><li><strong>Claude te pide un plan de pago.</strong> Claude Code necesita Pro o superior.</li><li><strong>“Este sistema aún no está soportado”.</strong> Funciona en Linux, macOS y Windows; en <a href="install.es.html">Instalación</a> tienes lo que necesita cada uno.</li><li><strong>“Claude Code necesita macOS 13”.</strong> Actualiza el Mac en Ajustes del Sistema → General → Actualización de software y vuelve a pegar el comando.</li><li><strong>Otra cosa.</strong> Cuéntalo en <a href="https://github.com/icalvete/augmented-brain/issues">las incidencias del proyecto</a>, con lo que salió en pantalla.</li></ul>
-  <p>Para saber qué pasa por dentro, sigue con <a href="how-it-works.es.html">Cómo funciona</a>.</p>
-  <a class="back" href="../es/">← Volver a augmented brain</a>
+  <div class="table-wrap"><table><thead><tr><th>Dices</th><th>Qué hace</th></tr></thead><tbody><tr><td>“Nueva tarea: preparar la reunión del jueves.”</td><td>Abre una tarea y te pregunta lo necesario para definirla</td></tr><tr><td>“Apárcala, mañana seguimos.”</td><td>Apunta dónde lo dejáis y qué viene después</td></tr><tr><td>“¿En qué estábamos?”</td><td>Te lista tus tareas vivas con su siguiente paso</td></tr><tr><td>“Seguimos con la reunión del jueves.”</td><td>Retoma la tarea donde la dejaste, en cualquier sesión</td></tr><tr><td>“Apunta: llamar al seguro.”</td><td>Lo deja en el buzón, sin abrir tarea</td></tr><tr><td>“Vamos con el proveedor B, que es más barato.”</td><td>Lo apunta en el diario de la tarea, con fecha</td></tr><tr><td>“Guárdalo como lección.”</td><td>Lo aprendido queda en una nota propia</td></tr><tr><td>“Cierra la tarea.”</td><td>La cierra; no se borra nunca</td></tr><tr><td>“Lucía es mi jefa, la llamo Lu.”</td><td>La guarda, y la próxima vez sabe quién es</td></tr><tr><td>“¿Por qué elegimos el proveedor B?”</td><td>Lo busca en tus notas y te da la decisión, con fecha y porqué</td></tr></tbody></table></div>
+  <p>Más frases, agrupadas por lo que quieres hacer: <a href="phrases.es.html">Qué decirle a Claude</a>.</p>
+  <h2 id="palabras-que-vas-a-oír">Palabras que vas a oír</h2>
+  <ul><li><strong>Espacio:</strong> un cajón separado, con sus notas y sus reglas. Vienen dos, <code>trabajo</code> y <code>personal</code>. La carpeta en la que abres Claude decide en cuál estás.</li><li><strong>Tarea:</strong> algo con principio y fin. Pasa por seis fases, de la idea a cerrada.</li><li><strong>Área:</strong> algo que cuidas siempre (la web, la casa, un equipo). Agrupa sus tareas.</li><li><strong>Buzón:</strong> donde van las ideas sueltas hasta que las ordenas.</li><li><strong>Guardia:</strong> el control que para o te pregunta antes de un comando arriesgado.</li><li><strong>Copia de seguridad:</strong> tus notas, subidas a un repositorio git privado tuyo después de cada sesión.</li><li><strong>Plugin:</strong> la pieza que conecta augmented brain con Claude Code. La instala el instalador.</li><li><strong>Panel:</strong> una página en tu navegador para ver y cambiar todo sin pedírselo a Claude.</li></ul>
+  <h2 id="si-algo-falla">Si algo falla</h2>
+  <ul><li><strong>Claude no se presenta ni te hace la entrevista.</strong> Empieza una sesión nueva. Si sigue igual, abre la terminal y escribe <code>augmented-brain doctor</code>: te dice qué falta y cómo arreglarlo.</li><li><strong>La terminal dice que no encuentra una orden</strong> (<code>command not found</code>, o “no se reconoce” en Windows). Cierra la terminal y abre otra: la nueva ya encuentra los programas recién instalados.</li><li><strong>Claude te pide un plan de pago.</strong> Claude Code necesita Pro o superior.</li><li><strong>Otra cosa.</strong> Mira <a href="troubleshooting.es.html">Si algo falla</a>.</li></ul>
+  <h2 id="por-dónde-seguir">Por dónde seguir</h2>
+  <ul><li><a href="tasks.es.html">Tareas</a>: cómo avanza una tarea, y cómo aparcarla y retomarla.</li><li><a href="guard.es.html">El guardia</a>: qué para, qué pregunta y por qué.</li><li><a href="panel.es.html">El panel</a>: todo de un vistazo, en tu navegador.</li><li><a href="backup.es.html">Copia de seguridad y restauración</a>: para que perder el portátil no te haga perder nada.</li></ul>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="next" href="install.es.html"><span>Siguiente →</span>Instalación</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {
   var b = document.createElement("button");
@@ -93,13 +151,6 @@ document.querySelectorAll(".prose pre").forEach(function (pre) {
   var box = document.createElement("div"); box.className = "codebox";
   pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
 });
-</script>
-</main>
-
-<footer>
-  <div class="wrap"><span>augmented brain · licencia MIT</span></div>
-</footer>
-<script>
 document.querySelectorAll("[data-lang]").forEach(function (a) {
   a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
 });

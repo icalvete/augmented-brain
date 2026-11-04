@@ -13,33 +13,224 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/"/>
   </url>
   <url>
-    <loc>https://icalvete.github.io/augmented-brain/guide/connect-services.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/connect-services.html"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/connect-services.es.html"/>
+    <loc>https://icalvete.github.io/augmented-brain/guide/index.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/index.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/index.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/index.html"/>
   </url>
   <url>
-    <loc>https://icalvete.github.io/augmented-brain/guide/connect-services.es.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/connect-services.html"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/connect-services.es.html"/>
-  </url>
-  <url>
-    <loc>https://icalvete.github.io/augmented-brain/guide/how-it-works.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html"/>
-  </url>
-  <url>
-    <loc>https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html"/>
+    <loc>https://icalvete.github.io/augmented-brain/guide/index.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/index.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/index.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/index.html"/>
   </url>
   <url>
     <loc>https://icalvete.github.io/augmented-brain/guide/getting-started.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/getting-started.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/getting-started.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/getting-started.html"/>
   </url>
   <url>
     <loc>https://icalvete.github.io/augmented-brain/guide/getting-started.es.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/getting-started.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/getting-started.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/getting-started.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/install.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/install.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/install.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/install.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/install.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/install.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/install.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/install.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/spaces.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/spaces.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/spaces.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/spaces.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/spaces.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/spaces.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/spaces.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/spaces.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/tasks.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/tasks.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/tasks.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/tasks.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/tasks.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/tasks.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/tasks.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/tasks.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/notes.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/notes.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/notes.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/notes.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/notes.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/notes.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/notes.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/notes.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/guard.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/guard.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/guard.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/guard.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/guard.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/guard.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/guard.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/guard.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/how-it-works.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/phrases.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/phrases.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/phrases.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/phrases.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/phrases.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/phrases.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/phrases.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/phrases.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/panel.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/panel.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/panel.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/panel.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/panel.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/panel.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/panel.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/panel.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/weekly-review.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/weekly-review.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/weekly-review.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/weekly-review.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/weekly-review.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/weekly-review.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/weekly-review.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/weekly-review.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/backup.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/backup.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/backup.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/backup.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/backup.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/backup.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/backup.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/backup.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/connect-services.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/connect-services.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/connect-services.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/connect-services.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/connect-services.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/connect-services.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/connect-services.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/connect-services.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/import.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/import.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/import.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/import.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/import.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/import.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/import.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/import.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/commands.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/commands.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/commands.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/commands.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/commands.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/commands.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/commands.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/commands.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/mcp-tools.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/configuration.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/configuration.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/configuration.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/configuration.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/configuration.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/configuration.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/configuration.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/configuration.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/memory-format.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/memory-format.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/memory-format.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/troubleshooting.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.html"/>
   </url>
 </urlset>

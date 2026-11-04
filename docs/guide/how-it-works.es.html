@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cómo funciona · augmented brain</title>
-<meta name="description" content="Cómo funciona augmented brain, en cuatro capas: tú y tu asistente, el plugin, el programa y tus ficheros. Qué pasa en una sesión y dónde vive cada fichero.">
+<title>Cómo funciona por dentro · augmented brain</title>
+<meta name="description" content="Cómo funciona augmented brain por dentro, en cuatro capas: tú y tu asistente, el plugin, el programa y tus ficheros. Una sesión paso a paso y dónde vive cada fichero.">
 <link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html">
 <link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html">
 <link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html">
@@ -13,7 +13,7 @@
 <meta name="color-scheme" content="light">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="augmented brain">
-<meta property="og:title" content="Cómo funciona · augmented brain">
+<meta property="og:title" content="Cómo funciona por dentro · augmented brain">
 <meta property="og:description" content="Cuatro capas, una sesión paso a paso y dónde vive cada fichero.">
 <meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html">
 <meta property="og:locale" content="es_ES">
@@ -23,7 +23,7 @@
 <meta property="og:image:height" content="640">
 <meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Cómo funciona · augmented brain">
+<meta name="twitter:title" content="Cómo funciona por dentro · augmented brain">
 <meta name="twitter:description" content="Cuatro capas, una sesión paso a paso y dónde vive cada fichero.">
 <meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
 <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
@@ -33,138 +33,116 @@
 <link rel="stylesheet" href="../site.css">
 </head>
 <body>
+<a class="skip" href="#main">Saltar al contenido</a>
 <header class="wrap top">
   <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
     <a href="how-it-works.html" hreflang="en" data-lang="en">English</a>
     <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
   </nav>
 </header>
 
-<main class="wrap prose">
-  <h1>Cómo funciona</h1>
-  <p>augmented brain es un programa pequeño y una carpeta de notas. Así encajan las piezas:</p>
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html" aria-current="page">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Cómo funciona por dentro</h1>
+  <p>augmented brain es un programa pequeño y una carpeta de notas. Esta página cuenta cómo encajan las piezas. Para usarlo, no te hace falta nada de esto.</p>
   <figure class="diagram"><picture><source media="(max-width: 600px)" srcset="../img/how-layers-narrow.es.svg"><img alt="augmented brain en cuatro capas" src="../img/how-layers.es.svg"></picture></figure>
-  <h2>Cuatro capas</h2>
-  <div class="table-wrap"><table><thead><tr><th>Capa</th><th>Qué es</th><th>Dónde vive</th></tr></thead><tbody><tr><td><strong>3 · Tú y tu asistente</strong></td><td>Hablas con Claude Code como siempre. No hay comandos nuevos que aprender.</td><td>Tu terminal</td></tr><tr><td><strong>2 · El plugin</strong></td><td>Las puertas por las que Claude entra al programa: varios hooks y un servidor MCP.</td><td>Dentro de Claude Code, que lo instala</td></tr><tr><td><strong>1 · El programa</strong></td><td><code>augmented-brain</code>, un solo fichero. Vigila los comandos, lleva las tareas, rehace el índice y hace la copia.</td><td><code>~/.local/bin/augmented-brain</code></td></tr><tr><td><strong>0 · Tus ficheros</strong></td><td>Texto normal: la configuración, tus notas y, si quieres, su copia.</td><td><code>~/.config/augmented-brain/</code>, <code>~/augmented-brain/</code> y tu repo git</td></tr></tbody></table></div>
-  <p>Dicho de otra forma: <strong>tus notas son un cuaderno, el programa es quien lo ordena y el plugin es la puerta.</strong> Tú solo hablas con Claude; Claude entra por la puerta y el programa escribe en el cuaderno.</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#cuatro-capas">Cuatro capas</a></li><li><a href="#una-sesión-paso-a-paso">Una sesión, paso a paso</a></li><li><a href="#dónde-viven-los-ficheros">Dónde viven los ficheros</a></li><li><a href="#lo-que-no-hace">Lo que no hace</a></li><li><a href="#lo-que-se-ha-ido-de-esta-página">Lo que se ha ido de esta página</a></li></ul></nav>
+  <h2 id="cuatro-capas">Cuatro capas</h2>
+  <div class="table-wrap"><table><thead><tr><th>Capa</th><th>Qué es</th><th>Dónde vive</th></tr></thead><tbody><tr><td><strong>3 · Tú y tu asistente</strong></td><td>Hablas con Claude Code como siempre. No hay comandos nuevos que aprender.</td><td>Tu terminal o la app de Claude</td></tr><tr><td><strong>2 · El plugin</strong></td><td>Las puertas por las que Claude entra al programa: varios hooks y un servidor MCP.</td><td>Dentro de Claude Code, que lo instala</td></tr><tr><td><strong>1 · El programa</strong></td><td><code>augmented-brain</code>, un solo fichero. Vigila los comandos, lleva las tareas, rehace el índice y hace la copia de seguridad.</td><td><code>~/.local/bin/augmented-brain</code></td></tr><tr><td><strong>0 · Tus ficheros</strong></td><td>Texto normal: la configuración, tus notas y, si quieres, su copia de seguridad.</td><td><code>~/.config/augmented-brain/</code>, <code>~/augmented-brain/</code> y tu repositorio git</td></tr></tbody></table></div>
+  <p>Dicho de otra forma: <strong>tus notas son un cuaderno, el programa es quien lo ordena y el plugin es la puerta.</strong> Tú solo hablas con Claude. Claude entra por la puerta y el programa escribe en el cuaderno.</p>
   <p>Dos palabras que salen mucho:</p>
-  <ul><li><strong>Hook</strong>: un aviso que Claude Code lanza en un momento concreto. Aquí, al empezar la sesión, antes de cada comando y cada cambio de fichero, después de cada respuesta de Claude, cuando una conversación larga se compacta y cuando la sesión termina. En cada aviso, Claude Code arranca el programa, le pregunta y el programa termina. Solo dos cosas siguen un rato por su cuenta: la copia de seguridad que lanza el final de una sesión, y el panel mientras lo usas.</li><li><strong>MCP</strong> (Model Context Protocol): un estándar abierto para dar herramientas a un asistente. El programa ofrece las suyas (“abre una tarea”, “apárcala”) y Claude las usa. Al ser un estándar, otros asistentes podrán usar las mismas.</li></ul>
-  <h2>Una sesión, paso a paso</h2>
+  <ul><li><strong>Hook</strong>: un aviso que Claude Code lanza en un momento concreto. Aquí, al empezar la sesión, antes de cada comando y cada cambio de fichero, después de cada respuesta, cuando una conversación larga se compacta y cuando la sesión termina. En cada aviso, Claude Code arranca el programa, le pregunta y el programa termina.</li><li><strong>MCP</strong> (Model Context Protocol): un estándar abierto para dar herramientas a un asistente. El programa ofrece las suyas (“abre una tarea”, “apárcala”) y Claude las usa. Al ser un estándar, otros asistentes podrán usar las mismas.</li></ul>
+  <p>La lista de hooks está en <a href="commands.es.html#augmented-brain-hook">Comandos</a>. Las herramientas, en <a href="mcp-tools.es.html">Herramientas MCP</a>.</p>
+  <h2 id="una-sesión-paso-a-paso">Una sesión, paso a paso</h2>
   <figure class="diagram"><picture><source media="(max-width: 600px)" srcset="../img/how-session-narrow.es.svg"><img alt="Una sesión, paso a paso" src="../img/how-session.es.svg"></picture></figure>
-  <p><strong>1. Abres Claude.</strong> El hook de inicio mira en qué carpeta estás y elige tu espacio. Antes de que escribas nada, le pasa a Claude tu perfil, tus reglas y la lista de tareas vivas. Por eso sabe dónde lo dejaste.</p>
-  <p><strong>2. Dices “apárcala”.</strong> Claude usa la herramienta <code>task_park</code>. El programa apunta en el fichero de la tarea dónde se quedó y cuál es el siguiente paso, y rehace el índice. La próxima sesión empieza desde ahí. Abrir, retomar y cerrar funcionan igual.</p>
-  <p><strong>3. Claude va a ejecutar un comando.</strong> El hook del guardia lo lee antes y decide:</p>
-  <ul><li><strong>Adelante</strong>: casi siempre. <code>ls</code>, <code>go test</code>, <code>aws --profile dev s3 ls</code>.</li><li><strong>Te pregunta</strong>: producción, o una máquina que marcaste como intocable. <code>aws --profile prod …</code>, <code>ssh db01 …</code>. Esas dos listas son de toda la máquina: valen en todos los espacios. Un <code>aws</code> se mira con todos los perfiles que puede usar: <code>--profile</code>, <code>AWS_PROFILE</code>, <code>AWS_DEFAULT_PROFILE</code>, o <code>default</code> si no hay ninguno. Igual las herramientas que llaman a AWS por su cuenta (<code>cdk</code>, <code>sam</code>, <code>serverless</code>, <code>terraform</code>, <code>tofu</code>, <code>pulumi</code>, <code>eksctl</code>, <code>copilot</code>).</li><li><strong>Lo para</strong>: subir código, root y secretos. <code>git push</code>, <code>sudo …</code>, un token en un comando, y lo que publica como un push: <code>gh release create</code>, <code>glab release create</code>. Puedes dejar que Claude haga commit y push en un repositorio tuyo, siempre escrito como <code>git -C &lt;repo&gt;</code>: ponlo en <code>git_allowed_repos</code> del espacio para que pase, o en <code>git_ask_repos</code> para que te pregunte cada vez. Como los perfiles de producción, estas listas valen en toda la máquina: un repositorio de la lista de un espacio pasa desde una sesión de cualquiera de ellos. Un worktree de un repositorio de la lista cuenta como él, y <code>~/code/app-*</code> vale para cada carpeta <code>app-&lt;nombre&gt;</code> junto a <code>app</code>. Incluso ahí, un push que reescribe o borra lo que hay en el remoto (<code>--force</code>, <code>--delete</code>, <code>+rama</code>) te pregunta antes. Fusionar una pull request también es un push: <code>gh pr merge</code> y <code>glab mr merge</code> van por las mismas listas. gh y glab no tienen <code>-C</code>, así que una fusión se escribe siempre como <code>cd &lt;repo&gt; &amp;&amp; gh pr merge 12</code>: la carpeta de ese <code>cd</code> es el repositorio, la carpeta de la lista o un worktree suyo. La carpeta de la sesión sola no cuenta. Un repositorio que nombre el comando (<code>-R dueño/nombre</code>, la dirección de la pull request) tiene que ser uno de los remotos de ese repositorio, o la fusión se bloquea. <code>--admin</code>, que se salta la protección de la rama, te pregunta siempre. Y un <code>rm -r</code> de tu carpeta personal entera o del disco entero no se ejecuta nunca, tampoco después de un <code>cd</code> (<code>cd ~ &amp;&amp; rm -rf .</code>), y en Windows se escriba como se escriba la ruta (<code>/c/Users/…</code>, como hace Git Bash, <code>C:/Users/…</code> o <code>$USERPROFILE</code>). Después de un <code>cd</code> que el guardia no puede seguir (<code>cd "$DIR"</code>), un <code>rm -r .</code> te pregunta.</li></ul>
-  <p>Si necesitas que Claude haga algo como root en una máquina durante un tiempo, añádela a <code>root_ask</code> en la configuración con una fecha de fin, como <code>root_ask = ["db01 until 2026-10-31"]</code>. Hasta entonces, root ahí te pregunta cada vez en vez de pararse; después, vuelve a pararse solo.</p>
-  <p>Al empezar cada sesión, a Claude se le dice qué excepciones están vigentes, y cuáles no se pueden leer (esas no dan nada). <code>augmented-brain doctor</code> te avisa cuando una ha caducado y se puede quitar, o cuando no se puede leer.</p>
-  <p>También mira dentro de <code>ssh</code>, de <code>vagrant ssh -c</code>, de <code>docker exec</code>, de <code>podman exec</code>, de <code>kubectl exec</code>, de <code>bash -c</code>, de los bucles, de lo que una tubería le pasa a una shell (<code>echo 'sudo …' | bash</code>) y de un script corto que lance Claude (<code>bash deploy.sh</code>, <code>./deploy.sh</code>). <code>ssh root@…</code> cuenta como hacerse root. Cuando no puede saber qué se va a ejecutar (un programa dado como variable, un comando anidado demasiado hondo, <code>rm -rf "$DIR/"*</code> con una variable que puede estar vacía), te pregunta. Y Claude nunca cambia por su cuenta la configuración de augmented brain ni la de Claude Code, donde una línea podría apagar una comprobación: te pregunta antes. Cuando Claude te guarda un perfil de producción o una máquina intocable, solo añade a las listas: para quitar uno, editas tú la configuración. Si no puede leer su configuración, te pregunta antes de cada <code>aws</code>, <code>ssh</code>, <code>scp</code>, <code>rsync</code>, <code>sftp</code> y <code>mosh</code>, y antes de las herramientas que llaman a AWS por su cuenta, porque no sabe cuáles importan. Los comandos que Claude deja en marcha para vigilar algo (un registro, una compilación) se miran igual, y también los de los ayudantes que Claude lanza (subagentes y flujos de trabajo). Si el guardia no puede ni arrancar, porque falta el programa o está roto, Claude Code para el comando o el cambio en el fichero en vez de dejarlo pasar (Claude Code 2.1.295 o posterior). <code>augmented-brain doctor</code> prueba el guardia de verdad y te dice si no está funcionando. Lee la shell, no PowerShell, así que para también cualquier comando de PowerShell, y Claude lo hace en Bash. Es una red contra despistes, no un muro de seguridad: lee el <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md#aviso-legal">aviso legal</a>.</p>
-  <p><strong>Lo que vence pronto.</strong> Si una tarea tiene una fecha de aviso en los próximos 7 días, o ya pasada, Claude te lo dice nada más empezar (también en una tarea cerrada: al cerrar es cuando se apuntan las comprobaciones de después). Lo mismo con lo apuntado con “recuérdamelo el jueves”: sale desde una semana antes, y cada día después, hasta que la revisión semanal lo resuelve. Y si hace una semana o más de la última revisión y hay cosas en el buzón o tareas paradas, te ofrece la revisión semanal: unos diez minutos repasando contigo cada cosa.</p>
-  <p><strong>Mientras trabajas, Claude va apuntando.</strong> Cada decisión o paso terminado va al diario de la tarea en el momento, no solo al aparcarla: una sesión puede acabar en cualquier momento. Si hay una tarea abierta y en 20 minutos no se ha escrito nada en ella, un hook al final de la respuesta de Claude se lo recuerda, una vez. Cuando una conversación larga se compacta (Claude Code cambia los detalles por un resumen), el resumen se guarda en <code>archive/sessions/</code>, el diario de la tarea apunta a él, y Claude anota lo decidido antes de seguir.</p>
-  <p><strong>4. Cierras la sesión.</strong> El hook de cierre apunta que la sesión acabó bien y lanza la copia de seguridad del espacio, por detrás, si la tienes montada. No esperas a nada. Si la copia falla, Claude te lo dice al empezar la siguiente. Si una sesión no acabó bien (se cerró la ventana a la fuerza, se apagó la máquina), la siguiente te ofrece recuperarla: Claude lee lo que os dijisteis después de la última entrada del diario de la tarea, en el registro de la conversación que guarda Claude Code en esta máquina (lo guarda 30 días), y apunta lo que falte.</p>
-  <h2>Tus ficheros</h2>
-  <p>Todo vive en <code>~/augmented-brain</code>, con una carpeta por <strong>espacio</strong>. Trabajas dentro de ella, y sus notas van en <code>notas/</code>:</p>
+  <p><strong>1. Abres Claude.</strong> El hook de inicio mira en qué carpeta estás y elige tu <a href="spaces.es.html">espacio</a>. Antes de que escribas nada, le pasa a Claude tu perfil, tus reglas y la lista de tareas vivas. También le dice lo que vence pronto, si toca la revisión semanal y si una sesión anterior se cortó. Por eso Claude sabe dónde lo dejaste.</p>
+  <p><strong>2. Dices “apárcala”.</strong> Claude usa la herramienta <code>task_park</code>. El programa apunta en el fichero de la tarea dónde se quedó y cuál es el siguiente paso, y rehace el índice. Abrir, retomar y cerrar funcionan igual. Mira <a href="tasks.es.html">Tareas</a>.</p>
+  <p><strong>3. Claude va a ejecutar un comando.</strong> El hook del guardia lo lee antes, y lo deja pasar, te pregunta o lo para. Mira <a href="guard.es.html">El guardia</a>.</p>
+  <p><strong>4. Claude termina una respuesta.</strong> Si hay una tarea abierta y en 20 minutos no se ha escrito nada en ella, un hook le recuerda a Claude que escriba en su diario, una vez.</p>
+  <p><strong>5. Cierras la sesión.</strong> El hook de cierre apunta que la sesión acabó bien. Lanza la <a href="backup.es.html">copia de seguridad</a> del espacio por detrás, si la tienes montada. No esperas a nada. Si la copia falla, Claude te lo dice al empezar la siguiente sesión.</p>
+  <p>Si una sesión no acabó bien (se cerró la ventana a la fuerza, se apagó el ordenador), la siguiente te ofrece recuperarla. Claude lee lo que os dijisteis después de la última entrada del diario de la tarea, en el registro de la conversación que guarda Claude Code en este ordenador (lo guarda 30 días), y apunta lo que falte.</p>
+  <h2 id="dónde-viven-los-ficheros">Dónde viven los ficheros</h2>
+  <p>Tus notas, una carpeta por espacio:</p>
   <pre><code>~/augmented-brain/
-├── trabajo/              abre Claude aquí para lo del trabajo
+├── trabajo/              una carpeta de trabajo: abre Claude aquí para lo del trabajo
 │   ├── notas/
-│   │   ├── MEMORY.md     el índice que Claude lee al empezar (lo genera el programa)
+│   │   ├── MEMORY.md     el índice que Claude lee al empezar (lo escribe el programa)
 │   │   ├── inbox.md      apuntes rápidos, para ordenar luego
-│   │   ├── areas/        lo que cuidas siempre: "la web", "los servidores"
+│   │   ├── areas/        lo que cuidas siempre
 │   │   ├── tasks/        un fichero por tarea
 │   │   ├── knowledge/    cómo funcionan las cosas y lo aprendido
-│   │   ├── people/       con quién tratas, para saber quién es "Marcos"
+│   │   ├── people/       con quién tratas
 │   │   ├── rules/        reglas solo de este espacio
 │   │   ├── reviews/      revisiones semanales
+│   │   ├── docs/         documentos largos de una tarea; no se cargan nunca
 │   │   └── archive/      lo antiguo; no se carga y no se borra
 │   └── (tus proyectos)
-└── personal/             y aquí para lo personal, con sus propias notas/</code></pre>
-  <p>Tu <strong>perfil</strong>, quién eres y cómo te gusta trabajar, es uno para todos los espacios: <code>~/.config/augmented-brain/profile.md</code>. No hace falta escribirlo a mano: la primera vez que abres Claude, te hace seis preguntas rápidas, explicándote el porqué de cada una. Con tus respuestas guarda el perfil, crea tus áreas, le dice al guardia (para todos los espacios) qué es producción y qué máquinas no se tocan, y apunta a las personas con las que trabajas. Para cambiar cualquier cosa, díselo.</p>
-  <p>Las <strong>reglas</strong> son cómo quieres que trabaje Claude. Dile “a partir de ahora, …” y Claude lo guarda como regla, en <code>rules/</code> del espacio, o en las notas compartidas (abajo) si vale para todo. Cada sesión las carga.</p>
-  <p>Una tarea es un fichero de texto. Arriba, entre las líneas <code>---</code>, los datos que usa el programa. Debajo, lo que escribís tú y Claude:</p>
-  <pre><code>---
-id: task-anadir-un-formulario-de-contacto
-type: task
-title: Añadir un formulario de contacto
-area: area-web
-status: parked
-waiting_on: me
-next: Escribir el plan
-created: "2026-10-15"
-updated: "2026-10-15"
----
-## Lo esencial
-Nombre, correo y mensaje, enviado por email.
+└── personal/             lo mismo, para lo personal</code></pre>
+  <p>La carpeta de configuración, <code>~/.config/augmented-brain/</code> (en Windows, <code>%APPDATA%\augmented-brain</code>):</p>
+  <pre><code>config.toml       los espacios y las listas del guardia
+secrets.toml      los nombres de tus secretos, nunca su valor
+profile.md        quién eres, para todos los espacios
+shared/           reglas, referencias y lecciones para todos los espacios
+state/            lo que este ordenador sabe de las sesiones de cada espacio; sin copia
+migrations/       una copia completa de las notas antes de que una versión nueva las mueva
+panel.json        dónde escucha el panel, mientras funciona</code></pre>
+  <p>Cada fichero está explicado en <a href="configuration.es.html">Configuración</a> y en el <a href="memory-format.html">formato de la memoria</a> (en inglés).</p>
+  <h2 id="lo-que-no-hace">Lo que no hace</h2>
+  <ul><li><strong>No hay servidor ni cuenta.</strong> Si Claude no está abierto, no funciona nada, salvo el panel mientras lo usas y la copia de seguridad que lanza el final de una sesión.</li><li><strong>No envía tus datos a nadie.</strong> Solo la copia de seguridad, si la configuras, habla con tu repositorio. Aparte, una vez al día, pregunta a GitHub cuál es la última versión, sin mandar nada tuyo. <code>AB_NO_UPDATE_CHECK=1</code> lo apaga.</li><li><strong>No toca tus ajustes de Claude Code.</strong> El plugin se pone y se quita con los comandos de Claude Code, que el instalador, <code>update</code> y <code>uninstall</code> lanzan por ti.</li><li><strong>Ojo: tu asistente lee tus notas</strong>, como cualquier fichero que abre. Viajan con tus conversaciones a su proveedor. No guardes ahí lo que no compartirías.</li></ul>
+  <h2 id="lo-que-se-ha-ido-de-esta-página">Lo que se ha ido de esta página</h2>
+  <p>Esta página tenía más cosas. Ahora cada parte tiene su propia página:</p>
+  <ul><li><a id="tus-ficheros"></a><a id="trabajo-y-personal-separados"></a><a id="notas-compartidas"></a>Tus ficheros, los espacios y las notas compartidas: <a href="spaces.es.html">Espacios</a> y <a href="notes.es.html">Áreas, conocimiento y lo demás</a>.</li><li><a id="la-copia-de-seguridad"></a><a id="en-una-máquina-nueva"></a>La copia de seguridad, y una máquina nueva: <a href="backup.es.html">Copia de seguridad y restauración</a>.</li><li><a id="trae-una-memoria-que-ya-tienes"></a>Importar una memoria que ya tienes: <a href="import.es.html">Trae una memoria</a>.</li><li><a id="el-panel"></a>El panel y cada una de sus páginas: <a href="panel.es.html">El panel</a>.</li><li><a id="actualizarlo"></a><a id="quitarlo"></a>Actualizarlo y quitarlo: <a href="install.es.html#actualizar">Instalación</a>.</li></ul>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="guard.es.html"><span>← Anterior</span>El guardia</a>
+    <a class="next" href="phrases.es.html"><span>Siguiente →</span>Qué decirle a Claude</a>
+  </nav>
+</main>
+</div>
 
-## Diario
-- 2026-10-15 — Tarea abierta.
-- 2026-10-15 — Aparcada. Siguiente: Escribir el plan</code></pre>
-  <p>Una tarea grande se puede partir de dos maneras. Un <strong>paso</strong> es una parte pequeña: una casilla del Plan de la tarea, <code>- [ ] Comprar el dominio</code>, que se marca al hacerla; el índice dice cuántos van hechos (“2/5 pasos”). Una <strong>subtarea</strong> es una parte con vida propia, porque espera a otra persona o lleva su propio ritmo: una tarea más, con una línea de más arriba, <code>parent:</code>, el id de la tarea grande. El índice la pone debajo de esa tarea. Un solo nivel: una subtarea no tiene subtareas, y la tarea grande se cierra la última.</p>
-  <p>Puedes abrir y editar todo con cualquier editor. El formato completo está en <a href="https://github.com/icalvete/augmented-brain/blob/main/docs/spec/memory-format.md">memory-format.md</a> (en inglés).</p>
-  <h2>Trabajo y personal, separados</h2>
-  <p>Un espacio es un juego completo de notas, reglas y copia. El instalador crea dos, <code>trabajo</code> y <code>personal</code>. <strong>La carpeta donde abres Claude elige el espacio</strong>, según tu configuración:</p>
-  <pre><code># ~/.config/augmented-brain/config.toml
-default_space = "personal"
-
-[spaces.trabajo]
-memory = "~/augmented-brain/trabajo/notas"
-work_folders = ["~/augmented-brain/trabajo"]
-
-[spaces.personal]
-memory = "~/augmented-brain/personal/notas"
-work_folders = ["~/augmented-brain/personal"]</code></pre>
-  <p>En <code>~/augmented-brain/trabajo/web</code>, Claude ve las notas del trabajo. En <code>~/augmented-brain/personal/blog</code>, las personales. Nunca se mezclan.</p>
-  <p>¿Y si abres Claude en otra carpeta? Por ejemplo, la app de escritorio empieza cada sesión nueva en una carpeta temporal suya. Entonces se usa el <strong>espacio por defecto</strong>, <code>personal</code>, y Claude te lo dice en una línea, con cómo pasar al de trabajo. Su copia de seguridad es también la que guarda tu perfil. Puedes cambiarlo en <code>default_space</code>; si tienes un solo espacio, es ese. Un espacio añadido con <code>space add</code> lo fija si no lo había.</p>
-  <p>¿Tus proyectos ya viven en otra carpeta, como <code>~/code</code>? Añádela a <code>work_folders</code> del espacio que toque. Para un espacio nuevo (un cliente, por ejemplo): <code>augmented-brain space add cliente</code>.</p>
-  <h3>Notas compartidas</h3>
-  <p>Algunas cosas que aprendes valen en todas partes: cómo se porta git, cómo te gustan las respuestas, una lección sobre una herramienta. Guardarlas dos veces, una por espacio, dejaría dos copias que acaban siendo distintas. Por eso van una sola vez en las <strong>notas compartidas</strong>, junto a tu perfil: <code>~/.config/augmented-brain/shared/</code>. Ahí solo van reglas, referencias y lecciones. Las tareas, las áreas y las personas son siempre de un espacio.</p>
-  <p>Todos los espacios las ven. Las reglas compartidas se cargan al empezar cada sesión, como las del espacio: enteras si caben, y si no, una línea cada una con su resumen, para que Claude abra el fichero cuando necesite el detalle. Las referencias y lecciones compartidas salen en una línea cada una, y Claude abre la que necesite. No hay que mover ficheros a mano: dile a Claude «esto vale para todo» y la guarda como compartida. Viajan en la copia de seguridad del espacio por defecto, como tu perfil.</p>
-  <h2>La copia de seguridad</h2>
-  <p>La carpeta de notas de cada espacio es también un repositorio git. La copia lo sube a un repositorio privado tuyo, uno por espacio.</p>
-  <p><strong>Montarla: pídeselo a Claude.</strong> Dile “monta la copia de seguridad” (al final de la entrevista ya te lo ofrece). Crea en tu cuenta de GitHub un repositorio privado, <code>augmented-brain-&lt;espacio&gt;</code>, lo conecta y hace la primera copia. Para eso usa <code>gh</code>, la herramienta oficial de GitHub: si no la tienes, Claude te dice cómo instalarla y te guía en el único paso que necesita tu navegador, entrar con tu cuenta. ¿Prefieres otro sitio (GitLab, el git de tu empresa)? Dale la dirección del repositorio, o hazlo tú:</p>
-  <pre><code>augmented-brain backup setup git@gitlab.com:tu-usuario/mi-cerebro.git</code></pre>
-  <p>Desde entonces <strong>se hace sola cada vez que terminas una sesión</strong> de Claude, en segundo plano. Si falla (sin conexión, sin permiso en el repositorio), Claude te lo dice al empezar la siguiente. También puedes lanzarla a mano:</p>
-  <pre><code>augmented-brain backup          # este espacio
-augmented-brain backup --all    # todos</code></pre>
-  <h3>En una máquina nueva</h3>
-  <ol><li>Instala augmented brain con el comando de siempre. Te crea los espacios vacíos. Si al acabar se abre Claude, ciérralo sin hacer la entrevista: tu perfil viene en la copia.</li><li>Recupera cada espacio desde su copia:<pre><code>augmented-brain restore https://github.com/tu-usuario/augmented-brain-trabajo.git</code></pre>Sustituye el espacio vacío por el tuyo: notas, tareas, reglas y la configuración del espacio, que solo puedes leer tú. Lo único que no trae son los repositorios donde Claude puede hacer commit y push: alguien podría haber cambiado la copia, así que <code>restore</code> los nombra y los vuelves a añadir si lo sigues queriendo. Tu perfil viene con el espacio por defecto (<code>personal</code>), y ese espacio vuelve a ser el de por defecto, con la lista de los nombres de tus secretos (mira «El panel», más abajo) si esta máquina no tiene ninguna. Las listas del guardia (producción, máquinas intocables) no van en ninguna copia, porque pueden nombrar máquinas de tu trabajo: <code>restore</code> y <code>doctor</code> lo dicen, y la siguiente sesión te ofrece volver a pedírtelas. Hasta entonces, nada pregunta antes de tocar producción. Si ese espacio ya tuviera notas tuyas, no lo pisa. Si algo falla a medias, el espacio vacío se queda como estaba.</li><li>Abre Claude. Sigue donde lo dejaste, y la copia sigue haciéndose sola.</li></ol>
-  <p>Si el repositorio está en GitHub, antes de restaurar entra una vez con <code>gh auth login</code> para que git tenga permiso.</p>
-  <p>Lo que te da:</p>
-  <ul><li><strong>Una máquina nueva en minutos</strong>, con los tres pasos de arriba.</li><li><strong>Varias máquinas, un solo cerebro.</strong> Antes de subir, la copia trae lo que hizo tu otra máquina y lo mezcla.</li><li><strong>Todo el historial.</strong> Cada copia es un commit de git, con la máquina y la hora. Con <code>git log</code> ves qué cambió y puedes volver a cualquier día.</li><li><strong>En tu sitio.</strong> GitHub, GitLab o tu servidor: el repositorio lo eliges tú. No hay nube de augmented brain.</li><li><strong>Un repositorio por espacio.</strong> El del trabajo puede ir al git de la empresa y el personal al tuyo. Tu perfil solo viaja en la copia del espacio por defecto, nunca en la del trabajo.</li><li><strong>No sube secretos.</strong> Las herramientas de Claude se niegan a escribir una contraseña o un token en una nota. Si aun así entra uno (a mano, por ejemplo), la copia se para y te dice en qué fichero.</li><li><strong>No pisa nada.</strong> Si dos máquinas cambiaron la misma nota, se para sin tocar nada y te explica cómo resolverlo. Si cada una solo le añadió entradas de diario (líneas con fecha), se juntan solas, por fecha. El índice, que es generado, se rehace solo, y las capturas del buzón hechas en dos máquinas se guardan las dos. Un detalle: una captura que procesaste en una máquina puede volver si la otra apuntó algo a la vez. Sale otra vez en la siguiente revisión, sin más.</li><li><strong>Ni basura ni gigantes.</strong> Los restos de un cuelgue y los ficheros que dejan los sistemas en las carpetas (<code>.DS_Store</code>, <code>Thumbs.db</code>) se quedan fuera. Un fichero de más de 50 MB también (GitHub los rechaza), y Claude te dice cuál al empezar la siguiente sesión.</li></ul>
-  <p>Para apagar la copia automática: <code>AB_NO_AUTO_BACKUP=1</code>.</p>
-  <h2>Trae una memoria que ya tienes</h2>
-  <p>Si Claude Code ya te guarda una memoria (los ficheros que escribe en <code>~/.claude/projects/&lt;carpeta&gt;/memory/</code>), puedes traerla a tus espacios:</p>
-  <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory</code></pre>
-  <p>Eso no escribe nada. Enseña adónde iría cada nota y lo que no ha podido decidir: ficheros que no son notas (un índice), notas sobre ti (copia lo que importe a tu perfil), enlaces que cruzarían de un espacio a otro, ids que tu espacio ya tiene. Cuando la lista esté bien, vuelve a lanzarlo con <code>--apply</code>. La carpeta de la que importas solo se lee.</p>
-  <p>Cada fichero pasa a ser una nota de su tipo: por su nombre (<code>task-…</code>, <code>area-…</code>, <code>ref-…</code>, <code>lesson-…</code>, <code>rule-…</code>, <code>person-…</code>) o, si no, por lo que Claude Code dice que es. Una tarea sin estado entra aparcada, esperándote, con «revisar esta tarea importada» como siguiente paso. Con más de un espacio, un fichero pequeño dice a qué espacio va cada área, qué notas van a otro sitio que su área y cuáles van a las notas compartidas:</p>
-  <pre><code>area-familia = personal
-task-curso-del-cole = trabajo
-lesson-git-commits-pequenos = shared
-* = trabajo</code></pre>
-  <p>y se pasa con <code>--map &lt;fichero&gt;</code>. <code>--repos-base &lt;carpeta&gt;</code> dice respecto a qué carpeta están los <code>repos:</code> de las notas, para reescribirlos respecto a la carpeta de trabajo del espacio.</p>
-  <p>Lo demás también viene. Las capturas de tu <code>inbox.md</code> antiguo (cada línea <code>- …</code>) van al buzón del espacio de <code>*</code>, con su fecha y nunca dos veces. <code>archive/</code> y <code>docs/&lt;tarea&gt;/</code> se copian tal cual, junto a su nota, también si vuelves a importar más tarde. Un fichero con un secreto escrito (una clave, un token), sea nota o documento, se importa, pero sale en el informe: la copia de seguridad no lo sube hasta que se quite. <code>augmented-brain check</code> también lo nombra. Una referencia o lección que es una lista de personas (una sección <code>## Nombre</code> por cada una, con una palabra como “personas” o “equipo” en su id o su título) entra tal cual, y el informe la nombra: las personas son notas propias, así que pide a Claude que guarde cada una como persona.</p>
-  <p>¿Claude Code llevaba esa memoria por su cuenta? Entonces la sigue llevando para las carpetas de tus espacios: una segunda memoria, junto a la del espacio, que se desvía de ella. <code>augmented-brain doctor</code> te avisa, y te dice cómo apagarla: <code>"autoMemoryEnabled": false</code> en los ajustes de Claude Code. Lo que ya tiene se queda, listo para importar.</p>
-  <h2>El panel</h2>
-  <p>El panel es una página en tu navegador para ver y cambiar tus espacios sin pasar por Claude. Ábrelo con <code>/brain:panel</code> en Claude, o desde una terminal:</p>
-  <pre><code>augmented-brain panel</code></pre>
-  <p>Abre tu navegador en <strong>Hoy</strong>, con el espacio de la carpeta desde la que lo lanzas. Si no puede (en un ordenador sin pantalla, por ejemplo), escribe una dirección para que la abras tú. Lo que encuentras:</p>
-  <ul><li><strong>Hoy</strong>, la primera página: todos los espacios a la vez. De cada uno, lo que vence en los próximos 7 días, las tareas que te esperan (las aparcadas, en una línea), cuántas capturas esperan en el buzón, si toca la revisión semanal, las sesiones que se cortaron y las notas con problemas. Debajo, <strong>Repositorios</strong>: los que tus tareas abiertas nombran en <code>repos:</code> y tienen cambios sin commit o commits sin subir, es decir, trabajo que solo está en este ordenador. Si todas sus tareas están aparcadas (o para algún día), sale marcado «¿olvidado?». El panel solo los lee: git funciona sin coger bloqueos, así que nunca te estorba, y nunca pide una contraseña. Una rama que nunca se subió solo cuenta si el repositorio tiene un remoto al que subirla. <strong>Ver todos los repositorios</strong> lleva al mapa completo.</li><li><strong>Tareas</strong>, agrupadas por área, primero las que te esperan a ti, con su estado y su siguiente paso. Los filtros enseñan solo las que te esperan, las que están en marcha, las aparcadas, las paradas, o las que esperan a una persona. Una tarea que nadie ha cambiado en 14 días sale marcada «parada N días»: la revisión semanal también la saca. Abre una: primero lo esencial, las demás secciones plegadas, y el diario con lo último arriba. Escribe en su diario, cambia su estado o su siguiente paso, apárcala o ciérrala. También puedes abrir tareas nuevas. Si una tarea espera a una persona de la que tienes nota, «espera a» te lleva a ella.</li><li><strong>Recordatorios</strong>: las fechas para revisar de tus tareas (también de las cerradas) y los recordatorios del buzón, primero lo atrasado y luego los próximos 30 días. Añade uno, o márcalo como hecho.</li><li><strong>Buzón</strong>: apunta una idea, márcala como resuelta, o conviértela en tarea.</li><li><strong>Revisión semanal</strong>, en una página. Cada captura pasa a tarea, a referencia o a lección, o se descarta. Cada tarea sin tocar dos semanas sigue como está, o pasa a algún día (o la abres para cerrarla). Lo que decides se va apuntando, y se guarda en el registro de la revisión al terminar.</li><li><strong>Áreas</strong>, <strong>conocimiento</strong>, <strong>reglas</strong> y <strong>personas</strong>. Conocimiento y reglas enseñan las del espacio y las compartidas, marcadas «compartida». Puedes crear áreas y cambiar el título y el resumen de un área. Puedes añadir personas y cambiarlas: sus otros nombres, su papel y sus notas. El nombre se queda: un nombre nuevo sería otra persona. La página de una persona enseña las tareas que le esperan y las que la enlazan.</li><li><strong>Repositorios</strong>: tu mapa de repositorios. Todos los repositorios git de las carpetas de trabajo de cada espacio, hasta tres carpetas por debajo (no dentro de otro repositorio, ni en carpetas ocultas, <code>node_modules</code> o <code>vendor</code>), agrupados por espacio, primero los que tienen trabajo pendiente. De cada uno: su rama, adónde sube (como <code>servidor/dueño/nombre</code>, nunca con contraseña), los ficheros cambiados, los commits sin subir, las tareas abiertas que lo nombran, y una línea tuya sobre qué es. Esa línea se escribe ahí mismo. Se guarda en las notas del espacio, en la referencia «Repositorios» (<code>knowledge/ref-repositories.md</code>, una línea por repositorio), así que la copia de seguridad la guarda; Claude también puede escribirla. Git solo se ejecuta dentro de las carpetas de trabajo, y los enlaces a carpetas de fuera no se siguen.</li><li><strong>Secretos</strong>: los nombres de los secretos que guardas en el llavero del sistema (donde tu ordenador guarda las contraseñas), nunca su valor. Cada uno como <code>servicio/nombre</code>, para qué sirve, y qué tareas lo nombran. Así sabes cuáles hay, y una máquina nueva sabe cuáles pedirte. <strong>Comprobar en el llavero</strong> dice si cada uno está en este ordenador (se lo pregunta a <code>secret-tool</code> en Linux y a <code>security</code> en macOS; en otros sistemas no lo puede saber). Solo pregunta cuando pulsas, porque un llavero bloqueado te pide su contraseña. Más abajo, el resto.</li><li><strong>Sesiones</strong>: tus sesiones de Claude en este ordenador, de los últimos 30 días. Las que no terminaron (cerradas a la fuerza, o cortadas al apagarse el ordenador) muestran lo dicho después de la última anotación del diario: guárdalo en las notas (va a <code>archive/sessions/</code> con una línea en el diario de la tarea) o dalas por revisadas. Las que están en marcha y las terminadas, con lo que ocupan sus transcripciones (los ficheros donde Claude Code guarda cada conversación). Puedes borrar la transcripción de una sesión terminada; esa sesión ya no se podrá retomar.</li><li><strong>Perfil</strong>: quién eres y cómo te gusta trabajar, el mismo para todos los espacios.</li><li><strong>Salud</strong>: la carpeta de notas y las carpetas de trabajo del espacio, si es el espacio por defecto, notas que no son válidas, repositorios a los que apuntan las notas y que ya no están en este ordenador, el índice, la última copia de seguridad y la última revisión semanal.</li><li><strong>Ayuda</strong>: enlaces a las respuestas de esta web, en tu idioma, y una forma de contarnos un problema o proponer una idea en GitHub (la web donde vive el proyecto; necesitas una cuenta gratuita allí). Pulsa <strong>Avisa de un problema en GitHub</strong> y el panel hace la revisión de salud (lo que dice <code>augmented-brain doctor</code>) en ese momento; luego abre el formulario de GitHub en otra pestaña con la versión, tu sistema y esa revisión ya escritos. Antes de abrirlo, el panel quita tu carpeta personal (sale como <code>~</code>), tus carpetas de notas y de trabajo, las direcciones de correo, los nombres de tus espacios, las máquinas intocables y los perfiles de AWS de producción, y cualquier línea que parezca una contraseña o una clave. Allí cuentas qué pasó y lees el resto: cambia o borra lo que prefieras no compartir. Nada se envía hasta que pulsas el botón de enviar de GitHub. Para ser claros: el texto viaja a GitHub dentro de la dirección de la página en cuanto se abre, así que GitHub puede verlo entonces, aunque no lo envíes.</li></ul>
-  <p>El cuadro de <strong>búsqueda</strong> del lateral busca en las notas del espacio y en las compartidas: títulos, resúmenes y texto. Sale una nota cuando tiene todas las palabras, en mayúsculas o minúsculas, con tildes o sin ellas.</p>
-  <p>Las notas se leen como texto, no como Markdown en crudo: títulos, listas, tablas, código y enlaces, y un <code>[[enlace]]</code> a otra nota te lleva a ella. Si una nota cambia en el disco mientras tienes abierta su página (Claude escribió en ella, por ejemplo), la página te lo dice, con un enlace para verla como está ahora.</p>
-  <p>La lista de secretos es la misma en todos los espacios. Vive en su propio fichero, <code>secrets.toml</code>, junto al de configuración, como <code>secrets = ["telegram/alertas-bot: avisos al móvil"]</code>. Puedes apuntar un nombre en el panel, o quitar uno de la lista (el secreto sigue en el llavero). O dile a Claude que has guardado un secreto nuevo, y apunta el nombre. Lo que parezca un valor se rechaza. Si al llavero le falta uno, el panel enseña el comando que lo guarda (te pide el valor). La lista viaja en la copia del espacio por defecto. Un restore la trae a una máquina nueva que no tenga ninguna, y nombra los secretos que su llavero aún no tiene, cada uno con el comando para guardarlo.</p>
-  <p>Cambia tus notas igual que Claude, con el mismo programa, y se esperan el uno al otro: puedes tener los dos abiertos a la vez.</p>
-  <p>Está hecho para que siga siendo solo tuyo:</p>
-  <ul><li>Funciona <strong>solo mientras lo usas</strong>. Tras 30 minutos sin uso se para solo. Para pararlo ya: <code>augmented-brain panel stop</code>, o el enlace del pie de la página.</li><li>Funciona <strong>solo en este ordenador</strong>. Las otras máquinas de tu red no llegan a él.</li><li>La dirección lleva una <strong>llave</strong>, nueva cada vez que el panel arranca. Sin ella el panel no responde nada, así que ningún otro programa ni página web de tu ordenador puede usarlo. La llave sigue en la dirección mientras usas el panel, así que trata la dirección como una contraseña: no la compartas. Deja de valer cuando el panel se para.</li><li>Al guardar una tarea, solo se guarda lo que cambiaste en la página: si Claude cambió otra cosa mientras tanto, se queda. Un paso solo se marca si sigue diciendo lo que mostraba la página.</li><li>No carga <strong>nada de internet</strong>: ni fuentes ni estadísticas. Funciona sin conexión. Una nota tampoco puede meter HTML ni scripts propios en la página. Los enlaces de la página Ayuda van a la web solo cuando los pulsas.</li><li>Mirar si una nota ha cambiado no cuenta como usar el panel: una pestaña abierta no lo mantiene en marcha.</li></ul>
-  <h2>Lo que no hace</h2>
-  <ul><li><strong>No hay servidor ni cuenta.</strong> Si Claude no está abierto, no funciona nada, salvo el panel mientras lo usas y la copia de seguridad que lanza el final de una sesión.</li><li><strong>No envía tus datos a nadie.</strong> Solo la copia, si la configuras, habla con tu repositorio. Aparte, una vez al día, pregunta a GitHub cuál es la última versión, sin mandar nada tuyo. <code>AB_NO_UPDATE_CHECK=1</code> lo apaga.</li><li><strong>No toca tus ajustes de Claude Code.</strong> El plugin se pone y se quita con los comandos de Claude Code, que el instalador, <code>update</code> y <code>uninstall</code> lanzan por ti.</li><li><strong>Ojo: tu asistente lee tus notas</strong>, como cualquier fichero que abre. Viajan con tus conversaciones a su proveedor. No guardes ahí lo que no compartirías.</li></ul>
-  <h2>Actualizarlo</h2>
-  <p>Cuando hay versión nueva, Claude te lo dice al empezar una sesión y se ofrece a actualizarlo. También puedes hacerlo tú:</p>
-  <pre><code>augmented-brain update</code></pre>
-  <p>Actualiza el programa y el plugin de Claude. Después, cierra y abre Claude para que use la versión nueva: una sesión que estaba abierta sigue con la vieja hasta que lo hagas, y sus herramientas de augmented brain pueden fallar. <code>augmented-brain doctor</code> y el arranque de una sesión nueva te dicen cuántas sesiones siguen con la versión vieja. Tus notas y tu configuración se quedan como están, salvo que la versión nueva las escriba de otra manera: entonces la primera sesión las pasa a la manera nueva, después de guardar una copia completa en la carpeta <code>migrations/</code> de la configuración, y Claude te lo dice. Una versión más vieja se niega a abrir notas escritas por una más nueva, en vez de estropearlas: actualízala también en ese ordenador.</p>
-  <h2>Quitarlo</h2>
-  <pre><code>augmented-brain uninstall</code></pre>
-  <p>Quita el plugin de Claude, lo que Claude Code guarda de él y el programa, después de preguntarte. Tus notas se quedan en <code>~/augmented-brain/</code>: son tuyas. También se quedan tu configuración (para borrarla: <code>augmented-brain uninstall --config</code>), Claude Code, su app y git. Si vuelves a instalarlo, lo encuentras todo como estaba.</p>
-  <p><strong>Para empezar de cero</strong>, <code>augmented-brain uninstall --all</code>: borra además tu configuración, tu perfil y las notas de cada espacio. Antes te enseña qué va a borrar, con cuántas notas tiene cada carpeta, y te pregunta. Lo que tengas tuyo dentro de la carpeta de un espacio se queda. Tu copia de seguridad en GitHub no se borra: te dice cuál es y cómo borrarla.</p>
-  <a class="back" href="../es/">← Volver a augmented brain</a>
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {
   var b = document.createElement("button");
@@ -181,13 +159,6 @@ document.querySelectorAll(".prose pre").forEach(function (pre) {
   var box = document.createElement("div"); box.className = "codebox";
   pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
 });
-</script>
-</main>
-
-<footer>
-  <div class="wrap"><span>augmented brain · licencia MIT</span></div>
-</footer>
-<script>
 document.querySelectorAll("[data-lang]").forEach(function (a) {
   a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
 });

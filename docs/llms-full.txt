@@ -1,0 +1,2930 @@
+# augmented brain: the full documentation
+
+> Your brain, augmented with AI. augmented brain gives an AI assistant (Claude Code today) memory, a method and a guard. This file is every page of the documentation at https://icalvete.github.io/augmented-brain/guide/, in English, generated from the Markdown sources by scripts/build-guides.py.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/getting-started.html
+
+# Getting started
+
+
+## What it is
+
+augmented brain gives your AI assistant a memory, a method and a guard. Today the
+assistant is Claude Code.
+
+- **A memory.** Your tasks, decisions, people and rules are kept as plain text files on
+  your computer. Every new session starts by reading them, so you never explain the same
+  thing twice.
+- **A method.** Every piece of work is a task that goes from idea to closed in six
+  phases. You can stop a task today and pick it up next week, in any session.
+- **A guard.** Before Claude runs a command, augmented brain reads it. Pushing code,
+  becoming root or writing a password is stopped. Touching production asks you first.
+
+You do not learn new commands. You talk to Claude as usual: "new task…", "park it",
+"where were we?".
+
+It is free and open source (MIT). It is also alpha: an early version that may change.
+
+This guide is for starting from scratch, even if you have never opened a terminal. It
+takes about ten minutes.
+
+## What you need
+
+- **A computer with Linux, macOS or Windows.** On a Mac, macOS 13 (Ventura) or later: see
+  the Apple menu → About This Mac. On Windows, Windows 10 or 11. What changes on each
+  system is in [Installing](https://icalvete.github.io/augmented-brain/guide/install.html).
+- **A paid Claude account**: Pro or above. augmented brain is free, but it works with
+  Claude Code, and Claude Code is not in the free plan. The plans are at
+  [claude.com/pricing](https://claude.com/pricing).
+- **Your computer's password**, in case something missing has to be installed.
+
+## 1. Open the terminal
+
+The terminal is a window where you type commands instead of clicking buttons. You only
+need it to install.
+
+- **On a Mac:** press `Cmd + Space`, type `Terminal` and press Enter.
+- **On Ubuntu:** press `Ctrl + Alt + T`.
+- **On Windows:** press the Windows key, type `PowerShell` and press Enter.
+
+## 2. Paste the install command
+
+Copy this line, on a Mac or Linux:
+
+```bash
+curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh
+```
+
+Or this one, on Windows:
+
+```powershell
+irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
+```
+
+Paste it into the terminal (`Cmd + V` on a Mac, `Ctrl + Shift + V` on Ubuntu, a right
+click on Windows) and press Enter.
+
+## 3. Answer the installer
+
+It asks a few questions. To accept what it suggests, just press Enter.
+
+1. **The language.** English or Spanish.
+2. **Whatever is missing**, if anything: git (keeps the history of your notes), Claude
+   Code and the Claude desktop app. It tells you what each one is for before installing it.
+   If you already had Claude Code but it is behind, it offers to update it.
+3. **Open the Claude app now?** Say yes.
+
+If it asks for your password, type it even though you see nothing: the terminal does not
+show it, not even as asterisks. Press Enter when done.
+
+On a Mac, if git is missing, a window opens to install Apple's developer tools. Click
+**Install** and accept. It takes a few minutes; the installer waits and carries on by itself.
+
+On Windows there is no password to type: when Git is installed, Windows shows a window
+asking for permission. Click **Yes**.
+
+## 4. Sign in to Claude
+
+In the Claude app:
+
+1. Sign in with your account.
+2. Open the **Code** tab.
+3. Click **+ New** and type "Hi".
+
+Without choosing a folder, you work in your personal space. For the work one, pick the
+folder `~/augmented-brain/work` with **Choose…**. A **space** is a separate drawer of
+notes: [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html) explains them.
+
+## 5. Answer the interview
+
+The first time, Claude introduces itself and asks six questions, one at a time, telling
+you what each one is for: who you are, what you look after, how you want answers, what
+must not be touched, which tools you use and who you work with. You can skip any of them.
+
+At the end it shows what it saved and offers to set up the backup. Say yes: your notes go
+to a private repository of yours, and losing the computer loses nothing.
+
+## Your first week
+
+Talk to it as usual. These phrases pay off from day one:
+
+| You say | What it does |
+|---|---|
+| "New task: prepare Thursday's meeting." | Opens a task and asks what it needs to define it |
+| "Park it, we carry on tomorrow." | Writes down where you stopped and what comes next |
+| "Where were we?" | Lists your live tasks with their next step |
+| "Let's carry on with Thursday's meeting." | Resumes the task where you left it, in any session |
+| "Note this: call the insurance." | Puts it in the inbox, without opening a task |
+| "We go with supplier B, it is cheaper." | Writes it in the task's journal, with the date |
+| "Save that as a lesson." | What you learned gets a note of its own |
+| "Close the task." | Closes it; it is never deleted |
+| "Lucía is my boss, I call her Lu." | Saves her, and next time it knows who she is |
+| "Why did we pick supplier B?" | Finds it in your notes and gives you the decision, with date and reason |
+
+More phrases, grouped by what you want: [What to say to Claude](https://icalvete.github.io/augmented-brain/guide/phrases.html).
+
+## Words you will hear
+
+- **Space:** a separate drawer, with its own notes and rules. There are two, `work` and
+  `personal`. The folder you open Claude in decides which one you are in.
+- **Task:** something with a start and an end. It goes through six phases, from idea to
+  closed.
+- **Area:** something you always look after (the website, the house, a team). It groups
+  its tasks.
+- **Inbox:** where loose ideas wait until you sort them.
+- **Guard:** the check that stops a risky command, or asks you first.
+- **Backup:** your notes, pushed to a private git repository of yours after every session.
+- **Plugin:** the piece that connects augmented brain to Claude Code. The installer puts
+  it in.
+- **Panel:** a page in your browser to see and change everything without asking Claude.
+
+## If something goes wrong
+
+- **Claude does not introduce itself or run the interview.** Start a new session. If
+  nothing changes, open the terminal and type `augmented-brain doctor`: it tells you what
+  is missing and how to fix it.
+- **The terminal cannot find a command** (`command not found`, or "not recognized" on
+  Windows). Close the terminal and open another one: the new one finds the programs just
+  installed.
+- **Claude asks you for a paid plan.** Claude Code needs Pro or above.
+- **Something else.** See [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html).
+
+## Where to go next
+
+- [Tasks](https://icalvete.github.io/augmented-brain/guide/tasks.html): how a task moves, and how to park and resume it.
+- [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html): what it stops, what it asks, and why.
+- [The panel](https://icalvete.github.io/augmented-brain/guide/panel.html): everything at a glance, in your browser.
+- [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html): so a lost laptop loses nothing.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/install.html
+
+# Installing
+
+
+One command installs augmented brain and everything it needs, on Linux, macOS and
+Windows. This page says what that command does on each system, where it puts things and
+what is different on each one. New to the terminal? [Getting started](https://icalvete.github.io/augmented-brain/guide/getting-started.html)
+walks you through it.
+
+## On every system
+
+- **A paid Claude plan** (Pro, Max, Team or Enterprise) or an Anthropic API key. augmented
+  brain is free, but it works with Claude Code, and the free plan does not include Claude
+  Code. The installer says so before installing it. Plans: [claude.com/pricing](https://claude.com/pricing).
+- **No administrator or root.** The program goes in your own folder. Only installing
+  something that is missing, like git, may ask for your password.
+- **The installer asks first.** The language, then each missing piece, with what it is for.
+  Press Enter to accept what it suggests.
+- **It always ends the same way:** two spaces, `work` and `personal` (in Spanish, `trabajo`
+  and `personal`), in `~/augmented-brain`, the Claude Code plugin installed, and the offer to
+  open Claude.
+- **Every download is checked.** The program comes from the project's latest release on
+  GitHub, and its SHA-256 must match the release's list, or nothing is installed.
+
+## Linux
+
+**You need:** a 64-bit PC or Arm (amd64 or arm64), `curl` or `wget`, and `sha256sum` (all
+usual distributions have them).
+
+**Install:** open a terminal (on Ubuntu, `Ctrl + Alt + T`) and paste:
+
+```bash
+curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh
+```
+
+**What it does:**
+
+1. **git**, if missing, with your system's package manager: `apt` (Ubuntu, Debian), `dnf`
+   (Fedora), `pacman` (Arch) or `zypper` (openSUSE). It asks for your password.
+2. **Claude Code**, if missing, with Anthropic's own installer, into `~/.local/bin`. If
+   you have it but it is behind, it offers to update it (`claude update`).
+3. **The Claude desktop app**, if you want it, **only on Ubuntu and Debian**: from
+   Anthropic's apt repository, which it adds for you; it asks for your password. On other
+   distributions you use Claude in the terminal.
+4. **The program**, into `~/.local/bin/augmented-brain`.
+5. **The PATH:** it adds `~/.local/bin` to `~/.bashrc` with bash, `~/.zshrc` with zsh, or
+   `~/.profile` otherwise, unless it is already there.
+6. **The setup**, and the offer to open Claude.
+
+**Where things go:** the program and Claude Code in `~/.local/bin`; the configuration in
+`~/.config/augmented-brain` (or `$XDG_CONFIG_HOME/augmented-brain`); your notes in
+`~/augmented-brain/<space>/notes`.
+
+**Good to know:**
+
+- After installing, **open a new terminal**: the one you used does not see the new PATH yet.
+- To work without the app: `cd ~/augmented-brain/work && claude`.
+
+## macOS
+
+**You need:** **macOS 13 (Ventura) or later**, which Claude Code needs; see the Apple menu →
+About This Mac. Apple silicon and Intel Macs both work. Homebrew is not needed.
+
+**Install:** open the Terminal (`Cmd + Space`, type `Terminal`, Enter) and paste:
+
+```bash
+curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh
+```
+
+**What it does:**
+
+1. **It checks the macOS version first.** Older than 13, it says so and stops, before
+   installing anything that would not start.
+2. **git**, if missing, comes with **Apple's developer tools**. A Mac has a `git` command
+   even without them, but it only asks you to install them: the installer looks past it.
+   A window opens: click **Install** and accept. It takes a few minutes; the installer waits
+   and carries on by itself.
+3. **Claude Code**, if missing, with Anthropic's own installer, into `~/.local/bin`. If
+   you have it but it is behind, it offers to update it (`claude update`).
+4. **The Claude desktop app**, if you want it: with Homebrew when you have it, otherwise
+   straight from Anthropic, with its signature checked. It goes to `/Applications`, or to
+   `~/Applications` if you cannot write there.
+5. **The program**, into `~/.local/bin/augmented-brain`.
+6. **The PATH:** with zsh, the Mac's usual shell, in `~/.zshrc`. With bash, in
+   `~/.bash_profile`, or in `~/.bash_login` or `~/.profile` if you already have one of them:
+   the Mac's Terminal reads those, not `~/.bashrc`.
+7. **The setup**, and the offer to open the Claude app.
+
+**Where things go:** as on Linux: `~/.local/bin`, `~/.config/augmented-brain` and
+`~/augmented-brain`.
+
+**Good to know:**
+
+- After installing, **open a new Terminal window**.
+- In the app: **Code** tab, **+ New**. Without choosing a folder you work in your personal
+  space; for work, **Choose…** and pick `~/augmented-brain/work`.
+
+## Windows
+
+**You need:** **Windows 10 or 11**, 64-bit PC or Arm. **winget**, Windows' own installer,
+which Windows 11 and an up-to-date Windows 10 already have (if it is missing, it comes with
+"App Installer" from the Microsoft Store). The PowerShell that comes with Windows is enough.
+
+**Install:** open **PowerShell** (Start menu, type `PowerShell`, Enter) and paste, with a
+right click:
+
+```powershell
+irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
+```
+
+**What it does:**
+
+1. **Git for Windows**, if missing, with winget. **On Windows it is required**, not only for
+   the history of your notes: it brings **Git Bash**, where Claude runs commands with the
+   guard watching. Windows shows a permission window: click **Yes**.
+2. **Claude Code**, if missing, with Anthropic's own installer, into
+   `%USERPROFILE%\.local\bin`. If you have it but it is behind, it offers to update it
+   (`claude update`).
+3. **The Claude desktop app**, if you want it, with winget.
+4. **The program**, into `%USERPROFILE%\.local\bin\augmented-brain.exe`.
+5. **The PATH:** it adds that folder to your user's PATH. Claude Code's own installer leaves
+   that to you; this one does it.
+6. **The setup**, and the offer to open the Claude app.
+
+**Where things go:** the program and Claude Code in `%USERPROFILE%\.local\bin`; the
+configuration in `%APPDATA%\augmented-brain`; your notes in
+`%USERPROFILE%\augmented-brain\<space>\notes`.
+
+**Good to know:**
+
+- After installing, **open a new PowerShell window**: the old one, and the ones already
+  open, do not see the new PATH.
+- **Claude runs commands in Bash, not in PowerShell.** The guard reads the shell, not
+  PowerShell, so it stops every PowerShell command and Claude uses Git Bash instead. You
+  will see that block in Claude's messages: it is expected.
+- **The app may ask to update itself** the first time ("needs the latest desktop app"):
+  winget does not always have the very latest one. Click **Update**.
+- To work without the app: `cd ~\augmented-brain\work; claude` (Windows PowerShell has no
+  `&&`).
+
+## Updating
+
+When a new version is out, Claude tells you at the start of a session and offers to
+update it. You can also do it yourself:
+
+```bash
+augmented-brain update
+```
+
+It updates the program and the Claude Code plugin. Running the install command again
+does the same. `augmented-brain update --plugin` updates only the plugin.
+
+Then close and open Claude. A session that was open keeps the old program until you do,
+and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new
+session tell you how many sessions still run the old version.
+
+Your notes and settings stay as they are. Sometimes a new version stores notes in a new
+way. Then the first session moves them to the new way, after keeping a full copy in the
+`migrations/` folder of the configuration, and Claude tells you. An older version never
+breaks notes a newer one wrote: it refuses them and asks to be updated. So update every
+computer you use.
+
+## Uninstalling
+
+```bash
+augmented-brain uninstall
+```
+
+It shows what it will remove and asks. It removes the program, the Claude Code plugin and
+what Claude Code keeps of it (its cache, its data and its server's logs).
+
+- **Your notes stay** in `~/augmented-brain/`: they are yours. If you install it again,
+  you find everything as it was.
+- **The configuration stays** too. `--config` removes it, with your profile.
+- **To start from scratch**, `--all` also removes every space's notes. First it shows each
+  folder with how many notes it has, and asks. Anything of yours inside a space's folder
+  stays. Your backup on GitHub is not deleted: it says which one it is and how to delete
+  it.
+- Claude Code, its desktop app, git and the PATH entry stay: Claude Code lives in that
+  same folder.
+
+On Windows the program file disappears a moment after the command ends, because Windows
+does not let a running program delete itself.
+
+All the commands and their options: [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html).
+
+## If something goes wrong
+
+- **The terminal cannot find a command** (`command not found`, or "not recognized" on
+  Windows). Open a new terminal: the one you used does not see the new PATH yet.
+- **Anything else after installing.** Run `augmented-brain doctor`: it says what is missing
+  and how to fix it. It also warns you when Claude Code keeps a second memory of its own
+  for your spaces' folders, and when other users of the computer could read your notes.
+- **"This system is not supported yet".** It works on Linux, macOS and Windows, on 64-bit PCs
+  and Arm.
+- **macOS: "Claude Code needs macOS 13".** Update the Mac in System Settings → General →
+  Software Update, then paste the command again.
+- **macOS: the developer tools window did not open.** Run `xcode-select --install` and then
+  the install command again.
+- **Linux: no desktop app offered.** It is only for Ubuntu and Debian; use Claude in the
+  terminal.
+- **Windows: "Git was not installed".** The installer tries winget first and then Git's own
+  download. If both fail, install Git from [git-scm.com](https://git-scm.com/download/win)
+  and run the command again. The desktop app needs winget: update "App Installer" from the
+  Microsoft Store.
+- **Claude asks whether you trust the folder.** The first time you open Claude in a
+  folder, Claude Code asks this before loading anything. Say yes in your work folder: until
+  then, augmented brain cannot load your notes.
+- **Windows: accents look broken (`sesiÃ³n`).** Windows PowerShell 5.1 misreads what
+  other programs write when it captures it (a redirection, a remote session). The text is
+  right: in Git Bash, or in a window, it shows well.
+- **Claude asks for a paid plan.** Claude Code needs Pro or above.
+- **Something else.** See [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html), or tell us in
+  [the project's issues](https://github.com/icalvete/augmented-brain/issues), with what
+  showed up on screen.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/spaces.html
+
+# Spaces
+
+
+You open Claude in `~/augmented-brain/work/website`. It sees your work tasks, your work
+rules and the people from work. You open it in `~/augmented-brain/personal/blog`. Now it
+sees your personal notes, and nothing from work.
+
+That is a **space**: a full set of notes, rules and backup, kept apart from the others.
+The installer creates two, `work` and `personal` (in Spanish, `trabajo` and `personal`).
+
+## The folder picks the space
+
+Each space has one or more **work folders**. When you open Claude inside one of them, you
+are in that space. The space's notes live in a `notes/` folder inside it:
+
+```
+~/augmented-brain/
+├── work/          a work folder: open Claude here for work
+│   ├── notes/     the work notes
+│   └── website/   a project of yours
+└── personal/      and here for personal things
+    └── notes/
+```
+
+The configuration file says which folders belong to which space:
+
+```toml
+# ~/.config/augmented-brain/config.toml
+default_space = "personal"
+
+[spaces.work]
+memory = "~/augmented-brain/work/notes"
+work_folders = ["~/augmented-brain/work", "~/code"]
+
+[spaces.personal]
+memory = "~/augmented-brain/personal/notes"
+work_folders = ["~/augmented-brain/personal"]
+```
+
+`memory` is where the notes are. `work_folders` are the folders that pick the space.
+
+To know which space a folder belongs to, run this in it:
+
+```bash
+augmented-brain space
+```
+
+## Outside every space
+
+The desktop app starts each new session in a scratch folder of its own. That folder is
+in no space. Then the **default space** is used, `personal` unless you change it, and
+Claude tells you in one line, with how to switch to work.
+
+The default space matters for one more thing: its backup carries your profile and the
+shared notes. Set it with `default_space` in the configuration. With a single space, it
+is that one.
+
+## Your projects live elsewhere?
+
+If your code is in `~/code`, add that folder to the `work_folders` of the right space, as
+in the example above. Then opening Claude in `~/code/shop` uses the work space.
+
+## Add a space
+
+For a client, a side project or a volunteer job:
+
+```bash
+augmented-brain space add client
+```
+
+It asks for the work folder and the notes folder, suggesting
+`~/augmented-brain/client` and `~/augmented-brain/client/notes`. Press Enter to accept.
+If there was no default space yet, it sets one. The options are in
+[Commands](https://icalvete.github.io/augmented-brain/guide/commands.html#augmented-brain-space-add).
+
+## What each space has, and what they share
+
+Each space has its own:
+
+- notes: tasks, areas, knowledge, people, inbox, reviews;
+- rules, on top of the common ones;
+- backup repository.
+
+Every space shares:
+
+- **your profile**: who you are and how you like to work. You are the same person at
+  work and at home.
+- **the shared notes**: rules, references and lessons that hold everywhere (below).
+- **the guard's lists**: production AWS profiles, machines not to touch, and the
+  repositories where Claude may commit. They hold on the whole machine. A production
+  profile saved from the work space is guarded in the personal one too.
+
+Spaces never read each other's notes.
+
+## Shared notes
+
+Some things you learn hold everywhere: how git behaves, how you like answers, a lesson
+about a tool. Saving them once per space would leave two copies that drift apart. So they
+go once in the **shared notes**, next to your profile, in `shared/` inside the
+configuration folder.
+
+Only rules, references and lessons can be shared. Tasks, areas and people always belong
+to one space.
+
+You do not move files by hand. Tell Claude "this holds everywhere" and it saves the note
+as shared. Every session loads the shared rules, and lists the shared references and
+lessons for Claude to open when it needs them. They travel in the backup of the default
+space, with your profile.
+
+## Next
+
+- [Tasks](https://icalvete.github.io/augmented-brain/guide/tasks.html): what goes inside a space.
+- [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html): every setting of a space.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/tasks.html
+
+# Tasks
+
+
+You say "new task: move the blog to a new host". Claude opens a task. You agree on what
+"done" means, then on a plan. In the evening you say "park it". Next week, in a new
+session, you say "let's carry on with the blog", and Claude picks it up where you left it.
+
+A **task** is any piece of work with a start and an end. It is one text file in the
+space's `tasks/` folder.
+
+## What a task looks like
+
+```markdown
+---
+id: task-move-the-blog
+type: task
+title: Move the blog
+area: area-blog
+status: parked
+waiting_on: me
+next: Copy the database to the new host
+created: "2026-10-15"
+updated: "2026-10-16"
+---
+## Essentials
+The blog moves to a cheaper host. Plan agreed: copy, test, switch the domain.
+Done: the new host is ready. Next: copy the database.
+
+## 3. Plan
+- [x] Open an account on the new host
+- [ ] Copy the database
+- [ ] Switch the domain
+
+## Journal
+- 2026-10-15 — Task opened.
+- 2026-10-16 — We go with the cheaper host: same speed, half the price.
+- 2026-10-16 — Parked. Next: Copy the database to the new host
+```
+
+The part between the `---` lines is the **header**: the data the program reads. Below it
+is free text, in any language. The first section is always the **essentials**: a few
+lines that are enough to resume the task. The last one is always the **journal**: dated
+lines of what happened.
+
+You can open and edit the file with any editor. The full format is in the
+[memory format](https://icalvete.github.io/augmented-brain/guide/memory-format.html).
+
+## The six phases
+
+A task moves through six phases. **You approve each change of phase.** Inside a phase,
+Claude works without asking at every step.
+
+1. **Definition**: what we want, what is out, and how we will know it worked.
+2. **Analysis**: how things really are, measured, not assumed.
+3. **Plan**: ordered steps, each with how to undo it.
+4. **Execution**: doing it, writing in the journal as we go.
+5. **Validation**: proving the "done" criterion.
+6. **Closed**: finished. It is kept, never deleted.
+
+The phase is the task's `status`. Two more statuses pause a task without losing anything:
+
+- **parked**: paused, to resume soon. `next` says exactly how.
+- **someday**: not for weeks. It leaves the list Claude reads at the start, and stays in
+  its area.
+
+## Who it waits on, and what comes next
+
+Every task says two more things:
+
+- **waiting_on**: `me` (you), `nobody`, a person's name, or another task.
+- **next**: the single next action, in one line.
+
+That is what "where were we?" shows you: each live task, those waiting on you first, with
+its next step.
+
+## Park and resume
+
+Before you switch to other work, say "park it". Claude writes down three things: the exact
+next step, who it waits on, and the essentials, rewritten so another session can resume
+without reading the whole journal.
+
+To resume, say "let's carry on with the blog". Claude reads the task first. Then it checks
+the real state of what the task touches (the files, the server) before trusting the note.
+Things may have changed since.
+
+## The journal, as you go
+
+Each decision or finished step goes to the journal at the moment, not only when you park
+it. A session can end at any time, and what is not in the note is lost.
+
+If a task is open and nothing has been written in it for 20 minutes, Claude gets a
+reminder at the end of its answer, once. When a long conversation is compacted (Claude
+Code replaces the details with a summary), the summary is kept in `archive/sessions/`,
+and the journal points at it.
+
+## Steps and subtasks
+
+A big task can be split in two ways.
+
+A **step** is a small part: a checkbox in the task's Plan, such as `- [ ] Copy the
+database`. Claude ticks it when it is done. The list of tasks shows how many are done
+("1/3 steps").
+
+A **subtask** is a part with a life of its own, because it waits on someone else or goes
+at its own pace. For example, "Ask Diego for the domain password" waits on Diego, while
+you go on with the rest. A subtask is a whole task, with one more line in its header:
+`parent: task-move-the-blog`.
+
+- Only one level: a subtask has no subtasks.
+- The bigger task closes last, when all its subtasks are closed.
+- Parking the bigger task leaves its subtasks as they are.
+
+Rule of thumb: if it waits on someone or has its own pace, it is a subtask. Otherwise, it
+is a step.
+
+## Dates to look at something again
+
+Some checks belong to a day: "on the 16th, is the certificate renewed?". Tell Claude and
+it adds a **watch date** to the task. From 7 days before, and every day after, Claude
+tells you at the start of the session, until it is marked done.
+
+This also works on a closed task. Closing is often when you write down what to check
+later.
+
+For something that is not a task ("remind me on Thursday to call the insurance"), Claude
+uses the inbox instead: see [Areas, knowledge and the rest](https://icalvete.github.io/augmented-brain/guide/notes.html#inbox).
+
+## Closing
+
+Say "close the task". Claude writes the result, and the task stays in its folder, marked
+closed. Nothing is ever deleted.
+
+A task that nobody has changed for 14 days comes up in the
+[weekly review](https://icalvete.github.io/augmented-brain/guide/weekly-review.html), so nothing stalls in silence.
+
+## Next
+
+- [What to say to Claude](https://icalvete.github.io/augmented-brain/guide/phrases.html): the phrases for all of this.
+- [MCP tools](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html): the tools Claude uses behind each phrase.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/notes.html
+
+# Areas, knowledge and the rest
+
+
+Tasks come and go. Around them, a space keeps a few other kinds of notes. Each one is a
+Markdown file in its own folder, and you never have to create them by hand: you say it,
+and Claude writes it.
+
+## Areas
+
+"The blog", "the servers", "the house". An **area** is something you look after with no
+end date. It groups the tasks and the knowledge that belong to it.
+
+You say: "the newsletter is a new area". Claude creates `areas/area-newsletter.md`. Its
+body says what you look after, how it is going and what to watch. The program lists the
+area's tasks and knowledge inside it by itself.
+
+The first-session interview creates your first areas, from what you said you look after.
+
+## Knowledge
+
+What is worth keeping beyond one task. There are two kinds, in `knowledge/`:
+
+- A **reference** says how something works: "how the blog is deployed".
+- A **lesson** says what you learned, with a title that already states the conclusion:
+  "Test the backup restore, not only the backup".
+
+You say: "save that as a lesson". Both belong to an area, and Claude opens them when a
+task needs them.
+
+## People
+
+You say: "Diego runs the hosting company; I call him Dieguito". Claude saves
+`people/person-diego.md`. The next time you say "tell Dieguito it is done", it knows who
+he is.
+
+A **person** has a name, who they are to you, the other names you use for them, and
+anything worth remembering. People belong to a space: work contacts stay in the work
+space. A task can wait on a person (`waiting_on: Diego`).
+
+## Inbox
+
+An idea that is not a task yet. You say: "note this: look at the new hosting prices".
+Claude adds one dated line to `inbox.md`, without opening a task:
+
+```
+- 2026-10-17 — Look at the new hosting prices
+- 2026-10-17 — Call the insurance (remind: 2026-10-22)
+```
+
+Each line is a **capture**. The [weekly review](https://icalvete.github.io/augmented-brain/guide/weekly-review.html) empties the inbox: each
+capture becomes a task, goes to an area or knowledge, or is dropped.
+
+"Remind me on Thursday to call the insurance" is a capture with a date. From a week
+before, and every day after, it comes up at the start of the session, until the weekly
+review deals with it (or you mark it done in the panel).
+
+## Rules
+
+How you want Claude to work. You say: "from now on, answer in short sentences". Claude
+saves it as a **rule**. Every session loads every rule, whole.
+
+There are three levels:
+
+- **common rules**, which come with the program: verify before advising, never push
+  unless asked, never become root, never write secrets…
+- **shared rules**, yours, for every space ("answer in short sentences");
+- **space rules**, in the space's `rules/`, for what only applies there ("the database
+  of the shop is never restarted on a Friday").
+
+A rule that holds everywhere goes to the shared notes. Tell Claude "this holds
+everywhere".
+
+## Your profile
+
+Who you are and how you like to work: your name, what you do, your language, how long
+you like answers, how much Claude may do without asking. It is one file for every space,
+`profile.md` in the configuration folder. The first-session interview writes it. To
+change it, tell Claude.
+
+## Repositories
+
+What each of your git repositories is, one line each: "`~/code/blog` — The blog, built
+with Hugo". It lives in one reference of the space, `knowledge/ref-repositories.md`, so
+the backup keeps it. You write the line in the panel's Repositories page, or Claude
+writes it for you.
+
+## The index
+
+`MEMORY.md` is the list Claude reads at the start of every session: your profile line,
+the rules, the areas, and the live tasks with their status and next step. The program
+writes it after every change. Do not edit it by hand; it would be rewritten.
+
+## Documents and the archive
+
+Two folders are never loaded:
+
+- `docs/<task>/` keeps the long documents a task produces (a plan, an analysis), next to
+  the notes and out of the project's repository.
+- `archive/` keeps old things: long journals moved out, summaries of compacted
+  conversations. Nothing there is ever deleted.
+
+## Editing by hand
+
+Every note is plain Markdown. Open it with any editor and change it. Afterwards, run
+`augmented-brain check` in a folder of the space: it checks every note and rebuilds the
+index.
+
+## Next
+
+- [What to say to Claude](https://icalvete.github.io/augmented-brain/guide/phrases.html): the phrases for each kind of note.
+- [Memory format](https://icalvete.github.io/augmented-brain/guide/memory-format.html): every folder and header field.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/guard.html
+
+# The guard
+
+
+Claude is about to run `git push origin main`. Before it does, augmented brain reads the
+command and stops it: pushing is for you. Claude tells you the change is ready, and you
+push it yourself.
+
+That check is the **guard**. It reads every command Claude runs, and every file it writes,
+before it happens. It has three answers:
+
+- **Go ahead**: almost always. `ls`, `go test`, `aws --profile dev s3 ls`.
+- **Ask you**: Claude Code shows the command and waits for your yes. `aws --profile prod
+  …`, `ssh db01 …`.
+- **Stop**: the command does not run. Claude gets the reason, and what to do instead.
+
+**The guard is a safety net against slips, not a security boundary.** It reads commands
+as text. It catches the mistakes an assistant makes, also hidden inside other commands.
+A program determined to get around it could. Read the
+[disclaimer](https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md).
+
+## What it stops
+
+- **Commits and pushes.** `git commit`, `git push`, and what publishes like a push:
+  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
+  Unless you let Claude in a repository (below).
+- **Becoming root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
+  without `--user`, `ssh root@…`, and on Windows `gsudo` and `runas`. Claude gives you the
+  exact command to run yourself. Running as another user (`sudo -u www-data …`) is fine.
+- **Secrets.** A token or key written in a command or in a file Claude writes. Secrets are
+  read from the system keychain, an environment variable or a secrets manager, never
+  typed in.
+- **Wiping your home folder or the whole disk.** `rm -r` of `~` or `/`, also after a
+  `cd` (`cd ~ && rm -rf .`), and on Windows however the path is written.
+- **PowerShell.** The guard reads the shell, not PowerShell, so it stops every PowerShell
+  command. Claude runs it in Bash (Git Bash on Windows) instead. You will see that block
+  on Windows: it is expected.
+
+## What it asks you first
+
+- **Production.** An `aws` command with a profile you marked as production. It checks
+  every profile the command may use: `--profile`, `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`,
+  or `default` when none is set. The same for tools that call AWS on their own: `cdk`,
+  `sam`, `serverless`, `terraform`, `tofu`, `pulumi`, `eksctl`, `copilot`.
+- **Machines not to touch.** `ssh`, `scp`, `rsync`, `sftp` and `mosh` to a host you marked
+  as untouchable. `db01` and `db01.example.com` count as the same host.
+- **Pushes that rewrite history**, even where Claude may push: `--force`, `--delete`,
+  `--mirror`, `--prune`, a refspec starting with `+` or `:`.
+- **What it cannot read.** A program given as a variable (`$TOOL deploy`), commands
+  nested too deep, `rm -rf "$DIR/"*` with a variable that may be empty, an `rm -r .` after
+  a `cd` it cannot follow.
+- **The guard's own settings.** Claude never changes augmented brain's configuration or
+  Claude Code's settings on its own, since a line there could switch a check off.
+
+## Let Claude commit in a repository
+
+By default, Claude never commits or pushes. For a repository of yours where you want it
+to, list it in the configuration, in any space:
+
+```toml
+[spaces.work]
+git_allowed_repos = ["~/code/blog", "~/code/blog-*"]   # commit and push freely
+git_ask_repos = ["~/code/shop"]                        # ask me each time
+```
+
+- Claude must name the repository in the command: `git -C ~/code/blog push`.
+- A git worktree of a listed repository counts as it.
+- `~/code/blog-*` covers every `blog-<name>` folder next to `blog`.
+- A repository in both lists asks.
+- The lists of every space count together: a repository is yours, not the space's.
+
+**Merging a pull request is a push too.** `gh pr merge`, `glab mr merge` and `glab mr
+accept` follow the same lists. gh and glab have no `-C`, so Claude writes `cd ~/code/blog
+&& gh pr merge 12`. The folder in that `cd` is the repository; the folder the session is
+in does not count alone. A repository the command names (`-R owner/name`, the pull
+request's address) must be one of that repository's remotes, or the merge is stopped.
+`gh pr merge --admin`, which skips the branch's protection, always asks.
+
+## Production profiles and untouchable machines
+
+You give them in the first-session interview, or any time: "the AWS profile `shop-prod`
+is production", "never touch `db01` without asking me". Claude saves them with the
+`safety_save` tool. They hold on the whole machine, in every space.
+
+Claude can only add to these lists. To take one out, edit the configuration yourself:
+`production_aws_profiles` and `untouchable_hosts` in [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html).
+
+These lists are in no backup, because they may name your work's machines. After a
+restore on a new machine, the next session offers to ask you for them again.
+
+## Root on one machine, for a while
+
+Sometimes Claude really needs root on a machine, for a migration, say. Add an exception
+with an end date to the configuration:
+
+```toml
+root_ask = ["db01 until 2026-12-31"]
+```
+
+Until that date, root on `db01` asks you each time instead of being stopped. The command
+it runs is still checked. After the date, root is stopped again by itself, and
+`augmented-brain doctor` says the line can go. The date is required, so no exception is
+left behind.
+
+## It looks inside
+
+The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh -c`,
+`docker exec`, `podman exec`, `kubectl exec`, `bash -c`, loops, what a pipe feeds a shell
+(`echo 'sudo …' | bash`), and short scripts Claude runs (`bash deploy.sh`,
+`./deploy.sh`). It checks the commands Claude leaves running to watch something, and
+those of the helpers Claude starts (subagents and workflows).
+
+## When something is wrong with it
+
+- **The configuration cannot be read.** Then the guard cannot know your lists. It asks
+  you before every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before the tools
+  that call AWS.
+- **The program is missing or broken.** Claude Code stops every command and file change
+  instead of letting them through (Claude Code 2.1.295 or later).
+- `augmented-brain doctor` tries the guard for real and tells you if it is not working.
+
+## Next
+
+- [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html): every list, with an example.
+- [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html): when the guard stops something it should not.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/how-it-works.html
+
+# How it works inside
+
+
+augmented brain is one small program and a folder of notes. This page is how the pieces
+fit. To use it, you do not need any of this.
+
+<picture>
+  <source media="(max-width: 600px)" srcset="../img/how-layers-narrow.en.svg">
+  <img alt="augmented brain in four layers" src="../img/how-layers.en.svg">
+</picture>
+
+## Four layers
+
+| Layer | What it is | Where it lives |
+|---|---|---|
+| **3 · You and your assistant** | You talk to Claude Code as usual. No new commands to learn. | Your terminal or the Claude app |
+| **2 · The plugin** | The doors Claude uses to reach the program: a few hooks and an MCP server. | Inside Claude Code, which installs it |
+| **1 · The program** | `augmented-brain`, a single file. It guards commands, keeps tasks, rebuilds the index and runs the backup. | `~/.local/bin/augmented-brain` |
+| **0 · Your files** | Plain text: the configuration, your notes and, if you want, their backup. | `~/.config/augmented-brain/`, `~/augmented-brain/` and your git repository |
+
+Put another way: **your notes are a notebook, the program keeps it in order and the
+plugin is the door.** You only talk to Claude. Claude comes in through the door, and the
+program writes in the notebook.
+
+Two words that come up a lot:
+
+- **Hook**: a call Claude Code makes at a given moment. Here: when a session starts,
+  before every command and file change, after each answer, when a long conversation is
+  compacted, and when the session ends. Each time, Claude Code starts the program, asks
+  it, and the program exits.
+- **MCP** (Model Context Protocol): an open standard to give tools to an assistant. The
+  program offers its own ("open a task", "park it") and Claude uses them. Since it is a
+  standard, other assistants will be able to use the same ones.
+
+The list of hooks is in [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html#augmented-brain-hook). The tools are in
+[MCP tools](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html).
+
+## A session, step by step
+
+<picture>
+  <source media="(max-width: 600px)" srcset="../img/how-session-narrow.en.svg">
+  <img alt="A session, step by step" src="../img/how-session.en.svg">
+</picture>
+
+**1. You open Claude.** The start hook looks at the folder you are in and picks your
+[space](https://icalvete.github.io/augmented-brain/guide/spaces.html). Before you type anything, it hands Claude your profile, your rules
+and the list of live tasks. It also says what is due soon, whether the weekly review is
+due, and whether an earlier session was cut off. That is how Claude knows where you left
+off.
+
+**2. You say "park it".** Claude uses the `task_park` tool. The program writes in the
+task file where it stopped and what comes next, and rebuilds the index. Opening,
+resuming and closing work the same way. See [Tasks](https://icalvete.github.io/augmented-brain/guide/tasks.html).
+
+**3. Claude is about to run a command.** The guard hook reads it first, and lets it
+through, asks you, or stops it. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
+
+**4. Claude finishes an answer.** If a task is open and nothing was written in it for 20
+minutes, a hook reminds Claude to write in its journal, once.
+
+**5. You close the session.** The end hook notes that the session ended well. It starts
+the [backup](https://icalvete.github.io/augmented-brain/guide/backup.html) of the space in the background, if you set one up. You wait for
+nothing. If the backup fails, Claude tells you at the start of the next session.
+
+If a session did not end well (the window was closed by force, the computer went down),
+the next one offers to recover it. Claude reads what you both said after the task's last
+journal entry, from Claude Code's own record of the conversation on this computer (kept
+30 days), and writes down what is missing.
+
+## Where files live
+
+Your notes, one folder per space:
+
+```
+~/augmented-brain/
+├── work/                 a work folder: open Claude here for work
+│   ├── notes/
+│   │   ├── MEMORY.md     the index Claude reads at the start (written by the program)
+│   │   ├── inbox.md      quick notes, to sort out later
+│   │   ├── areas/        what you always look after
+│   │   ├── tasks/        one file per task
+│   │   ├── knowledge/    how things work and what you learned
+│   │   ├── people/       who you deal with
+│   │   ├── rules/        rules for this space only
+│   │   ├── reviews/      weekly reviews
+│   │   ├── docs/         long documents of a task; never loaded
+│   │   └── archive/      old stuff; never loaded, never deleted
+│   └── (your projects)
+└── personal/             the same, for personal things
+```
+
+The configuration folder, `~/.config/augmented-brain/` (on Windows,
+`%APPDATA%\augmented-brain`):
+
+```
+config.toml       the spaces and the guard's lists
+secrets.toml      the names of your secrets, never their values
+profile.md        who you are, for every space
+shared/           rules, references and lessons for every space
+state/            what this computer knows of each space's sessions; never backed up
+migrations/       a full copy of the notes before a new version moves them
+panel.json        where the panel listens, while it runs
+```
+
+Each file is described in [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html) and in the
+[memory format](https://icalvete.github.io/augmented-brain/guide/memory-format.html).
+
+## What it does not do
+
+- **No server and no account.** If Claude is not open, nothing runs, except the panel
+  while you use it and the backup that the end of a session starts.
+- **It sends your data to no one.** Only the backup, if you set it up, talks to your
+  repository. Apart from that, once a day, it asks GitHub which version is the latest,
+  sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns that off.
+- **It does not change your Claude Code settings.** The plugin goes in and out with
+  Claude Code's own commands, which the installer, `update` and `uninstall` run for you.
+- **Mind this: your assistant reads your notes**, like any file it opens. They travel
+  with your conversations to its provider. Do not keep there what you would not share.
+
+## Moved from this page
+
+This page used to hold more. Each part now has a page of its own:
+
+- <a id="your-files"></a><a id="work-and-personal-apart"></a><a id="shared-notes"></a>Your files, spaces and shared notes: [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html) and [Areas, knowledge and the rest](https://icalvete.github.io/augmented-brain/guide/notes.html).
+- <a id="the-backup"></a><a id="on-a-new-machine"></a>The backup, and a new machine: [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html).
+- <a id="bring-in-a-memory-you-already-have"></a>Importing an existing memory: [Bring in a memory](https://icalvete.github.io/augmented-brain/guide/import.html).
+- <a id="the-panel"></a>The panel and every page in it: [The panel](https://icalvete.github.io/augmented-brain/guide/panel.html).
+- <a id="update-it"></a><a id="remove-it"></a>Updating and removing it: [Installing](https://icalvete.github.io/augmented-brain/guide/install.html#updating).
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/phrases.html
+
+# What to say to Claude
+
+
+You do not learn commands. You talk to Claude in your own words, in English or Spanish,
+and it uses augmented brain's tools behind the scenes. These are phrases that work. Any
+wording with the same meaning works too.
+
+## Tasks
+
+| You say | What happens |
+|---|---|
+| "New task: move the blog to a new host." | Opens a task in definition, waiting on you, and asks what "done" means |
+| "Where were we?" | Lists your live tasks, those waiting on you first, each with its next step |
+| "Let's carry on with the blog." | Reads the task, checks the real state, and picks it up where you left it |
+| "Go on to the plan." | Moves the task to its next phase; you approve each change |
+| "We go with the cheaper host." | Writes the decision in the task's journal, with the date |
+| "Add a step: switch the domain." | Adds a checkbox to the task's plan |
+| "The database is copied." | Ticks that step |
+| "That part waits on Diego: make it a subtask." | Opens a subtask with its own status and next step |
+| "On the 16th, check the certificate is renewed." | Adds a watch date to the task |
+| "Park it, we carry on tomorrow." | Writes the exact next step and the essentials, and pauses the task |
+| "Leave it for some day." | Parks it as someday: out of the daily list, kept in its area |
+| "Close the task." | Closes it with its result; it is never deleted |
+
+## Inbox and reminders
+
+| You say | What happens |
+|---|---|
+| "Note this: look at the new hosting prices." | One dated line in the inbox, no task opened |
+| "Remind me on Thursday to call the insurance." | A capture with a date: it comes up at the start of the session |
+| "Let's do the weekly review." | Goes through the inbox and the stalled tasks with you, one at a time |
+
+## Knowledge, rules and people
+
+| You say | What happens |
+|---|---|
+| "Save that as a lesson." | A lesson, with a title that states the conclusion |
+| "Write down how the deploy works." | A reference, in the task's area |
+| "The newsletter is a new area." | Creates the area |
+| "From now on, answer in short sentences." | A rule, loaded in every session |
+| "This holds everywhere." | Saves the rule or lesson as shared, for every space |
+| "Diego runs the hosting company; I call him Dieguito." | Saves Diego as a person, with his nickname |
+| "Why did we pick the cheaper host?" | Finds the decision in your notes, with date and reason |
+| "Change my profile: I prefer the recommendation first." | Rewrites your profile |
+
+## Safety
+
+| You say | What happens |
+|---|---|
+| "The AWS profile shop-prod is production." | The guard asks you before commands that use it |
+| "Never touch db01 without asking me." | The guard asks you before ssh, scp or rsync to it |
+| "I stored a new secret, telegram/alerts-bot, for alerts to my phone." | Writes down its name and what it is for, never its value |
+
+## Backup, sessions and the panel
+
+| You say | What happens |
+|---|---|
+| "Set up the backup." | Creates a private repository in your GitHub and makes the first copy |
+| "Recover the session that was cut off." | Reads what was said after the last journal entry, and writes down what is missing |
+| "~/code/blog is the blog, built with Hugo." | Writes that line for the repository, shown in the panel |
+| `/brain:panel` | Opens the panel in your browser |
+
+## When Claude talks first
+
+At the start of a session, Claude may bring things up without being asked:
+
+- a watch date or reminder due in the next 7 days, or already past;
+- the weekly review, when the last one is a week old and there is something to go
+  through;
+- a session that was cut off, to recover;
+- a backup that failed;
+- a new version, to update;
+- notes with problems.
+
+## Next
+
+- [MCP tools](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html): the tool behind each phrase, and what it takes.
+- [The panel](https://icalvete.github.io/augmented-brain/guide/panel.html): the same things, by clicking.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/panel.html
+
+# The panel
+
+
+The **panel** is a page in your browser to see and change your spaces without going
+through Claude. Open it with `/brain:panel` in Claude, or from a terminal:
+
+```bash
+augmented-brain panel
+```
+
+It opens your browser on **Today**, with the space of the folder you ran it in. If it
+cannot (on a computer with no screen, say), it prints an address to open yourself.
+
+The panel changes your notes the same way Claude does, with the same program, and they
+wait for each other: you can have both open at once.
+
+## Today
+
+The first page: every space at once. For each one:
+
+- what is due in the next 7 days;
+- the tasks waiting on you (the parked ones in one line);
+- how many captures wait in the inbox;
+- whether the weekly review is due;
+- the sessions that were cut off;
+- notes with problems.
+
+Below, **Repositories**: those your open tasks name in `repos:` that hold changes not
+committed or commits not pushed. That is work that is only on this computer. One whose
+tasks are all parked (or left for some day) is marked "forgotten?". A branch never
+pushed counts only if the repository has a remote to push it to. **See all
+repositories** leads to the whole map.
+
+## Tasks
+
+Grouped by area, those waiting on you first, with their status and next step. Filters
+show only those waiting on you, under way, parked, untouched, or waiting on one person.
+A task nobody has changed for 14 days is marked "untouched N days".
+
+Open one. Its essentials come first, the other sections folded, and the journal newest
+first. Write in its journal, change its status or next step, tick its steps, park it or
+close it. You can open new tasks too. When a task waits on a person you have a note of,
+"waits on" leads to them.
+
+When you save a task, only what you changed on the page is saved. If Claude changed
+something else in the meantime, that stays. A step is ticked only if it still says what
+the page showed.
+
+## Reminders
+
+The watch dates of your tasks (closed ones too) and the inbox reminders: overdue first,
+then the next 30 days. Add one, or mark it done.
+
+## Inbox
+
+Capture an idea, mark one as dealt with, or make it a task.
+
+## Weekly review
+
+The [weekly review](https://icalvete.github.io/augmented-brain/guide/weekly-review.html), on a page. Each capture becomes a task, a
+reference or a lesson, or is dropped. Each task untouched for two weeks goes on as it
+is, or goes to some day (or you open it to close it). What you decide is noted as you go,
+and kept in the review's record when you finish.
+
+## Areas, knowledge, rules and people
+
+Knowledge and rules show the space's own and the shared ones, marked "shared". You can
+create areas and change an area's title and summary.
+
+You can add people and change them: their other names, their role and notes. The name
+stays: a new name would be a new person. A person's page shows the tasks that wait on
+them and those that link to them.
+
+## Repositories
+
+Your map of repositories: every git repository in the work folders of each space, up to
+three folders down. It skips folders inside another repository, hidden folders,
+`node_modules` and `vendor`. They are grouped by space, those with work pending first.
+
+For each one: its branch, where it pushes (as `host/owner/name`, never with a password),
+files changed, commits not pushed, the open tasks that name it, and one line of yours on
+what it is. Write that line right there. It is kept in the space's notes, in the
+reference "Repositories" (`knowledge/ref-repositories.md`), so the backup keeps it.
+Claude can write it too.
+
+The panel only reads your repositories. Git runs without taking locks, so it never gets
+in your way, and it never asks for a password. It only runs inside the work folders, and
+links to folders outside them are not followed.
+
+## Secrets
+
+The names of the secrets you keep in your system keychain (where your computer keeps
+passwords), never their values. Each one as `service/name`, what it is for, and which
+tasks name it. So you know which there are, and a new machine knows which to ask you for.
+
+**Check the keychain** says whether each one is on this computer. It asks `secret-tool` on
+Linux and `security` on macOS; elsewhere it cannot tell. It asks only when you click,
+because a locked keychain asks you for its password. When the keychain lacks one, the
+page shows the command that stores it (that command asks you for the value).
+
+You can add a name, or take one off the list (the secret stays in the keychain). Anything
+that looks like a value is refused. The list is the same in every space, and lives in
+`secrets.toml` (see [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html#secretstoml)).
+
+## Sessions
+
+Your Claude sessions on this computer, from the last 30 days.
+
+- Those that did not end (closed by force, or cut off when the computer went down) show
+  what was said after the last journal entry. Keep it in the notes (it goes to
+  `archive/sessions/` with a line in the task's journal) or mark it as reviewed.
+- Those running now, and those that ended, with how much disk their transcripts take
+  (the files where Claude Code keeps each conversation). You can delete the transcript of
+  an ended session; that session can then no longer be resumed.
+
+## Profile
+
+Who you are and how you like to work: the same profile every space uses.
+
+## Health
+
+The space's notes folder and work folders, whether it is the default space, notes that
+are not valid, repositories that notes point at and that are no longer on this computer,
+the index, the last backup and the last weekly review.
+
+## Help
+
+Links to the answers on this website, in your language. And a way to tell us about a
+problem or propose an idea on GitHub (the website where the project lives; you need a
+free account there).
+
+Click **Report a problem on GitHub**. The panel runs the health check (what
+`augmented-brain doctor` says) at that moment. Then it opens GitHub's form in a new tab,
+with the version, your system and that check filled in.
+
+Before it opens, the panel takes out what is personal: your home folder (shown as `~`),
+your notes and work folders, e-mail addresses, the names of your spaces, untouchable
+machines, production AWS profiles, and any line that looks like a password or a key.
+You write what happened, and read the rest: change or delete what you prefer not to
+share. Nothing is sent until you press GitHub's submit button. To be honest about it:
+the text travels to GitHub inside the page's address as soon as it opens, so GitHub can
+see it then, even if you never submit.
+
+## Search and reading notes
+
+The **search** box at the side looks through the notes of the space and the shared ones:
+titles, summaries and text. A note shows up when it holds every word, in any case, with
+accents or without.
+
+Notes read as text, not as raw Markdown: headings, lists, tables, code and links. A
+`[[link]]` to another note takes you to it. If a note changes on disk while its page is
+open (Claude wrote in it, say), the page tells you, with a link to see it as it is now.
+
+## Made to stay yours
+
+- It runs **only while you use it**. After 30 minutes without use it stops by itself. To
+  stop it now: `augmented-brain panel stop`, or the link at the bottom of the page.
+- It works **only on this computer**. Other machines on your network cannot reach it.
+- The address carries a **key**, made new each time the panel starts. Without it the
+  panel answers nothing, so another program or web page on your computer cannot use it.
+  Treat the address like a password: do not share it. It stops working when the panel
+  stops.
+- It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
+  note cannot put HTML or scripts of its own in the page. The links of the Help page go to
+  the website only when you click them.
+- Checking whether a note changed does not count as using the panel: a tab left open
+  does not keep it running.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/weekly-review.html
+
+# The weekly review
+
+
+On Monday you open Claude. It says: "The weekly review is due: 3 captures in the inbox
+and 1 task untouched for two weeks. Shall we do it? About ten minutes." You say yes, and
+it goes through each item with you, one at a time.
+
+The **weekly review** keeps the system honest. Without it, the inbox fills up and stalled
+tasks pile up in silence.
+
+## What it goes through
+
+- **The inbox.** Each capture becomes a task, goes to an area or to knowledge, or is
+  dropped.
+- **Tasks untouched for 14 days or more.** Each one goes on as it is, goes to someday, or
+  is closed.
+- **The dates due in the coming week**: watch dates of tasks and inbox reminders.
+
+## When it comes up
+
+At the start of a session, when the last review is 7 days old or more and there is
+something to go through. Claude offers it once, in one line, when it does not interrupt
+other work. You can also ask for it any time: "let's do the weekly review".
+
+## With Claude
+
+Claude lists what there is, then asks about each item. You decide; it does the rest:
+opens the task, files the note, drops the capture. At the end it saves what was decided
+and takes the processed captures out of the inbox.
+
+## In the panel
+
+The panel has a **Weekly review** page. Each capture has its buttons: a task, a
+reference, a lesson, or drop it. Each untouched task goes on, or goes to some day (or you
+open it to close it). What you decide is noted as you go, in a draft on this computer,
+so you can leave and come back. When you finish, it is all written in the review's
+record.
+
+## What is kept
+
+Each review is a note, `reviews/review-<date>.md`, with what was decided. Processed
+captures leave the inbox. Nothing else is deleted.
+
+## Two computers
+
+Captures added on two computers are both kept. One catch: a capture you processed on one
+computer can come back if the other computer captured something at the same time. It
+just shows up again at the next review.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/backup.html
+
+# Backup and restore
+
+
+Your laptop dies. On the new one, you install augmented brain, run one command, and open
+Claude. It carries on where you left off: tasks, notes, rules and your profile.
+
+That is the **backup**. The notes folder of each space is also a git repository. The
+backup pushes it to a private repository of yours, one per space.
+
+## Set it up: ask Claude
+
+Say "set up the backup". Claude offers it at the end of the first-session interview too.
+
+It creates a private repository in your GitHub account, `augmented-brain-<space>`,
+connects it and makes the first copy. For that it uses `gh`, GitHub's official command
+line. If you do not have it, Claude tells you how to install it, and walks you through
+the one step that needs your browser: logging in.
+
+Rather somewhere else (GitLab, your company's git)? Give Claude the repository's address,
+or do it yourself, in a folder of the space:
+
+```bash
+augmented-brain backup setup git@gitlab.com:lucia/brain-work.git
+```
+
+Use a **private** repository: your notes are in it.
+
+## It runs by itself
+
+From then on, **the backup runs every time a Claude session ends**, in the background.
+You wait for nothing. If it fails (no network, no access to the repository), Claude tells
+you at the start of the next session.
+
+You can also run it by hand:
+
+```bash
+augmented-brain backup          # this folder's space
+augmented-brain backup --all    # every space
+```
+
+To turn the automatic backup off, set `AB_NO_AUTO_BACKUP=1` in your environment.
+
+## On a new machine
+
+1. Install augmented brain with the usual command. It creates the spaces, empty. If
+   Claude opens at the end, close it without doing the interview: your profile comes in
+   the backup.
+2. If the repository is on GitHub, log in once with `gh auth login`, so git has access.
+3. Bring each space back from its backup:
+   ```bash
+   augmented-brain restore https://github.com/lucia/augmented-brain-work.git
+   ```
+   It replaces the empty space with yours: notes, tasks, rules and the space's settings,
+   readable by you only. If anything fails half way, the empty space stays as it was. If
+   that space already had notes of yours, it leaves it alone.
+4. Open Claude. It carries on where you left off, and the backup keeps running by itself.
+
+Restore the default space (`personal`) too: your profile, your shared notes and the list
+of your secrets' names come with it.
+
+## What a restore does not bring
+
+Some things are left out on purpose:
+
+- **The guard's lists**: production AWS profiles and untouchable machines. They may name
+  your work's machines, so they are in no backup. `restore` and `doctor` say so, and the
+  next session offers to ask you for them again. Until then, nothing asks before touching
+  production.
+- **The repositories where Claude may commit and push** (`git_allowed_repos` and
+  `git_ask_repos`). Someone else may have changed the backup, so `restore` names them,
+  and you add them again if you still want to.
+- **Your secrets' values.** Only their names travel. `restore` names the secrets this
+  machine's keychain does not have yet, each with the command to store it.
+
+## What you get
+
+- **Several machines, one brain.** Before pushing, the backup fetches what your other
+  machine did and merges it.
+- **Full history.** Every backup is a git commit, with the machine and the time. With
+  `git log` you see what changed, and you can go back to any day.
+- **Your place.** GitHub, GitLab or your own server: you pick the repository. augmented
+  brain has no cloud.
+- **One repository per space.** Work can go to your company's git, and personal to
+  yours. Your profile only travels in the default space's backup, never in the work one.
+- **No secrets go up.** Claude's tools refuse to write a password or a token into a note.
+  If one gets in anyway (by hand, say), the backup stops and tells you which file.
+- **Nothing gets overwritten.** If two machines changed the same note, the backup stops
+  without touching anything and explains how to sort it out. When each machine only added
+  journal entries to it, they are joined by themselves, in date order. The index is
+  rebuilt by itself, and captures in the inbox from two machines are both kept.
+- **No junk, no giants.** Leftovers of a crash and the files systems drop in folders
+  (`.DS_Store`, `Thumbs.db`) stay out. A file over 50 MB stays out too (GitHub refuses
+  them), and Claude tells you which one.
+
+## When it fails
+
+Claude tells you at the start of the next session, with the reason. Running
+`augmented-brain backup` in a folder of the space shows the problem. The usual ones are
+in [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html#the-backup-failed).
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/connect-services.html
+
+# Connect your services
+
+augmented brain keeps your tasks and notes. To read your calendar, your mail, your
+documents or your tickets, your assistant also needs those services. Claude Code talks to
+them through **MCP** (Model Context Protocol): small connectors that give it tools such as
+"list today's meetings" or "read this Jira issue".
+
+## The easy way: claude.ai connectors
+
+If you sign in to Claude Code with your claude.ai account, the connectors you turn on in
+claude.ai also work in Claude Code.
+
+1. Open **claude.ai → Settings → Connectors**.
+2. Connect the services you want: Google Calendar, Gmail, Google Drive, Atlassian (Jira
+   and Confluence), and others. Each one asks you to sign in to that service once.
+3. **Start a new Claude Code session.** Connectors load when a session starts: a session
+   that was already open will not see a connector you just added.
+4. In Claude Code, type `/mcp` to see them. A connector marked as needing authentication
+   is fixed from claude.ai, not from Claude Code.
+
+That is all. Your assistant uses them when a task needs them ("what meetings do I have
+tomorrow?", "summarise the open issues of this epic").
+
+## Without a claude.ai account
+
+If you use Claude Code with an API key, claude.ai connectors are not available. You can
+add MCP servers yourself:
+
+```bash
+claude mcp add --scope user <name> -- <command that starts the server>
+```
+
+Many services publish an official MCP server; use those when they exist. Read what a
+server can do before adding it: it acts with your account.
+
+## Good habits
+
+- **Connect only what you use.** Every connector adds tools your assistant has to choose
+  from.
+- **Your safety rules still apply.** augmented brain's guard watches commands and file
+  writes. Actions inside a connector (sending an email, editing a ticket) are confirmed
+  through Claude Code's own permission prompts: read them before you accept.
+- **Never paste a password or a token in the chat** to connect a service. Every connector
+  signs in through the service's own page.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/import.html
+
+# Bring in a memory you already have
+
+
+If Claude Code has been keeping a memory for you, you do not start from zero. Claude Code
+writes it in `~/.claude/projects/<folder>/memory/`. You can bring it into your spaces.
+
+## First, look
+
+```bash
+augmented-brain import ~/.claude/projects/<folder>/memory
+```
+
+That writes nothing. It shows where each note would go, and what it could not decide:
+
+- files that are not notes (an index, say);
+- notes about you: copy what matters into your profile;
+- links that would cross from one space to another;
+- ids your space already has.
+
+The folder you import from is only read, now and later.
+
+## Then, write
+
+When the list looks right, run it again with `--apply`:
+
+```bash
+augmented-brain import ~/.claude/projects/<folder>/memory --apply
+```
+
+It never writes over a note that already exists.
+
+## What each file becomes
+
+Each file becomes a note of its kind: by its name (`task-…`, `area-…`, `ref-…`,
+`lesson-…`, `rule-…`, `person-…`), or else by what Claude Code says it is. A task with no
+status comes in parked, waiting on you, with "review this imported task" as its next
+step.
+
+The rest comes along too:
+
+- The captures of your old `inbox.md` (each `- …` line) go to the inbox of the space of
+  `*` (below), dated, and never twice.
+- `archive/` and `docs/<task>/` are copied as they are, next to their note, also when you
+  import again later.
+- A file with a secret written in it (a key, a token) is imported, but named in the
+  report. The backup will not upload it until the secret is out. `augmented-brain check`
+  names it too.
+- A reference or lesson that is a list of people (one `## Name` section each, with a word
+  like "people" or "team" in its id or title) comes in as it is, and the report names it.
+  People are notes of their own, so ask Claude to save each one as a person.
+
+## More than one space
+
+A small file says which space each area goes to, which notes go somewhere other than
+their area, and which go to the shared notes:
+
+```text
+area-family = personal
+task-evening-course = work
+lesson-git-small-commits = shared
+* = work
+```
+
+`*` is for everything else. Pass the file with `--map`:
+
+```bash
+augmented-brain import ~/.claude/projects/<folder>/memory --map map.txt
+```
+
+If the notes name repositories in `repos:`, `--repos-base <folder>` says what those paths
+are relative to. They are then rewritten relative to the space's work folder.
+
+## Turn off the old memory
+
+Has Claude Code been keeping that memory by itself? Then it goes on keeping it for your
+spaces' folders: a second memory, next to the space's, that drifts from it.
+`augmented-brain doctor` tells you, and how to turn it off: `"autoMemoryEnabled": false`
+in Claude Code's settings. What it already has stays, ready to import.
+
+All the options: [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html#augmented-brain-import).
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/commands.html
+
+# Commands
+
+
+Every command of the program, with every option. Day to day you do not need them: you
+talk to Claude. They are for setting up, checking and moving to a new machine.
+
+Run them in a terminal. Most act on **the space of the folder you are in**. Outside every
+space's folder, they use the default space.
+
+```bash
+cd ~/augmented-brain/work
+augmented-brain check
+```
+
+Options go before or after the other arguments, with one dash or two (`--all` or
+`-all`). A command that gets an argument it does not take says so, and does nothing.
+
+Three commands are started by Claude Code, not by you: `mcp`, `hook` and `panel serve`.
+They are here so you know what they are.
+
+Inside Claude Code there is one slash command: `/brain:panel` opens the panel, as
+`augmented-brain panel` does.
+
+## augmented-brain init
+
+Sets everything up: the spaces, the configuration and the Claude Code plugin. The
+installer runs it for you the first time.
+
+```bash
+augmented-brain init
+```
+
+With no options it asks nothing. It takes the language from the system and creates two
+spaces in `~/augmented-brain`: `work` and `personal` (`trabajo` and `personal` in
+Spanish), with `personal` as the default space. Then it installs the plugin. Without
+Claude Code, it prints the two commands that install the plugin later.
+
+If there is a configuration already, it stops and changes nothing. To add a space, use
+`space add`.
+
+- `--custom`: ask for the language, the space and its folders, to make one space your way.
+- `--language`: the language, `en` or `es`. Without it, the system's (or `AB_LANGUAGE`).
+- `--space`: the name of the one space to create (lowercase letters, digits and dashes,
+  starting with a letter).
+- `--work`: its work folder. Default: `~/augmented-brain/<space>`.
+- `--memory`: its notes folder. Default: `notes` inside the work folder.
+- `--yes`: do not ask; take the options given and the defaults.
+- `--no-plugin`: do not install the Claude Code plugin.
+
+`--space`, `--work` or `--memory` make a single space instead of the two.
+
+```bash
+augmented-brain init --space client --work ~/clients/acme --language en
+```
+
+## augmented-brain space
+
+Says which space this folder belongs to, and where its notes are.
+
+```bash
+augmented-brain space
+```
+
+Outside every space's folder it names the default space. With no default space, it says
+so, and lists the spaces. It takes no options.
+
+## augmented-brain space add
+
+Adds another space: a client, a side project, a volunteer job.
+
+```bash
+augmented-brain space add client
+```
+
+The name goes as an argument (first or last) or with `--space`. It asks for the work
+folder and the notes folder, suggesting `~/augmented-brain/<name>` and its `notes`
+folder. If there was no default space yet, it sets one: `personal` if a space has that
+name, or else the space that was there first.
+
+- `--space`: the name of the new space.
+- `--work`: its work folder.
+- `--memory`: its notes folder.
+- `--yes`: do not ask; take the options given and the defaults.
+- `--language`: accepted, but it does nothing here. A new space speaks the language of the
+  configuration.
+
+```bash
+augmented-brain space add client --work ~/clients/acme --yes
+```
+
+See [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html).
+
+## augmented-brain check
+
+Checks the notes of this folder's space, and rebuilds its index when they are all valid.
+
+```bash
+augmented-brain check
+```
+
+It also:
+
+- moves the notes to a new format when a new version needs it, after a full copy;
+- checks the shared notes, and rebuilds their index;
+- names every file that holds a secret (the backup refuses it until the secret is out);
+- names the repositories notes point at that are not on this computer;
+- makes the notes readable by you only, if other users could read them;
+- moves the list of secret names into `secrets.toml`, from `config.toml` where 0.6.0 kept it.
+
+Run it after editing notes by hand. It ends with an error when a note is not valid. It
+takes no options.
+
+## augmented-brain doctor
+
+Says what is missing, and how to fix it.
+
+```bash
+augmented-brain doctor
+```
+
+Each line starts with a mark: `✓` fine, `·` for your information, `!` a warning, `✗`
+something that fails. Under a line that needs work, `→` says what to do. It checks:
+
+- the configuration, the profile and which space this folder is in;
+- each space's notes folder, its notes and its index;
+- Claude Code, git and the plugin;
+- the guard, for real, with a command that must be stopped;
+- the guard's lists, the root exceptions in `root_ask`, and those that have ended;
+- Claude sessions still running an older version after an update;
+- a second memory that Claude Code keeps of its own for your folders;
+- notes that other users of the computer could read;
+- whether there is a default space, and whether a restore left the guard's lists empty.
+
+It ends with an error when something fails. It takes no options. See
+[Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html).
+
+## augmented-brain import
+
+Brings in a memory Claude Code already wrote. Without `--apply` it only shows what it
+would do.
+
+```bash
+augmented-brain import ~/.claude/projects/<folder>/memory
+```
+
+- `--apply`: write the notes. Without it, nothing is written.
+- `--map`: a file that says which space each area or note goes to: lines `area-x =
+  space`, `task-y = space`, `lesson-z = shared`, and `* = space` for the rest.
+- `--repos-base`: the folder the `repos:` paths of the source are relative to.
+
+It never writes over a note that exists, and only reads the source. See
+[Bring in a memory](https://icalvete.github.io/augmented-brain/guide/import.html).
+
+## augmented-brain backup
+
+Saves the latest changes of this folder's space to its private repository. It also runs
+by itself when a Claude session ends.
+
+```bash
+augmented-brain backup
+```
+
+- `--all`: back up every space, not only this folder's.
+- `--space`: back up this space, wherever you are: `--space work`.
+- `--auto`: how the end of a session starts it, in the background. Quiet, and it never
+  waits for a password. You do not need it.
+
+It stops without pushing when a note holds a secret, or when another machine changed the
+same note in another way, and says which. See [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html).
+
+## augmented-brain backup setup
+
+Connects this folder's space to a private git repository, and makes the first copy.
+
+```bash
+augmented-brain backup setup git@gitlab.com:lucia/brain-work.git
+```
+
+It takes one argument, the repository's address, and no options. To create the
+repository in your GitHub account for you, ask Claude: "set up the backup".
+
+## augmented-brain restore
+
+Brings a space back from its backup, on a new machine.
+
+```bash
+augmented-brain restore https://github.com/lucia/augmented-brain-work.git
+```
+
+It replaces the empty space of the same name with yours. It leaves alone a space that
+already has notes. It installs the Claude Code plugin if it is missing. Then it names
+what it did not bring: the guard's lists, the repositories where Claude may commit, and
+the secrets this machine's keychain lacks, each with the command to store it.
+
+- `--memory`: where to put the space's notes. Default: where they were, inside the work
+  folder.
+- `--work`: the work folder that selects the space. Default: the one saved in the backup.
+
+## augmented-brain panel
+
+Opens the panel in your browser: today at a glance, and every page of your spaces to see
+and edit.
+
+```bash
+augmented-brain panel
+```
+
+It starts the panel in the background, or finds the one running, and opens the browser
+on Today, with the space of this folder. It returns at once. The panel stops by itself
+after 30 minutes without use.
+
+- `--no-browser`: only print the address, do not open the browser. `AB_NO_BROWSER=1` does
+  the same.
+
+See [The panel](https://icalvete.github.io/augmented-brain/guide/panel.html).
+
+## augmented-brain panel stop
+
+Stops the panel now.
+
+```bash
+augmented-brain panel stop
+```
+
+It says whether a panel was running. The link at the bottom of every panel page does the
+same.
+
+## augmented-brain panel serve
+
+The panel itself, running in the background. `augmented-brain panel` starts it; you never
+run it by hand. It stops on its own after 30 minutes without use.
+
+## augmented-brain update
+
+Updates augmented brain and its Claude Code plugin.
+
+```bash
+augmented-brain update
+```
+
+If there is a newer version, it runs the published installer, which replaces the program
+and then updates the plugin. If not, it only updates the plugin. Close and open Claude
+afterwards, so the sessions use the new version.
+
+- `--plugin`: update only the Claude Code plugin. The installer uses it.
+
+## augmented-brain uninstall
+
+Removes the program and the Claude Code plugin. Your notes stay.
+
+```bash
+augmented-brain uninstall
+```
+
+It shows what it will remove and asks first.
+
+- `--config`: also remove the configuration and the profile.
+- `--all`: start from scratch: also the configuration, the profile and every space's
+  notes. It shows each notes folder with how many notes it has. Your backups are not
+  touched.
+- `--yes`: do not ask.
+
+See [Installing](https://icalvete.github.io/augmented-brain/guide/install.html#uninstalling).
+
+## augmented-brain mcp
+
+Runs the MCP server: the tools Claude uses to keep your tasks and notes. **Claude Code
+starts it**, through the plugin; you do not.
+
+It talks over its input and output. It finds the space again on every call, from the
+folder Claude works in. The tools are in [MCP tools](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html). It takes no options.
+
+## augmented-brain hook
+
+Answers a Claude Code hook: a call Claude Code makes at a given moment. **Claude Code
+runs it**, through the plugin; you do not. It reads what Claude Code sends on its input,
+and never makes Claude fail: a problem goes to its error output.
+
+```bash
+augmented-brain hook session-start 1
+```
+
+The events:
+
+- `session-start`: a session starts. It hands Claude the profile, the rules, the index of
+  tasks and what is due. It comes in up to nine parts, `session-start 1` to
+  `session-start 9`, because Claude Code cuts each hook's text at 10,000 characters. Only
+  the parts with something in them are sent.
+- `pre-tool-use`: before every command and file change. This is the
+  [guard](https://icalvete.github.io/augmented-brain/guide/guard.html). If it cannot run, Claude Code stops the command.
+- `stop`: after each answer. It reminds Claude to write in the task's journal, once,
+  after 20 minutes without writing.
+- `post-compact`: after Claude Code compacts a long conversation. It keeps the summary in
+  `archive/sessions/` and points the task's journal at it.
+- `session-end`: the session ends. It notes that it ended well, and starts the backup in
+  the background.
+
+## augmented-brain version
+
+Prints the version of the program.
+
+```bash
+augmented-brain version
+```
+
+`--version` and `-v` do the same.
+
+## augmented-brain help
+
+Prints the list of commands, in your language.
+
+```bash
+augmented-brain help
+```
+
+`--help` and `-h` do the same. Running `augmented-brain` with nothing prints the list too.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/mcp-tools.html
+
+# MCP tools
+
+
+You say "park it". Claude calls the tool `task_park`, with the task's id and the next
+step. The program writes the task file. You never call these tools yourself: Claude does,
+behind your words.
+
+**MCP** (Model Context Protocol) is an open standard to give tools to an assistant. The
+program serves these tools with `augmented-brain mcp`, which Claude Code starts through
+the plugin. In Claude Code they show up as `mcp__plugin_brain_augmented-brain__<tool>`.
+
+A few things hold for every tool:
+
+- It works on **the space of the folder Claude is in**, found again on every call.
+- Tools run one at a time, and wait for the panel, so two never write at once.
+- **No secrets.** A tool refuses to write a password, a token or a key into a note.
+- **Nothing is deleted.** Tasks are closed, not removed.
+- Dates are written `YYYY-MM-DD`.
+- A parameter is required unless it says optional.
+
+## Tools by purpose
+
+- **Where things are**: [`where_am_i`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#where_am_i), [`pending`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#pending).
+- **Tasks**: [`task_new`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_new), [`task_get`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_get),
+  [`task_update`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_update), [`task_step`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_step),
+  [`task_journal`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_journal), [`task_park`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_park), [`task_close`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_close).
+- **Inbox and the weekly review**: [`capture`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#capture),
+  [`weekly_review`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#weekly_review), [`review_done`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#review_done).
+- **Notes that last**: [`area_new`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#area_new), [`knowledge_new`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#knowledge_new),
+  [`rule_new`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#rule_new), [`person_save`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#person_save),
+  [`repo_describe`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#repo_describe).
+- **You and this machine**: [`profile_save`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#profile_save),
+  [`safety_save`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#safety_save), [`secret_name_save`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#secret_name_save),
+  [`backup_setup`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#backup_setup), [`session_recover`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#session_recover).
+
+## `where_am_i`
+
+Which space this session works in, its notes folder, its areas, and how many tasks are
+live. It takes no parameters.
+
+## `pending`
+
+The live tasks, those waiting on you first, each with its status, steps done, who it
+waits on and its next step. Then the watch dates that are due. Claude uses it for "where
+were we?".
+
+- `within_days` (optional): also list watch dates due within this many days. Default 7.
+
+## `task_new`
+
+Opens a new task, in the definition phase and waiting on you. With a parent, it is a
+subtask.
+
+- `title`: a short name for the task.
+- `summary` (optional): one line on what it is.
+- `area` (optional): the id of its area. Default: the parent's area, or `area-general`.
+- `parent` (optional): the id of the task this one is a part of. One level only: the
+  parent cannot be a subtask, nor closed.
+- `goal` (optional): one line on what the task is for. It goes into the Definition.
+- `done_when` (optional): one line on how we will know it worked. It goes into the
+  Definition.
+
+## `task_get`
+
+Reads a task: its header, its whole body with the journal, and its subtasks. It also says
+which task it is part of, and whether a repository it names is missing from this
+computer. Claude reads a task before resuming it.
+
+- `id`: the task's id, such as `task-move-the-blog`.
+
+## `task_update`
+
+Changes a task. Only the fields given change. A change of status is written in the
+journal.
+
+- `id`: the task's id.
+- `status` (optional): `definition`, `analysis`, `plan`, `execution`, `validation`,
+  `closed`, `parked` or `someday`.
+- `waiting_on` (optional): `me`, `nobody`, a person, or another task's id.
+- `next` (optional): the single next action, in one line.
+- `summary` (optional): one line on what it is.
+- `area` (optional): the id of its area.
+- `watch_date` (optional): add a date to look at something again. Needs `watch_what`.
+- `watch_what` (optional): what to look at on `watch_date`, in one line.
+- `watch_done` (optional): mark the watch date of this day as done.
+
+At least one field besides `id` is needed.
+
+## `task_step`
+
+Steps are the small parts of a task: checkboxes (`- [ ] text`) in its Plan. This tool adds
+one, or ticks or unticks one. Each change writes a short journal line, and the answer
+lists the steps.
+
+- `id`: the task's id.
+- `add` (optional): add this step, unticked, at the end of the Plan, instead of ticking
+  one.
+- `number` (optional): the step to tick or untick, 1 for the first checkbox.
+- `text` (optional): the step to tick or untick, by its text (or a part only it holds),
+  when `number` is not given.
+- `done` (optional): `true` to tick the step, `false` to untick it.
+
+## `task_journal`
+
+Adds a dated entry to a task's journal. Claude writes one at the moment something is
+done or decided.
+
+- `id`: the task's id.
+- `entry`: what was done, what came out, what was decided.
+
+## `task_park`
+
+Pauses a task without losing anything, before switching to other work.
+
+- `id`: the task's id.
+- `next`: exactly how to resume: a command, a file or a decision.
+- `waiting_on` (optional): who it waits on now.
+- `essentials` (optional, but Claude should pass it): three to six lines that are enough to
+  resume without the journal. They replace the task's first section. Without it, only
+  "where it is" and "next" are updated there.
+- `someday` (optional): `true` when it will not be touched for weeks. The task leaves
+  the daily list.
+
+## `task_close`
+
+Closes a finished task with its result. It is kept, never deleted. A task with open
+subtasks cannot close.
+
+- `id`: the task's id.
+- `result`: what was achieved, in one or two lines.
+
+## `capture`
+
+Notes something in the inbox without opening a task, optionally with a day to be
+reminded. The weekly review processes it.
+
+- `text`: the idea, link or loose end, in one line.
+- `remind_on` (optional): a date. It comes up at the start of the session from a week
+  before, until it is dealt with.
+
+## `weekly_review`
+
+Lists what the weekly review goes through: the inbox, live tasks untouched for 14 days
+or more, and the dates due in the next 7 days. Claude then goes through it with you, one
+item at a time. It takes no parameters.
+
+## `review_done`
+
+Finishes the weekly review. It saves what was decided in `reviews/`, and takes the
+processed captures out of the inbox.
+
+- `summary`: what was decided, in a few lines.
+- `processed` (optional): the text of each capture dealt with, exactly as `weekly_review`
+  listed it. They leave the inbox. One that is not found is left as it was, and named.
+
+## `area_new`
+
+Creates an area: a responsibility with no end date that groups tasks and knowledge.
+
+- `title`: the area's name.
+- `summary` (optional): one line on what it looks after.
+
+## `knowledge_new`
+
+Saves a reference or a lesson worth keeping beyond one task: in this space, or shared by
+every space.
+
+- `kind`: `reference` (how something works) or `lesson` (what was learned).
+- `title`: for a lesson, a title that already states the conclusion.
+- `summary` (optional): one line.
+- `area` (optional): the id of its area.
+- `body` (optional): the text, in Markdown.
+- `shared` (optional): `true` when it holds in every space. It then has no area.
+
+## `rule_new`
+
+Saves a rule you give on how to work. Every session loads it.
+
+- `title`: the rule in a few words.
+- `summary` (optional): one line that says what to do.
+- `body`: what to do, and why, in Markdown.
+- `shared` (optional): `true` when it applies in every space, not only this one.
+
+## `person_save`
+
+Remembers someone you work or deal with, so a first name leads to the right person.
+Saving a name that exists updates that person.
+
+- `name`: the full name, or how you know them.
+- `aliases` (optional): other names you use for them, such as a nickname.
+- `role` (optional): who they are to you, in a few words: "my manager", "runs the
+  hosting company".
+- `notes` (optional): anything else worth remembering.
+
+## `repo_describe`
+
+Writes down, in one line, what one of your git repositories is, for the panel's
+Repositories page. Only repositories inside this space's work folders. The line goes to
+the reference `ref-repositories`, one line per repository; a new one replaces the old.
+
+- `repo`: the repository: its path (`~/…` or absolute), or its name as a task's `repos:`
+  writes it, relative to a work folder.
+- `text`: what it is, in one line, in your words. Empty takes the line out.
+
+## `profile_save`
+
+Saves who you are and how you like to work. Every space shares it, and every session
+starts by reading it. It replaces the whole profile, so Claude includes what should stay.
+
+- `name`: what you want to be called.
+- `about` (optional): what you do and work on, in short lines starting with `- `.
+- `work_style` (optional): how you like to work with Claude: language, length of
+  answers, how much to ask before acting. Short lines starting with `- `.
+
+## `safety_save`
+
+Adds to what the guard asks you about. The lists hold on this whole machine, in every
+space. It only adds: to take one out, you edit the configuration yourself, and the
+answer says where.
+
+- `production_aws_profiles` (optional): AWS CLI profiles that reach production. The guard
+  asks before commands that use them.
+- `untouchable_hosts` (optional): machines not to touch without asking, as you type them
+  for ssh.
+
+## `secret_name_save`
+
+Writes down the name of a secret you keep in the system keychain, and what it is for.
+Never its value: a value is refused. The list is the same in every space; the panel
+shows it. Saving a name that is listed changes what it is for.
+
+- `service`: the service the secret is kept under in the keychain, such as `telegram`.
+- `name`: its name under that service, such as `alerts-bot`.
+- `what` (optional): what it is for, in a few words.
+
+## `backup_setup`
+
+Sets up the backup of this space: a private git repository that keeps its notes, pushed
+by itself every time a session ends.
+
+- `repo_url` (optional): a private git repository you can push to. Without it, the tool
+  creates `augmented-brain-<space>` in your GitHub account with the `gh` command line.
+  When `gh` is missing or not logged in, it returns the steps to guide you through.
+
+## `session_recover`
+
+Reads what you and Claude said in an earlier session of this space that did not end
+well, after the last journal entry of its task. Only the messages, no tool output, at
+most the last 20,000 characters, from Claude Code's record on this computer (kept 30
+days). Claude then writes in the journal what is missing.
+
+- `session_id` (optional): the session to recover. Without it, the one the session start
+  offered.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/configuration.html
+
+# Configuration
+
+
+The installer writes the configuration for you, and Claude adds to it when you ask
+("`shop-prod` is production"). You only open it to change something by hand: a new work
+folder, a repository where Claude may commit, a root exception.
+
+## Where it is
+
+One folder per computer, the **configuration folder**:
+
+- Linux and macOS: `~/.config/augmented-brain/` (or `$XDG_CONFIG_HOME/augmented-brain/`).
+- Windows: `%APPDATA%\augmented-brain\`.
+- Anywhere else, if you set `AB_CONFIG_DIR`.
+
+Inside it, `config.toml` holds the settings. It is a **TOML** file: `name = value` lines,
+and a `[section]` heading for each space. Lines starting with `#` are comments; the
+program keeps them when it changes the file.
+
+## An example
+
+```toml
+# ~/.config/augmented-brain/config.toml
+language = "en"
+default_space = "personal"
+production_aws_profiles = ["shop-prod", "shop-prod-eu"]
+untouchable_hosts = ["db01", "backup.example.com"]
+root_ask = ["web02 until 2026-12-31"]
+
+[spaces.work]
+memory = "~/augmented-brain/work/notes"
+work_folders = ["~/augmented-brain/work", "~/code"]
+backup = "git@gitlab.com:lucia/brain-work.git"
+git_allowed_repos = ["~/code/blog", "~/code/blog-*"]
+git_ask_repos = ["~/code/shop"]
+
+[spaces.personal]
+memory = "~/augmented-brain/personal/notes"
+work_folders = ["~/augmented-brain/personal"]
+backup = "https://github.com/lucia/augmented-brain-personal.git"
+```
+
+Paths may start with `~`, your home folder. The program reads the file every time it
+runs, so a change counts at once.
+
+## Settings for the whole computer
+
+These go at the top, before any `[spaces.…]` heading.
+
+- `language`: the language the program speaks to you, `en` or `es`. Default `en`.
+- `default_space`: the space used outside every work folder, such as the scratch folder
+  the desktop app opens a new session in. Its backup carries your profile and the shared
+  notes. Optional; with two spaces or more, `init` and `space add` set it.
+- `production_aws_profiles`: AWS profiles that reach production. The guard asks you
+  before any command that uses one, in every space. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
+- `untouchable_hosts`: machines not to touch without asking. The guard asks before
+  `ssh`, `scp`, `rsync`, `sftp` and `mosh` to them, in every space. Names match ignoring
+  case, and a short name matches the full one (`db01` and `db01.example.com`).
+- `root_ask`: temporary exceptions for root, one machine each, written `"<host> until
+  <date>"`. The date is a day (`2026-12-31`, which lasts to its end, in UTC) or a time
+  (`2026-12-31T23:59Z`). Until then, root on that machine asks you instead of being
+  stopped. The date is required.
+- `format`: the version of the configuration folder. The program writes it when a new
+  version needs it; never change it by hand. Without it, it is 1.
+
+## Settings of each space
+
+Each space is a section, `[spaces.<name>]`. Together they are the `spaces` of the file.
+The name is lowercase letters, digits and dashes, starting with a letter.
+
+- `memory`: the space's notes folder. Required.
+- `work_folders`: the folders that pick this space when you open Claude in them, or in a
+  folder inside them. See [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html).
+- `backup`: the address of the space's private git repository. `backup setup` writes it.
+  Without it, the space is not backed up.
+- `git_allowed_repos`: repositories where Claude may commit and push, written with
+  `git -C <repo>`. The last part of a path may hold a `*`, which matches one folder. A git
+  worktree of a listed repository counts as it.
+- `git_ask_repos`: the same, but Claude asks you each time. A repository in both lists
+  asks.
+- `production_aws_profiles` and `untouchable_hosts`: older versions kept these per space.
+  They still work there, and the guard joins them with the top-level lists. New ones go
+  at the top.
+
+The repository lists of every space count together: a repository listed in one space is
+let through from a session in any of them.
+
+## What Claude may change
+
+Claude never edits this file on its own: the guard asks you first. Two tools add to it,
+and only add:
+
+- `safety_save` adds production profiles and untouchable machines.
+- `backup_setup` writes a space's `backup`, and never moves an existing backup elsewhere.
+
+To take anything out, edit the file yourself.
+
+## When it cannot be read
+
+If the file has a mistake, the program says which line. A setting it does not know is an
+error too, named in the message. If the file was written by a newer version, the program
+says to update instead.
+
+While the file cannot be read, the guard does not know your lists. So it asks you before
+every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`. `augmented-brain doctor` tells you
+what is wrong.
+
+## `secrets.toml`
+
+Next to `config.toml`, `secrets.toml` names the secrets you keep in your system
+keychain, never their values:
+
+```toml
+secrets = ["telegram/alerts-bot: alerts to my phone", "smtp/newsletter: sending the newsletter"]
+```
+
+Each entry is `service/name: what it is for`. The service and the name are single words,
+as the keychain knows them. Claude adds to it with the tool `secret_name_save`, and the
+panel's Secrets page lists it. A value is refused. It is a file of its own because
+versions before 0.6.0 refuse a setting of `config.toml` they do not know. 0.6.0 kept the
+list in `config.toml` as `secrets`; `check` and the session start move it here.
+
+## Other files in the folder
+
+- `profile.md`: your profile, for every space.
+- `shared/`: the shared notes (rules, references and lessons for every space).
+- `state/`: what this computer knows of each space's sessions. Never backed up.
+- `migrations/`: a full copy of notes before a new version moved them.
+- `panel.json` and `panel.lock`: where the panel listens while it runs, and its lock.
+- `review-<space>.draft`: a weekly review started in the panel and not finished yet.
+
+## Environment variables
+
+Set these in your shell to change how the program behaves:
+
+- `AB_CONFIG_DIR`: use this folder as the configuration folder.
+- `AB_LANGUAGE`: `en` or `es`, the language before there is a configuration (the
+  installer and `init` use it).
+- `AB_NO_AUTO_BACKUP=1`: do not back up when a session ends.
+- `AB_NO_UPDATE_CHECK=1`: do not ask GitHub, once a day, whether there is a new version.
+- `AB_NO_BROWSER=1`: `augmented-brain panel` prints the address instead of opening the
+  browser.
+
+The installer reads a few more:
+
+- `AB_YES=1`: answer yes to every question.
+- `AB_NO_DESKTOP=1`: do not offer the Claude desktop app.
+- `AB_INSTALL_DIR`: where to put the program. Default `~/.local/bin`.
+- `AB_NO_INIT=1`: only install the program, without setting anything up.
+- `AB_VERSION`, `AB_RELEASE_URL` and `AB_MARKETPLACE`: for testing: which version, where
+  the release files are, and where the plugin comes from.
+
+## Claude Code's own settings
+
+One setting of Claude Code matters here. If Claude Code keeps a memory of its own for your
+spaces' folders, it drifts from the space's. `augmented-brain doctor` tells you, and the
+fix is `"autoMemoryEnabled": false` in Claude Code's settings, in the file `doctor`
+names.
+
+The full format of every file is in the [memory format](https://icalvete.github.io/augmented-brain/guide/memory-format.html).
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/memory-format.html
+
+# Memory format
+
+**Status: format version 1** (see "Format version" below). This document defines how augmented brain stores what you and your assistant know: what files exist, what goes in each, and which fields the program reads. Everything is plain Markdown that you can open, edit and search with any tool.
+
+## Principles
+
+1. **Plain files, yours.** One folder of Markdown per space. No database, no hosted service.
+2. **The program reads fields, never prose.** Anything the program needs (a task's status, who it waits on, its next step) lives in the file's header. The body is free text, in any language.
+3. **Indexes are generated.** You never edit an index by hand; the program rebuilds it after every change. Hand-kept indexes drift.
+4. **Nothing is deleted.** Closed tasks stay, marked closed. What is no longer needed day to day can go to `archive/`, which is never loaded.
+5. **Short at the top, detail below.** The file loaded at the start of every session stays small; detail lives one link away.
+
+## Spaces
+
+A **space** keeps one part of your life apart from the others, for example `work` and `personal`. Each space has:
+
+- its own memory folder (everything below);
+- its own rules, on top of the common ones;
+- its own backup repository.
+
+The space is chosen by **the folder you open the assistant in**. Spaces never read each other's memory. They share the program, the common rules, the shared notes (below), the safety hooks and the risk settings (which cloud profiles are production, which hosts must not be touched): those are for the whole machine, so a production profile saved from one space is guarded in all of them.
+
+Spaces are declared in the configuration file (see "Configuration" below), not inside the memory.
+
+By default, `augmented-brain init` creates two spaces, `work` and `personal` (in Spanish, `trabajo` and `personal`). Each one is a folder in `~/augmented-brain/`, which is its work folder, and its memory folder sits inside it as `notes/` (`notas/`). Any other layout can be set with `init --custom` or by editing the configuration.
+
+A session that runs outside every work folder (for example, the scratch folder the Claude desktop app opens a new session in) uses the **default space**, `default_space` in the configuration; `init` sets it to `personal`, and `space add` sets it when there are two spaces or more and none is set (to `personal` if a space has that name, or else to the first space). Its backup is the one that carries the profile. Without one, no memory is loaded there and the assistant tells the user which folders to open.
+
+## Layout of a space
+
+```
+<memory folder>/
+├── MEMORY.md          # the index loaded at the start of every session (generated)
+├── profile.md         # optional: what only applies in this space (your role at work…)
+├── inbox.md           # quick captures, processed in the weekly review
+├── areas/             # ongoing responsibilities (one file each)
+├── tasks/             # projects with a beginning and an end (one file each)
+├── knowledge/         # how things work (reference) and what you learned (lesson)
+├── people/            # who the user deals with, so a first name finds the right person
+├── rules/             # this space's own rules (the common rules ship with the program; shared ones live in the configuration folder)
+├── reviews/           # one file per weekly review
+├── docs/              # optional: long documents of a task (plans, analyses, reports); never loaded
+│   └── <task>/
+└── archive/           # old journals and merged files; never loaded, never deleted
+    └── sessions/      # summaries Claude Code wrote when it compacted a conversation
+```
+
+`docs/` keeps the long documents a task produces, so they stay with the notes and out of the repositories the work touches (a repository only gets what its team needs). Each one sits under the id of its task, is plain Markdown or any other file, has no header, and is linked from the task. The program does not read it.
+
+A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the active task pointing at it.
+
+`MEMORY.md` is what the session start hands the assistant: it comes in up to three parts of the start (see "Rules"). An index too long for them is cut, and the assistant is told where to read it whole.
+
+**Your profile** (who you are, your language, how you like answers) is the same person in every space, so it lives once, next to the configuration: `profile.md` in the configuration folder. A space's own `profile.md` only adds what applies there.
+
+The shared profile has two sections the program knows by their headings, in English or
+Spanish: the first ("About me" / "Sobre mí", with the name line) and the work style
+("How I like to work" / "Cómo me gusta trabajar"). Other sections a person adds by hand
+are kept: the program reads them as part of the first one.
+
+**Shared notes** are the rules, references and lessons that hold in every space (how git
+behaves, how the person likes answers). They live once, next to the configuration, in
+`shared/` inside the configuration folder, laid out like a space but with only
+`rules/` and `knowledge/` (plus the generated `MEMORY.md` and `.augmented-brain/format`).
+A shared note has no area, since areas belong to one space; a task, area, person or
+review there is a problem, reported and left out. Every space sees them: a note of a
+space may name a shared note in `related`, and the session start loads the shared rules
+like the space's (see Rules) and lists the shared references and lessons. A shared note never links into a
+space. They are migrated like a space's notes, and kept in the backup of the default
+space, under `.augmented-brain/shared/`, like the profile.
+
+## File header
+
+Every file except `MEMORY.md`, `inbox.md` and what is in `archive/` starts with a YAML header between `---` lines (a byte order mark before it is fine). Keys and enumerated values are always English, whatever language you write in.
+
+```yaml
+---
+id: task-backup-restore          # unique in the space; also the file name without .md
+type: task                       # profile | area | task | reference | lesson | rule | person
+title: Backup and restore        # shown in indexes; any language
+summary: One line on what it is  # shown in indexes; any language
+area: area-platform              # tasks, references and lessons: the area they belong to
+repos: [infra/terraform]         # optional: repositories it touches, relative to the space's work folder
+related: [lesson-git-filters]    # optional: other ids; the program keeps links two-way
+created: 2026-10-15
+updated: 2026-10-15
+---
+```
+
+A repository in `repos:` that is in none of the space's work folders (it was moved,
+renamed or deleted, or this computer never had it) is reported, never fixed by itself:
+`augmented-brain check` and the panel's Health page list them, and reading the task
+tells the assistant to ask the user where it is now. A closed task is not checked. An
+absolute path, or one starting with `~`, is taken as it is.
+
+### Task fields
+
+Tasks add the fields that drive the whole workflow:
+
+```yaml
+status: plan                     # see "Task lifecycle"
+waiting_on: me                   # me | nobody | a person's name | another task id
+next: Approve the plan           # the single next action, one line
+watch:                           # optional: dates to look at something again
+  - date: 2026-11-16
+    what: Certificates renewed?
+    done: false
+```
+
+A watch date that is not `done` and falls in the next 7 days, or is already past, is
+brought up at the start of the session. This holds for closed tasks too: closing is when
+the checks for later are written down, so they come up until they are marked `done`.
+
+### Subtasks
+
+A task may be part of a bigger one, with one more field:
+
+```yaml
+parent: task-new-website         # optional: the id of the task this one is a part of
+```
+
+A subtask is a whole task (its own status, waiting_on, next step and journal). Make one
+for a part that waits on someone else or goes at its own pace; anything smaller is a
+step (below). The rules:
+
+- The parent is an existing task that is not itself a subtask: one level only. The
+  program refuses to open a subtask under a missing task, a note that is not a task, a
+  subtask, or a closed task.
+- A parent cannot be closed while any of its subtasks is not closed. Parking the parent
+  leaves its subtasks as they are.
+- The index lists a live subtask under its parent, indented. A subtask whose parent is
+  closed, someday or missing is listed on its own, so it is never hidden. A `parent`
+  that does not exist, is not a task, is the task itself or is itself a subtask is
+  reported as a problem (like an `area` that does not exist), and so is a `parent` on a
+  note that is not a task; the note is still read and can still be written, and is
+  listed on its own, once.
+
+### Steps
+
+A step is a Markdown checkbox in the task's **Plan** section, the level-2 heading
+`## Plan` (numbered or not, `## 3. Plan`, any case):
+
+```markdown
+## 3. Plan
+- [x] Buy the domain
+- [ ] Point it to the server
+```
+
+Steps need no field: the program finds the Plan heading and reads its checkboxes
+(`- [ ]` or `- [x]`, also with `*`), outside code blocks, numbered from 1 in order. The
+index and `pending` show how many are done ("1/2 steps") when there are any. Adding a
+step puts it, unticked, at the end of the Plan; ticking or unticking one changes only its
+`[ ]`, and writes one line in the journal.
+
+## Task lifecycle
+
+A task moves through six phases. You approve each change of phase; inside a phase the assistant works without asking at every step.
+
+| `status` | Meaning |
+|---|---|
+| `definition` | What we want, what is out, and how we will know it worked |
+| `analysis` | How things really are, measured, not assumed |
+| `plan` | Ordered steps, each with how to undo it |
+| `execution` | Doing it, writing a journal entry as we go |
+| `validation` | Proving the "done" criterion |
+| `closed` | Finished; the closing checklist is done |
+
+Two more statuses pause a task without losing anything:
+
+| `status` | Meaning |
+|---|---|
+| `parked` | Paused, resumed soon; `next` says exactly how |
+| `someday` | Not for weeks; leaves the session index, stays in its area |
+
+### Task body
+
+The body uses these sections, in your language (the templates write the headings for you):
+
+1. **Essentials**: three to six lines that are enough to resume the task without reading anything else. Rewritten every time the task is parked.
+2. **Definition**, **Analysis**, **Plan**, **Validation**, **Closing**: one per phase.
+3. **Journal**: dated lines, `- YYYY-MM-DD — what happened`. Always the last section.
+
+The program never searches the prose. It relies on two positions only: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. The one exception is the checkboxes of the Plan section (see "Steps"). The program never moves journal entries: a task whose journal grows long can have its oldest entries moved to `archive/` by hand, with a link from the task.
+
+## Areas
+
+An area is something you look after with no end date (your platform, your observability, your side project). Its body says what you look after, how it is going and what to watch. The program lists its tasks and knowledge in the area automatically, from their `area` field.
+
+## Knowledge
+
+- **reference**: how something works (a system, a deployment, a tool).
+- **lesson**: something learned, with a title that already states the conclusion.
+
+Both belong to an area and can relate to tasks.
+
+## People
+
+A person is someone the user deals with: `people/person-<name>.md`. The title is the name,
+and the summary says who they are to the user and the other names the user calls them
+("my manager · also: Marcos"), so the index alone tells the assistant who "Marcos" is. The
+body keeps anything else worth remembering. People belong to a space: work contacts stay
+in the work space. The panel reads the role and the other names back from the summary
+when it changes a person; the name (title and id) stays.
+
+## Repositories
+
+What each of the user's git repositories is lives in one reference of the space,
+`knowledge/ref-repositories.md` (`type: reference`, no area), so it is backed up with
+the notes. It is an ordinary reference: releases that know nothing of it read it as
+one, and it needs no new field. Its body has one line per repository:
+
+```
+- `~/code/website` — The public website, built with Hugo
+```
+
+The path is written with `~` when it is under the home folder (otherwise absolute), or,
+by hand, relative to a work folder of the space, as `repos:` writes it. The text after
+the dash (` — `, or ` - ` by hand) is one line of plain text, at most 300 characters,
+and may not hold a secret. Any other line (a paragraph of your own, a heading) is left
+alone. The panel's Repositories page and the MCP tool `repo_describe` write it, only for
+folders inside the space's work folders: a new description replaces the line of that
+repository, and an empty one takes it out. The note is made the first time.
+
+## Inbox
+
+`inbox.md` has no header. Each capture is one line, with the date it was captured:
+
+```
+- 2026-10-17 — Look at the new CI runner
+- 2026-10-17 — Call the insurance (remind: 2026-10-22)
+```
+
+A capture ending in `(remind: YYYY-MM-DD)` is brought up at the start of the session from
+7 days before that date, and every day after it, until the capture is processed (in the
+weekly review, or marked as dealt with). Any other line (the heading, a paragraph) is left alone.
+
+## Reviews
+
+The weekly review goes through the inbox (each capture becomes a task, goes to an area or
+knowledge, or is dropped), the live tasks untouched for 14 days or more, and the dates due
+in the coming week. Processed captures leave the inbox, and the review is kept as
+`reviews/review-<date>.md` (`type: review`), with what was decided as its body and the
+first line as its summary. When the last review is 7 days old or more and there is
+something to go through, the session start offers a new one. A review done in the
+panel keeps one line per decision while it goes on in a draft on this machine
+(`review-<space>.draft` in the configuration folder, never in the notes), and writes
+those lines into the review's body when it is finished.
+
+## Rules
+
+Rules tell the assistant how to work. There are three levels:
+
+- **common rules**, shipped with the program (answer style, verify before advising, never commit or push unless asked, never escalate to root, never write secrets…);
+- **shared rules**, the person's own for every space, in the shared notes (for example, "answer in short sentences, one idea each");
+- **space rules**, in `rules/`, for what only applies to that space (for example, "hosts db01–db03 are never restarted without explicit permission").
+
+All of them are loaded at the start of every session, whole. The start comes in up to
+nine parts, each of about 9,500 characters at most: the heading with the profile and the
+common rules, the index (up to three parts), and the shared and space rules (up to five
+parts). Only the parts that have something are sent, and they are counted that way
+("part 2 of 3"). A
+rule's section titled `History` (or `Historia`) stays in its file: it tells how the rule
+came to be, not what to do. A rule that does not fit whole goes as one line, its title
+and summary, with the path of its file; so a rule's summary should say what to do.
+
+## Format version
+
+The notes of each space say which version of this format they follow, in
+`.augmented-brain/format` inside the memory folder: one line with a number. The
+configuration folder says its own, for the configuration and the profile, as
+`format = N` at the top of `config.toml`. Neither saying it means version 1, which is
+also never written to `config.toml`, because releases from before versions were
+written refuse settings they do not know. This document describes version 1.
+
+When a release writes something in a new way, it raises the version and brings a step
+that moves version N to N+1. At the start of a session (and in `augmented-brain check`)
+the program copies the whole folder to `migrations/` in the configuration folder, runs
+the missing steps one at a time and writes the new version after each, so a step that
+stops half way runs again from there. Notes of a newer version than the program knows
+are never written: the program asks to be updated.
+
+## Generated files
+
+The program rebuilds these after every change; editing them by hand is pointless:
+
+- `MEMORY.md`: your profile line, the rules, the areas, and the live tasks grouped by area, one line each, with status, steps done when the Plan has any, who it waits on and the next step; subtasks indented under their parent.
+- The "Tasks" and "Knowledge" lists inside each area.
+
+## Configuration
+
+`~/.config/augmented-brain/config.toml` (or the platform equivalent) declares the spaces:
+
+```toml
+language = "en"                  # en | es: the language the program speaks to you
+default_space = "personal"       # used outside every work folder (optional)
+production_aws_profiles = ["prod", "prod-eu"]   # every space: the user confirms first
+untouchable_hosts = ["db01", "db02", "db03"]    # ssh, scp, rsync, sftp, mosh to them: the user confirms first
+root_ask = ["db01 until 2026-10-31"]            # root there asks instead of being refused, until then
+
+[spaces.work]
+memory = "~/augmented-brain/work/notes"
+work_folders = ["~/augmented-brain/work", "~/code"]   # opening the assistant here selects this space
+backup = "git@github.com:me/brain-work-private.git"
+git_allowed_repos = ["~/code/website", "~/code/website-*"]   # the assistant may commit and push here, with git -C
+git_ask_repos = ["~/code/infra"]                # the same, once the user confirms each time
+
+[spaces.personal]
+memory = "~/augmented-brain/personal/notes"
+work_folders = ["~/augmented-brain/personal"]
+backup = "git@github.com:me/brain-personal-private.git"
+```
+
+In `git_allowed_repos` and `git_ask_repos` the last part of a path may hold a `*`, which
+matches one folder (`~/code/website-*` is every `website-<name>` next to `website`), and a
+git worktree of a listed repository counts as that repository, wherever it is. The guard
+joins the lists of every space, as it does with the production profiles: a repository
+belongs to the person, not to the space a session runs in. A repository in both lists
+asks. Even in an allowed one, a push that rewrites or deletes on the remote (a force, a
+delete, a mirror, or a refspec starting with `+` or `:`) asks.
+
+The same lists decide on merging a pull request (`gh pr merge`, `glab mr merge`, `glab mr
+accept`), which pushes to the branch it goes into. As a push counts only a repository
+written with `git -C`, a merge counts only one written in the command with a `cd` before
+it (`cd <repo> && gh pr merge 12`), never the session's folder alone: the listed folder
+itself or a worktree of it, not a folder inside it. A repository the command
+names (`-R`/`--repo`, `GH_REPO`, `GITLAB_REPO`, the pull request's address) must be one
+of that repository's remotes, read from its `.git/config` (includes are not followed); a
+name with no host is on `github.com` or `gitlab.com` (or `GH_HOST`, `GITLAB_HOST`).
+`gh pr merge --admin` always asks. Publishing a release stays for the user.
+
+`production_aws_profiles` and `untouchable_hosts` may also appear inside a space, as older
+versions wrote them: the guard applies the top-level lists and every space's together.
+Host names match ignoring case, and a short name matches the full one either way (`db01`
+and `db01.example.com`).
+
+`root_ask` holds temporary exceptions for root, one machine each: `"<host> until <date>"`.
+The date is a day (the exception lasts to its end, in UTC) or a time
+(`2026-10-31T23:59Z`), and it is required, so no exception is left behind. While it
+lasts, a command that would run as root on that machine (`sudo`, `su`, also inside
+`ssh <host> '…'`) asks the user instead of being refused; the command it runs is still
+checked. The host is matched as ssh names it, or against this machine's name. After the
+date the entry does nothing, and `augmented-brain doctor` says it can be removed. The
+session start tells the assistant which exceptions are in force, and names those that
+cannot be read (they grant nothing); `doctor` names those too.
+
+`secrets.toml`, next to `config.toml`, names the secrets the user keeps in the system
+keychain: `secrets = ["<service>/<name>: what it is for", …]`. It is a file of its own,
+not a setting of `config.toml`, because programs before 0.6.0 refuse a setting they do
+not know; 0.6.0 kept the list in `config.toml`, and 0.6.1 moves it here at the start of
+a session or with `check`. The service and the name are single words (letters, digits,
+`. _ @ + -`, not starting with `-`), and what it is for is one line of plain text (no
+quotes, backslashes or control characters), as the keychain knows them (`secret-tool` attributes `service` and
+`name` on Linux; a generic password's service and account on macOS). It never holds a
+value: anything that looks like one is refused. It is the same list in every space. The
+assistant adds to it with the MCP tool `secret_name_save` (saving a listed name changes
+what it is for); the panel lists it, adds and removes names, says which tasks name each
+one, and, only when asked, whether this computer's keychain has it. An entry that cannot
+be read is left out and counted on the panel's page.
+
+## Backup
+
+Each space backs up to its own private git repository: the memory folder itself is the
+repository. Every backup also copies this space's part of the configuration into
+`.augmented-brain/` inside the memory folder, so restoring on a new machine needs nothing
+else. The default space's backup (or the only space's) also carries the profile and
+`secrets.toml`, and says `default_space` in its copy of the configuration, so a restore
+makes it the default space again when the machine has none, and brings the secrets'
+names when the machine has none (also from a 0.6.0 backup, which kept them in its copy
+of the configuration), then names those this machine's keychain lacks; no other backup does, so the personal profile
+never reaches a work repository. The
+machine-wide guard lists are in no backup (they may name work machines): after a restore
+that leaves them empty, `restore` and `doctor` say so, and the next session offers to ask for them
+again. A restore never brings `git_allowed_repos` or `git_ask_repos` either, since someone
+else may have changed the backup: they are given again on the new machine. A backup that
+holds a symbolic link is never restored, nor merged with another machine's, since
+augmented brain never writes one. Notes are written readable by their owner only (files
+0600, folders 0700); a restore makes the restored notes so, `augmented-brain check` fixes
+a space whose notes others could read, and `augmented-brain doctor` warns about it. Paths are kept with `~`, so they point to the new machine's home, and
+the notes go back to the same place inside the work folder. A restore also installs the
+Claude Code plugin when it is missing.
+
+A backup is refused while any file of the memory holds a secret (the made-up keys of
+AWS's documentation are not secrets). The tools refuse to write one in the first place:
+a note may not hold more secrets than its old version did, so a note that already holds
+one (as an import may leave it) can still be changed to take it out. Files over 50 MB are left out, and the user is told.
+The repository gets a `.gitattributes` (`inbox.md merge=union`: captures from two machines
+are both kept, so one processed on one machine may come back if the other captured at the
+same time) and a `.gitignore` (`*.tmp`, `.DS_Store`, `Thumbs.db`, `desktop.ini`); lines
+the user adds to them stay. The generated index is rebuilt after a restore.
+
+When another machine changed the same notes, the backup merges before pushing. A note
+that each machine changed only by adding journal entries (dated lines) and moving its
+`updated` date is joined by itself: every entry either added, in date order, and the
+later date. Any other conflict stops the backup without pushing, naming the notes to
+merge by hand.
+
+## State of this machine
+
+`state/<space>.json` in the configuration folder keeps, for this machine only (never
+backed up, no text of the conversation): the active task and when it was last written,
+when the assistant was last reminded to write, and the sessions that started and ended,
+with the path of Claude Code's transcript of each. The Stop reminder, the request after a
+compaction and the offer to recover a session that did not end come from it.
+
+`panel.json`, also in the configuration folder and readable only by the user, says where
+the panel listens while it runs (its process, port and key); it goes away when the panel
+stops. `panel.lock`, next to it, lets one `augmented-brain panel` (or `panel stop`) at a
+time start or stop the panel, so several at once start only one. The panel changes notes
+only through the same code as the MCP tools.
+
+## Decisions
+
+- **A folder per type**, not one flat folder with prefixes: a newcomer sees at a glance what there is and where each thing goes.
+- **One profile for the person**, next to the configuration; each space may add its own `profile.md`.
+- **Shared notes, not spaces that read each other.** What holds everywhere lives once, in the shared notes, rather than copied into each space (copies drift) or by letting a space read another's memory (which would mix work and personal). Only rules and knowledge can be shared; tasks, areas and people stay in their space.
+- **Importing an existing memory** of Claude Code (`augmented-brain import`) reads the header only: a field this format has is kept, at the top or under `metadata`; a person's own conventions are turned into those fields by a step of their own before importing, not by the program. It plans first and writes only with `--apply`, never over an existing note, and never changes the source.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/troubleshooting.html
+
+# Troubleshooting
+
+
+Something is off. Start here: open a terminal and run
+
+```bash
+augmented-brain doctor
+```
+
+It checks the whole setup and says what is missing and how to fix it. Each line starts
+with a mark: `✓` fine, `·` for your information, `!` a warning, `✗` something that
+fails. Under a line that needs work, `→` says what to do.
+
+If you have the panel open, its **Help** page has links to these answers and a button to
+report a problem on GitHub, with the health check filled in and what is personal taken
+out. See [The panel](https://icalvete.github.io/augmented-brain/guide/panel.html#help).
+
+## Problems and fixes
+
+### Claude does not know my tasks, or skips the interview
+
+- **Claude Code asked whether you trust the folder.** The first time you open Claude in
+  a folder, Claude Code asks this before loading anything. Say yes in your work folders.
+  Until then, augmented brain cannot load your notes.
+- **The session started before the install.** Start a new session.
+- **You are in another space.** Run `augmented-brain space` in that folder. Outside every
+  space's folder, the default space is used. To make a folder count for a space, add it
+  to the space's `work_folders` (see [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html)).
+
+### The terminal cannot find a command
+
+`command not found`, or "not recognized" on Windows. Close the terminal and open a new
+one: the one you used does not see the new PATH yet.
+
+### Claude Code stops every command and file change
+
+The guard cannot run, so Claude Code stops everything instead of letting it through. The
+program is missing or broken. Run `augmented-brain doctor`. Make sure `augmented-brain`
+is on your PATH or in `~/.local/bin`. Installing again fixes it.
+
+### Every PowerShell command is stopped
+
+That is expected, on Windows. The guard reads the shell, not PowerShell, so it stops
+PowerShell commands and Claude runs them in Git Bash instead.
+
+### Claude asks before every aws or ssh command
+
+The configuration cannot be read, so the guard does not know your lists and asks to be
+safe. `augmented-brain doctor` names the problem. If it says "unknown settings", the file
+has a line this version does not know: a typo, or a setting of a newer version. Then
+update with `augmented-brain update`. See [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html).
+
+### Claude cannot push, even when I ask
+
+The guard stops `git commit` and `git push` unless the repository is listed. Push it
+yourself, or add the repository to `git_allowed_repos` (or `git_ask_repos`) and ask Claude
+to use `git -C <repo>`. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html#let-claude-commit-in-a-repository).
+
+### Claude needs root on a machine
+
+Claude gives you the exact command to run yourself. For a migration that needs many
+commands, add a dated exception, `root_ask = ["db01 until 2026-12-31"]`. Then root on
+that machine asks you each time, until the date.
+
+### augmented brain's tools fail after an update
+
+A session that was open keeps the old program. Close and open it. `augmented-brain
+doctor` says how many sessions still run the old version.
+
+### "Written by a newer augmented brain"
+
+A newer version on another computer moved the notes to a new format. Update this
+computer too: `augmented-brain update`. The older program refuses the notes instead of
+breaking them.
+
+### The backup failed
+
+Claude tells you at the start of the next session. Run `augmented-brain backup` in a
+folder of the space to see why:
+
+- **No network, or no access.** Check you can reach the repository. On GitHub, log in
+  with `gh auth login`.
+- **A secret in a note.** It names the file. Take the secret out, then back up again.
+  `augmented-brain check` names those files too.
+- **Two machines changed the same note.** It names the notes, and the folder where to
+  merge them by hand. When each machine only added journal entries, they are joined by
+  themselves.
+- **A file over 50 MB.** It is left out, and the rest is backed up. Move it out of the
+  notes folder.
+
+### A note is not valid
+
+`augmented-brain check` in a folder of the space lists each problem with its file. Fix
+the header (between the `---` lines) by hand, and run `check` again. Until then, the
+index is not rebuilt, but the tools keep working.
+
+### A repository is "not on this computer"
+
+A task names a repository in `repos:` that is in none of the space's work folders. It
+was moved, renamed or deleted, or this computer never had it. Tell Claude where it is
+now, or remove it from the task.
+
+### Claude Code keeps a second memory
+
+`doctor` warns that Claude Code keeps a memory of its own for your folders. It drifts
+from the space's. Add `"autoMemoryEnabled": false` to the settings file `doctor` names.
+What it holds stays, and you can [bring it in](https://icalvete.github.io/augmented-brain/guide/import.html).
+
+### Other users can read my notes
+
+`doctor` warns about it. Run `augmented-brain check` in a folder of the space: it makes
+the notes yours only.
+
+### The panel does not open, or its address stopped working
+
+On a computer with no screen, `augmented-brain panel` prints the address to open
+yourself. The address carries a key that changes each time the panel starts, and the
+panel stops after 30 minutes without use. Run `augmented-brain panel` again for a new
+address.
+
+### A session was cut off
+
+The window was closed by force, or the computer went down. The next session offers to
+recover it. Say yes, or go to the panel's Sessions page. Claude Code keeps each
+conversation for 30 days.
+
+### After a restore, nothing asks before production
+
+Backups do not carry the guard's lists. Open a Claude session: it offers to ask you for
+them. Or add `production_aws_profiles` and `untouchable_hosts` to the configuration
+yourself.
+
+### Windows: accents look broken (`sesiÃ³n`)
+
+Windows PowerShell 5.1 misreads what other programs write when it captures it. The text
+is right: in Git Bash, or in a window, it shows well.
+
+### macOS: the developer tools window did not open
+
+Run `xcode-select --install`, then the install command again.
+
+More problems of the installer, on each system: [Installing](https://icalvete.github.io/augmented-brain/guide/install.html#if-something-goes-wrong).
+
+## Questions
+
+### Is it free?
+
+augmented brain is: open source, MIT license, no account, no subscription. But it works
+with Claude Code, which needs a paid Claude plan (Pro or above).
+
+### Do my notes leave my computer?
+
+augmented brain never sends them anywhere. But your assistant reads them to work, like
+any file it opens, so they travel with the conversation to its provider. With a backup,
+they also go to the private repository you chose.
+
+### Can I edit the notes by hand?
+
+Yes, they are Markdown files. Afterwards, run `augmented-brain check`.
+
+### Which assistants does it work with?
+
+Claude Code today. The tools are an MCP server, an open standard, so other assistants can
+follow.
+
+### What if I stop using it?
+
+Your notes stay where they are, as plain files. There is nothing to export. See
+[Installing](https://icalvete.github.io/augmented-brain/guide/install.html#uninstalling).
+
+## Still stuck
+
+Tell us in [the project's issues](https://github.com/icalvete/augmented-brain/issues),
+with what showed up on screen and what `augmented-brain doctor` says. The panel's Help
+page fills that in for you.
+
+What changed in each version is in the
+[changelog](https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md).

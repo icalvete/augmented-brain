@@ -7,7 +7,7 @@ Tu asistente recuerda en qué estabais, trabaja con método y te pregunta antes 
 Todo queda en ficheros de texto tuyos, con copia en tu propio git.</p>
 
 <p align="center"><a href="https://icalvete.github.io/augmented-brain/es/">Web</a> ·
-<a href="docs/guide/how-it-works.es.md">Cómo funciona</a> · <a href="README.md">Read in English</a></p>
+<a href="https://icalvete.github.io/augmented-brain/guide/index.es.html">Documentación</a> · <a href="README.md">Read in English</a></p>
 
 <p align="center"><a href="https://github.com/sponsors/icalvete"><img alt="Patrocina" src="https://img.shields.io/badge/Patrocina-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white"></a></p>
 
@@ -32,23 +32,21 @@ Le hablas como siempre. Esto es lo que cambia:
 | Tú | Qué pasa |
 |---|---|
 | "¿En qué estábamos?" | Te lista tus tareas vivas, cada una con su siguiente paso y quién la bloquea |
-| "Apárcalo, mañana seguimos." | Apunta dónde lo dejáis y qué viene después; mañana, en otra sesión, arranca ahí |
-| "Apunta: renovar el certificado en noviembre." | Va al buzón sin abrir tarea; lo ordenáis en la revisión semanal |
+| "Apárcala, mañana seguimos." | Apunta dónde lo dejáis y qué viene después; mañana, en otra sesión, arranca ahí |
 | "Recuérdame el jueves que llame al seguro." | El jueves, nada más abrir Claude, te lo recuerda |
-| "¿Por qué elegimos Postgres?" | Lo busca en tus notas y te da la decisión, con fecha y porqué |
-| "Guárdalo como lección." | Lo aprendido queda en una nota propia, para la próxima vez |
+| "¿Por qué elegimos el hosting más barato?" | Lo busca en tus notas y te da la decisión, con fecha y porqué |
 | "Borra el bucket viejo de producción." | Antes de ejecutarlo, te pregunta |
 | Abres Claude en `~/augmented-brain/personal` | Solo ve tus notas personales; las del trabajo, no |
-| "Dile a Marcos que lo dejamos para el lunes." | Sabe que Marcos es tu jefe y te prepara el mensaje |
 | Se te rompe el portátil | `augmented-brain restore` en el nuevo y lo tienes todo |
+
+Más frases: [Qué decirle a Claude](https://icalvete.github.io/augmented-brain/guide/phrases.es.html).
 
 ## Empieza en dos pasos
 
 Necesitas Linux, macOS (13 o posterior) o Windows (10 u 11), y una cuenta de Claude de pago
-(Pro o superior), porque Claude Code no entra en el plan gratuito. augmented brain no
-necesita root ni administrador. ¿Nunca has abierto una terminal? Sigue los
-[primeros pasos](docs/guide/getting-started.es.md). Qué hace el instalador en cada sistema,
-dónde deja cada cosa y cómo actualizar o desinstalar: [Instalación](docs/guide/install.es.md).
+(Pro o superior), porque Claude Code no entra en el plan gratuito. No hace falta root ni
+administrador. ¿Nunca has abierto una terminal? Sigue los
+[primeros pasos](https://icalvete.github.io/augmented-brain/guide/getting-started.es.html).
 
 **1. Instálalo** con un solo comando. En Linux o en Mac, en la terminal:
 
@@ -62,27 +60,19 @@ En Windows, en PowerShell:
 irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
 ```
 
-Primero te pregunta el idioma. Si te falta git o Claude Code, te ofrece instalarlos, y
-también la app de escritorio de Claude, la forma más cómoda de trabajar (en Mac, Windows,
-Ubuntu y Debian). Después lo deja todo listo (dos espacios, `trabajo` y `personal`,
-en `~/augmented-brain`, y el plugin de Claude Code) y te pregunta si abre Claude ya.
+Te pregunta el idioma, te ofrece instalar lo que falte (git, Claude Code, la app de
+escritorio de Claude), crea dos espacios, `trabajo` y `personal`, en `~/augmented-brain`,
+e instala el plugin de Claude Code. Lo que hace en cada sistema:
+[Instalación](https://icalvete.github.io/augmented-brain/guide/install.es.html).
 
 **2. Contesta a Claude.** La primera vez te hace seis preguntas rápidas, explicándote para
 qué sirve cada una: quién eres, qué cuidas, cómo quieres las respuestas, qué no se toca,
-qué herramientas usas y con quién trabajas. Con eso crea tus áreas, configura el guardia y
-aprende quién es quién.
+qué herramientas usas y con quién trabajas.
 
-Las próximas veces, abre la app de Claude, pulsa **+ New** y escribe. Sin elegir carpeta,
-estás en tu espacio personal; para el de trabajo, elige con **Choose…** la carpeta
-`~/augmented-brain/trabajo`. Desde la terminal:
-
-```bash
-cd ~/augmented-brain/trabajo && claude
-```
-
-(En Windows, `cd ~\augmented-brain\trabajo; claude`.)
-
-Si algo no va, `augmented-brain doctor` te dice qué falta y cómo arreglarlo.
+Las próximas veces, abre la app de Claude, pulsa **+ New** y escribe. Para el trabajo,
+elige con **Choose…** la carpeta `~/augmented-brain/trabajo`, o lanza
+`cd ~/augmented-brain/trabajo && claude`. Si algo no va, `augmented-brain doctor` te dice
+qué falta y cómo arreglarlo.
 
 ## Cómo se ve
 
@@ -110,131 +100,76 @@ fiarse de ella.
 ## Qué te da
 
 - **Tareas con ciclo de vida**: definir, analizar, planificar, ejecutar con diario,
-  validar y cerrar. Aparcas una tarea y la retomas días después, en cualquier sesión.
-- **Áreas** que agrupan las tareas y el conocimiento de cada responsabilidad.
-- **Reglas cargadas en cada sesión**, y las importantes vigiladas por un guardia: nada
-  de commit, push ni merge salvo que lo permitas, nunca root (salvo que lo permitas en una máquina
-  hasta una fecha), ningún secreto en comandos ni ficheros. Los perfiles de AWS de producción y los hosts que marques como intocables
-  te piden confirmación, también por `ssh`, en todos los espacios.
-- **Trabajo y personal, separados**: cada *espacio* tiene su memoria, sus reglas y su
-  copia de seguridad. La carpeta en la que abres el asistente elige el espacio.
+  validar y cerrar. Aparca una tarea y retómala días después. Mira
+  [Tareas](https://icalvete.github.io/augmented-brain/guide/tasks.es.html).
+- **Trabajo y personal por separado**: cada espacio tiene sus notas, sus reglas y su
+  copia. La carpeta en la que abres Claude elige el espacio. Mira
+  [Espacios](https://icalvete.github.io/augmented-brain/guide/spaces.es.html).
+- **Un guardia** que para los commits, los push, el root y los secretos salvo que tú los
+  permitas, y te pregunta antes de tocar producción o las máquinas que marques como
+  intocables. Es una red contra despistes, no un muro de seguridad. Mira
+  [El guardia](https://icalvete.github.io/augmented-brain/guide/guard.es.html).
+- **Un panel** en tu navegador: el día de un vistazo, y cada tarea, recordatorio, nota,
+  repositorio y nombre de secreto para ver y cambiar. Mira [El panel](https://icalvete.github.io/augmented-brain/guide/panel.es.html).
 - **Copia de seguridad y restauración** en un repositorio git privado tuyo, uno por
-  espacio. Abajo, qué te da.
-- **Tus servicios** (calendario, correo, Jira…) por MCP: mira
-  [Conecta tus servicios](docs/guide/connect-services.es.md).
-
-## Pierdes el portátil, no el cerebro
-
-La carpeta de notas de cada espacio es un repositorio git, y la copia la sube a un
-repositorio privado tuyo. **Para montarla, díselo a Claude:** "monta la copia de
-seguridad". Crea el repositorio privado en tu GitHub, lo conecta y hace la primera copia.
-O, con otro repositorio:
-
-```bash
-augmented-brain backup setup git@gitlab.com:tu-usuario/mi-cerebro.git   # una vez
-augmented-brain backup                                                   # a mano, si quieres
-```
-
-- **Una máquina nueva en minutos.** Instala augmented brain y lanza
-  `augmented-brain restore <url>`: sustituye el espacio vacío por el tuyo, con notas,
-  tareas, reglas, tu perfil y su configuración (salvo los repositorios donde Claude puede
-  hacer commit: `restore` los nombra, para que los vuelvas a añadir). Paso a paso, en
-  [Cómo funciona](docs/guide/how-it-works.es.md#en-una-máquina-nueva).
-- **Varias máquinas, un solo cerebro.** Antes de subir, trae lo que hizo tu otra máquina
-  y lo mezcla.
-- **Todo el historial.** Cada copia es un commit, con la máquina y la hora: ves qué
-  cambió y vuelves a cualquier día.
-- **En tu sitio.** GitHub, GitLab o tu servidor. augmented brain no tiene nube.
-- **Un repositorio por espacio.** El del trabajo puede ir al git de la empresa. Tu
-  perfil solo viaja en la copia del espacio por defecto (`personal`), nunca en la del
-  trabajo. Las listas del guardia, y los repositorios donde Claude puede hacer commit, no
-  viajan en ninguna: en una máquina nueva, Claude te vuelve a pedir las listas, y los
-  repositorios los añades tú.
-- **No sube secretos.** Las herramientas de Claude se niegan a escribir una contraseña o
-  un token en una nota, y si aun así una parece tener uno, la copia se para.
-- **No pisa nada.** Si dos máquinas cambiaron la misma nota, se para y te explica qué hacer;
-  las entradas de diario añadidas en cada una se juntan solas.
-  Las capturas del buzón hechas en dos máquinas se guardan las dos (una ya procesada en
-  una máquina puede volver una vez, en la siguiente revisión).
-- **Los ficheros grandes se quedan fuera.** Un fichero de más de 50 MB en la carpeta de
-  notas no entra en la copia (GitHub los rechaza), y Claude te dice cuál.
-
-Una vez montada, **se hace sola cada vez que terminas una sesión** de Claude; si falla,
-Claude te lo dice al empezar la siguiente.
+  espacio, después de cada sesión. Mira
+  [Copia de seguridad y restauración](https://icalvete.github.io/augmented-brain/guide/backup.es.html).
+- **Ficheros Markdown normales** que son tuyos. Ábrelos con cualquier editor. Mira el
+  [formato de la memoria](https://icalvete.github.io/augmented-brain/guide/memory-format.html) (en inglés).
 
 ## Comandos
 
+En el día a día le hablas a Claude. Estos son para preparar y revisar:
+
 | Comando | Qué hace |
 |---|---|
-| `augmented-brain init` | Lo prepara todo: los espacios `trabajo` y `personal` y el plugin. Lo lanza el instalador; `--custom` para elegir tú |
+| `augmented-brain init` | Lo prepara todo: los espacios y el plugin (lo lanza el instalador) |
 | `augmented-brain space` | Dice de qué espacio es esta carpeta |
-| `augmented-brain space add` | Añade otro espacio (personal, un cliente…) |
-| `augmented-brain doctor` | Dice qué falta y cómo arreglarlo (también si Claude Code lleva una segunda memoria propia junto a la del espacio) |
-| `augmented-brain import <carpeta>` | Trae una memoria que Claude Code ya escribió. Solo enseña lo que haría; `--apply` la escribe ([detalles](docs/guide/how-it-works.es.md#trae-una-memoria-que-ya-tienes)) |
-| `augmented-brain check` | Revisa las notas del espacio de esta carpeta y rehace su índice; también avisa de los repositorios de las notas que ya no están en este ordenador |
-| `augmented-brain backup setup <url>` | Conecta este espacio a un repositorio git privado |
-| `augmented-brain backup` | Guarda los últimos cambios (`--all` para todos los espacios) |
+| `augmented-brain space add` | Añade otro espacio |
+| `augmented-brain check` | Revisa las notas de este espacio y rehace su índice |
+| `augmented-brain doctor` | Dice qué falta y cómo arreglarlo |
+| `augmented-brain import <carpeta>` | Trae una memoria que Claude Code ya escribió |
+| `augmented-brain backup` | Copia este espacio ahora (`backup setup <url>` lo conecta) |
 | `augmented-brain restore <url>` | Recupera un espacio en una máquina nueva |
-| `augmented-brain panel` | Abre el panel en tu navegador: el día de un vistazo, y cada sección de tus espacios para ver y editar (`panel stop` para pararlo) |
-| `augmented-brain update` | Actualiza augmented brain y su plugin de Claude Code (Claude te avisa cuando hay versión nueva) |
-| `augmented-brain uninstall` | Quita el programa y el plugin; tus notas se quedan (`--config` quita también la configuración, `--all` empieza de cero) |
+| `augmented-brain panel` | Abre el panel en el navegador (`panel stop` lo para) |
+| `augmented-brain update` | Actualiza el programa y el plugin |
+| `augmented-brain uninstall` | Quita el programa y el plugin; tus notas se quedan |
+| `augmented-brain version` | Muestra la versión (`help` lista los comandos) |
+| `augmented-brain mcp` | El servidor MCP: lo arranca el asistente, no tú |
+| `augmented-brain hook <evento>` | Responde a los hooks de Claude Code: lo arranca el asistente, no tú |
 
-El trabajo de cada día ocurre dentro de Claude Code, con tus palabras: "nueva tarea…",
-"¿qué tengo pendiente?", "apárcala", "apunta esto en el buzón".
+Todas las opciones: [Comandos](https://icalvete.github.io/augmented-brain/guide/commands.es.html). Las herramientas que usa Claude:
+[Herramientas MCP](https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html).
 
-### El panel
+## Documentación
 
-Para verlo todo de un vistazo, o cambiar algo sin pedírselo a Claude, abre el panel:
-escribe `/brain:panel` en Claude, o lanza `augmented-brain panel`. Abre una página en tu
-navegador en **Hoy**: todos los espacios a la vez, con lo que vence esta semana, las
-tareas que te esperan, el buzón, si toca la revisión semanal, y los repositorios de tus
-tareas con trabajo sin commit o sin subir. Desde ahí, espacio por espacio: tareas por
-área con filtros, recordatorios, el buzón, la revisión semanal, áreas, conocimiento,
-reglas, personas, tus secretos (solo por su nombre, nunca su valor), sesiones, perfil y
-salud. Un cuadro de búsqueda encuentra cualquier nota. Las notas se leen como texto, con
-sus enlaces. Solo funciona en tu ordenador y solo mientras lo usas: tras 30 minutos sin
-uso se para solo. Más detalles: [El panel](docs/guide/how-it-works.es.md#el-panel).
+Está toda en **[icalvete.github.io/augmented-brain/guide](https://icalvete.github.io/augmented-brain/guide/index.es.html)**, en español
+y en inglés:
 
-## Cómo funciona
+- **Empezar**: [Primeros pasos](https://icalvete.github.io/augmented-brain/guide/getting-started.es.html),
+  [Instalación](https://icalvete.github.io/augmented-brain/guide/install.es.html).
+- **Conceptos**: [Espacios](https://icalvete.github.io/augmented-brain/guide/spaces.es.html), [Tareas](https://icalvete.github.io/augmented-brain/guide/tasks.es.html),
+  [Áreas, conocimiento y lo demás](https://icalvete.github.io/augmented-brain/guide/notes.es.html), [El guardia](https://icalvete.github.io/augmented-brain/guide/guard.es.html),
+  [Cómo funciona por dentro](https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html).
+- **Día a día**: [Qué decirle a Claude](https://icalvete.github.io/augmented-brain/guide/phrases.es.html), [El panel](https://icalvete.github.io/augmented-brain/guide/panel.es.html),
+  [La revisión semanal](https://icalvete.github.io/augmented-brain/guide/weekly-review.es.html),
+  [Copia de seguridad y restauración](https://icalvete.github.io/augmented-brain/guide/backup.es.html),
+  [Conecta tus servicios](https://icalvete.github.io/augmented-brain/guide/connect-services.es.html),
+  [Trae una memoria que ya tienes](https://icalvete.github.io/augmented-brain/guide/import.es.html).
+- **Referencia**: [Comandos](https://icalvete.github.io/augmented-brain/guide/commands.es.html), [Herramientas MCP](https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html),
+  [Configuración](https://icalvete.github.io/augmented-brain/guide/configuration.es.html),
+  [Formato de la memoria](https://icalvete.github.io/augmented-brain/guide/memory-format.html) (en inglés).
+- **Ayuda**: [Si algo falla](https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html),
+  [registro de cambios](CHANGELOG.md) (en inglés).
 
-- **Tu memoria es Markdown**, una carpeta por espacio: `tasks/`, `areas/`,
-  `knowledge/`, `rules/`. Ábrela y edítala con cualquier editor. El formato está en
-  [docs/spec/memory-format.md](docs/spec/memory-format.md) (en inglés).
-- **Un solo programa**, `augmented-brain`, escrito en Go. Nada más que instalar.
-- **Un servidor MCP** da a tu asistente las herramientas del método, así que otros
-  asistentes también pueden usarlo. Claude Code es el primero.
-- **Un plugin de Claude Code** carga tu espacio al empezar cada sesión y pasa el guardia
-  antes de cada comando y cada escritura de fichero. También le recuerda a Claude que
-  escriba en el diario de la tarea, guarda el resumen cuando una conversación larga se
-  compacta, y lanza la copia de seguridad al terminar la sesión. Si el guardia no puede arrancar,
-  el comando o la escritura tampoco se hacen. El guardia es una red contra errores, no
-  una barrera de seguridad.
-
-Las cuatro capas, una sesión paso a paso y dónde vive cada fichero:
-[Cómo funciona](docs/guide/how-it-works.es.md).
-
-Inspirado en *Building a Second Brain*, de Tiago Forte, y *Getting Things Done*, de
-David Allen, adaptados a trabajar con un asistente de IA.
+Inspirado en *Building a Second Brain* de Tiago Forte y *Getting Things Done* de David
+Allen, adaptados a trabajar con un asistente de IA.
 
 ## Desarrollo
 
-Necesita Go 1.25 o posterior (un `go` más antiguo lo descarga solo). ¿Trabajas con un
-agente de IA? Su manual es [AGENTS.md](AGENTS.md) (en inglés): el mapa del código, las
-comprobaciones y las reglas de la casa.
-
-```bash
-go test ./...
-go build ./cmd/augmented-brain
-```
-
-`scripts/e2e-claude.sh` prueba la historia entera (abrir, aparcar, retomar y cerrar una
-tarea, y el guardia) con un Claude Code de verdad y aislado. Gasta uso: lánzalo antes de
-cada versión.
-
-La marca (logo, iconos y paleta) está en [`assets/brand/`](assets/brand/), y se ve en su
-sitio en [`docs/brand.html`](docs/brand.html).
-[`scripts/privacy-check.sh`](scripts/privacy-check.sh) bloquea los commits que
-publicarían datos personales o secretos.
+Necesita Go 1.25 o posterior. `go test ./...` y `go build ./cmd/augmented-brain`. ¿Trabajas
+con un agente de IA? Su manual es [AGENTS.md](AGENTS.md) (en inglés): el mapa del código,
+las comprobaciones y las reglas de la casa.
 
 ## Apoya el proyecto
 

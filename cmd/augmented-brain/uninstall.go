@@ -17,6 +17,16 @@ import (
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
+// uninstallFlags are uninstall's flags: --yes, --config and --all.
+func uninstallFlags(errOut io.Writer) (fs *flag.FlagSet, yes, withConfig, all *bool) {
+	fs = flag.NewFlagSet("uninstall", flag.ContinueOnError)
+	fs.SetOutput(errOut)
+	yes = fs.Bool("yes", false, "do not ask")
+	withConfig = fs.Bool("config", false, "also remove the configuration and the profile")
+	all = fs.Bool("all", false, "start from scratch: also the configuration, the profile and the notes of every space")
+	return fs, yes, withConfig, all
+}
+
 // cmdUninstall takes augmented brain away: the Claude Code plugin, what Claude Code
 // keeps of it (its cache, its data, the MCP server's logs) and the program. The notes
 // stay, and the configuration too unless --config. --all starts from scratch: it also
@@ -25,11 +35,7 @@ import (
 // its desktop app, git and the PATH line (Claude Code lives in the same folder) are left
 // alone.
 func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
-	flags := flag.NewFlagSet("uninstall", flag.ContinueOnError)
-	flags.SetOutput(errOut)
-	yes := flags.Bool("yes", false, "do not ask")
-	withConfig := flags.Bool("config", false, "also remove the configuration and the profile")
-	all := flags.Bool("all", false, "start from scratch: also the configuration, the profile and the notes of every space")
+	flags, yes, withConfig, all := uninstallFlags(errOut)
 	if _, ok := parseArgs(flags, args, 0, errOut); !ok {
 		return 2
 	}

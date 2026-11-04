@@ -14,6 +14,9 @@ import (
 	"github.com/icalvete/augmented-brain/internal/panel"
 )
 
+// panelNoBrowser is panel's one flag, read by hand (panel takes stop and serve too).
+const panelNoBrowser = "no-browser"
+
 // cmdPanel opens the panel: it starts the server in a detached process (or finds the
 // one running), prints its address, opens the browser, and returns at once.
 // AB_NO_BROWSER=1 or --no-browser only prints the address.
@@ -27,7 +30,7 @@ func cmdPanel(args []string, out, errOut io.Writer) int {
 	noBrowser := os.Getenv("AB_NO_BROWSER") == "1"
 	for _, a := range args {
 		switch a {
-		case "--no-browser":
+		case "--" + panelNoBrowser:
 			noBrowser = true
 		case "stop", "serve":
 			sub = a

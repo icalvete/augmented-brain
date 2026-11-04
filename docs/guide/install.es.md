@@ -143,14 +143,26 @@ configuración en `%APPDATA%\augmented-brain`; tus notas en
 
 ## Actualizar
 
+Cuando hay versión nueva, Claude te lo dice al empezar una sesión y se ofrece a
+actualizarlo. También puedes hacerlo tú:
+
 ```bash
 augmented-brain update
 ```
 
-Actualiza el programa y el plugin de Claude Code; tus notas y tus ajustes se quedan. Claude
-te avisa cuando hay una versión nueva. Cierra y vuelve a abrir las sesiones de Claude que
-tuvieras abiertas, para que también la usen. Volver a lanzar el comando de instalación hace lo
-mismo.
+Actualiza el programa y el plugin de Claude Code. Volver a lanzar el comando de
+instalación hace lo mismo. `augmented-brain update --plugin` actualiza solo el plugin.
+
+Después, cierra y abre Claude. Una sesión que estaba abierta sigue con el programa viejo
+hasta que lo hagas, y sus herramientas de augmented brain pueden fallar.
+`augmented-brain doctor` y el arranque de una sesión nueva te dicen cuántas sesiones
+siguen con la versión vieja.
+
+Tus notas y tus ajustes se quedan como están. A veces una versión nueva guarda las notas
+de otra manera. Entonces la primera sesión las pasa a la manera nueva, después de guardar
+una copia completa en la carpeta `migrations/` de la configuración, y Claude te lo dice.
+Una versión más vieja nunca estropea notas escritas por una más nueva: se niega a
+abrirlas y pide que la actualices. Así que actualiza todos los ordenadores que uses.
 
 ## Desinstalar
 
@@ -158,13 +170,23 @@ mismo.
 augmented-brain uninstall
 ```
 
-Quita el programa, el plugin de Claude Code y lo que Claude Code guarda de él (su caché,
-sus datos y los registros de su servidor). **Tus notas se quedan**, y la configuración también, salvo que
-añadas `--config`. Para empezar de cero, `--all` borra también la configuración, tu perfil y
-las notas de cada espacio, después de enseñarte qué y preguntarte. Claude Code, su app de escritorio, git
-y la entrada del PATH también se quedan: Claude Code vive en esa misma carpeta. En Windows
-el programa desaparece un momento después de acabar el comando, porque Windows no deja que
-un programa en marcha se borre a sí mismo.
+Te enseña lo que va a quitar y te pregunta. Quita el programa, el plugin de Claude Code y
+lo que Claude Code guarda de él (su caché, sus datos y los registros de su servidor).
+
+- **Tus notas se quedan** en `~/augmented-brain/`: son tuyas. Si vuelves a instalarlo,
+  lo encuentras todo como estaba.
+- **La configuración también se queda.** `--config` la borra, con tu perfil.
+- **Para empezar de cero**, `--all` borra además las notas de cada espacio. Antes te
+  enseña cada carpeta con cuántas notas tiene, y te pregunta. Lo que tengas tuyo dentro
+  de la carpeta de un espacio se queda. Tu copia de seguridad en GitHub no se borra: te
+  dice cuál es y cómo borrarla.
+- Claude Code, su app de escritorio, git y la entrada del PATH se quedan: Claude Code
+  vive en esa misma carpeta.
+
+En Windows el fichero del programa desaparece un momento después de acabar el comando,
+porque Windows no deja que un programa en marcha se borre a sí mismo.
+
+Todos los comandos y sus opciones: [Comandos](commands.es.md).
 
 ## Si algo falla
 
@@ -193,5 +215,6 @@ un programa en marcha se borre a sí mismo.
   escriben otros programas cuando lo recoge (una redirección, una sesión remota). El texto
   está bien: en Git Bash, o en una ventana, se ve bien.
 - **Claude te pide un plan de pago.** Claude Code necesita Pro o superior.
-- **Otra cosa.** Cuéntanoslo en [las incidencias del proyecto](https://github.com/icalvete/augmented-brain/issues),
-  con lo que salió en pantalla.
+- **Otra cosa.** Mira [Si algo falla](troubleshooting.es.md), o cuéntanoslo en
+  [las incidencias del proyecto](https://github.com/icalvete/augmented-brain/issues), con
+  lo que salió en pantalla.

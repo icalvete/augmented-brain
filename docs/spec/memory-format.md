@@ -294,7 +294,7 @@ The program rebuilds these after every change; editing them by hand is pointless
 language = "en"                  # en | es: the language the program speaks to you
 default_space = "personal"       # used outside every work folder (optional)
 production_aws_profiles = ["prod", "prod-eu"]   # every space: the user confirms first
-untouchable_hosts = ["db01", "db02", "db03"]    # ssh, scp, sftp, mosh to them: the user confirms first
+untouchable_hosts = ["db01", "db02", "db03"]    # ssh, scp, rsync, sftp, mosh to them: the user confirms first
 root_ask = ["db01 until 2026-10-31"]            # root there asks instead of being refused, until then
 
 [spaces.work]

@@ -10,24 +10,53 @@ On Windows, in PowerShell:
 
     irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
 
-The first session is a short guided interview. A local web panel (`augmented-brain panel`, or `/brain:panel` in Claude Code) shows today at a glance across every space and lets you see and edit tasks, reminders, the inbox, the weekly review, areas, knowledge, rules, people, the names of your secrets (never their values), sessions and the profile. A session outside every space's folder (such as a new session in the Claude desktop app with no folder chosen) uses the personal space.
+The first session is a short guided interview. A local web panel (`augmented-brain panel`, or `/brain:panel` in Claude Code) shows today at a glance across every space and lets you see and edit tasks, reminders, the inbox, the weekly review, areas, knowledge, rules, people, the names of your secrets (never their values), sessions, the profile, health, the map of your git repositories (Repositories) and Help (links to these docs and a problem report for GitHub). A session outside every space's folder (such as a new session in the Claude desktop app with no folder chosen) uses the personal space.
+
+The documentation, as web pages: https://icalvete.github.io/augmented-brain/guide/
 
 ## Docs
 
-- [README](https://raw.githubusercontent.com/icalvete/augmented-brain/main/README.md): what it does, getting started, commands, backup
-- [Getting started](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/getting-started.md): from nothing to the first session for people new to the terminal; what you need (a paid Claude plan), phrases for the first week, a glossary, common problems
+- [Getting started](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/getting-started.md): what it is; from nothing to the first session for people new to the terminal; what you need (a paid Claude plan), phrases for the first week, a glossary
 - [Installing](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/install.md): what the installer does on Linux, macOS and Windows, where it puts things, updating and uninstalling
-- [How it works](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.md): the four layers, a session step by step, where every file lives, spaces, backup, importing an existing memory, the panel
+- [Spaces](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/spaces.md): work and personal apart; the folder picks the space; the default space; adding a space; shared notes
+- [Tasks](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/tasks.md): the task file, the six phases, park and resume, the journal, steps and subtasks, watch dates, closing
+- [Areas, knowledge and the rest](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/notes.md): areas, references and lessons, people, the inbox, rules, the profile, repositories, the index
+- [The guard](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/guard.md): what it stops and what it asks; repository lists; merging pull requests; production profiles, untouchable hosts, root exceptions; a safety net, not a security boundary
+- [How it works inside](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.md): the four layers, a session step by step, where every file lives, what it does not do
+- [What to say to Claude](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/phrases.md): phrases for tasks, the inbox, knowledge, rules, people, safety, backup and the panel
+- [The panel](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/panel.md): the local web panel and every page: Today, Tasks, Reminders, Inbox, Weekly review, Areas, Knowledge, Rules, People, Repositories, Secrets, Sessions, Profile, Health, Help
+- [The weekly review](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/weekly-review.md): what it goes through, when it is offered, with Claude or in the panel
+- [Backup and restore](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/backup.md): a private git repository per space, automatic after each session; a new machine; what a restore does not bring
 - [Connect your services](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.md): calendar, mail, documents and Jira through MCP
-- [Memory format](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/spec/memory-format.md): folders, note headers, configuration, backup
+- [Bring in a memory you already have](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/import.md): augmented-brain import: plan first, --apply, --map, --repos-base
+- [Commands](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/commands.md): every command and flag, including mcp, hook and its events, version and help
+- [MCP tools](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/mcp-tools.md): every MCP tool, grouped by purpose, with every parameter
+- [Configuration](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/configuration.md): every config.toml setting with an example; secrets.toml; other files; environment variables
+- [Troubleshooting](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/troubleshooting.md): problems and fixes, doctor, the panel's Help page; common questions
+- [Memory format](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/spec/memory-format.md): folders, note headers, configuration, backup; the contract
+- [Full documentation in one file](https://icalvete.github.io/augmented-brain/llms-full.txt): every English page above, concatenated as Markdown
+- [README](https://raw.githubusercontent.com/icalvete/augmented-brain/main/README.md): what it is, install in two steps, commands
 
 ## Spanish
 
 - [README en español](https://raw.githubusercontent.com/icalvete/augmented-brain/main/README.es.md)
 - [Primeros pasos](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/getting-started.es.md)
 - [Instalación](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/install.es.md)
-- [Cómo funciona](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.es.md)
+- [Espacios](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/spaces.es.md)
+- [Tareas](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/tasks.es.md)
+- [Áreas, conocimiento y lo demás](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/notes.es.md)
+- [El guardia](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/guard.es.md)
+- [Cómo funciona por dentro](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.es.md)
+- [Qué decirle a Claude](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/phrases.es.md)
+- [El panel](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/panel.es.md)
+- [La revisión semanal](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/weekly-review.es.md)
+- [Copia de seguridad y restauración](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/backup.es.md)
 - [Conecta tus servicios](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.es.md)
+- [Trae una memoria que ya tienes](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/import.es.md)
+- [Comandos](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/commands.es.md)
+- [Herramientas MCP](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/mcp-tools.es.md)
+- [Configuración](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/configuration.es.md)
+- [Si algo falla](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/troubleshooting.es.md)
 
 ## Optional
 

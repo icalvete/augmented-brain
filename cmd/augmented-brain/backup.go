@@ -19,6 +19,17 @@ import (
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
+// backupFlags are backup's flags: --all, --space and --auto (the automatic backup the
+// session's end starts).
+func backupFlags(errOut io.Writer) (fs *flag.FlagSet, all *bool, only *string, auto *bool) {
+	fs = flag.NewFlagSet("backup", flag.ContinueOnError)
+	fs.SetOutput(errOut)
+	all = fs.Bool("all", false, "back up every space, not only this folder's")
+	only = fs.String("space", "", "back up this space, wherever you are")
+	auto = fs.Bool("auto", false, "started by the assistant when a session ends: quiet, never asks for a password")
+	return fs, all, only, auto
+}
+
 // cmdBackup: `backup` saves the current space (or every space with --all);
 // `backup setup <url>` connects the current space to a private repository.
 func cmdBackup(args []string, out, errOut io.Writer) int {
@@ -39,11 +50,7 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 		return 0
 	}
 
-	fs := flag.NewFlagSet("backup", flag.ContinueOnError)
-	fs.SetOutput(errOut)
-	all := fs.Bool("all", false, "back up every space, not only this folder's")
-	only := fs.String("space", "", "back up this space, wherever you are")
-	auto := fs.Bool("auto", false, "started by the assistant when a session ends: quiet, never asks for a password")
+	fs, all, only, auto := backupFlags(errOut)
 	if _, ok := parseArgs(fs, args, 0, errOut); !ok {
 		return 2
 	}
@@ -113,13 +120,19 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 	return code
 }
 
-// cmdRestore brings a space back from its backup on a new machine.
-func cmdRestore(args []string, out, errOut io.Writer) int {
+// restoreFlags are restore's flags: --memory and --work.
+func restoreFlags(errOut io.Writer) (*flag.FlagSet, *backup.RestoreOptions) {
 	fs := flag.NewFlagSet("restore", flag.ContinueOnError)
 	fs.SetOutput(errOut)
-	o := backup.RestoreOptions{}
+	o := &backup.RestoreOptions{}
 	fs.StringVar(&o.Memory, "memory", "", "where to put the space's notes (default: where they were, inside the work folder)")
 	fs.StringVar(&o.WorkFolder, "work", "", "work folder that selects the space (default: the one saved in the backup)")
+	return fs, o
+}
+
+// cmdRestore brings a space back from its backup on a new machine.
+func cmdRestore(args []string, out, errOut io.Writer) int {
+	fs, o := restoreFlags(errOut)
 	rest, ok := parseArgs(fs, args, 1, errOut)
 	if !ok {
 		return 2
@@ -136,7 +149,7 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
-	s, err := backup.Restore(dir, o)
+	s, err := backup.Restore(dir, *o)
 	if err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1

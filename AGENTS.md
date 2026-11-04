@@ -37,7 +37,8 @@ it feels to a newcomer.
 | `internal/rules`, `internal/templates` | The common rules and the starter files, in English and Spanish. |
 | `plugin/` | The Claude Code plugin: `hooks/hooks.json`, `.mcp.json`, `commands/panel.md` (`/brain:panel`). `.claude-plugin/marketplace.json` makes this repo its marketplace. |
 | `install.sh` | The installer people run with `curl … \| sh`. |
-| `docs/` | The website (GitHub Pages, served from `main`), the guides and the format spec. |
+| `internal/doccheck` | Used only by tests: whether the reference pages (`docs/guide/commands`, `mcp-tools`, `configuration`, each with its `.es` twin) cover every command and flag (`commands` in `cmd/augmented-brain/commands.go`), MCP tool and parameter, and `config.toml` setting. `AB_DOCS_DIR` points the tests at other pages. |
+| `docs/` | The website (GitHub Pages, served from `main`): the landing pages, the documentation in `docs/guide/` (Markdown sources, rendered with a sidebar by `scripts/build-guides.py`, which also writes `docs/llms-full.txt`) and the format spec. |
 | `scripts/` | Checks, builders and release helpers (below). |
 | `test/vm/ubuntu-desktop/` | A clean Ubuntu desktop VM (Vagrant + VirtualBox) to try it as a newcomer. |
 | `test/vm/windows-11/` | A clean Windows 11 VM, the same way, for the Windows work (evaluation edition, about 90 days). |
@@ -99,10 +100,11 @@ Heavier checks, before a release or when you touch what they cover:
   language table of its own. Outside Go: `say` in `install.sh`, the templates,
   `README.md` and `README.es.md`, `docs/index.html` and `docs/es/index.html`, each guide
   and its `.es` twin. Change one, change the other.
+- **The docs follow the code.** A new command or flag goes in `commands` (`cmd/augmented-brain/commands.go`) and in the usage text; a new command, flag, MCP tool, tool parameter or `config.toml` setting also goes in its reference page, in both languages, or `go test` fails (`TestCommandsDocumented`, `TestToolsDocumented`, `TestSettingsDocumented`). A change people notice also updates the guide that tells it.
 - **Generated files are not edited by hand.** Change the source and regenerate:
-  `docs/img/*.svg` from `docs/img/diagrams.py`; `docs/guide/how-it-works*.html`,
-  `getting-started*.html` and `install*.html` from their `.md` files with
-  `scripts/build-guides.py`; a space's
+  `docs/img/*.svg` from `docs/img/diagrams.py`; every `docs/guide/*.html`,
+  `docs/sitemap.xml` and `docs/llms-full.txt` from the `.md` sources with
+  `scripts/build-guides.py` (its `GROUPS` list is the sidebar: a new page goes there); a space's
   `MEMORY.md` is written by the program.
 - **The memory format is a contract.** `docs/spec/memory-format.md` describes it; a change
   to folders, header fields or note types updates the spec, the index and their tests.

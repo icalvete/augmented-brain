@@ -17,13 +17,18 @@ import (
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
+// updateFlags are update's flags: --plugin.
+func updateFlags(errOut io.Writer) (*flag.FlagSet, *bool) {
+	fs := flag.NewFlagSet("update", flag.ContinueOnError)
+	fs.SetOutput(errOut)
+	return fs, fs.Bool("plugin", false, "update only the Claude Code plugin")
+}
+
 // cmdUpdate brings augmented brain up to date: the program through the published
 // installer (the one people run, so there is a single way to install), and then the
 // Claude Code plugin. --plugin updates only the plugin; the installer calls it.
 func cmdUpdate(args []string, out, errOut io.Writer) int {
-	fs := flag.NewFlagSet("update", flag.ContinueOnError)
-	fs.SetOutput(errOut)
-	pluginOnly := fs.Bool("plugin", false, "update only the Claude Code plugin")
+	fs, pluginOnly := updateFlags(errOut)
 	if _, ok := parseArgs(fs, args, 0, errOut); !ok {
 		return 2
 	}

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El guardia · augmented brain</title>
+<meta name="description" content="El guardia de augmented brain: lo que para (push, root, secretos), lo que te pregunta antes (producción, máquinas intocables), las listas de repositorios, las excepciones de root, y por qué es una red, no un muro de seguridad.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/guard.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/guard.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/guard.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/guard.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="El guardia · augmented brain">
+<meta property="og:description" content="Lo que para, lo que te pregunta antes, y lo que no es.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/guard.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="El guardia · augmented brain">
+<meta name="twitter:description" content="Lo que para, lo que te pregunta antes, y lo que no es.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="guard.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html" aria-current="page">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>El guardia</h1>
+  <p>Claude va a ejecutar <code>git push origin main</code>. Antes, augmented brain lee el comando y lo para: subir código es cosa tuya. Claude te dice que el cambio está listo, y lo subes tú.</p>
+  <p>Quien hace esa comprobación es el <strong>guardia</strong>. Lee cada comando que ejecuta Claude, y cada fichero que escribe, antes de que pase. Tiene tres respuestas:</p>
+  <ul><li><strong>Adelante</strong>: casi siempre. <code>ls</code>, <code>go test</code>, <code>aws --profile dev s3 ls</code>.</li><li><strong>Te pregunta</strong>: Claude Code te enseña el comando y espera tu sí. <code>aws --profile prod …</code>, <code>ssh db01 …</code>.</li><li><strong>Lo para</strong>: el comando no se ejecuta. Claude recibe el motivo, y qué hacer en su lugar.</li></ul>
+  <p><strong>El guardia es una red contra despistes, no un muro de seguridad.</strong> Lee los comandos como texto. Pilla los errores que comete un asistente, también escondidos dentro de otros comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md#aviso-legal">aviso legal</a>.</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#lo-que-para">Lo que para</a></li><li><a href="#lo-que-te-pregunta-antes">Lo que te pregunta antes</a></li><li><a href="#deja-que-claude-haga-commit-en-un-repositorio">Deja que Claude haga commit en un repositorio</a></li><li><a href="#perfiles-de-producción-y-máquinas-intocables">Perfiles de producción y máquinas intocables</a></li><li><a href="#root-en-una-máquina-durante-un-tiempo">Root en una máquina, durante un tiempo</a></li><li><a href="#mira-por-dentro">Mira por dentro</a></li><li><a href="#cuando-algo-le-pasa">Cuando algo le pasa</a></li><li><a href="#siguiente">Siguiente</a></li></ul></nav>
+  <h2 id="lo-que-para">Lo que para</h2>
+  <ul><li><strong>Commits y pushes.</strong> <code>git commit</code>, <code>git push</code>, y lo que publica como un push: <code>git subtree push</code>, <code>git send-pack</code>, <code>gh release create</code>, <code>glab release create</code>. Salvo que dejes a Claude en un repositorio (más abajo).</li><li><strong>Hacerse root.</strong> <code>sudo</code>, <code>su</code>, <code>doas</code>, <code>pkexec</code>, <code>run0</code>, <code>sudoedit</code>, <code>systemd-run</code> sin <code>--user</code>, <code>ssh root@…</code>, y en Windows <code>gsudo</code> y <code>runas</code>. Claude te da el comando exacto para que lo ejecutes tú. Ejecutar como otro usuario (<code>sudo -u www-data …</code>) sí vale.</li><li><strong>Secretos.</strong> Un token o una clave escritos en un comando o en un fichero que escribe Claude. Los secretos se leen del llavero del sistema, de una variable de entorno o de un gestor de secretos. Nunca se escriben a mano.</li><li><strong>Borrar tu carpeta personal o el disco entero.</strong> <code>rm -r</code> de <code>~</code> o de <code>/</code>, también después de un <code>cd</code> (<code>cd ~ &amp;&amp; rm -rf .</code>), y en Windows se escriba como se escriba la ruta.</li><li><strong>PowerShell.</strong> El guardia lee la shell, no PowerShell, así que para cualquier comando de PowerShell. Claude lo hace en Bash (Git Bash en Windows). En Windows verás ese bloqueo: es lo esperado.</li></ul>
+  <h2 id="lo-que-te-pregunta-antes">Lo que te pregunta antes</h2>
+  <ul><li><strong>Producción.</strong> Un comando <code>aws</code> con un perfil que marcaste como producción. Mira todos los perfiles que puede usar el comando: <code>--profile</code>, <code>AWS_PROFILE</code>, <code>AWS_DEFAULT_PROFILE</code>, o <code>default</code> si no hay ninguno. Igual con las herramientas que llaman a AWS por su cuenta: <code>cdk</code>, <code>sam</code>, <code>serverless</code>, <code>terraform</code>, <code>tofu</code>, <code>pulumi</code>, <code>eksctl</code>, <code>copilot</code>.</li><li><strong>Máquinas que no se tocan.</strong> <code>ssh</code>, <code>scp</code>, <code>rsync</code>, <code>sftp</code> y <code>mosh</code> a una máquina que marcaste como intocable. <code>db01</code> y <code>db01.example.com</code> cuentan como la misma máquina.</li><li><strong>Pushes que reescriben la historia</strong>, incluso donde Claude puede hacer push: <code>--force</code>, <code>--delete</code>, <code>--mirror</code>, <code>--prune</code>, una refspec que empieza por <code>+</code> o por <code>:</code>.</li><li><strong>Lo que no puede leer.</strong> Un programa dado como variable (<code>$TOOL deploy</code>), comandos anidados demasiado hondo, <code>rm -rf "$DIR/"*</code> con una variable que puede estar vacía, un <code>rm -r .</code> después de un <code>cd</code> que no puede seguir.</li><li><strong>Los ajustes del propio guardia.</strong> Claude nunca cambia por su cuenta la configuración de augmented brain ni los ajustes de Claude Code, porque una línea ahí podría apagar una comprobación.</li></ul>
+  <h2 id="deja-que-claude-haga-commit-en-un-repositorio">Deja que Claude haga commit en un repositorio</h2>
+  <p>Por defecto, Claude nunca hace commit ni push. Si tienes un repositorio donde quieres que lo haga, ponlo en la configuración, en cualquier espacio:</p>
+  <pre><code>[spaces.trabajo]
+git_allowed_repos = ["~/code/blog", "~/code/blog-*"]   # commit y push sin preguntar
+git_ask_repos = ["~/code/tienda"]                      # pregúntame cada vez</code></pre>
+  <ul><li>Claude tiene que nombrar el repositorio en el comando: <code>git -C ~/code/blog push</code>.</li><li>Un worktree de git de un repositorio de la lista cuenta como él.</li><li><code>~/code/blog-*</code> vale para cada carpeta <code>blog-&lt;nombre&gt;</code> junto a <code>blog</code>.</li><li>Un repositorio que está en las dos listas pregunta.</li><li>Las listas de todos los espacios cuentan juntas: un repositorio es tuyo, no del espacio.</li></ul>
+  <p><strong>Fusionar una pull request también es un push.</strong> <code>gh pr merge</code>, <code>glab mr merge</code> y <code>glab mr accept</code> van por las mismas listas. gh y glab no tienen <code>-C</code>, así que Claude escribe <code>cd ~/code/blog &amp;&amp; gh pr merge 12</code>. La carpeta de ese <code>cd</code> es el repositorio. La carpeta de la sesión, sola, no cuenta. Un repositorio que nombre el comando (<code>-R dueño/nombre</code>, la dirección de la pull request) tiene que ser uno de los remotos de ese repositorio, o la fusión se para. <code>gh pr merge --admin</code>, que se salta la protección de la rama, pregunta siempre.</p>
+  <h2 id="perfiles-de-producción-y-máquinas-intocables">Perfiles de producción y máquinas intocables</h2>
+  <p>Se los das en la entrevista de la primera sesión, o cuando quieras: "el perfil de AWS <code>tienda-prod</code> es producción“, ”no toques nunca <code>db01</code> sin preguntarme". Claude los guarda con la herramienta <code>safety_save</code>. Valen en toda la máquina, en todos los espacios.</p>
+  <p>Claude solo puede añadir a estas listas. Para quitar uno, edita tú la configuración: <code>production_aws_profiles</code> y <code>untouchable_hosts</code> en <a href="configuration.es.html">Configuración</a>.</p>
+  <p>Estas listas no van en ninguna copia de seguridad, porque pueden nombrar máquinas de tu trabajo. Después de restaurar en una máquina nueva, la siguiente sesión te ofrece volver a pedírtelas.</p>
+  <h2 id="root-en-una-máquina-durante-un-tiempo">Root en una máquina, durante un tiempo</h2>
+  <p>A veces Claude necesita de verdad ser root en una máquina, para una migración, por ejemplo. Añade una excepción con fecha de fin en la configuración:</p>
+  <pre><code>root_ask = ["db01 until 2026-12-31"]</code></pre>
+  <p>Hasta esa fecha, root en <code>db01</code> te pregunta cada vez en vez de pararse. El comando que ejecuta se sigue mirando. Pasada la fecha, root vuelve a pararse solo, y <code>augmented-brain doctor</code> te dice que puedes quitar la línea. La fecha es obligatoria, así que ninguna excepción se queda olvidada.</p>
+  <h2 id="mira-por-dentro">Mira por dentro</h2>
+  <p>El guardia lee lo que se ejecuta dentro de otros comandos: <code>ssh máquina '…'</code>, <code>vagrant ssh -c</code>, <code>docker exec</code>, <code>podman exec</code>, <code>kubectl exec</code>, <code>bash -c</code>, los bucles, lo que una tubería le pasa a una shell (<code>echo 'sudo …' | bash</code>) y los scripts cortos que lanza Claude (<code>bash deploy.sh</code>, <code>./deploy.sh</code>). Mira los comandos que Claude deja en marcha para vigilar algo, y los de los ayudantes que Claude lanza (subagentes y flujos de trabajo).</p>
+  <h2 id="cuando-algo-le-pasa">Cuando algo le pasa</h2>
+  <ul><li><strong>No se puede leer la configuración.</strong> Entonces el guardia no puede saber tus listas. Te pregunta antes de cada <code>aws</code>, <code>ssh</code>, <code>scp</code>, <code>rsync</code>, <code>sftp</code> y <code>mosh</code>, y antes de las herramientas que llaman a AWS.</li><li><strong>Falta el programa o está roto.</strong> Claude Code para cada comando y cada cambio de fichero en vez de dejarlos pasar (Claude Code 2.1.295 o posterior).</li><li><code>augmented-brain doctor</code> prueba el guardia de verdad y te dice si no está funcionando.</li></ul>
+  <h2 id="siguiente">Siguiente</h2>
+  <ul><li><a href="configuration.es.html">Configuración</a>: cada lista, con un ejemplo.</li><li><a href="troubleshooting.es.html">Si algo falla</a>: cuando el guardia para algo que no debería.</li></ul>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="notes.es.html"><span>← Anterior</span>Áreas, conocimiento y lo demás</a>
+    <a class="next" href="how-it-works.es.html"><span>Siguiente →</span>Cómo funciona por dentro</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

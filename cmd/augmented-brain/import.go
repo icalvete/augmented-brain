@@ -18,14 +18,20 @@ import (
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
+// importFlags are import's flags: --map, --repos-base and --apply.
+func importFlags(errOut io.Writer) (fs *flag.FlagSet, mapFile, base *string, apply *bool) {
+	fs = flag.NewFlagSet("import", flag.ContinueOnError)
+	fs.SetOutput(errOut)
+	mapFile = fs.String("map", "", "file that says which space each area goes to: lines \"area-x = space\", and \"* = space\" for the rest")
+	base = fs.String("repos-base", "", "folder the repos: paths of the source are relative to")
+	apply = fs.Bool("apply", false, "write the notes (without it, nothing is written)")
+	return fs, mapFile, base, apply
+}
+
 // cmdImport brings a memory of Claude Code into the spaces. Without --apply it only
 // says what it would do.
 func cmdImport(args []string, out, errOut io.Writer) int {
-	fs := flag.NewFlagSet("import", flag.ContinueOnError)
-	fs.SetOutput(errOut)
-	mapFile := fs.String("map", "", "file that says which space each area goes to: lines \"area-x = space\", and \"* = space\" for the rest")
-	base := fs.String("repos-base", "", "folder the repos: paths of the source are relative to")
-	apply := fs.Bool("apply", false, "write the notes (without it, nothing is written)")
+	fs, mapFile, base, apply := importFlags(errOut)
 	rest, ok := parseArgs(fs, args, 1, errOut) // the folder may come before, between or after the flags
 	if !ok {
 		return 2

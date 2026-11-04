@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Areas, knowledge and the rest · augmented brain</title>
+<meta name="description" content="The other notes of augmented brain: areas, references and lessons, people, the inbox, rules, your profile, repositories and the index.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/notes.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/notes.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/notes.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/notes.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Areas, knowledge and the rest · augmented brain">
+<meta property="og:description" content="Areas, knowledge, people, the inbox, rules and your profile.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/notes.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Areas, knowledge and the rest · augmented brain">
+<meta name="twitter:description" content="Areas, knowledge, people, the inbox, rules and your profile.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="index.html">Docs</a>
+    <a href="notes.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Docs">
+<details open id="docnav"><summary>Documentation menu</summary>
+<p class="docnav-group">Get started</p>
+<ul>
+  <li><a href="getting-started.html">Getting started</a></li>
+  <li><a href="install.html">Installing</a></li>
+</ul>
+<p class="docnav-group">Concepts</p>
+<ul>
+  <li><a href="spaces.html">Spaces</a></li>
+  <li><a href="tasks.html">Tasks</a></li>
+  <li><a href="notes.html" aria-current="page">Areas, knowledge and the rest</a></li>
+  <li><a href="guard.html">The guard</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
+</ul>
+<p class="docnav-group">Daily use</p>
+<ul>
+  <li><a href="phrases.html">What to say to Claude</a></li>
+  <li><a href="panel.html">The panel</a></li>
+  <li><a href="weekly-review.html">The weekly review</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
+</ul>
+<p class="docnav-group">Reference</p>
+<ul>
+  <li><a href="commands.html">Commands</a></li>
+  <li><a href="mcp-tools.html">MCP tools</a></li>
+  <li><a href="configuration.html">Configuration</a></li>
+  <li><a href="memory-format.html">Memory format</a></li>
+</ul>
+<p class="docnav-group">Help</p>
+<ul>
+  <li><a href="troubleshooting.html">Troubleshooting</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Areas, knowledge and the rest</h1>
+  <p>Tasks come and go. Around them, a space keeps a few other kinds of notes. Each one is a Markdown file in its own folder, and you never have to create them by hand: you say it, and Claude writes it.</p>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#areas">Areas</a></li><li><a href="#knowledge">Knowledge</a></li><li><a href="#people">People</a></li><li><a href="#inbox">Inbox</a></li><li><a href="#rules">Rules</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#repositories">Repositories</a></li><li><a href="#the-index">The index</a></li><li><a href="#documents-and-the-archive">Documents and the archive</a></li><li><a href="#editing-by-hand">Editing by hand</a></li><li><a href="#next">Next</a></li></ul></nav>
+  <h2 id="areas">Areas</h2>
+  <p>“The blog”, “the servers”, “the house”. An <strong>area</strong> is something you look after with no end date. It groups the tasks and the knowledge that belong to it.</p>
+  <p>You say: “the newsletter is a new area”. Claude creates <code>areas/area-newsletter.md</code>. Its body says what you look after, how it is going and what to watch. The program lists the area's tasks and knowledge inside it by itself.</p>
+  <p>The first-session interview creates your first areas, from what you said you look after.</p>
+  <h2 id="knowledge">Knowledge</h2>
+  <p>What is worth keeping beyond one task. There are two kinds, in <code>knowledge/</code>:</p>
+  <ul><li>A <strong>reference</strong> says how something works: “how the blog is deployed”.</li><li>A <strong>lesson</strong> says what you learned, with a title that already states the conclusion: “Test the backup restore, not only the backup”.</li></ul>
+  <p>You say: “save that as a lesson”. Both belong to an area, and Claude opens them when a task needs them.</p>
+  <h2 id="people">People</h2>
+  <p>You say: “Diego runs the hosting company; I call him Dieguito”. Claude saves <code>people/person-diego.md</code>. The next time you say “tell Dieguito it is done”, it knows who he is.</p>
+  <p>A <strong>person</strong> has a name, who they are to you, the other names you use for them, and anything worth remembering. People belong to a space: work contacts stay in the work space. A task can wait on a person (<code>waiting_on: Diego</code>).</p>
+  <h2 id="inbox">Inbox</h2>
+  <p>An idea that is not a task yet. You say: “note this: look at the new hosting prices”. Claude adds one dated line to <code>inbox.md</code>, without opening a task:</p>
+  <pre><code>- 2026-10-17 — Look at the new hosting prices
+- 2026-10-17 — Call the insurance (remind: 2026-10-22)</code></pre>
+  <p>Each line is a <strong>capture</strong>. The <a href="weekly-review.html">weekly review</a> empties the inbox: each capture becomes a task, goes to an area or knowledge, or is dropped.</p>
+  <p>“Remind me on Thursday to call the insurance” is a capture with a date. From a week before, and every day after, it comes up at the start of the session, until the weekly review deals with it (or you mark it done in the panel).</p>
+  <h2 id="rules">Rules</h2>
+  <p>How you want Claude to work. You say: “from now on, answer in short sentences”. Claude saves it as a <strong>rule</strong>. Every session loads every rule, whole.</p>
+  <p>There are three levels:</p>
+  <ul><li><strong>common rules</strong>, which come with the program: verify before advising, never push unless asked, never become root, never write secrets…</li><li><strong>shared rules</strong>, yours, for every space (“answer in short sentences”);</li><li><strong>space rules</strong>, in the space's <code>rules/</code>, for what only applies there (“the database of the shop is never restarted on a Friday”).</li></ul>
+  <p>A rule that holds everywhere goes to the shared notes. Tell Claude “this holds everywhere”.</p>
+  <h2 id="your-profile">Your profile</h2>
+  <p>Who you are and how you like to work: your name, what you do, your language, how long you like answers, how much Claude may do without asking. It is one file for every space, <code>profile.md</code> in the configuration folder. The first-session interview writes it. To change it, tell Claude.</p>
+  <h2 id="repositories">Repositories</h2>
+  <p>What each of your git repositories is, one line each: "<code>~/code/blog</code> — The blog, built with Hugo". It lives in one reference of the space, <code>knowledge/ref-repositories.md</code>, so the backup keeps it. You write the line in the panel's Repositories page, or Claude writes it for you.</p>
+  <h2 id="the-index">The index</h2>
+  <p><code>MEMORY.md</code> is the list Claude reads at the start of every session: your profile line, the rules, the areas, and the live tasks with their status and next step. The program writes it after every change. Do not edit it by hand; it would be rewritten.</p>
+  <h2 id="documents-and-the-archive">Documents and the archive</h2>
+  <p>Two folders are never loaded:</p>
+  <ul><li><code>docs/&lt;task&gt;/</code> keeps the long documents a task produces (a plan, an analysis), next to the notes and out of the project's repository.</li><li><code>archive/</code> keeps old things: long journals moved out, summaries of compacted conversations. Nothing there is ever deleted.</li></ul>
+  <h2 id="editing-by-hand">Editing by hand</h2>
+  <p>Every note is plain Markdown. Open it with any editor and change it. Afterwards, run <code>augmented-brain check</code> in a folder of the space: it checks every note and rebuilds the index.</p>
+  <h2 id="next">Next</h2>
+  <ul><li><a href="phrases.html">What to say to Claude</a>: the phrases for each kind of note.</li><li><a href="memory-format.html">Memory format</a>: every folder and header field.</li></ul>
+  <nav class="pager" aria-label="Previous / Next">
+    <a class="prev" href="tasks.html"><span>← Previous</span>Tasks</a>
+    <a class="next" href="guard.html"><span>Next →</span>The guard</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

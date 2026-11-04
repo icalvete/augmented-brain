@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El panel · augmented brain</title>
+<meta name="description" content="El panel de augmented brain: una página en tu navegador para ver y cambiar tus espacios. Hoy, tareas, recordatorios, buzón, revisión semanal, repositorios, secretos, sesiones, salud y ayuda.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/panel.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/panel.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/panel.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/panel.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="El panel · augmented brain">
+<meta property="og:description" content="Todo de un vistazo, en tu navegador, y cada página que tiene.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/panel.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="El panel · augmented brain">
+<meta name="twitter:description" content="Todo de un vistazo, en tu navegador, y cada página que tiene.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="panel.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html" aria-current="page">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>El panel</h1>
+  <p>El <strong>panel</strong> es una página en tu navegador para ver y cambiar tus espacios sin pasar por Claude. Ábrelo con <code>/brain:panel</code> en Claude, o desde una terminal:</p>
+  <pre><code>augmented-brain panel</code></pre>
+  <p>Abre tu navegador en <strong>Hoy</strong>, con el espacio de la carpeta desde la que lo lanzas. Si no puede (en un ordenador sin pantalla, por ejemplo), escribe una dirección para que la abras tú.</p>
+  <p>El panel cambia tus notas igual que Claude, con el mismo programa, y se esperan el uno al otro: puedes tener los dos abiertos a la vez.</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#hoy">Hoy</a></li><li><a href="#tareas">Tareas</a></li><li><a href="#recordatorios">Recordatorios</a></li><li><a href="#buzón">Buzón</a></li><li><a href="#revisión-semanal">Revisión semanal</a></li><li><a href="#áreas-conocimiento-reglas-y-personas">Áreas, conocimiento, reglas y personas</a></li><li><a href="#repositorios">Repositorios</a></li><li><a href="#secretos">Secretos</a></li><li><a href="#sesiones">Sesiones</a></li><li><a href="#perfil">Perfil</a></li><li><a href="#salud">Salud</a></li><li><a href="#ayuda">Ayuda</a></li><li><a href="#búsqueda-y-lectura-de-notas">Búsqueda y lectura de notas</a></li><li><a href="#hecho-para-que-siga-siendo-tuyo">Hecho para que siga siendo tuyo</a></li></ul></nav>
+  <h2 id="hoy">Hoy</h2>
+  <p>La primera página: todos los espacios a la vez. De cada uno:</p>
+  <ul><li>lo que vence en los próximos 7 días;</li><li>las tareas que te esperan (las aparcadas, en una línea);</li><li>cuántas capturas esperan en el buzón;</li><li>si toca la revisión semanal;</li><li>las sesiones que se cortaron;</li><li>las notas con problemas.</li></ul>
+  <p>Debajo, <strong>Repositorios</strong>: los que tus tareas abiertas nombran en <code>repos:</code> y tienen cambios sin commit o commits sin subir. Es trabajo que solo está en este ordenador. Si todas sus tareas están aparcadas (o para algún día), sale marcado «¿olvidado?». Una rama que nunca se subió solo cuenta si el repositorio tiene un remoto al que subirla. <strong>Ver todos los repositorios</strong> lleva al mapa completo.</p>
+  <h2 id="tareas">Tareas</h2>
+  <p>Agrupadas por área, primero las que te esperan a ti, con su estado y su siguiente paso. Los filtros enseñan solo las que te esperan, las que están en marcha, las aparcadas, las paradas, o las que esperan a una persona. Una tarea que nadie ha cambiado en 14 días sale marcada «parada N días».</p>
+  <p>Abre una. Primero lo esencial, las demás secciones plegadas, y el diario con lo último arriba. Escribe en su diario, cambia su estado o su siguiente paso, marca sus pasos, apárcala o ciérrala. También puedes abrir tareas nuevas. Si una tarea espera a una persona de la que tienes nota, «espera a» te lleva a ella.</p>
+  <p>Al guardar una tarea, solo se guarda lo que cambiaste en la página. Si Claude cambió otra cosa mientras tanto, se queda. Un paso solo se marca si sigue diciendo lo que mostraba la página.</p>
+  <h2 id="recordatorios">Recordatorios</h2>
+  <p>Las fechas para revisar de tus tareas (también de las cerradas) y los recordatorios del buzón: primero lo atrasado, luego los próximos 30 días. Añade uno, o márcalo como hecho.</p>
+  <h2 id="buzón">Buzón</h2>
+  <p>Apunta una idea, márcala como resuelta, o conviértela en tarea.</p>
+  <h2 id="revisión-semanal">Revisión semanal</h2>
+  <p>La <a href="weekly-review.es.html">revisión semanal</a>, en una página. Cada captura pasa a tarea, a referencia o a lección, o se descarta. Cada tarea sin tocar dos semanas sigue como está, o pasa a algún día (o la abres para cerrarla). Lo que decides se va apuntando, y se guarda en el registro de la revisión al terminar.</p>
+  <h2 id="áreas-conocimiento-reglas-y-personas">Áreas, conocimiento, reglas y personas</h2>
+  <p>Conocimiento y reglas enseñan las del espacio y las compartidas, marcadas «compartida». Puedes crear áreas y cambiar el título y el resumen de un área.</p>
+  <p>Puedes añadir personas y cambiarlas: sus otros nombres, su papel y sus notas. El nombre se queda: un nombre nuevo sería otra persona. La página de una persona enseña las tareas que le esperan y las que la enlazan.</p>
+  <h2 id="repositorios">Repositorios</h2>
+  <p>Tu mapa de repositorios: todos los repositorios git de las carpetas de trabajo de cada espacio, hasta tres carpetas por debajo. Se salta las carpetas que están dentro de otro repositorio, las carpetas ocultas, <code>node_modules</code> y <code>vendor</code>. Salen agrupados por espacio, primero los que tienen trabajo pendiente.</p>
+  <p>De cada uno: su rama, adónde sube (como <code>servidor/dueño/nombre</code>, nunca con contraseña), los ficheros cambiados, los commits sin subir, las tareas abiertas que lo nombran, y una línea tuya sobre qué es. Esa línea se escribe ahí mismo. Se guarda en las notas del espacio, en la referencia «Repositorios» (<code>knowledge/ref-repositories.md</code>), así que la copia de seguridad la guarda. Claude también puede escribirla.</p>
+  <p>El panel solo lee tus repositorios. Git funciona sin coger bloqueos, así que nunca te estorba, y nunca pide una contraseña. Solo se ejecuta dentro de las carpetas de trabajo, y los enlaces a carpetas de fuera no se siguen.</p>
+  <h2 id="secretos">Secretos</h2>
+  <p>Los nombres de los secretos que guardas en el llavero del sistema (donde tu ordenador guarda las contraseñas), nunca su valor. Cada uno como <code>servicio/nombre</code>, para qué sirve, y qué tareas lo nombran. Así sabes cuáles hay, y una máquina nueva sabe cuáles pedirte.</p>
+  <p><strong>Comprobar en el llavero</strong> dice si cada uno está en este ordenador. Se lo pregunta a <code>secret-tool</code> en Linux y a <code>security</code> en macOS; en otros sistemas no lo puede saber. Solo pregunta cuando pulsas, porque un llavero bloqueado te pide su contraseña. Si al llavero le falta uno, la página enseña el comando que lo guarda (ese comando te pide el valor).</p>
+  <p>Puedes apuntar un nombre, o quitar uno de la lista (el secreto sigue en el llavero). Lo que parezca un valor se rechaza. La lista es la misma en todos los espacios, y vive en <code>secrets.toml</code> (mira <a href="configuration.es.html#secretstoml">Configuración</a>).</p>
+  <h2 id="sesiones">Sesiones</h2>
+  <p>Tus sesiones de Claude en este ordenador, de los últimos 30 días.</p>
+  <ul><li>Las que no terminaron (cerradas a la fuerza, o cortadas al apagarse el ordenador) muestran lo dicho después de la última entrada del diario. Guárdalo en las notas (va a <code>archive/sessions/</code> con una línea en el diario de la tarea) o dalas por revisadas.</li><li>Las que están en marcha y las terminadas, con lo que ocupan en disco sus transcripciones (los ficheros donde Claude Code guarda cada conversación). Puedes borrar la transcripción de una sesión terminada; esa sesión ya no se podrá retomar.</li></ul>
+  <h2 id="perfil">Perfil</h2>
+  <p>Quién eres y cómo te gusta trabajar: el mismo perfil para todos los espacios.</p>
+  <h2 id="salud">Salud</h2>
+  <p>La carpeta de notas y las carpetas de trabajo del espacio, si es el espacio por defecto, notas que no son válidas, repositorios a los que apuntan las notas y que ya no están en este ordenador, el índice, la última copia de seguridad y la última revisión semanal.</p>
+  <h2 id="ayuda">Ayuda</h2>
+  <p>Enlaces a las respuestas de esta web, en tu idioma. Y una forma de contarnos un problema o proponer una idea en GitHub (la web donde vive el proyecto; necesitas una cuenta gratuita allí).</p>
+  <p>Pulsa <strong>Avisa de un problema en GitHub</strong>. El panel hace la revisión de salud (lo que dice <code>augmented-brain doctor</code>) en ese momento. Luego abre el formulario de GitHub en otra pestaña, con la versión, tu sistema y esa revisión ya escritos.</p>
+  <p>Antes de abrirlo, el panel quita lo personal: tu carpeta personal (sale como <code>~</code>), tus carpetas de notas y de trabajo, las direcciones de correo, los nombres de tus espacios, las máquinas intocables, los perfiles de AWS de producción, y cualquier línea que parezca una contraseña o una clave. Tú cuentas qué pasó y lees el resto: cambia o borra lo que prefieras no compartir. Nada se envía hasta que pulsas el botón de enviar de GitHub. Para ser claros: el texto viaja a GitHub dentro de la dirección de la página en cuanto se abre, así que GitHub puede verlo entonces, aunque no lo envíes.</p>
+  <h2 id="búsqueda-y-lectura-de-notas">Búsqueda y lectura de notas</h2>
+  <p>El cuadro de <strong>búsqueda</strong> del lateral busca en las notas del espacio y en las compartidas: títulos, resúmenes y texto. Sale una nota cuando tiene todas las palabras, en mayúsculas o minúsculas, con tildes o sin ellas.</p>
+  <p>Las notas se leen como texto, no como Markdown en crudo: títulos, listas, tablas, código y enlaces. Un <code>[[enlace]]</code> a otra nota te lleva a ella. Si una nota cambia en el disco mientras tienes abierta su página (Claude escribió en ella, por ejemplo), la página te lo dice, con un enlace para verla como está ahora.</p>
+  <h2 id="hecho-para-que-siga-siendo-tuyo">Hecho para que siga siendo tuyo</h2>
+  <ul><li>Funciona <strong>solo mientras lo usas</strong>. Tras 30 minutos sin uso se para solo. Para pararlo ya: <code>augmented-brain panel stop</code>, o el enlace del pie de la página.</li><li>Funciona <strong>solo en este ordenador</strong>. Las otras máquinas de tu red no llegan a él.</li><li>La dirección lleva una <strong>llave</strong>, nueva cada vez que el panel arranca. Sin ella el panel no responde nada, así que ningún otro programa ni página web de tu ordenador puede usarlo. Trata la dirección como una contraseña: no la compartas. Deja de valer cuando el panel se para.</li><li>No carga <strong>nada de internet</strong>: ni fuentes ni estadísticas. Funciona sin conexión. Una nota tampoco puede meter HTML ni scripts propios en la página. Los enlaces de la página Ayuda van a la web solo cuando los pulsas.</li><li>Mirar si una nota ha cambiado no cuenta como usar el panel: una pestaña abierta no lo mantiene en marcha.</li></ul>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="phrases.es.html"><span>← Anterior</span>Qué decirle a Claude</a>
+    <a class="next" href="weekly-review.es.html"><span>Siguiente →</span>La revisión semanal</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

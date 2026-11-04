@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Copia de seguridad y restauración · augmented brain</title>
+<meta name="description" content="La copia de seguridad de augmented brain: un repositorio git privado por espacio, que se hace sola después de cada sesión, y cómo recuperarlo todo en una máquina nueva.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/backup.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/backup.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/backup.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/backup.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Copia de seguridad y restauración · augmented brain">
+<meta property="og:description" content="Un repositorio privado por espacio, y una máquina nueva en minutos.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/backup.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Copia de seguridad y restauración · augmented brain">
+<meta name="twitter:description" content="Un repositorio privado por espacio, y una máquina nueva en minutos.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="backup.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html" aria-current="page">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Copia de seguridad y restauración</h1>
+  <p>Se te muere el portátil. En el nuevo, instalas augmented brain, lanzas un comando y abres Claude. Sigue donde lo dejaste: tareas, notas, reglas y tu perfil.</p>
+  <p>Eso es la <strong>copia de seguridad</strong>. La carpeta de notas de cada espacio es también un repositorio git. La copia lo sube a un repositorio privado tuyo, uno por espacio.</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#montarla-pídeselo-a-claude">Montarla: pídeselo a Claude</a></li><li><a href="#se-hace-sola">Se hace sola</a></li><li><a href="#en-una-máquina-nueva">En una máquina nueva</a></li><li><a href="#lo-que-no-trae-una-restauración">Lo que no trae una restauración</a></li><li><a href="#lo-que-te-da">Lo que te da</a></li><li><a href="#cuando-falla">Cuando falla</a></li></ul></nav>
+  <h2 id="montarla-pídeselo-a-claude">Montarla: pídeselo a Claude</h2>
+  <p>Dile “monta la copia de seguridad”. Al final de la entrevista de la primera sesión, Claude también te la ofrece.</p>
+  <p>Crea en tu cuenta de GitHub un repositorio privado, <code>augmented-brain-&lt;espacio&gt;</code>, lo conecta y hace la primera copia. Para eso usa <code>gh</code>, la herramienta oficial de GitHub para la terminal. Si no la tienes, Claude te dice cómo instalarla, y te guía en el único paso que necesita tu navegador: entrar con tu cuenta.</p>
+  <p>¿Prefieres otro sitio (GitLab, el git de tu empresa)? Dale a Claude la dirección del repositorio, o hazlo tú, en una carpeta del espacio:</p>
+  <pre><code>augmented-brain backup setup git@gitlab.com:lucia/cerebro-trabajo.git</code></pre>
+  <p>Usa un repositorio <strong>privado</strong>: dentro van tus notas.</p>
+  <h2 id="se-hace-sola">Se hace sola</h2>
+  <p>Desde entonces, <strong>la copia se hace sola cada vez que termina una sesión de Claude</strong>, en segundo plano. No esperas a nada. Si falla (sin conexión, sin permiso en el repositorio), Claude te lo dice al empezar la siguiente sesión.</p>
+  <p>También puedes lanzarla a mano:</p>
+  <pre><code>augmented-brain backup          # el espacio de esta carpeta
+augmented-brain backup --all    # todos los espacios</code></pre>
+  <p>Para apagar la copia automática, pon <code>AB_NO_AUTO_BACKUP=1</code> en tu entorno.</p>
+  <h2 id="en-una-máquina-nueva">En una máquina nueva</h2>
+  <ol><li>Instala augmented brain con el comando de siempre. Te crea los espacios vacíos. Si al acabar se abre Claude, ciérralo sin hacer la entrevista: tu perfil viene en la copia.</li><li>Si el repositorio está en GitHub, entra una vez con <code>gh auth login</code>, para que git tenga permiso.</li><li>Recupera cada espacio desde su copia:<pre><code>augmented-brain restore https://github.com/lucia/augmented-brain-trabajo.git</code></pre>Sustituye el espacio vacío por el tuyo: notas, tareas, reglas y la configuración del espacio, que solo puedes leer tú. Si algo falla a medias, el espacio vacío se queda como estaba. Si ese espacio ya tenía notas tuyas, no lo toca.</li><li>Abre Claude. Sigue donde lo dejaste, y la copia sigue haciéndose sola.</li></ol>
+  <p>Recupera también el espacio por defecto (<code>personal</code>): con él vienen tu perfil, tus notas compartidas y la lista de los nombres de tus secretos.</p>
+  <h2 id="lo-que-no-trae-una-restauración">Lo que no trae una restauración</h2>
+  <p>Algunas cosas se quedan fuera a propósito:</p>
+  <ul><li><strong>Las listas del guardia</strong>: los perfiles de AWS de producción y las máquinas intocables. Pueden nombrar máquinas de tu trabajo, así que no van en ninguna copia. <code>restore</code> y <code>doctor</code> lo dicen, y la siguiente sesión te ofrece volver a pedírtelas. Hasta entonces, nada pregunta antes de tocar producción.</li><li><strong>Los repositorios donde Claude puede hacer commit y push</strong> (<code>git_allowed_repos</code> y <code>git_ask_repos</code>). Alguien podría haber cambiado la copia, así que <code>restore</code> los nombra, y los vuelves a añadir si lo sigues queriendo.</li><li><strong>El valor de tus secretos.</strong> Solo viajan sus nombres. <code>restore</code> nombra los secretos que el llavero de esta máquina aún no tiene, cada uno con el comando para guardarlo.</li></ul>
+  <h2 id="lo-que-te-da">Lo que te da</h2>
+  <ul><li><strong>Varias máquinas, un solo cerebro.</strong> Antes de subir, la copia trae lo que hizo tu otra máquina y lo mezcla.</li><li><strong>Todo el historial.</strong> Cada copia es un commit de git, con la máquina y la hora. Con <code>git log</code> ves qué cambió, y puedes volver a cualquier día.</li><li><strong>En tu sitio.</strong> GitHub, GitLab o tu servidor: el repositorio lo eliges tú. No hay nube de augmented brain.</li><li><strong>Un repositorio por espacio.</strong> El del trabajo puede ir al git de la empresa, y el personal al tuyo. Tu perfil solo viaja en la copia del espacio por defecto, nunca en la del trabajo.</li><li><strong>No sube secretos.</strong> Las herramientas de Claude se niegan a escribir una contraseña o un token en una nota. Si aun así entra uno (a mano, por ejemplo), la copia se para y te dice en qué fichero.</li><li><strong>No pisa nada.</strong> Si dos máquinas cambiaron la misma nota, la copia se para sin tocar nada y te explica cómo resolverlo. Si cada máquina solo le añadió entradas de diario, se juntan solas, por fecha. El índice se rehace solo, y las capturas del buzón hechas en dos máquinas se guardan las dos.</li><li><strong>Ni basura ni gigantes.</strong> Los restos de un cuelgue y los ficheros que dejan los sistemas en las carpetas (<code>.DS_Store</code>, <code>Thumbs.db</code>) se quedan fuera. Un fichero de más de 50 MB también (GitHub los rechaza), y Claude te dice cuál.</li></ul>
+  <h2 id="cuando-falla">Cuando falla</h2>
+  <p>Claude te lo dice al empezar la siguiente sesión, con el motivo. Si lanzas <code>augmented-brain backup</code> en una carpeta del espacio, ves el problema. Los más comunes están en <a href="troubleshooting.es.html#ha-fallado-la-copia-de-seguridad">Si algo falla</a>.</p>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="weekly-review.es.html"><span>← Anterior</span>La revisión semanal</a>
+    <a class="next" href="connect-services.es.html"><span>Siguiente →</span>Conecta tus servicios</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>
