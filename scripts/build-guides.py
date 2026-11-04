@@ -28,6 +28,7 @@ SITE = "https://icalvete.github.io/augmented-brain/"
 BASE = SITE + "guide/"
 REPO = "https://github.com/icalvete/augmented-brain/blob/main/"
 CHANGELOG = REPO + "CHANGELOG.md"
+CHANGELOG_ES = REPO + "CHANGELOG.es.md"
 
 # The sidebar, in order. Each page: slug, title (en, es), description (en, es) for
 # search engines, a short line (en, es) for sharing and for the index. A page with no
@@ -133,8 +134,8 @@ GROUPS = [
                    "Problemas con augmented brain y cómo arreglarlos: doctor, la página de Ayuda del panel, el guardia, la copia de seguridad, las notas, el panel y las sesiones; y preguntas frecuentes."),
              line=("Problems and fixes, doctor, and common questions.",
                    "Problemas y arreglos, doctor, y preguntas frecuentes.")),
-        dict(slug="changelog", title=("Changelog", "Registro de cambios"), url=CHANGELOG,
-             line=("What changed in each version.", "Qué cambió en cada versión (en inglés).")),
+        dict(slug="changelog", title=("Changelog", "Registro de cambios"), url=(CHANGELOG, CHANGELOG_ES),
+             line=("What changed in each version.", "Qué cambió en cada versión.")),
     ]),
 ]
 
@@ -175,12 +176,12 @@ def file_name(slug, lang):
 
 
 def href(p, lang):
-    return p["url"] if "url" in p else file_name(p["slug"], lang)
+    return p["url"][L(lang)] if "url" in p else file_name(p["slug"], lang)
 
 
 def label(p, lang):
     t = p["title"][L(lang)]
-    if lang == "es" and (("url" in p) or not has_es(p)):
+    if lang == "es" and "url" not in p and not has_es(p):
         t += UI["es"]["english"]
     return t
 
@@ -457,7 +458,7 @@ document.querySelectorAll("[data-lang]").forEach(function (a) {
 
 def footer(lang):
     u = UI[lang]
-    return (f'<footer>\n  <div class="wrap"><span>{u["footer"]} · <a href="{CHANGELOG}">'
+    return (f'<footer>\n  <div class="wrap"><span>{u["footer"]} · <a href="{CHANGELOG if lang == "en" else CHANGELOG_ES}">'
             f'{"Changelog" if lang == "en" else "Registro de cambios"}</a></span></div>\n</footer>\n'
             + COPY.replace("{copy}", u["copy"]).replace("{copied}", u["copied"]) + "\n</body>\n</html>\n")
 

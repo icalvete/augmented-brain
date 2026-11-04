@@ -57,6 +57,7 @@ The documentation, as web pages: https://icalvete.github.io/augmented-brain/guid
 - [Herramientas MCP](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/mcp-tools.es.md)
 - [Configuración](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/configuration.es.md)
 - [Si algo falla](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/troubleshooting.es.md)
+- [Registro de cambios](https://raw.githubusercontent.com/icalvete/augmented-brain/main/CHANGELOG.es.md)
 
 ## Optional
 

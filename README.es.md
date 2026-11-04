@@ -160,7 +160,7 @@ y en inglés:
   [Configuración](https://icalvete.github.io/augmented-brain/guide/configuration.es.html),
   [Formato de la memoria](https://icalvete.github.io/augmented-brain/guide/memory-format.html) (en inglés).
 - **Ayuda**: [Si algo falla](https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html),
-  [registro de cambios](CHANGELOG.md) (en inglés).
+  [Registro de cambios](CHANGELOG.es.md).
 
 Inspirado en *Building a Second Brain* de Tiago Forte y *Getting Things Done* de David
 Allen, adaptados a trabajar con un asistente de IA.
