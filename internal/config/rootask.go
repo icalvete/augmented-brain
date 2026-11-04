@@ -1,9 +1,11 @@
 package config
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/i18n"
 )
 
 // RootAsk is a temporary exception for root on one machine, written in root_ask as
@@ -15,12 +17,13 @@ type RootAsk struct {
 	Until time.Time
 }
 
-// ParseRootAsk reads one entry of root_ask.
-func ParseRootAsk(entry string) (RootAsk, error) {
+// ParseRootAsk reads one entry of root_ask; lang is the language of what it says when
+// it cannot.
+func ParseRootAsk(lang, entry string) (RootAsk, error) {
 	host, date, ok := strings.Cut(strings.TrimSpace(entry), " until ")
 	host, date = strings.TrimSpace(host), strings.TrimSpace(date)
 	if !ok || host == "" || strings.ContainsAny(host, " \t") {
-		return RootAsk{}, fmt.Errorf("%q is not \"<host> until <date>\"", entry)
+		return RootAsk{}, errors.New(i18n.T(lang, "config.rootask.form", entry))
 	}
 	if d, err := time.Parse("2006-01-02", date); err == nil {
 		return RootAsk{host, d.Add(24*time.Hour - time.Second)}, nil
@@ -30,14 +33,14 @@ func ParseRootAsk(entry string) (RootAsk, error) {
 			return RootAsk{host, t.UTC()}, nil
 		}
 	}
-	return RootAsk{}, fmt.Errorf("%q: the date %q is neither a day (2026-10-31) nor a time (2026-10-31T23:59Z)", entry, date)
+	return RootAsk{}, errors.New(i18n.T(lang, "config.rootask.date", entry, date))
 }
 
 // RootExceptions returns the entries of root_ask that can be read, and those that
 // cannot (they grant nothing).
 func (c *Config) RootExceptions() (valid []RootAsk, unread []string) {
 	for _, e := range c.RootAsk {
-		r, err := ParseRootAsk(e)
+		r, err := ParseRootAsk(c.Language, e)
 		if err != nil {
 			unread = append(unread, e)
 			continue

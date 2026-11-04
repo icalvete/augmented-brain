@@ -76,6 +76,28 @@ func TestUsageLanguage(t *testing.T) {
 	}
 }
 
+// The hook command, which only the plugin runs, says what it takes in the user's
+// language too.
+func TestHookUsageLanguage(t *testing.T) {
+	t.Setenv("AB_CONFIG_DIR", t.TempDir())
+	t.Setenv("AB_LANGUAGE", "es")
+	for args, want := range map[string]string{
+		"nope":            `no conozco el hook "nope"`,
+		"":                "uso: augmented-brain hook session-start|pre-tool-use",
+		"session-start x": "uso: augmented-brain hook session-start [1-",
+	} {
+		var out, errOut bytes.Buffer
+		if code := run(append([]string{"hook"}, strings.Fields(args)...), nil, &out, &errOut); code != 2 || !strings.Contains(errOut.String(), want) {
+			t.Errorf("hook %s: %d %q", args, code, errOut.String())
+		}
+	}
+	t.Setenv("AB_LANGUAGE", "en")
+	var out, errOut bytes.Buffer
+	if run([]string{"hook", "nope"}, nil, &out, &errOut); !strings.Contains(errOut.String(), `unknown hook "nope"`) {
+		t.Errorf("hook nope, in English: %q", errOut.String())
+	}
+}
+
 // `check` names a secret in any file the backup would take, not only in the notes: a
 // document in docs/ too.
 func TestCheckFindsSecretsInDocs(t *testing.T) {

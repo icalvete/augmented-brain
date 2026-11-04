@@ -64,6 +64,12 @@ EOF
 }
 
 export AB_NO_UPDATE_CHECK=1
+# Everything in English: the checks below look for English words ("unknown settings",
+# "newer augmented brain") in what the programs print. AB_LANGUAGE, which every release
+# since 0.2.3 honours over the machine's locale, makes init write a configuration in
+# English, so the programs that read it speak English too, and covers what is said
+# before a configuration is read.
+export AB_LANGUAGE=en
 # Each part runs with HOME and XDG_CONFIG_HOME inside $WORK: nothing outside it is touched.
 fail=0
 

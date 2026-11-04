@@ -38,7 +38,7 @@ func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 					return done, err
 				}
 			}
-			if err := format.CheckNotes(mem); err != nil {
+			if err := format.CheckNotes(mem, lang); err != nil {
 				return done, err
 			}
 		}

@@ -25,7 +25,7 @@ import (
 // remotes, read from its .git/config. --admin, which skips the branch's protection,
 // asks the user even where merging is allowed.
 func (p Policy) merge(name, what string, env map[string]string, args []string) Decision {
-	deny := publishDeny(name, what)
+	deny := p.publishDeny(name, what)
 	if p.host != "" || p.lost || p.Cwd == "" {
 		return deny // on another machine, or in a folder the guard cannot tell
 	}
@@ -48,16 +48,19 @@ func (p Policy) merge(name, what string, env map[string]string, args []string) D
 	if verdict == Deny {
 		return deny
 	}
+	// Only the command's own words count: text given to an option (a body, a subject, a
+	// message) may say anything, a pull request's address or --admin included.
+	args = withoutText(name, args)
 	named, ok := mergeTargets(name, env, p.Env, args)
 	if !ok {
-		return Decision{Deny, "`" + name + " " + what + "` names its pull request in a way augmented brain cannot read, so it cannot tell which repository it merges in. Use the number of the pull request, run from the repository's folder."}
+		return Decision{Deny, i18n.T(p.Lang, "guard.merge.unread", name+" "+what)}
 	}
 	if len(named) > 0 {
 		remotes := remoteURLs(dir)
 		host := defaultHost(name, env, p.Env)
 		for _, n := range named {
 			if !slices.ContainsFunc(remotes, func(r string) bool { return sameRepo(n, r, host) }) {
-				return Decision{Deny, "`" + name + " " + what + "` names " + n + ", which is not a remote of " + paths.Tilde(dir) + ", the repository the command runs in. Merging there is for the user: give them the exact command to run themselves."}
+				return Decision{Deny, i18n.T(p.Lang, "guard.merge.remote", name+" "+what, n, paths.Tilde(dir))}
 			}
 		}
 	}
@@ -70,18 +73,48 @@ func (p Policy) merge(name, what string, env map[string]string, args []string) D
 	return allow
 }
 
+// mergeText are the options of gh pr merge and glab mr merge (and mr accept) whose
+// value is free text or a file, which may hold an address that is not the pull
+// request's, or words that look like options. gh's -m is --merge, with no value.
+var mergeText = map[string][]string{
+	"gh":   {"-b", "--body", "-t", "--subject", "-F", "--body-file", "-A", "--author-email", "--match-head-commit"},
+	"glab": {"-m", "--message", "--squash-message", "--sha"},
+}
+
+// withoutText returns the arguments of a merge command without the options of
+// mergeText and their values, written apart (--body x), with = (--body=x) or, for a
+// short option, joined (-bx).
+func withoutText(name string, args []string) []string {
+	text := mergeText[name]
+	var out []string
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if slices.Contains(text, a) {
+			i++ // and its value
+			continue
+		}
+		if slices.ContainsFunc(text, func(o string) bool {
+			if strings.HasPrefix(o, "--") {
+				return strings.HasPrefix(a, o+"=")
+			}
+			return strings.HasPrefix(a, o) && len(a) > len(o)
+		}) {
+			continue
+		}
+		out = append(out, a)
+	}
+	return out
+}
+
 // mergeTargets returns the repositories a merge command names: the values of -R and
 // --repo, GH_REPO (gh) or GITLAB_REPO (glab) in the command or inherited, and the
 // address of a pull request given as one. ok is false for an address it cannot read.
+// args come without their free text (withoutText).
 func mergeTargets(name string, env, inherited map[string]string, args []string) (named []string, ok bool) {
 	vars := map[string]string{"gh": "GH_REPO", "glab": "GITLAB_REPO"}
 	if v := cmp.Or(env[vars[name]], inherited[vars[name]]); v != "" {
 		named = append(named, v)
 	}
-	// Options whose value is free text, which may hold an address that is not the pull
-	// request's.
-	text := []string{"-b", "--body", "-t", "--subject", "-m", "--message", "--squash-message", "-F", "--body-file",
-		"-A", "--author-email", "--match-head-commit", "--sha"}
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		switch {
@@ -94,8 +127,6 @@ func mergeTargets(name string, env, inherited map[string]string, args []string) 
 			named = append(named, strings.TrimPrefix(a, "--repo="))
 		case strings.HasPrefix(a, "-R") && len(a) > 2:
 			named = append(named, strings.TrimPrefix(strings.TrimPrefix(a, "-R"), "="))
-		case slices.Contains(text, a):
-			i++
 		case strings.Contains(a, "://"):
 			repo, found := pullRepo(name, a)
 			if !found {

@@ -48,7 +48,8 @@ que se ejecuta, así que un cambio vale al momento.
 
 Van arriba, antes de cualquier encabezado `[spaces.…]`.
 
-- `language`: el idioma en el que te habla el programa, `en` o `es`. Por defecto, `en`.
+- `language`: el idioma en el que te habla el programa, `en` o `es`: sus mensajes y los
+  motivos del guardia. Por defecto, `en`.
 - `default_space`: el espacio que se usa fuera de todas las carpetas de trabajo, como la
   carpeta provisional en la que la app de escritorio abre una sesión nueva. Su copia de
   seguridad lleva tu perfil y las notas compartidas. Es opcional; con dos espacios o más,
@@ -105,7 +106,9 @@ Para quitar cualquier cosa, edita tú el fichero.
 Si el fichero tiene un error, el programa dice en qué línea. Un ajuste que no conoce
 también es un error, y el mensaje lo nombra. Si el fichero lo escribió una versión más
 nueva, el programa te dice que actualices. Estos mensajes salen en el idioma del sistema
-(o en el de `AB_LANGUAGE`): el `language` del propio fichero aún no se puede leer.
+(o en el de `AB_LANGUAGE`): el `language` del propio fichero aún no se puede leer. Un
+fichero que se lee pero dice algo mal (un espacio sin `memory`, un `default_space` que no
+es un espacio) se cuenta en su `language`.
 
 Mientras no se puede leer el fichero, el guardia no conoce tus listas. Así que te
 pregunta antes de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`.

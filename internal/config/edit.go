@@ -1,12 +1,14 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
@@ -59,7 +61,7 @@ func setSpaceLine(dir, space, key, line string) error {
 	}
 	start, end, ok := f.table(space)
 	if !ok {
-		return fmt.Errorf("%s has no space %q", f.path, space)
+		return errors.New(i18n.T(langOf(dir), "config.nospace", f.path, space))
 	}
 	if i := f.find(start, end, key); i >= 0 {
 		if line == "" {
@@ -238,9 +240,18 @@ func (f *lineEditor) write(text string) error {
 	}
 	if _, err := Load(f.dir); err != nil {
 		_ = writeAtomic(f.path, f.old)
-		return fmt.Errorf("the change would break %s, so it was not made: %w", f.path, err)
+		return fmt.Errorf("%s: %w", i18n.T(langOf(f.dir), "config.wouldbreak", f.path), err)
 	}
 	return nil
+}
+
+// langOf is the language of the configuration in dir, for what an edit says: the
+// system's when it does not load.
+func langOf(dir string) string {
+	if c, err := Load(dir); err == nil {
+		return c.Language
+	}
+	return i18n.FromEnv()
 }
 
 // writeAtomic replaces a file in one step (write, then rename). When the path is a

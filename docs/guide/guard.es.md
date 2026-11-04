@@ -13,6 +13,9 @@ que escribe, antes de que pase. Tiene tres respuestas:
   …`, `ssh db01 …`.
 - **Lo para**: el comando no se ejecuta. Claude recibe el motivo, y qué hacer en su lugar.
 
+Los motivos salen en tu idioma, el `language` de tu
+[configuración](configuration.es.md) (el del sistema mientras no se puede leer).
+
 **El guardia es una red contra despistes, no un muro de seguridad.** Lee los comandos
 como texto. Pilla los errores que comete un asistente, también escondidos dentro de otros
 comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
@@ -78,7 +81,9 @@ mr accept` van por las mismas listas. gh y glab no tienen `-C`, así que Claude 
 de la sesión, sola, no cuenta. Un repositorio que nombre el comando (`-R dueño/nombre`,
 la dirección de la pull request) tiene que ser uno de los remotos de ese repositorio, o la
 fusión se para. `gh pr merge --admin`, que se salta la protección de la rama, pregunta
-siempre.
+siempre. Solo cuenta el comando en sí: `gh pr merge` escrito en el cuerpo de una pull
+request o en un mensaje de commit no es una fusión, y tampoco lo son una dirección o un
+`--admin` dentro del texto de `--body` o `--subject`.
 
 ## Perfiles de producción y máquinas intocables
 

@@ -15,6 +15,7 @@
 package format
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -58,20 +59,35 @@ func Notes() int  { return 1 + len(NotesMigrations) }
 func Config() int { return 1 + len(ConfigMigrations) }
 
 // NewerError says the files were written by a newer program than this one. It is
-// said in the system's language: it can come before the configuration, and its
-// language, could be read.
+// said in Lang, the user's language; when that is not known (it can come before the
+// configuration, and its language, could be read), in the system's.
 type NewerError struct {
 	What    string // the memory folder or the configuration folder
 	Version int
 	Known   int
+	Lang    string
 }
 
 func (e *NewerError) Error() string {
-	return i18n.T(i18n.FromEnv(), "format.newer", e.What, e.Version, e.Known)
+	return i18n.T(cmp.Or(e.Lang, i18n.FromEnv()), "format.newer", e.What, e.Version, e.Known)
 }
 
-// Of reads the version of a memory folder: 1 when it says none.
-func Of(memDir string) (int, error) {
+// stepError is an error of a migration, said in the user's language, that keeps the
+// error under it for errors.Is and errors.As.
+type stepError struct {
+	msg string
+	err error
+}
+
+func (e *stepError) Error() string { return e.msg }
+func (e *stepError) Unwrap() error { return e.err }
+
+// Of reads the version of a memory folder: 1 when it says none. What it says when it
+// cannot is in the system's language.
+func Of(memDir string) (int, error) { return of(memDir, i18n.FromEnv()) }
+
+// of is Of, saying what it cannot read in lang.
+func of(memDir, lang string) (int, error) {
 	data, err := os.ReadFile(filepath.Join(memDir, MetaDir, File))
 	if errors.Is(err, fs.ErrNotExist) {
 		return 1, nil
@@ -81,7 +97,7 @@ func Of(memDir string) (int, error) {
 	}
 	v, err := strconv.Atoi(strings.TrimSpace(string(data)))
 	if err != nil || v < 1 {
-		return 0, fmt.Errorf("%s: %q is not a format version", filepath.Join(memDir, MetaDir, File), strings.TrimSpace(string(data)))
+		return 0, errors.New(i18n.T(lang, "format.notversion", filepath.Join(memDir, MetaDir, File), strings.TrimSpace(string(data))))
 	}
 	return v, nil
 }
@@ -96,14 +112,15 @@ func Write(memDir string, v int) error {
 }
 
 // CheckNotes refuses notes written by a newer program. It reads one small file, so
-// every open of a space can afford it.
-func CheckNotes(memDir string) error {
-	v, err := Of(memDir)
+// every open of a space can afford it. lang is the user's language ("": the system's).
+func CheckNotes(memDir, lang string) error {
+	lang = cmp.Or(lang, i18n.FromEnv())
+	v, err := of(memDir, lang)
 	if err != nil {
 		return err
 	}
 	if v > Notes() {
-		return &NewerError{What: memDir, Version: v, Known: Notes()}
+		return &NewerError{What: memDir, Version: v, Known: Notes(), Lang: lang}
 	}
 	return nil
 }
@@ -120,34 +137,36 @@ func (r Result) Migrated() bool { return r.From != r.To }
 
 // EnsureNotes brings a memory folder to the version this program writes: it records
 // the version when the folder says none, and runs the missing steps, after copying the
-// whole folder into <cfgDir>/migrations/. name names the copy (the space).
-func EnsureNotes(memDir, cfgDir, name string, now time.Time) (Result, error) {
-	v, err := Of(memDir)
+// whole folder into <cfgDir>/migrations/. name names the copy (the space); lang is the
+// language of what it says when it cannot ("": the system's).
+func EnsureNotes(memDir, cfgDir, name, lang string, now time.Time) (Result, error) {
+	lang = cmp.Or(lang, i18n.FromEnv())
+	v, err := of(memDir, lang)
 	if err != nil {
 		return Result{}, err
 	}
-	return ensure(memDir, cfgDir, "notes-"+name, v, Notes(), NotesMigrations, now,
+	return ensure(memDir, cfgDir, "notes-"+name, lang, v, Notes(), NotesMigrations, now,
 		func(n int) error { return Write(memDir, n) })
 }
 
 // EnsureConfig does the same for the configuration folder, given its version as read
 // from config.toml and how to write a new one there. The copy leaves out the copies
 // of earlier migrations and the machine's state.
-func EnsureConfig(cfgDir string, v int, write func(int) error, now time.Time) (Result, error) {
-	return ensure(cfgDir, cfgDir, "config", v, Config(), ConfigMigrations, now, write)
+func EnsureConfig(cfgDir string, v int, write func(int) error, lang string, now time.Time) (Result, error) {
+	return ensure(cfgDir, cfgDir, "config", cmp.Or(lang, i18n.FromEnv()), v, Config(), ConfigMigrations, now, write)
 }
 
-func ensure(dir, cfgDir, name string, v, target int, steps []Migration, now time.Time, write func(int) error) (Result, error) {
+func ensure(dir, cfgDir, name, lang string, v, target int, steps []Migration, now time.Time, write func(int) error) (Result, error) {
 	r := Result{From: v, To: v}
 	switch {
 	case v > target:
-		return r, &NewerError{What: dir, Version: v, Known: target}
+		return r, &NewerError{What: dir, Version: v, Known: target, Lang: lang}
 	case v == target:
 		return r, write(v) // records it when it was only implied; cheap
 	}
 	r.Copy = filepath.Join(cfgDir, CopiesDir, fmt.Sprintf("%s-%d-%s", name, v, now.Format("20060102-150405")))
 	if err := paths.CopyTree(dir, r.Copy, CopiesDir, "state", ".git"); err != nil { // the machine's state and earlier copies stay out
-		return r, fmt.Errorf("copying %s before moving it to format %d: %w", dir, target, err)
+		return r, &stepError{i18n.T(lang, "format.copying", dir, target, err), err}
 	}
 	for r.To < target {
 		var step *Migration
@@ -157,10 +176,10 @@ func ensure(dir, cfgDir, name string, v, target int, steps []Migration, now time
 			}
 		}
 		if step == nil {
-			return r, fmt.Errorf("no way from format %d to %d", r.To, r.To+1)
+			return r, errors.New(i18n.T(lang, "format.noway", r.To, r.To+1))
 		}
 		if err := step.Run(dir); err != nil {
-			return r, fmt.Errorf("moving %s from format %d to %d (%s): %w; a copy from before is in %s", dir, r.To, r.To+1, step.What, err, r.Copy)
+			return r, &stepError{i18n.T(lang, "format.moving", dir, r.To, r.To+1, step.What, err, r.Copy), err}
 		}
 		if err := write(r.To + 1); err != nil {
 			return r, err

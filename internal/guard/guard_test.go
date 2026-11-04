@@ -183,10 +183,10 @@ func TestNoPolicy(t *testing.T) {
 
 func TestWrite(t *testing.T) {
 	key := "-----BEGIN " + "PRIVATE KEY-----"
-	if Write("config:\n  key: "+key).Verdict != Deny {
+	if Write("en", "config:\n  key: "+key).Verdict != Deny {
 		t.Error("private key not caught")
 	}
-	if Write("password: read it from $DB_PASSWORD").Verdict != Allow {
+	if Write("en", "password: read it from $DB_PASSWORD").Verdict != Allow {
 		t.Error("the word password is not a secret")
 	}
 }
@@ -366,5 +366,33 @@ func TestMonitorShapes(t *testing.T) {
 		if got := p.Command(c.cmd); got.Verdict != c.want {
 			t.Errorf("%q: got %v (%s), want %v", c.cmd, got.Verdict, got.Reason, c.want)
 		}
+	}
+}
+
+// Every reason is in the user's language, the general ones too, not only the newer.
+func TestReasonsInTheUsersLanguage(t *testing.T) {
+	es := Policy{Lang: "es", ProductionAWSProfiles: []string{"prod"}, UntouchableHosts: []string{"db01"}}
+	for cmd, want := range map[string]string{
+		"sudo ls":                        "esto se ejecutaría como root. Nunca te hagas root",
+		"git push":                       "`git push` es cosa del usuario",
+		"aws s3 ls --profile prod":       "este comando de AWS puede usar el perfil de producción prod",
+		"ssh db01":                       "ssh llega a db01, marcado como intocable",
+		"rm -rf /":                       "`rm -r` de todo el disco nunca se ejecuta",
+		"gh release create v1":           "`gh release create` publica o fusiona",
+		"echo AKIA" + "ABCDEFGHIJKLMNOP": "el comando contiene una clave de acceso de AWS",
+	} {
+		if r := es.Command(cmd).Reason; !strings.Contains(r, want) {
+			t.Errorf("%q: %q, want it to say %q", cmd, r, want)
+		}
+	}
+	if r := PowerShell("es").Reason; !strings.Contains(r, "todavía no revisa los comandos de PowerShell") {
+		t.Errorf("PowerShell: %q", r)
+	}
+	if r := Write("es", "AKIA"+"ABCDEFGHIJKLMNOP").Reason; !strings.Contains(r, "Los secretos nunca van en ficheros") {
+		t.Errorf("Write: %q", r)
+	}
+	// No language, or one it does not speak: English.
+	if r := (Policy{}).Command("sudo ls").Reason; !strings.HasPrefix(r, "`sudo` runs as root") && !strings.HasPrefix(r, "this would run as root") {
+		t.Errorf("English: %q", r)
 	}
 }

@@ -54,7 +54,7 @@ func TestEnsureNotes(t *testing.T) {
 	}
 	now := time.Date(2026, 11, 1, 9, 0, 0, 0, time.UTC)
 
-	r, err := EnsureNotes(mem, cfg, "work", now)
+	r, err := EnsureNotes(mem, cfg, "work", "", now)
 	if err == nil || !strings.Contains(err.Error(), "disk full") || !strings.Contains(err.Error(), r.Copy) {
 		t.Fatalf("a failing step: %v", err)
 	}
@@ -66,14 +66,14 @@ func TestEnsureNotes(t *testing.T) {
 	}
 
 	fail = false
-	r, err = EnsureNotes(mem, cfg, "work", now.Add(time.Minute))
+	r, err = EnsureNotes(mem, cfg, "work", "", now.Add(time.Minute))
 	if err != nil || r.From != 2 || r.To != 3 || len(r.Done) != 1 || r.Done[0] != "add" {
 		t.Fatalf("again: %+v %v", r, err)
 	}
 	if v, _ := Of(mem); v != 3 {
 		t.Errorf("version %d, want 3", v)
 	}
-	if r, err := EnsureNotes(mem, cfg, "work", now); err != nil || r.Migrated() {
+	if r, err := EnsureNotes(mem, cfg, "work", "", now); err != nil || r.Migrated() {
 		t.Errorf("nothing left to do: %+v %v", r, err)
 	}
 }
@@ -85,26 +85,55 @@ func TestNewerNotesAreLeftAlone(t *testing.T) {
 		t.Fatal(err)
 	}
 	var newer *NewerError
-	if err := CheckNotes(mem); !errors.As(err, &newer) || !strings.Contains(err.Error(), "augmented-brain update") {
+	if err := CheckNotes(mem, ""); !errors.As(err, &newer) || !strings.Contains(err.Error(), "augmented-brain update") {
 		t.Errorf("CheckNotes: %v", err)
 	}
 	t.Setenv("AB_LANGUAGE", "es")
-	if err := CheckNotes(mem); err == nil || !strings.Contains(err.Error(), "lo escribió un augmented brain más nuevo (formato 7; este conoce hasta el 1)") {
+	if err := CheckNotes(mem, ""); err == nil || !strings.Contains(err.Error(), "lo escribió un augmented brain más nuevo (formato 7; este conoce hasta el 1)") {
 		t.Errorf("CheckNotes, in Spanish: %v", err)
 	}
 	t.Setenv("AB_LANGUAGE", "en")
-	if _, err := EnsureNotes(mem, t.TempDir(), "work", time.Now()); !errors.As(err, &newer) {
+	if _, err := EnsureNotes(mem, t.TempDir(), "work", "", time.Now()); !errors.As(err, &newer) {
 		t.Errorf("EnsureNotes: %v", err)
+	}
+	// The user's language, when the caller knows it, wins over the system's.
+	if err := CheckNotes(mem, "es"); err == nil || !strings.Contains(err.Error(), "lo escribió un augmented brain más nuevo") {
+		t.Errorf("CheckNotes in the user's Spanish: %v", err)
+	}
+	if _, err := EnsureNotes(mem, t.TempDir(), "work", "es", time.Now()); err == nil || !strings.Contains(err.Error(), "lo escribió") {
+		t.Errorf("EnsureNotes in the user's Spanish: %v", err)
 	}
 	if v, _ := Of(mem); v != 7 {
 		t.Errorf("the version was changed to %d", v)
 	}
 }
 
+// What a migration that fails says is in the user's language, and keeps the error.
+func TestMigrationErrorsInTheUsersLanguage(t *testing.T) {
+	boom := errors.New("boom")
+	old := NotesMigrations
+	t.Cleanup(func() { NotesMigrations = old })
+	NotesMigrations = []Migration{{From: 1, What: "a step", Run: func(string) error { return boom }}}
+	mem, cfg := t.TempDir(), t.TempDir()
+	_, err := EnsureNotes(mem, cfg, "work", "es", time.Now())
+	if err == nil || !strings.Contains(err.Error(), "al pasar "+mem+" del formato 1 al 2 (a step): boom; hay una copia de antes en") || !errors.Is(err, boom) {
+		t.Errorf("failed step, in Spanish: %v", err)
+	}
+	if err := Write(mem, 1); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(mem, MetaDir, File), []byte("x\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := EnsureNotes(mem, cfg, "work", "en", time.Now()); err == nil || !strings.Contains(err.Error(), `"x" is not a format version`) {
+		t.Errorf("unreadable version, in English: %v", err)
+	}
+}
+
 // A folder that says no version is recorded as the current one, with no copy.
 func TestEnsureRecordsTheImpliedVersion(t *testing.T) {
 	mem, cfg := t.TempDir(), t.TempDir()
-	r, err := EnsureNotes(mem, cfg, "work", time.Now())
+	r, err := EnsureNotes(mem, cfg, "work", "", time.Now())
 	if err != nil || r.Migrated() || r.Copy != "" {
 		t.Fatalf("%+v %v", r, err)
 	}
@@ -129,7 +158,7 @@ func TestEnsureConfigCopy(t *testing.T) {
 	t.Cleanup(func() { ConfigMigrations = nil })
 	ConfigMigrations = []Migration{{From: 1, What: "x", Run: func(string) error { return nil }}}
 	got := 0
-	r, err := EnsureConfig(cfg, 1, func(v int) error { got = v; return nil }, time.Now())
+	r, err := EnsureConfig(cfg, 1, func(v int) error { got = v; return nil }, "", time.Now())
 	if err != nil || got != 2 {
 		t.Fatalf("%+v %v, wrote %d", r, err, got)
 	}

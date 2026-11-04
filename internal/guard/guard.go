@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
@@ -98,7 +99,7 @@ func (p Policy) root(reason string) Decision {
 	}
 	where, names := p.host, []string{p.host}
 	if where == "" {
-		where, names = "this machine", []string{p.Hostname, "localhost"}
+		where, names = i18n.T(p.Lang, "guard.root.thismachine"), []string{p.Hostname, "localhost"}
 	}
 	for _, e := range p.RootAsk {
 		if !now.Before(e.Until) {
@@ -106,7 +107,7 @@ func (p Policy) root(reason string) Decision {
 		}
 		for _, n := range names {
 			if n != "" && rootHost(n, e.Host) {
-				return Decision{Ask, "this would run as root on " + where + ", which has a temporary root exception until " + e.Until.UTC().Format("2006-01-02 15:04") + " UTC (root_ask). The user confirms each command: say first what it does and why."}
+				return Decision{Ask, i18n.T(p.Lang, "guard.root.exception", where, e.Until.UTC().Format("2006-01-02 15:04"))}
 			}
 		}
 	}
@@ -116,20 +117,24 @@ func (p Policy) root(reason string) Decision {
 // PowerShell is the answer to any command for Claude Code's PowerShell tool, the main
 // one on Windows. The guard reads POSIX shell, not PowerShell, so it cannot tell a safe
 // PowerShell command from a push or an elevation: it blocks them all and sends the
-// assistant to Bash (Git Bash on Windows), where every rule applies.
-func PowerShell() Decision {
-	return Decision{Deny, "PowerShell commands are not checked by augmented brain yet, so they are blocked. Run the command with the Bash tool instead (Git Bash on Windows), in POSIX syntax. If it can only be done in PowerShell, give the user the exact command to run themselves, and wait for its output."}
+// assistant to Bash (Git Bash on Windows), where every rule applies. lang is the
+// user's language.
+func PowerShell(lang string) Decision {
+	return Decision{Deny, i18n.T(lang, "guard.powershell")}
 }
 
-const (
-	rootReason = "this would run as root. Never become root: give the user the exact command to run themselves, and wait for its output. Running as another user (sudo -u <user>) is fine."
-	maxDepth   = 4
-)
+const maxDepth = 4
+
+// rootReason is why becoming root is denied, and what to do instead.
+func (p Policy) rootReason() string { return i18n.T(p.Lang, "guard.root") }
+
+// secret is the kind of secret FindSecret found, in the user's language.
+func (p Policy) secret(what string) string { return i18n.T(p.Lang, "secret."+what) }
 
 // Command checks a shell command.
 func (p Policy) Command(line string) Decision {
 	if what := FindSecret(line); what != "" {
-		return Decision{Deny, "the command has " + what + " written in it. Read secrets from the system keychain, an environment variable or a secrets manager, never from the command line, and never ask the user to paste one in the chat."}
+		return Decision{Deny, i18n.T(p.Lang, "guard.secret.command", p.secret(what))}
 	}
 	return p.commands(parse(line), map[string]string{}, 0)
 }
@@ -207,10 +212,10 @@ func (p Policy) inner(line string, exported map[string]string, depth int) Decisi
 		return allow
 	}
 	if depth >= maxDepth {
-		return Decision{Ask, "the command runs commands nested too deep for augmented brain to check; the user confirms it."}
+		return Decision{Ask, i18n.T(p.Lang, "guard.depth")}
 	}
 	if what := FindSecret(line); what != "" {
-		return Decision{Deny, "the command has " + what + " written in it."}
+		return Decision{Deny, i18n.T(p.Lang, "guard.secret.inner", p.secret(what))}
 	}
 	return p.commands(parse(line), maps.Clone(exported), depth+1)
 }
@@ -228,32 +233,32 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	}
 	for _, k := range []string{"AWS_SECRET_ACCESS_KEY", "AWS_ACCESS_KEY_ID", "AWS_SESSION_TOKEN"} {
 		if v, ok := env[k]; ok && v != "" && !strings.HasPrefix(v, "$") {
-			return Decision{Deny, "the command sets " + k + " with a value written in it. Use an AWS profile (--profile or AWS_PROFILE) instead of keys on the command line."}
+			return Decision{Deny, i18n.T(p.Lang, "guard.awskey", k)}
 		}
 	}
 	if (strings.HasPrefix(name, "$") || strings.ContainsRune(name, subst)) && !p.inScript {
-		return Decision{Ask, "the program this runs is only known when it runs (`" + strings.ReplaceAll(raw, string(subst), "$(…)") + "`), so augmented brain cannot check it; the user confirms it."}
+		return Decision{Ask, i18n.T(p.Lang, "guard.unknownprogram", strings.ReplaceAll(raw, string(subst), "$(…)"))}
 	}
 	switch name {
 	case "git":
 		return p.git(env, args)
 	case "powershell", "pwsh", "cmd":
-		return PowerShell()
+		return PowerShell(p.Lang)
 	case "gsudo", "runas", "sudoedit":
-		return p.root("`" + name + "` runs as root (or as the administrator). " + rootReason)
+		return p.root(i18n.T(p.Lang, "guard.root.admin", name, p.rootReason()))
 	case "runuser":
 		if u := optValue(args, "-u", "--user"); u != "" && u != "root" && u != "0" {
 			return p.simple(afterOptions(args, "u"), stdin, env, depth)
 		}
-		return p.root("`runuser` runs as root unless given another user. " + rootReason)
+		return p.root(i18n.T(p.Lang, "guard.root.runuser", p.rootReason()))
 	case "systemd-run":
 		if !slices.Contains(args, "--user") {
-			return p.root("`systemd-run` starts the command as a system service, as root unless --user. " + rootReason)
+			return p.root(i18n.T(p.Lang, "guard.root.systemdrun", p.rootReason()))
 		}
 	case "machinectl":
 		if len(args) > 0 && (args[0] == "shell" || args[0] == "login") {
 			if len(args) < 2 || !strings.Contains(args[1], "@") || strings.HasPrefix(args[1], "root@") || strings.HasPrefix(args[1], "@") {
-				return p.root("`machinectl " + args[0] + "` opens a shell as root unless given another user. " + rootReason)
+				return p.root(i18n.T(p.Lang, "guard.root.machinectl", args[0], p.rootReason()))
 			}
 		}
 	case "source", ".":
@@ -272,7 +277,7 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	case "sudo", "doas":
 		return p.sudo(name, args, stdin, env, depth)
 	case "su", "run0", "pkexec":
-		return p.root("`" + name + "` switches to another user, root by default. " + rootReason)
+		return p.root(i18n.T(p.Lang, "guard.root.su", name, p.rootReason()))
 	case "aws":
 		return p.aws(env, args)
 	case "cdk", "sam", "serverless", "sls", "terraform", "tofu", "pulumi", "eksctl", "copilot":
@@ -314,7 +319,7 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	// Any other program set to a production profile in the command itself.
 	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE"} {
 		if prof, ok := env[k]; ok && slices.Contains(p.ProductionAWSProfiles, prof) {
-			return Decision{Ask, "this runs with the production AWS profile " + prof + "; the user confirms first."}
+			return Decision{Ask, i18n.T(p.Lang, "guard.aws.env", prof)}
 		}
 	}
 	return allow
@@ -327,11 +332,11 @@ func (p Policy) checkHost(name, target string) Decision {
 	if host == "" {
 		return allow
 	}
-	if d, unknown := p.listsUnknown(name + " to " + host); unknown {
+	if d, unknown := p.listsUnknown(i18n.T(p.Lang, "guard.config.to", name, host)); unknown {
 		return d
 	}
 	if p.untouchable(host) {
-		return Decision{Ask, name + " reaches " + host + ", marked as untouchable; the user confirms first."}
+		return Decision{Ask, i18n.T(p.Lang, "guard.host", name, host)}
 	}
 	return allow
 }
@@ -396,7 +401,7 @@ func (p Policy) script(path string, env map[string]string, depth int) Decision {
 	p.inScript = true
 	inner := p.inner(string(data), env, depth)
 	if inner.Verdict != Allow {
-		inner.Reason = "the script " + paths.Tilde(d) + " runs a command that needs it: " + inner.Reason
+		inner.Reason = i18n.T(p.Lang, "guard.script", paths.Tilde(d), inner.Reason)
 	}
 	return inner
 }
@@ -453,7 +458,7 @@ func (p Policy) git(env map[string]string, args []string) Decision {
 		}
 		if k, _, _ := strings.Cut(strings.ToLower(args[j]), "="); strings.HasPrefix(k, "alias.") ||
 			slices.Contains([]string{"core.sshcommand", "core.pager", "core.editor", "core.hookspath", "core.fsmonitor", "sequence.editor", "credential.helper"}, k) {
-			return Decision{Ask, "`git -c " + args[j] + "` makes git run a command of its own, which augmented brain cannot check; the user confirms it."}
+			return Decision{Ask, i18n.T(p.Lang, "guard.git.config", args[j])}
 		}
 	}
 	if i < len(args) {
@@ -473,7 +478,7 @@ func (p Policy) git(env map[string]string, args []string) Decision {
 			}
 		case sub == "send-pack" || sub == "subtree" && i+1 < len(args) && args[i+1] == "push" ||
 			sub == "svn" && i+1 < len(args) && args[i+1] == "dcommit":
-			return Decision{Deny, "`git " + sub + "` publishes like a git push, so it is for the user. Leave the change ready and checked, and give the user the exact command to run themselves."}
+			return Decision{Deny, i18n.T(p.Lang, "guard.git.publish", sub)}
 		}
 	}
 	if i >= len(args) || (args[i] != "commit" && args[i] != "push") {
@@ -483,16 +488,16 @@ func (p Policy) git(env map[string]string, args []string) Decision {
 		if d, err := p.resolve(dir); err == nil {
 			switch p.repoVerdict(d) {
 			case Ask:
-				return Decision{Ask, "`git " + args[i] + "` in " + paths.Tilde(d) + " needs the user's go-ahead each time. Before asking, show them what would be committed or pushed."}
+				return Decision{Ask, i18n.T(p.Lang, "guard.git.ask", args[i], paths.Tilde(d))}
 			case Allow:
 				if args[i] == "push" && rewrites(args[i+1:]) {
-					return Decision{Ask, "this push rewrites or deletes what is on the remote (force, delete or mirror). The user confirms it each time, even in a repository the assistant may push to."}
+					return Decision{Ask, i18n.T(p.Lang, "guard.git.rewrite")}
 				}
 				return allow
 			}
 		}
 	}
-	return Decision{Deny, "`git " + args[i] + "` is for the user. Leave the change ready and checked, show what would be committed, and tell the user it is ready. (The user, not the assistant, can let the assistant commit in a repository by adding it to git_allowed_repos, or to git_ask_repos to be asked each time; then use `git -C <repo>`.)"}
+	return Decision{Deny, i18n.T(p.Lang, "guard.git.deny", args[i])}
 }
 
 // rewrites reports whether the arguments of a push change history on the remote rather
@@ -548,24 +553,24 @@ func (p Policy) rm(args []string) Decision {
 		if v := leadingVar.FindString(o); v != "" && !strings.HasPrefix(o, "~") {
 			rest := strings.Trim(strings.TrimPrefix(o, v), "/*")
 			if rest == "" {
-				return Decision{Ask, "`rm -r " + o + "`: if " + v + " is empty or unset, this deletes from the disk root or the current folder. Check the variable first (for example ${VAR:?}), or the user confirms it."}
+				return Decision{Ask, i18n.T(p.Lang, "guard.rm.var", o, v)}
 			}
 		}
 		if o = strings.TrimSuffix(o, "*"); o == "" {
 			o = "." // rm -r * empties the folder it runs in
 		}
 		if o = strings.TrimRight(o, "/"); o == "" {
-			return Decision{Deny, "`rm -r` of the whole disk is never run."}
+			return Decision{Deny, i18n.T(p.Lang, "guard.rm.all")}
 		}
 		if p.lost && !filepath.IsAbs(o) && !strings.HasPrefix(o, "~") && strings.Trim(o, "./") == "" {
-			return Decision{Ask, "`rm -r " + o + "` after a cd the guard cannot follow: it cannot tell which folder this deletes. The user confirms it."}
+			return Decision{Ask, i18n.T(p.Lang, "guard.rm.lost", o)}
 		}
 		if d, err := p.resolve(o); err == nil && filepath.Dir(d) == d {
-			return Decision{Deny, "`rm -r` of a whole disk (" + d + ") is never run."}
+			return Decision{Deny, i18n.T(p.Lang, "guard.rm.disk", d)}
 		} else if err == nil && home != "" && d != home && paths.Within(home, d) {
-			return Decision{Deny, "`rm -r` of " + d + " would delete the user's home folder with it; it is never run."}
+			return Decision{Deny, i18n.T(p.Lang, "guard.rm.abovehome", d)}
 		} else if err == nil && home != "" && d == home {
-			return Decision{Deny, "`rm -r` of the user's whole home folder (" + paths.Tilde(d) + ") is never run. Delete the files or folders inside it that need to go, one by one."}
+			return Decision{Deny, i18n.T(p.Lang, "guard.rm.home", paths.Tilde(d))}
 		}
 	}
 	return allow
@@ -665,7 +670,7 @@ func (p Policy) sudo(name string, args []string, stdin string, env map[string]st
 		return allow // sudo -l, sudo -v: nothing runs
 	}
 	if user == "" || user == "root" || user == "0" || user == "#0" {
-		d := p.root(rootReason)
+		d := p.root(p.rootReason())
 		if d.Verdict == Deny || len(rest) == 0 {
 			return d
 		}
@@ -681,7 +686,7 @@ func (p Policy) sudo(name string, args []string, stdin string, env map[string]st
 // guard cannot tell which one it will be.
 func (p Policy) unknownProfile(prof string) (Decision, bool) {
 	if len(p.ProductionAWSProfiles) > 0 && (strings.HasPrefix(prof, "$") || strings.ContainsRune(prof, subst)) {
-		return Decision{Ask, "the AWS profile (" + prof + ") is only known when the command runs, and it may be a production one; the user confirms first."}, true
+		return Decision{Ask, i18n.T(p.Lang, "guard.aws.unknown", prof)}, true
 	}
 	return Decision{}, false
 }
@@ -691,14 +696,14 @@ func (p Policy) unknownProfile(prof string) (Decision, bool) {
 // one given with --profile, AWS_PROFILE and AWS_DEFAULT_PROFILE (set in the command or
 // inherited), and "default" when nothing is set.
 func (p Policy) aws(env map[string]string, args []string) Decision {
-	if d, unknown := p.listsUnknown("this AWS command"); unknown {
+	if d, unknown := p.listsUnknown(i18n.T(p.Lang, "guard.config.aws")); unknown {
 		return d
 	}
 	if d, unknown := p.unknownProfile(profileFlag(args, "--profile")); unknown {
 		return d
 	}
 	if prof := p.productionProfile(env, profileFlag(args, "--profile")); prof != "" {
-		return Decision{Ask, "this AWS command may use the production profile " + prof + "; the user confirms first."}
+		return Decision{Ask, i18n.T(p.Lang, "guard.aws.cli", prof)}
 	}
 	return allow
 }
@@ -714,7 +719,7 @@ func (p Policy) awsTool(name string, env map[string]string, args []string) Decis
 		return d
 	}
 	if prof := p.productionProfile(env, given); prof != "" {
-		return Decision{Ask, name + " may run with the production AWS profile " + prof + "; the user confirms first."}
+		return Decision{Ask, i18n.T(p.Lang, "guard.aws.tool", name, prof)}
 	}
 	return allow
 }
@@ -757,7 +762,7 @@ func (p Policy) awsVault(args []string, stdin string, env map[string]string, dep
 	if u, unknown := p.listsUnknown("aws-vault"); unknown {
 		d = u
 	} else if slices.Contains(p.ProductionAWSProfiles, prof) {
-		d = Decision{Ask, "aws-vault runs this with the production AWS profile " + prof + "; the user confirms first."}
+		d = Decision{Ask, i18n.T(p.Lang, "guard.aws.vault", prof)}
 	}
 	return worse(d, inner)
 }
@@ -781,8 +786,7 @@ func (p Policy) listsUnknown(what string) (Decision, bool) {
 	if p.ConfigProblem == "" {
 		return allow, false
 	}
-	return Decision{Ask, what + " may reach production or an untouchable host, and augmented brain cannot tell: it cannot read its configuration (" +
-		p.ConfigProblem + "). The user confirms first; `augmented-brain doctor` shows how to fix the configuration."}, true
+	return Decision{Ask, i18n.T(p.Lang, "guard.config", what, p.ConfigProblem)}, true
 }
 
 // syncDestination reports whether gh repo sync names a destination repository (any
@@ -826,7 +830,7 @@ func (p Policy) publish(name string, env map[string]string, args []string) Decis
 			return a == "-f" || a == "-F" || a == "--field" || a == "--raw-field"
 		})
 		if writes && (strings.Contains(path, "/merge") || strings.Contains(path, "/releases") || strings.Contains(path, "/git/refs")) {
-			return Decision{Deny, "`" + name + " api` with this call merges, releases or moves a branch, like a git push, so it is for the user. Give the user the exact command to run themselves."}
+			return Decision{Deny, i18n.T(p.Lang, "guard.api", name)}
 		}
 		return allow
 	}
@@ -849,13 +853,13 @@ func (p Policy) publish(name string, env map[string]string, args []string) Decis
 	if what == "pr merge" || what == "mr merge" || what == "mr accept" {
 		return p.merge(name, what, env, args)
 	}
-	return publishDeny(name, what)
+	return p.publishDeny(name, what)
 }
 
 // publishDeny is the answer to a gh or glab command that publishes or merges where the
 // assistant may not.
-func publishDeny(name, what string) Decision {
-	return Decision{Deny, "`" + name + " " + what + "` publishes or merges, like a git push, so it is for the user. Leave the change ready and checked, and give the user the exact command to run themselves."}
+func (p Policy) publishDeny(name, what string) Decision {
+	return Decision{Deny, i18n.T(p.Lang, "guard.publish", name+" "+what)}
 }
 
 // ssh asks before reaching an untouchable host, and checks the remote command, or what
@@ -869,7 +873,7 @@ func (p Policy) ssh(args []string, stdin string, env map[string]string, depth in
 		jumps = worse(jumps, p.checkHost("ssh", j))
 	}
 	if sshUser(args, host) == "root" {
-		if d := p.root("this logs in to " + p.host + " as root. " + rootReason); d.Verdict == Deny {
+		if d := p.root(i18n.T(p.Lang, "guard.root.ssh", p.host, p.rootReason())); d.Verdict == Deny {
 			return d
 		} else {
 			jumps = worse(jumps, d)
@@ -1070,7 +1074,7 @@ func (p Policy) find(args []string, env map[string]string, depth int) Decision {
 	}
 	if deletes && !picks {
 		if r := p.rm(append([]string{"-r"}, roots...)); r.Verdict != Allow {
-			r.Reason = "`find` deletes everything it finds there: " + r.Reason
+			r.Reason = i18n.T(p.Lang, "guard.find", r.Reason)
 			return r
 		}
 	}
@@ -1177,10 +1181,11 @@ func isShell(name string) bool {
 	return false
 }
 
-// Write checks text the assistant is about to write into a file.
-func Write(text string) Decision {
+// Write checks text the assistant is about to write into a file; lang is the user's
+// language, for the reason.
+func Write(lang, text string) Decision {
 	if what := FindSecret(text); what != "" {
-		return Decision{Deny, "the text has " + what + " in it. Secrets never go into files: the code reads them from an environment variable, the system keychain or a secrets manager."}
+		return Decision{Deny, i18n.T(lang, "guard.secret.write", i18n.T(lang, "secret."+what))}
 	}
 	return allow
 }
@@ -1188,7 +1193,7 @@ func Write(text string) Decision {
 // WriteFile checks a write of text into the file at path: Write, and a protected file
 // asks the user.
 func (p Policy) WriteFile(path, text string) Decision {
-	if d := Write(text); d.Verdict == Deny {
+	if d := Write(p.Lang, text); d.Verdict == Deny {
 		return d
 	}
 	return p.protected(path)
@@ -1205,7 +1210,7 @@ func (p Policy) protected(path string) Decision {
 	}
 	for _, f := range p.Protected {
 		if paths.Same(d, f) {
-			return Decision{Ask, paths.Tilde(d) + " holds the guard's settings (or Claude Code's): changing it can switch a check off. Only the user changes it; ask them, showing the change."}
+			return Decision{Ask, i18n.T(p.Lang, "guard.protected", paths.Tilde(d))}
 		}
 	}
 	return allow

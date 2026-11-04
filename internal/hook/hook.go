@@ -18,6 +18,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/guard"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/update"
@@ -167,7 +168,7 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	var d guard.Decision
 	switch {
 	case !ok:
-		d = guard.Decision{Verdict: guard.Deny, Reason: "the tool call could not be read, so it was not checked; try again."}
+		d = guard.Decision{Verdict: guard.Deny, Reason: i18n.T(p.Lang, "guard.unreadable")}
 	default:
 		d = toolDecision(p, i)
 	}
@@ -187,7 +188,7 @@ func toolDecision(p guard.Policy, i input) guard.Decision {
 		cmd, _ := i.ToolInput["command"].(string)
 		d = p.Command(cmd)
 	case "PowerShell":
-		d = guard.PowerShell()
+		d = guard.PowerShell(p.Lang)
 	case "Write", "Edit", "MultiEdit", "NotebookEdit":
 		path, _ := i.ToolInput["file_path"].(string)
 		if path == "" {
@@ -209,7 +210,8 @@ var Getenv = os.Getenv
 // When the configuration exists but cannot be read, the guard is told, so it asks
 // before every command those lists would cover instead of letting them through unseen.
 func policy(cfgDir, dir string) guard.Policy {
-	p := guard.Policy{Cwd: dir, Env: map[string]string{}}
+	// The configuration's language when it loads; the system's when it does not.
+	p := guard.Policy{Cwd: dir, Env: map[string]string{}, Lang: i18n.FromEnv()}
 	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE",
 		"GH_REPO", "GH_HOST", "GITLAB_REPO", "GITLAB_HOST", "GIT_DIR", "GIT_WORK_TREE"} {
 		if v := Getenv(k); v != "" {

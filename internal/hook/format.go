@@ -35,7 +35,7 @@ func migrate(c *config.Config, s *config.Space, cfgDir string) string {
 		}
 	}
 	if unlock, err := filelock.LockWithin(filepath.Join(cfgDir, backup.NotesLock), LockWait); err == nil {
-		r, err := format.EnsureConfig(cfgDir, c.FormatVersion(), func(v int) error { return config.SetFormat(cfgDir, v) }, now)
+		r, err := format.EnsureConfig(cfgDir, c.FormatVersion(), func(v int) error { return config.SetFormat(cfgDir, v) }, c.Language, now)
 		if err == nil {
 			// 0.6.0 kept the secrets' names in config.toml, which earlier programs
 			// refuse: they go to their own file.
@@ -54,10 +54,10 @@ func migrate(c *config.Config, s *config.Space, cfgDir string) string {
 		return out.String()
 	}
 	defer unlock()
-	r, err := format.EnsureNotes(s.Memory, cfgDir, s.Name, now)
+	r, err := format.EnsureNotes(s.Memory, cfgDir, s.Name, c.Language, now)
 	say("the notes of space "+s.Name, r, err)
 	if _, err := os.Stat(c.SharedDir()); err == nil {
-		r, err = format.EnsureNotes(c.SharedDir(), cfgDir, config.SharedFolder, now)
+		r, err = format.EnsureNotes(c.SharedDir(), cfgDir, config.SharedFolder, c.Language, now)
 		say("the shared notes", r, err)
 	}
 	return out.String()

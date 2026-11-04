@@ -13,7 +13,7 @@ import (
 type msg struct{ en, es string }
 
 // messages is every message, by key. Each subject keeps its own in a file of its own.
-var messages = merge(doctorMessages, commandMessages, panelMessages, importMessages, initMessages, noteMessages, helpMessages)
+var messages = merge(doctorMessages, commandMessages, panelMessages, importMessages, initMessages, noteMessages, helpMessages, guardMessages)
 
 // merge joins the subjects' messages. A key in two of them is a mistake: it panics, so
 // the tests catch it.
