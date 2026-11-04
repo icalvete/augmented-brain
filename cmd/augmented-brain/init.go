@@ -53,6 +53,14 @@ func spaceFlags(name string, errOut io.Writer) (*flag.FlagSet, *setup.Options, *
 	return fs, o, yes, lang
 }
 
+// initFlags are init's flags: the space's, --no-plugin and --custom.
+func initFlags(errOut io.Writer) (fs *flag.FlagSet, o *setup.Options, yes *bool, lang *string, noPlugin, custom *bool) {
+	fs, o, yes, lang = spaceFlags("init", errOut)
+	noPlugin = fs.Bool("no-plugin", false, "do not install the Claude Code plugin")
+	custom = fs.Bool("custom", false, "ask for the language, the space and its folders")
+	return fs, o, yes, lang, noPlugin, custom
+}
+
 // root holds every space unless told otherwise: one folder per space, to work in, with
 // its notes inside.
 const root = "~/augmented-brain"
@@ -80,9 +88,7 @@ func defaults(o *setup.Options, lang string) {
 // the system, and it creates two spaces in ~/augmented-brain. --custom asks for the
 // language and one space; --space, --work and --memory make that one space without asking.
 func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
-	fs, o, yes, lang := spaceFlags("init", errOut)
-	noPlugin := fs.Bool("no-plugin", false, "do not install the Claude Code plugin")
-	custom := fs.Bool("custom", false, "ask for the language, the space and its folders")
+	fs, o, yes, lang, noPlugin, custom := initFlags(errOut)
 	if _, ok := parseArgs(fs, args, 0, errOut); !ok {
 		return 2
 	}

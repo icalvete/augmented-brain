@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Espacios · augmented brain</title>
+<meta name="description" content="Los espacios de augmented brain: trabajo y personal por separado, cómo la carpeta en la que abres Claude elige el espacio, el espacio por defecto, añadir un espacio y las notas compartidas.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/spaces.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/spaces.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/spaces.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/spaces.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Espacios · augmented brain">
+<meta property="og:description" content="Trabajo y personal por separado: la carpeta en la que abres Claude elige el espacio.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/spaces.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Espacios · augmented brain">
+<meta name="twitter:description" content="Trabajo y personal por separado: la carpeta en la que abres Claude elige el espacio.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="spaces.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html" aria-current="page">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Espacios</h1>
+  <p>Abres Claude en <code>~/augmented-brain/trabajo/web</code>. Ve tus tareas del trabajo, tus reglas del trabajo y a la gente del trabajo. Lo abres en <code>~/augmented-brain/personal/blog</code>. Ahora ve tus notas personales, y nada del trabajo.</p>
+  <p>Eso es un <strong>espacio</strong>: un juego completo de notas, reglas y copia de seguridad, separado de los demás. El instalador crea dos, <code>trabajo</code> y <code>personal</code> (en inglés, <code>work</code> y <code>personal</code>).</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#la-carpeta-elige-el-espacio">La carpeta elige el espacio</a></li><li><a href="#fuera-de-todos-los-espacios">Fuera de todos los espacios</a></li><li><a href="#tus-proyectos-viven-en-otro-sitio">¿Tus proyectos viven en otro sitio?</a></li><li><a href="#añade-un-espacio">Añade un espacio</a></li><li><a href="#qué-tiene-cada-espacio-y-qué-comparten">Qué tiene cada espacio, y qué comparten</a></li><li><a href="#notas-compartidas">Notas compartidas</a></li><li><a href="#por-dónde-seguir">Por dónde seguir</a></li></ul></nav>
+  <h2 id="la-carpeta-elige-el-espacio">La carpeta elige el espacio</h2>
+  <p>Cada espacio tiene una o más <strong>carpetas de trabajo</strong>. Cuando abres Claude dentro de una de ellas, estás en ese espacio. Las notas del espacio viven en una carpeta <code>notas/</code> dentro de ella:</p>
+  <pre><code>~/augmented-brain/
+├── trabajo/       una carpeta de trabajo: abre Claude aquí para lo del trabajo
+│   ├── notas/     las notas del trabajo
+│   └── web/       un proyecto tuyo
+└── personal/      y aquí para lo personal
+    └── notas/</code></pre>
+  <p>El fichero de configuración dice qué carpetas son de qué espacio:</p>
+  <pre><code># ~/.config/augmented-brain/config.toml
+default_space = "personal"
+
+[spaces.trabajo]
+memory = "~/augmented-brain/trabajo/notas"
+work_folders = ["~/augmented-brain/trabajo", "~/code"]
+
+[spaces.personal]
+memory = "~/augmented-brain/personal/notas"
+work_folders = ["~/augmented-brain/personal"]</code></pre>
+  <p><code>memory</code> es donde están las notas. <code>work_folders</code> son las carpetas que eligen el espacio.</p>
+  <p>Para saber de qué espacio es una carpeta, lanza esto en ella:</p>
+  <pre><code>augmented-brain space</code></pre>
+  <h2 id="fuera-de-todos-los-espacios">Fuera de todos los espacios</h2>
+  <p>La app de escritorio empieza cada sesión nueva en una carpeta temporal suya. Esa carpeta no es de ningún espacio. Entonces se usa el <strong>espacio por defecto</strong>, <code>personal</code> salvo que lo cambies, y Claude te lo dice en una línea, con cómo pasar al de trabajo.</p>
+  <p>El espacio por defecto importa para una cosa más: su copia de seguridad lleva tu perfil y las notas compartidas. Se elige con <code>default_space</code> en la configuración. Si tienes un solo espacio, es ese.</p>
+  <h2 id="tus-proyectos-viven-en-otro-sitio">¿Tus proyectos viven en otro sitio?</h2>
+  <p>Si tu código está en <code>~/code</code>, añade esa carpeta a <code>work_folders</code> del espacio que toque, como en el ejemplo de arriba. Así, abrir Claude en <code>~/code/tienda</code> usa el espacio de trabajo.</p>
+  <h2 id="añade-un-espacio">Añade un espacio</h2>
+  <p>Para un cliente, un proyecto aparte o un voluntariado:</p>
+  <pre><code>augmented-brain space add cliente</code></pre>
+  <p>Te pide la carpeta de trabajo y la carpeta de notas, y te propone <code>~/augmented-brain/cliente</code> y <code>~/augmented-brain/cliente/notas</code>. Pulsa Enter para aceptar. Si aún no había espacio por defecto, lo fija. Las opciones están en <a href="commands.es.html#augmented-brain-space-add">Comandos</a>.</p>
+  <h2 id="qué-tiene-cada-espacio-y-qué-comparten">Qué tiene cada espacio, y qué comparten</h2>
+  <p>Cada espacio tiene lo suyo:</p>
+  <ul><li>notas: tareas, áreas, conocimiento, personas, buzón, revisiones;</li><li>reglas, además de las comunes;</li><li>repositorio de copia de seguridad.</li></ul>
+  <p>Todos los espacios comparten:</p>
+  <ul><li><strong>tu perfil</strong>: quién eres y cómo te gusta trabajar. Eres la misma persona en el trabajo y en casa.</li><li><strong>las notas compartidas</strong>: reglas, referencias y lecciones que valen en todas partes (abajo).</li><li><strong>las listas del guardia</strong>: los perfiles de AWS de producción, las máquinas que no se tocan y los repositorios donde Claude puede hacer commit. Valen en toda la máquina. Un perfil de producción guardado desde el espacio de trabajo también se vigila en el personal.</li></ul>
+  <p>Un espacio nunca lee las notas de otro.</p>
+  <h2 id="notas-compartidas">Notas compartidas</h2>
+  <p>Algunas cosas que aprendes valen en todas partes: cómo se porta git, cómo te gustan las respuestas, una lección sobre una herramienta. Guardarlas una vez por espacio dejaría dos copias que acaban siendo distintas. Por eso van una sola vez en las <strong>notas compartidas</strong>, junto a tu perfil, en <code>shared/</code> dentro de la carpeta de configuración.</p>
+  <p>Solo se pueden compartir reglas, referencias y lecciones. Las tareas, las áreas y las personas son siempre de un espacio.</p>
+  <p>No mueves ficheros a mano. Dile a Claude “esto vale para todo” y guarda la nota como compartida. Cada sesión carga las reglas compartidas, y lista las referencias y lecciones compartidas para que Claude abra la que necesite. Viajan en la copia de seguridad del espacio por defecto, con tu perfil.</p>
+  <h2 id="por-dónde-seguir">Por dónde seguir</h2>
+  <ul><li><a href="tasks.es.html">Tareas</a>: lo que va dentro de un espacio.</li><li><a href="configuration.es.html">Configuración</a>: todos los ajustes de un espacio.</li></ul>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="install.es.html"><span>← Anterior</span>Instalación</a>
+    <a class="next" href="tasks.es.html"><span>Siguiente →</span>Tareas</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

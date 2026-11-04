@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trae una memoria que ya tienes · augmented brain</title>
+<meta name="description" content="Cómo traer a los espacios de augmented brain una memoria que Claude Code ya escribió, con augmented-brain import: primero mirar, luego escribir.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/import.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/import.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/import.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/import.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Trae una memoria que ya tienes · augmented brain">
+<meta property="og:description" content="La memoria de Claude Code, traída a tus espacios.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/import.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Trae una memoria que ya tienes · augmented brain">
+<meta name="twitter:description" content="La memoria de Claude Code, traída a tus espacios.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="import.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html" aria-current="page">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Trae una memoria que ya tienes</h1>
+  <p>Si Claude Code ya te guarda una memoria, no empiezas de cero. Claude Code la escribe en <code>~/.claude/projects/&lt;carpeta&gt;/memory/</code>. Puedes traerla a tus espacios.</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#primero-mira">Primero, mira</a></li><li><a href="#luego-escribe">Luego, escribe</a></li><li><a href="#en-qué-se-convierte-cada-fichero">En qué se convierte cada fichero</a></li><li><a href="#más-de-un-espacio">Más de un espacio</a></li><li><a href="#apaga-la-memoria-antigua">Apaga la memoria antigua</a></li></ul></nav>
+  <h2 id="primero-mira">Primero, mira</h2>
+  <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory</code></pre>
+  <p>Eso no escribe nada. Enseña adónde iría cada nota, y lo que no ha podido decidir:</p>
+  <ul><li>ficheros que no son notas (un índice, por ejemplo);</li><li>notas sobre ti: copia lo que importe a tu perfil;</li><li>enlaces que cruzarían de un espacio a otro;</li><li>ids que tu espacio ya tiene.</li></ul>
+  <p>La carpeta de la que importas solo se lee, ahora y después.</p>
+  <h2 id="luego-escribe">Luego, escribe</h2>
+  <p>Cuando la lista esté bien, vuelve a lanzarlo con <code>--apply</code>:</p>
+  <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory --apply</code></pre>
+  <p>Nunca escribe encima de una nota que ya existe.</p>
+  <h2 id="en-qué-se-convierte-cada-fichero">En qué se convierte cada fichero</h2>
+  <p>Cada fichero pasa a ser una nota de su tipo: por su nombre (<code>task-…</code>, <code>area-…</code>, <code>ref-…</code>, <code>lesson-…</code>, <code>rule-…</code>, <code>person-…</code>) o, si no, por lo que Claude Code dice que es. Una tarea sin estado entra aparcada, esperándote, con «revisar esta tarea importada» como siguiente paso.</p>
+  <p>Lo demás también viene:</p>
+  <ul><li>Las capturas de tu <code>inbox.md</code> antiguo (cada línea <code>- …</code>) van al buzón del espacio de <code>*</code> (más abajo), con su fecha y nunca dos veces.</li><li><code>archive/</code> y <code>docs/&lt;tarea&gt;/</code> se copian tal cual, junto a su nota, también si vuelves a importar más tarde.</li><li>Un fichero con un secreto escrito (una clave, un token) se importa, pero sale en el informe. La copia de seguridad no lo sube hasta que se quite el secreto. <code>augmented-brain check</code> también lo nombra.</li><li>Una referencia o lección que es una lista de personas (una sección <code>## Nombre</code> por cada una, con una palabra como “personas” o “equipo” en su id o su título) entra tal cual, y el informe la nombra. Las personas son notas propias, así que pide a Claude que guarde cada una como persona.</li></ul>
+  <h2 id="más-de-un-espacio">Más de un espacio</h2>
+  <p>Un fichero pequeño dice a qué espacio va cada área, qué notas van a otro sitio que su área, y cuáles van a las notas compartidas:</p>
+  <pre><code>area-familia = personal
+task-curso-de-tarde = trabajo
+lesson-git-commits-pequenos = shared
+* = trabajo</code></pre>
+  <p><code>*</code> es para todo lo demás. Pasa el fichero con <code>--map</code>:</p>
+  <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory --map mapa.txt</code></pre>
+  <p>Si las notas nombran repositorios en <code>repos:</code>, <code>--repos-base &lt;carpeta&gt;</code> dice respecto a qué carpeta están esas rutas. Entonces se reescriben respecto a la carpeta de trabajo del espacio.</p>
+  <h2 id="apaga-la-memoria-antigua">Apaga la memoria antigua</h2>
+  <p>¿Claude Code llevaba esa memoria por su cuenta? Entonces la sigue llevando para las carpetas de tus espacios: una segunda memoria, junto a la del espacio, que se va separando de ella. <code>augmented-brain doctor</code> te avisa, y te dice cómo apagarla: <code>"autoMemoryEnabled": false</code> en los ajustes de Claude Code. Lo que ya tiene se queda, listo para importar.</p>
+  <p>Todas las opciones: <a href="commands.es.html#augmented-brain-import">Comandos</a>.</p>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="connect-services.es.html"><span>← Anterior</span>Conecta tus servicios</a>
+    <a class="next" href="commands.es.html"><span>Siguiente →</span>Comandos</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

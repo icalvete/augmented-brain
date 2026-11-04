@@ -1,8 +1,9 @@
-# How it works
+# How it works inside
 
 [Leer en español](how-it-works.es.md)
 
-augmented brain is one small program and a folder of notes. This is how the pieces fit:
+augmented brain is one small program and a folder of notes. This page is how the pieces
+fit. To use it, you do not need any of this.
 
 <picture>
   <source media="(max-width: 600px)" srcset="../img/how-layers-narrow.en.svg">
@@ -13,25 +14,27 @@ augmented brain is one small program and a folder of notes. This is how the piec
 
 | Layer | What it is | Where it lives |
 |---|---|---|
-| **3 · You and your assistant** | You talk to Claude Code as usual. No new commands to learn. | Your terminal |
+| **3 · You and your assistant** | You talk to Claude Code as usual. No new commands to learn. | Your terminal or the Claude app |
 | **2 · The plugin** | The doors Claude uses to reach the program: a few hooks and an MCP server. | Inside Claude Code, which installs it |
 | **1 · The program** | `augmented-brain`, a single file. It guards commands, keeps tasks, rebuilds the index and runs the backup. | `~/.local/bin/augmented-brain` |
-| **0 · Your files** | Plain text: the configuration, your notes and, if you want, their backup. | `~/.config/augmented-brain/`, `~/augmented-brain/` and your git repo |
+| **0 · Your files** | Plain text: the configuration, your notes and, if you want, their backup. | `~/.config/augmented-brain/`, `~/augmented-brain/` and your git repository |
 
 Put another way: **your notes are a notebook, the program keeps it in order and the
-plugin is the door.** You only talk to Claude; Claude comes in through the door and the
+plugin is the door.** You only talk to Claude. Claude comes in through the door, and the
 program writes in the notebook.
 
 Two words that come up a lot:
 
-- **Hook**: a call Claude Code makes at a given moment. Here, when a session starts,
-  before every command and file change, after each answer of Claude, when a long
-  conversation is compacted, and when the session ends. Each time, Claude Code starts the
-  program, asks it, and the program exits. Only two things go on a while by themselves:
-  the backup that the end of a session starts, and the panel while you use it.
+- **Hook**: a call Claude Code makes at a given moment. Here: when a session starts,
+  before every command and file change, after each answer, when a long conversation is
+  compacted, and when the session ends. Each time, Claude Code starts the program, asks
+  it, and the program exits.
 - **MCP** (Model Context Protocol): an open standard to give tools to an assistant. The
   program offers its own ("open a task", "park it") and Claude uses them. Since it is a
   standard, other assistants will be able to use the same ones.
+
+The list of hooks is in [Commands](commands.md#augmented-brain-hook). The tools are in
+[MCP tools](mcp-tools.md).
 
 ## A session, step by step
 
@@ -41,447 +44,67 @@ Two words that come up a lot:
 </picture>
 
 **1. You open Claude.** The start hook looks at the folder you are in and picks your
-space. Before you type anything, it hands Claude your profile, your rules and the list of
-live tasks. That is how it knows where you left off.
+[space](spaces.md). Before you type anything, it hands Claude your profile, your rules
+and the list of live tasks. It also says what is due soon, whether the weekly review is
+due, and whether an earlier session was cut off. That is how Claude knows where you left
+off.
 
-**2. You say "park it".** Claude uses the `task_park` tool. The program writes down in the
-task file where it stopped and what the next step is, and rebuilds the index. The next
-session starts from there. Opening, resuming and closing work the same way.
+**2. You say "park it".** Claude uses the `task_park` tool. The program writes in the
+task file where it stopped and what comes next, and rebuilds the index. Opening,
+resuming and closing work the same way. See [Tasks](tasks.md).
 
-**3. Claude is about to run a command.** The guard hook reads it first and decides:
+**3. Claude is about to run a command.** The guard hook reads it first, and lets it
+through, asks you, or stops it. See [The guard](guard.md).
 
-- **Go ahead**: almost always. `ls`, `go test`, `aws --profile dev s3 ls`.
-- **Ask you**: production, or a machine you marked as untouchable.
-  `aws --profile prod …`, `ssh db01 …`. Those two lists are for the whole machine: they
-  apply in every space. An `aws` command is checked against every profile it may use:
-  `--profile`, `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`, or `default` when none is set. So
-  are the tools that call AWS on their own (`cdk`, `sam`, `serverless`, `terraform`,
-  `tofu`, `pulumi`, `eksctl`, `copilot`).
-- **Stop**: pushing code, root and secrets. `git push`, `sudo …`, a token in a command,
-  and what publishes like a push: `gh release create`, `glab release create`.
-  You can let Claude commit and push in a repository of yours, always written as
-  `git -C <repo>`: list it in the space's `git_allowed_repos` to let it through, or in
-  `git_ask_repos` to be asked each time. Like the production profiles, these lists hold
-  on the whole machine: a repository listed in one space is let through from a session
-  in any of them. A worktree of a listed repository counts as it, and `~/code/app-*`
-  covers every `app-<name>` folder next to `app`. Even there, a push that rewrites or
-  deletes what is on the remote (`--force`, `--delete`, `+branch`) asks you first.
-  Merging a pull request is a push too: `gh pr merge` and `glab mr merge` go by the same
-  lists. gh and glab have no `-C`, so a merge is always written as `cd <repo> && gh pr
-  merge 12`: the folder in that `cd` is the repository, the listed folder itself or a
-  worktree of it. The folder the session is in does not count alone. A repository the command names (`-R owner/name`, the pull request's address) must
-  be one of that repository's remotes, or the merge is blocked. `--admin`, which skips
-  the branch's protection, always asks you.
-  And `rm -r` of your whole home folder or of the whole disk is never run, also after a
-  `cd` (`cd ~ && rm -rf .`), and on Windows however the path is written (`/c/Users/…`, as
-  Git Bash does, `C:/Users/…` or `$USERPROFILE`). After a `cd` the guard cannot follow (`cd "$DIR"`), an
-  `rm -r .` asks you.
+**4. Claude finishes an answer.** If a task is open and nothing was written in it for 20
+minutes, a hook reminds Claude to write in its journal, once.
 
-If you need Claude to do something as root on a machine for a while, add it to
-`root_ask` in the configuration with an end date, such as `root_ask = ["db01 until
-2026-10-31"]`. Until then, root there asks you each time instead of being refused; after
-it, root is refused again by itself.
+**5. You close the session.** The end hook notes that the session ended well. It starts
+the [backup](backup.md) of the space in the background, if you set one up. You wait for
+nothing. If the backup fails, Claude tells you at the start of the next session.
 
-At the start of each session, Claude is told which of these exceptions are in force,
-and which cannot be read (those grant nothing). `augmented-brain doctor` tells you when
-one has ended and can be removed, or cannot be read.
+If a session did not end well (the window was closed by force, the computer went down),
+the next one offers to recover it. Claude reads what you both said after the task's last
+journal entry, from Claude Code's own record of the conversation on this computer (kept
+30 days), and writes down what is missing.
 
-It also looks inside `ssh`, `vagrant ssh -c`, `docker exec`, `podman exec`, `kubectl exec`, `bash -c`,
-loops, what a pipe feeds a shell (`echo 'sudo …' | bash`), and a short script Claude
-runs (`bash deploy.sh`, `./deploy.sh`). `ssh root@…` counts as becoming root. When it
-cannot tell what will run (a program given as a variable, a command nested too deep,
-`rm -rf "$DIR/"*` with a variable that may be empty), it asks you. And Claude never
-changes, on its own, augmented brain's configuration or Claude Code's settings, where
-a line could switch a check off: it asks you first. When Claude saves a production
-profile or an untouchable machine for you, it only adds to the lists: to take one out,
-you edit the configuration yourself. If its configuration cannot be read, it asks you before every
-`aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before the tools that call AWS
-on their own, since it cannot tell which ones matter.
-Commands Claude leaves running to watch something (a log, a build) are checked the same
-way, and so are those of the helpers Claude starts (subagents and workflows). If the
-guard cannot run at all, because the program is missing or broken, Claude Code stops
-the command or the file change instead of letting it through (Claude Code 2.1.295 or
-later).
-`augmented-brain doctor` tries the guard for real and tells you if it is not working. It reads the shell, not PowerShell, so it
-stops every PowerShell command too, and Claude runs it in Bash instead. It is a net
-against slips, not a security wall: read the [disclaimer](../../DISCLAIMER.md).
+## Where files live
 
-**What is due soon.** If a task has a watch date in the next 7 days, or already past,
-Claude tells you as soon as you start (also on a closed task: closing is when the checks
-for later are written down). The same with what you said "remind me on Thursday" about:
-it comes up from a week before, and every day after, until the weekly review deals with
-it. And when
-the last review is a week old or more and there are captures in the inbox or stalled
-tasks, it offers the weekly review: about ten minutes going through each of them with you.
-
-**While you work, Claude writes as it goes.** Each decision or finished step goes to the
-task's journal at the moment, not only when you park it: a session can end at any time.
-If a task is open and nothing has been written to it for 20 minutes, a hook at the end of
-Claude's answer reminds it, once. When a long conversation gets compacted (Claude Code
-replaces the details with a summary), the summary is kept in `archive/sessions/`, the
-task's journal points at it, and Claude writes down what was decided before going on.
-
-**4. You close the session.** The end hook notes that the session ended well, and starts
-the backup of the space, in the background, if you set one up. You wait for nothing. If
-the backup fails, Claude tells you at the start of the next one. If a session did not end
-well (the window was closed by force, the machine went down), the next one offers to
-recover it: Claude reads what you both said after the task's last journal entry, from
-Claude Code's own record of the conversation on this machine (it keeps it 30 days), and
-writes down what is missing.
-
-## Your files
-
-Everything lives in `~/augmented-brain`, one folder per **space**. You work inside it,
-and its notes go in `notes/`:
+Your notes, one folder per space:
 
 ```
 ~/augmented-brain/
-├── work/                 open Claude here for work
+├── work/                 a work folder: open Claude here for work
 │   ├── notes/
 │   │   ├── MEMORY.md     the index Claude reads at the start (written by the program)
 │   │   ├── inbox.md      quick notes, to sort out later
-│   │   ├── areas/        what you always look after: "the website", "the servers"
+│   │   ├── areas/        what you always look after
 │   │   ├── tasks/        one file per task
 │   │   ├── knowledge/    how things work and what you learned
-│   │   ├── people/       who you deal with, so it knows who "Marcos" is
+│   │   ├── people/       who you deal with
 │   │   ├── rules/        rules for this space only
 │   │   ├── reviews/      weekly reviews
+│   │   ├── docs/         long documents of a task; never loaded
 │   │   └── archive/      old stuff; never loaded, never deleted
 │   └── (your projects)
-└── personal/             and here for personal things, with its own notes/
+└── personal/             the same, for personal things
 ```
 
-Your **profile**, who you are and how you like to work, is one for every space:
-`~/.config/augmented-brain/profile.md`. You don't write it by hand: the first time you
-open Claude, it asks six quick questions, saying why it asks each one. With your answers
-it saves the profile, creates your areas, tells the guard what is production and which
-machines must not be touched (for every space), and notes the people you work with. To change anything,
-tell it.
+The configuration folder, `~/.config/augmented-brain/` (on Windows,
+`%APPDATA%\augmented-brain`):
 
-**Rules** are how you want Claude to work. Say "from now on, …" and Claude saves it as a
-rule, in `rules/` of the space, or in the shared notes (below) when it holds everywhere.
-Every session loads them.
-
-A task is a text file. At the top, between the `---` lines, the data the program uses.
-Below, what you and Claude write:
-
-```markdown
----
-id: task-add-a-contact-form
-type: task
-title: Add a contact form
-area: area-website
-status: parked
-waiting_on: me
-next: Write the plan
-created: "2026-10-15"
-updated: "2026-10-15"
----
-## Essentials
-Name, email and message, sent by email.
-
-## Journal
-- 2026-10-15 — Task opened.
-- 2026-10-15 — Parked. Next: Write the plan
+```
+config.toml       the spaces and the guard's lists
+secrets.toml      the names of your secrets, never their values
+profile.md        who you are, for every space
+shared/           rules, references and lessons for every space
+state/            what this computer knows of each space's sessions; never backed up
+migrations/       a full copy of the notes before a new version moves them
+panel.json        where the panel listens, while it runs
 ```
 
-A big task can be split in two ways. A **step** is a small part: a checkbox in the
-task's Plan, `- [ ] Buy the domain`, ticked when it is done; the index shows how many
-are done ("2/5 steps"). A **subtask** is a part with a life of its own, because it waits
-on someone else or goes at its own pace: a task of its own, with one more line at the
-top, `parent:`, the id of the bigger task. The index lists it under that task. Only one
-level: a subtask has no subtasks, and the bigger task closes last.
-
-You can open and edit everything with any editor. The full format is in
-[memory-format.md](../spec/memory-format.md).
-
-## Work and personal, apart
-
-A space is a full set of notes, rules and backup. The installer creates two, `work` and
-`personal`. **The folder where you open Claude picks the space**, following your
-configuration:
-
-```toml
-# ~/.config/augmented-brain/config.toml
-default_space = "personal"
-
-[spaces.work]
-memory = "~/augmented-brain/work/notes"
-work_folders = ["~/augmented-brain/work"]
-
-[spaces.personal]
-memory = "~/augmented-brain/personal/notes"
-work_folders = ["~/augmented-brain/personal"]
-```
-
-In `~/augmented-brain/work/website`, Claude sees your work notes. In
-`~/augmented-brain/personal/blog`, your personal ones. They never mix.
-
-What if you open Claude in another folder? For example, the desktop app starts each new
-session in a scratch folder of its own. Then the **default space**, `personal`, is used,
-and Claude tells you in one line, with how to switch to work. Its backup is also the one
-that keeps your profile. You can change it in `default_space`; if you have a single space,
-it is that one. A space added with `space add` sets it when there was none.
-
-Do your projects already live elsewhere, like `~/code`? Add that folder to the
-`work_folders` of the right space. For a new space (a client, say):
-`augmented-brain space add client`.
-
-### Shared notes
-
-Some things you learn hold everywhere: how git behaves, how you like answers, a lesson
-about a tool. Saving them twice, once per space, would leave two copies that drift
-apart. So they go once in the **shared notes**, next to your profile:
-`~/.config/augmented-brain/shared/`. Only rules, references and lessons go there. Tasks,
-areas and people always belong to one space.
-
-Every space sees them. The shared rules are loaded at the start of each session, like
-the space's own: whole when they fit, and otherwise one line each, with their summary,
-for Claude to open the file when it needs the detail. The shared references and lessons are listed one line each, and Claude
-opens the one it needs. You don't move files by hand: tell Claude "this holds
-everywhere" and it saves the note as shared. They travel in the backup of the default
-space, like your profile.
-
-## The backup
-
-The notes folder of each space is also a git repository. The backup pushes it to a
-private repository of yours, one per space.
-
-**Setting it up: ask Claude.** Say "set up the backup" (it offers at the end of the
-interview). It creates a private repository in your GitHub account,
-`augmented-brain-<space>`, connects it and makes the first copy. For that it uses `gh`,
-GitHub's official command line: if you don't have it, Claude tells you how to install it
-and walks you through the one step that needs your browser, logging in. Rather somewhere
-else (GitLab, your company's git)? Give it the repository's address, or do it yourself:
-
-```bash
-augmented-brain backup setup git@gitlab.com:you/my-brain.git
-```
-
-From then on **it runs by itself every time a Claude session ends**, in the background.
-If it fails (no network, no access to the repository), Claude tells you at the start of
-the next one. You can also run it by hand:
-
-```bash
-augmented-brain backup          # this space
-augmented-brain backup --all    # every space
-```
-
-### On a new machine
-
-1. Install augmented brain with the usual command. It creates the spaces, empty. If
-   Claude opens at the end, close it without doing the interview: your profile comes in
-   the backup.
-2. Bring each space back from its backup:
-   ```bash
-   augmented-brain restore https://github.com/you/augmented-brain-work.git
-   ```
-   It replaces the empty space with yours: notes, tasks, rules and the space's settings,
-   readable by you only. The one setting left out is the repositories where Claude may
-   commit and push: someone else may have changed the backup, so `restore` names them
-   and you add them again if you still want to. Your profile comes with the default
-   space (`personal`), and that space is the default one again, with the list of your
-   secrets' names (see "The panel", below) when this machine has none. The guard's lists (production, untouchable machines) are in no
-   backup, since they may name your work's machines: `restore` and `doctor` say so,
-   and the next session offers to ask you for them again. Until then, nothing asks
-   before touching production. If that
-   space already had notes of yours, it leaves it alone. If anything fails half way, the
-   empty space stays as it was.
-3. Open Claude. It carries on where you left off, and the backup keeps running by itself.
-
-If the repository is on GitHub, log in once with `gh auth login` before restoring, so git
-has access.
-
-What you get:
-
-- **A new machine in minutes**, with the three steps above.
-- **Several machines, one brain.** Before pushing, the backup fetches what your other
-  machine did and merges it.
-- **Full history.** Every backup is a git commit, with the machine and the time. With
-  `git log` you see what changed, and you can go back to any day.
-- **Your place.** GitHub, GitLab or your own server: you pick the repository. augmented
-  brain has no cloud.
-- **One repository per space.** Work can go to your company's git, and personal to yours.
-  Your profile only travels in the default space's backup, never in the work one.
-- **No secrets go up.** Claude's tools refuse to write a password or a token into a
-  note. If one gets in anyway (by hand, say), the backup stops and tells you which file.
-- **Nothing gets overwritten.** If two machines changed the same note, it stops without
-  touching anything and explains how to sort it out. When each only added journal
-  entries (dated lines) to it, they are joined by themselves, in date order. The index, being generated, is
-  rebuilt by itself, and captures in the inbox from two machines are both kept. One
-  catch: a capture you processed on one machine can come back if the other machine
-  captured something at the same time. It just shows up again at the next review.
-- **No junk, no giants.** Leftovers of a crash and the files systems drop in folders
-  (`.DS_Store`, `Thumbs.db`) stay out. A file over 50 MB stays out too (GitHub refuses
-  them), and Claude tells you which one at the start of the next session.
-
-To turn the automatic backup off: `AB_NO_AUTO_BACKUP=1`.
-
-## Bring in a memory you already have
-
-If Claude Code has been keeping a memory for you (the files it writes in
-`~/.claude/projects/<folder>/memory/`), you can bring it into your spaces:
-
-```bash
-augmented-brain import ~/.claude/projects/<folder>/memory
-```
-
-That writes nothing. It shows where each note would go and what it could not decide:
-files that are not notes (an index), notes about you (copy what matters into your
-profile), links that would cross from one space to another, ids your space already
-has. When the list looks right, run it again with `--apply`. The folder you import
-from is only read.
-
-Each file becomes a note of its kind: by its name (`task-…`, `area-…`, `ref-…`,
-`lesson-…`, `rule-…`, `person-…`) or else by what Claude Code says it is. A task with
-no status comes in parked, waiting on you, with "review this imported task" as its next
-step. With more than one space, a small file says which space each area goes to,
-which notes go somewhere other than their area, and which go to the shared notes:
-
-```text
-area-family = personal
-task-school-course = work
-lesson-git-small-commits = shared
-* = work
-```
-
-and goes in with `--map <file>`. `--repos-base <folder>` says what the notes' `repos:`
-paths are relative to, so they are rewritten relative to the space's work folder.
-
-The rest comes along too. The captures of your old `inbox.md` (each `- …` line) go to
-the inbox of the space of `*`, dated, and never twice. `archive/` and `docs/<task>/`
-are copied as they are, next to their note, also when you import again later. A file
-with a secret written in it (a key, a token), a note or a document, is imported but
-named in the report: the backup will not upload it until the secret is out.
-`augmented-brain check` names it too. A reference or lesson that is a list of people (one
-`## Name` section each, with a word like "people" or "team" in its id or title) comes in as it is,
-and the report names it: people are notes of their own, so ask Claude to save each one
-as a person.
-
-Has Claude Code been keeping that memory by itself? Then it goes on keeping it for your
-spaces' folders: a second memory, next to the space's, that drifts from it.
-`augmented-brain doctor` tells you, and how to turn it off: `"autoMemoryEnabled": false`
-in Claude Code's settings. What it already has stays, ready to import.
-
-## The panel
-
-The panel is a page in your browser to see and change your spaces without going through
-Claude. Open it with `/brain:panel` in Claude, or from a terminal:
-
-```bash
-augmented-brain panel
-```
-
-It opens your browser on **Today**, with the space of the folder you ran it in. If it
-cannot (on a computer with no screen, say), it prints an address to open yourself. What
-you find there:
-
-- **Today**, the first page: every space at once. For each one, what is due in the next
-  7 days, the tasks waiting on you (the parked ones in one line), how many captures wait
-  in the inbox, whether the weekly review is due, the sessions that were cut off, and
-  notes with problems. Below, **Repositories**: those your open tasks name in `repos:`
-  that hold changes not committed or commits not pushed, that is, work that is only on
-  this computer. One whose tasks are all parked (or left for some day) is marked "forgotten?". The panel only
-  reads them: git runs without taking locks, so it never gets in your way, and never
-  asks for a password. A branch never pushed counts only if the repository has a remote
-  to push it to. **See all repositories** leads to the whole map.
-- **Tasks**, grouped by area, those waiting on you first, with their status and next
-  step. Filters show only those waiting on you, under way, parked, untouched, or waiting
-  on one person. A task nobody has changed for 14 days is marked "untouched N days": the
-  weekly review brings it up too. Open one: its essentials come first, the other
-  sections folded, and the journal newest first. Write in its journal, change its status
-  or next step, park it or close it. You can open new ones too. When a task waits on a
-  person you have a note of, "waits on" leads to them.
-- **Reminders**: the watch dates of your tasks (closed ones too) and the inbox
-  reminders, overdue first, then the next 30 days. Add one, or mark it done.
-- **Inbox**: capture an idea, mark one as dealt with, or make it a task.
-- **Weekly review**, on a page. Each capture becomes a task, a reference or a lesson,
-  or is dropped. Each task untouched for two weeks goes on as it is, or goes to some
-  day (or you open it to close it). What you decide is noted as you go, and kept in the
-  review's record when you finish.
-- **Areas**, **knowledge**, **rules** and **people**. Knowledge and rules show the
-  space's own and the shared ones, marked "shared". You can create areas and change an
-  area's title and summary. You can add people and change them: their other names,
-  their role and notes. The name stays: a new name would be a new person. A person's
-  page shows the tasks that wait on them and those that link to them.
-- **Repositories**: your map of repositories. Every git repository in the work folders
-  of each space, up to three folders down (not inside another repository, and not in
-  hidden folders, `node_modules` or `vendor`), grouped by space, those with work pending
-  first. For each one: its branch, where it pushes (as `host/owner/name`, never with a
-  password), files changed, commits not pushed, the open tasks that name it, and one
-  line of yours on what it is. Write that line right there. It is kept in the space's
-  notes, in the reference "Repositories" (`knowledge/ref-repositories.md`, a line per
-  repository), so the backup keeps it; Claude can write it too. Git only ever runs
-  inside the work folders, and links to folders outside them are not followed.
-- **Secrets**: the names of the secrets you keep in your system keychain (where your
-  computer keeps passwords), never their values. Each one as `service/name`, what it is
-  for, and which tasks name it. So you know which there are, and a new machine knows
-  which to ask you for. **Check the keychain** says whether each one is on this computer
-  (it asks `secret-tool` on Linux and `security` on macOS; elsewhere it cannot tell). It
-  asks only when you click, because a locked keychain asks you for its password. More
-  below.
-- **Sessions**: your Claude sessions on this computer, from the last 30 days. Those that
-  did not end (closed by force, or cut off when the computer went down) show what was
-  said after the last journal entry: keep it in the notes (it goes to `archive/sessions/`
-  with a line in the task's journal) or mark it as reviewed. Those running now, and those
-  that ended, with how much disk their transcripts take (the files where Claude Code
-  keeps each conversation). You can delete the transcript of an ended session; that
-  session can then no longer be resumed.
-- **Profile**: who you are and how you like to work, the same one every space uses.
-- **Health**: the space's notes folder and work folders, whether it is the default
-  space, notes that are not valid, repositories that notes point at and that are no
-  longer on this computer, the index, the last backup and the last weekly review.
-- **Help**: links to the answers on this website, in your language, and a way to tell
-  us about a problem or propose an idea on GitHub (the website where the project
-  lives; you need a free account there). Click **Report a problem on GitHub** and the
-  panel runs the health check (what `augmented-brain doctor` says) at that moment, then
-  opens GitHub's form in a new tab with the version, your system and that check filled
-  in. Before it opens, the panel takes out your home folder (shown as `~`), your notes
-  and work folders, e-mail addresses, the names of your spaces, untouchable machines and
-  production AWS profiles, and any line that looks like a password or a key. You write
-  what happened there, and read the rest: change or delete what you prefer not to
-  share. Nothing is sent until you press GitHub's submit button. To be honest about it:
-  the text travels to GitHub inside the page's address as soon as it opens, so GitHub
-  can see it then, even if you never submit.
-
-The **search** box at the side looks through the notes of the space and the shared ones:
-titles, summaries and text. A note shows up when it holds every word, in any case, with
-accents or without.
-
-Notes read as text, not as raw Markdown: headings, lists, tables, code and links, and a
-`[[link]]` to another note takes you to it. If a note changes on disk while its page is
-open (Claude wrote in it, say), the page tells you, with a link to see it as it is now.
-
-The list of secrets is the same in every space. It lives in a file of its own,
-`secrets.toml`, next to the configuration file, as
-`secrets = ["telegram/alerts-bot: alerts to my phone"]`. You can add a name in the panel,
-or take one off the list (the secret stays in the keychain). Or tell Claude you stored a
-new secret, and it notes the name. Anything that looks like a value is refused. When the
-keychain lacks one, the panel shows the command that stores it (it asks for the value).
-The list travels in the default space's backup. A restore brings it to a new machine
-that has none, and names the secrets that machine's keychain does not have yet, each
-with the command to store it.
-
-It changes your notes the same way Claude does, with the same program, and they wait for
-each other: you can have both open at once.
-
-It is made to stay yours:
-
-- It runs **only while you use it**. After 30 minutes without use it stops by itself.
-  To stop it now: `augmented-brain panel stop`, or the link at the bottom of the page.
-- It works **only on this computer**. Other machines on your network cannot reach it.
-- The address carries a **key**, made new each time the panel starts. Without it the
-  panel answers nothing, so another program or web page on your computer cannot use it.
-  The key stays in the address while you use the panel, so treat the address like a
-  password: do not share it. It stops working when the panel stops.
-- When you save a task, only what you changed on the page is saved: if Claude changed
-  something else in the meantime, that stays. A step is ticked only if it still says
-  what the page showed.
-- It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
-  note cannot put HTML or scripts of its own in the page either. The links of the Help
-  page go to the website only when you click them.
-- Checking whether a note changed does not count as using the panel: a tab left open
-  does not keep it running.
+Each file is described in [Configuration](configuration.md) and in the
+[memory format](../spec/memory-format.md).
 
 ## What it does not do
 
@@ -489,42 +112,18 @@ It is made to stay yours:
   while you use it and the backup that the end of a session starts.
 - **It sends your data to no one.** Only the backup, if you set it up, talks to your
   repository. Apart from that, once a day, it asks GitHub which version is the latest,
-  sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns it off.
-- **It does not touch your Claude Code settings.** The plugin goes in and out with Claude
-  Code's own commands, which the installer, `update` and `uninstall` run for you.
-- **Mind this: your assistant reads your notes**, like any file it opens. They travel with
-  your conversations to its provider. Do not keep there what you would not share.
+  sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns that off.
+- **It does not change your Claude Code settings.** The plugin goes in and out with
+  Claude Code's own commands, which the installer, `update` and `uninstall` run for you.
+- **Mind this: your assistant reads your notes**, like any file it opens. They travel
+  with your conversations to its provider. Do not keep there what you would not share.
 
-## Update it
+## Moved from this page
 
-When a new version is out, Claude tells you at the start of a session and offers to
-update it. You can also do it yourself:
+This page used to hold more. Each part now has a page of its own:
 
-```bash
-augmented-brain update
-```
-
-It updates the program and the Claude plugin. Then close and open Claude so it uses the
-new version: a session that was open keeps the old one until you do, and its augmented
-brain tools may fail. `augmented-brain doctor` and the start of a new session tell you
-how many sessions still run the old version. Your notes and your configuration stay as they are, unless the new version
-writes them in a different way: then the first session moves them to the new way, after
-keeping a full copy in the `migrations/` folder of the configuration, and Claude tells
-you. An older version refuses notes a newer one wrote, instead of breaking them: update
-it on that computer too.
-
-## Remove it
-
-```bash
-augmented-brain uninstall
-```
-
-It removes the Claude plugin, what Claude Code keeps of it and the program, after asking.
-Your notes stay in `~/augmented-brain/`: they are yours. Your configuration stays too (to
-remove it: `augmented-brain uninstall --config`), and so do Claude Code, its app and git.
-If you install it again, you find everything as it was.
-
-**To start from scratch**, `augmented-brain uninstall --all`: it also removes your
-configuration, your profile and every space's notes. First it shows what it will remove,
-with how many notes each folder has, and asks. Anything of yours inside a space's folder
-stays. Your backup on GitHub is not deleted: it says which one it is and how to delete it.
+- <a id="your-files"></a><a id="work-and-personal-apart"></a><a id="shared-notes"></a>Your files, spaces and shared notes: [Spaces](spaces.md) and [Areas, knowledge and the rest](notes.md).
+- <a id="the-backup"></a><a id="on-a-new-machine"></a>The backup, and a new machine: [Backup and restore](backup.md).
+- <a id="bring-in-a-memory-you-already-have"></a>Importing an existing memory: [Bring in a memory](import.md).
+- <a id="the-panel"></a>The panel and every page in it: [The panel](panel.md).
+- <a id="update-it"></a><a id="remove-it"></a>Updating and removing it: [Installing](install.md#updating).

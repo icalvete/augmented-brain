@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Herramientas MCP · augmented brain</title>
+<meta name="description" content="Las herramientas MCP que augmented brain da a tu asistente, agrupadas por uso, con cada parámetro: tareas, buzón, revisión semanal, conocimiento, personas, seguridad y copia de seguridad.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Herramientas MCP · augmented brain">
+<meta property="og:description" content="Las herramientas que usa Claude detrás de tus palabras, con cada parámetro.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Herramientas MCP · augmented brain">
+<meta name="twitter:description" content="Las herramientas que usa Claude detrás de tus palabras, con cada parámetro.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="mcp-tools.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html" aria-current="page">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Herramientas MCP</h1>
+  <p>Dices “apárcala”. Claude llama a la herramienta <code>task_park</code>, con el id de la tarea y el siguiente paso. El programa escribe el fichero de la tarea. Tú nunca llamas a estas herramientas: las llama Claude, detrás de tus palabras.</p>
+  <p><strong>MCP</strong> (Model Context Protocol) es un estándar abierto para dar herramientas a un asistente. El programa las ofrece con <code>augmented-brain mcp</code>, que Claude Code arranca a través del plugin. En Claude Code aparecen como <code>mcp__plugin_brain_augmented-brain__&lt;herramienta&gt;</code>.</p>
+  <p>Hay cosas que valen para todas:</p>
+  <ul><li>Trabajan con <strong>el espacio de la carpeta en la que está Claude</strong>, que buscan de nuevo en cada llamada.</li><li>Van de una en una, y esperan al panel, así que nunca escriben dos a la vez.</li><li><strong>Nada de secretos.</strong> Una herramienta se niega a escribir una contraseña, un token o una clave en una nota.</li><li><strong>No se borra nada.</strong> Las tareas se cierran, no se quitan.</li><li>Las fechas se escriben <code>AAAA-MM-DD</code>.</li><li>Un parámetro es obligatorio salvo que diga opcional.</li></ul>
+  <h2 id="herramientas-por-uso">Herramientas por uso</h2>
+  <ul><li><strong>Dónde está cada cosa</strong>: [<code>where_am_i</code>](#where_am_i), [<code>pending</code>](#pending).</li><li><strong>Tareas</strong>: [<code>task_new</code>](#task_new), [<code>task_get</code>](#task_get), [<code>task_update</code>](#task_update), [<code>task_step</code>](#task_step), [<code>task_journal</code>](#task_journal), [<code>task_park</code>](#task_park), [<code>task_close</code>](#task_close).</li><li><strong>El buzón y la revisión semanal</strong>: [<code>capture</code>](#capture), [<code>weekly_review</code>](#weekly_review), [<code>review_done</code>](#review_done).</li><li><strong>Notas que duran</strong>: [<code>area_new</code>](#area_new), [<code>knowledge_new</code>](#knowledge_new), [<code>rule_new</code>](#rule_new), [<code>person_save</code>](#person_save), [<code>repo_describe</code>](#repo_describe).</li><li><strong>Tú y esta máquina</strong>: [<code>profile_save</code>](#profile_save), [<code>safety_save</code>](#safety_save), [<code>secret_name_save</code>](#secret_name_save), [<code>backup_setup</code>](#backup_setup), [<code>session_recover</code>](#session_recover).</li></ul>
+  <h2 id="where_am_i"><code>where_am_i</code></h2>
+  <p>En qué espacio trabaja esta sesión, su carpeta de notas, sus áreas y cuántas tareas están vivas. No tiene parámetros.</p>
+  <h2 id="pending"><code>pending</code></h2>
+  <p>Las tareas vivas, primero las que esperan por ti, cada una con su estado, los pasos hechos, a quién espera y su siguiente paso. Después, las fechas para revisar que han llegado. Claude la usa para “¿en qué estábamos?”.</p>
+  <ul><li><code>within_days</code> (opcional): lista también las fechas para revisar que llegan en estos días. Por defecto, 7.</li></ul>
+  <h2 id="task_new"><code>task_new</code></h2>
+  <p>Abre una tarea nueva, en la fase de definición y esperando por ti. Con una tarea madre, es una subtarea.</p>
+  <ul><li><code>title</code>: un nombre corto para la tarea.</li><li><code>summary</code> (opcional): una línea sobre qué es.</li><li><code>area</code> (opcional): el id de su área. Por defecto, el área de la tarea madre, o <code>area-general</code>.</li><li><code>parent</code> (opcional): el id de la tarea de la que esta es una parte. Un solo nivel: la tarea madre no puede ser una subtarea, ni estar cerrada.</li><li><code>goal</code> (opcional): una línea sobre para qué es la tarea. Va a la Definición.</li><li><code>done_when</code> (opcional): una línea sobre cómo sabremos que ha salido bien. Va a la Definición.</li></ul>
+  <h2 id="task_get"><code>task_get</code></h2>
+  <p>Lee una tarea: su cabecera, todo su cuerpo con el diario, y sus subtareas. También dice de qué tarea es parte, y si falta en este ordenador un repositorio que nombra. Claude lee una tarea antes de retomarla.</p>
+  <ul><li><code>id</code>: el id de la tarea, como <code>task-mudar-el-blog</code>.</li></ul>
+  <h2 id="task_update"><code>task_update</code></h2>
+  <p>Cambia una tarea. Solo cambian los campos que se le dan. Un cambio de estado se apunta en el diario.</p>
+  <ul><li><code>id</code>: el id de la tarea.</li><li><code>status</code> (opcional): <code>definition</code>, <code>analysis</code>, <code>plan</code>, <code>execution</code>, <code>validation</code>, <code>closed</code>, <code>parked</code> o <code>someday</code>.</li><li><code>waiting_on</code> (opcional): <code>me</code>, <code>nobody</code>, una persona, o el id de otra tarea.</li><li><code>next</code> (opcional): la única acción siguiente, en una línea.</li><li><code>summary</code> (opcional): una línea sobre qué es.</li><li><code>area</code> (opcional): el id de su área.</li><li><code>watch_date</code> (opcional): añade una fecha para volver a mirar algo. Necesita <code>watch_what</code>.</li><li><code>watch_what</code> (opcional): qué mirar en <code>watch_date</code>, en una línea.</li><li><code>watch_done</code> (opcional): marca como hecha la fecha para revisar de este día.</li></ul>
+  <p>Hace falta al menos un campo además de <code>id</code>.</p>
+  <h2 id="task_step"><code>task_step</code></h2>
+  <p>Los pasos son las partes pequeñas de una tarea: casillas (<code>- [ ] texto</code>) en su Plan. Esta herramienta añade una, o la marca o la desmarca. Cada cambio escribe una línea corta en el diario, y la respuesta lista los pasos.</p>
+  <ul><li><code>id</code>: el id de la tarea.</li><li><code>add</code> (opcional): añade este paso, sin marcar, al final del Plan, en vez de marcar uno.</li><li><code>number</code> (opcional): el paso que marcar o desmarcar, 1 para la primera casilla.</li><li><code>text</code> (opcional): el paso que marcar o desmarcar, por su texto (o un trozo que solo tenga él), cuando no se da <code>number</code>.</li><li><code>done</code> (opcional): <code>true</code> para marcar el paso, <code>false</code> para desmarcarlo.</li></ul>
+  <h2 id="task_journal"><code>task_journal</code></h2>
+  <p>Añade una entrada con fecha al diario de una tarea. Claude escribe una en el momento en que se hace o se decide algo.</p>
+  <ul><li><code>id</code>: el id de la tarea.</li><li><code>entry</code>: lo que se ha hecho, lo que ha salido, lo que se ha decidido.</li></ul>
+  <h2 id="task_park"><code>task_park</code></h2>
+  <p>Deja una tarea en pausa sin perder nada, antes de pasar a otra cosa.</p>
+  <ul><li><code>id</code>: el id de la tarea.</li><li><code>next</code>: cómo retomarla exactamente: un comando, un fichero o una decisión.</li><li><code>waiting_on</code> (opcional): a quién espera ahora.</li><li><code>essentials</code> (opcional, pero Claude debería pasarlo): de tres a seis líneas que basten para retomarla sin el diario. Sustituyen a la primera sección de la tarea. Sin ellas, allí solo se actualizan “dónde está” y “siguiente”.</li><li><code>someday</code> (opcional): <code>true</code> cuando no se va a tocar en semanas. La tarea sale de la lista del día.</li></ul>
+  <h2 id="task_close"><code>task_close</code></h2>
+  <p>Cierra una tarea terminada con su resultado. Se guarda, nunca se borra. Una tarea con subtareas abiertas no se puede cerrar.</p>
+  <ul><li><code>id</code>: el id de la tarea.</li><li><code>result</code>: lo que se ha conseguido, en una o dos líneas.</li></ul>
+  <h2 id="capture"><code>capture</code></h2>
+  <p>Apunta algo en el buzón sin abrir una tarea, si quieres con un día para recordártelo. La revisión semanal lo procesa.</p>
+  <ul><li><code>text</code>: la idea, el enlace o el cabo suelto, en una línea.</li><li><code>remind_on</code> (opcional): una fecha. Sale al empezar la sesión desde una semana antes, hasta que se resuelve.</li></ul>
+  <h2 id="weekly_review"><code>weekly_review</code></h2>
+  <p>Lista lo que repasa la revisión semanal: el buzón, las tareas vivas que nadie ha tocado en 14 días o más, y las fechas que llegan en los próximos 7 días. Después Claude lo repasa contigo, una cosa cada vez. No tiene parámetros.</p>
+  <h2 id="review_done"><code>review_done</code></h2>
+  <p>Termina la revisión semanal. Guarda lo decidido en <code>reviews/</code>, y saca del buzón las capturas procesadas.</p>
+  <ul><li><code>summary</code>: lo que se ha decidido, en unas pocas líneas.</li><li><code>processed</code> (opcional): el texto de cada captura resuelta, tal como la listó <code>weekly_review</code>. Salen del buzón. Una que no se encuentra se queda como estaba, y se nombra.</li></ul>
+  <h2 id="area_new"><code>area_new</code></h2>
+  <p>Crea un área: una responsabilidad sin fecha de fin que agrupa tareas y conocimiento.</p>
+  <ul><li><code>title</code>: el nombre del área.</li><li><code>summary</code> (opcional): una línea sobre qué cuida.</li></ul>
+  <h2 id="knowledge_new"><code>knowledge_new</code></h2>
+  <p>Guarda una referencia o una lección que merece la pena más allá de una tarea: en este espacio, o compartida por todos.</p>
+  <ul><li><code>kind</code>: <code>reference</code> (cómo funciona algo) o <code>lesson</code> (lo aprendido).</li><li><code>title</code>: en una lección, un título que ya diga la conclusión.</li><li><code>summary</code> (opcional): una línea.</li><li><code>area</code> (opcional): el id de su área.</li><li><code>body</code> (opcional): el texto, en Markdown.</li><li><code>shared</code> (opcional): <code>true</code> cuando vale en todos los espacios. Entonces no tiene área.</li></ul>
+  <h2 id="rule_new"><code>rule_new</code></h2>
+  <p>Guarda una regla que das sobre cómo trabajar. Cada sesión la carga.</p>
+  <ul><li><code>title</code>: la regla en pocas palabras.</li><li><code>summary</code> (opcional): una línea que dice qué hacer.</li><li><code>body</code>: qué hacer, y por qué, en Markdown.</li><li><code>shared</code> (opcional): <code>true</code> cuando vale en todos los espacios, no solo en este.</li></ul>
+  <h2 id="person_save"><code>person_save</code></h2>
+  <p>Recuerda a alguien con quien trabajas o tratas, para que un nombre de pila lleve a la persona correcta. Guardar un nombre que ya existe actualiza a esa persona.</p>
+  <ul><li><code>name</code>: el nombre completo, o como la conoces.</li><li><code>aliases</code> (opcional): otros nombres que usas para ella, como un mote.</li><li><code>role</code> (opcional): quién es para ti, en pocas palabras: “mi jefa”, “lleva la empresa del hosting”.</li><li><code>notes</code> (opcional): cualquier otra cosa que merezca la pena recordar.</li></ul>
+  <h2 id="repo_describe"><code>repo_describe</code></h2>
+  <p>Apunta, en una línea, qué es uno de tus repositorios git, para la página Repositorios del panel. Solo repositorios dentro de las carpetas de trabajo de este espacio. La línea va a la referencia <code>ref-repositories</code>, una línea por repositorio; una nueva sustituye a la anterior.</p>
+  <ul><li><code>repo</code>: el repositorio: su ruta (<code>~/…</code> o absoluta), o su nombre tal como lo escribe el <code>repos:</code> de una tarea, respecto a una carpeta de trabajo.</li><li><code>text</code>: qué es, en una línea, con tus palabras. Vacío, quita la línea.</li></ul>
+  <h2 id="profile_save"><code>profile_save</code></h2>
+  <p>Guarda quién eres y cómo te gusta trabajar. Lo comparten todos los espacios, y cada sesión empieza leyéndolo. Sustituye el perfil entero, así que Claude incluye lo que debe quedarse.</p>
+  <ul><li><code>name</code>: cómo quieres que te llamen.</li><li><code>about</code> (opcional): a qué te dedicas y en qué trabajas, en líneas cortas que empiezan por <code>- </code>.</li><li><code>work_style</code> (opcional): cómo te gusta trabajar con Claude: idioma, largo de las respuestas, cuánto preguntar antes de actuar. Líneas cortas que empiezan por <code>- </code>.</li></ul>
+  <h2 id="safety_save"><code>safety_save</code></h2>
+  <p>Añade cosas a lo que el guardia te pregunta. Las listas valen en toda esta máquina, en todos los espacios. Solo añade: para quitar algo, editas tú la configuración, y la respuesta dice dónde.</p>
+  <ul><li><code>production_aws_profiles</code> (opcional): perfiles de AWS CLI que llegan a producción. El guardia pregunta antes de los comandos que los usan.</li><li><code>untouchable_hosts</code> (opcional): máquinas que no se tocan sin preguntar, tal como las escribes para ssh.</li></ul>
+  <h2 id="secret_name_save"><code>secret_name_save</code></h2>
+  <p>Apunta el nombre de un secreto que guardas en el llavero del sistema, y para qué es. Nunca su valor: un valor se rechaza. La lista es la misma en todos los espacios; el panel la enseña. Guardar un nombre que ya está en la lista cambia para qué es.</p>
+  <ul><li><code>service</code>: el servicio bajo el que se guarda el secreto en el llavero, como <code>telegram</code>.</li><li><code>name</code>: su nombre dentro de ese servicio, como <code>alerts-bot</code>.</li><li><code>what</code> (opcional): para qué es, en pocas palabras.</li></ul>
+  <h2 id="backup_setup"><code>backup_setup</code></h2>
+  <p>Monta la copia de seguridad de este espacio: un repositorio git privado que guarda sus notas, y al que se suben solas cada vez que acaba una sesión.</p>
+  <ul><li><code>repo_url</code> (opcional): un repositorio git privado al que puedas subir. Sin él, la herramienta crea <code>augmented-brain-&lt;espacio&gt;</code> en tu cuenta de GitHub con la línea de comandos <code>gh</code>. Si falta <code>gh</code> o no has entrado con él, devuelve los pasos para guiarte.</li></ul>
+  <h2 id="session_recover"><code>session_recover</code></h2>
+  <p>Lee lo que tú y Claude os dijisteis en una sesión anterior de este espacio que no acabó bien, después de la última entrada del diario de su tarea. Solo los mensajes, sin la salida de las herramientas, como mucho los últimos 20.000 caracteres, del registro que guarda Claude Code en este ordenador (lo guarda 30 días). Después Claude apunta en el diario lo que falte.</p>
+  <ul><li><code>session_id</code> (opcional): la sesión que recuperar. Sin él, la que ofreció el inicio de la sesión.</li></ul>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="commands.es.html"><span>← Anterior</span>Comandos</a>
+    <a class="next" href="configuration.es.html"><span>Siguiente →</span>Configuración</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

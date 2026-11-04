@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory format · augmented brain</title>
+<meta name="description" content="The memory format of augmented brain: folders, note headers, the task lifecycle, configuration, backup and format versions.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/memory-format.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/memory-format.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/memory-format.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Memory format · augmented brain">
+<meta property="og:description" content="Folders, note headers and what the program reads. The contract.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/memory-format.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Memory format · augmented brain">
+<meta name="twitter:description" content="Folders, note headers and what the program reads. The contract.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="index.html">Docs</a>
+    <a href="index.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Docs">
+<details open id="docnav"><summary>Documentation menu</summary>
+<p class="docnav-group">Get started</p>
+<ul>
+  <li><a href="getting-started.html">Getting started</a></li>
+  <li><a href="install.html">Installing</a></li>
+</ul>
+<p class="docnav-group">Concepts</p>
+<ul>
+  <li><a href="spaces.html">Spaces</a></li>
+  <li><a href="tasks.html">Tasks</a></li>
+  <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="guard.html">The guard</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
+</ul>
+<p class="docnav-group">Daily use</p>
+<ul>
+  <li><a href="phrases.html">What to say to Claude</a></li>
+  <li><a href="panel.html">The panel</a></li>
+  <li><a href="weekly-review.html">The weekly review</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
+</ul>
+<p class="docnav-group">Reference</p>
+<ul>
+  <li><a href="commands.html">Commands</a></li>
+  <li><a href="mcp-tools.html">MCP tools</a></li>
+  <li><a href="configuration.html">Configuration</a></li>
+  <li><a href="memory-format.html" aria-current="page">Memory format</a></li>
+</ul>
+<p class="docnav-group">Help</p>
+<ul>
+  <li><a href="troubleshooting.html">Troubleshooting</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Memory format</h1>
+  <p><strong>Status: format version 1</strong> (see “Format version” below). This document defines how augmented brain stores what you and your assistant know: what files exist, what goes in each, and which fields the program reads. Everything is plain Markdown that you can open, edit and search with any tool.</p>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#principles">Principles</a></li><li><a href="#spaces">Spaces</a></li><li><a href="#layout-of-a-space">Layout of a space</a></li><li><a href="#file-header">File header</a></li><li><a href="#task-lifecycle">Task lifecycle</a></li><li><a href="#areas">Areas</a></li><li><a href="#knowledge">Knowledge</a></li><li><a href="#people">People</a></li><li><a href="#repositories">Repositories</a></li><li><a href="#inbox">Inbox</a></li><li><a href="#reviews">Reviews</a></li><li><a href="#rules">Rules</a></li><li><a href="#format-version">Format version</a></li><li><a href="#generated-files">Generated files</a></li><li><a href="#configuration">Configuration</a></li><li><a href="#backup">Backup</a></li><li><a href="#state-of-this-machine">State of this machine</a></li><li><a href="#decisions">Decisions</a></li></ul></nav>
+  <h2 id="principles">Principles</h2>
+  <ol><li><strong>Plain files, yours.</strong> One folder of Markdown per space. No database, no hosted service.</li><li><strong>The program reads fields, never prose.</strong> Anything the program needs (a task's status, who it waits on, its next step) lives in the file's header. The body is free text, in any language.</li><li><strong>Indexes are generated.</strong> You never edit an index by hand; the program rebuilds it after every change. Hand-kept indexes drift.</li><li><strong>Nothing is deleted.</strong> Closed tasks stay, marked closed. What is no longer needed day to day can go to <code>archive/</code>, which is never loaded.</li><li><strong>Short at the top, detail below.</strong> The file loaded at the start of every session stays small; detail lives one link away.</li></ol>
+  <h2 id="spaces">Spaces</h2>
+  <p>A <strong>space</strong> keeps one part of your life apart from the others, for example <code>work</code> and <code>personal</code>. Each space has:</p>
+  <ul><li>its own memory folder (everything below);</li><li>its own rules, on top of the common ones;</li><li>its own backup repository.</li></ul>
+  <p>The space is chosen by <strong>the folder you open the assistant in</strong>. Spaces never read each other's memory. They share the program, the common rules, the shared notes (below), the safety hooks and the risk settings (which cloud profiles are production, which hosts must not be touched): those are for the whole machine, so a production profile saved from one space is guarded in all of them.</p>
+  <p>Spaces are declared in the configuration file (see “Configuration” below), not inside the memory.</p>
+  <p>By default, <code>augmented-brain init</code> creates two spaces, <code>work</code> and <code>personal</code> (in Spanish, <code>trabajo</code> and <code>personal</code>). Each one is a folder in <code>~/augmented-brain/</code>, which is its work folder, and its memory folder sits inside it as <code>notes/</code> (<code>notas/</code>). Any other layout can be set with <code>init --custom</code> or by editing the configuration.</p>
+  <p>A session that runs outside every work folder (for example, the scratch folder the Claude desktop app opens a new session in) uses the <strong>default space</strong>, <code>default_space</code> in the configuration; <code>init</code> sets it to <code>personal</code>, and <code>space add</code> sets it when there are two spaces or more and none is set (to <code>personal</code> if a space has that name, or else to the first space). Its backup is the one that carries the profile. Without one, no memory is loaded there and the assistant tells the user which folders to open.</p>
+  <h2 id="layout-of-a-space">Layout of a space</h2>
+  <pre><code>&lt;memory folder&gt;/
+├── MEMORY.md          # the index loaded at the start of every session (generated)
+├── profile.md         # optional: what only applies in this space (your role at work…)
+├── inbox.md           # quick captures, processed in the weekly review
+├── areas/             # ongoing responsibilities (one file each)
+├── tasks/             # projects with a beginning and an end (one file each)
+├── knowledge/         # how things work (reference) and what you learned (lesson)
+├── people/            # who the user deals with, so a first name finds the right person
+├── rules/             # this space's own rules (the common rules ship with the program; shared ones live in the configuration folder)
+├── reviews/           # one file per weekly review
+├── docs/              # optional: long documents of a task (plans, analyses, reports); never loaded
+│   └── &lt;task&gt;/
+└── archive/           # old journals and merged files; never loaded, never deleted
+    └── sessions/      # summaries Claude Code wrote when it compacted a conversation</code></pre>
+  <p><code>docs/</code> keeps the long documents a task produces, so they stay with the notes and out of the repositories the work touches (a repository only gets what its team needs). Each one sits under the id of its task, is plain Markdown or any other file, has no header, and is linked from the task. The program does not read it.</p>
+  <p>A summary in <code>archive/sessions/</code> is plain Markdown with no header, named <code>&lt;date&gt;-&lt;time&gt;-&lt;session&gt;.md</code>; the program writes it, with any secret taken out, and adds a journal line to the active task pointing at it.</p>
+  <p><code>MEMORY.md</code> is what the session start hands the assistant: it comes in up to three parts of the start (see “Rules”). An index too long for them is cut, and the assistant is told where to read it whole.</p>
+  <p><strong>Your profile</strong> (who you are, your language, how you like answers) is the same person in every space, so it lives once, next to the configuration: <code>profile.md</code> in the configuration folder. A space's own <code>profile.md</code> only adds what applies there.</p>
+  <p>The shared profile has two sections the program knows by their headings, in English or Spanish: the first (“About me” / “Sobre mí”, with the name line) and the work style (“How I like to work” / “Cómo me gusta trabajar”). Other sections a person adds by hand are kept: the program reads them as part of the first one.</p>
+  <p><strong>Shared notes</strong> are the rules, references and lessons that hold in every space (how git behaves, how the person likes answers). They live once, next to the configuration, in <code>shared/</code> inside the configuration folder, laid out like a space but with only <code>rules/</code> and <code>knowledge/</code> (plus the generated <code>MEMORY.md</code> and <code>.augmented-brain/format</code>). A shared note has no area, since areas belong to one space; a task, area, person or review there is a problem, reported and left out. Every space sees them: a note of a space may name a shared note in <code>related</code>, and the session start loads the shared rules like the space's (see Rules) and lists the shared references and lessons. A shared note never links into a space. They are migrated like a space's notes, and kept in the backup of the default space, under <code>.augmented-brain/shared/</code>, like the profile.</p>
+  <h2 id="file-header">File header</h2>
+  <p>Every file except <code>MEMORY.md</code>, <code>inbox.md</code> and what is in <code>archive/</code> starts with a YAML header between <code>---</code> lines (a byte order mark before it is fine). Keys and enumerated values are always English, whatever language you write in.</p>
+  <pre><code>---
+id: task-backup-restore          # unique in the space; also the file name without .md
+type: task                       # profile | area | task | reference | lesson | rule | person
+title: Backup and restore        # shown in indexes; any language
+summary: One line on what it is  # shown in indexes; any language
+area: area-platform              # tasks, references and lessons: the area they belong to
+repos: [infra/terraform]         # optional: repositories it touches, relative to the space's work folder
+related: [lesson-git-filters]    # optional: other ids; the program keeps links two-way
+created: 2026-10-15
+updated: 2026-10-15
+---</code></pre>
+  <p>A repository in <code>repos:</code> that is in none of the space's work folders (it was moved, renamed or deleted, or this computer never had it) is reported, never fixed by itself: <code>augmented-brain check</code> and the panel's Health page list them, and reading the task tells the assistant to ask the user where it is now. A closed task is not checked. An absolute path, or one starting with <code>~</code>, is taken as it is.</p>
+  <h3 id="task-fields">Task fields</h3>
+  <p>Tasks add the fields that drive the whole workflow:</p>
+  <pre><code>status: plan                     # see "Task lifecycle"
+waiting_on: me                   # me | nobody | a person's name | another task id
+next: Approve the plan           # the single next action, one line
+watch:                           # optional: dates to look at something again
+  - date: 2026-11-16
+    what: Certificates renewed?
+    done: false</code></pre>
+  <p>A watch date that is not <code>done</code> and falls in the next 7 days, or is already past, is brought up at the start of the session. This holds for closed tasks too: closing is when the checks for later are written down, so they come up until they are marked <code>done</code>.</p>
+  <h3 id="subtasks">Subtasks</h3>
+  <p>A task may be part of a bigger one, with one more field:</p>
+  <pre><code>parent: task-new-website         # optional: the id of the task this one is a part of</code></pre>
+  <p>A subtask is a whole task (its own status, waiting_on, next step and journal). Make one for a part that waits on someone else or goes at its own pace; anything smaller is a step (below). The rules:</p>
+  <ul><li>The parent is an existing task that is not itself a subtask: one level only. The program refuses to open a subtask under a missing task, a note that is not a task, a subtask, or a closed task.</li><li>A parent cannot be closed while any of its subtasks is not closed. Parking the parent leaves its subtasks as they are.</li><li>The index lists a live subtask under its parent, indented. A subtask whose parent is closed, someday or missing is listed on its own, so it is never hidden. A <code>parent</code> that does not exist, is not a task, is the task itself or is itself a subtask is reported as a problem (like an <code>area</code> that does not exist), and so is a <code>parent</code> on a note that is not a task; the note is still read and can still be written, and is listed on its own, once.</li></ul>
+  <h3 id="steps">Steps</h3>
+  <p>A step is a Markdown checkbox in the task's <strong>Plan</strong> section, the level-2 heading <code>## Plan</code> (numbered or not, <code>## 3. Plan</code>, any case):</p>
+  <pre><code>## 3. Plan
+- [x] Buy the domain
+- [ ] Point it to the server</code></pre>
+  <p>Steps need no field: the program finds the Plan heading and reads its checkboxes (<code>- [ ]</code> or <code>- [x]</code>, also with <code>*</code>), outside code blocks, numbered from 1 in order. The index and <code>pending</code> show how many are done (“1/2 steps”) when there are any. Adding a step puts it, unticked, at the end of the Plan; ticking or unticking one changes only its <code>[ ]</code>, and writes one line in the journal.</p>
+  <h2 id="task-lifecycle">Task lifecycle</h2>
+  <p>A task moves through six phases. You approve each change of phase; inside a phase the assistant works without asking at every step.</p>
+  <div class="table-wrap"><table><thead><tr><th><code>status</code></th><th>Meaning</th></tr></thead><tbody><tr><td><code>definition</code></td><td>What we want, what is out, and how we will know it worked</td></tr><tr><td><code>analysis</code></td><td>How things really are, measured, not assumed</td></tr><tr><td><code>plan</code></td><td>Ordered steps, each with how to undo it</td></tr><tr><td><code>execution</code></td><td>Doing it, writing a journal entry as we go</td></tr><tr><td><code>validation</code></td><td>Proving the “done” criterion</td></tr><tr><td><code>closed</code></td><td>Finished; the closing checklist is done</td></tr></tbody></table></div>
+  <p>Two more statuses pause a task without losing anything:</p>
+  <div class="table-wrap"><table><thead><tr><th><code>status</code></th><th>Meaning</th></tr></thead><tbody><tr><td><code>parked</code></td><td>Paused, resumed soon; <code>next</code> says exactly how</td></tr><tr><td><code>someday</code></td><td>Not for weeks; leaves the session index, stays in its area</td></tr></tbody></table></div>
+  <h3 id="task-body">Task body</h3>
+  <p>The body uses these sections, in your language (the templates write the headings for you):</p>
+  <ol><li><strong>Essentials</strong>: three to six lines that are enough to resume the task without reading anything else. Rewritten every time the task is parked.</li><li><strong>Definition</strong>, <strong>Analysis</strong>, <strong>Plan</strong>, <strong>Validation</strong>, <strong>Closing</strong>: one per phase.</li><li><strong>Journal</strong>: dated lines, <code>- YYYY-MM-DD — what happened</code>. Always the last section.</li></ol>
+  <p>The program never searches the prose. It relies on two positions only: the essentials are the <strong>first</strong> section, and the journal is the <strong>last</strong>, so a new entry is simply appended at the end of the file. The one exception is the checkboxes of the Plan section (see “Steps”). The program never moves journal entries: a task whose journal grows long can have its oldest entries moved to <code>archive/</code> by hand, with a link from the task.</p>
+  <h2 id="areas">Areas</h2>
+  <p>An area is something you look after with no end date (your platform, your observability, your side project). Its body says what you look after, how it is going and what to watch. The program lists its tasks and knowledge in the area automatically, from their <code>area</code> field.</p>
+  <h2 id="knowledge">Knowledge</h2>
+  <ul><li><strong>reference</strong>: how something works (a system, a deployment, a tool).</li><li><strong>lesson</strong>: something learned, with a title that already states the conclusion.</li></ul>
+  <p>Both belong to an area and can relate to tasks.</p>
+  <h2 id="people">People</h2>
+  <p>A person is someone the user deals with: <code>people/person-&lt;name&gt;.md</code>. The title is the name, and the summary says who they are to the user and the other names the user calls them (“my manager · also: Marcos”), so the index alone tells the assistant who “Marcos” is. The body keeps anything else worth remembering. People belong to a space: work contacts stay in the work space. The panel reads the role and the other names back from the summary when it changes a person; the name (title and id) stays.</p>
+  <h2 id="repositories">Repositories</h2>
+  <p>What each of the user's git repositories is lives in one reference of the space, <code>knowledge/ref-repositories.md</code> (<code>type: reference</code>, no area), so it is backed up with the notes. It is an ordinary reference: releases that know nothing of it read it as one, and it needs no new field. Its body has one line per repository:</p>
+  <pre><code>- `~/code/website` — The public website, built with Hugo</code></pre>
+  <p>The path is written with <code>~</code> when it is under the home folder (otherwise absolute), or, by hand, relative to a work folder of the space, as <code>repos:</code> writes it. The text after the dash (<code> — </code>, or <code> - </code> by hand) is one line of plain text, at most 300 characters, and may not hold a secret. Any other line (a paragraph of your own, a heading) is left alone. The panel's Repositories page and the MCP tool <code>repo_describe</code> write it, only for folders inside the space's work folders: a new description replaces the line of that repository, and an empty one takes it out. The note is made the first time.</p>
+  <h2 id="inbox">Inbox</h2>
+  <p><code>inbox.md</code> has no header. Each capture is one line, with the date it was captured:</p>
+  <pre><code>- 2026-10-17 — Look at the new CI runner
+- 2026-10-17 — Call the insurance (remind: 2026-10-22)</code></pre>
+  <p>A capture ending in <code>(remind: YYYY-MM-DD)</code> is brought up at the start of the session from 7 days before that date, and every day after it, until the capture is processed (in the weekly review, or marked as dealt with). Any other line (the heading, a paragraph) is left alone.</p>
+  <h2 id="reviews">Reviews</h2>
+  <p>The weekly review goes through the inbox (each capture becomes a task, goes to an area or knowledge, or is dropped), the live tasks untouched for 14 days or more, and the dates due in the coming week. Processed captures leave the inbox, and the review is kept as <code>reviews/review-&lt;date&gt;.md</code> (<code>type: review</code>), with what was decided as its body and the first line as its summary. When the last review is 7 days old or more and there is something to go through, the session start offers a new one. A review done in the panel keeps one line per decision while it goes on in a draft on this machine (<code>review-&lt;space&gt;.draft</code> in the configuration folder, never in the notes), and writes those lines into the review's body when it is finished.</p>
+  <h2 id="rules">Rules</h2>
+  <p>Rules tell the assistant how to work. There are three levels:</p>
+  <ul><li><strong>common rules</strong>, shipped with the program (answer style, verify before advising, never commit or push unless asked, never escalate to root, never write secrets…);</li><li><strong>shared rules</strong>, the person's own for every space, in the shared notes (for example, “answer in short sentences, one idea each”);</li><li><strong>space rules</strong>, in <code>rules/</code>, for what only applies to that space (for example, “hosts db01–db03 are never restarted without explicit permission”).</li></ul>
+  <p>All of them are loaded at the start of every session, whole. The start comes in up to nine parts, each of about 9,500 characters at most: the heading with the profile and the common rules, the index (up to three parts), and the shared and space rules (up to five parts). Only the parts that have something are sent, and they are counted that way (“part 2 of 3”). A rule's section titled <code>History</code> (or <code>Historia</code>) stays in its file: it tells how the rule came to be, not what to do. A rule that does not fit whole goes as one line, its title and summary, with the path of its file; so a rule's summary should say what to do.</p>
+  <h2 id="format-version">Format version</h2>
+  <p>The notes of each space say which version of this format they follow, in <code>.augmented-brain/format</code> inside the memory folder: one line with a number. The configuration folder says its own, for the configuration and the profile, as <code>format = N</code> at the top of <code>config.toml</code>. Neither saying it means version 1, which is also never written to <code>config.toml</code>, because releases from before versions were written refuse settings they do not know. This document describes version 1.</p>
+  <p>When a release writes something in a new way, it raises the version and brings a step that moves version N to N+1. At the start of a session (and in <code>augmented-brain check</code>) the program copies the whole folder to <code>migrations/</code> in the configuration folder, runs the missing steps one at a time and writes the new version after each, so a step that stops half way runs again from there. Notes of a newer version than the program knows are never written: the program asks to be updated.</p>
+  <h2 id="generated-files">Generated files</h2>
+  <p>The program rebuilds these after every change; editing them by hand is pointless:</p>
+  <ul><li><code>MEMORY.md</code>: your profile line, the rules, the areas, and the live tasks grouped by area, one line each, with status, steps done when the Plan has any, who it waits on and the next step; subtasks indented under their parent.</li><li>The “Tasks” and “Knowledge” lists inside each area.</li></ul>
+  <h2 id="configuration">Configuration</h2>
+  <p><code>~/.config/augmented-brain/config.toml</code> (or the platform equivalent) declares the spaces:</p>
+  <pre><code>language = "en"                  # en | es: the language the program speaks to you
+default_space = "personal"       # used outside every work folder (optional)
+production_aws_profiles = ["prod", "prod-eu"]   # every space: the user confirms first
+untouchable_hosts = ["db01", "db02", "db03"]    # ssh, scp, rsync, sftp, mosh to them: the user confirms first
+root_ask = ["db01 until 2026-10-31"]            # root there asks instead of being refused, until then
+
+[spaces.work]
+memory = "~/augmented-brain/work/notes"
+work_folders = ["~/augmented-brain/work", "~/code"]   # opening the assistant here selects this space
+backup = "git@github.com:me/brain-work-private.git"
+git_allowed_repos = ["~/code/website", "~/code/website-*"]   # the assistant may commit and push here, with git -C
+git_ask_repos = ["~/code/infra"]                # the same, once the user confirms each time
+
+[spaces.personal]
+memory = "~/augmented-brain/personal/notes"
+work_folders = ["~/augmented-brain/personal"]
+backup = "git@github.com:me/brain-personal-private.git"</code></pre>
+  <p>In <code>git_allowed_repos</code> and <code>git_ask_repos</code> the last part of a path may hold a <code>*</code>, which matches one folder (<code>~/code/website-*</code> is every <code>website-&lt;name&gt;</code> next to <code>website</code>), and a git worktree of a listed repository counts as that repository, wherever it is. The guard joins the lists of every space, as it does with the production profiles: a repository belongs to the person, not to the space a session runs in. A repository in both lists asks. Even in an allowed one, a push that rewrites or deletes on the remote (a force, a delete, a mirror, or a refspec starting with <code>+</code> or <code>:</code>) asks.</p>
+  <p>The same lists decide on merging a pull request (<code>gh pr merge</code>, <code>glab mr merge</code>, <code>glab mr accept</code>), which pushes to the branch it goes into. As a push counts only a repository written with <code>git -C</code>, a merge counts only one written in the command with a <code>cd</code> before it (<code>cd &lt;repo&gt; &amp;&amp; gh pr merge 12</code>), never the session's folder alone: the listed folder itself or a worktree of it, not a folder inside it. A repository the command names (<code>-R</code>/<code>--repo</code>, <code>GH_REPO</code>, <code>GITLAB_REPO</code>, the pull request's address) must be one of that repository's remotes, read from its <code>.git/config</code> (includes are not followed); a name with no host is on <code>github.com</code> or <code>gitlab.com</code> (or <code>GH_HOST</code>, <code>GITLAB_HOST</code>). <code>gh pr merge --admin</code> always asks. Publishing a release stays for the user.</p>
+  <p><code>production_aws_profiles</code> and <code>untouchable_hosts</code> may also appear inside a space, as older versions wrote them: the guard applies the top-level lists and every space's together. Host names match ignoring case, and a short name matches the full one either way (<code>db01</code> and <code>db01.example.com</code>).</p>
+  <p><code>root_ask</code> holds temporary exceptions for root, one machine each: <code>"&lt;host&gt; until &lt;date&gt;"</code>. The date is a day (the exception lasts to its end, in UTC) or a time (<code>2026-10-31T23:59Z</code>), and it is required, so no exception is left behind. While it lasts, a command that would run as root on that machine (<code>sudo</code>, <code>su</code>, also inside <code>ssh &lt;host&gt; '…'</code>) asks the user instead of being refused; the command it runs is still checked. The host is matched as ssh names it, or against this machine's name. After the date the entry does nothing, and <code>augmented-brain doctor</code> says it can be removed. The session start tells the assistant which exceptions are in force, and names those that cannot be read (they grant nothing); <code>doctor</code> names those too.</p>
+  <p><code>secrets.toml</code>, next to <code>config.toml</code>, names the secrets the user keeps in the system keychain: <code>secrets = ["&lt;service&gt;/&lt;name&gt;: what it is for", …]</code>. It is a file of its own, not a setting of <code>config.toml</code>, because programs before 0.6.0 refuse a setting they do not know; 0.6.0 kept the list in <code>config.toml</code>, and 0.6.1 moves it here at the start of a session or with <code>check</code>. The service and the name are single words (letters, digits, <code>. _ @ + -</code>, not starting with <code>-</code>), and what it is for is one line of plain text (no quotes, backslashes or control characters), as the keychain knows them (<code>secret-tool</code> attributes <code>service</code> and <code>name</code> on Linux; a generic password's service and account on macOS). It never holds a value: anything that looks like one is refused. It is the same list in every space. The assistant adds to it with the MCP tool <code>secret_name_save</code> (saving a listed name changes what it is for); the panel lists it, adds and removes names, says which tasks name each one, and, only when asked, whether this computer's keychain has it. An entry that cannot be read is left out and counted on the panel's page.</p>
+  <h2 id="backup">Backup</h2>
+  <p>Each space backs up to its own private git repository: the memory folder itself is the repository. Every backup also copies this space's part of the configuration into <code>.augmented-brain/</code> inside the memory folder, so restoring on a new machine needs nothing else. The default space's backup (or the only space's) also carries the profile and <code>secrets.toml</code>, and says <code>default_space</code> in its copy of the configuration, so a restore makes it the default space again when the machine has none, and brings the secrets' names when the machine has none (also from a 0.6.0 backup, which kept them in its copy of the configuration), then names those this machine's keychain lacks; no other backup does, so the personal profile never reaches a work repository. The machine-wide guard lists are in no backup (they may name work machines): after a restore that leaves them empty, <code>restore</code> and <code>doctor</code> say so, and the next session offers to ask for them again. A restore never brings <code>git_allowed_repos</code> or <code>git_ask_repos</code> either, since someone else may have changed the backup: they are given again on the new machine. A backup that holds a symbolic link is never restored, nor merged with another machine's, since augmented brain never writes one. Notes are written readable by their owner only (files 0600, folders 0700); a restore makes the restored notes so, <code>augmented-brain check</code> fixes a space whose notes others could read, and <code>augmented-brain doctor</code> warns about it. Paths are kept with <code>~</code>, so they point to the new machine's home, and the notes go back to the same place inside the work folder. A restore also installs the Claude Code plugin when it is missing.</p>
+  <p>A backup is refused while any file of the memory holds a secret (the made-up keys of AWS's documentation are not secrets). The tools refuse to write one in the first place: a note may not hold more secrets than its old version did, so a note that already holds one (as an import may leave it) can still be changed to take it out. Files over 50 MB are left out, and the user is told. The repository gets a <code>.gitattributes</code> (<code>inbox.md merge=union</code>: captures from two machines are both kept, so one processed on one machine may come back if the other captured at the same time) and a <code>.gitignore</code> (<code>*.tmp</code>, <code>.DS_Store</code>, <code>Thumbs.db</code>, <code>desktop.ini</code>); lines the user adds to them stay. The generated index is rebuilt after a restore.</p>
+  <p>When another machine changed the same notes, the backup merges before pushing. A note that each machine changed only by adding journal entries (dated lines) and moving its <code>updated</code> date is joined by itself: every entry either added, in date order, and the later date. Any other conflict stops the backup without pushing, naming the notes to merge by hand.</p>
+  <h2 id="state-of-this-machine">State of this machine</h2>
+  <p><code>state/&lt;space&gt;.json</code> in the configuration folder keeps, for this machine only (never backed up, no text of the conversation): the active task and when it was last written, when the assistant was last reminded to write, and the sessions that started and ended, with the path of Claude Code's transcript of each. The Stop reminder, the request after a compaction and the offer to recover a session that did not end come from it.</p>
+  <p><code>panel.json</code>, also in the configuration folder and readable only by the user, says where the panel listens while it runs (its process, port and key); it goes away when the panel stops. <code>panel.lock</code>, next to it, lets one <code>augmented-brain panel</code> (or <code>panel stop</code>) at a time start or stop the panel, so several at once start only one. The panel changes notes only through the same code as the MCP tools.</p>
+  <h2 id="decisions">Decisions</h2>
+  <ul><li><strong>A folder per type</strong>, not one flat folder with prefixes: a newcomer sees at a glance what there is and where each thing goes.</li><li><strong>One profile for the person</strong>, next to the configuration; each space may add its own <code>profile.md</code>.</li><li><strong>Shared notes, not spaces that read each other.</strong> What holds everywhere lives once, in the shared notes, rather than copied into each space (copies drift) or by letting a space read another's memory (which would mix work and personal). Only rules and knowledge can be shared; tasks, areas and people stay in their space.</li><li><strong>Importing an existing memory</strong> of Claude Code (<code>augmented-brain import</code>) reads the header only: a field this format has is kept, at the top or under <code>metadata</code>; a person's own conventions are turned into those fields by a step of their own before importing, not by the program. It plans first and writes only with <code>--apply</code>, never over an existing note, and never changes the source.</li></ul>
+  <nav class="pager" aria-label="Previous / Next">
+    <a class="prev" href="configuration.html"><span>← Previous</span>Configuration</a>
+    <a class="next" href="troubleshooting.html"><span>Next →</span>Troubleshooting</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

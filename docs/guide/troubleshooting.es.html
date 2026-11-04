@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Si algo falla · augmented brain</title>
+<meta name="description" content="Problemas con augmented brain y cómo arreglarlos: doctor, la página de Ayuda del panel, el guardia, la copia de seguridad, las notas, el panel y las sesiones; y preguntas frecuentes.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Si algo falla · augmented brain">
+<meta property="og:description" content="Problemas y arreglos, doctor, y preguntas frecuentes.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Si algo falla · augmented brain">
+<meta name="twitter:description" content="Problemas y arreglos, doctor, y preguntas frecuentes.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="troubleshooting.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html" aria-current="page">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Si algo falla</h1>
+  <p>Algo no va bien. Empieza por aquí: abre una terminal y escribe</p>
+  <pre><code>augmented-brain doctor</code></pre>
+  <p>Revisa toda la instalación y te dice qué falta y cómo arreglarlo. Cada línea empieza con una marca: <code>✓</code> bien, <code>·</code> para que lo sepas, <code>!</code> un aviso, <code>✗</code> algo que falla. Debajo de una línea que pide arreglo, <code>→</code> dice qué hacer.</p>
+  <p>Si tienes el panel abierto, su página <strong>Ayuda</strong> tiene enlaces a estas respuestas y un botón para avisar de un problema en GitHub, con la revisión de salud ya puesta y sin lo que es personal. Lo tienes en <a href="panel.es.html#ayuda">El panel</a>.</p>
+  <h2 id="problemas-y-arreglos">Problemas y arreglos</h2>
+  <h3 id="claude-no-conoce-mis-tareas-o-se-salta-la-entrevista">Claude no conoce mis tareas, o se salta la entrevista</h3>
+  <ul><li><strong>Claude Code te preguntó si confías en la carpeta.</strong> La primera vez que abres Claude en una carpeta, Claude Code lo pregunta antes de cargar nada. Di que sí en tus carpetas de trabajo. Hasta entonces, augmented brain no puede cargar tus notas.</li><li><strong>La sesión empezó antes de instalar.</strong> Empieza una sesión nueva.</li><li><strong>Estás en otro espacio.</strong> Escribe <code>augmented-brain space</code> en esa carpeta. Fuera de las carpetas de tus espacios, se usa el espacio por defecto. Para que una carpeta cuente para un espacio, añádela a sus <code>work_folders</code> (lo tienes en <a href="spaces.es.html">Espacios</a>).</li></ul>
+  <h3 id="la-terminal-no-encuentra-un-comando">La terminal no encuentra un comando</h3>
+  <p><code>command not found</code>, o “no se reconoce” en Windows. Cierra la terminal y abre otra: la que usabas aún no ve el PATH nuevo.</p>
+  <h3 id="claude-code-para-todos-los-comandos-y-cambios-de-ficheros">Claude Code para todos los comandos y cambios de ficheros</h3>
+  <p>El guardia no puede ejecutarse, así que Claude Code lo para todo en vez de dejarlo pasar. Falta el programa o está roto. Escribe <code>augmented-brain doctor</code>. Comprueba que <code>augmented-brain</code> está en tu PATH o en <code>~/.local/bin</code>. Volver a instalar lo arregla.</p>
+  <h3 id="todos-los-comandos-de-powershell-se-paran">Todos los comandos de PowerShell se paran</h3>
+  <p>Es lo esperado, en Windows. El guardia lee la shell, no PowerShell, así que para los comandos de PowerShell y Claude los lanza en Git Bash.</p>
+  <h3 id="claude-pregunta-antes-de-cada-comando-aws-o-ssh">Claude pregunta antes de cada comando aws o ssh</h3>
+  <p>No se puede leer la configuración, así que el guardia no conoce tus listas y pregunta por si acaso. <code>augmented-brain doctor</code> nombra el problema. Si dice “unknown settings”, el fichero tiene una línea que esta versión no conoce: una errata, o un ajuste de una versión más nueva. Entonces actualiza con <code>augmented-brain update</code>. Lo tienes en <a href="configuration.es.html">Configuración</a>.</p>
+  <h3 id="claude-no-puede-hacer-push-aunque-se-lo-pida">Claude no puede hacer push, aunque se lo pida</h3>
+  <p>El guardia para <code>git commit</code> y <code>git push</code> salvo que el repositorio esté en la lista. Haz tú el push, o añade el repositorio a <code>git_allowed_repos</code> (o a <code>git_ask_repos</code>) y pide a Claude que use <code>git -C &lt;repo&gt;</code>. Lo tienes en <a href="guard.es.html#deja-que-claude-haga-commit-en-un-repositorio">El guardia</a>.</p>
+  <h3 id="claude-necesita-root-en-una-máquina">Claude necesita root en una máquina</h3>
+  <p>Claude te da el comando exacto para que lo lances tú. Para una migración que necesita muchos comandos, añade una excepción con fecha, <code>root_ask = ["db01 until 2026-12-31"]</code>. Así root en esa máquina te pregunta cada vez, hasta esa fecha.</p>
+  <h3 id="las-herramientas-de-augmented-brain-fallan-después-de-actualizar">Las herramientas de augmented brain fallan después de actualizar</h3>
+  <p>Una sesión que estaba abierta sigue con el programa antiguo. Ciérrala y vuelve a abrirla. <code>augmented-brain doctor</code> dice cuántas sesiones siguen con la versión antigua.</p>
+  <h3 id="written-by-a-newer-augmented-brain">“Written by a newer augmented brain”</h3>
+  <p>Una versión más nueva, en otro ordenador, pasó las notas a un formato nuevo. Actualiza también este ordenador: <code>augmented-brain update</code>. El programa antiguo rechaza las notas en vez de romperlas.</p>
+  <h3 id="ha-fallado-la-copia-de-seguridad">Ha fallado la copia de seguridad</h3>
+  <p>Claude te lo dice al empezar la siguiente sesión. Escribe <code>augmented-brain backup</code> en una carpeta del espacio para ver por qué:</p>
+  <ul><li><strong>No hay red, o no hay acceso.</strong> Comprueba que llegas al repositorio. En GitHub, entra con <code>gh auth login</code>.</li><li><strong>Un secreto en una nota.</strong> Dice qué fichero es. Quita el secreto y vuelve a hacer la copia. <code>augmented-brain check</code> también nombra esos ficheros.</li><li><strong>Dos máquinas cambiaron la misma nota.</strong> Nombra las notas, y la carpeta donde juntarlas a mano. Cuando cada máquina solo añadió entradas al diario, se juntan solas.</li><li><strong>Un fichero de más de 50 MB.</strong> Se queda fuera, y el resto se copia. Sácalo de la carpeta de notas.</li></ul>
+  <h3 id="una-nota-no-es-válida">Una nota no es válida</h3>
+  <p><code>augmented-brain check</code> en una carpeta del espacio lista cada problema con su fichero. Arregla a mano la cabecera (entre las líneas <code>---</code>) y vuelve a lanzar <code>check</code>. Hasta entonces, el índice no se rehace, pero las herramientas siguen funcionando.</p>
+  <h3 id="un-repositorio-no-está-en-este-ordenador">Un repositorio “no está en este ordenador”</h3>
+  <p>Una tarea nombra en <code>repos:</code> un repositorio que no está en ninguna carpeta de trabajo del espacio. Se movió, se cambió de nombre o se borró, o este ordenador nunca lo tuvo. Dile a Claude dónde está ahora, o quítalo de la tarea.</p>
+  <h3 id="claude-code-guarda-una-segunda-memoria">Claude Code guarda una segunda memoria</h3>
+  <p><code>doctor</code> avisa de que Claude Code guarda una memoria propia para tus carpetas. Se desvía de la del espacio. Añade <code>"autoMemoryEnabled": false</code> al fichero de ajustes que nombra <code>doctor</code>. Lo que ya tiene se queda, y puedes <a href="import.es.html">traerlo</a>.</p>
+  <h3 id="otros-usuarios-pueden-leer-mis-notas">Otros usuarios pueden leer mis notas</h3>
+  <p><code>doctor</code> te avisa. Escribe <code>augmented-brain check</code> en una carpeta del espacio: deja las notas solo para ti.</p>
+  <h3 id="el-panel-no-se-abre-o-su-dirección-ha-dejado-de-funcionar">El panel no se abre, o su dirección ha dejado de funcionar</h3>
+  <p>En un ordenador sin pantalla, <code>augmented-brain panel</code> escribe la dirección para que la abras tú. La dirección lleva una clave que cambia cada vez que arranca el panel, y el panel se para después de 30 minutos sin usarlo. Vuelve a lanzar <code>augmented-brain panel</code> para tener una dirección nueva.</p>
+  <h3 id="una-sesión-se-cortó">Una sesión se cortó</h3>
+  <p>La ventana se cerró a la fuerza, o el ordenador se apagó. La siguiente sesión te ofrece recuperarla. Di que sí, o ve a la página Sesiones del panel. Claude Code guarda cada conversación 30 días.</p>
+  <h3 id="después-de-recuperar-una-copia-nada-pregunta-antes-de-tocar-producción">Después de recuperar una copia, nada pregunta antes de tocar producción</h3>
+  <p>Las copias de seguridad no llevan las listas del guardia. Abre una sesión de Claude: se ofrece a preguntártelas. O añade tú <code>production_aws_profiles</code> y <code>untouchable_hosts</code> a la configuración.</p>
+  <h3 id="windows-los-acentos-salen-mal-sesiã³n">Windows: los acentos salen mal (<code>sesiÃ³n</code>)</h3>
+  <p>Windows PowerShell 5.1 lee mal lo que escriben otros programas cuando lo captura. El texto está bien: en Git Bash, o en una ventana, se ve bien.</p>
+  <h3 id="macos-no-se-abrió-la-ventana-de-las-herramientas-de-desarrollo">macOS: no se abrió la ventana de las herramientas de desarrollo</h3>
+  <p>Escribe <code>xcode-select --install</code>, y después otra vez el comando de instalación.</p>
+  <p>Más problemas del instalador, en cada sistema: <a href="install.es.html#si-algo-falla">Instalación</a>.</p>
+  <h2 id="preguntas">Preguntas</h2>
+  <h3 id="es-gratis">¿Es gratis?</h3>
+  <p>augmented brain sí: código abierto, licencia MIT, sin cuenta y sin suscripción. Pero trabaja con Claude Code, que necesita un plan de pago de Claude (Pro o superior).</p>
+  <h3 id="mis-notas-salen-de-mi-ordenador">¿Mis notas salen de mi ordenador?</h3>
+  <p>augmented brain no las manda a ningún sitio. Pero tu asistente las lee para trabajar, como cualquier fichero que abre, así que viajan con la conversación a su proveedor. Con copia de seguridad, van también al repositorio privado que elegiste.</p>
+  <h3 id="puedo-editar-las-notas-a-mano">¿Puedo editar las notas a mano?</h3>
+  <p>Sí, son ficheros Markdown. Después, escribe <code>augmented-brain check</code>.</p>
+  <h3 id="con-qué-asistentes-funciona">¿Con qué asistentes funciona?</h3>
+  <p>Hoy, con Claude Code. Las herramientas son un servidor MCP, un estándar abierto, así que pueden venir otros asistentes.</p>
+  <h3 id="y-si-dejo-de-usarlo">¿Y si dejo de usarlo?</h3>
+  <p>Tus notas se quedan donde están, como ficheros normales. No hay nada que exportar. Lo tienes en <a href="install.es.html#desinstalar">Instalación</a>.</p>
+  <h2 id="sigues-atascado">¿Sigues atascado?</h2>
+  <p>Cuéntalo en <a href="https://github.com/icalvete/augmented-brain/issues">las incidencias del proyecto</a>, con lo que salió en pantalla y lo que dice <code>augmented-brain doctor</code>. La página Ayuda del panel lo rellena por ti.</p>
+  <p>Lo que cambia en cada versión está en el <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">registro de cambios</a> (en inglés).</p>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="memory-format.html"><span>← Anterior</span>Formato de la memoria (en inglés)</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

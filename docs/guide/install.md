@@ -140,13 +140,25 @@ configuration in `%APPDATA%\augmented-brain`; your notes in
 
 ## Updating
 
+When a new version is out, Claude tells you at the start of a session and offers to
+update it. You can also do it yourself:
+
 ```bash
 augmented-brain update
 ```
 
-It updates the program and the Claude Code plugin; your notes and settings stay. Claude
-tells you when a new version is out. Close and open the Claude sessions you had open, so
-they use it too. Running the install command again does the same.
+It updates the program and the Claude Code plugin. Running the install command again
+does the same. `augmented-brain update --plugin` updates only the plugin.
+
+Then close and open Claude. A session that was open keeps the old program until you do,
+and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new
+session tell you how many sessions still run the old version.
+
+Your notes and settings stay as they are. Sometimes a new version stores notes in a new
+way. Then the first session moves them to the new way, after keeping a full copy in the
+`migrations/` folder of the configuration, and Claude tells you. An older version never
+breaks notes a newer one wrote: it refuses them and asks to be updated. So update every
+computer you use.
 
 ## Uninstalling
 
@@ -154,13 +166,23 @@ they use it too. Running the install command again does the same.
 augmented-brain uninstall
 ```
 
-It removes the program, the Claude Code plugin and what Claude Code keeps of it (its cache,
-its data and its server's logs). **Your notes stay**, and so does the configuration unless you add
-`--config`. To start from scratch, `--all` removes the configuration, your profile and
-every space's notes too, after showing what and asking. Claude Code, its desktop app, git and the PATH
-entry stay too: Claude Code lives in that same folder. On Windows the program file
-disappears a moment after the command ends, because Windows does not let a running program
-delete itself.
+It shows what it will remove and asks. It removes the program, the Claude Code plugin and
+what Claude Code keeps of it (its cache, its data and its server's logs).
+
+- **Your notes stay** in `~/augmented-brain/`: they are yours. If you install it again,
+  you find everything as it was.
+- **The configuration stays** too. `--config` removes it, with your profile.
+- **To start from scratch**, `--all` also removes every space's notes. First it shows each
+  folder with how many notes it has, and asks. Anything of yours inside a space's folder
+  stays. Your backup on GitHub is not deleted: it says which one it is and how to delete
+  it.
+- Claude Code, its desktop app, git and the PATH entry stay: Claude Code lives in that
+  same folder.
+
+On Windows the program file disappears a moment after the command ends, because Windows
+does not let a running program delete itself.
+
+All the commands and their options: [Commands](commands.md).
 
 ## If something goes wrong
 
@@ -188,5 +210,6 @@ delete itself.
   other programs write when it captures it (a redirection, a remote session). The text is
   right: in Git Bash, or in a window, it shows well.
 - **Claude asks for a paid plan.** Claude Code needs Pro or above.
-- **Something else.** Tell us in [the project's issues](https://github.com/icalvete/augmented-brain/issues),
-  with what showed up on screen.
+- **Something else.** See [Troubleshooting](troubleshooting.md), or tell us in
+  [the project's issues](https://github.com/icalvete/augmented-brain/issues), with what
+  showed up on screen.

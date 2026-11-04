@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tareas · augmented brain</title>
+<meta name="description" content="Las tareas de augmented brain: cómo es el fichero de una tarea, las seis fases, aparcar y retomar, el diario, pasos y subtareas, fechas para revisar y cerrar.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/tasks.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/tasks.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/tasks.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/tasks.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Tareas · augmented brain">
+<meta property="og:description" content="Seis fases, aparcar y retomar, pasos y subtareas, fechas para revisar.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/tasks.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tareas · augmented brain">
+<meta name="twitter:description" content="Seis fases, aparcar y retomar, pasos y subtareas, fechas para revisar.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="tasks.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html" aria-current="page">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Tareas</h1>
+  <p>Dices “nueva tarea: mudar el blog a otro hosting”. Claude abre una tarea. Acordáis qué significa “hecho” y, después, un plan. Por la tarde dices “apárcala”. La semana siguiente, en una sesión nueva, dices “seguimos con el blog”, y Claude la retoma donde la dejaste.</p>
+  <p>Una <strong>tarea</strong> es cualquier trabajo con principio y fin. Es un fichero de texto en la carpeta <code>tasks/</code> del espacio.</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#cómo-es-una-tarea">Cómo es una tarea</a></li><li><a href="#las-seis-fases">Las seis fases</a></li><li><a href="#a-quién-espera-y-qué-viene-después">A quién espera, y qué viene después</a></li><li><a href="#aparcar-y-retomar">Aparcar y retomar</a></li><li><a href="#el-diario-sobre-la-marcha">El diario, sobre la marcha</a></li><li><a href="#pasos-y-subtareas">Pasos y subtareas</a></li><li><a href="#fechas-para-volver-a-mirar-algo">Fechas para volver a mirar algo</a></li><li><a href="#cerrar">Cerrar</a></li><li><a href="#por-dónde-seguir">Por dónde seguir</a></li></ul></nav>
+  <h2 id="cómo-es-una-tarea">Cómo es una tarea</h2>
+  <pre><code>---
+id: task-mudar-el-blog
+type: task
+title: Mudar el blog
+area: area-blog
+status: parked
+waiting_on: me
+next: Copiar la base de datos al hosting nuevo
+created: "2026-10-15"
+updated: "2026-10-16"
+---
+## Lo esencial
+El blog se muda a un hosting más barato. Plan acordado: copiar, probar, cambiar el dominio.
+Hecho: el hosting nuevo está listo. Siguiente: copiar la base de datos.
+
+## 3. Plan
+- [x] Abrir una cuenta en el hosting nuevo
+- [ ] Copiar la base de datos
+- [ ] Cambiar el dominio
+
+## Diario
+- 2026-10-15 — Tarea abierta.
+- 2026-10-16 — Vamos con el hosting más barato: misma velocidad, la mitad de precio.
+- 2026-10-16 — Aparcada. Siguiente: Copiar la base de datos al hosting nuevo</code></pre>
+  <p>La parte entre las líneas <code>---</code> es la <strong>cabecera</strong>: los datos que lee el programa. Debajo va texto libre, en cualquier idioma. La primera sección es siempre <strong>lo esencial</strong>: unas pocas líneas que bastan para retomar la tarea. La última es siempre el <strong>diario</strong>: líneas con fecha de lo que ha pasado.</p>
+  <p>Puedes abrir y editar el fichero con cualquier editor. El formato completo está en el <a href="memory-format.html">formato de la memoria</a> (en inglés).</p>
+  <h2 id="las-seis-fases">Las seis fases</h2>
+  <p>Una tarea pasa por seis fases. <strong>Tú apruebas cada cambio de fase.</strong> Dentro de una fase, Claude trabaja sin preguntarte a cada paso.</p>
+  <ol><li><strong>Definición</strong>: qué queremos, qué queda fuera y cómo sabremos que ha funcionado.</li><li><strong>Análisis</strong>: cómo están de verdad las cosas, medido, no supuesto.</li><li><strong>Plan</strong>: pasos en orden, cada uno con cómo deshacerlo.</li><li><strong>Ejecución</strong>: hacerlo, apuntando en el diario sobre la marcha.</li><li><strong>Validación</strong>: demostrar el criterio de “hecho”.</li><li><strong>Cerrada</strong>: terminada. Se guarda, no se borra nunca.</li></ol>
+  <p>La fase es el <code>status</code> de la tarea. Dos estados más pausan una tarea sin perder nada:</p>
+  <ul><li><strong>parked</strong>: aparcada, para retomarla pronto. <code>next</code> dice exactamente cómo.</li><li><strong>someday</strong>: algún día, no para estas semanas. Sale de la lista que Claude lee al empezar, y se queda en su área.</li></ul>
+  <h2 id="a-quién-espera-y-qué-viene-después">A quién espera, y qué viene después</h2>
+  <p>Cada tarea dice dos cosas más:</p>
+  <ul><li><strong>waiting_on</strong>: <code>me</code> (tú), <code>nobody</code> (nadie), el nombre de una persona u otra tarea.</li><li><strong>next</strong>: la siguiente acción, una sola, en una línea.</li></ul>
+  <p>Eso es lo que te enseña “¿en qué estábamos?”: cada tarea viva, primero las que te esperan a ti, con su siguiente paso.</p>
+  <h2 id="aparcar-y-retomar">Aparcar y retomar</h2>
+  <p>Antes de pasar a otro trabajo, di “apárcala”. Claude apunta tres cosas: el siguiente paso exacto, a quién espera y lo esencial, reescrito para que otra sesión pueda retomarla sin leerse todo el diario.</p>
+  <p>Para retomarla, di “seguimos con el blog”. Claude lee primero la tarea. Luego comprueba el estado real de lo que toca la tarea (los ficheros, el servidor) antes de fiarse de la nota. Las cosas pueden haber cambiado desde entonces.</p>
+  <h2 id="el-diario-sobre-la-marcha">El diario, sobre la marcha</h2>
+  <p>Cada decisión o paso terminado va al diario en el momento, no solo al aparcar. Una sesión puede acabar en cualquier momento, y lo que no está en la nota se pierde.</p>
+  <p>Si hay una tarea abierta y en 20 minutos no se ha escrito nada en ella, Claude recibe un recordatorio al final de su respuesta, una vez. Cuando una conversación larga se compacta (Claude Code cambia los detalles por un resumen), el resumen se guarda en <code>archive/sessions/</code>, y el diario apunta a él.</p>
+  <h2 id="pasos-y-subtareas">Pasos y subtareas</h2>
+  <p>Una tarea grande se puede partir de dos maneras.</p>
+  <p>Un <strong>paso</strong> es una parte pequeña: una casilla del Plan de la tarea, como <code>- [ ] Copiar la base de datos</code>. Claude la marca cuando está hecha. La lista de tareas dice cuántos van hechos (“1/3 pasos”).</p>
+  <p>Una <strong>subtarea</strong> es una parte con vida propia, porque espera a otra persona o lleva su propio ritmo. Por ejemplo, “Pedirle a Diego la contraseña del dominio” espera a Diego, mientras tú sigues con lo demás. Una subtarea es una tarea entera, con una línea más en su cabecera: <code>parent: task-mudar-el-blog</code>.</p>
+  <ul><li>Un solo nivel: una subtarea no tiene subtareas.</li><li>La tarea grande se cierra la última, cuando todas sus subtareas están cerradas.</li><li>Aparcar la tarea grande deja sus subtareas como están.</li></ul>
+  <p>Regla práctica: si espera a alguien o lleva su propio ritmo, es una subtarea. Si no, es un paso.</p>
+  <h2 id="fechas-para-volver-a-mirar-algo">Fechas para volver a mirar algo</h2>
+  <p>Algunas comprobaciones son de un día: “el 16, ¿se ha renovado el certificado?”. Díselo a Claude y añade una <strong>fecha para revisar</strong> a la tarea. Desde 7 días antes, y cada día después, Claude te lo dice al empezar la sesión, hasta que se marque como hecha.</p>
+  <p>También vale en una tarea cerrada. Al cerrar es cuando muchas veces apuntas lo que hay que comprobar después.</p>
+  <p>Para algo que no es una tarea (“recuérdame el jueves que llame al seguro”), Claude usa el buzón: mira <a href="notes.es.html#buzón">Áreas, conocimiento y lo demás</a>.</p>
+  <h2 id="cerrar">Cerrar</h2>
+  <p>Di “cierra la tarea”. Claude apunta el resultado, y la tarea se queda en su carpeta, marcada como cerrada. Nunca se borra nada.</p>
+  <p>Una tarea que nadie ha cambiado en 14 días sale en la <a href="weekly-review.es.html">revisión semanal</a>, para que nada se pare en silencio.</p>
+  <h2 id="por-dónde-seguir">Por dónde seguir</h2>
+  <ul><li><a href="phrases.es.html">Qué decirle a Claude</a>: las frases para todo esto.</li><li><a href="mcp-tools.es.html">Herramientas MCP</a>: las herramientas que usa Claude detrás de cada frase.</li></ul>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="spaces.es.html"><span>← Anterior</span>Espacios</a>
+    <a class="next" href="notes.es.html"><span>Siguiente →</span>Áreas, conocimiento y lo demás</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

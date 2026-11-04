@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spaces · augmented brain</title>
+<meta name="description" content="Spaces in augmented brain: work and personal kept apart, how the folder you open Claude in picks the space, the default space, adding a space and the shared notes.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/spaces.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/spaces.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/spaces.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/spaces.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Spaces · augmented brain">
+<meta property="og:description" content="Work and personal apart: the folder you open Claude in picks the space.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/spaces.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Spaces · augmented brain">
+<meta name="twitter:description" content="Work and personal apart: the folder you open Claude in picks the space.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="index.html">Docs</a>
+    <a href="spaces.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Docs">
+<details open id="docnav"><summary>Documentation menu</summary>
+<p class="docnav-group">Get started</p>
+<ul>
+  <li><a href="getting-started.html">Getting started</a></li>
+  <li><a href="install.html">Installing</a></li>
+</ul>
+<p class="docnav-group">Concepts</p>
+<ul>
+  <li><a href="spaces.html" aria-current="page">Spaces</a></li>
+  <li><a href="tasks.html">Tasks</a></li>
+  <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="guard.html">The guard</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
+</ul>
+<p class="docnav-group">Daily use</p>
+<ul>
+  <li><a href="phrases.html">What to say to Claude</a></li>
+  <li><a href="panel.html">The panel</a></li>
+  <li><a href="weekly-review.html">The weekly review</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
+</ul>
+<p class="docnav-group">Reference</p>
+<ul>
+  <li><a href="commands.html">Commands</a></li>
+  <li><a href="mcp-tools.html">MCP tools</a></li>
+  <li><a href="configuration.html">Configuration</a></li>
+  <li><a href="memory-format.html">Memory format</a></li>
+</ul>
+<p class="docnav-group">Help</p>
+<ul>
+  <li><a href="troubleshooting.html">Troubleshooting</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Spaces</h1>
+  <p>You open Claude in <code>~/augmented-brain/work/website</code>. It sees your work tasks, your work rules and the people from work. You open it in <code>~/augmented-brain/personal/blog</code>. Now it sees your personal notes, and nothing from work.</p>
+  <p>That is a <strong>space</strong>: a full set of notes, rules and backup, kept apart from the others. The installer creates two, <code>work</code> and <code>personal</code> (in Spanish, <code>trabajo</code> and <code>personal</code>).</p>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#the-folder-picks-the-space">The folder picks the space</a></li><li><a href="#outside-every-space">Outside every space</a></li><li><a href="#your-projects-live-elsewhere">Your projects live elsewhere?</a></li><li><a href="#add-a-space">Add a space</a></li><li><a href="#what-each-space-has-and-what-they-share">What each space has, and what they share</a></li><li><a href="#shared-notes">Shared notes</a></li><li><a href="#next">Next</a></li></ul></nav>
+  <h2 id="the-folder-picks-the-space">The folder picks the space</h2>
+  <p>Each space has one or more <strong>work folders</strong>. When you open Claude inside one of them, you are in that space. The space's notes live in a <code>notes/</code> folder inside it:</p>
+  <pre><code>~/augmented-brain/
+├── work/          a work folder: open Claude here for work
+│   ├── notes/     the work notes
+│   └── website/   a project of yours
+└── personal/      and here for personal things
+    └── notes/</code></pre>
+  <p>The configuration file says which folders belong to which space:</p>
+  <pre><code># ~/.config/augmented-brain/config.toml
+default_space = "personal"
+
+[spaces.work]
+memory = "~/augmented-brain/work/notes"
+work_folders = ["~/augmented-brain/work", "~/code"]
+
+[spaces.personal]
+memory = "~/augmented-brain/personal/notes"
+work_folders = ["~/augmented-brain/personal"]</code></pre>
+  <p><code>memory</code> is where the notes are. <code>work_folders</code> are the folders that pick the space.</p>
+  <p>To know which space a folder belongs to, run this in it:</p>
+  <pre><code>augmented-brain space</code></pre>
+  <h2 id="outside-every-space">Outside every space</h2>
+  <p>The desktop app starts each new session in a scratch folder of its own. That folder is in no space. Then the <strong>default space</strong> is used, <code>personal</code> unless you change it, and Claude tells you in one line, with how to switch to work.</p>
+  <p>The default space matters for one more thing: its backup carries your profile and the shared notes. Set it with <code>default_space</code> in the configuration. With a single space, it is that one.</p>
+  <h2 id="your-projects-live-elsewhere">Your projects live elsewhere?</h2>
+  <p>If your code is in <code>~/code</code>, add that folder to the <code>work_folders</code> of the right space, as in the example above. Then opening Claude in <code>~/code/shop</code> uses the work space.</p>
+  <h2 id="add-a-space">Add a space</h2>
+  <p>For a client, a side project or a volunteer job:</p>
+  <pre><code>augmented-brain space add client</code></pre>
+  <p>It asks for the work folder and the notes folder, suggesting <code>~/augmented-brain/client</code> and <code>~/augmented-brain/client/notes</code>. Press Enter to accept. If there was no default space yet, it sets one. The options are in <a href="commands.html#augmented-brain-space-add">Commands</a>.</p>
+  <h2 id="what-each-space-has-and-what-they-share">What each space has, and what they share</h2>
+  <p>Each space has its own:</p>
+  <ul><li>notes: tasks, areas, knowledge, people, inbox, reviews;</li><li>rules, on top of the common ones;</li><li>backup repository.</li></ul>
+  <p>Every space shares:</p>
+  <ul><li><strong>your profile</strong>: who you are and how you like to work. You are the same person at work and at home.</li><li><strong>the shared notes</strong>: rules, references and lessons that hold everywhere (below).</li><li><strong>the guard's lists</strong>: production AWS profiles, machines not to touch, and the repositories where Claude may commit. They hold on the whole machine. A production profile saved from the work space is guarded in the personal one too.</li></ul>
+  <p>Spaces never read each other's notes.</p>
+  <h2 id="shared-notes">Shared notes</h2>
+  <p>Some things you learn hold everywhere: how git behaves, how you like answers, a lesson about a tool. Saving them once per space would leave two copies that drift apart. So they go once in the <strong>shared notes</strong>, next to your profile, in <code>shared/</code> inside the configuration folder.</p>
+  <p>Only rules, references and lessons can be shared. Tasks, areas and people always belong to one space.</p>
+  <p>You do not move files by hand. Tell Claude “this holds everywhere” and it saves the note as shared. Every session loads the shared rules, and lists the shared references and lessons for Claude to open when it needs them. They travel in the backup of the default space, with your profile.</p>
+  <h2 id="next">Next</h2>
+  <ul><li><a href="tasks.html">Tasks</a>: what goes inside a space.</li><li><a href="configuration.html">Configuration</a>: every setting of a space.</li></ul>
+  <nav class="pager" aria-label="Previous / Next">
+    <a class="prev" href="install.html"><span>← Previous</span>Installing</a>
+    <a class="next" href="tasks.html"><span>Next →</span>Tasks</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

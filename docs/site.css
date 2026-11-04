@@ -282,3 +282,45 @@ section[id] { scroll-margin-top: 16px; }
 @keyframes demo-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes demo-dot { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
 @media (max-width: 600px) { .demo.on .demo-body { height: 480px; } .demo .bubble { max-width: 94%; } }
+
+/* documentation: a sidebar with every page by group, the page beside it. On a narrow
+   screen the sidebar folds into a menu above the page. */
+.docs { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 40px; max-width: 1120px; }
+.docs .prose { max-width: 720px; min-width: 0; }
+.docnav { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding-block: 24px 40px; font-size: 0.93rem; }
+.docnav summary { display: none; }
+.docnav-group { font: 700 0.74rem var(--display); text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage); margin: 14px 0 4px 10px; }
+.docnav-group:first-of-type { margin-top: 0; }
+.docnav ul { list-style: none; margin: 0; padding: 0; }
+.docnav a { display: block; padding: 4px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; line-height: 1.4; }
+.docnav a:hover { color: var(--ink); background: var(--code); }
+.docnav a[aria-current="page"] { color: var(--ink); background: var(--soft); font-weight: 600; }
+.prose h2[id], .prose h3[id] { scroll-margin-top: 16px; }
+.prose h3 { margin: 26px 0 10px; }
+.toc { margin: 4px 0 26px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 12px; font-size: 0.93rem; }
+.toc p { font: 700 0.74rem var(--display); text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage); margin: 0 0 6px; }
+.toc ul { margin: 0; padding-left: 1.1em; columns: 2; column-gap: 28px; }
+.toc li { margin-bottom: 4px; break-inside: avoid; }
+.pager { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 44px; padding-top: 24px; border-top: 1px solid var(--line); }
+.pager a { display: grid; gap: 2px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; text-decoration: none; font-weight: 600; }
+.pager a:hover { border-color: var(--mint); }
+.pager span { font: 500 0.8rem var(--body); color: var(--muted); }
+.pager .next { grid-column: 2; text-align: right; }
+.docs-index .guides { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 10px; }
+.docs-index h2 { margin-top: 30px; }
+@media (max-width: 820px) {
+  .docs { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .docnav { position: static; max-height: none; overflow: visible; padding-block: 4px 0; border-bottom: 1px solid var(--line); }
+  .docnav summary { display: block; cursor: pointer; font-weight: 600; color: var(--ink); padding: 10px 0; }
+  .docnav details[open] { padding-bottom: 14px; }
+  .toc ul { columns: 1; }
+  .docs-index .guides { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .pager { grid-template-columns: minmax(0, 1fr); }
+  .pager .next { grid-column: 1; }
+}
+/* At phone width, long names in code wrap instead of widening the page, and a table's
+   first column (often a whole phrase) may wrap too: the table scrolls in its box. */
+.prose p code, .prose li code, .prose td code { overflow-wrap: anywhere; }
+.prose td:first-child { white-space: normal; min-width: 9em; }

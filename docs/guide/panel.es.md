@@ -1,0 +1,172 @@
+# El panel
+
+[Read in English](panel.md)
+
+El **panel** es una página en tu navegador para ver y cambiar tus espacios sin pasar por
+Claude. Ábrelo con `/brain:panel` en Claude, o desde una terminal:
+
+```bash
+augmented-brain panel
+```
+
+Abre tu navegador en **Hoy**, con el espacio de la carpeta desde la que lo lanzas. Si no
+puede (en un ordenador sin pantalla, por ejemplo), escribe una dirección para que la
+abras tú.
+
+El panel cambia tus notas igual que Claude, con el mismo programa, y se esperan el uno al
+otro: puedes tener los dos abiertos a la vez.
+
+## Hoy
+
+La primera página: todos los espacios a la vez. De cada uno:
+
+- lo que vence en los próximos 7 días;
+- las tareas que te esperan (las aparcadas, en una línea);
+- cuántas capturas esperan en el buzón;
+- si toca la revisión semanal;
+- las sesiones que se cortaron;
+- las notas con problemas.
+
+Debajo, **Repositorios**: los que tus tareas abiertas nombran en `repos:` y tienen
+cambios sin commit o commits sin subir. Es trabajo que solo está en este ordenador. Si
+todas sus tareas están aparcadas (o para algún día), sale marcado «¿olvidado?». Una rama
+que nunca se subió solo cuenta si el repositorio tiene un remoto al que subirla. **Ver
+todos los repositorios** lleva al mapa completo.
+
+## Tareas
+
+Agrupadas por área, primero las que te esperan a ti, con su estado y su siguiente paso.
+Los filtros enseñan solo las que te esperan, las que están en marcha, las aparcadas, las
+paradas, o las que esperan a una persona. Una tarea que nadie ha cambiado en 14 días sale
+marcada «parada N días».
+
+Abre una. Primero lo esencial, las demás secciones plegadas, y el diario con lo último
+arriba. Escribe en su diario, cambia su estado o su siguiente paso, marca sus pasos,
+apárcala o ciérrala. También puedes abrir tareas nuevas. Si una tarea espera a una
+persona de la que tienes nota, «espera a» te lleva a ella.
+
+Al guardar una tarea, solo se guarda lo que cambiaste en la página. Si Claude cambió otra
+cosa mientras tanto, se queda. Un paso solo se marca si sigue diciendo lo que mostraba la
+página.
+
+## Recordatorios
+
+Las fechas para revisar de tus tareas (también de las cerradas) y los recordatorios del
+buzón: primero lo atrasado, luego los próximos 30 días. Añade uno, o márcalo como hecho.
+
+## Buzón
+
+Apunta una idea, márcala como resuelta, o conviértela en tarea.
+
+## Revisión semanal
+
+La [revisión semanal](weekly-review.es.md), en una página. Cada captura pasa a tarea, a
+referencia o a lección, o se descarta. Cada tarea sin tocar dos semanas sigue como está, o
+pasa a algún día (o la abres para cerrarla). Lo que decides se va apuntando, y se guarda
+en el registro de la revisión al terminar.
+
+## Áreas, conocimiento, reglas y personas
+
+Conocimiento y reglas enseñan las del espacio y las compartidas, marcadas «compartida».
+Puedes crear áreas y cambiar el título y el resumen de un área.
+
+Puedes añadir personas y cambiarlas: sus otros nombres, su papel y sus notas. El nombre se
+queda: un nombre nuevo sería otra persona. La página de una persona enseña las tareas que
+le esperan y las que la enlazan.
+
+## Repositorios
+
+Tu mapa de repositorios: todos los repositorios git de las carpetas de trabajo de cada
+espacio, hasta tres carpetas por debajo. Se salta las carpetas que están dentro de otro
+repositorio, las carpetas ocultas, `node_modules` y `vendor`. Salen agrupados por espacio,
+primero los que tienen trabajo pendiente.
+
+De cada uno: su rama, adónde sube (como `servidor/dueño/nombre`, nunca con contraseña),
+los ficheros cambiados, los commits sin subir, las tareas abiertas que lo nombran, y una
+línea tuya sobre qué es. Esa línea se escribe ahí mismo. Se guarda en las notas del
+espacio, en la referencia «Repositorios» (`knowledge/ref-repositories.md`), así que la
+copia de seguridad la guarda. Claude también puede escribirla.
+
+El panel solo lee tus repositorios. Git funciona sin coger bloqueos, así que nunca te
+estorba, y nunca pide una contraseña. Solo se ejecuta dentro de las carpetas de trabajo,
+y los enlaces a carpetas de fuera no se siguen.
+
+## Secretos
+
+Los nombres de los secretos que guardas en el llavero del sistema (donde tu ordenador
+guarda las contraseñas), nunca su valor. Cada uno como `servicio/nombre`, para qué sirve,
+y qué tareas lo nombran. Así sabes cuáles hay, y una máquina nueva sabe cuáles pedirte.
+
+**Comprobar en el llavero** dice si cada uno está en este ordenador. Se lo pregunta a
+`secret-tool` en Linux y a `security` en macOS; en otros sistemas no lo puede saber. Solo
+pregunta cuando pulsas, porque un llavero bloqueado te pide su contraseña. Si al llavero
+le falta uno, la página enseña el comando que lo guarda (ese comando te pide el valor).
+
+Puedes apuntar un nombre, o quitar uno de la lista (el secreto sigue en el llavero). Lo
+que parezca un valor se rechaza. La lista es la misma en todos los espacios, y vive en
+`secrets.toml` (mira [Configuración](configuration.es.md#secretstoml)).
+
+## Sesiones
+
+Tus sesiones de Claude en este ordenador, de los últimos 30 días.
+
+- Las que no terminaron (cerradas a la fuerza, o cortadas al apagarse el ordenador)
+  muestran lo dicho después de la última entrada del diario. Guárdalo en las notas (va a
+  `archive/sessions/` con una línea en el diario de la tarea) o dalas por revisadas.
+- Las que están en marcha y las terminadas, con lo que ocupan en disco sus
+  transcripciones (los ficheros donde Claude Code guarda cada conversación). Puedes borrar
+  la transcripción de una sesión terminada; esa sesión ya no se podrá retomar.
+
+## Perfil
+
+Quién eres y cómo te gusta trabajar: el mismo perfil para todos los espacios.
+
+## Salud
+
+La carpeta de notas y las carpetas de trabajo del espacio, si es el espacio por defecto,
+notas que no son válidas, repositorios a los que apuntan las notas y que ya no están en
+este ordenador, el índice, la última copia de seguridad y la última revisión semanal.
+
+## Ayuda
+
+Enlaces a las respuestas de esta web, en tu idioma. Y una forma de contarnos un problema o
+proponer una idea en GitHub (la web donde vive el proyecto; necesitas una cuenta gratuita
+allí).
+
+Pulsa **Avisa de un problema en GitHub**. El panel hace la revisión de salud (lo que dice
+`augmented-brain doctor`) en ese momento. Luego abre el formulario de GitHub en otra
+pestaña, con la versión, tu sistema y esa revisión ya escritos.
+
+Antes de abrirlo, el panel quita lo personal: tu carpeta personal (sale como `~`), tus
+carpetas de notas y de trabajo, las direcciones de correo, los nombres de tus espacios,
+las máquinas intocables, los perfiles de AWS de producción, y cualquier línea que parezca
+una contraseña o una clave. Tú cuentas qué pasó y lees el resto: cambia o borra lo que
+prefieras no compartir. Nada se envía hasta que pulsas el botón de enviar de GitHub. Para
+ser claros: el texto viaja a GitHub dentro de la dirección de la página en cuanto se abre,
+así que GitHub puede verlo entonces, aunque no lo envíes.
+
+## Búsqueda y lectura de notas
+
+El cuadro de **búsqueda** del lateral busca en las notas del espacio y en las
+compartidas: títulos, resúmenes y texto. Sale una nota cuando tiene todas las palabras,
+en mayúsculas o minúsculas, con tildes o sin ellas.
+
+Las notas se leen como texto, no como Markdown en crudo: títulos, listas, tablas, código y
+enlaces. Un `[[enlace]]` a otra nota te lleva a ella. Si una nota cambia en el disco
+mientras tienes abierta su página (Claude escribió en ella, por ejemplo), la página te lo
+dice, con un enlace para verla como está ahora.
+
+## Hecho para que siga siendo tuyo
+
+- Funciona **solo mientras lo usas**. Tras 30 minutos sin uso se para solo. Para pararlo
+  ya: `augmented-brain panel stop`, o el enlace del pie de la página.
+- Funciona **solo en este ordenador**. Las otras máquinas de tu red no llegan a él.
+- La dirección lleva una **llave**, nueva cada vez que el panel arranca. Sin ella el panel
+  no responde nada, así que ningún otro programa ni página web de tu ordenador puede
+  usarlo. Trata la dirección como una contraseña: no la compartas. Deja de valer cuando el
+  panel se para.
+- No carga **nada de internet**: ni fuentes ni estadísticas. Funciona sin conexión. Una
+  nota tampoco puede meter HTML ni scripts propios en la página. Los enlaces de la página
+  Ayuda van a la web solo cuando los pulsas.
+- Mirar si una nota ha cambiado no cuenta como usar el panel: una pestaña abierta no lo
+  mantiene en marcha.

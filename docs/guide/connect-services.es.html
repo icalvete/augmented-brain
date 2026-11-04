@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="augmented brain">
 <meta property="og:title" content="Conecta tus servicios · augmented brain">
-<meta property="og:description" content="Calendario, correo, documentos y Jira para tu asistente de IA, por MCP.">
+<meta property="og:description" content="Calendario, correo, documentos y Jira, por MCP.">
 <meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/connect-services.es.html">
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Conecta tus servicios · augmented brain">
-<meta name="twitter:description" content="Calendario, correo, documentos y Jira para tu asistente de IA, por MCP.">
+<meta name="twitter:description" content="Calendario, correo, documentos y Jira, por MCP.">
 <meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
 <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,46 +33,95 @@
 <link rel="stylesheet" href="../site.css">
 </head>
 <body>
+<a class="skip" href="#main">Saltar al contenido</a>
 <header class="wrap top">
   <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
     <a href="connect-services.html" hreflang="en" data-lang="en">English</a>
     <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
   </nav>
 </header>
 
-<main class="wrap prose">
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html" aria-current="page">Conecta tus servicios</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios (en inglés)</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
   <h1>Conecta tus servicios</h1>
   <p>augmented brain guarda tus tareas y tus notas. Para leer tu calendario, tu correo, tus documentos o tus tickets, tu asistente necesita además esos servicios. Claude Code habla con ellos mediante <strong>MCP</strong> (Model Context Protocol): pequeños conectores que le dan herramientas como “lista las reuniones de hoy” o “lee esta incidencia de Jira”.</p>
-
-  <h2>La forma fácil: los conectores de claude.ai</h2>
+  <h2 id="la-forma-fácil-los-conectores-de-claudeai">La forma fácil: los conectores de claude.ai</h2>
   <p>Si entras en Claude Code con tu cuenta de claude.ai, los conectores que actives en claude.ai también funcionan en Claude Code.</p>
-  <ol>
-    <li>Abre <strong>claude.ai → Ajustes → Conectores</strong>.</li>
-    <li>Conecta los servicios que quieras: Google Calendar, Gmail, Google Drive, Atlassian (Jira y Confluence) y otros. Cada uno te pide entrar en ese servicio una vez.</li>
-    <li><strong>Empieza una sesión nueva de Claude Code.</strong> Los conectores se cargan al empezar la sesión: una sesión que ya estaba abierta no verá un conector que acabas de añadir.</li>
-    <li>En Claude Code, escribe <code>/mcp</code> para verlos. Si alguno pide autenticación, se arregla desde claude.ai, no desde Claude Code.</li>
-  </ol>
+  <ol><li>Abre <strong>claude.ai → Ajustes → Conectores</strong>.</li><li>Conecta los servicios que quieras: Google Calendar, Gmail, Google Drive, Atlassian (Jira y Confluence) y otros. Cada uno te pide entrar en ese servicio una vez.</li><li><strong>Empieza una sesión nueva de Claude Code.</strong> Los conectores se cargan al empezar la sesión: una sesión que ya estaba abierta no verá un conector que acabas de añadir.</li><li>En Claude Code, escribe <code>/mcp</code> para verlos. Si alguno pide autenticación, se arregla desde claude.ai, no desde Claude Code.</li></ol>
   <p>Y ya está. Tu asistente los usa cuando una tarea los necesita (“¿qué reuniones tengo mañana?”, “resúmeme las incidencias abiertas de esta épica”).</p>
-
-  <h2>Sin cuenta de claude.ai</h2>
+  <h2 id="sin-cuenta-de-claudeai">Sin cuenta de claude.ai</h2>
   <p>Si usas Claude Code con una API key, los conectores de claude.ai no están disponibles. Puedes añadir servidores MCP tú mismo:</p>
   <pre><code>claude mcp add --scope user &lt;nombre&gt; -- &lt;comando que arranca el servidor&gt;</code></pre>
   <p>Muchos servicios publican un servidor MCP oficial; usa esos cuando existan. Lee qué puede hacer un servidor antes de añadirlo: actúa con tu cuenta.</p>
-
-  <h2>Buenos hábitos</h2>
-  <ul>
-    <li><strong>Conecta solo lo que uses.</strong> Cada conector añade herramientas entre las que tu asistente tiene que elegir.</li>
-    <li><strong>Tus reglas de seguridad siguen valiendo.</strong> El guardia de augmented brain vigila los comandos y las escrituras de ficheros. Las acciones dentro de un conector (enviar un correo, editar un ticket) se confirman con los avisos de permiso de Claude Code: léelos antes de aceptar.</li>
-    <li><strong>Nunca pegues una contraseña o un token en el chat</strong> para conectar un servicio. Cada conector entra por la página del propio servicio.</li>
-  </ul>
-  <a class="back" href="../es/">← Volver a augmented brain</a>
+  <h2 id="buenos-hábitos">Buenos hábitos</h2>
+  <ul><li><strong>Conecta solo lo que uses.</strong> Cada conector añade herramientas entre las que tu asistente tiene que elegir.</li><li><strong>Tus reglas de seguridad siguen valiendo.</strong> El guardia de augmented brain vigila los comandos y las escrituras de ficheros. Las acciones dentro de un conector (enviar un correo, editar un ticket) se confirman con los avisos de permiso de Claude Code: léelos antes de aceptar.</li><li><strong>Nunca pegues una contraseña o un token en el chat</strong> para conectar un servicio. Cada conector entra por la página del propio servicio.</li></ul>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="backup.es.html"><span>← Anterior</span>Copia de seguridad y restauración</a>
+    <a class="next" href="import.es.html"><span>Siguiente →</span>Trae una memoria que ya tienes</a>
+  </nav>
 </main>
+</div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · licencia MIT</span></div>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Registro de cambios</a></span></div>
 </footer>
 <script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
 document.querySelectorAll("[data-lang]").forEach(function (a) {
   a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
 });

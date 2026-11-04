@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration · augmented brain</title>
+<meta name="description" content="Every setting of augmented brain&#x27;s config.toml, for the whole computer and for each space, with an example; secrets.toml, the other files and the environment variables.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/configuration.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/configuration.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/configuration.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/configuration.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Configuration · augmented brain">
+<meta property="og:description" content="Every setting of config.toml, with an example.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/configuration.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Configuration · augmented brain">
+<meta name="twitter:description" content="Every setting of config.toml, with an example.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="index.html">Docs</a>
+    <a href="configuration.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Docs">
+<details open id="docnav"><summary>Documentation menu</summary>
+<p class="docnav-group">Get started</p>
+<ul>
+  <li><a href="getting-started.html">Getting started</a></li>
+  <li><a href="install.html">Installing</a></li>
+</ul>
+<p class="docnav-group">Concepts</p>
+<ul>
+  <li><a href="spaces.html">Spaces</a></li>
+  <li><a href="tasks.html">Tasks</a></li>
+  <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="guard.html">The guard</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
+</ul>
+<p class="docnav-group">Daily use</p>
+<ul>
+  <li><a href="phrases.html">What to say to Claude</a></li>
+  <li><a href="panel.html">The panel</a></li>
+  <li><a href="weekly-review.html">The weekly review</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
+</ul>
+<p class="docnav-group">Reference</p>
+<ul>
+  <li><a href="commands.html">Commands</a></li>
+  <li><a href="mcp-tools.html">MCP tools</a></li>
+  <li><a href="configuration.html" aria-current="page">Configuration</a></li>
+  <li><a href="memory-format.html">Memory format</a></li>
+</ul>
+<p class="docnav-group">Help</p>
+<ul>
+  <li><a href="troubleshooting.html">Troubleshooting</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Configuration</h1>
+  <p>The installer writes the configuration for you, and Claude adds to it when you ask ("<code>shop-prod</code> is production"). You only open it to change something by hand: a new work folder, a repository where Claude may commit, a root exception.</p>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#where-it-is">Where it is</a></li><li><a href="#an-example">An example</a></li><li><a href="#settings-for-the-whole-computer">Settings for the whole computer</a></li><li><a href="#settings-of-each-space">Settings of each space</a></li><li><a href="#what-claude-may-change">What Claude may change</a></li><li><a href="#when-it-cannot-be-read">When it cannot be read</a></li><li><a href="#secretstoml"><code>secrets.toml</code></a></li><li><a href="#other-files-in-the-folder">Other files in the folder</a></li><li><a href="#environment-variables">Environment variables</a></li><li><a href="#claude-codes-own-settings">Claude Code's own settings</a></li></ul></nav>
+  <h2 id="where-it-is">Where it is</h2>
+  <p>One folder per computer, the <strong>configuration folder</strong>:</p>
+  <ul><li>Linux and macOS: <code>~/.config/augmented-brain/</code> (or <code>$XDG_CONFIG_HOME/augmented-brain/</code>).</li><li>Windows: <code>%APPDATA%\augmented-brain\</code>.</li><li>Anywhere else, if you set <code>AB_CONFIG_DIR</code>.</li></ul>
+  <p>Inside it, <code>config.toml</code> holds the settings. It is a <strong>TOML</strong> file: <code>name = value</code> lines, and a <code>[section]</code> heading for each space. Lines starting with <code>#</code> are comments; the program keeps them when it changes the file.</p>
+  <h2 id="an-example">An example</h2>
+  <pre><code># ~/.config/augmented-brain/config.toml
+language = "en"
+default_space = "personal"
+production_aws_profiles = ["shop-prod", "shop-prod-eu"]
+untouchable_hosts = ["db01", "backup.example.com"]
+root_ask = ["web02 until 2026-12-31"]
+
+[spaces.work]
+memory = "~/augmented-brain/work/notes"
+work_folders = ["~/augmented-brain/work", "~/code"]
+backup = "git@gitlab.com:lucia/brain-work.git"
+git_allowed_repos = ["~/code/blog", "~/code/blog-*"]
+git_ask_repos = ["~/code/shop"]
+
+[spaces.personal]
+memory = "~/augmented-brain/personal/notes"
+work_folders = ["~/augmented-brain/personal"]
+backup = "https://github.com/lucia/augmented-brain-personal.git"</code></pre>
+  <p>Paths may start with <code>~</code>, your home folder. The program reads the file every time it runs, so a change counts at once.</p>
+  <h2 id="settings-for-the-whole-computer">Settings for the whole computer</h2>
+  <p>These go at the top, before any <code>[spaces.…]</code> heading.</p>
+  <ul><li><code>language</code>: the language the program speaks to you, <code>en</code> or <code>es</code>. Default <code>en</code>.</li><li><code>default_space</code>: the space used outside every work folder, such as the scratch folder the desktop app opens a new session in. Its backup carries your profile and the shared notes. Optional; with two spaces or more, <code>init</code> and <code>space add</code> set it.</li><li><code>production_aws_profiles</code>: AWS profiles that reach production. The guard asks you before any command that uses one, in every space. See <a href="guard.html">The guard</a>.</li><li><code>untouchable_hosts</code>: machines not to touch without asking. The guard asks before <code>ssh</code>, <code>scp</code>, <code>rsync</code>, <code>sftp</code> and <code>mosh</code> to them, in every space. Names match ignoring case, and a short name matches the full one (<code>db01</code> and <code>db01.example.com</code>).</li><li><code>root_ask</code>: temporary exceptions for root, one machine each, written <code>"&lt;host&gt; until &lt;date&gt;"</code>. The date is a day (<code>2026-12-31</code>, which lasts to its end, in UTC) or a time (<code>2026-12-31T23:59Z</code>). Until then, root on that machine asks you instead of being stopped. The date is required.</li><li><code>format</code>: the version of the configuration folder. The program writes it when a new version needs it; never change it by hand. Without it, it is 1.</li></ul>
+  <h2 id="settings-of-each-space">Settings of each space</h2>
+  <p>Each space is a section, <code>[spaces.&lt;name&gt;]</code>. Together they are the <code>spaces</code> of the file. The name is lowercase letters, digits and dashes, starting with a letter.</p>
+  <ul><li><code>memory</code>: the space's notes folder. Required.</li><li><code>work_folders</code>: the folders that pick this space when you open Claude in them, or in a folder inside them. See <a href="spaces.html">Spaces</a>.</li><li><code>backup</code>: the address of the space's private git repository. <code>backup setup</code> writes it. Without it, the space is not backed up.</li><li><code>git_allowed_repos</code>: repositories where Claude may commit and push, written with <code>git -C &lt;repo&gt;</code>. The last part of a path may hold a <code>*</code>, which matches one folder. A git worktree of a listed repository counts as it.</li><li><code>git_ask_repos</code>: the same, but Claude asks you each time. A repository in both lists asks.</li><li><code>production_aws_profiles</code> and <code>untouchable_hosts</code>: older versions kept these per space. They still work there, and the guard joins them with the top-level lists. New ones go at the top.</li></ul>
+  <p>The repository lists of every space count together: a repository listed in one space is let through from a session in any of them.</p>
+  <h2 id="what-claude-may-change">What Claude may change</h2>
+  <p>Claude never edits this file on its own: the guard asks you first. Two tools add to it, and only add:</p>
+  <ul><li><code>safety_save</code> adds production profiles and untouchable machines.</li><li><code>backup_setup</code> writes a space's <code>backup</code>, and never moves an existing backup elsewhere.</li></ul>
+  <p>To take anything out, edit the file yourself.</p>
+  <h2 id="when-it-cannot-be-read">When it cannot be read</h2>
+  <p>If the file has a mistake, the program says which line. A setting it does not know is an error too, named in the message. If the file was written by a newer version, the program says to update instead.</p>
+  <p>While the file cannot be read, the guard does not know your lists. So it asks you before every <code>aws</code>, <code>ssh</code>, <code>scp</code>, <code>rsync</code>, <code>sftp</code> and <code>mosh</code>. <code>augmented-brain doctor</code> tells you what is wrong.</p>
+  <h2 id="secretstoml"><code>secrets.toml</code></h2>
+  <p>Next to <code>config.toml</code>, <code>secrets.toml</code> names the secrets you keep in your system keychain, never their values:</p>
+  <pre><code>secrets = ["telegram/alerts-bot: alerts to my phone", "smtp/newsletter: sending the newsletter"]</code></pre>
+  <p>Each entry is <code>service/name: what it is for</code>. The service and the name are single words, as the keychain knows them. Claude adds to it with the tool <code>secret_name_save</code>, and the panel's Secrets page lists it. A value is refused. It is a file of its own because versions before 0.6.0 refuse a setting of <code>config.toml</code> they do not know. 0.6.0 kept the list in <code>config.toml</code> as <code>secrets</code>; <code>check</code> and the session start move it here.</p>
+  <h2 id="other-files-in-the-folder">Other files in the folder</h2>
+  <ul><li><code>profile.md</code>: your profile, for every space.</li><li><code>shared/</code>: the shared notes (rules, references and lessons for every space).</li><li><code>state/</code>: what this computer knows of each space's sessions. Never backed up.</li><li><code>migrations/</code>: a full copy of notes before a new version moved them.</li><li><code>panel.json</code> and <code>panel.lock</code>: where the panel listens while it runs, and its lock.</li><li><code>review-&lt;space&gt;.draft</code>: a weekly review started in the panel and not finished yet.</li></ul>
+  <h2 id="environment-variables">Environment variables</h2>
+  <p>Set these in your shell to change how the program behaves:</p>
+  <ul><li><code>AB_CONFIG_DIR</code>: use this folder as the configuration folder.</li><li><code>AB_LANGUAGE</code>: <code>en</code> or <code>es</code>, the language before there is a configuration (the installer and <code>init</code> use it).</li><li><code>AB_NO_AUTO_BACKUP=1</code>: do not back up when a session ends.</li><li><code>AB_NO_UPDATE_CHECK=1</code>: do not ask GitHub, once a day, whether there is a new version.</li><li><code>AB_NO_BROWSER=1</code>: <code>augmented-brain panel</code> prints the address instead of opening the browser.</li></ul>
+  <p>The installer reads a few more:</p>
+  <ul><li><code>AB_YES=1</code>: answer yes to every question.</li><li><code>AB_NO_DESKTOP=1</code>: do not offer the Claude desktop app.</li><li><code>AB_INSTALL_DIR</code>: where to put the program. Default <code>~/.local/bin</code>.</li><li><code>AB_NO_INIT=1</code>: only install the program, without setting anything up.</li><li><code>AB_VERSION</code>, <code>AB_RELEASE_URL</code> and <code>AB_MARKETPLACE</code>: for testing: which version, where the release files are, and where the plugin comes from.</li></ul>
+  <h2 id="claude-codes-own-settings">Claude Code's own settings</h2>
+  <p>One setting of Claude Code matters here. If Claude Code keeps a memory of its own for your spaces' folders, it drifts from the space's. <code>augmented-brain doctor</code> tells you, and the fix is <code>"autoMemoryEnabled": false</code> in Claude Code's settings, in the file <code>doctor</code> names.</p>
+  <p>The full format of every file is in the <a href="memory-format.html">memory format</a>.</p>
+  <nav class="pager" aria-label="Previous / Next">
+    <a class="prev" href="mcp-tools.html"><span>← Previous</span>MCP tools</a>
+    <a class="next" href="memory-format.html"><span>Next →</span>Memory format</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

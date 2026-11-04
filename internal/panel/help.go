@@ -306,6 +306,8 @@ func (s *Server) help(v *view, _ *http.Request) (string, page, error) {
 	}{
 		Answers: []helpLink{
 			{t("faq"), t("faq.hint"), siteURL(l) + "#faq"},
+			{t("docs"), t("docs.hint"), guideURL(l, "index")},
+			{t("trouble"), t("trouble.hint"), guideURL(l, "troubleshooting")},
 			{t("start"), t("start.hint"), guideURL(l, "getting-started")},
 			{t("how"), t("how.hint"), guideURL(l, "how-it-works")},
 			{t("install"), t("install.hint"), guideURL(l, "install")},

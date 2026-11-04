@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -327,6 +328,24 @@ func cmdMCP(errOut io.Writer) int {
 	return 0
 }
 
+// hookEvent is a hook the plugin calls (`augmented-brain hook <name>`); part is the
+// part of the session text session-start asks for, 0 for the others.
+type hookEvent struct {
+	name string
+	run  func(in io.Reader, out io.Writer, dir string, part int) error
+}
+
+// hookEvents are every hook the command answers, in the order its usage names them.
+var hookEvents = []hookEvent{
+	{"session-start", func(in io.Reader, out io.Writer, dir string, part int) error {
+		return hook.SessionStartPart(in, out, dir, part)
+	}},
+	{"pre-tool-use", func(in io.Reader, out io.Writer, dir string, _ int) error { return hook.PreToolUse(in, out, dir) }},
+	{"stop", func(in io.Reader, out io.Writer, dir string, _ int) error { return hook.Stop(in, out, dir) }},
+	{"post-compact", func(in io.Reader, _ io.Writer, dir string, _ int) error { return hook.PostCompact(in, dir) }},
+	{"session-end", func(in io.Reader, _ io.Writer, dir string, _ int) error { return hook.SessionEnd(in, dir) }},
+}
+
 // cmdHook answers a Claude Code hook. A hook must never break the assistant, so it
 // always exits 0 and reports problems on stderr.
 func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
@@ -346,27 +365,20 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 		part, args = n, args[:1]
 	}
 	if len(args) != 1 {
-		fmt.Fprintln(errOut, "usage: augmented-brain hook session-start|pre-tool-use|stop|post-compact|session-end")
+		names := make([]string, len(hookEvents))
+		for i, e := range hookEvents {
+			names[i] = e.name
+		}
+		fmt.Fprintln(errOut, "usage: augmented-brain hook "+strings.Join(names, "|"))
 		return 2
 	}
 	dir, _ := config.Dir()
-	var err error
-	switch args[0] {
-	case "session-start":
-		err = hook.SessionStartPart(in, out, dir, part)
-	case "pre-tool-use":
-		err = hook.PreToolUse(in, out, dir)
-	case "session-end":
-		err = hook.SessionEnd(in, dir)
-	case "stop":
-		err = hook.Stop(in, out, dir)
-	case "post-compact":
-		err = hook.PostCompact(in, dir)
-	default:
+	i := slices.IndexFunc(hookEvents, func(e hookEvent) bool { return e.name == args[0] })
+	if i < 0 {
 		fmt.Fprintf(errOut, "unknown hook %q\n", args[0])
 		return 2
 	}
-	if err != nil {
+	if err := hookEvents[i].run(in, out, dir, part); err != nil {
 		fmt.Fprintln(errOut, "augmented-brain hook:", err)
 	}
 	return 0

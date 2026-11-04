@@ -2,6 +2,24 @@
 
 [Leer en español](getting-started.es.md)
 
+## What it is
+
+augmented brain gives your AI assistant a memory, a method and a guard. Today the
+assistant is Claude Code.
+
+- **A memory.** Your tasks, decisions, people and rules are kept as plain text files on
+  your computer. Every new session starts by reading them, so you never explain the same
+  thing twice.
+- **A method.** Every piece of work is a task that goes from idea to closed in six
+  phases. You can stop a task today and pick it up next week, in any session.
+- **A guard.** Before Claude runs a command, augmented brain reads it. Pushing code,
+  becoming root or writing a password is stopped. Touching production asks you first.
+
+You do not learn new commands. You talk to Claude as usual: "new task…", "park it",
+"where were we?".
+
+It is free and open source (MIT). It is also alpha: an early version that may change.
+
 This guide is for starting from scratch, even if you have never opened a terminal. It
 takes about ten minutes.
 
@@ -69,7 +87,8 @@ In the Claude app:
 3. Click **+ New** and type "Hi".
 
 Without choosing a folder, you work in your personal space. For the work one, pick the
-folder `~/augmented-brain/work` with **Choose…**.
+folder `~/augmented-brain/work` with **Choose…**. A **space** is a separate drawer of
+notes: [Spaces](spaces.md) explains them.
 
 ## 5. Answer the interview
 
@@ -94,8 +113,10 @@ Talk to it as usual. These phrases pay off from day one:
 | "We go with supplier B, it is cheaper." | Writes it in the task's journal, with the date |
 | "Save that as a lesson." | What you learned gets a note of its own |
 | "Close the task." | Closes it; it is never deleted |
-| "Marta is my boss, I call her Martie." | Saves her, and next time it knows who she is |
+| "Lucía is my boss, I call her Lu." | Saves her, and next time it knows who she is |
 | "Why did we pick supplier B?" | Finds it in your notes and gives you the decision, with date and reason |
+
+More phrases, grouped by what you want: [What to say to Claude](phrases.md).
 
 ## Words you will hear
 
@@ -110,6 +131,7 @@ Talk to it as usual. These phrases pay off from day one:
 - **Backup:** your notes, pushed to a private git repository of yours after every session.
 - **Plugin:** the piece that connects augmented brain to Claude Code. The installer puts
   it in.
+- **Panel:** a page in your browser to see and change everything without asking Claude.
 
 ## If something goes wrong
 
@@ -120,12 +142,11 @@ Talk to it as usual. These phrases pay off from day one:
   Windows). Close the terminal and open another one: the new one finds the programs just
   installed.
 - **Claude asks you for a paid plan.** Claude Code needs Pro or above.
-- **"This system is not supported yet".** It works on Linux, macOS and Windows; see
-  [Installing](install.md) for what each one needs.
-- **"Claude Code needs macOS 13".** Update the Mac in System Settings → General → Software
-  Update, then paste the command again.
-- **Something else.** Tell us in
-  [the project's issues](https://github.com/icalvete/augmented-brain/issues), with what
-  showed up on screen.
+- **Something else.** See [Troubleshooting](troubleshooting.md).
 
-To see what happens inside, go on to [How it works](how-it-works.md).
+## Where to go next
+
+- [Tasks](tasks.md): how a task moves, and how to park and resume it.
+- [The guard](guard.md): what it stops, what it asks, and why.
+- [The panel](panel.md): everything at a glance, in your browser.
+- [Backup and restore](backup.md): so a lost laptop loses nothing.

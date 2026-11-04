@@ -39,8 +39,24 @@ var helpMessages = map[string]msg{
 		es: "Cómo funciona",
 	},
 	"panel.help.how.hint": {
-		en: "Your files, the backup, the panel, updating it and removing it.",
-		es: "Tus ficheros, la copia de seguridad, el panel, actualizarlo y quitarlo.",
+		en: "Inside: the layers, a session step by step, where every file lives.",
+		es: "Por dentro: las capas, una sesión paso a paso, dónde vive cada fichero.",
+	},
+	"panel.help.docs": {
+		en: "Documentation",
+		es: "Documentación",
+	},
+	"panel.help.docs.hint": {
+		en: "Every page: concepts, daily use, the panel, backup and the reference of commands and tools.",
+		es: "Todas las páginas: conceptos, uso diario, el panel, la copia y la referencia de comandos y herramientas.",
+	},
+	"panel.help.trouble": {
+		en: "Problems and fixes",
+		es: "Problemas y soluciones",
+	},
+	"panel.help.trouble.hint": {
+		en: "What to do when something fails, and what doctor says.",
+		es: "Qué hacer cuando algo falla, y qué dice doctor.",
 	},
 	"panel.help.install": {
 		en: "Install",

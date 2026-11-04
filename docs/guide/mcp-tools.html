@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP tools · augmented brain</title>
+<meta name="description" content="The MCP tools augmented brain gives your assistant, grouped by purpose, with every parameter: tasks, the inbox, the weekly review, knowledge, people, safety and backup.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/mcp-tools.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="MCP tools · augmented brain">
+<meta property="og:description" content="The tools Claude uses behind your words, with every parameter.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/mcp-tools.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MCP tools · augmented brain">
+<meta name="twitter:description" content="The tools Claude uses behind your words, with every parameter.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="index.html">Docs</a>
+    <a href="mcp-tools.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Docs">
+<details open id="docnav"><summary>Documentation menu</summary>
+<p class="docnav-group">Get started</p>
+<ul>
+  <li><a href="getting-started.html">Getting started</a></li>
+  <li><a href="install.html">Installing</a></li>
+</ul>
+<p class="docnav-group">Concepts</p>
+<ul>
+  <li><a href="spaces.html">Spaces</a></li>
+  <li><a href="tasks.html">Tasks</a></li>
+  <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="guard.html">The guard</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
+</ul>
+<p class="docnav-group">Daily use</p>
+<ul>
+  <li><a href="phrases.html">What to say to Claude</a></li>
+  <li><a href="panel.html">The panel</a></li>
+  <li><a href="weekly-review.html">The weekly review</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
+</ul>
+<p class="docnav-group">Reference</p>
+<ul>
+  <li><a href="commands.html">Commands</a></li>
+  <li><a href="mcp-tools.html" aria-current="page">MCP tools</a></li>
+  <li><a href="configuration.html">Configuration</a></li>
+  <li><a href="memory-format.html">Memory format</a></li>
+</ul>
+<p class="docnav-group">Help</p>
+<ul>
+  <li><a href="troubleshooting.html">Troubleshooting</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>MCP tools</h1>
+  <p>You say “park it”. Claude calls the tool <code>task_park</code>, with the task's id and the next step. The program writes the task file. You never call these tools yourself: Claude does, behind your words.</p>
+  <p><strong>MCP</strong> (Model Context Protocol) is an open standard to give tools to an assistant. The program serves these tools with <code>augmented-brain mcp</code>, which Claude Code starts through the plugin. In Claude Code they show up as <code>mcp__plugin_brain_augmented-brain__&lt;tool&gt;</code>.</p>
+  <p>A few things hold for every tool:</p>
+  <ul><li>It works on <strong>the space of the folder Claude is in</strong>, found again on every call.</li><li>Tools run one at a time, and wait for the panel, so two never write at once.</li><li><strong>No secrets.</strong> A tool refuses to write a password, a token or a key into a note.</li><li><strong>Nothing is deleted.</strong> Tasks are closed, not removed.</li><li>Dates are written <code>YYYY-MM-DD</code>.</li><li>A parameter is required unless it says optional.</li></ul>
+  <h2 id="tools-by-purpose">Tools by purpose</h2>
+  <ul><li><strong>Where things are</strong>: [<code>where_am_i</code>](#where_am_i), [<code>pending</code>](#pending).</li><li><strong>Tasks</strong>: [<code>task_new</code>](#task_new), [<code>task_get</code>](#task_get), [<code>task_update</code>](#task_update), [<code>task_step</code>](#task_step), [<code>task_journal</code>](#task_journal), [<code>task_park</code>](#task_park), [<code>task_close</code>](#task_close).</li><li><strong>Inbox and the weekly review</strong>: [<code>capture</code>](#capture), [<code>weekly_review</code>](#weekly_review), [<code>review_done</code>](#review_done).</li><li><strong>Notes that last</strong>: [<code>area_new</code>](#area_new), [<code>knowledge_new</code>](#knowledge_new), [<code>rule_new</code>](#rule_new), [<code>person_save</code>](#person_save), [<code>repo_describe</code>](#repo_describe).</li><li><strong>You and this machine</strong>: [<code>profile_save</code>](#profile_save), [<code>safety_save</code>](#safety_save), [<code>secret_name_save</code>](#secret_name_save), [<code>backup_setup</code>](#backup_setup), [<code>session_recover</code>](#session_recover).</li></ul>
+  <h2 id="where_am_i"><code>where_am_i</code></h2>
+  <p>Which space this session works in, its notes folder, its areas, and how many tasks are live. It takes no parameters.</p>
+  <h2 id="pending"><code>pending</code></h2>
+  <p>The live tasks, those waiting on you first, each with its status, steps done, who it waits on and its next step. Then the watch dates that are due. Claude uses it for “where were we?”.</p>
+  <ul><li><code>within_days</code> (optional): also list watch dates due within this many days. Default 7.</li></ul>
+  <h2 id="task_new"><code>task_new</code></h2>
+  <p>Opens a new task, in the definition phase and waiting on you. With a parent, it is a subtask.</p>
+  <ul><li><code>title</code>: a short name for the task.</li><li><code>summary</code> (optional): one line on what it is.</li><li><code>area</code> (optional): the id of its area. Default: the parent's area, or <code>area-general</code>.</li><li><code>parent</code> (optional): the id of the task this one is a part of. One level only: the parent cannot be a subtask, nor closed.</li><li><code>goal</code> (optional): one line on what the task is for. It goes into the Definition.</li><li><code>done_when</code> (optional): one line on how we will know it worked. It goes into the Definition.</li></ul>
+  <h2 id="task_get"><code>task_get</code></h2>
+  <p>Reads a task: its header, its whole body with the journal, and its subtasks. It also says which task it is part of, and whether a repository it names is missing from this computer. Claude reads a task before resuming it.</p>
+  <ul><li><code>id</code>: the task's id, such as <code>task-move-the-blog</code>.</li></ul>
+  <h2 id="task_update"><code>task_update</code></h2>
+  <p>Changes a task. Only the fields given change. A change of status is written in the journal.</p>
+  <ul><li><code>id</code>: the task's id.</li><li><code>status</code> (optional): <code>definition</code>, <code>analysis</code>, <code>plan</code>, <code>execution</code>, <code>validation</code>, <code>closed</code>, <code>parked</code> or <code>someday</code>.</li><li><code>waiting_on</code> (optional): <code>me</code>, <code>nobody</code>, a person, or another task's id.</li><li><code>next</code> (optional): the single next action, in one line.</li><li><code>summary</code> (optional): one line on what it is.</li><li><code>area</code> (optional): the id of its area.</li><li><code>watch_date</code> (optional): add a date to look at something again. Needs <code>watch_what</code>.</li><li><code>watch_what</code> (optional): what to look at on <code>watch_date</code>, in one line.</li><li><code>watch_done</code> (optional): mark the watch date of this day as done.</li></ul>
+  <p>At least one field besides <code>id</code> is needed.</p>
+  <h2 id="task_step"><code>task_step</code></h2>
+  <p>Steps are the small parts of a task: checkboxes (<code>- [ ] text</code>) in its Plan. This tool adds one, or ticks or unticks one. Each change writes a short journal line, and the answer lists the steps.</p>
+  <ul><li><code>id</code>: the task's id.</li><li><code>add</code> (optional): add this step, unticked, at the end of the Plan, instead of ticking one.</li><li><code>number</code> (optional): the step to tick or untick, 1 for the first checkbox.</li><li><code>text</code> (optional): the step to tick or untick, by its text (or a part only it holds), when <code>number</code> is not given.</li><li><code>done</code> (optional): <code>true</code> to tick the step, <code>false</code> to untick it.</li></ul>
+  <h2 id="task_journal"><code>task_journal</code></h2>
+  <p>Adds a dated entry to a task's journal. Claude writes one at the moment something is done or decided.</p>
+  <ul><li><code>id</code>: the task's id.</li><li><code>entry</code>: what was done, what came out, what was decided.</li></ul>
+  <h2 id="task_park"><code>task_park</code></h2>
+  <p>Pauses a task without losing anything, before switching to other work.</p>
+  <ul><li><code>id</code>: the task's id.</li><li><code>next</code>: exactly how to resume: a command, a file or a decision.</li><li><code>waiting_on</code> (optional): who it waits on now.</li><li><code>essentials</code> (optional, but Claude should pass it): three to six lines that are enough to resume without the journal. They replace the task's first section. Without it, only “where it is” and “next” are updated there.</li><li><code>someday</code> (optional): <code>true</code> when it will not be touched for weeks. The task leaves the daily list.</li></ul>
+  <h2 id="task_close"><code>task_close</code></h2>
+  <p>Closes a finished task with its result. It is kept, never deleted. A task with open subtasks cannot close.</p>
+  <ul><li><code>id</code>: the task's id.</li><li><code>result</code>: what was achieved, in one or two lines.</li></ul>
+  <h2 id="capture"><code>capture</code></h2>
+  <p>Notes something in the inbox without opening a task, optionally with a day to be reminded. The weekly review processes it.</p>
+  <ul><li><code>text</code>: the idea, link or loose end, in one line.</li><li><code>remind_on</code> (optional): a date. It comes up at the start of the session from a week before, until it is dealt with.</li></ul>
+  <h2 id="weekly_review"><code>weekly_review</code></h2>
+  <p>Lists what the weekly review goes through: the inbox, live tasks untouched for 14 days or more, and the dates due in the next 7 days. Claude then goes through it with you, one item at a time. It takes no parameters.</p>
+  <h2 id="review_done"><code>review_done</code></h2>
+  <p>Finishes the weekly review. It saves what was decided in <code>reviews/</code>, and takes the processed captures out of the inbox.</p>
+  <ul><li><code>summary</code>: what was decided, in a few lines.</li><li><code>processed</code> (optional): the text of each capture dealt with, exactly as <code>weekly_review</code> listed it. They leave the inbox. One that is not found is left as it was, and named.</li></ul>
+  <h2 id="area_new"><code>area_new</code></h2>
+  <p>Creates an area: a responsibility with no end date that groups tasks and knowledge.</p>
+  <ul><li><code>title</code>: the area's name.</li><li><code>summary</code> (optional): one line on what it looks after.</li></ul>
+  <h2 id="knowledge_new"><code>knowledge_new</code></h2>
+  <p>Saves a reference or a lesson worth keeping beyond one task: in this space, or shared by every space.</p>
+  <ul><li><code>kind</code>: <code>reference</code> (how something works) or <code>lesson</code> (what was learned).</li><li><code>title</code>: for a lesson, a title that already states the conclusion.</li><li><code>summary</code> (optional): one line.</li><li><code>area</code> (optional): the id of its area.</li><li><code>body</code> (optional): the text, in Markdown.</li><li><code>shared</code> (optional): <code>true</code> when it holds in every space. It then has no area.</li></ul>
+  <h2 id="rule_new"><code>rule_new</code></h2>
+  <p>Saves a rule you give on how to work. Every session loads it.</p>
+  <ul><li><code>title</code>: the rule in a few words.</li><li><code>summary</code> (optional): one line that says what to do.</li><li><code>body</code>: what to do, and why, in Markdown.</li><li><code>shared</code> (optional): <code>true</code> when it applies in every space, not only this one.</li></ul>
+  <h2 id="person_save"><code>person_save</code></h2>
+  <p>Remembers someone you work or deal with, so a first name leads to the right person. Saving a name that exists updates that person.</p>
+  <ul><li><code>name</code>: the full name, or how you know them.</li><li><code>aliases</code> (optional): other names you use for them, such as a nickname.</li><li><code>role</code> (optional): who they are to you, in a few words: “my manager”, “runs the hosting company”.</li><li><code>notes</code> (optional): anything else worth remembering.</li></ul>
+  <h2 id="repo_describe"><code>repo_describe</code></h2>
+  <p>Writes down, in one line, what one of your git repositories is, for the panel's Repositories page. Only repositories inside this space's work folders. The line goes to the reference <code>ref-repositories</code>, one line per repository; a new one replaces the old.</p>
+  <ul><li><code>repo</code>: the repository: its path (<code>~/…</code> or absolute), or its name as a task's <code>repos:</code> writes it, relative to a work folder.</li><li><code>text</code>: what it is, in one line, in your words. Empty takes the line out.</li></ul>
+  <h2 id="profile_save"><code>profile_save</code></h2>
+  <p>Saves who you are and how you like to work. Every space shares it, and every session starts by reading it. It replaces the whole profile, so Claude includes what should stay.</p>
+  <ul><li><code>name</code>: what you want to be called.</li><li><code>about</code> (optional): what you do and work on, in short lines starting with <code>- </code>.</li><li><code>work_style</code> (optional): how you like to work with Claude: language, length of answers, how much to ask before acting. Short lines starting with <code>- </code>.</li></ul>
+  <h2 id="safety_save"><code>safety_save</code></h2>
+  <p>Adds to what the guard asks you about. The lists hold on this whole machine, in every space. It only adds: to take one out, you edit the configuration yourself, and the answer says where.</p>
+  <ul><li><code>production_aws_profiles</code> (optional): AWS CLI profiles that reach production. The guard asks before commands that use them.</li><li><code>untouchable_hosts</code> (optional): machines not to touch without asking, as you type them for ssh.</li></ul>
+  <h2 id="secret_name_save"><code>secret_name_save</code></h2>
+  <p>Writes down the name of a secret you keep in the system keychain, and what it is for. Never its value: a value is refused. The list is the same in every space; the panel shows it. Saving a name that is listed changes what it is for.</p>
+  <ul><li><code>service</code>: the service the secret is kept under in the keychain, such as <code>telegram</code>.</li><li><code>name</code>: its name under that service, such as <code>alerts-bot</code>.</li><li><code>what</code> (optional): what it is for, in a few words.</li></ul>
+  <h2 id="backup_setup"><code>backup_setup</code></h2>
+  <p>Sets up the backup of this space: a private git repository that keeps its notes, pushed by itself every time a session ends.</p>
+  <ul><li><code>repo_url</code> (optional): a private git repository you can push to. Without it, the tool creates <code>augmented-brain-&lt;space&gt;</code> in your GitHub account with the <code>gh</code> command line. When <code>gh</code> is missing or not logged in, it returns the steps to guide you through.</li></ul>
+  <h2 id="session_recover"><code>session_recover</code></h2>
+  <p>Reads what you and Claude said in an earlier session of this space that did not end well, after the last journal entry of its task. Only the messages, no tool output, at most the last 20,000 characters, from Claude Code's record on this computer (kept 30 days). Claude then writes in the journal what is missing.</p>
+  <ul><li><code>session_id</code> (optional): the session to recover. Without it, the one the session start offered.</li></ul>
+  <nav class="pager" aria-label="Previous / Next">
+    <a class="prev" href="commands.html"><span>← Previous</span>Commands</a>
+    <a class="next" href="configuration.html"><span>Next →</span>Configuration</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

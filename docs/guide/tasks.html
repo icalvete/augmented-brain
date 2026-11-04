@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tasks · augmented brain</title>
+<meta name="description" content="Tasks in augmented brain: what a task file looks like, the six phases, parking and resuming, the journal, steps and subtasks, watch dates and closing.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/tasks.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/tasks.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/tasks.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/tasks.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Tasks · augmented brain">
+<meta property="og:description" content="Six phases, park and resume, steps and subtasks, dates to check again.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/tasks.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tasks · augmented brain">
+<meta name="twitter:description" content="Six phases, park and resume, steps and subtasks, dates to check again.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="index.html">Docs</a>
+    <a href="tasks.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Docs">
+<details open id="docnav"><summary>Documentation menu</summary>
+<p class="docnav-group">Get started</p>
+<ul>
+  <li><a href="getting-started.html">Getting started</a></li>
+  <li><a href="install.html">Installing</a></li>
+</ul>
+<p class="docnav-group">Concepts</p>
+<ul>
+  <li><a href="spaces.html">Spaces</a></li>
+  <li><a href="tasks.html" aria-current="page">Tasks</a></li>
+  <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="guard.html">The guard</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
+</ul>
+<p class="docnav-group">Daily use</p>
+<ul>
+  <li><a href="phrases.html">What to say to Claude</a></li>
+  <li><a href="panel.html">The panel</a></li>
+  <li><a href="weekly-review.html">The weekly review</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
+</ul>
+<p class="docnav-group">Reference</p>
+<ul>
+  <li><a href="commands.html">Commands</a></li>
+  <li><a href="mcp-tools.html">MCP tools</a></li>
+  <li><a href="configuration.html">Configuration</a></li>
+  <li><a href="memory-format.html">Memory format</a></li>
+</ul>
+<p class="docnav-group">Help</p>
+<ul>
+  <li><a href="troubleshooting.html">Troubleshooting</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Tasks</h1>
+  <p>You say “new task: move the blog to a new host”. Claude opens a task. You agree on what “done” means, then on a plan. In the evening you say “park it”. Next week, in a new session, you say “let's carry on with the blog”, and Claude picks it up where you left it.</p>
+  <p>A <strong>task</strong> is any piece of work with a start and an end. It is one text file in the space's <code>tasks/</code> folder.</p>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#what-a-task-looks-like">What a task looks like</a></li><li><a href="#the-six-phases">The six phases</a></li><li><a href="#who-it-waits-on-and-what-comes-next">Who it waits on, and what comes next</a></li><li><a href="#park-and-resume">Park and resume</a></li><li><a href="#the-journal-as-you-go">The journal, as you go</a></li><li><a href="#steps-and-subtasks">Steps and subtasks</a></li><li><a href="#dates-to-look-at-something-again">Dates to look at something again</a></li><li><a href="#closing">Closing</a></li><li><a href="#next">Next</a></li></ul></nav>
+  <h2 id="what-a-task-looks-like">What a task looks like</h2>
+  <pre><code>---
+id: task-move-the-blog
+type: task
+title: Move the blog
+area: area-blog
+status: parked
+waiting_on: me
+next: Copy the database to the new host
+created: "2026-10-15"
+updated: "2026-10-16"
+---
+## Essentials
+The blog moves to a cheaper host. Plan agreed: copy, test, switch the domain.
+Done: the new host is ready. Next: copy the database.
+
+## 3. Plan
+- [x] Open an account on the new host
+- [ ] Copy the database
+- [ ] Switch the domain
+
+## Journal
+- 2026-10-15 — Task opened.
+- 2026-10-16 — We go with the cheaper host: same speed, half the price.
+- 2026-10-16 — Parked. Next: Copy the database to the new host</code></pre>
+  <p>The part between the <code>---</code> lines is the <strong>header</strong>: the data the program reads. Below it is free text, in any language. The first section is always the <strong>essentials</strong>: a few lines that are enough to resume the task. The last one is always the <strong>journal</strong>: dated lines of what happened.</p>
+  <p>You can open and edit the file with any editor. The full format is in the <a href="memory-format.html">memory format</a>.</p>
+  <h2 id="the-six-phases">The six phases</h2>
+  <p>A task moves through six phases. <strong>You approve each change of phase.</strong> Inside a phase, Claude works without asking at every step.</p>
+  <ol><li><strong>Definition</strong>: what we want, what is out, and how we will know it worked.</li><li><strong>Analysis</strong>: how things really are, measured, not assumed.</li><li><strong>Plan</strong>: ordered steps, each with how to undo it.</li><li><strong>Execution</strong>: doing it, writing in the journal as we go.</li><li><strong>Validation</strong>: proving the “done” criterion.</li><li><strong>Closed</strong>: finished. It is kept, never deleted.</li></ol>
+  <p>The phase is the task's <code>status</code>. Two more statuses pause a task without losing anything:</p>
+  <ul><li><strong>parked</strong>: paused, to resume soon. <code>next</code> says exactly how.</li><li><strong>someday</strong>: not for weeks. It leaves the list Claude reads at the start, and stays in its area.</li></ul>
+  <h2 id="who-it-waits-on-and-what-comes-next">Who it waits on, and what comes next</h2>
+  <p>Every task says two more things:</p>
+  <ul><li><strong>waiting_on</strong>: <code>me</code> (you), <code>nobody</code>, a person's name, or another task.</li><li><strong>next</strong>: the single next action, in one line.</li></ul>
+  <p>That is what “where were we?” shows you: each live task, those waiting on you first, with its next step.</p>
+  <h2 id="park-and-resume">Park and resume</h2>
+  <p>Before you switch to other work, say “park it”. Claude writes down three things: the exact next step, who it waits on, and the essentials, rewritten so another session can resume without reading the whole journal.</p>
+  <p>To resume, say “let's carry on with the blog”. Claude reads the task first. Then it checks the real state of what the task touches (the files, the server) before trusting the note. Things may have changed since.</p>
+  <h2 id="the-journal-as-you-go">The journal, as you go</h2>
+  <p>Each decision or finished step goes to the journal at the moment, not only when you park it. A session can end at any time, and what is not in the note is lost.</p>
+  <p>If a task is open and nothing has been written in it for 20 minutes, Claude gets a reminder at the end of its answer, once. When a long conversation is compacted (Claude Code replaces the details with a summary), the summary is kept in <code>archive/sessions/</code>, and the journal points at it.</p>
+  <h2 id="steps-and-subtasks">Steps and subtasks</h2>
+  <p>A big task can be split in two ways.</p>
+  <p>A <strong>step</strong> is a small part: a checkbox in the task's Plan, such as <code>- [ ] Copy the database</code>. Claude ticks it when it is done. The list of tasks shows how many are done (“1/3 steps”).</p>
+  <p>A <strong>subtask</strong> is a part with a life of its own, because it waits on someone else or goes at its own pace. For example, “Ask Diego for the domain password” waits on Diego, while you go on with the rest. A subtask is a whole task, with one more line in its header: <code>parent: task-move-the-blog</code>.</p>
+  <ul><li>Only one level: a subtask has no subtasks.</li><li>The bigger task closes last, when all its subtasks are closed.</li><li>Parking the bigger task leaves its subtasks as they are.</li></ul>
+  <p>Rule of thumb: if it waits on someone or has its own pace, it is a subtask. Otherwise, it is a step.</p>
+  <h2 id="dates-to-look-at-something-again">Dates to look at something again</h2>
+  <p>Some checks belong to a day: “on the 16th, is the certificate renewed?”. Tell Claude and it adds a <strong>watch date</strong> to the task. From 7 days before, and every day after, Claude tells you at the start of the session, until it is marked done.</p>
+  <p>This also works on a closed task. Closing is often when you write down what to check later.</p>
+  <p>For something that is not a task (“remind me on Thursday to call the insurance”), Claude uses the inbox instead: see <a href="notes.html#inbox">Areas, knowledge and the rest</a>.</p>
+  <h2 id="closing">Closing</h2>
+  <p>Say “close the task”. Claude writes the result, and the task stays in its folder, marked closed. Nothing is ever deleted.</p>
+  <p>A task that nobody has changed for 14 days comes up in the <a href="weekly-review.html">weekly review</a>, so nothing stalls in silence.</p>
+  <h2 id="next">Next</h2>
+  <ul><li><a href="phrases.html">What to say to Claude</a>: the phrases for all of this.</li><li><a href="mcp-tools.html">MCP tools</a>: the tools Claude uses behind each phrase.</li></ul>
+  <nav class="pager" aria-label="Previous / Next">
+    <a class="prev" href="spaces.html"><span>← Previous</span>Spaces</a>
+    <a class="next" href="notes.html"><span>Next →</span>Areas, knowledge and the rest</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

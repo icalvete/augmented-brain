@@ -2,6 +2,26 @@
 
 [Read in English](getting-started.md)
 
+## Qué es
+
+augmented brain le da a tu asistente de IA una memoria, un método y un guardia. Hoy el
+asistente es Claude Code.
+
+- **Una memoria.** Tus tareas, decisiones, personas y reglas se guardan como ficheros de
+  texto normal en tu ordenador. Cada sesión nueva empieza leyéndolos, así que nunca
+  explicas dos veces lo mismo.
+- **Un método.** Cada trabajo es una tarea que va de la idea a cerrada en seis fases.
+  Puedes parar una tarea hoy y retomarla la semana que viene, en cualquier sesión.
+- **Un guardia.** Antes de que Claude ejecute un comando, augmented brain lo lee. Subir
+  código, hacerse root o escribir una contraseña se para. Tocar producción te pregunta
+  antes.
+
+No aprendes comandos nuevos. Hablas con Claude como siempre: "nueva tarea…",
+"apárcala", "¿en qué estábamos?".
+
+Es gratis y de código abierto (MIT). También es alfa: una versión temprana que puede
+cambiar.
+
 Esta guía es para empezar de cero, aunque nunca hayas abierto una terminal. Son unos diez
 minutos.
 
@@ -69,7 +89,8 @@ En la app de Claude:
 3. Pulsa **+ New** y escribe "Hola".
 
 Sin elegir carpeta, trabajas en tu espacio personal. Para el de trabajo, elige con
-**Choose…** la carpeta `~/augmented-brain/trabajo`.
+**Choose…** la carpeta `~/augmented-brain/trabajo`. Un **espacio** es un cajón separado
+de notas: te lo cuenta [Espacios](spaces.es.md).
 
 ## 5. Contesta a la entrevista
 
@@ -95,8 +116,10 @@ Háblale como siempre. Estas frases te sacan partido desde el primer día:
 | "Vamos con el proveedor B, que es más barato." | Lo apunta en el diario de la tarea, con fecha |
 | "Guárdalo como lección." | Lo aprendido queda en una nota propia |
 | "Cierra la tarea." | La cierra; no se borra nunca |
-| "Marta es mi jefa, la llamo Martita." | La guarda, y la próxima vez sabe quién es |
+| "Lucía es mi jefa, la llamo Lu." | La guarda, y la próxima vez sabe quién es |
 | "¿Por qué elegimos el proveedor B?" | Lo busca en tus notas y te da la decisión, con fecha y porqué |
+
+Más frases, agrupadas por lo que quieres hacer: [Qué decirle a Claude](phrases.es.md).
 
 ## Palabras que vas a oír
 
@@ -110,6 +133,7 @@ Háblale como siempre. Estas frases te sacan partido desde el primer día:
   de cada sesión.
 - **Plugin:** la pieza que conecta augmented brain con Claude Code. La instala el
   instalador.
+- **Panel:** una página en tu navegador para ver y cambiar todo sin pedírselo a Claude.
 
 ## Si algo falla
 
@@ -120,12 +144,12 @@ Háblale como siempre. Estas frases te sacan partido desde el primer día:
   en Windows). Cierra la terminal y abre otra: la nueva ya encuentra los programas recién
   instalados.
 - **Claude te pide un plan de pago.** Claude Code necesita Pro o superior.
-- **"Este sistema aún no está soportado".** Funciona en Linux, macOS y Windows; en
-  [Instalación](install.es.md) tienes lo que necesita cada uno.
-- **"Claude Code necesita macOS 13".** Actualiza el Mac en Ajustes del Sistema → General →
-  Actualización de software y vuelve a pegar el comando.
-- **Otra cosa.** Cuéntalo en
-  [las incidencias del proyecto](https://github.com/icalvete/augmented-brain/issues), con
-  lo que salió en pantalla.
+- **Otra cosa.** Mira [Si algo falla](troubleshooting.es.md).
 
-Para saber qué pasa por dentro, sigue con [Cómo funciona](how-it-works.es.md).
+## Por dónde seguir
+
+- [Tareas](tasks.es.md): cómo avanza una tarea, y cómo aparcarla y retomarla.
+- [El guardia](guard.es.md): qué para, qué pregunta y por qué.
+- [El panel](panel.es.md): todo de un vistazo, en tu navegador.
+- [Copia de seguridad y restauración](backup.es.md): para que perder el portátil no te
+  haga perder nada.

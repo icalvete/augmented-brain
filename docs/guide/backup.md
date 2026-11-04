@@ -1,0 +1,100 @@
+# Backup and restore
+
+[Leer en español](backup.es.md)
+
+Your laptop dies. On the new one, you install augmented brain, run one command, and open
+Claude. It carries on where you left off: tasks, notes, rules and your profile.
+
+That is the **backup**. The notes folder of each space is also a git repository. The
+backup pushes it to a private repository of yours, one per space.
+
+## Set it up: ask Claude
+
+Say "set up the backup". Claude offers it at the end of the first-session interview too.
+
+It creates a private repository in your GitHub account, `augmented-brain-<space>`,
+connects it and makes the first copy. For that it uses `gh`, GitHub's official command
+line. If you do not have it, Claude tells you how to install it, and walks you through
+the one step that needs your browser: logging in.
+
+Rather somewhere else (GitLab, your company's git)? Give Claude the repository's address,
+or do it yourself, in a folder of the space:
+
+```bash
+augmented-brain backup setup git@gitlab.com:lucia/brain-work.git
+```
+
+Use a **private** repository: your notes are in it.
+
+## It runs by itself
+
+From then on, **the backup runs every time a Claude session ends**, in the background.
+You wait for nothing. If it fails (no network, no access to the repository), Claude tells
+you at the start of the next session.
+
+You can also run it by hand:
+
+```bash
+augmented-brain backup          # this folder's space
+augmented-brain backup --all    # every space
+```
+
+To turn the automatic backup off, set `AB_NO_AUTO_BACKUP=1` in your environment.
+
+## On a new machine
+
+1. Install augmented brain with the usual command. It creates the spaces, empty. If
+   Claude opens at the end, close it without doing the interview: your profile comes in
+   the backup.
+2. If the repository is on GitHub, log in once with `gh auth login`, so git has access.
+3. Bring each space back from its backup:
+   ```bash
+   augmented-brain restore https://github.com/lucia/augmented-brain-work.git
+   ```
+   It replaces the empty space with yours: notes, tasks, rules and the space's settings,
+   readable by you only. If anything fails half way, the empty space stays as it was. If
+   that space already had notes of yours, it leaves it alone.
+4. Open Claude. It carries on where you left off, and the backup keeps running by itself.
+
+Restore the default space (`personal`) too: your profile, your shared notes and the list
+of your secrets' names come with it.
+
+## What a restore does not bring
+
+Some things are left out on purpose:
+
+- **The guard's lists**: production AWS profiles and untouchable machines. They may name
+  your work's machines, so they are in no backup. `restore` and `doctor` say so, and the
+  next session offers to ask you for them again. Until then, nothing asks before touching
+  production.
+- **The repositories where Claude may commit and push** (`git_allowed_repos` and
+  `git_ask_repos`). Someone else may have changed the backup, so `restore` names them,
+  and you add them again if you still want to.
+- **Your secrets' values.** Only their names travel. `restore` names the secrets this
+  machine's keychain does not have yet, each with the command to store it.
+
+## What you get
+
+- **Several machines, one brain.** Before pushing, the backup fetches what your other
+  machine did and merges it.
+- **Full history.** Every backup is a git commit, with the machine and the time. With
+  `git log` you see what changed, and you can go back to any day.
+- **Your place.** GitHub, GitLab or your own server: you pick the repository. augmented
+  brain has no cloud.
+- **One repository per space.** Work can go to your company's git, and personal to
+  yours. Your profile only travels in the default space's backup, never in the work one.
+- **No secrets go up.** Claude's tools refuse to write a password or a token into a note.
+  If one gets in anyway (by hand, say), the backup stops and tells you which file.
+- **Nothing gets overwritten.** If two machines changed the same note, the backup stops
+  without touching anything and explains how to sort it out. When each machine only added
+  journal entries to it, they are joined by themselves, in date order. The index is
+  rebuilt by itself, and captures in the inbox from two machines are both kept.
+- **No junk, no giants.** Leftovers of a crash and the files systems drop in folders
+  (`.DS_Store`, `Thumbs.db`) stay out. A file over 50 MB stays out too (GitHub refuses
+  them), and Claude tells you which one.
+
+## When it fails
+
+Claude tells you at the start of the next session, with the reason. Running
+`augmented-brain backup` in a folder of the space shows the problem. The usual ones are
+in [Troubleshooting](troubleshooting.md#the-backup-failed).
