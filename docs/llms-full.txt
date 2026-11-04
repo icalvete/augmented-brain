@@ -2271,10 +2271,10 @@ To take anything out, edit the file yourself.
 
 If the file has a mistake, the program says which line. A setting it does not know is an
 error too, named in the message. If the file was written by a newer version, the program
-says to update instead. These messages are in the system's language (or `AB_LANGUAGE`):
-the file's own `language` cannot be read yet. A file that reads but says something
-wrong (a space with no `memory`, a `default_space` that is not a space) is told in its
-`language`.
+says to update instead. A file with a mistake is told in the system's language (or
+`AB_LANGUAGE`), since its own `language` cannot be read. Everything else is told in the
+file's `language`: an unknown setting, a newer version, a space with no `memory`, a
+`default_space` that is not a space. If `language` itself is wrong, the system's.
 
 While the file cannot be read, the guard does not know your lists. So it asks you before
 every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`. `augmented-brain doctor` tells you
