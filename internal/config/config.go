@@ -16,6 +16,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/icalvete/augmented-brain/internal/format"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
@@ -123,7 +124,8 @@ func Load(dir string) (*Config, error) {
 		for i, k := range extra {
 			keys[i] = k.String()
 		}
-		return nil, fmt.Errorf("%s: unknown settings: %s", path, strings.Join(keys, ", "))
+		// The configuration did not load, so its language is unknown: the system's.
+		return nil, errors.New(i18n.T(i18n.FromEnv(), "config.unknown", path, strings.Join(keys, ", ")))
 	}
 	c.Dir = dir
 	if err := c.normalize(); err != nil {

@@ -99,7 +99,7 @@
   <h3 id="every-powershell-command-is-stopped">Every PowerShell command is stopped</h3>
   <p>That is expected, on Windows. The guard reads the shell, not PowerShell, so it stops PowerShell commands and Claude runs them in Git Bash instead.</p>
   <h3 id="claude-asks-before-every-aws-or-ssh-command">Claude asks before every aws or ssh command</h3>
-  <p>The configuration cannot be read, so the guard does not know your lists and asks to be safe. <code>augmented-brain doctor</code> names the problem. If it says “unknown settings”, the file has a line this version does not know: a typo, or a setting of a newer version. Then update with <code>augmented-brain update</code>. See <a href="configuration.html">Configuration</a>.</p>
+  <p>The configuration cannot be read, so the guard does not know your lists and asks to be safe. <code>augmented-brain doctor</code> names the problem. If it says “unknown settings” (“ajustes desconocidos” in Spanish), the file has a line this version does not know: a typo, or a setting of a newer version. Then update with <code>augmented-brain update</code>. See <a href="configuration.html">Configuration</a>.</p>
   <h3 id="claude-cannot-push-even-when-i-ask">Claude cannot push, even when I ask</h3>
   <p>The guard stops <code>git commit</code> and <code>git push</code> unless the repository is listed. Push it yourself, or add the repository to <code>git_allowed_repos</code> (or <code>git_ask_repos</code>) and ask Claude to use <code>git -C &lt;repo&gt;</code>. See <a href="guard.html#let-claude-commit-in-a-repository">The guard</a>.</p>
   <h3 id="claude-needs-root-on-a-machine">Claude needs root on a machine</h3>

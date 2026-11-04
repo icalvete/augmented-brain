@@ -82,8 +82,9 @@ name, or else the space that was there first.
 - `--work`: its work folder.
 - `--memory`: its notes folder.
 - `--yes`: do not ask; take the options given and the defaults.
-- `--language`: accepted, but it does nothing here. A new space speaks the language of the
-  configuration.
+
+It has no `--language`. The language is the same for every space on this computer: the
+`language` setting, which `init` sets. See [Configuration](configuration.md).
 
 ```bash
 augmented-brain space add client --work ~/clients/acme --yes

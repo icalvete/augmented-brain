@@ -99,14 +99,14 @@
   <h3 id="todos-los-comandos-de-powershell-se-paran">Todos los comandos de PowerShell se paran</h3>
   <p>Es lo esperado, en Windows. El guardia lee la shell, no PowerShell, así que para los comandos de PowerShell y Claude los lanza en Git Bash.</p>
   <h3 id="claude-pregunta-antes-de-cada-comando-aws-o-ssh">Claude pregunta antes de cada comando aws o ssh</h3>
-  <p>No se puede leer la configuración, así que el guardia no conoce tus listas y pregunta por si acaso. <code>augmented-brain doctor</code> nombra el problema. Si dice “unknown settings”, el fichero tiene una línea que esta versión no conoce: una errata, o un ajuste de una versión más nueva. Entonces actualiza con <code>augmented-brain update</code>. Lo tienes en <a href="configuration.es.html">Configuración</a>.</p>
+  <p>No se puede leer la configuración, así que el guardia no conoce tus listas y pregunta por si acaso. <code>augmented-brain doctor</code> nombra el problema. Si dice “ajustes desconocidos” (o “unknown settings”, en inglés), el fichero tiene una línea que esta versión no conoce: una errata, o un ajuste de una versión más nueva. Entonces actualiza con <code>augmented-brain update</code>. Lo tienes en <a href="configuration.es.html">Configuración</a>.</p>
   <h3 id="claude-no-puede-hacer-push-aunque-se-lo-pida">Claude no puede hacer push, aunque se lo pida</h3>
   <p>El guardia para <code>git commit</code> y <code>git push</code> salvo que el repositorio esté en la lista. Haz tú el push, o añade el repositorio a <code>git_allowed_repos</code> (o a <code>git_ask_repos</code>) y pide a Claude que use <code>git -C &lt;repo&gt;</code>. Lo tienes en <a href="guard.es.html#deja-que-claude-haga-commit-en-un-repositorio">El guardia</a>.</p>
   <h3 id="claude-necesita-root-en-una-máquina">Claude necesita root en una máquina</h3>
   <p>Claude te da el comando exacto para que lo lances tú. Para una migración que necesita muchos comandos, añade una excepción con fecha, <code>root_ask = ["db01 until 2026-12-31"]</code>. Así root en esa máquina te pregunta cada vez, hasta esa fecha.</p>
   <h3 id="las-herramientas-de-augmented-brain-fallan-después-de-actualizar">Las herramientas de augmented brain fallan después de actualizar</h3>
   <p>Una sesión que estaba abierta sigue con el programa antiguo. Ciérrala y vuelve a abrirla. <code>augmented-brain doctor</code> dice cuántas sesiones siguen con la versión antigua.</p>
-  <h3 id="written-by-a-newer-augmented-brain">“Written by a newer augmented brain”</h3>
+  <h3 id="lo-escribió-un-augmented-brain-más-nuevo">“Lo escribió un augmented brain más nuevo”</h3>
   <p>Una versión más nueva, en otro ordenador, pasó las notas a un formato nuevo. Actualiza también este ordenador: <code>augmented-brain update</code>. El programa antiguo rechaza las notas en vez de romperlas.</p>
   <h3 id="ha-fallado-la-copia-de-seguridad">Ha fallado la copia de seguridad</h3>
   <p>Claude te lo dice al empezar la siguiente sesión. Escribe <code>augmented-brain backup</code> en una carpeta del espacio para ver por qué:</p>

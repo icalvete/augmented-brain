@@ -104,7 +104,8 @@ Para quitar cualquier cosa, edita tú el fichero.
 
 Si el fichero tiene un error, el programa dice en qué línea. Un ajuste que no conoce
 también es un error, y el mensaje lo nombra. Si el fichero lo escribió una versión más
-nueva, el programa te dice que actualices.
+nueva, el programa te dice que actualices. Estos mensajes salen en el idioma del sistema
+(o en el de `AB_LANGUAGE`): el `language` del propio fichero aún no se puede leer.
 
 Mientras no se puede leer el fichero, el guardia no conoce tus listas. Así que te
 pregunta antes de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`.
@@ -145,8 +146,8 @@ fichero aparte porque las versiones anteriores a la 0.6.0 rechazan un ajuste de
 Defínelas en tu shell para cambiar cómo se porta el programa:
 
 - `AB_CONFIG_DIR`: usa esta carpeta como carpeta de configuración.
-- `AB_LANGUAGE`: `en` o `es`, el idioma antes de que haya configuración (lo usan el
-  instalador e `init`).
+- `AB_LANGUAGE`: `en` o `es`, el idioma antes de que haya configuración, o mientras no
+  se puede leer (lo usan el instalador e `init`).
 - `AB_NO_AUTO_BACKUP=1`: no hace la copia de seguridad cuando acaba una sesión.
 - `AB_NO_UPDATE_CHECK=1`: no pregunta a GitHub, una vez al día, si hay una versión nueva.
 - `AB_NO_BROWSER=1`: `augmented-brain panel` escribe la dirección en vez de abrir el

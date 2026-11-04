@@ -83,8 +83,9 @@ ese nombre, y si no, el espacio que ya estaba.
 - `--work`: su carpeta de trabajo.
 - `--memory`: su carpeta de notas.
 - `--yes`: no pregunta; usa las opciones que le des y lo que hay por defecto.
-- `--language`: se admite, pero aquí no hace nada. Un espacio nuevo habla el idioma de la
-  configuración.
+
+No tiene `--language`. El idioma es el mismo para todos los espacios de este ordenador: el
+ajuste `language`, que pone `init`. Lo tienes en [Configuración](configuration.es.md).
 
 ```bash
 augmented-brain space add cliente --work ~/clientes/acme --yes

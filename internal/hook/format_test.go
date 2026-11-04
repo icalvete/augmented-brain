@@ -14,6 +14,7 @@ import (
 // A new space is written in this program's format; when a newer program adds a step,
 // the next session runs it and tells the assistant, once.
 func TestSessionStartMigrates(t *testing.T) {
+	t.Setenv("AB_LANGUAGE", "en")
 	cfgDir, work := setupSpace(t)
 	c, _ := config.Load(cfgDir)
 	mem := c.Spaces["work"].Memory

@@ -109,7 +109,8 @@ augmented-brain check</code></pre>
   <p>Adds another space: a client, a side project, a volunteer job.</p>
   <pre><code>augmented-brain space add client</code></pre>
   <p>The name goes as an argument (first or last) or with <code>--space</code>. It asks for the work folder and the notes folder, suggesting <code>~/augmented-brain/&lt;name&gt;</code> and its <code>notes</code> folder. If there was no default space yet, it sets one: <code>personal</code> if a space has that name, or else the space that was there first.</p>
-  <ul><li><code>--space</code>: the name of the new space.</li><li><code>--work</code>: its work folder.</li><li><code>--memory</code>: its notes folder.</li><li><code>--yes</code>: do not ask; take the options given and the defaults.</li><li><code>--language</code>: accepted, but it does nothing here. A new space speaks the language of the configuration.</li></ul>
+  <ul><li><code>--space</code>: the name of the new space.</li><li><code>--work</code>: its work folder.</li><li><code>--memory</code>: its notes folder.</li><li><code>--yes</code>: do not ask; take the options given and the defaults.</li></ul>
+  <p>It has no <code>--language</code>. The language is the same for every space on this computer: the <code>language</code> setting, which <code>init</code> sets. See <a href="configuration.html">Configuration</a>.</p>
   <pre><code>augmented-brain space add client --work ~/clients/acme --yes</code></pre>
   <p>See <a href="spaces.html">Spaces</a>.</p>
   <h2 id="augmented-brain-check">augmented-brain check</h2>

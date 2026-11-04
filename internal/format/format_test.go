@@ -79,6 +79,7 @@ func TestEnsureNotes(t *testing.T) {
 }
 
 func TestNewerNotesAreLeftAlone(t *testing.T) {
+	t.Setenv("AB_LANGUAGE", "en")
 	mem := t.TempDir()
 	if err := Write(mem, 7); err != nil {
 		t.Fatal(err)
@@ -87,6 +88,11 @@ func TestNewerNotesAreLeftAlone(t *testing.T) {
 	if err := CheckNotes(mem); !errors.As(err, &newer) || !strings.Contains(err.Error(), "augmented-brain update") {
 		t.Errorf("CheckNotes: %v", err)
 	}
+	t.Setenv("AB_LANGUAGE", "es")
+	if err := CheckNotes(mem); err == nil || !strings.Contains(err.Error(), "lo escribió un augmented brain más nuevo (formato 7; este conoce hasta el 1)") {
+		t.Errorf("CheckNotes, in Spanish: %v", err)
+	}
+	t.Setenv("AB_LANGUAGE", "en")
 	if _, err := EnsureNotes(mem, t.TempDir(), "work", time.Now()); !errors.As(err, &newer) {
 		t.Errorf("EnsureNotes: %v", err)
 	}
