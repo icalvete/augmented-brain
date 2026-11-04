@@ -171,6 +171,15 @@ func TestSpaceAdd(t *testing.T) {
 	if code := run([]string{"space", "add", "lab", "--yes"}, strings.NewReader(""), &out, &errOut); code != 1 {
 		t.Errorf("space add of an existing space: %d", code)
 	}
+	// The language is the machine's, set by init: space add has no --language.
+	errOut.Reset()
+	if code := run([]string{"space", "add", "other", "--yes", "--language", "en"}, strings.NewReader(""), &out, &errOut); code != 2 ||
+		!strings.Contains(errOut.String(), "flag provided but not defined: -language") {
+		t.Errorf("space add --language: %d %s", code, errOut.String())
+	}
+	if c, _ := config.Load(cfg); c.Spaces["other"] != nil {
+		t.Error("space add --language added the space")
+	}
 }
 
 // --custom asks for the language and one space; an empty answer takes the default, and

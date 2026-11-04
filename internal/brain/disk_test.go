@@ -53,6 +53,7 @@ func TestMismatches(t *testing.T) {
 
 // A space whose notes come from a newer program is not opened: writing could break them.
 func TestOpenRefusesNewerNotes(t *testing.T) {
+	t.Setenv("AB_LANGUAGE", "en")
 	b := open(t, "en")
 	if err := format.Write(b.Space.Memory, 99); err != nil {
 		t.Fatal(err)

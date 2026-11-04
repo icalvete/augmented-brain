@@ -42,45 +42,13 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprint(errOut, i18n.T(userLanguage(), "usage"))
 		return 2
 	}
-	switch args[0] {
-	case "version", "--version", "-v":
-		fmt.Fprintln(out, version.Version)
-		return 0
-	case "help", "--help", "-h":
-		fmt.Fprint(out, i18n.T(userLanguage(), "usage"))
-		return 0
-	case "init":
-		return cmdInit(args[1:], in, out, errOut)
-	case "space":
-		if len(args) > 1 && args[1] == "add" {
-			return cmdSpaceAdd(args[2:], in, out, errOut)
-		}
-		return cmdSpace(out, errOut)
-	case "check":
-		return cmdCheck(out, errOut)
-	case "doctor":
-		return cmdDoctor(out, errOut)
-	case "import":
-		return cmdImport(args[1:], out, errOut)
-	case "mcp":
-		return cmdMCP(errOut)
-	case "hook":
-		return cmdHook(args[1:], in, out, errOut)
-	case "backup":
-		return cmdBackup(args[1:], out, errOut)
-	case "restore":
-		return cmdRestore(args[1:], out, errOut)
-	case "panel":
-		return cmdPanel(args[1:], out, errOut)
-	case "update":
-		return cmdUpdate(args[1:], out, errOut)
-	case "uninstall":
-		return cmdUninstall(args[1:], in, out, errOut)
-	default:
+	c, rest, ok := find(args)
+	if !ok {
 		l := userLanguage()
 		fmt.Fprintf(errOut, "%s\n\n%s", i18n.T(l, "usage.unknown", args[0]), i18n.T(l, "usage"))
 		return 2
 	}
+	return c.run(rest, in, out, errOut)
 }
 
 // userLanguage is the language of the configuration, or the system's when there is

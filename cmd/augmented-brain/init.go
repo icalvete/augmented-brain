@@ -39,9 +39,9 @@ func (a *asker) ask(question, def string) string {
 	return def
 }
 
-// spaceFlags are the flags init and space add share: a space and its folders, --yes
-// and --language.
-func spaceFlags(name string, errOut io.Writer) (*flag.FlagSet, *setup.Options, *bool, *string) {
+// spaceFlags are the flags init and space add share: a space and its folders, and
+// --yes. The language is the machine's, set once by init: space add has no --language.
+func spaceFlags(name string, errOut io.Writer) (*flag.FlagSet, *setup.Options, *bool) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	o := &setup.Options{}
@@ -49,13 +49,13 @@ func spaceFlags(name string, errOut io.Writer) (*flag.FlagSet, *setup.Options, *
 	fs.StringVar(&o.WorkFolder, "work", "", "work folder")
 	fs.StringVar(&o.Memory, "memory", "", "memory folder")
 	yes := fs.Bool("yes", false, "do not ask: take the flags and the defaults")
-	lang := fs.String("language", "", "language: en | es")
-	return fs, o, yes, lang
+	return fs, o, yes
 }
 
-// initFlags are init's flags: the space's, --no-plugin and --custom.
+// initFlags are init's flags: the space's, --language, --no-plugin and --custom.
 func initFlags(errOut io.Writer) (fs *flag.FlagSet, o *setup.Options, yes *bool, lang *string, noPlugin, custom *bool) {
-	fs, o, yes, lang = spaceFlags("init", errOut)
+	fs, o, yes = spaceFlags("init", errOut)
+	lang = fs.String("language", "", "language: en | es")
 	noPlugin = fs.Bool("no-plugin", false, "do not install the Claude Code plugin")
 	custom = fs.Bool("custom", false, "ask for the language, the space and its folders")
 	return fs, o, yes, lang, noPlugin, custom
@@ -232,7 +232,7 @@ func installPlugin(a *asker, lang string, out, errOut io.Writer) bool {
 // cmdSpaceAdd adds one space to the configuration, asking for its name and folders
 // unless --yes.
 func cmdSpaceAdd(args []string, in io.Reader, out, errOut io.Writer) int {
-	fs, o, yes, _ := spaceFlags("space add", errOut)
+	fs, o, yes := spaceFlags("space add", errOut)
 	// The name may come first (space add personal --work ~/personal) or last.
 	rest, ok := parseArgs(fs, args, 1, errOut)
 	if !ok {

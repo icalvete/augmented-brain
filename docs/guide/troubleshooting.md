@@ -47,7 +47,7 @@ PowerShell commands and Claude runs them in Git Bash instead.
 ### Claude asks before every aws or ssh command
 
 The configuration cannot be read, so the guard does not know your lists and asks to be
-safe. `augmented-brain doctor` names the problem. If it says "unknown settings", the file
+safe. `augmented-brain doctor` names the problem. If it says "unknown settings" ("ajustes desconocidos" in Spanish), the file
 has a line this version does not know: a typo, or a setting of a newer version. Then
 update with `augmented-brain update`. See [Configuration](configuration.md).
 

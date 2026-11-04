@@ -30,6 +30,14 @@ var commandMessages = map[string]msg{
 		en: "%v.\nRun `augmented-brain init` to create one.",
 		es: "%v.\nLanza `augmented-brain init` para crearla.",
 	},
+	"config.unknown": {
+		en: "%s: unknown settings: %s",
+		es: "%s: ajustes desconocidos: %s",
+	},
+	"format.newer": {
+		en: "%s was written by a newer augmented brain (format %d; this one knows up to %d): run `augmented-brain update` before using it here",
+		es: "%s lo escribió un augmented brain más nuevo (formato %d; este conoce hasta el %d): lanza `augmented-brain update` antes de usarlo aquí",
+	},
 	"check.summary": {
 		en: "space %s: %s, %s",
 		es: "espacio %s: %s, %s",

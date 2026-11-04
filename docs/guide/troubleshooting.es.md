@@ -47,10 +47,10 @@ comandos de PowerShell y Claude los lanza en Git Bash.
 ### Claude pregunta antes de cada comando aws o ssh
 
 No se puede leer la configuración, así que el guardia no conoce tus listas y pregunta por
-si acaso. `augmented-brain doctor` nombra el problema. Si dice "unknown settings", el
-fichero tiene una línea que esta versión no conoce: una errata, o un ajuste de una versión
-más nueva. Entonces actualiza con `augmented-brain update`. Lo tienes en
-[Configuración](configuration.es.md).
+si acaso. `augmented-brain doctor` nombra el problema. Si dice "ajustes desconocidos" (o
+"unknown settings", en inglés), el fichero tiene una línea que esta versión no conoce: una
+errata, o un ajuste de una versión más nueva. Entonces actualiza con
+`augmented-brain update`. Lo tienes en [Configuración](configuration.es.md).
 
 ### Claude no puede hacer push, aunque se lo pida
 
@@ -70,7 +70,7 @@ Así root en esa máquina te pregunta cada vez, hasta esa fecha.
 Una sesión que estaba abierta sigue con el programa antiguo. Ciérrala y vuelve a abrirla.
 `augmented-brain doctor` dice cuántas sesiones siguen con la versión antigua.
 
-### "Written by a newer augmented brain"
+### "Lo escribió un augmented brain más nuevo"
 
 Una versión más nueva, en otro ordenador, pasó las notas a un formato nuevo. Actualiza
 también este ordenador: `augmented-brain update`. El programa antiguo rechaza las notas

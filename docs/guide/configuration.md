@@ -100,7 +100,8 @@ To take anything out, edit the file yourself.
 
 If the file has a mistake, the program says which line. A setting it does not know is an
 error too, named in the message. If the file was written by a newer version, the program
-says to update instead.
+says to update instead. These messages are in the system's language (or `AB_LANGUAGE`):
+the file's own `language` cannot be read yet.
 
 While the file cannot be read, the guard does not know your lists. So it asks you before
 every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`. `augmented-brain doctor` tells you
@@ -135,8 +136,8 @@ list in `config.toml` as `secrets`; `check` and the session start move it here.
 Set these in your shell to change how the program behaves:
 
 - `AB_CONFIG_DIR`: use this folder as the configuration folder.
-- `AB_LANGUAGE`: `en` or `es`, the language before there is a configuration (the
-  installer and `init` use it).
+- `AB_LANGUAGE`: `en` or `es`, the language before there is a configuration, or while it
+  cannot be read (the installer and `init` use it).
 - `AB_NO_AUTO_BACKUP=1`: do not back up when a session ends.
 - `AB_NO_UPDATE_CHECK=1`: do not ask GitHub, once a day, whether there is a new version.
 - `AB_NO_BROWSER=1`: `augmented-brain panel` prints the address instead of opening the

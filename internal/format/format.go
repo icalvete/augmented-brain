@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
@@ -56,7 +57,9 @@ var (
 func Notes() int  { return 1 + len(NotesMigrations) }
 func Config() int { return 1 + len(ConfigMigrations) }
 
-// NewerError says the files were written by a newer program than this one.
+// NewerError says the files were written by a newer program than this one. It is
+// said in the system's language: it can come before the configuration, and its
+// language, could be read.
 type NewerError struct {
 	What    string // the memory folder or the configuration folder
 	Version int
@@ -64,7 +67,7 @@ type NewerError struct {
 }
 
 func (e *NewerError) Error() string {
-	return fmt.Sprintf("%s was written by a newer augmented brain (format %d; this one knows up to %d): run `augmented-brain update` before using it here", e.What, e.Version, e.Known)
+	return i18n.T(i18n.FromEnv(), "format.newer", e.What, e.Version, e.Known)
 }
 
 // Of reads the version of a memory folder: 1 when it says none.

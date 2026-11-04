@@ -76,6 +76,7 @@ work_folders = ["~/personal"]
 }
 
 func TestLoadErrors(t *testing.T) {
+	t.Setenv("AB_LANGUAGE", "en")
 	cases := map[string]string{
 		"": "no configuration found",
 		`language = "fr"` + "\n[spaces.a]\nmemory = \"/m\"": "language",
@@ -340,6 +341,7 @@ func TestGitAskRepos(t *testing.T) {
 // A configuration from a newer program, with a setting this one does not know, says
 // to update; the same setting in a configuration of this version is an error in it.
 func TestNewerConfigSaysUpdate(t *testing.T) {
+	t.Setenv("AB_LANGUAGE", "en")
 	dir := t.TempDir()
 	write := func(text string) {
 		if err := os.WriteFile(filepath.Join(dir, FileName), []byte(text), 0o600); err != nil {
@@ -354,5 +356,10 @@ func TestNewerConfigSaysUpdate(t *testing.T) {
 	write("language = \"en\"\nfuture_thing = 1\n\n[spaces]\n")
 	if _, err := Load(dir); err == nil || !strings.Contains(err.Error(), "unknown settings: future_thing") {
 		t.Errorf("unknown setting: %v", err)
+	}
+	// It comes before the configuration's language is known: the system's.
+	t.Setenv("AB_LANGUAGE", "es")
+	if _, err := Load(dir); err == nil || !strings.Contains(err.Error(), "ajustes desconocidos: future_thing") {
+		t.Errorf("unknown setting, in Spanish: %v", err)
 	}
 }
