@@ -101,7 +101,15 @@ func Dir() (string, error) {
 }
 
 // ErrNotFound means there is no configuration file yet (run `augmented-brain init`).
+// Load returns it with the folder, said in the system's language.
 var ErrNotFound = errors.New("no configuration found")
+
+// notFound is ErrNotFound for one folder, in the system's language: there is no
+// configuration to read the user's from.
+type notFound struct{ dir string }
+
+func (e notFound) Error() string        { return i18n.T(i18n.FromEnv(), "config.notfound", e.dir) }
+func (e notFound) Is(target error) bool { return target == ErrNotFound }
 
 // Load reads and checks the configuration in dir. Paths come back absolute, with ~ expanded.
 func Load(dir string) (*Config, error) {
@@ -109,23 +117,24 @@ func Load(dir string) (*Config, error) {
 	var c Config
 	md, err := toml.DecodeFile(path, &c)
 	if errors.Is(err, os.ErrNotExist) {
-		return nil, fmt.Errorf("%w in %s", ErrNotFound, dir)
+		return nil, notFound{dir}
 	}
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
 	if extra := md.Undecoded(); len(extra) > 0 {
+		// The configuration did not load, so its language is unknown: the system's.
+		lang := i18n.FromEnv()
 		// A configuration written by a newer program may hold settings this one does
 		// not know: then the thing to say is to update, not that the file is wrong.
 		if c.Format > format.Config() {
-			return nil, &format.NewerError{What: dir, Version: c.Format, Known: format.Config()}
+			return nil, &format.NewerError{What: dir, Version: c.Format, Known: format.Config(), Lang: lang}
 		}
 		keys := make([]string, len(extra))
 		for i, k := range extra {
 			keys[i] = k.String()
 		}
-		// The configuration did not load, so its language is unknown: the system's.
-		return nil, errors.New(i18n.T(i18n.FromEnv(), "config.unknown", path, strings.Join(keys, ", ")))
+		return nil, errors.New(i18n.T(lang, "config.unknown", path, strings.Join(keys, ", ")))
 	}
 	c.Dir = dir
 	if err := c.normalize(); err != nil {
@@ -139,20 +148,22 @@ func (c *Config) normalize() error {
 		c.Language = "en"
 	}
 	if !slices.Contains(Languages, c.Language) {
-		return fmt.Errorf("language %q is not one of %s", c.Language, strings.Join(Languages, ", "))
+		// A language it does not speak: the system's.
+		return errors.New(i18n.T(i18n.FromEnv(), "config.language", c.Language, strings.Join(Languages, ", ")))
 	}
+	lang := c.Language
 	if len(c.Spaces) == 0 {
-		return errors.New("no spaces declared")
+		return errors.New(i18n.T(lang, "config.nospaces"))
 	}
 	if c.DefaultSpace != "" {
 		if _, ok := c.Spaces[c.DefaultSpace]; !ok {
-			return fmt.Errorf("default_space %q is not one of the spaces (%s)", c.DefaultSpace, strings.Join(c.SpaceNames(), ", "))
+			return errors.New(i18n.T(lang, "config.defaultspace", c.DefaultSpace, strings.Join(c.SpaceNames(), ", ")))
 		}
 	}
 	for name, s := range c.Spaces {
 		s.Name = name
 		if s.Memory == "" {
-			return fmt.Errorf("space %q: memory folder is missing", name)
+			return errors.New(i18n.T(lang, "config.nomemory", name))
 		}
 		m, err := absPath(s.Memory)
 		if err != nil {

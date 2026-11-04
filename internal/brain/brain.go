@@ -41,7 +41,7 @@ type Brain struct {
 // Open loads the space's memory. A file that is not a valid note does not stop the
 // rest: it is left out, listed in Problems, and never written over.
 func Open(c *config.Config, s *config.Space) (*Brain, error) {
-	if err := format.CheckNotes(s.Memory); err != nil {
+	if err := format.CheckNotes(s.Memory, c.Language); err != nil {
 		return nil, err // written by a newer program: writing here could break them
 	}
 	m, problems, err := memory.LoadSpace(s.Memory, c.SharedDir())
@@ -60,7 +60,7 @@ func (b *Brain) Shared() (*Brain, error) {
 			return nil, err
 		}
 	}
-	if err := format.CheckNotes(dir); err != nil {
+	if err := format.CheckNotes(dir, b.Language); err != nil {
 		return nil, err
 	}
 	m, problems, err := memory.LoadShared(dir)

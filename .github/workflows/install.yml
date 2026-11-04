@@ -12,10 +12,25 @@ on:
 permissions:
   contents: read
 
+# macOS runners are few, and a push to a pull request's branch starts several Mac jobs
+# at once (ci on push and on pull_request, install's Mac rows): some waited so long
+# they were cancelled. A newer push to the same branch or pull request makes an older
+# run of this workflow moot, so it is stopped (cancel-in-progress) instead of holding
+# runners; a run on main is never stopped, so every commit of main keeps its result.
+# The group tells events apart, so a push never stops a pull_request run (or the
+# other way round): every check still runs on the last commit. Nothing is skipped.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   install:
     strategy:
       fail-fast: false
+      # Two rows at a time: three of the four are Macs, and with ci's Mac jobs they
+      # were more than the Mac runners could take at once. Every row still runs, the
+      # last ones when the first are done.
+      max-parallel: 2
       matrix:
         include:
           - os: macos-latest

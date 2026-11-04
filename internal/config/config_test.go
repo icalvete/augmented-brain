@@ -97,6 +97,17 @@ func TestLoadErrors(t *testing.T) {
 			t.Errorf("missing file: want ErrNotFound, got %v", err)
 		}
 	}
+	// A configuration that says its language is told in it; with none to read, the
+	// system's.
+	dir := t.TempDir()
+	write(t, dir, "language = \"es\"\n[spaces.a]\nwork_folders = [\"/w\"]")
+	if _, err := Load(dir); err == nil || !strings.Contains(err.Error(), `espacio "a": falta la carpeta de memoria`) {
+		t.Errorf("in Spanish: %v", err)
+	}
+	t.Setenv("AB_LANGUAGE", "es")
+	if _, err := Load(t.TempDir()); !errors.Is(err, ErrNotFound) || !strings.Contains(err.Error(), "no hay ninguna configuración en") {
+		t.Errorf("missing file, system in Spanish: %v", err)
+	}
 }
 
 func TestDir(t *testing.T) {
@@ -210,7 +221,8 @@ func TestDefaultSpace(t *testing.T) {
 	if s, d := c.SpaceAt(filepath.Join(home, "ab", "trabajo", "web")); s == nil || s.Name != "trabajo" || d {
 		t.Errorf("inside trabajo: %v %v", s, d)
 	}
-	if err := SetDefaultSpace(dir, "nope"); err == nil || !strings.Contains(err.Error(), "not one of the spaces") {
+	// The configuration is in Spanish: so is what it says.
+	if err := SetDefaultSpace(dir, "nope"); err == nil || !strings.Contains(err.Error(), "el cambio estropearía") || !strings.Contains(err.Error(), `default_space "nope" no es ninguno de los espacios (personal, trabajo)`) {
 		t.Errorf("a default that is not a space: %v", err)
 	}
 	data, _ := os.ReadFile(filepath.Join(dir, FileName))

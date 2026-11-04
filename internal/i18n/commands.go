@@ -34,27 +34,68 @@ var commandMessages = map[string]msg{
 		en: "%s: unknown settings: %s",
 		es: "%s: ajustes desconocidos: %s",
 	},
+	// What is wrong with the configuration file (config.toml).
+	"config.notfound": {
+		en: "no configuration found in %s",
+		es: "no hay ninguna configuración en %s",
+	},
+	"config.language": {
+		en: "language %q is not one of %s",
+		es: "language %q no es ninguno de estos: %s",
+	},
+	"config.nospaces": {
+		en: "no spaces declared",
+		es: "no hay ningún espacio declarado",
+	},
+	"config.defaultspace": {
+		en: "default_space %q is not one of the spaces (%s)",
+		es: "default_space %q no es ninguno de los espacios (%s)",
+	},
+	"config.nomemory": {
+		en: "space %q: memory folder is missing",
+		es: "espacio %q: falta la carpeta de memoria (memory)",
+	},
+	"config.nospace": {
+		en: "%s has no space %q",
+		es: "%s no tiene ningún espacio %q",
+	},
+	"config.wouldbreak": {
+		en: "the change would break %s, so it was not made",
+		es: "el cambio estropearía %s, así que no se ha hecho",
+	},
+	"config.rootask.form": {
+		en: "%q is not \"<host> until <date>\"",
+		es: "%q no tiene la forma \"<host> until <fecha>\"",
+	},
+	"config.rootask.date": {
+		en: "%q: the date %q is neither a day (2026-10-31) nor a time (2026-10-31T23:59Z)",
+		es: "%q: la fecha %q no es ni un día (2026-10-31) ni una hora (2026-10-31T23:59Z)",
+	},
 	"format.newer": {
 		en: "%s was written by a newer augmented brain (format %d; this one knows up to %d): run `augmented-brain update` before using it here",
 		es: "%s lo escribió un augmented brain más nuevo (formato %d; este conoce hasta el %d): lanza `augmented-brain update` antes de usarlo aquí",
 	},
+	// Moving notes to a new format: the folder, the format numbers, what the step does,
+	// what went wrong and where the copy from before is.
+	"format.notversion": {
+		en: "%s: %q is not a format version",
+		es: "%s: %q no es una versión de formato",
+	},
+	"format.copying": {
+		en: "copying %s before moving it to format %d: %v",
+		es: "al copiar %s antes de pasarlo al formato %d: %v",
+	},
+	"format.noway": {
+		en: "no way from format %d to %d",
+		es: "no hay forma de pasar del formato %d al %d",
+	},
+	"format.moving": {
+		en: "moving %s from format %d to %d (%s): %v; a copy from before is in %s",
+		es: "al pasar %s del formato %d al %d (%s): %v; hay una copia de antes en %s",
+	},
 	"check.summary": {
 		en: "space %s: %s, %s",
 		es: "espacio %s: %s, %s",
-	},
-	// What the guard says when merging a pull request needs the user's go-ahead: the
-	// command, then the repository.
-	"guard.merge.ask": {
-		en: "`%s` merges a pull request in %s, a repository where that needs the user's go-ahead each time (git_ask_repos). Before asking, show them which pull request it merges and what it changes.",
-		es: "`%s` fusiona una pull request en %s, un repositorio donde eso necesita el visto bueno del usuario cada vez (git_ask_repos). Antes de preguntar, enséñale qué pull request fusiona y qué cambia.",
-	},
-	"guard.merge.cd": {
-		en: "`%s` merges a pull request, and goes by git_allowed_repos and git_ask_repos only when the command names the repository, as `git -C` does for a push: write it as `cd <repo> && %s …`, with the repository's path. As it is, it is for the user.",
-		es: "`%s` fusiona una pull request, y va por git_allowed_repos y git_ask_repos solo cuando el comando nombra el repositorio, como `git -C` en un push: escríbelo como `cd <repo> && %s …`, con la ruta del repositorio. Tal como está, es para el usuario.",
-	},
-	"guard.merge.admin": {
-		en: "`%s --admin` merges a pull request in %s skipping the branch's protection (its required checks and reviews). The user confirms it each time, even in a repository the assistant may merge in.",
-		es: "`%s --admin` fusiona una pull request en %s saltándose la protección de la rama (sus comprobaciones y revisiones obligatorias). El usuario lo confirma cada vez, también en un repositorio donde el asistente puede fusionar.",
 	},
 	"secret.an AWS access key": {
 		en: "an AWS access key",
@@ -319,6 +360,28 @@ Uso:
 	"usage.unknown": {
 		en: "unknown command %q",
 		es: "no conozco el comando %q",
+	},
+	// augmented-brain hook, which only the plugin runs: the number of parts, the hooks.
+	"usage.hook.part": {
+		en: "usage: augmented-brain hook session-start [1-%d]",
+		es: "uso: augmented-brain hook session-start [1-%d]",
+	},
+	"usage.hook": {
+		en: "usage: augmented-brain hook %s",
+		es: "uso: augmented-brain hook %s",
+	},
+	"usage.hook.unknown": {
+		en: "unknown hook %q",
+		es: "no conozco el hook %q",
+	},
+	// What the MCP server answers when it cannot open a space.
+	"mcp.init": {
+		en: "run `augmented-brain init`",
+		es: "lanza `augmented-brain init`",
+	},
+	"mcp.nospace": {
+		en: "%s belongs to no space (spaces: %s); open the assistant inside a space's work folder, or run `augmented-brain space add`",
+		es: "%s no es de ningún espacio (espacios: %s); abre el asistente dentro de la carpeta de trabajo de un espacio, o lanza `augmented-brain space add`",
 	},
 	"usage.backup.setup": {
 		en: "usage: augmented-brain backup setup <url of a private git repository>",

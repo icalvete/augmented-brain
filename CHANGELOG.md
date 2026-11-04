@@ -1,5 +1,37 @@
 # Changelog
 
+## Unreleased
+
+- **`space add` no longer takes `--language`.** It never did anything: the language is
+  the same for every space on a computer, the `language` setting that `init` sets. A
+  script that still passes it now gets an error that names it.
+- A documentation site, in English and Spanish, in the website's `guide/`: twenty pages
+  from getting started to troubleshooting, with a reference of every command and flag,
+  MCP tool and `config.toml` setting. Tests fail when one of them is missing from the
+  reference in either language.
+- One list of commands, the one the help and those tests are checked against. Every
+  command works as before.
+- **Every message is in your language.** "Unknown settings", "written by a newer
+  augmented brain", what is wrong in `config.toml`, a failed move to a new format, the
+  `hook` command's usage and the MCP server's errors now come in Spanish too: in the
+  configuration's `language`, or the system's while the configuration cannot be read.
+- The guard's reasons, which Claude reads and you see when it asks, all follow your
+  `language`. Until now only those about merging a pull request did, next to the others
+  in English.
+- The guard no longer takes the text given to `gh pr merge --body` or `--subject` (or
+  `glab mr merge --message`) as part of the command: an address or `--admin` written
+  there does not change what the merge is. `gh pr merge` written in a pull request's
+  body or a commit message was already not a merge; tests now say so.
+- **A hole in the guard closed.** `gh pr merge -m` (`--merge`, which takes no value)
+  made the guard skip the next word, so `gh pr merge -m <another repository's pull
+  request>` went through in a repository where merging is allowed. It is now refused,
+  like any merge that names a repository other than the one it runs in.
+- CI stops an older run when a newer push to the same branch or pull request
+  supersedes it (never on `main`), and runs the installer's checks two at a time, so
+  the macOS jobs no longer wait for runners until they are cancelled.
+- `compat-check.sh` runs the earlier releases in English, so the words it looks for
+  are there whatever the language of the machine.
+
 ## 0.7.0-alpha
 
 Released 2026-11-03.

@@ -157,7 +157,7 @@ func cmdCheck(out, errOut io.Writer) int {
 			fmt.Fprintln(out, i18n.T(c.Language, "check.private", paths.Tilde(s.Memory)))
 		}
 	}
-	if r, err := format.EnsureNotes(s.Memory, c.Dir, s.Name, time.Now()); err != nil {
+	if r, err := format.EnsureNotes(s.Memory, c.Dir, s.Name, c.Language, time.Now()); err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
 	} else if r.Migrated() {
@@ -208,7 +208,7 @@ func checkShared(c *config.Config, out, errOut io.Writer) (*memory.Memory, bool)
 	if _, err := os.Stat(dir); err != nil {
 		return &memory.Memory{Dir: dir, Notes: map[string]*memory.Note{}}, true
 	}
-	if r, err := format.EnsureNotes(dir, c.Dir, config.SharedFolder, time.Now()); err != nil {
+	if r, err := format.EnsureNotes(dir, c.Dir, config.SharedFolder, c.Language, time.Now()); err != nil {
 		fmt.Fprintln(errOut, err)
 		return nil, false
 	} else if r.Migrated() {
@@ -271,7 +271,8 @@ func cmdMCP(errOut io.Writer) int {
 			return nil, err // it says to update; init would not help
 		}
 		if err != nil {
-			return nil, fmt.Errorf("%w; run `augmented-brain init`", err)
+			// It did not load, so its language is unknown: the system's.
+			return nil, fmt.Errorf("%w; %s", err, i18n.T(i18n.FromEnv(), "mcp.init"))
 		}
 		wd, err := os.Getwd()
 		if err != nil {
@@ -279,7 +280,7 @@ func cmdMCP(errOut io.Writer) int {
 		}
 		s, _ := c.SpaceAt(wd)
 		if s == nil {
-			return nil, fmt.Errorf("%s belongs to no space (spaces: %v); open the assistant inside a space's work folder, or run `augmented-brain space add`", wd, c.SpaceNames())
+			return nil, errors.New(i18n.T(c.Language, "mcp.nospace", wd, strings.Join(c.SpaceNames(), ", ")))
 		}
 		return brain.Open(c, s)
 	}
@@ -321,7 +322,7 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 	if len(args) == 2 && args[0] == "session-start" {
 		n, err := strconv.Atoi(args[1])
 		if err != nil || n < 1 {
-			fmt.Fprintf(errOut, "usage: augmented-brain hook session-start [1-%d]\n", session.Parts)
+			fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.hook.part", session.Parts))
 			return 2
 		}
 		if n > session.Parts {
@@ -337,13 +338,13 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 		for i, e := range hookEvents {
 			names[i] = e.name
 		}
-		fmt.Fprintln(errOut, "usage: augmented-brain hook "+strings.Join(names, "|"))
+		fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.hook", strings.Join(names, "|")))
 		return 2
 	}
 	dir, _ := config.Dir()
 	i := slices.IndexFunc(hookEvents, func(e hookEvent) bool { return e.name == args[0] })
 	if i < 0 {
-		fmt.Fprintf(errOut, "unknown hook %q\n", args[0])
+		fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.hook.unknown", args[0]))
 		return 2
 	}
 	if err := hookEvents[i].run(in, out, dir, part); err != nil {

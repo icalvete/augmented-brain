@@ -246,3 +246,57 @@ func TestSameRepo(t *testing.T) {
 		}
 	}
 }
+
+// Found in use: `gh pr merge` written in the text of another argument (the body of a
+// pull request, a commit message) is not a merge. Only the words the shell would run
+// count, as for a push; and in a real merge, the text given to an option (a body, a
+// subject) is not an address or an option of the command.
+func TestMergeOnlyInCommandWords(t *testing.T) {
+	home, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HOME", home)
+	app := filepath.Join(home, "code", "app")
+	lab := filepath.Join(home, "code", "lab")
+	fakeRepo(t, app, map[string]string{"origin": "git@github.com:acme/app.git"})
+	fakeRepo(t, lab, map[string]string{"origin": "git@gitlab.com:team/lab.git"})
+	p := Policy{Cwd: home, GitAllowedRepos: []string{app, lab}}
+	in := func(dir, cmd string) string { return "cd '" + filepath.ToSlash(dir) + "' && " + cmd }
+	for _, c := range []struct {
+		cmd  string
+		want Verdict
+	}{
+		// gh pr merge only as text: never a merge, wherever it runs
+		{`gh pr create --title "Fix" --body "When CI is green, gh pr merge 5 --admin"`, Allow},
+		{`gh pr create --title Fix --body 'then: gh pr merge 5 -R evil/app'`, Allow},
+		{"gh pr create --title Fix --body \"$(cat <<'EOF'\n## Next\nRun `gh pr merge 5` (after review).\nEOF\n)\"", Allow},
+		{`gh pr comment 5 --body "gh pr merge 5"`, Allow},
+		{`glab mr create --title Fix --description "then glab mr merge 7"`, Allow},
+		{`echo "gh pr merge 5"`, Allow},
+		{"git -C '" + filepath.ToSlash(app) + "' commit -m \"Docs: how to gh pr merge 5\"", Allow},
+		{in(app, `gh pr create --body "gh pr merge 5"`), Allow},
+		{in(app, `gh pr merge 12 --body "--admin, as in gh pr merge 5 --admin"`), Allow},
+		{in(app, `gh pr merge 12 --body "see https://github.com/acme/other/pull/3"`), Allow},
+		{in(app, `gh pr merge 12 --body="see https://github.com/acme/other/pull/3"`), Allow},
+		{in(app, `gh pr merge 12 -b"see https://github.com/acme/other/pull/3"`), Allow},
+		{in(app, `gh pr merge 12 -t "Merge https://github.com/acme/other/pull/3"`), Allow},
+		{in(lab, `glab mr merge 7 -m "see https://gitlab.com/team/other/-/merge_requests/3"`), Allow},
+		{in(lab, `glab mr merge 7 --squash-message="see https://gitlab.com/team/other/-/merge_requests/3"`), Allow},
+		// the merges themselves still count
+		{in(app, "gh pr merge 12 --admin"), Ask},
+		{in(app, "gh pr merge 12 -R evil/app"), Deny},
+		{in(app, "gh pr merge -m https://github.com/acme/other/pull/3"), Deny}, // gh's -m is --merge, with no value
+		{"gh pr merge 5", Deny},
+		{"gh pr create --body x && gh pr merge 5", Deny},
+		{"gh pr create --body \"`gh pr merge 5`\"", Deny}, // backquotes run, even inside double quotes
+	} {
+		if d := p.Command(c.cmd); d.Verdict != c.want {
+			t.Errorf("%q: %v (%s), want %v", c.cmd, d.Verdict, d.Reason, c.want)
+		}
+	}
+	// A commit that is not allowed is denied as a commit, not as a merge.
+	if r := p.Command(`git commit -m "then gh pr merge 5"`).Reason; !strings.Contains(r, "`git commit` is for the user") {
+		t.Errorf("commit reason: %s", r)
+	}
+}

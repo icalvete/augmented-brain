@@ -325,3 +325,51 @@ func TestSessionStartOldServers(t *testing.T) {
 		t.Errorf("no word of the old session:\n%s", out.String())
 	}
 }
+
+// The guard's reasons come in the user's language: the configuration's, and the
+// system's when there is no configuration to read it from.
+func TestPreToolUseLanguage(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	reason := func(cfg, cmd string) string {
+		pre := func(in *bytes.Reader, out *bytes.Buffer) error { return PreToolUse(in, out, cfg) }
+		o := run(t, pre, map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": cmd}})
+		if o == nil {
+			return ""
+		}
+		return o["permissionDecisionReason"].(string)
+	}
+	setLanguage := func(lang string) {
+		c, err := config.Load(cfgDir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		c.Language = lang
+		if err := c.Save(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	setLanguage("en")
+	t.Setenv("AB_LANGUAGE", "es")
+	if r := reason(cfgDir, "sudo id"); !strings.Contains(r, "this would run as root") {
+		t.Errorf("configuration in English: %q", r)
+	}
+	setLanguage("es")
+	t.Setenv("AB_LANGUAGE", "en")
+	for cmd, want := range map[string]string{
+		"sudo id":                  "esto se ejecutaría como root",
+		"aws s3 ls --profile prod": "puede usar el perfil de producción prod",
+		"git push":                 "`git push` es cosa del usuario",
+	} {
+		if r := reason(cfgDir, cmd); !strings.Contains(r, want) {
+			t.Errorf("configuration in Spanish, %q: %q", cmd, r)
+		}
+	}
+	t.Setenv("AB_LANGUAGE", "es")
+	if r := reason(t.TempDir(), "sudo id"); !strings.Contains(r, "esto se ejecutaría como root") {
+		t.Errorf("no configuration, system in Spanish: %q", r)
+	}
+	var out bytes.Buffer
+	if err := PreToolUse(strings.NewReader("not json"), &out, t.TempDir()); err != nil || !strings.Contains(out.String(), "no se pudo leer la llamada") {
+		t.Errorf("broken input, system in Spanish: %q", out.String())
+	}
+}

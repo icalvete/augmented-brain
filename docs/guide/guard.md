@@ -14,6 +14,9 @@ before it happens. It has three answers:
   …`, `ssh db01 …`.
 - **Stop**: the command does not run. Claude gets the reason, and what to do instead.
 
+The reasons are in your language, the `language` of your
+[configuration](configuration.md) (the system's while it cannot be read).
+
 **The guard is a safety net against slips, not a security boundary.** It reads commands
 as text. It catches the mistakes an assistant makes, also hidden inside other commands.
 A program determined to get around it could. Read the
@@ -74,7 +77,10 @@ accept` follow the same lists. gh and glab have no `-C`, so Claude writes `cd ~/
 && gh pr merge 12`. The folder in that `cd` is the repository; the folder the session is
 in does not count alone. A repository the command names (`-R owner/name`, the pull
 request's address) must be one of that repository's remotes, or the merge is stopped.
-`gh pr merge --admin`, which skips the branch's protection, always asks.
+`gh pr merge --admin`, which skips the branch's protection, always asks. Only the command
+itself counts: `gh pr merge` written in a pull request's body or a commit message is not
+a merge, and neither is an address or `--admin` in the text given to `--body` or
+`--subject`.
 
 ## Production profiles and untouchable machines
 

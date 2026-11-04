@@ -11,6 +11,14 @@ on:
 permissions:
   contents: read
 
+# As in ci.yml and install.yml (where it keeps the few macOS runners free): a newer
+# push to the same branch or pull request stops an older run of this workflow, except
+# on main, where every commit keeps its result. The group tells events apart, so a
+# push never stops a pull_request run: every check still runs on the last commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   test:
     runs-on: windows-latest

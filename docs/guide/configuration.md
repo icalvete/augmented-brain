@@ -48,7 +48,8 @@ runs, so a change counts at once.
 
 These go at the top, before any `[spaces.…]` heading.
 
-- `language`: the language the program speaks to you, `en` or `es`. Default `en`.
+- `language`: the language the program speaks to you, `en` or `es`: its messages and the
+  guard's reasons. Default `en`.
 - `default_space`: the space used outside every work folder, such as the scratch folder
   the desktop app opens a new session in. Its backup carries your profile and the shared
   notes. Optional; with two spaces or more, `init` and `space add` set it.
@@ -101,7 +102,9 @@ To take anything out, edit the file yourself.
 If the file has a mistake, the program says which line. A setting it does not know is an
 error too, named in the message. If the file was written by a newer version, the program
 says to update instead. These messages are in the system's language (or `AB_LANGUAGE`):
-the file's own `language` cannot be read yet.
+the file's own `language` cannot be read yet. A file that reads but says something
+wrong (a space with no `memory`, a `default_space` that is not a space) is told in its
+`language`.
 
 While the file cannot be read, the guard does not know your lists. So it asks you before
 every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`. `augmented-brain doctor` tells you
