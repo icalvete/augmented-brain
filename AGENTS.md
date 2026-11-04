@@ -98,8 +98,9 @@ Heavier checks, before a release or when you touch what they cover:
   Spanish: a new message goes in `internal/i18n`, in the file of its subject, with both
   languages (`TestCatalog` checks they have the same placeholders); no package keeps a
   language table of its own. Outside Go: `say` in `install.sh`, the templates,
-  `README.md` and `README.es.md`, `docs/index.html` and `docs/es/index.html`, each guide
-  and its `.es` twin. Change one, change the other.
+  `README.md` and `README.es.md`, `CHANGELOG.md` and `CHANGELOG.es.md`,
+  `docs/index.html` and `docs/es/index.html`, each guide and its `.es` twin. Change one,
+  change the other.
 - **The docs follow the code.** A new command or flag goes in `commands` (`cmd/augmented-brain/commands.go`) and in the usage text; a new command, flag, MCP tool, tool parameter or `config.toml` setting also goes in its reference page, in both languages, or `go test` fails (`TestCommandsDocumented`, `TestToolsDocumented`, `TestSettingsDocumented`). A change people notice also updates the guide that tells it.
 - **Generated files are not edited by hand.** Change the source and regenerate:
   `docs/img/*.svg` from `docs/img/diagrams.py`; every `docs/guide/*.html`,
@@ -138,7 +139,8 @@ Heavier checks, before a release or when you touch what they cover:
   `main` (a GitHub ruleset; no force push, no deletion, no one bypasses it). Tags `v*`
   cannot be moved or deleted once pushed.
 - A release: on a branch, set `VERSION`, rename the `## Unreleased` section of
-  `CHANGELOG.md` to `## <version>` with its date, commit, open a pull request and merge it
+  `CHANGELOG.md` and `CHANGELOG.es.md` to `## <version>` with its date (`Released <date>.`,
+  `Publicada el <date>.`), commit, open a pull request and merge it
   when CI is green; then tag `v<version>` on that commit of `main` and push the tag. `release.yml` builds
   the archives, checksums and `install.sh` and publishes them; the installer always takes
   the latest release.
