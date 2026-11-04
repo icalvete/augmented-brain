@@ -157,6 +157,7 @@ func TestSessionStartBrokenConfig(t *testing.T) {
 func TestMain(m *testing.M) {
 	LatestVersion = func() (string, error) { return "", nil }
 	state.ScanProc = false // the Claude sessions open on the machine running the tests are not theirs
+	Processes = nil        // nor is the memory of the window running them
 	os.Exit(m.Run())
 }
 

@@ -291,7 +291,11 @@ The events:
 - `pre-tool-use`: before every command and file change. This is the
   [guard](guard.md). If it cannot run, Claude Code stops the command.
 - `stop`: after each answer. It reminds Claude to write in the task's journal, once,
-  after 20 minutes without writing.
+  after 20 minutes without writing. It also looks at how much memory the window uses
+  (VS Code's extension host, or Claude itself in a terminal), and has Claude warn you
+  when it passes 2 GB, then 4 and 8 GB, once each. On Linux and macOS; it takes a
+  fraction of a millisecond. See
+  [Troubleshooting](troubleshooting.md#the-window-uses-a-lot-of-memory).
 - `post-compact`: after Claude Code compacts a long conversation. It keeps the summary in
   `archive/sessions/` and points the task's journal at it.
 - `session-end`: the session ends. It notes that it ended well, and starts the backup in

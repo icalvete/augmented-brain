@@ -959,7 +959,10 @@ resuming and closing work the same way. See [Tasks](https://icalvete.github.io/a
 through, asks you, or stops it. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
 
 **4. Claude finishes an answer.** If a task is open and nothing was written in it for 20
-minutes, a hook reminds Claude to write in its journal, once.
+minutes, a hook reminds Claude to write in its journal, once. The same hook looks at the
+memory of the window: if it has grown far past normal, Claude tells you, so you can park
+the task before the system closes the window. See
+[Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html#the-window-uses-a-lot-of-memory).
 
 **5. You close the session.** The end hook notes that the session ended well. It starts
 the [backup](https://icalvete.github.io/augmented-brain/guide/backup.html) of the space in the background, if you set one up. You wait for
@@ -1879,7 +1882,11 @@ The events:
 - `pre-tool-use`: before every command and file change. This is the
   [guard](https://icalvete.github.io/augmented-brain/guide/guard.html). If it cannot run, Claude Code stops the command.
 - `stop`: after each answer. It reminds Claude to write in the task's journal, once,
-  after 20 minutes without writing.
+  after 20 minutes without writing. It also looks at how much memory the window uses
+  (VS Code's extension host, or Claude itself in a terminal), and has Claude warn you
+  when it passes 2 GB, then 4 and 8 GB, once each. On Linux and macOS; it takes a
+  fraction of a millisecond. See
+  [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html#the-window-uses-a-lot-of-memory).
 - `post-compact`: after Claude Code compacts a long conversation. It keeps the summary in
   `archive/sessions/` and points the task's journal at it.
 - `session-end`: the session ends. It notes that it ended well, and starts the backup in
@@ -2886,6 +2893,23 @@ address.
 The window was closed by force, or the computer went down. The next session offers to
 recover it. Say yes, or go to the panel's Sessions page. Claude Code keeps each
 conversation for 30 days.
+
+### The window uses a lot of memory
+
+Claude says that the window uses a lot of memory, or `doctor` warns about a Claude window
+of several GB. The process that holds the window's sessions has grown far past normal:
+VS Code's extension host (the program inside VS Code that runs Claude and the other
+extensions), or Claude itself in a terminal. It normally stays near 0.5 GB for days.
+Now and then one grows without stopping, and the system ends up closing it, with every
+Claude session of the window. The length of the conversation has nothing to do with it.
+
+What to do, as soon as you see it:
+
+1. Ask Claude to park the task ("park it"). Where you were and what comes next are kept.
+2. Open a new VS Code window (or a new terminal session) and resume the task there.
+3. Close the old window when you are done with it: that frees the memory.
+
+Claude warns at 2 GB, then at 4 and 8 GB, once each. On Windows it does not look.
 
 ### After a restore, nothing asks before production
 

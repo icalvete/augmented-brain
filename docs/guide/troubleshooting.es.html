@@ -123,6 +123,11 @@
   <p>En un ordenador sin pantalla, <code>augmented-brain panel</code> escribe la dirección para que la abras tú. La dirección lleva una clave que cambia cada vez que arranca el panel, y el panel se para después de 30 minutos sin usarlo. Vuelve a lanzar <code>augmented-brain panel</code> para tener una dirección nueva.</p>
   <h3 id="una-sesión-se-cortó">Una sesión se cortó</h3>
   <p>La ventana se cerró a la fuerza, o el ordenador se apagó. La siguiente sesión te ofrece recuperarla. Di que sí, o ve a la página Sesiones del panel. Claude Code guarda cada conversación 30 días.</p>
+  <h3 id="la-ventana-usa-mucha-memoria">La ventana usa mucha memoria</h3>
+  <p>Claude te dice que la ventana usa mucha memoria, o <code>doctor</code> avisa de una ventana de Claude de varios GB. El proceso que lleva las sesiones de la ventana ha crecido mucho más de lo normal: el host de extensiones de VS Code (el programa dentro de VS Code que ejecuta Claude y las demás extensiones), o el propio Claude en un terminal. Lo normal es que se quede cerca de 0,5 GB durante días. De vez en cuando uno crece sin parar, y el sistema acaba cerrándolo, con todas las sesiones de Claude de la ventana. La longitud de la conversación no tiene nada que ver.</p>
+  <p>Qué hacer, en cuanto lo veas:</p>
+  <ol><li>Pídele a Claude que aparque la tarea (“apárcala”). Se guarda dónde estabas y lo que viene después.</li><li>Abre una ventana nueva de VS Code (o una sesión nueva en el terminal) y retoma la tarea allí.</li><li>Cierra la ventana vieja cuando acabes con ella: así se libera la memoria.</li></ol>
+  <p>Claude avisa a los 2 GB, luego a los 4 y a los 8 GB, una vez cada uno. En Windows no lo mira.</p>
   <h3 id="después-de-recuperar-una-copia-nada-pregunta-antes-de-tocar-producción">Después de recuperar una copia, nada pregunta antes de tocar producción</h3>
   <p>Las copias de seguridad no llevan las listas del guardia. Abre una sesión de Claude: se ofrece a preguntártelas. O añade tú <code>production_aws_profiles</code> y <code>untouchable_hosts</code> a la configuración.</p>
   <h3 id="windows-los-acentos-salen-mal-sesiã³n">Windows: los acentos salen mal (<code>sesiÃ³n</code>)</h3>

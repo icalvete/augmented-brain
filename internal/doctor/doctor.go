@@ -17,6 +17,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/hostmem"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -135,6 +136,7 @@ func Run(e Env) []Check {
 	if old := state.OldServers(c.Dir, version.Version); len(old) > 0 {
 		add(Warning, i18n.T(l, "doctor.oldservers", len(old), version.Version), i18n.T(l, "doctor.oldservers.fix"))
 	}
+	out = append(out, memoryHogs(l)...)
 	return append(out, tools(e)...)
 }
 
@@ -284,6 +286,24 @@ func Worst(checks []Check) Status {
 		}
 	}
 	return w
+}
+
+// memoryHogs warns about every Claude window on this machine whose host process (VS
+// Code's extension host, or claude in a terminal) is past the first step of the Stop
+// hook's memory warning: the system may kill it, with every session in it.
+func memoryHogs(lang string) []Check {
+	if hostmem.Local == nil {
+		return nil
+	}
+	first := hostmem.Steps(os.Getenv)[0] << 20
+	var out []Check
+	for _, h := range hostmem.Hosts(hostmem.Local) {
+		if h.RSS >= first {
+			out = append(out, Check{Warning, i18n.T(lang, "doctor.memory", hostmem.GB(h.RSS, lang), i18n.T(lang, "doctor.memory."+h.Kind), h.PID),
+				i18n.T(lang, "doctor.memory.fix")})
+		}
+	}
+	return out
 }
 
 // autoMemory warns when Claude Code keeps a memory of its own for a work folder: its
