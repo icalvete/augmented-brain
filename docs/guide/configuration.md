@@ -125,6 +125,24 @@ panel's Secrets page lists it. A value is refused. It is a file of its own becau
 versions before 0.6.0 refuse a setting of `config.toml` they do not know. 0.6.0 kept the
 list in `config.toml` as `secrets`; `check` and the session start move it here.
 
+## `guard.toml`
+
+Next to `config.toml`, `guard.toml` holds what the guard never allows:
+
+```toml
+untouchable_repos = ["~/work/core", "~/work/cli-*"]
+```
+
+- `untouchable_repos`: repositories where Claude never commits, pushes or merges,
+  whatever `git_allowed_repos` and `git_ask_repos` say. For the whole computer. Same form
+  as those lists (`~`, a `*` in the last part, worktrees count).
+
+The panel's Guard page writes it. If the file is missing, nothing is untouchable; if it
+cannot be read, the guard asks before every commit and push. It is a file of its own for
+the same reason as `secrets.toml`: versions before this one refuse a setting of
+`config.toml` they do not know, and ignore a file they do not know. A session that still
+runs such a version does not enforce the list. It is not carried by backups.
+
 ## `remote.toml`
 
 Next to `config.toml`, `remote.toml` holds the settings of [remote access](remote.md),
@@ -162,6 +180,7 @@ Run `augmented-brain remote install` again after changing it, so the services pi
 - `state/`: what this computer knows of each space's sessions. Never backed up.
 - `migrations/`: a full copy of notes before a new version moved them.
 - `panel.json` and `panel.lock`: where the panel listens while it runs, and its lock.
+  The guard never lets Claude read `panel.json`: it holds the panel's key.
 - `remote/<space>/`: the folder where the remote access service of a space starts. It is a
   work folder of that space.
 - `review-<space>.draft`: a weekly review started in the panel and not finished yet.

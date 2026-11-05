@@ -2,6 +2,26 @@
 
 ## Unreleased
 
+- **Repositorios que Claude nunca toca, y un guardia que Claude no puede aflojar.** Una
+  lista nueva de **repositorios intocables** (`untouchable_repos` en un fichero nuevo,
+  `guard.toml`) donde el guardia deniega commit, push y fusionar una pull request, digan
+  lo que digan `git_allowed_repos` y `git_ask_repos`. Una página **Guardia** nueva en el
+  panel muestra y cambia todas las listas a las que responde el guardia (repositorios
+  intocables y permitidos, excepciones de root con su fecha de fin, perfiles de
+  producción, máquinas intocables), respetando tus comentarios; quitar un repositorio
+  intocable o añadir una excepción de root te pide escribir su nombre. Para que esas
+  listas sigan siendo tuyas: el guardia ahora también pregunta antes de escribir en
+  `guard.toml`, `secrets.toml` y `remote.toml`; deniega que Claude lea `panel.json` (la
+  clave del panel) o llame al panel desde un comando; y guarda un sello de sus listas, de
+  modo que si algo que no es el panel ni el inicio de una sesión las cambió, un push o
+  merge que las listas permiten pregunta antes, y `doctor` y la página Guardia lo dicen
+  hasta que las aceptes. Las preguntas de un push o un merge ahora nombran la rama y
+  adónde lleva el remoto (sin contraseñas). `doctor` avisa de un `guard.toml` ilegible y
+  de un repositorio que es intocable y está también en otra lista. Una sesión que aún
+  ejecuta una versión anterior no hace cumplir `guard.toml`. Un script que Claude escriba
+  en línea todavía puede editar los ficheros: se nota, no se impide. El hook del plugin
+  ahora también escucha `Read` y `Grep`: actualiza el plugin junto con el programa.
+
 - **Personas compartidas entre espacios, desde el panel.** La misma persona puede estar
   ahora en varios espacios (un cliente que también es amigo). Cada espacio guarda su
   propia nota de ella, con el mismo id, y solo tiene lo que quieres que se vea allí; en

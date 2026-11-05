@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+- **Repositories Claude never touches, and a guard Claude cannot loosen.** A new list of
+  **untouchable repositories** (`untouchable_repos` in a new file, `guard.toml`) where the
+  guard denies commit, push and merging a pull request, whatever `git_allowed_repos` and
+  `git_ask_repos` say. A new **Guard** page in the panel shows and changes every list the
+  guard answers to (untouchable and allowed repositories, root exceptions with their end
+  date, production profiles, untouchable machines), keeping your comments; removing an
+  untouchable repository or adding a root exception asks you to type its name. To keep
+  those lists yours: the guard now also asks before a write to `guard.toml`,
+  `secrets.toml` and `remote.toml`; denies Claude reading `panel.json` (the panel's key)
+  or calling the panel from a command; and keeps a seal of its lists, so when something
+  other than the panel or a session start changed them, a push or merge that the lists
+  allow asks first, and `doctor` and the Guard page say so until you accept them. The
+  questions about a push or a merge now name the branch and where the remote leads (no
+  passwords). `doctor` warns about an unreadable `guard.toml` and about a repository that
+  is both untouchable and in another list. A session still running an earlier version
+  does not enforce `guard.toml`. A script Claude writes in line can still edit the
+  files: it is noticed, not prevented. The plugin's hook now also listens to `Read` and
+  `Grep`: update the plugin with the program.
+
 - **People shared across spaces, from the panel.** The same person can now be in several
   spaces (a client who is also a friend). Each space keeps its own note for them, with
   the same id, and it holds only what you want visible there; nothing changes on disk, so

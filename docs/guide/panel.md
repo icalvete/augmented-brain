@@ -123,6 +123,24 @@ Your Claude sessions on this computer, from the last 30 days.
 
 Who you are and how you like to work: the same profile every space uses.
 
+## Guard
+
+Every list the guard answers to, in one page, to read and change:
+
+- **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
+  asks you to type the folder's name.
+- **Repositories** each space lets Claude commit in, or ask you about, with a form to add
+  or remove.
+- **Root exceptions**, with the date each ends (the ones that ended are marked). Adding
+  one asks you to type the machine's name again.
+- **Production profiles** and **untouchable machines**.
+- The files Claude cannot change on its own.
+
+Your comments in `config.toml` stay where they are. If the lists are not the ones you last
+saw (something changed them outside this page), a notice says so with an accept button;
+until then a push or merge that the lists allow asks first. Claude cannot open this page:
+the guard denies it the panel's key. See [The guard](guard.md).
+
 ## Health
 
 The space's notes folder and work folders, whether it is the default space, notes that

@@ -127,6 +127,25 @@ Tus sesiones de Claude en este ordenador, de los últimos 30 días.
 
 Quién eres y cómo te gusta trabajar: el mismo perfil para todos los espacios.
 
+## Guardia
+
+Todas las listas a las que responde el guardia, en una página, para leerlas y cambiarlas:
+
+- **Repositorios intocables**, donde Claude nunca hace commit, push ni merge. Quitar uno
+  te pide escribir el nombre de la carpeta.
+- **Repositorios** donde cada espacio deja que Claude haga commit, o te pregunte, con un
+  formulario para añadir o quitar.
+- **Excepciones de root**, con la fecha en que acaba cada una (las que ya acabaron se
+  marcan). Añadir una te pide escribir otra vez el nombre de la máquina.
+- **Perfiles de producción** y **máquinas intocables**.
+- Los ficheros que Claude no puede cambiar por su cuenta.
+
+Tus comentarios de `config.toml` se quedan donde están. Si las listas no son las que viste
+por última vez (algo las cambió fuera de esta página), un aviso lo dice con un botón para
+aceptarlas; hasta entonces un push o merge que las listas permiten pregunta antes. Claude
+no puede abrir esta página: el guardia le niega la clave del panel. Mira
+[El guardia](guard.md).
+
 ## Salud
 
 La carpeta de notas y las carpetas de trabajo del espacio, si es el espacio por defecto,

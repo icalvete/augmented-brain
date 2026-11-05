@@ -53,6 +53,9 @@ update with `augmented-brain update`. See [Configuration](configuration.md).
 
 ### Claude cannot push, even when I ask
 
+If it says a repository is **untouchable**, that is on purpose: only you can change it, in
+the panel's Guard page (see [The guard](guard.md#repositories-claude-must-never-touch)).
+
 The guard stops `git commit` and `git push` unless the repository is listed. Push it
 yourself, or add the repository to `git_allowed_repos` (or `git_ask_repos`) and ask Claude
 to use `git -C <repo>`. See [The guard](guard.md#let-claude-commit-in-a-repository).

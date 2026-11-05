@@ -54,6 +54,9 @@ errata, o un ajuste de una versión más nueva. Entonces actualiza con
 
 ### Claude no puede hacer push, aunque se lo pida
 
+Si dice que un repositorio es **intocable**, es a propósito: solo tú puedes cambiarlo, en
+la página Guardia del panel (mira [El guardia](guard.md#repositorios-que-claude-nunca-debe-tocar)).
+
 El guardia para `git commit` y `git push` salvo que el repositorio esté en la lista. Haz
 tú el push, o añade el repositorio a `git_allowed_repos` (o a `git_ask_repos`) y pide a
 Claude que use `git -C <repo>`. Lo tienes en
