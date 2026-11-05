@@ -45,8 +45,11 @@ type Policy struct {
 	// GitAskRepos those where it may once the user confirms. Absolute paths; the last
 	// part may hold a * (one folder: ~/code/app-* is every app-<name> next to app), and
 	// a git worktree of a listed repository counts as that repository.
-	GitAllowedRepos       []string
-	GitAskRepos           []string
+	GitAllowedRepos []string
+	GitAskRepos     []string
+	// UntouchableRepos are repositories where the assistant never commits, pushes or
+	// merges, whatever the two lists above say. Same form as them.
+	UntouchableRepos      []string
 	ProductionAWSProfiles []string // AWS profiles that need the user's confirmation
 	UntouchableHosts      []string // hosts that need the user's confirmation for ssh, scp, rsync
 	Cwd                   string   // the folder the command runs in, for relative paths
@@ -58,6 +61,15 @@ type Policy struct {
 	// configuration and Claude Code's settings, which could switch the guard off.
 	// Absolute paths; writing one asks the user.
 	Protected []string
+	// Hidden are files the assistant must not read at all (the panel's token file), and
+	// ConfigDirs the ways the configuration folder is written in a command (its path,
+	// with ~, and the variable that moves it), to tell that a bare file name is theirs.
+	Hidden     []string
+	ConfigDirs []string
+	// ConfigChanged says the guard's lists are not the ones the user last saw (at the
+	// start of the session, or saved in the panel): something else changed them. Where
+	// the lists would let a commit, a push or a merge through, it asks instead.
+	ConfigChanged bool
 	// ConfigProblem, when not empty, says why the configuration could not be read: the
 	// lists above are unknown, so a command they would cover asks the user every time.
 	ConfigProblem string
@@ -135,6 +147,9 @@ func (p Policy) secret(what string) string { return i18n.T(p.Lang, "secret."+wha
 func (p Policy) Command(line string) Decision {
 	if what := FindSecret(line); what != "" {
 		return Decision{Deny, i18n.T(p.Lang, "guard.secret.command", p.secret(what))}
+	}
+	if p.panelAccess(line) {
+		return p.panelDeny()
 	}
 	return p.commands(parse(line), map[string]string{}, 0)
 }
@@ -486,10 +501,16 @@ func (p Policy) git(env map[string]string, args []string) Decision {
 	}
 	if dir != "" && !elsewhere {
 		if d, err := p.resolve(dir); err == nil {
+			if p.untouchableRepo(d) {
+				return Decision{Deny, i18n.T(p.Lang, "guard.untouchable", paths.Tilde(d), "git "+args[i])}
+			}
 			switch p.repoVerdict(d) {
 			case Ask:
-				return Decision{Ask, i18n.T(p.Lang, "guard.git.ask", args[i], paths.Tilde(d))}
+				return Decision{Ask, i18n.T(p.Lang, "guard.git.ask", args[i], paths.Tilde(d), p.facts(d))}
 			case Allow:
+				if p.ConfigChanged {
+					return Decision{Ask, i18n.T(p.Lang, "guard.changed", "git "+args[i], paths.Tilde(d), p.facts(d))}
+				}
 				if args[i] == "push" && rewrites(args[i+1:]) {
 					return Decision{Ask, i18n.T(p.Lang, "guard.git.rewrite")}
 				}
@@ -1246,6 +1267,9 @@ func (p Policy) resolve(path string) (string, error) {
 // allowing: a repository may be in both lists, from two spaces. A push and the merge
 // of a pull request (gh pr merge, glab mr merge) go by the same answer.
 func (p Policy) repoVerdict(dir string) Verdict {
+	if p.untouchableRepo(dir) {
+		return Deny // the one list that wins over the others
+	}
 	if repoListed(p.GitAskRepos, dir) {
 		return Ask
 	}
@@ -1254,6 +1278,9 @@ func (p Policy) repoVerdict(dir string) Verdict {
 	}
 	return Deny
 }
+
+// untouchableRepo reports whether the repository at dir (resolved) is in UntouchableRepos.
+func (p Policy) untouchableRepo(dir string) bool { return repoListed(p.UntouchableRepos, dir) }
 
 // repoListed reports whether the repository at dir (resolved) is in list: the same
 // path, a match of an entry with a * in its last part, or a worktree of one of them.

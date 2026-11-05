@@ -131,6 +131,25 @@ fichero aparte porque las versiones anteriores a la 0.6.0 rechazan un ajuste de
 `config.toml` que no conocen. La 0.6.0 guardaba la lista en `config.toml` como `secrets`;
 `check` y el inicio de sesión la pasan aquí.
 
+## `guard.toml`
+
+Junto a `config.toml`, `guard.toml` guarda lo que el guardia nunca permite:
+
+```toml
+untouchable_repos = ["~/work/core", "~/work/cli-*"]
+```
+
+- `untouchable_repos`: repositorios donde Claude nunca hace commit, push ni merge, digan
+  lo que digan `git_allowed_repos` y `git_ask_repos`. Para todo el ordenador. Misma forma
+  que esas listas (`~`, un `*` en la última parte, los worktrees cuentan).
+
+La página Guardia del panel lo escribe. Si el fichero falta, nada es intocable; si no se
+puede leer, el guardia pregunta antes de cada commit y push. Es un fichero aparte por la
+misma razón que `secrets.toml`: las versiones anteriores a esta rechazan un ajuste de
+`config.toml` que no conocen, e ignoran un fichero que no conocen. Una sesión que aún
+ejecuta una de esas versiones no hace cumplir la lista. Las copias de seguridad no lo
+llevan.
+
 ## Otros ficheros de la carpeta
 
 - `profile.md`: tu perfil, para todos los espacios.
@@ -141,7 +160,7 @@ fichero aparte porque las versiones anteriores a la 0.6.0 rechazan un ajuste de
 - `migrations/`: una copia completa de las notas antes de que una versión nueva las
   cambiara de formato.
 - `panel.json` y `panel.lock`: dónde escucha el panel mientras está en marcha, y su
-  bloqueo.
+  bloqueo. El guardia nunca deja que Claude lea `panel.json`: guarda la clave del panel.
 - `review-<espacio>.draft`: una revisión semanal empezada en el panel y aún sin
   terminar.
 

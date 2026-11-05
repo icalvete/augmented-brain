@@ -3,6 +3,7 @@ package guard
 import (
 	"bufio"
 	"cmp"
+	"github.com/icalvete/augmented-brain/internal/repostat"
 	"io"
 	"net/url"
 	"os"
@@ -28,6 +29,9 @@ func (p Policy) merge(name, what string, env map[string]string, args []string) D
 	deny := p.publishDeny(name, what)
 	if p.host != "" || p.lost || p.Cwd == "" {
 		return deny // on another machine, or in a folder the guard cannot tell
+	}
+	if d, err := paths.Resolve(p.Cwd); err == nil && p.untouchableRepo(d) {
+		return Decision{Deny, i18n.T(p.Lang, "guard.untouchable", paths.Tilde(d), name+" "+what)}
 	}
 	if !p.cdNamed {
 		if d, err := paths.Resolve(p.Cwd); err == nil && p.repoVerdict(d) != Deny {
@@ -67,8 +71,11 @@ func (p Policy) merge(name, what string, env map[string]string, args []string) D
 	if name == "gh" && slices.ContainsFunc(args, func(a string) bool { return a == "--admin" || a == "--admin=true" }) {
 		return Decision{Ask, i18n.T(p.Lang, "guard.merge.admin", name+" "+what, paths.Tilde(dir))}
 	}
+	if verdict == Allow && p.ConfigChanged {
+		return Decision{Ask, i18n.T(p.Lang, "guard.changed", name+" "+what, paths.Tilde(dir), p.facts(dir))}
+	}
 	if verdict == Ask {
-		return Decision{Ask, i18n.T(p.Lang, "guard.merge.ask", name+" "+what, paths.Tilde(dir))}
+		return Decision{Ask, i18n.T(p.Lang, "guard.merge.ask", name+" "+what, paths.Tilde(dir), p.facts(dir))}
 	}
 	return allow
 }
@@ -306,4 +313,56 @@ func configValue(v string) string {
 		}
 	}
 	return strings.TrimSpace(b.String())
+}
+
+// headBranch is the branch checked out in the repository or worktree at dir, read from
+// its HEAD without running git; empty when HEAD is detached or cannot be read.
+func headBranch(dir string) string {
+	gitdir := filepath.Join(dir, ".git")
+	info, err := os.Lstat(gitdir)
+	if err != nil {
+		return ""
+	}
+	if !info.IsDir() {
+		data, err := os.ReadFile(gitdir)
+		if err != nil {
+			return ""
+		}
+		g, ok := strings.CutPrefix(strings.TrimSpace(string(data)), "gitdir:")
+		if !ok {
+			return ""
+		}
+		gitdir = strings.TrimSpace(g)
+		if !filepath.IsAbs(gitdir) {
+			gitdir = filepath.Join(dir, gitdir)
+		}
+	}
+	head, err := os.ReadFile(filepath.Join(gitdir, "HEAD"))
+	if err != nil {
+		return ""
+	}
+	b, _ := strings.CutPrefix(strings.TrimSpace(string(head)), "ref: refs/heads/")
+	if b == strings.TrimSpace(string(head)) {
+		return ""
+	}
+	return b
+}
+
+// facts says what a question to the user is about: the branch and where the
+// repository's remotes lead, with no credentials in the addresses.
+func (p Policy) facts(dir string) string {
+	branch := headBranch(dir)
+	if branch == "" {
+		branch = i18n.T(p.Lang, "guard.facts.nobranch")
+	}
+	var remotes []string
+	for _, r := range remoteURLs(dir) {
+		if c := repostat.CleanRemote(r); c != "" && !slices.Contains(remotes, c) {
+			remotes = append(remotes, c)
+		}
+	}
+	if len(remotes) == 0 {
+		remotes = []string{i18n.T(p.Lang, "guard.facts.noremote")}
+	}
+	return i18n.T(p.Lang, "guard.facts", branch, strings.Join(remotes, ", "))
 }

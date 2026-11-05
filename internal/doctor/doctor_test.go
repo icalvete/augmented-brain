@@ -7,7 +7,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/setup"
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 func find(checks []Check, text string) *Check {
@@ -184,5 +186,48 @@ func TestNoListsAfterRestore(t *testing.T) {
 	}
 	if c := run(); c == nil || c.Status != Warning {
 		t.Errorf("no warning after a restore without lists: %+v", c)
+	}
+}
+
+// guard.toml: a repository both untouchable and allowed is worth a look, a file that
+// cannot be read is a warning, and lists changed outside the panel are said.
+func TestGuardFileChecks(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	work := filepath.Join(home, "work")
+	if err := os.MkdirAll(work, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: work, Memory: "~/brain"}); err != nil {
+		t.Fatal(err)
+	}
+	env := Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: yes, Hook: denies}
+	repo := filepath.Join(work, "core")
+	if err := config.SetSpaceList(cfg, "work", "git_allowed_repos", []string{repo}); err != nil {
+		t.Fatal(err)
+	}
+	if err := config.SaveGuard(cfg, config.Guard{UntouchableRepos: []string{repo}}); err != nil {
+		t.Fatal(err)
+	}
+	checks := Run(env)
+	if c := find(checks, "is untouchable and also in"); c == nil || c.Status != Warning {
+		t.Errorf("both lists: %+v", checks)
+	}
+	if c := find(checks, "1 untouchable repositories"); c == nil {
+		t.Errorf("count: %+v", checks)
+	}
+	if err := os.WriteFile(filepath.Join(cfg, config.GuardFile), []byte("untouchable_repos = ["), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if c := find(Run(env), "guard.toml cannot be read"); c == nil || c.Status != Warning {
+		t.Error("a broken guard.toml is not a warning")
+	}
+	_ = config.SaveGuard(cfg, config.Guard{})
+	if err := state.WriteSeal(cfg, "not-the-current-one"); err != nil {
+		t.Fatal(err)
+	}
+	if c := find(Run(env), "not the ones saved"); c == nil || c.Status != Warning {
+		t.Error("lists changed outside the panel are not said")
 	}
 }

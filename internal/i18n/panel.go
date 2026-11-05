@@ -2,6 +2,150 @@ package i18n
 
 // The panel's pages.
 var panelMessages = map[string]msg{
+	"panel.guard": {
+		en: "Guard",
+		es: "Guardia",
+	},
+	"panel.guard.hint": {
+		en: "What the guard allows, asks about and never allows. Only you change it, here: the assistant cannot read this panel's key or open its pages. Every change keeps your comments in the files.",
+		es: "Lo que el guardia deja pasar, lo que pregunta y lo que nunca permite. Solo lo cambias tú, aquí: el asistente no puede leer la clave de este panel ni abrir sus páginas. Cada cambio respeta tus comentarios en los ficheros.",
+	},
+	"panel.guard.problem": {
+		en: "The file guard.toml cannot be read, so the guard asks about every commit and push until it is fixed: %s",
+		es: "El fichero guard.toml no se puede leer, así que el guardia pregunta por cada commit y push hasta que se arregle: %s",
+	},
+	"panel.guard.changed": {
+		en: "The guard's lists are not the ones you last saw: something changed them outside this page (you by hand, or an assistant). Until you accept them, a commit, push or merge that the lists allow asks first.",
+		es: "Las listas del guardia no son las que viste por última vez: algo las cambió fuera de esta página (tú a mano, o un asistente). Hasta que las aceptes, un commit, push o merge que las listas permiten pregunta antes.",
+	},
+	"panel.guard.accept": {
+		en: "I have seen them, accept",
+		es: "Las he visto, aceptar",
+	},
+	"panel.guard.untouchable": {
+		en: "Untouchable repositories",
+		es: "Repositorios intocables",
+	},
+	"panel.guard.untouchable.hint": {
+		en: "No commit, push or merge there, ever, whatever the lists below say. For the whole machine, in every space. A folder name ending in * covers its siblings (app-*), and a worktree counts as its repository.",
+		es: "Ni commit, ni push, ni merge ahí, nunca, digan lo que digan las listas de abajo. Para toda la máquina, en todos los espacios. Un nombre de carpeta que acabe en * cubre a sus hermanas (app-*), y un worktree cuenta como su repositorio.",
+	},
+	"panel.guard.untouchable.none": {
+		en: "No repository is untouchable yet.",
+		es: "Todavía no hay ningún repositorio intocable.",
+	},
+	"panel.guard.remove": {
+		en: "Remove",
+		es: "Quitar",
+	},
+	"panel.guard.typename": {
+		en: "To confirm, type the folder's name:",
+		es: "Para confirmar, escribe el nombre de la carpeta:",
+	},
+	"panel.guard.repo": {
+		en: "Repository folder",
+		es: "Carpeta del repositorio",
+	},
+	"panel.guard.repos": {
+		en: "Repositories in space %s",
+		es: "Repositorios del espacio %s",
+	},
+	"panel.guard.allowed": {
+		en: "The assistant may commit and push",
+		es: "El asistente puede hacer commit y push",
+	},
+	"panel.guard.allowed.hint": {
+		en: "Without asking, when you have asked for that change.",
+		es: "Sin preguntar, cuando tú le has pedido ese cambio.",
+	},
+	"panel.guard.ask": {
+		en: "The assistant asks you each time",
+		es: "El asistente te pregunta cada vez",
+	},
+	"panel.guard.ask.hint": {
+		en: "Commit, push and merge ask for your go-ahead, with the branch and the remote.",
+		es: "Commit, push y merge piden tu visto bueno, con la rama y el remoto.",
+	},
+	"panel.guard.none": {
+		en: "Nothing listed.",
+		es: "No hay nada en la lista.",
+	},
+	"panel.guard.root": {
+		en: "Root exceptions",
+		es: "Excepciones de root",
+	},
+	"panel.guard.root.hint": {
+		en: "Becoming root is denied. An exception lets the guard ask you instead, on one machine, until a date; it ends by itself.",
+		es: "Hacerse root está denegado. Una excepción deja que el guardia te pregunte, en una máquina, hasta una fecha; acaba sola.",
+	},
+	"panel.guard.root.bad": {
+		en: "These entries cannot be read, so they grant nothing: %s",
+		es: "Estas entradas no se pueden leer, así que no conceden nada: %s",
+	},
+	"panel.guard.root.none": {
+		en: "No exception now.",
+		es: "Ahora no hay ninguna excepción.",
+	},
+	"panel.guard.expired": {
+		en: "ended",
+		es: "caducada",
+	},
+	"panel.guard.until": {
+		en: "Until (date, or date and time, UTC)",
+		es: "Hasta (fecha, o fecha y hora, UTC)",
+	},
+	"panel.guard.typehost": {
+		en: "To confirm, type the machine's name again:",
+		es: "Para confirmar, escribe otra vez el nombre de la máquina:",
+	},
+	"panel.guard.profiles": {
+		en: "Production profiles",
+		es: "Perfiles de producción",
+	},
+	"panel.guard.profiles.hint": {
+		en: "AWS profiles that need your confirmation before the assistant uses them.",
+		es: "Perfiles de AWS que necesitan tu confirmación antes de que el asistente los use.",
+	},
+	"panel.guard.hosts": {
+		en: "Untouchable machines",
+		es: "Máquinas intocables",
+	},
+	"panel.guard.hosts.hint": {
+		en: "Machines that need your confirmation for ssh, scp and rsync.",
+		es: "Máquinas que necesitan tu confirmación para ssh, scp y rsync.",
+	},
+	"panel.guard.fromspaces": {
+		en: "Also from a space's own list (change them in config.toml):",
+		es: "También de la lista propia de un espacio (cámbialas en config.toml):",
+	},
+	"panel.guard.protected": {
+		en: "Files the assistant cannot change",
+		es: "Ficheros que el asistente no puede cambiar",
+	},
+	"panel.guard.protected.hint": {
+		en: "Writing one asks you first. An assistant that writes a script in line could still edit them: the guard then notices the change and asks before a push.",
+		es: "Escribir uno te pregunta antes. Un asistente que escriba un script en línea aún podría editarlos: el guardia nota el cambio y pregunta antes de un push.",
+	},
+	"panel.guard.err.gone": {
+		en: "That entry is no longer in the list.",
+		es: "Esa entrada ya no está en la lista.",
+	},
+	"panel.guard.err.op": {
+		en: "The panel did not understand that change.",
+		es: "El panel no ha entendido ese cambio.",
+	},
+	"panel.guard.err.typename": {
+		en: "Type %s to confirm.",
+		es: "Escribe %s para confirmar.",
+	},
+	"panel.f.host": {
+		en: "Machine",
+		es: "Máquina",
+	},
+	"panel.f.value": {
+		en: "Value",
+		es: "Valor",
+	},
 	"panel.today": {
 		en: "Today",
 		es: "Hoy",

@@ -54,7 +54,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash|PowerShell|Monitor|Write|Edit|MultiEdit|NotebookEdit",
+        "matcher": "Bash|PowerShell|Monitor|Read|Grep|Write|Edit|MultiEdit|NotebookEdit",
         "hooks": [
           {
             "type": "command",

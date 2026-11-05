@@ -129,6 +129,7 @@ func Run(e Env) []Check {
 		}
 	}
 
+	out = append(out, guardLists(c, l)...)
 	for _, name := range c.SpaceNames() {
 		out = append(out, space(c, c.Spaces[name])...)
 	}
@@ -346,4 +347,27 @@ func autoMemory(e Env, c *config.Config) []Check {
 	}
 	return []Check{{Warning, i18n.T(c.Language, "doctor.automemory", strings.Join(found, ", ")),
 		i18n.T(c.Language, "doctor.automemory.fix", filepath.Join(dir, "settings.json"))}}
+}
+
+// guardLists reports on guard.toml (the untouchable repositories) and on whether the
+// guard's lists are the ones the user last saw.
+func guardLists(c *config.Config, l string) []Check {
+	var out []Check
+	g, err := config.LoadGuard(c.Dir)
+	if err != nil {
+		return []Check{{Warning, i18n.T(l, "doctor.guardfile.bad", err.Error()), i18n.T(l, "doctor.guardfile.fix", filepath.Join(c.Dir, config.GuardFile))}}
+	}
+	if len(g.UntouchableRepos) > 0 {
+		out = append(out, Check{Info, i18n.T(l, "doctor.untouchable", len(g.UntouchableRepos)), ""})
+	}
+	allowed, ask := c.GitLists()
+	for _, r := range g.UntouchableRepos {
+		if slices.Contains(allowed, r) || slices.Contains(ask, r) {
+			out = append(out, Check{Warning, i18n.T(l, "doctor.untouchable.both", paths.Tilde(r)), i18n.T(l, "doctor.untouchable.both.fix")})
+		}
+	}
+	if seal := state.ReadSeal(c.Dir); seal != "" && seal != c.GuardFingerprint(g) {
+		out = append(out, Check{Warning, i18n.T(l, "doctor.guardchanged"), i18n.T(l, "doctor.guardchanged.fix")})
+	}
+	return out
 }

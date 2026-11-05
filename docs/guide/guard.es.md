@@ -85,6 +85,50 @@ siempre. Solo cuenta el comando en sí: `gh pr merge` escrito en el cuerpo de un
 request o en un mensaje de commit no es una fusión, y tampoco lo son una dirección o un
 `--admin` dentro del texto de `--body` o `--subject`.
 
+## Repositorios que Claude nunca debe tocar
+
+Hay repositorios que no son solo tuyos, o que están a un push equivocado de producción.
+Ponlos como **intocables** y el guardia deniega `git commit`, `git push` y fusionar una
+pull request ahí, digan lo que digan las demás listas: gana a `git_allowed_repos` y a
+`git_ask_repos`. Viven en `guard.toml`, una lista para todo el ordenador:
+
+```toml
+untouchable_repos = ["~/work/core", "~/work/cli-*"]
+```
+
+- Misma forma que las otras listas: `~`, un `*` en la última parte, y un worktree cuenta
+  como su repositorio.
+- La respuesta dice que el repositorio es intocable y que solo tú puedes cambiarlo. A
+  Claude se le dice que no busque otra vía.
+- Se añaden y se quitan en la página **Guardia** del panel. Quitar uno te pide escribir
+  el nombre de la carpeta.
+
+## Preguntas que dicen de qué van
+
+Cuando un repositorio está en `git_ask_repos`, la pregunta nombra el repositorio, la rama
+y adónde lleva el remoto (la dirección, nunca una contraseña): `Rama: feat/x. Remoto:
+git.example.com/acme/app`. Igual al fusionar una pull request.
+
+## Solo tú cambias las listas del guardia
+
+El asistente trabaja en la misma cuenta que tú, así que el guardia no puede ser un muro.
+Hace tres cosas para que las listas sigan siendo tuyas:
+
+- **Pregunta antes de escribir en los ficheros del guardia** (`config.toml`,
+  `guard.toml`, `secrets.toml`, `remote.toml` y los ajustes de Claude Code).
+- **Deniega llegar al panel.** Leer `panel.json` (la clave del panel) con una herramienta
+  o un comando, y llamar a una página del panel desde un comando, se deniega: la página
+  Guardia del panel es como tú cambias las listas, y funciona con esa clave.
+- **Se da cuenta de un cambio que no vio.** El guardia guarda un sello de sus listas: se
+  toma al empezar una sesión y al guardar en el panel. Si las listas difieren del sello,
+  algo más las cambió, y un commit, push o merge que las listas dejarían pasar pregunta
+  antes, y la página Guardia y `doctor` lo dicen hasta que las aceptes.
+
+Lo que esto no para: un script que Claude escriba en línea (`python -c`, un heredoc)
+todavía puede editar los ficheros, como puede hacer cualquier cosa que tu cuenta pueda.
+El guardia nota entonces el cambio y pregunta antes de un push, pero no lo impidió. Es
+una red de seguridad, no una frontera de seguridad.
+
 ## Perfiles de producción y máquinas intocables
 
 Se los das en la entrevista de la primera sesión, o cuando quieras: "el perfil de AWS
@@ -128,6 +172,8 @@ trabajo).
   herramientas que llaman a AWS.
 - **Falta el programa o está roto.** Claude Code para cada comando y cada cambio de
   fichero en vez de dejarlos pasar (Claude Code 2.1.295 o posterior).
+- **`guard.toml` no se puede leer.** El guardia pregunta antes de cada commit y push
+  hasta que se arregle o se quite.
 - `augmented-brain doctor` prueba el guardia de verdad y te dice si no está funcionando.
 
 ## Siguiente

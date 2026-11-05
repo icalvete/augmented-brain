@@ -21,6 +21,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/session"
+	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/update"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
@@ -141,6 +142,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string
 	note += askSafety(c, cfgDir)
 	note += rootNote(c)
 	note += oldServersNote(c)
+	note += guardSealNote(c, cfgDir)
 	return note
 }
 
@@ -189,6 +191,12 @@ func toolDecision(p guard.Policy, i input) guard.Decision {
 		d = p.Command(cmd)
 	case "PowerShell":
 		d = guard.PowerShell(p.Lang)
+	case "Read":
+		path, _ := i.ToolInput["file_path"].(string)
+		d = p.ReadFile(path)
+	case "Grep":
+		path, _ := i.ToolInput["path"].(string)
+		d = p.ReadFile(path)
 	case "Write", "Edit", "MultiEdit", "NotebookEdit":
 		path, _ := i.ToolInput["file_path"].(string)
 		if path == "" {
@@ -232,8 +240,17 @@ func policy(cfgDir, dir string) guard.Policy {
 		}
 		p.Hostname, _ = os.Hostname()
 		p.Lang = c.Language
+		if g, err := config.LoadGuard(cfgDir); err != nil {
+			p.ConfigProblem = err.Error()
+		} else {
+			p.UntouchableRepos = g.UntouchableRepos
+			if seal := state.ReadSeal(cfgDir); seal != "" && seal != c.GuardFingerprint(g) {
+				p.ConfigChanged = true
+			}
+		}
 	}
 	p.Protected = protectedFiles(cfgDir, dir)
+	p.Hidden, p.ConfigDirs = hiddenFiles(cfgDir)
 	return p
 }
 
@@ -275,7 +292,8 @@ func written(v any) string {
 // configuration, and Claude Code's settings (yours and the project's), where a line can
 // switch the plugin, and so the guard, off.
 func protectedFiles(cfgDir, dir string) []string {
-	list := []string{filepath.Join(cfgDir, config.FileName)}
+	list := []string{filepath.Join(cfgDir, config.FileName), filepath.Join(cfgDir, config.GuardFile),
+		filepath.Join(cfgDir, config.SecretsFile), filepath.Join(cfgDir, "remote.toml")}
 	if home, err := paths.Home(); err == nil {
 		for _, f := range []string{"settings.json", "settings.local.json"} {
 			list = append(list, filepath.Join(home, ".claude", f))
@@ -290,4 +308,36 @@ func protectedFiles(cfgDir, dir string) []string {
 		}
 	}
 	return list
+}
+
+// hiddenFiles are the files the assistant never reads (the panel's token file) and the
+// ways a command can write the configuration folder.
+func hiddenFiles(cfgDir string) (hidden, dirs []string) {
+	f := filepath.Join(cfgDir, "panel.json")
+	if r, err := paths.Resolve(f); err == nil {
+		f = r
+	}
+	dirs = []string{cfgDir, paths.Tilde(cfgDir), ".config/augmented-brain", "AB_CONFIG_DIR"}
+	return []string{f}, dirs
+}
+
+// guardSealNote compares the guard's lists with the ones the user last saw, says so when
+// they differ, and takes the current ones as the ones the user knows from now on (a
+// session that starts is the user opening it). A change after this point is what the
+// guard asks about.
+func guardSealNote(c *config.Config, cfgDir string) string {
+	g, err := config.LoadGuard(cfgDir)
+	if err != nil {
+		return ""
+	}
+	cur := c.GuardFingerprint(g)
+	old := state.ReadSeal(cfgDir)
+	if old == cur {
+		return ""
+	}
+	_ = state.WriteSeal(cfgDir, cur)
+	if old == "" {
+		return "" // the first time: nothing to compare
+	}
+	return "\nThe guard's lists (repositories it allows, asks about or never allows, root exceptions, production profiles, untouchable hosts) are not the ones saved when a session last started, and the panel did not change them. If the user did not do it, say so. " + session.TellUserLine(c.Language) + ".\n"
 }

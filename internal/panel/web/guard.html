@@ -1,0 +1,106 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "guard"}}</h1>
+<p class="hint">{{t "guard.hint"}}</p>
+{{if .Problem}}<p class="flash err" role="alert">{{tf "guard.problem" .Problem}}</p>{{end}}
+{{if .Changed}}<div class="flash warn" role="alert">
+  <p>{{t "guard.changed"}}</p>
+  <form method="post" action="{{$.Base}}/guard/accept" class="stack">
+    {{template "fields" (fields $)}}
+    <button type="submit" class="small">{{t "guard.accept"}}</button>
+  </form>
+</div>{{end}}
+
+<h2>{{t "guard.untouchable"}}</h2>
+<p class="hint">{{t "guard.untouchable.hint"}}</p>
+{{if .Untouchable}}<ul class="cards">{{range .Untouchable}}<li class="card">
+  <div class="title"><code>{{.}}</code></div>
+  <details class="said"><summary>{{t "guard.remove"}}</summary>
+    <form method="post" action="{{$.Base}}/guard/list" class="stack">
+      {{template "fields" (fields $ "list" "untouchable" "op" "remove" "value" .)}}
+      <label>{{t "guard.typename"}} <input name="confirm" required maxlength="200" autocomplete="off"></label>
+      <button type="submit" class="small">{{t "guard.remove"}}</button>
+    </form>
+  </details>
+</li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.untouchable.none"}}</p>{{end}}
+<form method="post" action="{{$.Base}}/guard/list" class="stack">
+  {{template "fields" (fields $ "list" "untouchable" "op" "add")}}
+  <label>{{t "guard.repo"}} <input name="value" required maxlength="500" placeholder="~/work/core"></label>
+  <button type="submit">{{t "add"}}</button>
+</form>
+
+{{range .Spaces}}{{$sp := .Space}}
+<h2>{{tf "guard.repos" $sp}}</h2>
+<h3>{{t "guard.allowed"}}</h3>
+<p class="hint">{{t "guard.allowed.hint"}}</p>
+{{if .Allowed}}<ul class="plain">{{range .Allowed}}<li><code>{{.}}</code>
+  <form method="post" action="{{$.Base}}/guard/list" class="inline">
+    {{template "fields" (fields $ "list" "allowed" "op" "remove" "space" $sp "value" .)}}
+    <button type="submit" class="small">{{t "guard.remove"}}</button>
+  </form></li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.none"}}</p>{{end}}
+<form method="post" action="{{$.Base}}/guard/list" class="stack">
+  {{template "fields" (fields $ "list" "allowed" "op" "add" "space" $sp)}}
+  <label>{{t "guard.repo"}} <input name="value" required maxlength="500"></label>
+  <button type="submit">{{t "add"}}</button>
+</form>
+<h3>{{t "guard.ask"}}</h3>
+<p class="hint">{{t "guard.ask.hint"}}</p>
+{{if .Ask}}<ul class="plain">{{range .Ask}}<li><code>{{.}}</code>
+  <form method="post" action="{{$.Base}}/guard/list" class="inline">
+    {{template "fields" (fields $ "list" "ask" "op" "remove" "space" $sp "value" .)}}
+    <button type="submit" class="small">{{t "guard.remove"}}</button>
+  </form></li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.none"}}</p>{{end}}
+<form method="post" action="{{$.Base}}/guard/list" class="stack">
+  {{template "fields" (fields $ "list" "ask" "op" "add" "space" $sp)}}
+  <label>{{t "guard.repo"}} <input name="value" required maxlength="500"></label>
+  <button type="submit">{{t "add"}}</button>
+</form>
+{{end}}
+
+<h2>{{t "guard.root"}}</h2>
+<p class="hint">{{t "guard.root.hint"}}</p>
+{{if .Unreadable}}<p class="flash warn">{{tf "guard.root.bad" .Unreadable}}</p>{{end}}
+{{if .Roots}}<ul class="plain">{{range .Roots}}<li><code>{{.Host}}</code> · {{.Until}}{{if .Expired}} <span class="badge warn">{{t "guard.expired"}}</span>{{end}}
+  <form method="post" action="{{$.Base}}/guard/root" class="inline">
+    {{template "fields" (fields $ "op" "remove" "value" .Entry)}}
+    <button type="submit" class="small">{{t "guard.remove"}}</button>
+  </form></li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.root.none"}}</p>{{end}}
+<form method="post" action="{{$.Base}}/guard/root" class="stack">
+  {{template "fields" (fields $ "op" "add")}}
+  <label>{{t "f.host"}} <input name="host" required maxlength="200" autocomplete="off"></label>
+  <label>{{t "guard.until"}} <input name="until" required maxlength="40" placeholder="2026-11-30" autocomplete="off"></label>
+  <label>{{t "guard.typehost"}} <input name="confirm" required maxlength="200" autocomplete="off"></label>
+  <button type="submit">{{t "add"}}</button>
+</form>
+
+<h2>{{t "guard.profiles"}}</h2>
+<p class="hint">{{t "guard.profiles.hint"}}</p>
+{{if .Profiles}}<ul class="plain">{{range .Profiles}}<li><code>{{.}}</code>
+  <form method="post" action="{{$.Base}}/guard/list" class="inline">
+    {{template "fields" (fields $ "list" "profiles" "op" "remove" "value" .)}}
+    <button type="submit" class="small">{{t "guard.remove"}}</button>
+  </form></li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.none"}}</p>{{end}}
+{{if .OtherProf}}<p class="hint">{{t "guard.fromspaces"}} {{range .OtherProf}}<code>{{.}}</code> {{end}}</p>{{end}}
+<form method="post" action="{{$.Base}}/guard/list" class="stack">
+  {{template "fields" (fields $ "list" "profiles" "op" "add")}}
+  <label>{{t "f.name"}} <input name="value" required maxlength="200"></label>
+  <button type="submit">{{t "add"}}</button>
+</form>
+
+<h2>{{t "guard.hosts"}}</h2>
+<p class="hint">{{t "guard.hosts.hint"}}</p>
+{{if .Hosts}}<ul class="plain">{{range .Hosts}}<li><code>{{.}}</code>
+  <form method="post" action="{{$.Base}}/guard/list" class="inline">
+    {{template "fields" (fields $ "list" "hosts" "op" "remove" "value" .)}}
+    <button type="submit" class="small">{{t "guard.remove"}}</button>
+  </form></li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.none"}}</p>{{end}}
+{{if .OtherHosts}}<p class="hint">{{t "guard.fromspaces"}} {{range .OtherHosts}}<code>{{.}}</code> {{end}}</p>{{end}}
+<form method="post" action="{{$.Base}}/guard/list" class="stack">
+  {{template "fields" (fields $ "list" "hosts" "op" "add")}}
+  <label>{{t "f.host"}} <input name="value" required maxlength="200"></label>
+  <button type="submit">{{t "add"}}</button>
+</form>
+
+<h2>{{t "guard.protected"}}</h2>
+<p class="hint">{{t "guard.protected.hint"}}</p>
+<ul class="plain">{{range .Protected}}<li><code>{{.}}</code></li>{{end}}</ul>
+{{end}}{{end}}

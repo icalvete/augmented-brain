@@ -82,6 +82,50 @@ itself counts: `gh pr merge` written in a pull request's body or a commit messag
 a merge, and neither is an address or `--admin` in the text given to `--body` or
 `--subject`.
 
+## Repositories Claude must never touch
+
+Some repositories are not yours alone, or are one wrong push away from production. List
+them as **untouchable** and the guard denies `git commit`, `git push` and merging a pull
+request there, whatever the other lists say: it wins over `git_allowed_repos` and
+`git_ask_repos`. They live in `guard.toml`, one list for the whole computer:
+
+```toml
+untouchable_repos = ["~/work/core", "~/work/cli-*"]
+```
+
+- Same form as the other lists: `~`, a `*` in the last part, and a worktree counts as its
+  repository.
+- The answer says the repository is untouchable and that only you can change it. Claude
+  is told not to look for another way.
+- Add and remove them in the panel's **Guard** page. Removing one asks you to type the
+  folder's name.
+
+## Questions that say what they are about
+
+When a repository is in `git_ask_repos`, the question names the repository, the branch
+and where the remote leads (the address, never a password): `Branch: feat/x. Remote:
+git.example.com/acme/app`. The same for merging a pull request.
+
+## Only you change the guard's lists
+
+The assistant works in the same account as you, so the guard cannot be a wall. It does
+three things so that the lists stay yours:
+
+- **It asks before a write to the guard's files** (`config.toml`, `guard.toml`,
+  `secrets.toml`, `remote.toml`, and Claude Code's settings).
+- **It denies reaching the panel.** Reading `panel.json` (the panel's key) with a tool
+  or a command, and calling a panel page from a command, are denied: the panel's Guard
+  page is how you change the lists, and it works with that key.
+- **It notices a change it did not see.** The guard keeps a seal of its lists: taken
+  when a session starts and when you save in the panel. If the lists differ from the
+  seal, something else changed them, and a commit, push or merge that the lists would
+  let through asks first, and the Guard page and `doctor` say so until you accept them.
+
+What this does not stop: a script that Claude writes in line (`python -c`, a heredoc) can
+still edit the files, as it can anything your account can. The guard then notices the
+change and asks before a push, but it did not prevent it. It is a safety net, not a
+security boundary.
+
 ## Production profiles and untouchable machines
 
 You give them in the first-session interview, or any time: "the AWS profile `shop-prod`
@@ -123,6 +167,8 @@ those of the helpers Claude starts (subagents and workflows).
   that call AWS.
 - **The program is missing or broken.** Claude Code stops every command and file change
   instead of letting them through (Claude Code 2.1.295 or later).
+- **`guard.toml` cannot be read.** The guard asks before every commit and push until it
+  is fixed or removed.
 - `augmented-brain doctor` tries the guard for real and tells you if it is not working.
 
 ## Next

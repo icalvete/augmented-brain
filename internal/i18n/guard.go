@@ -94,12 +94,30 @@ var guardMessages = map[string]msg{
 	},
 	// git commit or push, then the repository.
 	"guard.git.ask": {
-		en: "`git %s` in %s needs the user's go-ahead each time. Before asking, show them what would be committed or pushed.",
-		es: "`git %s` en %s necesita el visto bueno del usuario cada vez. Antes de preguntar, enséñale lo que entraría en el commit o lo que se subiría.",
+		en: "`git %s` in %s needs the user's go-ahead each time. %s Before asking, show them what would be committed or pushed.",
+		es: "`git %s` en %s necesita el visto bueno del usuario cada vez. %s Antes de preguntar, enséñale lo que entraría en el commit o lo que se subiría.",
 	},
 	"guard.git.rewrite": {
 		en: "this push rewrites or deletes what is on the remote (force, delete or mirror). The user confirms it each time, even in a repository the assistant may push to.",
 		es: "este push reescribe o borra lo que hay en el remoto (force, delete o mirror). El usuario lo confirma cada vez, también en un repositorio donde el asistente puede hacer push.",
+	},
+	"guard.panel": {
+		en: "the panel's token and pages are for the user: with them anyone could change the lists the guard answers to. Do not read panel.json or call the panel from a command. If a setting needs changing, tell the user what and why; they do it in the panel.",
+		es: "el token y las páginas del panel son del usuario: con ellos se podrían cambiar las listas que el guardia respeta. No leas panel.json ni llames al panel desde un comando. Si hay que cambiar un ajuste, dile al usuario qué y por qué; lo hace él en el panel.",
+	},
+	"guard.changed": {
+		en: "`%s` in %s would go through, but the guard's lists (repositories, root exceptions, profiles, hosts) are not the ones the user last saw: something changed them outside the panel. Say so, show what changed if you know, and ask the user to confirm. %s",
+		es: "`%s` en %s pasaría, pero las listas del guardia (repositorios, excepciones de root, perfiles, hosts) no son las que el usuario vio por última vez: algo las cambió fuera del panel. Dilo, enseña qué cambió si lo sabes y pide al usuario que lo confirme. %s",
+	},
+	"guard.facts": {
+		en: "Branch: %s. Remote: %s.",
+		es: "Rama: %s. Remoto: %s.",
+	},
+	"guard.facts.nobranch": {en: "none (detached HEAD)", es: "ninguna (HEAD suelto)"},
+	"guard.facts.noremote": {en: "none", es: "ninguno"},
+	"guard.untouchable": {
+		en: "%s is an untouchable repository: `%s` there is never allowed, whatever the other lists say. Do not look for another way. Tell the user what you wanted to do; only the user can change it, from the panel's Guard page.",
+		es: "%s es un repositorio intocable: `%s` ahí nunca se permite, digan lo que digan las demás listas. No busques otra vía. Cuenta al usuario qué querías hacer; solo él puede cambiarlo, desde la página Guardia del panel.",
 	},
 	"guard.git.deny": {
 		en: "`git %s` is for the user. Leave the change ready and checked, show what would be committed, and tell the user it is ready. (The user, not the assistant, can let the assistant commit in a repository by adding it to git_allowed_repos, or to git_ask_repos to be asked each time; then use `git -C <repo>`.)",
@@ -115,8 +133,8 @@ var guardMessages = map[string]msg{
 	},
 	// Merging a pull request: the command, then the repository.
 	"guard.merge.ask": {
-		en: "`%s` merges a pull request in %s, a repository where that needs the user's go-ahead each time (git_ask_repos). Before asking, show them which pull request it merges and what it changes.",
-		es: "`%s` fusiona una pull request en %s, un repositorio donde eso necesita el visto bueno del usuario cada vez (git_ask_repos). Antes de preguntar, enséñale qué pull request fusiona y qué cambia.",
+		en: "`%s` merges a pull request in %s, a repository where that needs the user's go-ahead each time (git_ask_repos). %s Before asking, show them which pull request it merges and what it changes.",
+		es: "`%s` fusiona una pull request en %s, un repositorio donde eso necesita el visto bueno del usuario cada vez (git_ask_repos). %s Antes de preguntar, enséñale qué pull request fusiona y qué cambia.",
 	},
 	"guard.merge.cd": {
 		en: "`%s` merges a pull request, and goes by git_allowed_repos and git_ask_repos only when the command names the repository, as `git -C` does for a push: write it as `cd <repo> && %s …`, with the repository's path. As it is, it is for the user.",

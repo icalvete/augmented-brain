@@ -856,6 +856,50 @@ itself counts: `gh pr merge` written in a pull request's body or a commit messag
 a merge, and neither is an address or `--admin` in the text given to `--body` or
 `--subject`.
 
+## Repositories Claude must never touch
+
+Some repositories are not yours alone, or are one wrong push away from production. List
+them as **untouchable** and the guard denies `git commit`, `git push` and merging a pull
+request there, whatever the other lists say: it wins over `git_allowed_repos` and
+`git_ask_repos`. They live in `guard.toml`, one list for the whole computer:
+
+```toml
+untouchable_repos = ["~/work/core", "~/work/cli-*"]
+```
+
+- Same form as the other lists: `~`, a `*` in the last part, and a worktree counts as its
+  repository.
+- The answer says the repository is untouchable and that only you can change it. Claude
+  is told not to look for another way.
+- Add and remove them in the panel's **Guard** page. Removing one asks you to type the
+  folder's name.
+
+## Questions that say what they are about
+
+When a repository is in `git_ask_repos`, the question names the repository, the branch
+and where the remote leads (the address, never a password): `Branch: feat/x. Remote:
+git.example.com/acme/app`. The same for merging a pull request.
+
+## Only you change the guard's lists
+
+The assistant works in the same account as you, so the guard cannot be a wall. It does
+three things so that the lists stay yours:
+
+- **It asks before a write to the guard's files** (`config.toml`, `guard.toml`,
+  `secrets.toml`, `remote.toml`, and Claude Code's settings).
+- **It denies reaching the panel.** Reading `panel.json` (the panel's key) with a tool
+  or a command, and calling a panel page from a command, are denied: the panel's Guard
+  page is how you change the lists, and it works with that key.
+- **It notices a change it did not see.** The guard keeps a seal of its lists: taken
+  when a session starts and when you save in the panel. If the lists differ from the
+  seal, something else changed them, and a commit, push or merge that the lists would
+  let through asks first, and the Guard page and `doctor` say so until you accept them.
+
+What this does not stop: a script that Claude writes in line (`python -c`, a heredoc) can
+still edit the files, as it can anything your account can. The guard then notices the
+change and asks before a push, but it did not prevent it. It is a safety net, not a
+security boundary.
+
 ## Production profiles and untouchable machines
 
 You give them in the first-session interview, or any time: "the AWS profile `shop-prod`
@@ -897,6 +941,8 @@ those of the helpers Claude starts (subagents and workflows).
   that call AWS.
 - **The program is missing or broken.** Claude Code stops every command and file change
   instead of letting them through (Claude Code 2.1.295 or later).
+- **`guard.toml` cannot be read.** The guard asks before every commit and push until it
+  is fixed or removed.
 - `augmented-brain doctor` tries the guard for real and tells you if it is not working.
 
 ## Next
@@ -1253,6 +1299,24 @@ Your Claude sessions on this computer, from the last 30 days.
 ## Profile
 
 Who you are and how you like to work: the same profile every space uses.
+
+## Guard
+
+Every list the guard answers to, in one page, to read and change:
+
+- **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
+  asks you to type the folder's name.
+- **Repositories** each space lets Claude commit in, or ask you about, with a form to add
+  or remove.
+- **Root exceptions**, with the date each ends (the ones that ended are marked). Adding
+  one asks you to type the machine's name again.
+- **Production profiles** and **untouchable machines**.
+- The files Claude cannot change on its own.
+
+Your comments in `config.toml` stay where they are. If the lists are not the ones you last
+saw (something changed them outside this page), a notice says so with an accept button;
+until then a push or merge that the lists allow asks first. Claude cannot open this page:
+the guard denies it the panel's key. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
 
 ## Health
 
@@ -2323,6 +2387,24 @@ panel's Secrets page lists it. A value is refused. It is a file of its own becau
 versions before 0.6.0 refuse a setting of `config.toml` they do not know. 0.6.0 kept the
 list in `config.toml` as `secrets`; `check` and the session start move it here.
 
+## `guard.toml`
+
+Next to `config.toml`, `guard.toml` holds what the guard never allows:
+
+```toml
+untouchable_repos = ["~/work/core", "~/work/cli-*"]
+```
+
+- `untouchable_repos`: repositories where Claude never commits, pushes or merges,
+  whatever `git_allowed_repos` and `git_ask_repos` say. For the whole computer. Same form
+  as those lists (`~`, a `*` in the last part, worktrees count).
+
+The panel's Guard page writes it. If the file is missing, nothing is untouchable; if it
+cannot be read, the guard asks before every commit and push. It is a file of its own for
+the same reason as `secrets.toml`: versions before this one refuse a setting of
+`config.toml` they do not know, and ignore a file they do not know. A session that still
+runs such a version does not enforce the list. It is not carried by backups.
+
 ## Other files in the folder
 
 - `profile.md`: your profile, for every space.
@@ -2330,6 +2412,7 @@ list in `config.toml` as `secrets`; `check` and the session start move it here.
 - `state/`: what this computer knows of each space's sessions. Never backed up.
 - `migrations/`: a full copy of notes before a new version moved them.
 - `panel.json` and `panel.lock`: where the panel listens while it runs, and its lock.
+  The guard never lets Claude read `panel.json`: it holds the panel's key.
 - `review-<space>.draft`: a weekly review started in the panel and not finished yet.
 
 ## Environment variables
@@ -2842,6 +2925,9 @@ has a line this version does not know: a typo, or a setting of a newer version. 
 update with `augmented-brain update`. See [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html).
 
 ### Claude cannot push, even when I ask
+
+If it says a repository is **untouchable**, that is on purpose: only you can change it, in
+the panel's Guard page (see [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html#repositories-claude-must-never-touch)).
 
 The guard stops `git commit` and `git push` unless the repository is listed. Push it
 yourself, or add the repository to `git_allowed_repos` (or `git_ask_repos`) and ask Claude

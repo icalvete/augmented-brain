@@ -374,3 +374,127 @@ func TestPreToolUseLanguage(t *testing.T) {
 		t.Errorf("broken input, system in Spanish: %q", out.String())
 	}
 }
+
+// guard.toml, loaded by the hook: an untouchable repository is denied even where the
+// space allows it, the panel's token file and pages are out of the assistant's reach,
+// and the guard's own files ask before a write.
+func TestPreToolUseGuardFile(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	old := Getenv
+	t.Cleanup(func() { Getenv = old })
+	Getenv = func(string) string { return "" }
+	repo := filepath.Join(work, "repo")
+	if err := os.MkdirAll(filepath.Join(repo, ".git"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	pre := func(in *bytes.Reader, out *bytes.Buffer) error { return PreToolUse(in, out, cfgDir) }
+	decide := func(tool string, input map[string]any) string {
+		o := run(t, pre, map[string]any{"cwd": work, "tool_name": tool, "tool_input": input})
+		if o == nil {
+			return ""
+		}
+		return o["permissionDecision"].(string)
+	}
+	push := "git -C " + filepath.ToSlash(repo) + " push"
+	if got := decide("Bash", map[string]any{"command": push}); got != "" {
+		t.Fatalf("before guard.toml, the allowed repository: %q", got)
+	}
+	if err := config.SaveGuard(cfgDir, config.Guard{UntouchableRepos: []string{repo}}); err != nil {
+		t.Fatal(err)
+	}
+	if got := decide("Bash", map[string]any{"command": push}); got != "deny" {
+		t.Errorf("untouchable repository: %q", got)
+	}
+	// a guard.toml that cannot be read: what the lists would cover asks every time
+	if err := os.WriteFile(filepath.Join(cfgDir, config.GuardFile), []byte("untouchable_repos = ["), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := decide("Bash", map[string]any{"command": "ssh web01 uptime"}); got != "ask" {
+		t.Errorf("broken guard.toml: %q", got)
+	}
+	if err := config.SaveGuard(cfgDir, config.Guard{}); err != nil {
+		t.Fatal(err)
+	}
+
+	token := filepath.Join(cfgDir, "panel.json")
+	if got := decide("Read", map[string]any{"file_path": token}); got != "deny" {
+		t.Errorf("Read panel.json: %q", got)
+	}
+	if got := decide("Grep", map[string]any{"path": cfgDir, "pattern": "token"}); got != "deny" {
+		t.Errorf("Grep in the configuration folder: %q", got)
+	}
+	if got := decide("Read", map[string]any{"file_path": filepath.Join(cfgDir, config.FileName)}); got != "" {
+		t.Errorf("Read config.toml: %q", got)
+	}
+	for _, cmd := range []string{
+		"cat " + token,
+		"cd " + cfgDir + " && cat panel.json",
+		"jq .token " + cfgDir + "/panel.*",
+		"curl -s http://127.0.0.1:41234/s/0123456789abcdef0123456789abcdef/",
+	} {
+		if got := decide("Bash", map[string]any{"command": cmd}); got != "deny" {
+			t.Errorf("%s: %q", cmd, got)
+		}
+	}
+	for _, cmd := range []string{"grep -rn panel.json internal docs", "ls " + cfgDir, "augmented-brain panel", "curl -s http://127.0.0.1:8080/health"} {
+		if got := decide("Bash", map[string]any{"command": cmd}); got != "" {
+			t.Errorf("%s should pass: %q", cmd, got)
+		}
+	}
+	for _, f := range []string{config.GuardFile, config.SecretsFile, "remote.toml", config.FileName} {
+		if got := decide("Write", map[string]any{"file_path": filepath.Join(cfgDir, f), "content": "x = 1\n"}); got != "ask" {
+			t.Errorf("write %s: %q", f, got)
+		}
+	}
+}
+
+// A change to the guard's lists that the user did not see (not made in the panel, not
+// there when the session started) makes a push that the lists allow ask instead, until
+// the user accepts the lists.
+func TestPreToolUseGuardChangeAsks(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	old := Getenv
+	t.Cleanup(func() { Getenv = old })
+	Getenv = func(string) string { return "" }
+	repo := filepath.Join(work, "repo")
+	if err := os.MkdirAll(filepath.Join(repo, ".git"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	seal := func() {
+		t.Helper()
+		c, err := config.Load(cfgDir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		g, _ := config.LoadGuard(cfgDir)
+		if err := state.WriteSeal(cfgDir, c.GuardFingerprint(g)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	push := "git -C " + filepath.ToSlash(repo) + " push"
+	decide := func() string {
+		o := run(t, func(in *bytes.Reader, out *bytes.Buffer) error { return PreToolUse(in, out, cfgDir) },
+			map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": push}})
+		if o == nil {
+			return ""
+		}
+		return o["permissionDecision"].(string)
+	}
+	if got := decide(); got != "" {
+		t.Fatalf("no seal yet: %q", got)
+	}
+	seal()
+	if got := decide(); got != "" {
+		t.Fatalf("lists as sealed: %q", got)
+	}
+	if err := config.SetTopList(cfgDir, "untouchable_hosts", []string{"db99.example.com"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := decide(); got != "ask" {
+		t.Errorf("a list changed since the seal: %q", got)
+	}
+	seal() // the user accepts them (the panel does this when it saves)
+	if got := decide(); got != "" {
+		t.Errorf("after accepting: %q", got)
+	}
+}

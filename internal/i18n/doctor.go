@@ -102,6 +102,34 @@ var doctorMessages = map[string]msg{
 		en: "Claude Code plugin %s: installed",
 		es: "plugin de Claude Code %s: instalado",
 	},
+	"doctor.guardfile.bad": {
+		en: "guard.toml cannot be read, so the guard asks about every commit and push (%s)",
+		es: "guard.toml no se puede leer, así que el guardia pregunta por cada commit y push (%s)",
+	},
+	"doctor.guardfile.fix": {
+		en: "fix or remove %s, or open the panel's Guard page",
+		es: "arregla o quita %s, o abre la página Guardia del panel",
+	},
+	"doctor.untouchable": {
+		en: "guard: %d untouchable repositories (no commit, push or merge there)",
+		es: "guardia: %d repositorios intocables (ni commit, ni push, ni merge ahí)",
+	},
+	"doctor.untouchable.both": {
+		en: "%s is untouchable and also in git_allowed_repos or git_ask_repos: the untouchable list wins, so the other entry does nothing",
+		es: "%s es intocable y también está en git_allowed_repos o git_ask_repos: gana la lista de intocables, así que la otra entrada no hace nada",
+	},
+	"doctor.untouchable.both.fix": {
+		en: "take it out of the other list, in the panel's Guard page",
+		es: "quítalo de la otra lista, en la página Guardia del panel",
+	},
+	"doctor.guardchanged": {
+		en: "guard: its lists (repositories, root exceptions, profiles, hosts) are not the ones saved when you last started a session or used the panel; something changed them. Until you accept them, a push or merge that the lists allow asks first",
+		es: "guardia: sus listas (repositorios, excepciones de root, perfiles, hosts) no son las que se guardaron la última vez que empezaste una sesión o usaste el panel; algo las cambió. Hasta que las aceptes, un push o merge que las listas permiten pregunta antes",
+	},
+	"doctor.guardchanged.fix": {
+		en: "look at the Guard page of the panel and press accept, or start a new session",
+		es: "mira la página Guardia del panel y pulsa aceptar, o empieza una sesión nueva",
+	},
 	"doctor.guard.ok": {
 		en: "guard: it blocks a risky command, as it should",
 		es: "guardia: bloquea un comando arriesgado, como debe",
