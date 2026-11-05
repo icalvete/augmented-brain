@@ -503,3 +503,43 @@ func TestRepoDescribe(t *testing.T) {
 		t.Errorf("a folder outside the work folders was described: %s", out)
 	}
 }
+
+// With several spaces, person_save does not guess where a person is visible: it asks,
+// listing the spaces of the configuration; with spaces it writes in those only.
+func TestPersonSaveAsksForSpaces(t *testing.T) {
+	open := space(t)
+	b, err := open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	home := os.Getenv("HOME")
+	folder := filepath.Join(home, "other")
+	if err := os.MkdirAll(folder, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := setup.AddSpace(b.ConfigDir, setup.Options{Space: "casa", WorkFolder: folder, Memory: "~/brain-casa"}); err != nil {
+		t.Fatal(err)
+	}
+	cs := connect(t, open)
+	out, isErr := call(t, cs, "person_save", map[string]any{"name": "Lucia Prado", "role": "friend"})
+	if isErr || !strings.Contains(out, "Not saved") || !strings.Contains(out, "casa, work") {
+		t.Fatalf("no question: %q %v", out, isErr)
+	}
+	for _, d := range []string{"brain", "brain-casa"} {
+		if _, err := os.Stat(filepath.Join(home, d, "people", "person-lucia-prado.md")); err == nil {
+			t.Errorf("saved in %s without being told where", d)
+		}
+	}
+	if out, isErr := call(t, cs, "person_save", map[string]any{"name": "Lucia Prado", "role": "friend", "spaces": []string{"casa"}}); isErr {
+		t.Fatal(out)
+	}
+	if _, err := os.Stat(filepath.Join(home, "brain-casa", "people", "person-lucia-prado.md")); err != nil {
+		t.Error("not saved in casa")
+	}
+	if _, err := os.Stat(filepath.Join(home, "brain", "people", "person-lucia-prado.md")); err == nil {
+		t.Error("saved in work, which was not asked for")
+	}
+	if out, isErr := call(t, cs, "person_save", map[string]any{"name": "Lucia Prado", "spaces": []string{"mars"}}); !isErr || !strings.Contains(out, "casa, work") {
+		t.Errorf("unknown space: %q %v", out, isErr)
+	}
+}

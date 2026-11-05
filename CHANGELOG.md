@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **People shared across spaces, from the panel.** The same person can now be in several
+  spaces (a client who is also a friend). Each space keeps its own note for them, with
+  the same id, and it holds only what you want visible there; nothing changes on disk, so
+  earlier versions read the files as before. The panel lists each person once, with a
+  badge per space, and their page is one form: a role and other names per space, and a
+  list of details with a box per space. A detail you do not tick for a space is never
+  written there, so something personal never reaches a work file or its backup. Claude's
+  `person_save` takes a new `spaces` parameter: with several spaces and none given, it
+  asks you where to save instead of guessing. Two notes written today with the same id
+  (one paragraph each) show as one card, each paragraph a detail ticked in its own space.
+
 - **A warning before a window runs out of memory.** Now and then the process that holds
   a window's Claude sessions (VS Code's extension host, or Claude itself in a terminal)
   grows without stopping, from its usual half a gigabyte to many, until the system kills

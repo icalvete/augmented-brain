@@ -15,7 +15,7 @@
   <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span></div>{{if .Next}}<div class="next">{{t "next"}}: {{inline .Next}}</div>{{end}}</li>{{end}}</ul>{{end}}
 {{if .Named}}<h2>{{t "person.named"}}</h2><ul class="plain">{{range .Named}}<li><a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a> · {{.StatusLabel}}</li>{{end}}</ul>{{end}}
 {{end}}
-{{template "sections" .Sections}}
+{{if not .Person}}{{template "sections" .Sections}}{{end}}
 {{if and (eq .H.Type "area") (not .Shared)}}<details class="box">
   <summary>{{t "area.edit"}}</summary>
   <form method="post" action="{{$.Base}}/area/update" class="stack">
@@ -25,15 +25,26 @@
     <button type="submit">{{t "save"}}</button>
   </form>
 </details>{{end}}
-{{with .Person}}<details class="box">
-  <summary>{{t "person.edit"}}</summary>
-  <form method="post" action="{{$.Base}}/person" class="stack">
-    {{template "fields" (fields $ "name" $.D.H.Title "replace" "1")}}
-    <label>{{t "f.aliases"}} <input name="aliases" value="{{.Aliases}}" maxlength="500" placeholder="{{t "f.aliases.hint"}}"></label>
-    <label>{{t "f.role"}} <input name="role" value="{{.Role}}" maxlength="300"></label>
-    <label>{{t "f.notes"}} <textarea name="notes" rows="6" maxlength="8000">{{$.D.Body}}</textarea></label>
-    <p class="hint">{{t "person.edit.hint"}}</p>
-    <button type="submit">{{t "save"}}</button>
-  </form>
-</details>{{end}}
+{{with .Person}}{{with .Card}}
+<h2>{{t "person.edit"}}</h2>
+<form method="post" action="{{$.Base}}/person/card" class="stack personcard">
+  {{template "fields" (fields $ "id" .ID "n" (len .Rows))}}
+  <p class="hint">{{t "person.card.hint"}}</p>
+  {{range .Spaces}}<fieldset>
+    <legend>{{tf "person.in" .Space}}</legend>
+    <label>{{t "f.role"}} <input name="role.{{.Space}}" value="{{.Role}}" maxlength="300"></label>
+    <label>{{t "f.aliases"}} <input name="aliases.{{.Space}}" value="{{.Aliases}}" maxlength="500" placeholder="{{t "f.aliases.hint"}}"></label>
+    {{if not .Exists}}<p class="hint">{{t "person.nofile"}}</p>{{end}}
+  </fieldset>{{end}}
+  <h3>{{t "person.details"}}</h3>
+  <p class="hint">{{t "person.details.hint"}}</p>
+  {{range $row := .Rows}}<fieldset class="detail{{if $row.Err}} bad{{end}}">
+    <label>{{tf "person.detail.n" (inc $row.N)}} <textarea name="t{{$row.N}}" rows="{{$row.Lines}}" maxlength="4000">{{$row.Text}}</textarea></label>
+    {{if $row.Err}}<p class="flash err" role="alert">{{$row.Err}}</p>{{end}}
+    <div class="ticks"><span>{{t "person.visible"}}:</span>{{range $row.Checks}}<label class="check"><input type="checkbox" name="v{{$row.N}}" value="{{.Space}}"{{if .On}} checked{{end}}> {{.Space}}</label>{{end}}</div>
+  </fieldset>{{end}}
+  <p><a href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.ID}}&amp;extra={{.Extra}}">{{t "person.more"}}</a> <span class="hint">{{t "person.more.hint"}}</span></p>
+  <button type="submit">{{t "save"}}</button>
+</form>
+{{end}}{{end}}
 {{end}}{{end}}

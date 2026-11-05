@@ -194,11 +194,20 @@ Guarda una regla que das sobre cómo trabajar. Cada sesión la carga.
 Recuerda a alguien con quien trabajas o tratas, para que un nombre de pila lleve a la
 persona correcta. Guardar un nombre que ya existe actualiza a esa persona.
 
+Una persona puede estar en varios espacios: la misma persona, con el rol y las notas que
+cada espacio puede mostrar. Claude te pregunta dónde debe verse (por ejemplo, una nota
+sobre un amigo no debe acabar en tu espacio de trabajo) y pasa tu respuesta en `spaces`.
+Con un solo espacio no hay nada que preguntar. Sin `spaces` y con varios, no se guarda
+nada: la respuesta lista tus espacios y pregunta. Lo que se guarda en un espacio solo se
+ve en ese espacio.
+
 - `name`: el nombre completo, o como la conoces.
 - `aliases` (opcional): otros nombres que usas para ella, como un mote.
 - `role` (opcional): quién es para ti, en pocas palabras: "mi jefa", "lleva la empresa
   del hosting".
 - `notes` (opcional): cualquier otra cosa que merezca la pena recordar.
+- `spaces` (opcional con un espacio, necesario con varios): los nombres de los espacios
+  donde se ve. El rol, los otros nombres y las notas se escriben solo en esos espacios.
 
 ## `repo_describe`
 

@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- **Personas compartidas entre espacios, desde el panel.** La misma persona puede estar
+  ahora en varios espacios (un cliente que también es amigo). Cada espacio guarda su
+  propia nota de ella, con el mismo id, y solo tiene lo que quieres que se vea allí; en
+  disco no cambia nada, así que las versiones anteriores leen los ficheros como siempre.
+  El panel lista a cada persona una vez, con una etiqueta por espacio, y su página es un
+  solo formulario: un papel y otros nombres por espacio, y una lista de detalles con una
+  casilla por espacio. Un detalle que no marcas para un espacio no se escribe nunca allí,
+  así que algo personal no llega a un fichero de trabajo ni a su copia de seguridad. La
+  herramienta `person_save` de Claude tiene un parámetro nuevo, `spaces`: con varios
+  espacios y ninguno indicado, te pregunta dónde guardar en vez de adivinar. Dos notas
+  escritas hoy con el mismo id (un párrafo cada una) salen como una sola ficha, cada
+  párrafo un detalle marcado en su propio espacio.
+
 - **Un aviso antes de que una ventana se quede sin memoria.** A veces el proceso que
   lleva las sesiones de Claude de una ventana (el host de extensiones de VS Code, o el
   propio Claude en una terminal) crece sin parar, de su medio gigabyte de siempre a
