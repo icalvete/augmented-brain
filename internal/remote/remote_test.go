@@ -1,10 +1,12 @@
 package remote
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -100,8 +102,12 @@ func (f *fake) load() (*config.Config, Settings) {
 
 func (f *fake) trust(dir string) {
 	f.t.Helper()
-	json := `{"projects":{"` + dir + `":{"hasTrustDialogAccepted":true}}}`
-	if err := os.WriteFile(f.sys.ClaudeJSON, []byte(json), 0o600); err != nil {
+	// Marshalled, not concatenated: a Windows path has backslashes JSON must escape.
+	body, err := json.Marshal(map[string]any{"projects": map[string]any{dir: map[string]bool{"hasTrustDialogAccepted": true}}})
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	if err := os.WriteFile(f.sys.ClaudeJSON, body, 0o600); err != nil {
 		f.t.Fatal(err)
 	}
 }
@@ -198,7 +204,7 @@ func TestInstallIsRepeatable(t *testing.T) {
 		t.Fatal(err)
 	}
 	folder := filepath.Join(f.cfgDir, "remote", "personal")
-	if st, err := os.Stat(folder); err != nil || !st.IsDir() || st.Mode().Perm() != 0o700 {
+	if st, err := os.Stat(folder); err != nil || !st.IsDir() || (runtime.GOOS != "windows" && st.Mode().Perm() != 0o700) { // Windows has no modes
 		t.Errorf("folder: %v %v", st, err)
 	}
 	c2, _ := f.load()
@@ -212,7 +218,7 @@ func TestInstallIsRepeatable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(unit), "ExecStart="+filepath.Join(f.root, ".local", "bin", "claude")+" remote-control --name box.local-personal --permission-mode default\n") {
+	if !strings.Contains(string(unit), "ExecStart="+unitArg(filepath.Join(f.root, ".local", "bin", "claude"), true)+" remote-control --name box.local-personal --permission-mode default\n") {
 		t.Errorf("unit:\n%s", unit)
 	}
 	wantCalls := []string{
