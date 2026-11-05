@@ -55,6 +55,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /area/new", s.write(s.areaNew))
 	m.HandleFunc("POST /area/update", s.write(s.areaUpdate))
 	m.HandleFunc("POST /person", s.write(s.personSave))
+	m.HandleFunc("POST /person/card", s.personCard)
 	m.HandleFunc("POST /secret", s.write(s.secretSave))
 	m.HandleFunc("POST /secret/forget", s.write(s.secretForget))
 	m.HandleFunc("POST /review/capture", s.write(s.reviewCapture))
@@ -157,6 +158,8 @@ type view struct {
 	// commands (git, the keychain) no longer makes Claude wait. Calling it again, or
 	// the handler's own release after it, does nothing.
 	unlock func()
+	// cardErr is the detail of a person's form that could not be saved, to show next to it.
+	cardErr *brain.CardError
 }
 
 var errNoSpace = errors.New("no such space")

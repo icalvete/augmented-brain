@@ -35,9 +35,17 @@ Dices: "Diego lleva la empresa del hosting; le llamo Dieguito". Claude guarda
 quién es.
 
 Una **persona** tiene un nombre, quién es para ti, los otros nombres que usas para ella y
-lo que merezca la pena recordar. Las personas son de un espacio: los contactos del trabajo
-se quedan en el espacio de trabajo. Una tarea puede esperar a una persona
+lo que merezca la pena recordar. Una tarea puede esperar a una persona
 (`waiting_on: Diego`).
+
+**La misma persona puede estar en más de un espacio.** Digamos que Diego es tu cliente y
+también tu amigo. Cada espacio guarda su propia nota de él, con el mismo id, y esa nota
+tiene solo lo que quieres ver allí: su papel, sus otros nombres y sus detalles. El panel
+las junta en una sola ficha, para que veas todo sobre él en un sitio, y en cada detalle
+marcas los espacios donde se ve. Un detalle sobre tu amigo que dejes sin marcar en
+`trabajo` no se escribe nunca en un fichero de trabajo, así que nunca llega a una copia
+de seguridad de trabajo. Cuando le pides a Claude que recuerde a alguien, te pregunta en
+qué espacios debe verse.
 
 ## Buzón
 

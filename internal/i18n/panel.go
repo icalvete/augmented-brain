@@ -135,12 +135,52 @@ var panelMessages = map[string]msg{
 		es: "Para que un nombre de pila, en una tarea o en lo que le dices a Claude, lleve a la persona que es.",
 	},
 	"panel.person.edit": {
-		en: "Change",
-		es: "Cambiar",
+		en: "Their card",
+		es: "Su ficha",
 	},
-	"panel.person.edit.hint": {
-		en: "The name stays: a new name would be a new person. What you write here replaces the notes.",
-		es: "El nombre se queda: un nombre nuevo sería otra persona. Lo que escribas aquí sustituye las notas.",
+	"panel.person.new.hint": {
+		en: "They start in the space you are in; on their page you choose where else they show.",
+		es: "Empieza en el espacio en el que estás; en su página eliges en qué otros espacios se ve.",
+	},
+	"panel.person.card.hint": {
+		en: "One card for the same person in every space. The name stays: a new name would be a new person. Each space keeps only what you leave visible there.",
+		es: "Una sola ficha para la misma persona en todos los espacios. El nombre se queda: un nombre nuevo sería otra persona. Cada espacio guarda solo lo que dejes visible en él.",
+	},
+	"panel.person.in": {
+		en: "In %s",
+		es: "En %s",
+	},
+	"panel.person.nofile": {
+		en: "Not here yet. It is created when you save something visible in this space.",
+		es: "Aún no está aquí. Se crea cuando guardes algo visible en este espacio.",
+	},
+	"panel.person.details": {
+		en: "Details",
+		es: "Detalles",
+	},
+	"panel.person.details.hint": {
+		en: "Each detail shows only in the spaces you tick. Empty the text to remove it.",
+		es: "Cada detalle solo se ve en los espacios que marques. Vacía el texto para quitarlo.",
+	},
+	"panel.person.detail.n": {
+		en: "Detail %d",
+		es: "Detalle %d",
+	},
+	"panel.person.visible": {
+		en: "Visible in",
+		es: "Se ve en",
+	},
+	"panel.person.nospace": {
+		en: "Not saved: tick at least one space, or empty the text to remove this detail.",
+		es: "No se guardó: marca al menos un espacio, o vacía el texto para quitar este detalle.",
+	},
+	"panel.person.more": {
+		en: "Another detail",
+		es: "Otro detalle",
+	},
+	"panel.person.more.hint": {
+		en: "Reloads the page with one more empty row: save first, or what you typed is lost.",
+		es: "Recarga la página con una fila vacía más: guarda antes, o lo que escribiste se pierde.",
 	},
 	"panel.person.waiting": {
 		en: "Waiting on them",

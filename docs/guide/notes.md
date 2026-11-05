@@ -35,8 +35,15 @@ You say: "Diego runs the hosting company; I call him Dieguito". Claude saves
 he is.
 
 A **person** has a name, who they are to you, the other names you use for them, and
-anything worth remembering. People belong to a space: work contacts stay in the work
-space. A task can wait on a person (`waiting_on: Diego`).
+anything worth remembering. A task can wait on a person (`waiting_on: Diego`).
+
+**The same person can be in more than one space.** Say Diego is your client and also
+your friend. Each space keeps its own note for him, with the same id, and that note holds
+only what you want to see there: his role, his other names and his details. The panel
+joins them into one card, so you see everything about him in one place, and for each
+detail you tick the spaces where it shows. A detail about your friend that you leave
+unticked for `work` is never written in a work file, so it never reaches a work backup.
+When you ask Claude to remember someone, it asks in which spaces they should be visible.
 
 ## Inbox
 

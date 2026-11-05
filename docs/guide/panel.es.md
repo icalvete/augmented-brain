@@ -70,9 +70,15 @@ en el registro de la revisión al terminar.
 Conocimiento y reglas enseñan las del espacio y las compartidas, marcadas «compartida».
 Puedes crear áreas y cambiar el título y el resumen de un área.
 
-Puedes añadir personas y cambiarlas: sus otros nombres, su papel y sus notas. El nombre se
-queda: un nombre nuevo sería otra persona. La página de una persona enseña las tareas que
-le esperan y las que la enlazan.
+Las personas salen una sola vez, con una etiqueta por cada espacio en el que están. Una
+persona nueva empieza en el espacio en el que estás. La página de una persona es un solo
+formulario: el nombre se queda (un nombre nuevo sería otra persona), luego un papel y
+otros nombres por cada espacio, y una lista de detalles. Cada detalle tiene una casilla
+por espacio; marca dónde debe verse. Vacía el texto de un detalle para quitarlo. Un
+detalle sin ninguna casilla marcada no se guarda, y la página lo dice junto a él. Siempre
+hay una fila vacía al final para añadir uno, y «Otro detalle» recarga la página con una
+más (guarda antes: no conserva lo que escribiste). La página también enseña las tareas
+que le esperan y las que la enlazan.
 
 ## Repositorios
 

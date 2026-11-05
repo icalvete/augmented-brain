@@ -105,8 +105,9 @@ respuestas, una lección sobre una herramienta. Guardarlas una vez por espacio d
 copias que acaban siendo distintas. Por eso van una sola vez en las **notas
 compartidas**, junto a tu perfil, en `shared/` dentro de la carpeta de configuración.
 
-Solo se pueden compartir reglas, referencias y lecciones. Las tareas, las áreas y las
-personas son siempre de un espacio.
+Solo se pueden compartir reglas, referencias y lecciones. Las tareas y las áreas son siempre
+de un espacio. Una persona puede estar en varios, cada uno con su nota y solo lo que
+quieres ver allí (mira Personas en Notas).
 
 No mueves ficheros a mano. Dile a Claude "esto vale para todo" y guarda la nota como
 compartida. Cada sesión carga las reglas compartidas, y lista las referencias y lecciones

@@ -274,3 +274,9 @@ a.button {
   background: var(--accent); color: var(--on-accent); font-weight: 500; font-size: .88rem;
 }
 a.button:hover { opacity: .85; text-decoration: none; }
+
+.personcard fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: .6rem .8rem .8rem; display: grid; gap: .6rem; }
+.personcard fieldset.bad { border-color: var(--bad); }
+.personcard legend { padding: 0 .3rem; font-weight: 600; font-size: .9rem; }
+.personcard .ticks { display: flex; flex-wrap: wrap; gap: .4rem 1rem; align-items: center; font-size: .85rem; color: var(--muted); }
+.personcard .flash { margin: 0; }

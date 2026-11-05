@@ -97,7 +97,8 @@
   <p>Dices: “guárdalo como lección”. Las dos son de un área, y Claude las abre cuando una tarea las necesita.</p>
   <h2 id="personas">Personas</h2>
   <p>Dices: “Diego lleva la empresa del hosting; le llamo Dieguito”. Claude guarda <code>people/person-diego.md</code>. La próxima vez que digas “dile a Dieguito que ya está”, sabe quién es.</p>
-  <p>Una <strong>persona</strong> tiene un nombre, quién es para ti, los otros nombres que usas para ella y lo que merezca la pena recordar. Las personas son de un espacio: los contactos del trabajo se quedan en el espacio de trabajo. Una tarea puede esperar a una persona (<code>waiting_on: Diego</code>).</p>
+  <p>Una <strong>persona</strong> tiene un nombre, quién es para ti, los otros nombres que usas para ella y lo que merezca la pena recordar. Una tarea puede esperar a una persona (<code>waiting_on: Diego</code>).</p>
+  <p><strong>La misma persona puede estar en más de un espacio.</strong> Digamos que Diego es tu cliente y también tu amigo. Cada espacio guarda su propia nota de él, con el mismo id, y esa nota tiene solo lo que quieres ver allí: su papel, sus otros nombres y sus detalles. El panel las junta en una sola ficha, para que veas todo sobre él en un sitio, y en cada detalle marcas los espacios donde se ve. Un detalle sobre tu amigo que dejes sin marcar en <code>trabajo</code> no se escribe nunca en un fichero de trabajo, así que nunca llega a una copia de seguridad de trabajo. Cuando le pides a Claude que recuerde a alguien, te pregunta en qué espacios debe verse.</p>
   <h2 id="buzón">Buzón</h2>
   <p>Una idea que todavía no es una tarea. Dices: “apunta: mirar los precios nuevos del hosting”. Claude añade una línea con fecha a <code>inbox.md</code>, sin abrir tarea:</p>
   <pre><code>- 2026-10-17 — Mirar los precios nuevos del hosting
