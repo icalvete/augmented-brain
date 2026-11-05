@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Configuration · augmented brain</title>
-<meta name="description" content="Every setting of augmented brain&#x27;s config.toml, for the whole computer and for each space, with an example; secrets.toml, the other files and the environment variables.">
+<meta name="description" content="Every setting of augmented brain&#x27;s config.toml, for the whole computer and for each space, with an example; secrets.toml, remote.toml, the other files and the environment variables.">
 <link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/configuration.html">
 <link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/configuration.html">
 <link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/configuration.es.html">
@@ -66,6 +66,7 @@
   <li><a href="weekly-review.html">The weekly review</a></li>
   <li><a href="backup.html">Backup and restore</a></li>
   <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="remote.html">Remote access</a></li>
   <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -86,7 +87,7 @@
 <main class="prose" id="main">
   <h1>Configuration</h1>
   <p>The installer writes the configuration for you, and Claude adds to it when you ask ("<code>shop-prod</code> is production"). You only open it to change something by hand: a new work folder, a repository where Claude may commit, a root exception.</p>
-  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#where-it-is">Where it is</a></li><li><a href="#an-example">An example</a></li><li><a href="#settings-for-the-whole-computer">Settings for the whole computer</a></li><li><a href="#settings-of-each-space">Settings of each space</a></li><li><a href="#what-claude-may-change">What Claude may change</a></li><li><a href="#when-it-cannot-be-read">When it cannot be read</a></li><li><a href="#secretstoml"><code>secrets.toml</code></a></li><li><a href="#guardtoml"><code>guard.toml</code></a></li><li><a href="#other-files-in-the-folder">Other files in the folder</a></li><li><a href="#environment-variables">Environment variables</a></li><li><a href="#claude-codes-own-settings">Claude Code's own settings</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#where-it-is">Where it is</a></li><li><a href="#an-example">An example</a></li><li><a href="#settings-for-the-whole-computer">Settings for the whole computer</a></li><li><a href="#settings-of-each-space">Settings of each space</a></li><li><a href="#what-claude-may-change">What Claude may change</a></li><li><a href="#when-it-cannot-be-read">When it cannot be read</a></li><li><a href="#secretstoml"><code>secrets.toml</code></a></li><li><a href="#guardtoml"><code>guard.toml</code></a></li><li><a href="#remotetoml"><code>remote.toml</code></a></li><li><a href="#other-files-in-the-folder">Other files in the folder</a></li><li><a href="#environment-variables">Environment variables</a></li><li><a href="#claude-codes-own-settings">Claude Code's own settings</a></li></ul></nav>
   <h2 id="where-it-is">Where it is</h2>
   <p>One folder per computer, the <strong>configuration folder</strong>:</p>
   <ul><li>Linux and macOS: <code>~/.config/augmented-brain/</code> (or <code>$XDG_CONFIG_HOME/augmented-brain/</code>).</li><li>Windows: <code>%APPDATA%\augmented-brain\</code>.</li><li>Anywhere else, if you set <code>AB_CONFIG_DIR</code>.</li></ul>
@@ -134,8 +135,17 @@ backup = "https://github.com/lucia/augmented-brain-personal.git"</code></pre>
   <pre><code>untouchable_repos = ["~/work/core", "~/work/cli-*"]</code></pre>
   <ul><li><code>untouchable_repos</code>: repositories where Claude never commits, pushes or merges, whatever <code>git_allowed_repos</code> and <code>git_ask_repos</code> say. For the whole computer. Same form as those lists (<code>~</code>, a <code>*</code> in the last part, worktrees count).</li></ul>
   <p>The panel's Guard page writes it. If the file is missing, nothing is untouchable; if it cannot be read, the guard asks before every commit and push. It is a file of its own for the same reason as <code>secrets.toml</code>: versions before this one refuse a setting of <code>config.toml</code> they do not know, and ignore a file they do not know. A session that still runs such a version does not enforce the list. It is not carried by backups.</p>
+  <h2 id="remotetoml"><code>remote.toml</code></h2>
+  <p>Next to <code>config.toml</code>, <code>remote.toml</code> holds the settings of <a href="remote.html">remote access</a>, which keeps Claude reachable from another computer. <code>augmented-brain remote install</code> creates it. It is a file of its own because versions before this one refuse a setting of <code>config.toml</code> they do not know, and they must keep reading your configuration.</p>
+  <pre><code>enabled = true
+spaces = ["personal", "work"]
+name_prefix = "my-laptop"
+permission_mode = "default"</code></pre>
+  <p>All are optional:</p>
+  <ul><li><code>enabled</code>: whether remote access is set up. <code>remote install</code> writes <code>true</code> and <code>remote uninstall</code> writes <code>false</code>. Only when it is <code>true</code> does <code>doctor</code> check it.</li><li><code>spaces</code>: the spaces that get a session, each in a service of its own. Default: the <code>default_space</code>.</li><li><code>name_prefix</code>: sessions are called <code>&lt;name_prefix&gt;-&lt;space&gt;</code>, such as <code>my-laptop-personal</code>. One plain word: letters, digits, dot, dash and underscore. Default: the computer's name.</li><li><code>permission_mode</code>: how much Claude may do without asking. One of <code>default</code>, <code>acceptEdits</code>, <code>plan</code>, <code>auto</code>, <code>dontAsk</code> and <code>bypassPermissions</code>. Default: <code>default</code>, where Claude asks as usual and the guard stays in force. **Do not use <code>bypassPermissions</code>**: it lets whoever connects run anything, with no questions, and leaves the computer open.</li></ul>
+  <p>Run <code>augmented-brain remote install</code> again after changing it, so the services pick it up.</p>
   <h2 id="other-files-in-the-folder">Other files in the folder</h2>
-  <ul><li><code>profile.md</code>: your profile, for every space.</li><li><code>shared/</code>: the shared notes (rules, references and lessons for every space).</li><li><code>state/</code>: what this computer knows of each space's sessions. Never backed up.</li><li><code>migrations/</code>: a full copy of notes before a new version moved them.</li><li><code>panel.json</code> and <code>panel.lock</code>: where the panel listens while it runs, and its lock. The guard never lets Claude read <code>panel.json</code>: it holds the panel's key.</li><li><code>review-&lt;space&gt;.draft</code>: a weekly review started in the panel and not finished yet.</li></ul>
+  <ul><li><code>profile.md</code>: your profile, for every space.</li><li><code>shared/</code>: the shared notes (rules, references and lessons for every space).</li><li><code>state/</code>: what this computer knows of each space's sessions. Never backed up.</li><li><code>migrations/</code>: a full copy of notes before a new version moved them.</li><li><code>panel.json</code> and <code>panel.lock</code>: where the panel listens while it runs, and its lock. The guard never lets Claude read <code>panel.json</code>: it holds the panel's key.</li><li><code>remote/&lt;space&gt;/</code>: the folder where the remote access service of a space starts. It is a work folder of that space.</li><li><code>review-&lt;space&gt;.draft</code>: a weekly review started in the panel and not finished yet.</li></ul>
   <h2 id="environment-variables">Environment variables</h2>
   <p>Set these in your shell to change how the program behaves:</p>
   <ul><li><code>AB_CONFIG_DIR</code>: use this folder as the configuration folder.</li><li><code>AB_LANGUAGE</code>: <code>en</code> or <code>es</code>, the language before there is a configuration, or while it cannot be read (the installer and <code>init</code> use it).</li><li><code>AB_NO_AUTO_BACKUP=1</code>: do not back up when a session ends.</li><li><code>AB_NO_UPDATE_CHECK=1</code>: do not ask GitHub, once a day, whether there is a new version.</li><li><code>AB_NO_BROWSER=1</code>: <code>augmented-brain panel</code> prints the address instead of opening the browser.</li></ul>

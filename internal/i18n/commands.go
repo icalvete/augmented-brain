@@ -331,6 +331,9 @@ Usage:
   augmented-brain backup setup URL   connect this folder's space to a private git repository
   augmented-brain restore URL  bring a space back from its backup, on a new machine
   augmented-brain panel        open the panel in your browser: see and edit your tasks, inbox, profile… (panel stop: stop it)
+  augmented-brain remote install    keep Claude reachable from another computer, also after a reboot (Linux)
+  augmented-brain remote uninstall  stop that and remove it
+  augmented-brain remote status     say whether it runs, and what is missing
   augmented-brain update       update augmented brain and its Claude Code plugin
   augmented-brain uninstall    remove the program and the plugin (your notes stay; --all: start from scratch)
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
@@ -350,6 +353,9 @@ Uso:
   augmented-brain backup setup URL   conecta el espacio de esta carpeta a un repositorio git privado
   augmented-brain restore URL  recupera un espacio de su copia, en una máquina nueva
   augmented-brain panel        abre el panel en el navegador: ve y cambia tus tareas, buzón, perfil… (panel stop: lo para)
+  augmented-brain remote install    mantiene Claude accesible desde otro ordenador, también tras reiniciar (Linux)
+  augmented-brain remote uninstall  lo para y lo quita
+  augmented-brain remote status     dice si funciona y qué falta
   augmented-brain update       actualiza augmented brain y su plugin de Claude Code
   augmented-brain uninstall    quita el programa y el plugin (tus notas se quedan; --all: empezar de cero)
   augmented-brain mcp          arranca el servidor MCP (lo arranca tu asistente, no tú)

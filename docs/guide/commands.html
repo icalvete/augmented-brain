@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Commands · augmented brain</title>
-<meta name="description" content="Every command of augmented brain, with every option: init, space, check, doctor, import, backup, restore, panel, update, uninstall, mcp, hook, version and help.">
+<meta name="description" content="Every command of augmented brain, with every option: init, space, check, doctor, import, backup, restore, panel, remote, update, uninstall, mcp, hook, version and help.">
 <link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/commands.html">
 <link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/commands.html">
 <link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/commands.es.html">
@@ -66,6 +66,7 @@
   <li><a href="weekly-review.html">The weekly review</a></li>
   <li><a href="backup.html">Backup and restore</a></li>
   <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="remote.html">Remote access</a></li>
   <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -92,7 +93,7 @@ augmented-brain check</code></pre>
   <p>Options go before or after the other arguments, with one dash or two (<code>--all</code> or <code>-all</code>). A command that gets an argument it does not take says so, and does nothing.</p>
   <p>Three commands are started by Claude Code, not by you: <code>mcp</code>, <code>hook</code> and <code>panel serve</code>. They are here so you know what they are.</p>
   <p>Inside Claude Code there is one slash command: <code>/brain:panel</code> opens the panel, as <code>augmented-brain panel</code> does.</p>
-  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#augmented-brain-init">augmented-brain init</a></li><li><a href="#augmented-brain-space">augmented-brain space</a></li><li><a href="#augmented-brain-space-add">augmented-brain space add</a></li><li><a href="#augmented-brain-check">augmented-brain check</a></li><li><a href="#augmented-brain-doctor">augmented-brain doctor</a></li><li><a href="#augmented-brain-import">augmented-brain import</a></li><li><a href="#augmented-brain-backup">augmented-brain backup</a></li><li><a href="#augmented-brain-backup-setup">augmented-brain backup setup</a></li><li><a href="#augmented-brain-restore">augmented-brain restore</a></li><li><a href="#augmented-brain-panel">augmented-brain panel</a></li><li><a href="#augmented-brain-panel-stop">augmented-brain panel stop</a></li><li><a href="#augmented-brain-panel-serve">augmented-brain panel serve</a></li><li><a href="#augmented-brain-update">augmented-brain update</a></li><li><a href="#augmented-brain-uninstall">augmented-brain uninstall</a></li><li><a href="#augmented-brain-mcp">augmented-brain mcp</a></li><li><a href="#augmented-brain-hook">augmented-brain hook</a></li><li><a href="#augmented-brain-version">augmented-brain version</a></li><li><a href="#augmented-brain-help">augmented-brain help</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#augmented-brain-init">augmented-brain init</a></li><li><a href="#augmented-brain-space">augmented-brain space</a></li><li><a href="#augmented-brain-space-add">augmented-brain space add</a></li><li><a href="#augmented-brain-check">augmented-brain check</a></li><li><a href="#augmented-brain-doctor">augmented-brain doctor</a></li><li><a href="#augmented-brain-import">augmented-brain import</a></li><li><a href="#augmented-brain-backup">augmented-brain backup</a></li><li><a href="#augmented-brain-backup-setup">augmented-brain backup setup</a></li><li><a href="#augmented-brain-restore">augmented-brain restore</a></li><li><a href="#augmented-brain-panel">augmented-brain panel</a></li><li><a href="#augmented-brain-panel-stop">augmented-brain panel stop</a></li><li><a href="#augmented-brain-panel-serve">augmented-brain panel serve</a></li><li><a href="#augmented-brain-remote">augmented-brain remote</a></li><li><a href="#augmented-brain-remote-install">augmented-brain remote install</a></li><li><a href="#augmented-brain-remote-uninstall">augmented-brain remote uninstall</a></li><li><a href="#augmented-brain-remote-status">augmented-brain remote status</a></li><li><a href="#augmented-brain-update">augmented-brain update</a></li><li><a href="#augmented-brain-uninstall">augmented-brain uninstall</a></li><li><a href="#augmented-brain-mcp">augmented-brain mcp</a></li><li><a href="#augmented-brain-hook">augmented-brain hook</a></li><li><a href="#augmented-brain-version">augmented-brain version</a></li><li><a href="#augmented-brain-help">augmented-brain help</a></li></ul></nav>
   <h2 id="augmented-brain-init">augmented-brain init</h2>
   <p>Sets everything up: the spaces, the configuration and the Claude Code plugin. The installer runs it for you the first time.</p>
   <pre><code>augmented-brain init</code></pre>
@@ -123,7 +124,7 @@ augmented-brain check</code></pre>
   <p>Says what is missing, and how to fix it.</p>
   <pre><code>augmented-brain doctor</code></pre>
   <p>Each line starts with a mark: <code>✓</code> fine, <code>·</code> for your information, <code>!</code> a warning, <code>✗</code> something that fails. Under a line that needs work, <code>→</code> says what to do. It checks:</p>
-  <ul><li>the configuration, the profile and which space this folder is in;</li><li>each space's notes folder, its notes and its index;</li><li>Claude Code, git and the plugin;</li><li>the guard, for real, with a command that must be stopped;</li><li>the guard's lists, the root exceptions in <code>root_ask</code>, and those that have ended;</li><li>Claude sessions still running an older version after an update;</li><li>a second memory that Claude Code keeps of its own for your folders;</li><li>notes that other users of the computer could read;</li><li>whether there is a default space, and whether a restore left the guard's lists empty.</li></ul>
+  <ul><li>the configuration, the profile and which space this folder is in;</li><li>each space's notes folder, its notes and its index;</li><li>Claude Code, git and the plugin;</li><li>the guard, for real, with a command that must be stopped;</li><li>the guard's lists, the root exceptions in <code>root_ask</code>, and those that have ended;</li><li>Claude sessions still running an older version after an update;</li><li>a second memory that Claude Code keeps of its own for your folders;</li><li>notes that other users of the computer could read;</li><li>whether there is a default space, and whether a restore left the guard's lists empty;</li><li>remote access, one line per space, when you set it up with <code>remote install</code>: a warning when its service is not running, Claude does not trust its folder yet, or linger is off.</li></ul>
   <p>It ends with an error when something fails. It takes no options. See <a href="troubleshooting.html">Troubleshooting</a>.</p>
   <h2 id="augmented-brain-import">augmented-brain import</h2>
   <p>Brings in a memory Claude Code already wrote. Without <code>--apply</code> it only shows what it would do.</p>
@@ -156,6 +157,23 @@ augmented-brain check</code></pre>
   <p>It says whether a panel was running. The link at the bottom of every panel page does the same.</p>
   <h2 id="augmented-brain-panel-serve">augmented-brain panel serve</h2>
   <p>The panel itself, running in the background. <code>augmented-brain panel</code> starts it; you never run it by hand. It stops on its own after 30 minutes without use.</p>
+  <h2 id="augmented-brain-remote">augmented-brain remote</h2>
+  <p>Keeps Claude reachable from another computer or your phone, also after a reboot. It is three commands, <code>install</code>, <code>uninstall</code> and <code>status</code>, each with its own section below. Linux only for now (it uses a <code>systemd</code> user service); on macOS and Windows they say it is not available yet. Without a subcommand, or with another, <code>remote</code> prints its usage. See <a href="remote.html">Remote access</a>.</p>
+  <h2 id="augmented-brain-remote-install">augmented-brain remote install</h2>
+  <p>Sets remote access up, one service per space.</p>
+  <pre><code>augmented-brain remote install</code></pre>
+  <p>For each space named in <code>remote.toml</code> (by default, the default space) it creates a folder inside the configuration folder, makes it a work folder of that space, writes a <code>systemd</code> user service that runs <code>claude remote-control</code> there, and starts it. You can run it again at any time: it changes only what is different.</p>
+  <p>It then says what is still missing, and does none of it for you:</p>
+  <ul><li>Claude must <strong>trust each folder</strong>. It prints <code>cd &lt;folder&gt; &amp;&amp; claude</code> for each one that is not trusted yet: run it once and accept the question.</li><li><strong>Linger</strong> must be on for the services to start after a reboot with nobody logged in. It prints the command, <code>sudo loginctl enable-linger &lt;you&gt;</code>, for you to run.</li></ul>
+  <p>It takes no options. The settings are in <code>remote.toml</code> (see <a href="configuration.html">Configuration</a>).</p>
+  <h2 id="augmented-brain-remote-uninstall">augmented-brain remote uninstall</h2>
+  <p>Stops remote access and removes it.</p>
+  <pre><code>augmented-brain remote uninstall</code></pre>
+  <p>It stops and removes the services <code>remote install</code> wrote, and sets <code>enabled = false</code> in <code>remote.toml</code>. The folders and their entries in <code>work_folders</code> stay: it never deletes anything else. It takes no options.</p>
+  <h2 id="augmented-brain-remote-status">augmented-brain remote status</h2>
+  <p>Says how remote access stands, and changes nothing.</p>
+  <pre><code>augmented-brain remote status</code></pre>
+  <p>For each space: the session's name (what you pick in Claude Desktop or claude.ai), whether the service is running and starts by itself, and whether Claude trusts its folder. Then whether linger is on. Under each problem, <code>→</code> says what to do. It takes no options.</p>
   <h2 id="augmented-brain-update">augmented-brain update</h2>
   <p>Updates augmented brain and its Claude Code plugin.</p>
   <pre><code>augmented-brain update</code></pre>

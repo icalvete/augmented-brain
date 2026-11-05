@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/setup"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
@@ -229,5 +230,49 @@ func TestGuardFileChecks(t *testing.T) {
 	}
 	if c := find(Run(env), "not the ones saved"); c == nil || c.Status != Warning {
 		t.Error("lists changed outside the panel are not said")
+	}
+}
+
+// With remote access set up, doctor gives a line per space and warns of a stopped
+// service, an untrusted folder and linger off; with it not set up, no line.
+func TestRemoteLines(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: "~/work", Memory: "~/brain/work"}); err != nil {
+		t.Fatal(err)
+	}
+	units := filepath.Join(home, "units")
+	sys := &remote.System{
+		Run: func(name string, args ...string) (string, error) {
+			if name == "loginctl" {
+				return "Linger=no\n", nil
+			}
+			if len(args) > 1 && args[1] == "is-active" {
+				return "inactive\n", errors.New("exit status 3")
+			}
+			return "", nil
+		},
+		Hostname: func() (string, error) { return "box", nil }, GOOS: "linux", User: "lucia",
+		UnitDir: units, ClaudeJSON: filepath.Join(home, "none.json"),
+	}
+	env := Env{ConfigDir: cfg, WorkDir: home, LookPath: allTools, Plugin: yes, Hook: denies, Remote: sys}
+	if c := find(Run(env), "remote access"); c != nil {
+		t.Errorf("not set up, yet doctor says: %+v", c)
+	}
+	if err := os.WriteFile(filepath.Join(cfg, remote.SettingsFile), []byte("enabled = true\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(units, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	unit := remote.Service{Space: "work", Name: "box-work", Folder: filepath.Join(cfg, "remote", "work")}.UnitText("/bin/claude", "default")
+	if err := os.WriteFile(filepath.Join(units, "augmented-brain-remote-work.service"), []byte(unit), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	c := find(Run(env), "remote access, space work")
+	if c == nil || c.Status != Warning || !strings.Contains(c.What, "box-work") ||
+		!strings.Contains(c.Fix, "claude") || !strings.Contains(c.Fix, "enable-linger lucia") {
+		t.Errorf("remote line = %+v", c)
 	}
 }
