@@ -986,6 +986,26 @@ var panelMessages = map[string]msg{
 		en: "Write short lines that start with \"- \".",
 		es: "Escribe líneas cortas que empiecen por \"- \".",
 	},
+	"panel.profile.assistant": {
+		en: "Your assistant",
+		es: "Tu asistente",
+	},
+	"panel.profile.assistant.hint": {
+		en: "A name and a personality for the assistant. They change how it talks, never the rules, the guard or its honesty. Leave both empty for none.",
+		es: "Un nombre y una personalidad para el asistente. Cambian cómo habla, nunca las reglas, el guardia ni su honestidad. Déjalos vacíos si no quieres ninguno.",
+	},
+	"panel.f.assistant": {
+		en: "Its name",
+		es: "Su nombre",
+	},
+	"panel.f.personality": {
+		en: "Its personality, in your words",
+		es: "Su personalidad, con tus palabras",
+	},
+	"panel.profile.signature": {
+		en: "Emails it writes in your name end like this, and the second line is always there:",
+		es: "Los correos que escriba en tu nombre acaban así, y la segunda línea va siempre:",
+	},
 	"panel.space.title": {
 		en: "Space %s",
 		es: "Espacio %s",

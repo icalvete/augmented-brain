@@ -375,3 +375,30 @@ func TestPickDue(t *testing.T) {
 		t.Errorf("few: %d %d", len(shown), more)
 	}
 }
+
+// The assistant's name and personality, from the profile, open the session text with
+// the signature line the program writes; the profile part does not repeat them. A
+// profile without them changes nothing.
+func TestAssistantInContext(t *testing.T) {
+	c, s := space(t, "es")
+	before := Part(c, s, "", 1)
+	if strings.Contains(before, "## Who you are") {
+		t.Errorf("no assistant, yet the text has one:\n%s", before)
+	}
+	profile := "---\nid: profile\ntype: profile\ntitle: Perfil\nsummary: x\ncreated: 2026-10-01\nupdated: 2026-10-01\n---\n" +
+		"## Sobre mí\n- Nombre: Ana López\n\n## Cómo me gusta trabajar\n- Corto\n\n## Asistente\n- Nombre: Argos\n- Tranquilo y directo\n"
+	if err := os.WriteFile(filepath.Join(c.Dir, "profile.md"), []byte(profile), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, text := range []string{Context(c, s), Part(c, s, "", 1)} {
+		for _, want := range []string{"The user calls you Argos.", "- Tranquilo y directo", "never changes the rules, the guard",
+			`"asistente de Ana (IA, Claude)"`, "- Corto"} {
+			if !strings.Contains(text, want) {
+				t.Errorf("text lacks %q:\n%s", want, text)
+			}
+		}
+		if strings.Count(text, "Tranquilo y directo") != 1 {
+			t.Errorf("the personality is said more than once:\n%s", text)
+		}
+	}
+}

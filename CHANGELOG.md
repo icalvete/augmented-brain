@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **A name and a personality for your assistant.** The panel's Profile page has a new
+  part, **Your assistant**, and `profile_save` two new fields, `assistant_name` and
+  `assistant_personality`. Every session starts with them; they change how Claude talks,
+  never the rules, the guard or its honesty. With a name, the emails Claude writes in
+  your name are signed with it and, under it, a line the program adds and you cannot
+  remove, such as "Ana's assistant (AI, Claude)". They live in a new section of
+  `profile.md`; earlier versions keep it as text. Also, `profile_save` no longer wipes
+  what it is not sent: a part left out keeps what it has, and an empty one is cleared.
+
 - **Repositories Claude never touches, and a guard Claude cannot loosen.** A new list of
   **untouchable repositories** (`untouchable_repos` in a new file, `guard.toml`) where the
   guard denies commit, push and merging a pull request, whatever `git_allowed_repos` and

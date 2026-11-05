@@ -34,7 +34,7 @@ func ContextWith(c *config.Config, s *config.Space, note string) string {
 		return failed
 	}
 	return fit(parts{
-		head:    heading(c, s, m, problems, note),
+		head:    heading(c, s, m, problems, note) + assistantText(c),
 		profile: section("Who the user is", profileText(c, s)),
 		common:  section("Rules", rules.Common(c.Language)),
 		index:   "\n" + m.Index(c.Language) + sharedKnowledge(shared),
@@ -82,7 +82,7 @@ func Part(c *config.Config, s *config.Space, note string, n int) string {
 	total := 1 + len(chunks) + len(pieces)
 	switch {
 	case n == 1:
-		head := heading(c, s, m, problems, note)
+		head := heading(c, s, m, problems, note) + assistantText(c)
 		if total > 1 {
 			head += fmt.Sprintf("\n(This is part 1 of %d: the index of the space and the user's rules come in the other parts.)\n", total)
 		}
@@ -617,6 +617,35 @@ func NoSpace(c *config.Config, dir string) string {
 		dir, InTheirLanguage(c.Language), strings.Join(where, "; "))
 }
 
+// assistantText is what the session start says about the assistant's name and
+// personality, from the profile's Assistant section; nothing when it has none. The
+// signature line is written by the program, not by the user, so it cannot be left out.
+func assistantText(c *config.Config) string {
+	in, err := brain.LoadProfile(c.Dir)
+	if err != nil || (in.Assistant == "" && in.Personality == "") {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString("\n## Who you are\n\n")
+	if in.Assistant != "" {
+		fmt.Fprintf(&b, "The user calls you %s.", in.Assistant)
+	} else {
+		b.WriteString("The user gave you no name.")
+	}
+	if in.Personality != "" {
+		b.WriteString(" Your personality, in their words:\n\n" + in.Personality + "\n\n")
+	} else {
+		b.WriteString("\n\n")
+	}
+	b.WriteString("This is style only: it never changes the rules, the guard, or being honest about what you have not checked and about your mistakes.")
+	if in.Assistant != "" {
+		fmt.Fprintf(&b, " When you write an email or a message in the user's name, sign it as %s, and under the name always put this line, so whoever reads it knows no person wrote it: %q.",
+			in.Assistant, brain.SignatureLine(c.Language, in.Name))
+	}
+	b.WriteString("\n")
+	return b.String()
+}
+
 // profileText joins the person's profile and the space's own, without their headers.
 func profileText(c *config.Config, s *config.Space) string {
 	var parts []string
@@ -626,7 +655,8 @@ func profileText(c *config.Config, s *config.Space) string {
 			continue
 		}
 		if n, err := memory.Parse(filepath.Base(p), data); err == nil {
-			parts = append(parts, strings.TrimSpace(n.Body))
+			// The assistant's section is said apart, in assistantText.
+			parts = append(parts, strings.TrimSpace(brain.WithoutAssistant(n.Body)))
 		}
 	}
 	return strings.Join(parts, "\n\n")

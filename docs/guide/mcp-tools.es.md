@@ -222,15 +222,21 @@ anterior.
 
 ## `profile_save`
 
-Guarda quién eres y cómo te gusta trabajar. Lo comparten todos los espacios, y cada
-sesión empieza leyéndolo. Sustituye el perfil entero, así que Claude incluye lo que debe
-quedarse.
+Guarda quién eres, cómo te gusta trabajar, y el nombre y la personalidad que le das a
+Claude. Lo comparten todos los espacios, y cada sesión empieza leyéndolo. Claude manda
+solo las partes que cambian: una parte que no se manda conserva lo que tiene, y una
+vacía se borra.
 
-- `name`: cómo quieres que te llamen.
+- `name` (hace falta la primera vez): cómo quieres que te llamen.
 - `about` (opcional): a qué te dedicas y en qué trabajas, en líneas cortas que empiezan
   por `- `.
 - `work_style` (opcional): cómo te gusta trabajar con Claude: idioma, largo de las
   respuestas, cuánto preguntar antes de actuar. Líneas cortas que empiezan por `- `.
+- `assistant_name` (opcional): el nombre que le das a Claude. Firma con él los correos
+  que escribe en tu nombre, siempre seguido de una línea que dice que es una IA (ver
+  [Panel, Perfil](panel.es.md#perfil)).
+- `assistant_personality` (opcional): cómo quieres que sea Claude, con tus palabras.
+  Solo estilo: nunca cambia las reglas, el guardia ni su honestidad.
 
 ## `safety_save`
 

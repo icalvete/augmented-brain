@@ -213,13 +213,19 @@ the reference `ref-repositories`, one line per repository; a new one replaces th
 
 ## `profile_save`
 
-Saves who you are and how you like to work. Every space shares it, and every session
-starts by reading it. It replaces the whole profile, so Claude includes what should stay.
+Saves who you are, how you like to work, and the name and personality you give Claude.
+Every space shares it, and every session starts by reading it. Claude sends only the
+parts that change: a part left out keeps what it has, and an empty one is cleared.
 
-- `name`: what you want to be called.
+- `name` (needed the first time): what you want to be called.
 - `about` (optional): what you do and work on, in short lines starting with `- `.
 - `work_style` (optional): how you like to work with Claude: language, length of
   answers, how much to ask before acting. Short lines starting with `- `.
+- `assistant_name` (optional): the name you give Claude. It signs with it the emails it
+  writes in your name, always followed by a line that says it is an AI (see
+  [Panel, Profile](panel.md#profile)).
+- `assistant_personality` (optional): how you want Claude to be, in your words. Style
+  only: it never changes the rules, the guard or its honesty.
 
 ## `safety_save`
 

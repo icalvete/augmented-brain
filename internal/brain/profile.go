@@ -35,6 +35,10 @@ type ProfileInput struct {
 	Name      string
 	About     string // what they do, what they work on
 	WorkStyle string // how they like to work with the assistant
+	// Assistant and Personality are the name and personality the user gives their
+	// assistant, in the profile's "Assistant" section. Both may be empty.
+	Assistant   string
+	Personality string
 }
 
 // SaveProfile writes the user's profile, keeping the date it was first written.
@@ -46,6 +50,16 @@ func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
 	word := func(key string) string { return i18n.T(b.Language, "profile."+key) }
 	if workStyleIn(in.About) || workStyleIn(in.WorkStyle) {
 		return nil, errors.New(i18n.T(b.Language, "profile.heading", word("work")))
+	}
+	for _, text := range []string{in.About, in.WorkStyle, in.Personality} {
+		if headingIn(text, "profile.assistant") {
+			return nil, errors.New(i18n.T(b.Language, "profile.heading.field", word("assistant")))
+		}
+	}
+	for _, key := range []string{"profile.work", "profile.about"} {
+		if headingIn(in.Personality, key) {
+			return nil, errors.New(i18n.T(b.Language, "profile.heading.field", word(strings.TrimPrefix(key, "profile."))))
+		}
 	}
 	label := i18n.T(b.Language, "profile.name")
 	created := b.today()
@@ -62,6 +76,18 @@ func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
 	body.WriteString("\n## " + word("work") + "\n")
 	if style := strings.TrimSpace(in.WorkStyle); style != "" {
 		body.WriteString(style + "\n")
+	}
+	assistant, personality := strings.TrimSpace(in.Assistant), strings.TrimSpace(in.Personality)
+	if assistant != "" || personality != "" {
+		// Only lines with something in them: an empty "- Name:" line is what marks a
+		// blank profile (ProfileEmpty).
+		body.WriteString("\n## " + word("assistant") + "\n")
+		if assistant != "" {
+			body.WriteString("- " + label + ": " + assistant + "\n")
+		}
+		if personality != "" {
+			body.WriteString(personality + "\n")
+		}
 	}
 	n := &memory.Note{
 		Path: ProfileFile,
@@ -92,13 +118,68 @@ func heading(line string, key string) bool {
 
 // workStyleIn reports whether text has a line that is the work-style heading: saved,
 // it would split the profile in the wrong place.
-func workStyleIn(text string) bool {
+func workStyleIn(text string) bool { return headingIn(text, "profile.work") }
+
+// headingIn reports whether text has a line that is the profile heading key.
+func headingIn(text, key string) bool {
 	for _, l := range strings.Split(text, "\n") {
-		if heading(l, "profile.work") {
+		if heading(l, key) {
 			return true
 		}
 	}
 	return false
+}
+
+// takeSection splits lines into the section under the heading key (without the
+// heading, up to the next "## " heading) and the lines left. found is false when the
+// profile has no such heading.
+func takeSection(lines []string, key string) (section, rest []string, found bool) {
+	for i, l := range lines {
+		if !heading(l, key) {
+			continue
+		}
+		end := len(lines)
+		for j := i + 1; j < len(lines); j++ {
+			if strings.HasPrefix(lines[j], "## ") {
+				end = j
+				break
+			}
+		}
+		return lines[i+1 : end], append(slices.Clip(lines[:i]), lines[end:]...), true
+	}
+	return nil, lines, false
+}
+
+// assistantFrom reads the Assistant section: its first name line is the assistant's
+// name, everything else is the personality.
+func assistantFrom(section []string) (name, personality string) {
+	var rest []string
+	for _, l := range section {
+		if m := profileName.FindStringSubmatch(l); m != nil && name == "" {
+			name = strings.TrimSpace(m[1])
+			continue
+		}
+		rest = append(rest, l)
+	}
+	return name, strings.TrimSpace(strings.Join(rest, "\n"))
+}
+
+// WithoutAssistant is a profile's body without its Assistant section, which the
+// session start says in words of its own (see session.assistantText).
+func WithoutAssistant(body string) string {
+	_, rest, _ := takeSection(strings.Split(body, "\n"), "profile.assistant")
+	return strings.Join(rest, "\n")
+}
+
+// SignatureLine is the line that goes under the assistant's name in every email or
+// message it writes in the user's name, so whoever reads it knows no person wrote it.
+// It names the user by their first name.
+func SignatureLine(lang, userName string) string {
+	first := userName
+	if f := strings.Fields(userName); len(f) > 0 {
+		first = f[0]
+	}
+	return i18n.T(lang, "assistant.signature", first)
 }
 
 // LoadProfile reads the profile in cfgDir back into the parts SaveProfile takes: the
@@ -119,9 +200,10 @@ func LoadProfile(cfgDir string) (ProfileInput, error) {
 	if err != nil {
 		return ProfileInput{}, err
 	}
-	lines := strings.Split(n.Body, "\n")
-	rest := lines
 	var in ProfileInput
+	section, lines, _ := takeSection(strings.Split(n.Body, "\n"), "profile.assistant")
+	in.Assistant, in.Personality = assistantFrom(section)
+	rest := lines
 	for i, l := range lines {
 		if !heading(l, "profile.work") {
 			continue

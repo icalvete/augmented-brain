@@ -239,6 +239,18 @@ func TestProfileSave(t *testing.T) {
 	if brain.ProfileEmpty(cfgDir) {
 		t.Error("a saved profile still counts as blank")
 	}
+	// A part left out keeps what it has; an empty one is cleared.
+	if out, isErr := call(t, cs, "profile_save", map[string]any{"assistant_name": "Argos", "assistant_personality": "- Calm"}); isErr {
+		t.Fatal(out)
+	}
+	if out, isErr := call(t, cs, "profile_save", map[string]any{"work_style": ""}); isErr {
+		t.Fatal(out)
+	}
+	got, err := brain.LoadProfile(cfgDir)
+	want := brain.ProfileInput{Name: "Ana", About: "- Builds the shop's website", Assistant: "Argos", Personality: "- Calm"}
+	if err != nil || got != want {
+		t.Errorf("after partial saves: %+v, %v; want %+v", got, err, want)
+	}
 }
 
 // People: a first name leads to the right person through the index; saving the same

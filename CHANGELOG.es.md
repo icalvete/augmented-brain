@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Un nombre y una personalidad para tu asistente.** La página Perfil del panel tiene
+  una parte nueva, **Tu asistente**, y `profile_save` dos campos nuevos,
+  `assistant_name` y `assistant_personality`. Cada sesión empieza con ellos; cambian cómo
+  habla Claude, nunca las reglas, el guardia ni su honestidad. Con nombre, los correos
+  que Claude escribe en tu nombre van firmados con él y, debajo, una línea que añade el
+  programa y que no se puede quitar, como «asistente de Ana (IA, Claude)». Viven en una
+  sección nueva de `profile.md`; las versiones anteriores la conservan como texto.
+  Además, `profile_save` ya no borra lo que no se le manda: una parte que no se manda
+  conserva lo que tiene, y una vacía se borra.
+
 - **Repositorios que Claude nunca toca, y un guardia que Claude no puede aflojar.** Una
   lista nueva de **repositorios intocables** (`untouchable_repos` en un fichero nuevo,
   `guard.toml`) donde el guardia deniega commit, push y fusionar una pull request, digan

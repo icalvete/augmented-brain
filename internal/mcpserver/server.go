@@ -470,13 +470,27 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		})
 
 	type profileIn struct {
-		Name      string `json:"name" jsonschema:"what the user wants to be called"`
-		About     string `json:"about,omitempty" jsonschema:"what they do and work on, in their words; short lines starting with '- '"`
-		WorkStyle string `json:"work_style,omitempty" jsonschema:"how they like to work with you: language, length of answers, how much to ask before acting; short lines starting with '- '"`
+		Name        *string `json:"name,omitempty" jsonschema:"what the user wants to be called"`
+		About       *string `json:"about,omitempty" jsonschema:"what they do and work on, in their words; short lines starting with '- '"`
+		WorkStyle   *string `json:"work_style,omitempty" jsonschema:"how they like to work with you: language, length of answers, how much to ask before acting; short lines starting with '- '"`
+		Assistant   *string `json:"assistant_name,omitempty" jsonschema:"the name the user gives you, their assistant"`
+		Personality *string `json:"assistant_personality,omitempty" jsonschema:"the personality the user wants you to have, in their words: style only, never above the rules"`
 	}
-	tool(s, locked, "profile_save", "Save who the user is and how they like to work. Every space shares it, and every session starts by reading it. Use it in the first session, and whenever the user asks to change it; it replaces the whole profile, so include what should stay.",
+	tool(s, locked, "profile_save", "Save who the user is, how they like to work, and the name and personality they give you. Every space shares it, and every session starts by reading it. Use it in the first session, and whenever the user asks to change it. Send only the parts that change: a part left out keeps what it has, and an empty one is cleared. The name is needed the first time.",
 		func(b *brain.Brain, in profileIn) (string, error) {
-			n, err := b.SaveProfile(brain.ProfileInput{Name: in.Name, About: in.About, WorkStyle: in.WorkStyle})
+			p, err := brain.LoadProfile(b.ConfigDir)
+			if err != nil {
+				return "", err
+			}
+			for _, f := range []struct {
+				from *string
+				to   *string
+			}{{in.Name, &p.Name}, {in.About, &p.About}, {in.WorkStyle, &p.WorkStyle}, {in.Assistant, &p.Assistant}, {in.Personality, &p.Personality}} {
+				if f.from != nil {
+					*f.to = *f.from
+				}
+			}
+			n, err := b.SaveProfile(p)
 			return render(n, err)
 		})
 

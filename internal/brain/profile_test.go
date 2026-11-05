@@ -78,3 +78,63 @@ func TestLoadProfileBlankAndHandEdited(t *testing.T) {
 		t.Errorf("missing profile = %+v, %v", got, err)
 	}
 }
+
+// The assistant's name and personality live in a section of their own, which loads back
+// as it was saved, in either language; a profile without them gets no such section.
+func TestProfileAssistant(t *testing.T) {
+	for _, lang := range []string{"en", "es"} {
+		b := open(t, lang)
+		in := ProfileInput{Name: "Ana López", WorkStyle: "- Short answers", Assistant: "Argos",
+			Personality: "- Calm and direct\n- Dry humour, now and then"}
+		if _, err := b.SaveProfile(in); err != nil {
+			t.Fatal(err)
+		}
+		got, err := LoadProfile(b.ConfigDir)
+		if err != nil || got != in {
+			t.Errorf("%s: LoadProfile = %+v, %v; want %+v", lang, got, err, in)
+		}
+		if ProfileEmpty(b.ConfigDir) {
+			t.Errorf("%s: a profile with an assistant counts as blank", lang)
+		}
+		data, _ := os.ReadFile(filepath.Join(b.ConfigDir, ProfileFile))
+		if body := WithoutAssistant(string(data)); strings.Contains(body, "Argos") || !strings.Contains(body, "Short answers") {
+			t.Errorf("%s: WithoutAssistant kept the section or lost the rest:\n%s", lang, body)
+		}
+		// Without assistant, no section at all.
+		in.Assistant, in.Personality = "", ""
+		if _, err := b.SaveProfile(in); err != nil {
+			t.Fatal(err)
+		}
+		data, _ = os.ReadFile(filepath.Join(b.ConfigDir, ProfileFile))
+		for _, h := range []string{"## Assistant", "## Asistente"} {
+			if strings.Contains(string(data), h) {
+				t.Errorf("%s: an empty assistant wrote %q:\n%s", lang, h, data)
+			}
+		}
+	}
+}
+
+// A heading the program writes cannot come inside a part, or the profile would split
+// in the wrong place.
+func TestProfileAssistantHeadings(t *testing.T) {
+	b := open(t, "es")
+	for _, bad := range []ProfileInput{
+		{Name: "Ana", About: "## Asistente\n- Nombre: X"},
+		{Name: "Ana", Personality: "## Cómo me gusta trabajar\n- x"},
+		{Name: "Ana", Personality: "## Assistant"},
+	} {
+		if _, err := b.SaveProfile(bad); err == nil {
+			t.Errorf("SaveProfile(%+v) took a heading", bad)
+		}
+	}
+}
+
+// The signature line names the user by their first name, in the user's language.
+func TestSignatureLine(t *testing.T) {
+	if got := SignatureLine("es", "Ana López"); got != "asistente de Ana (IA, Claude)" {
+		t.Errorf("es: %q", got)
+	}
+	if got := SignatureLine("en", "Ana"); got != "Ana's assistant (AI, Claude)" {
+		t.Errorf("en: %q", got)
+	}
+}
