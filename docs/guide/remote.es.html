@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acceso remoto · augmented brain</title>
+<meta name="description" content="Cómo mantener Claude accesible desde otro ordenador o el móvil, también tras reiniciar, con augmented-brain remote: instalar, el paso de confianza, el linger, conectarse desde claude.ai o Claude Desktop y la nota de seguridad.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/remote.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/remote.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/remote.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/remote.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Acceso remoto · augmented brain">
+<meta property="og:description" content="Llega al Claude de este ordenador desde cualquier sitio, incluso tras reiniciar.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/remote.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Acceso remoto · augmented brain">
+<meta name="twitter:description" content="Llega al Claude de este ordenador desde cualquier sitio, incluso tras reiniciar.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="remote.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="remote.es.html" aria-current="page">Acceso remoto</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Acceso remoto</h1>
+  <p>A Claude Code se puede llegar desde otro ordenador o desde el móvil: desde <a href="https://claude.ai/code">claude.ai/code</a> o Claude Desktop eliges una sesión que corre en tu máquina y trabajas en ella como si estuvieras delante. Para eso, un programa pequeño, <code>claude remote-control</code>, tiene que estar funcionando en la máquina.</p>
+  <p><code>augmented-brain remote</code> lo mantiene funcionando por ti. Arranca solo cuando arranca el ordenador, y vuelve a arrancar si se para. Se prepara una vez.</p>
+  <p>Por ahora es para Linux. macOS queda pendiente.</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#una-puerta-por-espacio">Una puerta por espacio</a></li><li><a href="#instálalo">Instálalo</a></li><li><a href="#compruébalo">Compruébalo</a></li><li><a href="#conéctate-desde-otro-ordenador">Conéctate desde otro ordenador</a></li><li><a href="#mantenlo-seguro">Mantenlo seguro</a></li><li><a href="#conviene-saber">Conviene saber</a></li><li><a href="#quitarlo">Quitarlo</a></li><li><a href="#los-ajustes">Los ajustes</a></li></ul></nav>
+  <h2 id="una-puerta-por-espacio">Una puerta por espacio</h2>
+  <p>Cada espacio (trabajo, personal…) tiene su propia puerta, con su propio nombre: <code>&lt;nombre del ordenador&gt;-&lt;espacio&gt;</code>, como <code>mi-portatil-personal</code>. Una sesión abierta por esa puerta empieza en una carpeta que es de ese espacio, así que Claude carga las notas y las reglas de ese espacio, y nada se cruza entre espacios. Por defecto solo tu espacio por defecto tiene puerta. Para abrir otra para trabajo, mira <a href="configuration.es.html">Configuración</a>.</p>
+  <h2 id="instálalo">Instálalo</h2>
+  <pre><code>augmented-brain remote install</code></pre>
+  <p>Crea la carpeta, escribe el servicio y lo arranca. Luego te dice lo que falta. Siempre faltan dos cosas, porque solo puedes hacerlas tú.</p>
+  <h3 id="1-que-claude-confíe-en-la-carpeta">1. Que Claude confíe en la carpeta</h3>
+  <p>Claude se niega a trabajar en una carpeta de la que no le han dicho que se fíe, y cuando arranca solo no hay nadie al teclado para contestar. Así que, una vez por cada carpeta que nombre <code>install</code>, abre Claude ahí y acepta la pregunta:</p>
+  <pre><code>cd ~/.config/augmented-brain/remote/personal &amp;&amp; claude</code></pre>
+  <p>Acepta «confiar en esta carpeta» y cierra Claude (<code>/exit</code>). augmented brain nunca toca por ti los ajustes de Claude. El servicio lo reintenta cada 30 segundos, así que en medio minuto está en marcha.</p>
+  <h3 id="2-activa-el-linger">2. Activa el «linger»</h3>
+  <p>Un servicio de usuario normalmente solo funciona mientras tienes la sesión abierta. Para que esté tras reiniciar, sin que nadie haya entrado, hay que decirle al sistema que conserve tus servicios: se llama <strong>linger</strong> y lo tiene que hacer un administrador. <code>install</code> escribe el comando exacto y no lo lanza:</p>
+  <pre><code>sudo loginctl enable-linger tu-usuario</code></pre>
+  <h2 id="compruébalo">Compruébalo</h2>
+  <pre><code>augmented-brain remote status</code></pre>
+  <p>Para cada espacio dice si el servicio está en marcha, si Claude confía en su carpeta y si el linger está activado, con lo que hacer con cada problema. <code>augmented-brain doctor</code> enseña lo mismo, una línea por espacio.</p>
+  <h2 id="conéctate-desde-otro-ordenador">Conéctate desde otro ordenador</h2>
+  <ol><li>Abre <a href="https://claude.ai/code">claude.ai/code</a> o Claude Desktop, con la misma cuenta de Claude que en la máquina.</li><li>Elige el entorno que se llama <code>&lt;nombre del ordenador&gt;-&lt;espacio&gt;</code>, el nombre que enseña <code>status</code>.</li><li>Empieza una sesión. Empieza las que quieras: cada una arranca en la carpeta de ese espacio.</li></ol>
+  <h2 id="mantenlo-seguro">Mantenlo seguro</h2>
+  <p><strong>Es una puerta permanente a tu ordenador.</strong> Quien entre en tu cuenta de Claude puede trabajar en la máquina por ella.</p>
+  <ul><li>Claude pregunta antes de actuar, como siempre (modo de permisos <code>default</code>), y el guardia sigue vigente: frena los push, root y los secretos, y pregunta antes de producción.</li><li>**No pongas <code>permission_mode</code> en <code>bypassPermissions</code>.** Deja que quien se conecte ejecute lo que quiera sin preguntar, y deja la máquina abierta.</li><li>Protege tu cuenta de Claude: una contraseña fuerte y verificación en dos pasos.</li><li>Quita la puerta cuando no la necesites: <code>augmented-brain remote uninstall</code>.</li></ul>
+  <h2 id="conviene-saber">Conviene saber</h2>
+  <ul><li><strong>Un portátil que se duerme corta la conexión.</strong> La sesión vuelve cuando despierta. El programa no cambia tus ajustes de suspensión.</li><li>Si caduca tu acceso a Claude, el servicio sigue en marcha pero nadie puede conectarse. <code>status</code> y <code>doctor</code> lo dicen; lanza <code>claude</code> una vez e inicia sesión otra vez.</li><li>Las sesiones que empieces desde el móvil son del espacio de su carpeta: la puerta de trabajo abre las notas de trabajo. Para llegar a otro espacio, usa la puerta de ese espacio.</li></ul>
+  <h2 id="quitarlo">Quitarlo</h2>
+  <pre><code>augmented-brain remote uninstall</code></pre>
+  <p>Para y quita los servicios. Las carpetas, y su sitio entre las carpetas de trabajo del espacio, se quedan, y no se borra nada más. Bórralas a mano si quieres.</p>
+  <h2 id="los-ajustes">Los ajustes</h2>
+  <p><code>remote.toml</code>, en la carpeta de configuración: <code>enabled</code>, <code>spaces</code>, <code>name_prefix</code> y <code>permission_mode</code>. Mira <a href="configuration.es.html">Configuración</a>. Los comandos están en <a href="commands.es.html">Comandos</a>.</p>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="connect-services.es.html"><span>← Anterior</span>Conecta tus servicios</a>
+    <a class="next" href="import.es.html"><span>Siguiente →</span>Trae una memoria que ya tienes</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

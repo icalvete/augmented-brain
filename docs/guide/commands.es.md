@@ -136,7 +136,10 @@ algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Re
 - las sesiones de Claude que siguen con una versión anterior después de actualizar;
 - una segunda memoria que Claude Code guarda por su cuenta para tus carpetas;
 - las notas que otros usuarios del ordenador podrían leer;
-- si hay espacio por defecto, y si una recuperación dejó vacías las listas del guardia.
+- si hay espacio por defecto, y si una recuperación dejó vacías las listas del guardia;
+- el acceso remoto, una línea por espacio, cuando lo has puesto con `remote install`: un
+  aviso si su servicio no está en marcha, Claude aún no confía en su carpeta o el linger
+  está apagado.
 
 Acaba con error si algo falla. No tiene opciones. Lo tienes en
 [Si algo falla](troubleshooting.es.md).
@@ -238,6 +241,62 @@ mismo.
 
 El panel en sí, funcionando por detrás. Lo arranca `augmented-brain panel`; nunca lo
 lanzas a mano. Se para solo después de 30 minutos sin usarlo.
+
+## augmented-brain remote
+
+Mantiene Claude accesible desde otro ordenador o desde el móvil, también después de
+reiniciar. Son tres comandos, `install`, `uninstall` y `status`, cada uno con su sección
+más abajo. Solo en Linux por ahora (usa un servicio de usuario de `systemd`); en macOS y
+Windows dicen que aún no está disponible. Sin subcomando, o con otro, `remote` escribe su
+uso. Lo tienes en [Acceso remoto](remote.es.md).
+
+## augmented-brain remote install
+
+Pone el acceso remoto, un servicio por espacio.
+
+```bash
+augmented-brain remote install
+```
+
+Para cada espacio que nombra `remote.toml` (por defecto, el espacio por defecto) crea una
+carpeta dentro de la carpeta de configuración, la hace carpeta de trabajo de ese espacio,
+escribe un servicio de usuario de `systemd` que ejecuta `claude remote-control` ahí y lo
+arranca. Puedes lanzarlo otra vez cuando quieras: solo cambia lo que es distinto.
+
+Luego dice lo que aún falta, y no hace nada de ello por ti:
+
+- Claude tiene que **confiar en cada carpeta**. Escribe `cd <carpeta> && claude` para cada
+  una que aún no es de confianza: lánzalo una vez y acepta la pregunta.
+- El **linger** tiene que estar activado para que los servicios arranquen tras reiniciar
+  sin que nadie haya entrado. Escribe el comando, `sudo loginctl enable-linger <tú>`,
+  para que lo lances tú.
+
+No tiene opciones. Los ajustes están en `remote.toml` (mira [Configuración](configuration.es.md)).
+
+## augmented-brain remote uninstall
+
+Para el acceso remoto y lo quita.
+
+```bash
+augmented-brain remote uninstall
+```
+
+Para y quita los servicios que escribió `remote install`, y pone `enabled = false` en
+`remote.toml`. Las carpetas y sus entradas en `work_folders` se quedan: nunca borra nada
+más. No tiene opciones.
+
+## augmented-brain remote status
+
+Dice cómo está el acceso remoto, y no cambia nada.
+
+```bash
+augmented-brain remote status
+```
+
+Para cada espacio: el nombre de la sesión (el que eliges en Claude Desktop o en
+claude.ai), si el servicio está en marcha y arranca solo, y si Claude confía en su
+carpeta. Luego, si el linger está activado. Debajo de cada problema, `→` dice qué hacer.
+No tiene opciones.
 
 ## augmented-brain update
 

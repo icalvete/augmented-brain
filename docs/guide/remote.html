@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Remote access · augmented brain</title>
+<meta name="description" content="How to keep Claude reachable from another computer or your phone, also after a reboot, with augmented-brain remote: install, the trust step, linger, connecting from claude.ai or Claude Desktop, and the security note.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/remote.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/remote.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/remote.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/remote.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Remote access · augmented brain">
+<meta property="og:description" content="Reach Claude on this computer from anywhere, even after a reboot.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/remote.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Remote access · augmented brain">
+<meta name="twitter:description" content="Reach Claude on this computer from anywhere, even after a reboot.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="index.html">Docs</a>
+    <a href="remote.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Docs">
+<details open id="docnav"><summary>Documentation menu</summary>
+<p class="docnav-group">Get started</p>
+<ul>
+  <li><a href="getting-started.html">Getting started</a></li>
+  <li><a href="install.html">Installing</a></li>
+</ul>
+<p class="docnav-group">Concepts</p>
+<ul>
+  <li><a href="spaces.html">Spaces</a></li>
+  <li><a href="tasks.html">Tasks</a></li>
+  <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="guard.html">The guard</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
+</ul>
+<p class="docnav-group">Daily use</p>
+<ul>
+  <li><a href="phrases.html">What to say to Claude</a></li>
+  <li><a href="panel.html">The panel</a></li>
+  <li><a href="weekly-review.html">The weekly review</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="remote.html" aria-current="page">Remote access</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
+</ul>
+<p class="docnav-group">Reference</p>
+<ul>
+  <li><a href="commands.html">Commands</a></li>
+  <li><a href="mcp-tools.html">MCP tools</a></li>
+  <li><a href="configuration.html">Configuration</a></li>
+  <li><a href="memory-format.html">Memory format</a></li>
+</ul>
+<p class="docnav-group">Help</p>
+<ul>
+  <li><a href="troubleshooting.html">Troubleshooting</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Remote access</h1>
+  <p>Claude Code can be reached from another computer or from your phone: from <a href="https://claude.ai/code">claude.ai/code</a> or Claude Desktop you pick a session that runs on your machine and work in it as if you were sitting there. For that, a small program, <code>claude remote-control</code>, has to be running on the machine.</p>
+  <p><code>augmented-brain remote</code> keeps it running for you. It starts by itself when the computer starts, and starts again if it stops. You set it up once.</p>
+  <p>This is for Linux for now. macOS is still to do.</p>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#one-door-per-space">One door per space</a></li><li><a href="#install-it">Install it</a></li><li><a href="#check-it">Check it</a></li><li><a href="#connect-from-another-computer">Connect from another computer</a></li><li><a href="#keep-it-safe">Keep it safe</a></li><li><a href="#good-to-know">Good to know</a></li><li><a href="#take-it-away">Take it away</a></li><li><a href="#the-settings">The settings</a></li></ul></nav>
+  <h2 id="one-door-per-space">One door per space</h2>
+  <p>Each space (work, personal…) gets its own door, with its own name: <code>&lt;computer name&gt;-&lt;space&gt;</code>, such as <code>my-laptop-personal</code>. A session opened through that door starts in a folder that belongs to that space, so Claude loads that space's notes and rules, and nothing crosses between spaces. By default only your default space has a door. To open one for work too, see <a href="configuration.html">Configuration</a>.</p>
+  <h2 id="install-it">Install it</h2>
+  <pre><code>augmented-brain remote install</code></pre>
+  <p>It creates the folder, writes the service, and starts it. It then tells you what is missing. Two things always are, because only you can do them.</p>
+  <h3 id="1-let-claude-trust-the-folder">1. Let Claude trust the folder</h3>
+  <p>Claude refuses to run in a folder it has not been told to trust, and there is no one at the keyboard to answer when it starts by itself. So once, for each folder <code>install</code> names, open Claude there and accept the question:</p>
+  <pre><code>cd ~/.config/augmented-brain/remote/personal &amp;&amp; claude</code></pre>
+  <p>Accept “trust this folder”, then close Claude (<code>/exit</code>). augmented brain never edits Claude's own settings for you. The service tries again every 30 seconds, so within half a minute it is running.</p>
+  <h3 id="2-turn-on-linger">2. Turn on “linger”</h3>
+  <p>A user service normally runs only while you are logged in. To have it after a reboot with nobody logged in, the system must be told to keep your services: that is called <strong>linger</strong>, and it needs an administrator. <code>install</code> prints the exact command and does not run it:</p>
+  <pre><code>sudo loginctl enable-linger your-user-name</code></pre>
+  <h2 id="check-it">Check it</h2>
+  <pre><code>augmented-brain remote status</code></pre>
+  <p>For each space it says whether the service is running, whether Claude trusts its folder, and whether linger is on, with what to do about each problem. <code>augmented-brain doctor</code> shows the same, one line per space.</p>
+  <h2 id="connect-from-another-computer">Connect from another computer</h2>
+  <ol><li>Open <a href="https://claude.ai/code">claude.ai/code</a> or Claude Desktop, signed in to the same Claude account as on the machine.</li><li>Choose the environment named <code>&lt;computer name&gt;-&lt;space&gt;</code>, the name <code>status</code> shows.</li><li>Start a session. Start as many as you like: each one begins in that space's folder.</li></ol>
+  <h2 id="keep-it-safe">Keep it safe</h2>
+  <p><strong>This is a permanent door to your computer.</strong> Anyone who gets into your Claude account can work on the machine through it.</p>
+  <ul><li>Claude asks before it acts, as always (permission mode <code>default</code>), and the guard stays in force: it stops pushes, root and secrets, and asks before production.</li><li>**Do not set <code>permission_mode</code> to <code>bypassPermissions</code>.** It lets whoever connects run anything with no question, and leaves the machine open.</li><li>Protect your Claude account: a strong password and two-step verification.</li><li>Remove the door whenever you do not need it: <code>augmented-brain remote uninstall</code>.</li></ul>
+  <h2 id="good-to-know">Good to know</h2>
+  <ul><li><strong>A laptop that sleeps drops the connection.</strong> The session is back when it wakes up. The program does not change your sleep settings.</li><li>If your Claude login expires, the service keeps running but nobody can connect. <code>status</code> and <code>doctor</code> say so; run <code>claude</code> once and sign in again.</li><li>Sessions you start from the phone belong to the space of their folder: the work door opens work notes. To reach another space, use that space's door.</li></ul>
+  <h2 id="take-it-away">Take it away</h2>
+  <pre><code>augmented-brain remote uninstall</code></pre>
+  <p>It stops and removes the services. The folders, and their place in the space's work folders, stay, and nothing else is deleted. Remove them by hand if you want.</p>
+  <h2 id="the-settings">The settings</h2>
+  <p><code>remote.toml</code>, in the configuration folder: <code>enabled</code>, <code>spaces</code>, <code>name_prefix</code> and <code>permission_mode</code>. See <a href="configuration.html">Configuration</a>. The commands are in <a href="commands.html">Commands</a>.</p>
+  <nav class="pager" aria-label="Previous / Next">
+    <a class="prev" href="connect-services.html"><span>← Previous</span>Connect your services</a>
+    <a class="next" href="import.html"><span>Next →</span>Bring in a memory you already have</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

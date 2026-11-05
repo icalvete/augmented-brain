@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Comandos · augmented brain</title>
-<meta name="description" content="Todos los comandos de augmented brain, con todas sus opciones: init, space, check, doctor, import, backup, restore, panel, update, uninstall, mcp, hook, version y help.">
+<meta name="description" content="Todos los comandos de augmented brain, con todas sus opciones: init, space, check, doctor, import, backup, restore, panel, remote, update, uninstall, mcp, hook, version y help.">
 <link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/commands.es.html">
 <link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/commands.html">
 <link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/commands.es.html">
@@ -66,6 +66,7 @@
   <li><a href="weekly-review.es.html">La revisión semanal</a></li>
   <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
   <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="remote.es.html">Acceso remoto</a></li>
   <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
 </ul>
 <p class="docnav-group">Referencia</p>
@@ -92,7 +93,7 @@ augmented-brain check</code></pre>
   <p>Las opciones van antes o después del resto de argumentos, con uno o dos guiones (<code>--all</code> o <code>-all</code>). Si un comando recibe un argumento que no admite, lo dice y no hace nada.</p>
   <p>Hay tres comandos que lanza Claude Code, no tú: <code>mcp</code>, <code>hook</code> y <code>panel serve</code>. Están aquí para que sepas qué son.</p>
   <p>Dentro de Claude Code hay un comando con barra: <code>/brain:panel</code> abre el panel, igual que <code>augmented-brain panel</code>.</p>
-  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#augmented-brain-init">augmented-brain init</a></li><li><a href="#augmented-brain-space">augmented-brain space</a></li><li><a href="#augmented-brain-space-add">augmented-brain space add</a></li><li><a href="#augmented-brain-check">augmented-brain check</a></li><li><a href="#augmented-brain-doctor">augmented-brain doctor</a></li><li><a href="#augmented-brain-import">augmented-brain import</a></li><li><a href="#augmented-brain-backup">augmented-brain backup</a></li><li><a href="#augmented-brain-backup-setup">augmented-brain backup setup</a></li><li><a href="#augmented-brain-restore">augmented-brain restore</a></li><li><a href="#augmented-brain-panel">augmented-brain panel</a></li><li><a href="#augmented-brain-panel-stop">augmented-brain panel stop</a></li><li><a href="#augmented-brain-panel-serve">augmented-brain panel serve</a></li><li><a href="#augmented-brain-update">augmented-brain update</a></li><li><a href="#augmented-brain-uninstall">augmented-brain uninstall</a></li><li><a href="#augmented-brain-mcp">augmented-brain mcp</a></li><li><a href="#augmented-brain-hook">augmented-brain hook</a></li><li><a href="#augmented-brain-version">augmented-brain version</a></li><li><a href="#augmented-brain-help">augmented-brain help</a></li></ul></nav>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#augmented-brain-init">augmented-brain init</a></li><li><a href="#augmented-brain-space">augmented-brain space</a></li><li><a href="#augmented-brain-space-add">augmented-brain space add</a></li><li><a href="#augmented-brain-check">augmented-brain check</a></li><li><a href="#augmented-brain-doctor">augmented-brain doctor</a></li><li><a href="#augmented-brain-import">augmented-brain import</a></li><li><a href="#augmented-brain-backup">augmented-brain backup</a></li><li><a href="#augmented-brain-backup-setup">augmented-brain backup setup</a></li><li><a href="#augmented-brain-restore">augmented-brain restore</a></li><li><a href="#augmented-brain-panel">augmented-brain panel</a></li><li><a href="#augmented-brain-panel-stop">augmented-brain panel stop</a></li><li><a href="#augmented-brain-panel-serve">augmented-brain panel serve</a></li><li><a href="#augmented-brain-remote">augmented-brain remote</a></li><li><a href="#augmented-brain-remote-install">augmented-brain remote install</a></li><li><a href="#augmented-brain-remote-uninstall">augmented-brain remote uninstall</a></li><li><a href="#augmented-brain-remote-status">augmented-brain remote status</a></li><li><a href="#augmented-brain-update">augmented-brain update</a></li><li><a href="#augmented-brain-uninstall">augmented-brain uninstall</a></li><li><a href="#augmented-brain-mcp">augmented-brain mcp</a></li><li><a href="#augmented-brain-hook">augmented-brain hook</a></li><li><a href="#augmented-brain-version">augmented-brain version</a></li><li><a href="#augmented-brain-help">augmented-brain help</a></li></ul></nav>
   <h2 id="augmented-brain-init">augmented-brain init</h2>
   <p>Prepara todo: los espacios, la configuración y el plugin de Claude Code. El instalador lo lanza por ti la primera vez.</p>
   <pre><code>augmented-brain init</code></pre>
@@ -123,7 +124,7 @@ augmented-brain check</code></pre>
   <p>Dice qué falta y cómo arreglarlo.</p>
   <pre><code>augmented-brain doctor</code></pre>
   <p>Cada línea empieza con una marca: <code>✓</code> bien, <code>·</code> para que lo sepas, <code>!</code> un aviso, <code>✗</code> algo que falla. Debajo de una línea que pide arreglo, <code>→</code> dice qué hacer. Revisa:</p>
-  <ul><li>la configuración, el perfil y en qué espacio está esta carpeta;</li><li>la carpeta de notas de cada espacio, sus notas y su índice;</li><li>Claude Code, git y el plugin;</li><li>el guardia, de verdad, con un comando que tiene que parar;</li><li>las listas del guardia, las excepciones de root en <code>root_ask</code> y las que ya han terminado;</li><li>las sesiones de Claude que siguen con una versión anterior después de actualizar;</li><li>una segunda memoria que Claude Code guarda por su cuenta para tus carpetas;</li><li>las notas que otros usuarios del ordenador podrían leer;</li><li>si hay espacio por defecto, y si una recuperación dejó vacías las listas del guardia.</li></ul>
+  <ul><li>la configuración, el perfil y en qué espacio está esta carpeta;</li><li>la carpeta de notas de cada espacio, sus notas y su índice;</li><li>Claude Code, git y el plugin;</li><li>el guardia, de verdad, con un comando que tiene que parar;</li><li>las listas del guardia, las excepciones de root en <code>root_ask</code> y las que ya han terminado;</li><li>las sesiones de Claude que siguen con una versión anterior después de actualizar;</li><li>una segunda memoria que Claude Code guarda por su cuenta para tus carpetas;</li><li>las notas que otros usuarios del ordenador podrían leer;</li><li>si hay espacio por defecto, y si una recuperación dejó vacías las listas del guardia;</li><li>el acceso remoto, una línea por espacio, cuando lo has puesto con <code>remote install</code>: un aviso si su servicio no está en marcha, Claude aún no confía en su carpeta o el linger está apagado.</li></ul>
   <p>Acaba con error si algo falla. No tiene opciones. Lo tienes en <a href="troubleshooting.es.html">Si algo falla</a>.</p>
   <h2 id="augmented-brain-import">augmented-brain import</h2>
   <p>Trae una memoria que Claude Code ya escribió. Sin <code>--apply</code>, solo enseña lo que haría.</p>
@@ -156,6 +157,23 @@ augmented-brain check</code></pre>
   <p>Dice si había un panel en marcha. El enlace del pie de cada página del panel hace lo mismo.</p>
   <h2 id="augmented-brain-panel-serve">augmented-brain panel serve</h2>
   <p>El panel en sí, funcionando por detrás. Lo arranca <code>augmented-brain panel</code>; nunca lo lanzas a mano. Se para solo después de 30 minutos sin usarlo.</p>
+  <h2 id="augmented-brain-remote">augmented-brain remote</h2>
+  <p>Mantiene Claude accesible desde otro ordenador o desde el móvil, también después de reiniciar. Son tres comandos, <code>install</code>, <code>uninstall</code> y <code>status</code>, cada uno con su sección más abajo. Solo en Linux por ahora (usa un servicio de usuario de <code>systemd</code>); en macOS y Windows dicen que aún no está disponible. Sin subcomando, o con otro, <code>remote</code> escribe su uso. Lo tienes en <a href="remote.es.html">Acceso remoto</a>.</p>
+  <h2 id="augmented-brain-remote-install">augmented-brain remote install</h2>
+  <p>Pone el acceso remoto, un servicio por espacio.</p>
+  <pre><code>augmented-brain remote install</code></pre>
+  <p>Para cada espacio que nombra <code>remote.toml</code> (por defecto, el espacio por defecto) crea una carpeta dentro de la carpeta de configuración, la hace carpeta de trabajo de ese espacio, escribe un servicio de usuario de <code>systemd</code> que ejecuta <code>claude remote-control</code> ahí y lo arranca. Puedes lanzarlo otra vez cuando quieras: solo cambia lo que es distinto.</p>
+  <p>Luego dice lo que aún falta, y no hace nada de ello por ti:</p>
+  <ul><li>Claude tiene que <strong>confiar en cada carpeta</strong>. Escribe <code>cd &lt;carpeta&gt; &amp;&amp; claude</code> para cada una que aún no es de confianza: lánzalo una vez y acepta la pregunta.</li><li>El <strong>linger</strong> tiene que estar activado para que los servicios arranquen tras reiniciar sin que nadie haya entrado. Escribe el comando, <code>sudo loginctl enable-linger &lt;tú&gt;</code>, para que lo lances tú.</li></ul>
+  <p>No tiene opciones. Los ajustes están en <code>remote.toml</code> (mira <a href="configuration.es.html">Configuración</a>).</p>
+  <h2 id="augmented-brain-remote-uninstall">augmented-brain remote uninstall</h2>
+  <p>Para el acceso remoto y lo quita.</p>
+  <pre><code>augmented-brain remote uninstall</code></pre>
+  <p>Para y quita los servicios que escribió <code>remote install</code>, y pone <code>enabled = false</code> en <code>remote.toml</code>. Las carpetas y sus entradas en <code>work_folders</code> se quedan: nunca borra nada más. No tiene opciones.</p>
+  <h2 id="augmented-brain-remote-status">augmented-brain remote status</h2>
+  <p>Dice cómo está el acceso remoto, y no cambia nada.</p>
+  <pre><code>augmented-brain remote status</code></pre>
+  <p>Para cada espacio: el nombre de la sesión (el que eliges en Claude Desktop o en claude.ai), si el servicio está en marcha y arranca solo, y si Claude confía en su carpeta. Luego, si el linger está activado. Debajo de cada problema, <code>→</code> dice qué hacer. No tiene opciones.</p>
   <h2 id="augmented-brain-update">augmented-brain update</h2>
   <p>Actualiza augmented brain y su plugin de Claude Code.</p>
   <pre><code>augmented-brain update</code></pre>

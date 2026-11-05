@@ -24,6 +24,16 @@
 - The landing pages show the panel: a picture of its Today page, what it is for, and a
   link to its guide page, with a Panel link in the top menu.
 - The panel says "1 aparcada" in Spanish, in the singular, instead of "1 aparcadas".
+- **Remote access: Claude reachable from another computer, also after a reboot.**
+  `augmented-brain remote install` sets up a service per space that keeps
+  `claude remote-control` running, so you can connect to this machine from claude.ai/code
+  or Claude Desktop (choose the environment `<computer name>-<space>`). Each session starts
+  in a folder of its space, so its notes and rules are that space's. `remote status` and
+  `doctor` show whether it runs, whether Claude trusts its folder, and whether "linger"
+  is on; `remote uninstall` takes it away and deletes nothing else. Claude must trust each
+  folder (open it once with `claude`) and linger needs one command as administrator:
+  `install` prints both, it does not run them. Settings in the new `remote.toml`. Linux
+  only for now. See Remote access.
 
 ## 0.8.0-alpha
 

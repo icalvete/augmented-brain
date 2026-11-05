@@ -131,7 +131,9 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
 - Claude sessions still running an older version after an update;
 - a second memory that Claude Code keeps of its own for your folders;
 - notes that other users of the computer could read;
-- whether there is a default space, and whether a restore left the guard's lists empty.
+- whether there is a default space, and whether a restore left the guard's lists empty;
+- remote access, one line per space, when you set it up with `remote install`: a warning
+  when its service is not running, Claude does not trust its folder yet, or linger is off.
 
 It ends with an error when something fails. It takes no options. See
 [Troubleshooting](troubleshooting.md).
@@ -231,6 +233,60 @@ same.
 
 The panel itself, running in the background. `augmented-brain panel` starts it; you never
 run it by hand. It stops on its own after 30 minutes without use.
+
+## augmented-brain remote
+
+Keeps Claude reachable from another computer or your phone, also after a reboot. It is
+three commands, `install`, `uninstall` and `status`, each with its own section below.
+Linux only for now (it uses a `systemd` user service); on macOS and Windows they say it
+is not available yet. Without a subcommand, or with another, `remote` prints its usage.
+See [Remote access](remote.md).
+
+## augmented-brain remote install
+
+Sets remote access up, one service per space.
+
+```bash
+augmented-brain remote install
+```
+
+For each space named in `remote.toml` (by default, the default space) it creates a
+folder inside the configuration folder, makes it a work folder of that space, writes a
+`systemd` user service that runs `claude remote-control` there, and starts it. You can
+run it again at any time: it changes only what is different.
+
+It then says what is still missing, and does none of it for you:
+
+- Claude must **trust each folder**. It prints `cd <folder> && claude` for each one that
+  is not trusted yet: run it once and accept the question.
+- **Linger** must be on for the services to start after a reboot with nobody logged in.
+  It prints the command, `sudo loginctl enable-linger <you>`, for you to run.
+
+It takes no options. The settings are in `remote.toml` (see [Configuration](configuration.md)).
+
+## augmented-brain remote uninstall
+
+Stops remote access and removes it.
+
+```bash
+augmented-brain remote uninstall
+```
+
+It stops and removes the services `remote install` wrote, and sets `enabled = false` in
+`remote.toml`. The folders and their entries in `work_folders` stay: it never deletes
+anything else. It takes no options.
+
+## augmented-brain remote status
+
+Says how remote access stands, and changes nothing.
+
+```bash
+augmented-brain remote status
+```
+
+For each space: the session's name (what you pick in Claude Desktop or claude.ai), whether
+the service is running and starts by itself, and whether Claude trusts its folder. Then
+whether linger is on. Under each problem, `→` says what to do. It takes no options.
 
 ## augmented-brain update
 

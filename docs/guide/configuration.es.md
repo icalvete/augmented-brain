@@ -131,6 +131,38 @@ fichero aparte porque las versiones anteriores a la 0.6.0 rechazan un ajuste de
 `config.toml` que no conocen. La 0.6.0 guardaba la lista en `config.toml` como `secrets`;
 `check` y el inicio de sesión la pasan aquí.
 
+## `remote.toml`
+
+Junto a `config.toml`, `remote.toml` guarda los ajustes del [acceso remoto](remote.es.md),
+que mantiene Claude accesible desde otro ordenador. Lo crea `augmented-brain remote
+install`. Es un fichero aparte porque las versiones anteriores a esta rechazan un ajuste
+de `config.toml` que no conocen, y tienen que seguir leyendo tu configuración.
+
+```toml
+enabled = true
+spaces = ["personal", "trabajo"]
+name_prefix = "mi-portatil"
+permission_mode = "default"
+```
+
+Todos son opcionales:
+
+- `enabled`: si el acceso remoto está puesto. `remote install` escribe `true` y `remote
+  uninstall` escribe `false`. Solo cuando es `true` lo revisa `doctor`.
+- `spaces`: los espacios que tienen una sesión, cada uno en un servicio propio. Por
+  defecto, el `default_space`.
+- `name_prefix`: las sesiones se llaman `<name_prefix>-<espacio>`, como
+  `mi-portatil-personal`. Una palabra sencilla: letras, cifras, punto, guion y guion
+  bajo. Por defecto, el nombre del ordenador.
+- `permission_mode`: cuánto puede hacer Claude sin preguntar. Uno de `default`,
+  `acceptEdits`, `plan`, `auto`, `dontAsk` y `bypassPermissions`. Por defecto `default`,
+  donde Claude pregunta como siempre y el guardia sigue vigente. **No uses
+  `bypassPermissions`**: deja que quien se conecte ejecute lo que quiera, sin preguntas, y
+  deja el ordenador abierto.
+
+Vuelve a lanzar `augmented-brain remote install` después de cambiarlo, para que los
+servicios lo recojan.
+
 ## Otros ficheros de la carpeta
 
 - `profile.md`: tu perfil, para todos los espacios.
@@ -142,6 +174,8 @@ fichero aparte porque las versiones anteriores a la 0.6.0 rechazan un ajuste de
   cambiara de formato.
 - `panel.json` y `panel.lock`: dónde escucha el panel mientras está en marcha, y su
   bloqueo.
+- `remote/<espacio>/`: la carpeta donde arranca el servicio de acceso remoto de un espacio.
+  Es carpeta de trabajo de ese espacio.
 - `review-<espacio>.draft`: una revisión semanal empezada en el panel y aún sin
   terminar.
 

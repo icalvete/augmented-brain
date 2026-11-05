@@ -125,6 +125,36 @@ panel's Secrets page lists it. A value is refused. It is a file of its own becau
 versions before 0.6.0 refuse a setting of `config.toml` they do not know. 0.6.0 kept the
 list in `config.toml` as `secrets`; `check` and the session start move it here.
 
+## `remote.toml`
+
+Next to `config.toml`, `remote.toml` holds the settings of [remote access](remote.md),
+which keeps Claude reachable from another computer. `augmented-brain remote install`
+creates it. It is a file of its own because versions before this one refuse a setting of
+`config.toml` they do not know, and they must keep reading your configuration.
+
+```toml
+enabled = true
+spaces = ["personal", "work"]
+name_prefix = "my-laptop"
+permission_mode = "default"
+```
+
+All are optional:
+
+- `enabled`: whether remote access is set up. `remote install` writes `true` and
+  `remote uninstall` writes `false`. Only when it is `true` does `doctor` check it.
+- `spaces`: the spaces that get a session, each in a service of its own. Default: the
+  `default_space`.
+- `name_prefix`: sessions are called `<name_prefix>-<space>`, such as `my-laptop-personal`.
+  One plain word: letters, digits, dot, dash and underscore. Default: the computer's name.
+- `permission_mode`: how much Claude may do without asking. One of `default`,
+  `acceptEdits`, `plan`, `auto`, `dontAsk` and `bypassPermissions`. Default: `default`,
+  where Claude asks as usual and the guard stays in force. **Do not use
+  `bypassPermissions`**: it lets whoever connects run anything, with no questions, and
+  leaves the computer open.
+
+Run `augmented-brain remote install` again after changing it, so the services pick it up.
+
 ## Other files in the folder
 
 - `profile.md`: your profile, for every space.
@@ -132,6 +162,8 @@ list in `config.toml` as `secrets`; `check` and the session start move it here.
 - `state/`: what this computer knows of each space's sessions. Never backed up.
 - `migrations/`: a full copy of notes before a new version moved them.
 - `panel.json` and `panel.lock`: where the panel listens while it runs, and its lock.
+- `remote/<space>/`: the folder where the remote access service of a space starts. It is a
+  work folder of that space.
 - `review-<space>.draft`: a weekly review started in the panel and not finished yet.
 
 ## Environment variables
