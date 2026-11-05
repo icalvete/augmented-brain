@@ -14,6 +14,16 @@
 - Las páginas de inicio enseñan el panel: una imagen de su página Hoy, para qué sirve y
   un enlace a su guía, con un enlace Panel en el menú de arriba.
 - El panel dice «1 aparcada» en español, en singular, en vez de «1 aparcadas».
+- **Acceso remoto: Claude accesible desde otro ordenador, también tras reiniciar.**
+  `augmented-brain remote install` prepara un servicio por espacio que mantiene en marcha
+  `claude remote-control`, para que puedas conectarte a esta máquina desde claude.ai/code o
+  Claude Desktop (elige el entorno `<nombre del ordenador>-<espacio>`). Cada sesión empieza
+  en una carpeta de su espacio, así que sus notas y reglas son las de ese espacio. `remote
+  status` y `doctor` dicen si funciona, si Claude confía en su carpeta y si el «linger»
+  está activado; `remote uninstall` lo quita y no borra nada más. Claude tiene que confiar
+  en cada carpeta (ábrela una vez con `claude`) y el linger necesita un comando como
+  administrador: `install` escribe los dos, no los lanza. Los ajustes, en el nuevo
+  `remote.toml`. Solo en Linux por ahora. Mira Acceso remoto.
 
 ## 0.8.0-alpha
 

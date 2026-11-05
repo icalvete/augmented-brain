@@ -21,6 +21,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
@@ -57,6 +58,8 @@ type Env struct {
 	Hook func(input []byte) ([]byte, error)
 	// ClaudeDir is Claude Code's folder (settings, projects); "" means its usual one.
 	ClaudeDir string
+	// Remote is the system remote access is read from; nil means the real one.
+	Remote *remote.System
 }
 
 // Run returns every check, in the order they are shown. Later checks are skipped when
@@ -132,6 +135,7 @@ func Run(e Env) []Check {
 	for _, name := range c.SpaceNames() {
 		out = append(out, space(c, c.Spaces[name])...)
 	}
+	out = append(out, remoteChecks(e, c)...)
 	out = append(out, autoMemory(e, c)...)
 	if old := state.OldServers(c.Dir, version.Version); len(old) > 0 {
 		add(Warning, i18n.T(l, "doctor.oldservers", len(old), version.Version), i18n.T(l, "doctor.oldservers.fix"))
@@ -346,4 +350,41 @@ func autoMemory(e Env, c *config.Config) []Check {
 	}
 	return []Check{{Warning, i18n.T(c.Language, "doctor.automemory", strings.Join(found, ", ")),
 		i18n.T(c.Language, "doctor.automemory.fix", filepath.Join(dir, "settings.json"))}}
+}
+
+// remoteChecks is a line per space when remote access is set up (`remote install`): a
+// warning when its service is not running, Claude does not trust its folder, or linger
+// is off. Nothing when it is not set up, or on a system that has no remote access yet.
+func remoteChecks(e Env, c *config.Config) []Check {
+	l := c.Language
+	sys := e.Remote
+	if sys == nil {
+		s, err := remote.NewSystem()
+		if err != nil {
+			return nil
+		}
+		sys = &s
+	}
+	host, _ := sys.Hostname()
+	set, err := remote.LoadSettings(c, host)
+	if err != nil {
+		return []Check{{Warning, i18n.T(l, "remote.doctor.bad", err), i18n.T(l, "remote.doctor.bad.fix")}}
+	}
+	if !set.Enabled {
+		return nil
+	}
+	st, err := sys.Status(c, set)
+	if err != nil {
+		return nil
+	}
+	var out []Check
+	for _, x := range st.Spaces {
+		what, fix, ok := sys.DoctorLine(l, x, st.Linger)
+		status := OK
+		if !ok {
+			status = Warning
+		}
+		out = append(out, Check{status, what, fix})
+	}
+	return out
 }

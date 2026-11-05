@@ -45,6 +45,11 @@ var commands = []command{
 	{name: "panel", run: withoutIn(cmdPanel), flags: func() []string { return []string{panelNoBrowser} }},
 	{name: "panel stop"},
 	{name: "panel serve", hidden: true}, // the detached server `panel` starts
+	// remote is hidden: its three subcommands are the ones the usage text lists.
+	{name: "remote", hidden: true, run: withoutIn(cmdRemote)},
+	{name: "remote install"},
+	{name: "remote uninstall"},
+	{name: "remote status"},
 	{name: "update", run: withoutIn(cmdUpdate), flags: func() []string { fs, _ := updateFlags(io.Discard); return flagNames(fs) }},
 	{name: "uninstall", run: cmdUninstall, flags: func() []string { fs, _, _, _ := uninstallFlags(io.Discard); return flagNames(fs) }},
 	{name: "mcp", run: func(_ []string, _ io.Reader, _, errOut io.Writer) int { return cmdMCP(errOut) }},
