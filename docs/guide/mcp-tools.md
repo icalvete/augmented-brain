@@ -28,7 +28,7 @@ A few things hold for every tool:
 - **Inbox and the weekly review**: [`capture`](#capture),
   [`weekly_review`](#weekly_review), [`review_done`](#review_done).
 - **Notes that last**: [`area_new`](#area_new), [`knowledge_new`](#knowledge_new),
-  [`rule_new`](#rule_new), [`person_save`](#person_save),
+  [`rule_new`](#rule_new), [`note_retire`](#note_retire), [`person_save`](#person_save),
   [`repo_describe`](#repo_describe).
 - **You and this machine**: [`profile_save`](#profile_save),
   [`safety_save`](#safety_save), [`secret_name_save`](#secret_name_save),
@@ -164,8 +164,12 @@ Creates an area: a responsibility with no end date that groups tasks and knowled
 ## `knowledge_new`
 
 Saves a reference or a lesson worth keeping beyond one task: in this space, or shared by
-every space.
+every space. A title that already exists creates nothing: Claude is told its id, to change
+that one or choose another title. Nothing is ever saved twice without anyone knowing.
 
+- `id` (optional): to change a reference or lesson that exists. What is sent replaces
+  what it had, what is left out stays, and the version it replaces is kept in
+  `archive/`.
 - `kind`: `reference` (how something works) or `lesson` (what was learned).
 - `title`: for a lesson, a title that already states the conclusion.
 - `summary` (optional): one line.
@@ -175,12 +179,27 @@ every space.
 
 ## `rule_new`
 
-Saves a rule you give on how to work. Every session loads it.
+Saves a rule you give on how to work. Every session loads it. A title that already exists
+creates nothing: Claude is told its id.
 
+- `id` (optional): to change a rule that exists. What is sent replaces what it had, what
+  is left out stays, and the version it replaces is kept in `archive/`.
 - `title`: the rule in a few words.
 - `summary` (optional): one line that says what to do.
 - `body`: what to do, and why, in Markdown.
 - `shared` (optional): `true` when it applies in every space, not only this one.
+
+## `note_retire`
+
+Retires a rule, reference or lesson that no longer holds, without deleting it. It moves
+to `archive/`, which is never loaded, so a retired rule stops reaching the session start.
+A line at its end says when, why and what replaces it. For a duplicate or an old
+version; Claude asks you first.
+
+- `id`: the rule, reference or lesson.
+- `reason`: why, in a few words. It stays with the note.
+- `replaced_by` (optional): the id of the note that replaces it.
+- `shared` (optional): `true` when the note is in the shared layer.
 
 ## `person_save`
 

@@ -10,6 +10,14 @@
   remove, such as "Ana's assistant (AI, Claude)". They live in a new section of
   `profile.md`; earlier versions keep it as text. Also, `profile_save` no longer wipes
   what it is not sent: a part left out keeps what it has, and an empty one is cleared.
+- **Rules and knowledge can be changed and retired, and are never duplicated without
+  anyone knowing.** Saving a rule, reference, lesson or area with a title that already
+  exists used to create a second copy ("-2"), and both loaded; now nothing is created,
+  and Claude is told the id. `rule_new` and `knowledge_new` take an `id` to change one
+  in place; the version it replaces is kept in `archive/`. A new tool, `note_retire`,
+  moves a rule, reference or lesson to `archive/` with the reason and what replaces it:
+  it stays, but a retired rule no longer loads. No new field in the notes, so earlier
+  versions read them as before.
 
 - **Repositories Claude never touches, and a guard Claude cannot loosen.** A new list of
   **untouchable repositories** (`untouchable_repos` in a new file, `guard.toml`) where the

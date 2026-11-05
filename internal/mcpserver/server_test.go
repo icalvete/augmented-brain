@@ -97,7 +97,7 @@ func TestTools(t *testing.T) {
 		names = append(names, tl.Name)
 	}
 	sort.Strings(names)
-	want := "area_new backup_setup capture knowledge_new pending person_save profile_save repo_describe review_done rule_new safety_save secret_name_save session_recover task_close task_get task_journal task_new task_park task_step task_update weekly_review where_am_i"
+	want := "area_new backup_setup capture knowledge_new note_retire pending person_save profile_save repo_describe review_done rule_new safety_save secret_name_save session_recover task_close task_get task_journal task_new task_park task_step task_update weekly_review where_am_i"
 	if got := strings.Join(names, " "); got != want {
 		t.Errorf("tools = %s", got)
 	}
@@ -553,5 +553,26 @@ func TestPersonSaveAsksForSpaces(t *testing.T) {
 	}
 	if out, isErr := call(t, cs, "person_save", map[string]any{"name": "Lucia Prado", "spaces": []string{"mars"}}); !isErr || !strings.Contains(out, "casa, work") {
 		t.Errorf("unknown space: %q %v", out, isErr)
+	}
+}
+
+// rule_new with a title that exists creates nothing and says the id; with the id it
+// changes the rule; note_retire takes it out of the memory.
+func TestRuleChangeAndRetire(t *testing.T) {
+	cs := connect(t, space(t))
+	if out, isErr := call(t, cs, "rule_new", map[string]any{"title": "Short answers", "body": "One idea each."}); isErr {
+		t.Fatal(out)
+	}
+	if out, isErr := call(t, cs, "rule_new", map[string]any{"title": "Short answers", "body": "Another."}); !isErr || !strings.Contains(out, "rule-short-answers") {
+		t.Errorf("same title: %v %s", isErr, out)
+	}
+	if out, isErr := call(t, cs, "rule_new", map[string]any{"id": "rule-short-answers", "title": "Short answers", "body": "One idea each, no padding."}); isErr {
+		t.Fatal(out)
+	}
+	if out, isErr := call(t, cs, "note_retire", map[string]any{"id": "rule-short-answers", "reason": "the profile says it"}); isErr || !strings.Contains(out, "archive") {
+		t.Errorf("note_retire: %v %s", isErr, out)
+	}
+	if out, isErr := call(t, cs, "note_retire", map[string]any{"id": "rule-short-answers", "reason": "again"}); !isErr {
+		t.Errorf("retired twice: %s", out)
 	}
 }
