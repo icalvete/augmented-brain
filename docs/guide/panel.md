@@ -123,6 +123,13 @@ Your Claude sessions on this computer, from the last 30 days.
 
 Who you are and how you like to work: the same profile every space uses.
 
+Under **Your assistant** you can give Claude a name and a personality. Every session
+starts with them. They change how it talks, never the rules, the guard or its honesty.
+With a name, the emails Claude writes in your name end with that name and, under it, a
+line the program adds and you cannot remove, such as "Ana's assistant (AI, Claude)": whoever
+reads it knows no person wrote it. The page shows that signature. Leave both fields
+empty for no name and no personality.
+
 ## Guard
 
 Every list the guard answers to, in one page, to read and change:

@@ -127,6 +127,13 @@ Tus sesiones de Claude en este ordenador, de los últimos 30 días.
 
 Quién eres y cómo te gusta trabajar: el mismo perfil para todos los espacios.
 
+En **Tu asistente** puedes darle a Claude un nombre y una personalidad. Cada sesión
+empieza con ellos. Cambian cómo habla, nunca las reglas, el guardia ni su honestidad.
+Con nombre, los correos que Claude escribe en tu nombre acaban con ese nombre y, debajo,
+una línea que añade el programa y que no se puede quitar, como «asistente de Ana (IA,
+Claude)»: quien lo lea sabe que no lo escribió una persona. La página enseña esa firma.
+Deja los dos campos vacíos si no quieres ni nombre ni personalidad.
+
 ## Guardia
 
 Todas las listas a las que responde el guardia, en una página, para leerlas y cambiarlas:

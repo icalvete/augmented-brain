@@ -14,10 +14,15 @@ func (s *Server) profile(v *view, _ *http.Request) (string, page, error) {
 		return "", page{}, err
 	}
 	p := v.frame("profile", v.t("profile"))
+	sig := ""
+	if in.Assistant != "" {
+		sig = brain.SignatureLine(v.lang, in.Name)
+	}
 	p.D = struct {
-		P    brain.ProfileInput
-		Path string
-	}{in, filepath.Join(v.b.ConfigDir, brain.ProfileFile)}
+		P         brain.ProfileInput
+		Path      string
+		Signature string
+	}{in, filepath.Join(v.b.ConfigDir, brain.ProfileFile), sig}
 	return "profile", p, nil
 }
 
@@ -28,6 +33,7 @@ func (s *Server) profileSave(v *view, r *http.Request) (string, error) {
 	// Browsers send \r\n in text areas; notes use \n.
 	nl := strings.NewReplacer("\r\n", "\n")
 	_, err := v.b.SaveProfile(brain.ProfileInput{Name: field(r, "name"),
-		About: nl.Replace(field(r, "about")), WorkStyle: nl.Replace(field(r, "work_style"))})
+		About: nl.Replace(field(r, "about")), WorkStyle: nl.Replace(field(r, "work_style")),
+		Assistant: field(r, "assistant"), Personality: nl.Replace(field(r, "personality"))})
 	return "/profile", err
 }

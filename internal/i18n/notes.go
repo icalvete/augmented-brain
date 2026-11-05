@@ -103,6 +103,18 @@ var noteMessages = map[string]msg{
 		en: "How I like to work",
 		es: "Cómo me gusta trabajar",
 	},
+	"profile.assistant": {
+		en: "Assistant",
+		es: "Asistente",
+	},
+	"assistant.signature": {
+		en: "%s's assistant (AI, Claude)",
+		es: "asistente de %s (IA, Claude)",
+	},
+	"profile.heading.field": {
+		en: "a part of the profile cannot hold the heading \"## %s\": the program writes it; leave it out",
+		es: "una parte del perfil no puede llevar el encabezado \"## %s\": lo escribe el programa; quítalo",
+	},
 	"profile.heading": {
 		en: "the profile already has the heading \"## %s\": write what goes under it in the work style, without the heading",
 		es: "el perfil ya tiene el encabezado \"## %s\": escribe lo que va debajo en la forma de trabajar, sin el encabezado",
