@@ -15,7 +15,13 @@ func TestGuardFileMissingIsEmpty(t *testing.T) {
 
 func TestGuardFileRoundTrip(t *testing.T) {
 	dir := t.TempDir()
-	in := Guard{UntouchableRepos: []string{"/srv/core", "/srv/core", "/srv/cli-*"}}
+	// Paths of this system, resolved as Load resolves them (on Windows "/srv/core" gains a drive).
+	base, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	core, cli := filepath.Join(base, "core"), filepath.Join(base, "cli-*")
+	in := Guard{UntouchableRepos: []string{core, core, cli}}
 	if err := SaveGuard(dir, in); err != nil {
 		t.Fatal(err)
 	}
@@ -23,7 +29,7 @@ func TestGuardFileRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(g.UntouchableRepos) != 2 || g.UntouchableRepos[0] != "/srv/core" || g.UntouchableRepos[1] != "/srv/cli-*" {
+	if len(g.UntouchableRepos) != 2 || g.UntouchableRepos[0] != core || g.UntouchableRepos[1] != cli {
 		t.Fatalf("got %v", g.UntouchableRepos)
 	}
 	if fi, _ := os.Stat(filepath.Join(dir, GuardFile)); fi.Mode().Perm() != 0o600 {
