@@ -68,8 +68,13 @@ and kept in the review's record when you finish.
 Knowledge and rules show the space's own and the shared ones, marked "shared". You can
 create areas and change an area's title and summary.
 
-You can add people and change them: their other names, their role and notes. The name
-stays: a new name would be a new person. A person's page shows the tasks that wait on
+People are listed once, with a badge for each space they are in. A new person starts in
+the space you are in. A person's page is one form: the name stays (a new name would be a
+new person), then a role and other names for each space, then a list of details. Each
+detail has a box per space; tick where it should show. Empty a detail's text to remove it.
+A detail with no box ticked is not saved, and the page says so next to it. There is always
+an empty row at the end to add one, and "Another detail" reloads the page with one more
+(save first: it does not keep what you typed). The page also shows the tasks that wait on
 them and those that link to them.
 
 ## Repositories

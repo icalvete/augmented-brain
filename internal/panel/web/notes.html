@@ -2,8 +2,8 @@
 <h1>{{.Heading}}</h1>
 <p class="hint">{{.Hint}}</p>
 {{if .Rows}}<ul class="cards">
-{{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
-  <div class="meta">{{if .Kind}}<span class="badge">{{.Kind}}</span>{{end}}{{if .Shared}}<span class="badge">{{t "shared"}}</span>{{end}}{{if .Summary}}<span>{{inline .Summary}}</span>{{end}}</div></li>{{end}}
+{{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{if .Space}}{{.Space}}{{else}}{{$.Space}}{{end}}&amp;id={{.ID}}">{{.Title}}</a>
+  <div class="meta">{{range .Badges}}<span class="badge">{{.}}</span>{{end}}{{if .Kind}}<span class="badge">{{.Kind}}</span>{{end}}{{if .Shared}}<span class="badge">{{t "shared"}}</span>{{end}}{{if .Summary}}<span>{{inline .Summary}}</span>{{end}}</div></li>{{end}}
 </ul>{{else}}<p class="empty">{{.Empty}}</p>{{end}}
 {{if .NewPerson}}<details class="box">
   <summary>{{t "person.new"}}</summary>
@@ -13,7 +13,7 @@
     <label>{{t "f.aliases"}} <input name="aliases" maxlength="500" placeholder="{{t "f.aliases.hint"}}"></label>
     <label>{{t "f.role"}} <input name="role" maxlength="300"></label>
     <label>{{t "f.notes"}} <textarea name="notes" rows="4" maxlength="8000"></textarea></label>
-    <p class="hint">{{t "person.hint"}}</p>
+    <p class="hint">{{t "person.hint"}} {{t "person.new.hint"}}</p>
     <button type="submit">{{t "create"}}</button>
   </form>
 </details>{{end}}

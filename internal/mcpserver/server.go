@@ -16,6 +16,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
+	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/state"
@@ -400,11 +401,29 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		Aliases []string `json:"aliases,omitempty" jsonschema:"other names the user uses for them, e.g. a nickname"`
 		Role    string   `json:"role,omitempty" jsonschema:"who they are to the user, in a few words: 'my manager', 'client, runs the shop'"`
 		Notes   string   `json:"notes,omitempty" jsonschema:"anything else worth remembering about them"`
+		Spaces  []string `json:"spaces,omitempty" jsonschema:"the spaces where this is visible; ask the user which, never guess: without it nothing is saved and the answer is the question to ask"`
 	}
-	tool(s, locked, "person_save", "Remember someone the user works or deals with, so a first name like 'Marcos' leads to the right person. Saving a name that exists updates it. People live in the space, and the index lists them.",
+	tool(s, locked, "person_save", "Remember someone the user works or deals with, so a first name like 'Marcos' leads to the right person. Saving a name that exists updates it. A person can be in several spaces (the same person, with the role and notes each space is allowed to show): pass spaces, the ones the user says. Without spaces nothing is saved and the answer asks which spaces to use; ask the user and call again. The index of each space lists its people.",
 		func(b *brain.Brain, in personIn) (string, error) {
-			n, err := b.SavePerson(brain.PersonInput{Name: in.Name, Aliases: in.Aliases, Role: in.Role, Notes: in.Notes})
-			return header(n, err)
+			c, err := config.Load(b.ConfigDir)
+			if err != nil {
+				return "", err
+			}
+			names := c.SpaceNames()
+			spaces := in.Spaces
+			if len(spaces) == 0 {
+				if len(names) != 1 {
+					return fmt.Sprintf("Not saved yet: where should %q be visible? Ask the user which of these spaces, and call person_save again with spaces: %s. "+
+						"What is saved in a space is seen in that space only (a personal note about someone should not be in a work space).",
+						strings.TrimSpace(in.Name), strings.Join(names, ", ")), nil
+				}
+				spaces = names // one space: nothing to ask
+			}
+			id, written, err := brain.SavePersonIn(c, spaces, brain.PersonInput{Name: in.Name, Aliases: in.Aliases, Role: in.Role, Notes: in.Notes})
+			if err != nil {
+				return "", err
+			}
+			return fmt.Sprintf("%s (%s) saved in: %s", id, strings.TrimSpace(in.Name), strings.Join(written, ", ")), nil
 		})
 
 	type safetyIn struct {

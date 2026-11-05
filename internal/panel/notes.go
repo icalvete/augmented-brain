@@ -6,14 +6,19 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
+	"strings"
 
+	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
 
 type noteRow struct {
 	ID, Title, Summary, Kind string
 	Shared                   bool
+	Space                    string   // the space whose page opens this note, when not the current one
+	Badges                   []string // the spaces a person is in
 }
 
 func (s *Server) areas(v *view, _ *http.Request) (string, page, error) {
@@ -94,7 +99,7 @@ func (v *view) list(types ...string) []noteRow {
 				if len(types) > 1 {
 					kind = v.t("kind." + t)
 				}
-				rows = append(rows, noteRow{n.Header.ID, n.Header.Title, n.Header.Summary, kind, m == v.shared})
+				rows = append(rows, noteRow{ID: n.Header.ID, Title: n.Header.Title, Summary: n.Header.Summary, Kind: kind, Shared: m == v.shared})
 			}
 		}
 	}
@@ -119,16 +124,26 @@ func (s *Server) rules(v *view, _ *http.Request) (string, page, error) {
 	return "notes", p, nil
 }
 
+// people lists every person once, across the spaces, with a badge for each space they
+// are in. Each says how many live tasks wait on them in this space.
 func (s *Server) people(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("people", v.t("people"))
-	rows := v.list("person")
-	// Each person says how many live tasks wait on them.
-	for i := range rows {
-		if n, ok := v.b.Mem.Notes[rows[i].ID]; ok {
-			if w := len(v.person(n).Waiting); w > 0 {
-				rows[i].Kind = v.t("people.waiting", w)
+	list, err := brain.People(v.c)
+	if err != nil {
+		return "", page{}, err
+	}
+	var rows []noteRow
+	for _, pr := range list {
+		row := noteRow{ID: pr.ID, Title: pr.Name, Summary: pr.Role, Badges: pr.Spaces, Space: pr.Spaces[0]}
+		if slices.Contains(pr.Spaces, v.b.Space.Name) {
+			row.Space = v.b.Space.Name
+			if n, ok := v.b.Mem.Notes[pr.ID]; ok {
+				if w := len(v.person(n).Waiting); w > 0 {
+					row.Kind = v.t("people.waiting", w)
+				}
 			}
 		}
+		rows = append(rows, row)
 	}
 	p.D = notesData{v.t("people"), v.t("people.hint"), v.t("people.none"), rows, true}
 	return "notes", p, nil
@@ -142,6 +157,12 @@ func (s *Server) note(v *view, r *http.Request) (string, page, error) {
 	shared := false
 	if !ok {
 		n, shared = v.shared.Notes[id]
+	}
+	if n == nil && strings.HasPrefix(id, memory.Types["person"].Prefix) {
+		// A person this space has no file for, known in another: their card still shows.
+		if card, err := brain.PersonCard(v.c, id); err == nil {
+			n = &memory.Note{Header: memory.Header{ID: id, Type: "person", Title: card.Name}}
+		}
 	}
 	if n == nil {
 		return "", page{}, errors.New(v.t("err.note", id))
@@ -164,6 +185,15 @@ func (s *Server) note(v *view, r *http.Request) (string, page, error) {
 	var person *personData
 	if n.Header.Type == "person" && !shared {
 		d := v.person(n)
+		var posted *http.Request
+		if r.Method == http.MethodPost {
+			posted = r
+		}
+		card, err := v.cardFor(id, extraRows(r), posted, v.cardErr)
+		if err != nil {
+			return "", page{}, err
+		}
+		d.Card = card
 		person = &d
 	}
 	p := v.frame(section, n.Header.Title)

@@ -100,8 +100,9 @@ about a tool. Saving them once per space would leave two copies that drift apart
 go once in the **shared notes**, next to your profile, in `shared/` inside the
 configuration folder.
 
-Only rules, references and lessons can be shared. Tasks, areas and people always belong
-to one space.
+Only rules, references and lessons can be shared. Tasks and areas always belong
+to one space. A person can be in several spaces, each with its own note and only what
+you want visible there (see People in Notes).
 
 You do not move files by hand. Tell Claude "this holds everywhere" and it saves the note
 as shared. Every session loads the shared rules, and lists the shared references and

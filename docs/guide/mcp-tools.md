@@ -187,11 +187,19 @@ Saves a rule you give on how to work. Every session loads it.
 Remembers someone you work or deal with, so a first name leads to the right person.
 Saving a name that exists updates that person.
 
+A person can be in several spaces: the same person, with the role and notes each space
+may show. Claude asks you where it should be visible (for instance, a note about a friend
+should not land in your work space) and passes your answer in `spaces`. With only one
+space, there is nothing to ask. Without `spaces` and with several, nothing is saved: the
+answer lists your spaces and asks. What is saved in a space is seen in that space only.
+
 - `name`: the full name, or how you know them.
 - `aliases` (optional): other names you use for them, such as a nickname.
 - `role` (optional): who they are to you, in a few words: "my manager", "runs the
   hosting company".
 - `notes` (optional): anything else worth remembering.
+- `spaces` (optional with one space, needed with several): the names of the spaces where
+  this is visible. The role, other names and notes are written in those spaces only.
 
 ## `repo_describe`
 
