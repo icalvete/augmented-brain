@@ -31,7 +31,7 @@ Hay cosas que valen para todas:
 - **El buzón y la revisión semanal**: [`capture`](#capture),
   [`weekly_review`](#weekly_review), [`review_done`](#review_done).
 - **Notas que duran**: [`area_new`](#area_new), [`knowledge_new`](#knowledge_new),
-  [`rule_new`](#rule_new), [`person_save`](#person_save),
+  [`rule_new`](#rule_new), [`note_retire`](#note_retire), [`person_save`](#person_save),
   [`repo_describe`](#repo_describe).
 - **Tú y esta máquina**: [`profile_save`](#profile_save),
   [`safety_save`](#safety_save), [`secret_name_save`](#secret_name_save),
@@ -171,8 +171,12 @@ Crea un área: una responsabilidad sin fecha de fin que agrupa tareas y conocimi
 ## `knowledge_new`
 
 Guarda una referencia o una lección que merece la pena más allá de una tarea: en este
-espacio, o compartida por todos.
+espacio, o compartida por todos. Un título que ya existe no crea nada: Claude recibe su
+id, para cambiar esa o elegir otro título. Nada se guarda dos veces sin que nadie lo sepa.
 
+- `id` (opcional): para cambiar una referencia o lección que existe. Lo que se manda
+  sustituye a lo que tenía, lo que no se manda se queda, y la versión sustituida se
+  guarda en `archive/`.
 - `kind`: `reference` (cómo funciona algo) o `lesson` (lo aprendido).
 - `title`: en una lección, un título que ya diga la conclusión.
 - `summary` (opcional): una línea.
@@ -182,12 +186,27 @@ espacio, o compartida por todos.
 
 ## `rule_new`
 
-Guarda una regla que das sobre cómo trabajar. Cada sesión la carga.
+Guarda una regla que das sobre cómo trabajar. Cada sesión la carga. Un título que ya
+existe no crea nada: Claude recibe su id.
 
+- `id` (opcional): para cambiar una regla que existe. Lo que se manda sustituye a lo que
+  tenía, lo que no se manda se queda, y la versión sustituida se guarda en `archive/`.
 - `title`: la regla en pocas palabras.
 - `summary` (opcional): una línea que dice qué hacer.
 - `body`: qué hacer, y por qué, en Markdown.
 - `shared` (opcional): `true` cuando vale en todos los espacios, no solo en este.
+
+## `note_retire`
+
+Retira una regla, referencia o lección que ya no vale, sin borrarla. Pasa a `archive/`,
+que nunca se carga, así que una regla retirada deja de llegar al inicio de la sesión.
+Una línea al final dice cuándo, por qué y qué la sustituye. Para un duplicado o una
+versión vieja; Claude te pregunta antes.
+
+- `id`: la regla, referencia o lección.
+- `reason`: por qué, en pocas palabras. Se queda con la nota.
+- `replaced_by` (opcional): el id de la nota que la sustituye.
+- `shared` (opcional): `true` cuando la nota está en la capa compartida.
 
 ## `person_save`
 

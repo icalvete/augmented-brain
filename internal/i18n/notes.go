@@ -87,6 +87,14 @@ var noteMessages = map[string]msg{
 		en: "step %d no longer says %q: the plan changed since. Look at it again and choose the step once more",
 		es: "el paso %d ya no dice %q: el plan ha cambiado desde entonces. Míralo otra vez y vuelve a elegir el paso",
 	},
+	"note.retired": {
+		en: "Retired on %s: %s.",
+		es: "Retirada el %s: %s.",
+	},
+	"note.replaced": {
+		en: "Replaced by [[%s]].",
+		es: "Sustituida por [[%s]].",
+	},
 	"profile.title": {
 		en: "Profile",
 		es: "Perfil",

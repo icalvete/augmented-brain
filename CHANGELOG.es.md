@@ -11,6 +11,14 @@
   sección nueva de `profile.md`; las versiones anteriores la conservan como texto.
   Además, `profile_save` ya no borra lo que no se le manda: una parte que no se manda
   conserva lo que tiene, y una vacía se borra.
+- **Las reglas y el conocimiento se pueden cambiar y retirar, y nunca se duplican sin
+  que nadie lo sepa.** Guardar una regla, referencia, lección o área con un título que
+  ya existe creaba una segunda copia («-2») y se cargaban las dos; ahora no se crea
+  nada, y Claude recibe el id. `rule_new` y `knowledge_new` aceptan un `id` para cambiar
+  una; la versión sustituida se guarda en `archive/`. Una herramienta nueva,
+  `note_retire`, pasa una regla, referencia o lección a `archive/` con el motivo y qué
+  la sustituye: se conserva, pero una regla retirada deja de cargarse. Sin campos nuevos
+  en las notas, así que las versiones anteriores las leen igual.
 
 - **Repositorios que Claude nunca toca, y un guardia que Claude no puede aflojar.** Una
   lista nueva de **repositorios intocables** (`untouchable_repos` en un fichero nuevo,

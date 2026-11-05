@@ -365,6 +365,7 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		})
 
 	type knowledgeIn struct {
+		ID      string `json:"id,omitempty" jsonschema:"to change a reference or lesson that exists, its id; leave it out to create one"`
 		Kind    string `json:"kind" jsonschema:"reference (how something works) or lesson (what was learned)"`
 		Title   string `json:"title" jsonschema:"for a lesson, a title that already states the conclusion"`
 		Summary string `json:"summary,omitempty"`
@@ -372,28 +373,54 @@ func New(open Resolver, lockFile string) *mcp.Server {
 		Body    string `json:"body,omitempty" jsonschema:"Markdown"`
 		Shared  bool   `json:"shared,omitempty" jsonschema:"true when it holds in every space, whatever part of the user's life (it then has no area)"`
 	}
-	tool(s, locked, "knowledge_new", "Save a reference or a lesson that is worth keeping beyond one task: in this space, or shared by every space.",
+	tool(s, locked, "knowledge_new", "Save a reference or a lesson that is worth keeping beyond one task: in this space, or shared by every space. With id, change that one instead: what you send replaces what it had, what you leave out stays, and the old version is kept in archive/. A title that already exists creates nothing and says its id. To take one out, use note_retire.",
 		func(b *brain.Brain, in knowledgeIn) (string, error) {
 			b, err := where(b, in.Shared)
 			if err != nil {
 				return "", err
 			}
+			if in.ID != "" {
+				return header(b.UpdateNote(in.ID, in.Kind, in.Title, in.Summary, in.Area, in.Body))
+			}
 			return header(b.NewKnowledge(in.Kind, in.Title, in.Summary, in.Area, in.Body))
 		})
 
 	type ruleIn struct {
+		ID      string `json:"id,omitempty" jsonschema:"to change a rule that exists, its id; leave it out to create one"`
 		Title   string `json:"title" jsonschema:"the rule in a few words"`
 		Summary string `json:"summary,omitempty"`
 		Body    string `json:"body" jsonschema:"Markdown: what to do, and why"`
 		Shared  bool   `json:"shared,omitempty" jsonschema:"true when it applies in every space, not only this one"`
 	}
-	tool(s, locked, "rule_new", "Save a rule the user gives on how to work, loaded at the start of every session: in this space, or shared by every space.",
+	tool(s, locked, "rule_new", "Save a rule the user gives on how to work, loaded at the start of every session: in this space, or shared by every space. With id, change that rule instead: what you send replaces what it had, what you leave out stays, and the old version is kept in archive/. A title that already exists creates nothing and says its id. To take a rule out, use note_retire.",
 		func(b *brain.Brain, in ruleIn) (string, error) {
 			b, err := where(b, in.Shared)
 			if err != nil {
 				return "", err
 			}
+			if in.ID != "" {
+				return header(b.UpdateNote(in.ID, "rule", in.Title, in.Summary, "", in.Body))
+			}
 			return header(b.NewRule(in.Title, in.Summary, in.Body))
+		})
+
+	type retireIn struct {
+		ID         string `json:"id" jsonschema:"the rule, reference or lesson to retire"`
+		Reason     string `json:"reason" jsonschema:"why, in a few words: it stays with the note"`
+		ReplacedBy string `json:"replaced_by,omitempty" jsonschema:"the id of the note that replaces it, if any"`
+		Shared     bool   `json:"shared,omitempty" jsonschema:"true when the note is in the shared layer, not in this space"`
+	}
+	tool(s, locked, "note_retire", "Retire a rule, reference or lesson that no longer holds, without deleting it: it moves to archive/, which is never loaded (a rule stops reaching the session start), with a line that says when, why and what replaces it. Use it for a duplicate or an old version; ask the user first.",
+		func(b *brain.Brain, in retireIn) (string, error) {
+			b, err := where(b, in.Shared)
+			if err != nil {
+				return "", err
+			}
+			dest, err := b.RetireNote(in.ID, in.Reason, in.ReplacedBy)
+			if err != nil {
+				return "", err
+			}
+			return in.ID + " retired: it is now " + dest + " and is no longer loaded.", nil
 		})
 
 	type personIn struct {

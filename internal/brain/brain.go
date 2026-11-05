@@ -594,7 +594,10 @@ func (b *Brain) NewArea(title, summary string) (*memory.Note, error) {
 	if strings.TrimSpace(title) == "" {
 		return nil, errors.New("an area needs a title")
 	}
-	id := b.newID("area", Slug(title))
+	id, err := b.freshID("area", title)
+	if err != nil {
+		return nil, err
+	}
 	n := &memory.Note{
 		Path:   memory.PathFor("area", id),
 		Header: memory.Header{ID: id, Type: "area", Title: title, Summary: summary, Created: b.today()},
@@ -631,7 +634,10 @@ func (b *Brain) NewKnowledge(kind, title, summary, area, body string) (*memory.N
 			return nil, err
 		}
 	}
-	id := b.newID(kind, Slug(title))
+	id, err := b.freshID(kind, title)
+	if err != nil {
+		return nil, err
+	}
 	if body != "" && !strings.HasSuffix(body, "\n") {
 		body += "\n"
 	}
@@ -649,7 +655,10 @@ func (b *Brain) NewRule(title, summary, body string) (*memory.Note, error) {
 	if strings.TrimSpace(title) == "" || strings.TrimSpace(body) == "" {
 		return nil, errors.New("a rule needs a title and a body: what to do, and why")
 	}
-	id := b.newID("rule", Slug(title))
+	id, err := b.freshID("rule", title)
+	if err != nil {
+		return nil, err
+	}
 	if !strings.HasSuffix(body, "\n") {
 		body += "\n"
 	}
@@ -686,6 +695,23 @@ func Slug(title string) string {
 		s = "untitled"
 	}
 	return s
+}
+
+// freshID is the id for a new area, reference, lesson or rule with this title. When a
+// note of the memory already has it, nothing is made up: the error says how to change
+// that note instead, so a second copy is never created without anyone knowing (it was
+// "-2" before). A file with that name that is not a valid note does not count.
+func (b *Brain) freshID(typ, title string) (string, error) {
+	base := memory.Types[typ].Prefix + Slug(title)
+	if old, taken := b.Mem.Notes[base]; taken {
+		how := "call again with id " + base + " to change it"
+		if typ == "area" {
+			how = "change it in the panel's Areas page"
+		}
+		return "", fmt.Errorf("%s already exists (%q): nothing was created. If it is the same thing, %s; if it is another one, use another title",
+			base, old.Header.Title, how)
+	}
+	return b.uniqueID(base), nil
 }
 
 // newID returns a free id for a new note of that type: its prefix, then name.
