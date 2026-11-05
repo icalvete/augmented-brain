@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -32,7 +33,7 @@ func TestGuardFileRoundTrip(t *testing.T) {
 	if len(g.UntouchableRepos) != 2 || g.UntouchableRepos[0] != core || g.UntouchableRepos[1] != cli {
 		t.Fatalf("got %v", g.UntouchableRepos)
 	}
-	if fi, _ := os.Stat(filepath.Join(dir, GuardFile)); fi.Mode().Perm() != 0o600 {
+	if fi, _ := os.Stat(filepath.Join(dir, GuardFile)); runtime.GOOS != "windows" && fi.Mode().Perm() != 0o600 { // Windows has no such modes
 		t.Fatalf("mode %v", fi.Mode())
 	}
 }
