@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Unreleased
+## 0.9.0-alpha
+
+Publicada el 2026-11-06.
 
 - **Un nombre y una personalidad para tu asistente.** La página Perfil del panel tiene
   una parte nueva, **Tu asistente**, y `profile_save` dos campos nuevos,

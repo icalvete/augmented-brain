@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.9.0-alpha
+
+Released 2026-11-06.
 
 - **A name and a personality for your assistant.** The panel's Profile page has a new
   part, **Your assistant**, and `profile_save` two new fields, `assistant_name` and
