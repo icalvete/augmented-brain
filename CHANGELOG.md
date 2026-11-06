@@ -22,8 +22,8 @@ Released 2026-11-06.
   versions read them as before.
 - **Know which model is answering.** A new setting, `preferred_model` in a new file,
   `session.toml` (or the panel's Guard page): when a session answers with another model,
-  Claude tells you, at the start if Claude Code names it and otherwise right after the
-  first answer, once per session and model. It never changes the model itself. Empty by
+  Claude tells you, at the start if Claude Code names it and otherwise after an answer
+  (in a new session, the second at the latest), once per session and model. It never changes the model itself. Empty by
   default: nothing is checked.
 - **After a compaction, the summary is not taken as fact.** Claude used to be asked to
   write the journal from the summary; now it is asked to check before stating anything
