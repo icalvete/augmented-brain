@@ -114,6 +114,26 @@ var panelMessages = map[string]msg{
 		en: "Machines that need your confirmation for ssh, scp and rsync.",
 		es: "Máquinas que necesitan tu confirmación para ssh, scp y rsync.",
 	},
+	"panel.guard.model": {
+		en: "Model of your sessions",
+		es: "Modelo de tus sesiones",
+	},
+	"panel.guard.model.hint": {
+		en: "The model you expect to answer: opus, sonnet, haiku or a full name. When a session answers with another one, the assistant tells you at once. Empty: no check.",
+		es: "El modelo que esperas que responda: opus, sonnet, haiku o un nombre completo. Si una sesión responde con otro, el asistente te lo dice en el momento. Vacío: no se comprueba.",
+	},
+	"panel.guard.model.last": {
+		en: "Last session start: Claude Code said %s.",
+		es: "Último inicio de sesión: Claude Code dijo %s.",
+	},
+	"panel.guard.model.none": {
+		en: "nothing about its model (the check then comes after the first answer)",
+		es: "nada de su modelo (entonces el aviso llega tras la primera respuesta)",
+	},
+	"panel.f.model": {
+		en: "Model",
+		es: "Modelo",
+	},
 	"panel.guard.fromspaces": {
 		en: "Also from a space's own list (change them in config.toml):",
 		es: "También de la lista propia de un espacio (cámbialas en config.toml):",

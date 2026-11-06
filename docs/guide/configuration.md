@@ -143,6 +143,24 @@ the same reason as `secrets.toml`: versions before this one refuse a setting of
 `config.toml` they do not know, and ignore a file they do not know. A session that still
 runs such a version does not enforce the list. It is not carried by backups.
 
+## `session.toml`
+
+Next to `config.toml`, `session.toml` holds how you want your sessions:
+
+```toml
+preferred_model = "opus"
+```
+
+- `preferred_model`: the model you expect to answer (`opus`, `sonnet`, `haiku` or a full
+  name such as `claude-opus-5-5`). When a session answers with another one, Claude tells
+  you: at the start, if Claude Code says which model it starts with, and otherwise right
+  after its first answer, and again if the model changes in the middle. Once per session
+  and model. It never changes the model itself: you do, with `/model` or the model picker.
+
+The panel's Guard page writes it, and the guard asks before Claude writes it. If the file
+is missing or the setting is empty, nothing is checked. It is a file of its own for the
+same reason as `guard.toml`. It is not carried by backups.
+
 ## `remote.toml`
 
 Next to `config.toml`, `remote.toml` holds the settings of [remote access](remote.md),

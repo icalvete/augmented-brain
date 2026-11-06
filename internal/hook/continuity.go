@@ -44,11 +44,18 @@ func Stop(in io.Reader, out io.Writer, cfgDir string) error {
 		return nil
 	}
 	mem := memoryNote(c.Language, cfgDir)
-	journal, err := journalNote(c, cfgDir, i.Cwd, mem != "")
+	model := modelStopNote(c.Language, cfgDir, i)
+	journal, err := journalNote(c, cfgDir, i.Cwd, mem != "" || model != "")
 	if err != nil {
 		return err
 	}
-	text := strings.TrimSpace(journal + "\n\n" + mem)
+	var notes []string
+	for _, n := range []string{journal, model, mem} {
+		if n != "" {
+			notes = append(notes, n)
+		}
+	}
+	text := strings.Join(notes, "\n\n")
 	if text == "" {
 		return nil
 	}
@@ -164,16 +171,12 @@ func ownSpace(cfgDir, dir string) (*config.Config, *config.Space) {
 }
 
 // compactNote is added to the session text right after a compaction: the details of
-// what came before are gone from the conversation, so what matters goes to the journal
-// now, while the summary is still there.
-func compactNote(lang, task string) string {
-	where := "in the journal of the task you were working on (task_journal), if any"
-	if task != "" {
-		where = "in the journal of task " + task + " (task_journal)"
-	}
-	return fmt.Sprintf("\nThe conversation was just compacted: its details are gone, only a summary is left. Before going on, write %s "+
-		"what was decided, found or done since its last entry, in one or two short entries, %s. "+
-		"Then carry on.\n", where, session.InUserLanguage(lang))
+// what came before are gone, and the summary left may be wrong. It asks the assistant
+// not to take the summary as fact and to tell the user, suggesting to park the task and
+// go on in a new session. (PostCompact already keeps the summary and notes it in the
+// journal of the active task.)
+func compactNote(lang string) string {
+	return i18n.T(lang, "hook.compact")
 }
 
 // recoverNote offers to recover a session of the space that never ended (it was closed
@@ -200,7 +203,7 @@ func sessionStarted(c *config.Config, s *config.Space, i input, cfgDir string) s
 	st := state.Read(cfgDir, s.Name)
 	note := ""
 	if i.Source == "compact" {
-		note += compactNote(c.Language, st.Task)
+		note += compactNote(c.Language)
 	}
 	if i.Source == "startup" || i.Source == "" {
 		for _, se := range st.Unclosed(i.SessionID, now) {
@@ -263,4 +266,53 @@ func oldServersNote(c *config.Config) string {
 	}
 	return fmt.Sprintf("\n%d other Claude sessions on this machine still run an earlier augmented brain: they started before it was updated to %s, and their augmented-brain tools may fail until they are restarted. %smention it in one line: close and open those sessions again when it suits them.\n",
 		len(old), version.Version, session.FirstAnswerLine(c.Language))
+}
+
+// preferredModel is the model the user wants (session.toml), or "" when there is none
+// or the file cannot be read: a hook must never break the session.
+func preferredModel(cfgDir string) string {
+	s, err := config.LoadSession(cfgDir)
+	if err != nil {
+		return ""
+	}
+	return s.PreferredModel
+}
+
+// modelStartNote, at the start of a session, records whether Claude Code said which
+// model it starts with (it may not), and asks the assistant to tell the user when it is
+// not the preferred one.
+func modelStartNote(lang, cfgDir string, i input) string {
+	pref := preferredModel(cfgDir)
+	if pref == "" {
+		return ""
+	}
+	now := Now()
+	_ = state.RecordStartModel(cfgDir, i.Source, i.Model, now)
+	if i.Model == "" || config.ModelMatches(pref, i.Model) || i.SessionID == "" {
+		return ""
+	}
+	if err := state.MarkModel(cfgDir, i.SessionID, i.Model, now); err != nil {
+		return ""
+	}
+	return i18n.T(lang, "hook.model.start", i.Model, pref)
+}
+
+// modelStopNote, after an answer, reads which model wrote it (the end of the
+// transcript) and asks the assistant to tell the user when it is not the preferred one:
+// it covers a start that did not say its model and a change in the middle of a
+// session. Once per session and model, and only once its mark is written, so it never
+// repeats after every answer.
+func modelStopNote(lang, cfgDir string, i input) string {
+	pref := preferredModel(cfgDir)
+	if pref == "" || i.SessionID == "" {
+		return ""
+	}
+	model := state.LastModel(i.TranscriptPath)
+	if config.ModelMatches(pref, model) || state.ModelWarned(cfgDir, i.SessionID) == model {
+		return ""
+	}
+	if err := state.MarkModel(cfgDir, i.SessionID, model, Now()); err != nil {
+		return ""
+	}
+	return i18n.T(lang, "hook.model.stop", model, pref)
 }

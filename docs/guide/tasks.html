@@ -130,7 +130,7 @@ Done: the new host is ready. Next: copy the database.
   <p>To resume, say “let's carry on with the blog”. Claude reads the task first. Then it checks the real state of what the task touches (the files, the server) before trusting the note. Things may have changed since.</p>
   <h2 id="the-journal-as-you-go">The journal, as you go</h2>
   <p>Each decision or finished step goes to the journal at the moment, not only when you park it. A session can end at any time, and what is not in the note is lost.</p>
-  <p>If a task is open and nothing has been written in it for 20 minutes, Claude gets a reminder at the end of its answer, once. When a long conversation is compacted (Claude Code replaces the details with a summary), the summary is kept in <code>archive/sessions/</code>, and the journal points at it.</p>
+  <p>If a task is open and nothing has been written in it for 20 minutes, Claude gets a reminder at the end of its answer, once. When a long conversation is compacted (Claude Code replaces the details with a summary), the summary is kept in <code>archive/sessions/</code>, and the journal points at it. The summary can be wrong, so Claude is asked not to take it as fact, to check before stating anything from before, and to tell you the session was compacted and suggest parking the task and going on in a new session, which starts from the notes.</p>
   <h2 id="steps-and-subtasks">Steps and subtasks</h2>
   <p>A big task can be split in two ways.</p>
   <p>A <strong>step</strong> is a small part: a checkbox in the task's Plan, such as <code>- [ ] Copy the database</code>. Claude ticks it when it is done. The list of tasks shows how many are done (“1/3 steps”).</p>

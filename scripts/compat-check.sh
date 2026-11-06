@@ -80,6 +80,8 @@ git config --global user.email compat@example.com
 git config --global user.name compat
 git config --global init.defaultBranch main
 "$NEW" init --yes >/dev/null
+# Settings in files of their own, as the panel writes them: earlier releases must ignore them.
+printf '# How you want your sessions.\npreferred_model = "opus"\n' > "$XDG_CONFIG_HOME/augmented-brain/session.toml"
 WORKDIR="$HOME/augmented-brain/work"
 # A repository of the user's, for repo_describe (its note is an ordinary reference).
 mkdir -p "$WORKDIR/code/site"

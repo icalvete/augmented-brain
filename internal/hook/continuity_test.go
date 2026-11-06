@@ -90,7 +90,8 @@ func TestStopReminder(t *testing.T) {
 }
 
 // After a compaction the summary is kept in archive/sessions/, secrets out, with a
-// journal line in the active task; the next session start asks to journal.
+// journal line in the active task; the next session start warns that the summary may
+// be wrong and suggests parking and going on in a new session.
 func TestCompaction(t *testing.T) {
 	cfgDir, work := setupSpace(t)
 	clock(t, time.Date(2026, 10, 20, 11, 30, 0, 0, time.Local))
@@ -119,7 +120,7 @@ func TestCompaction(t *testing.T) {
 
 	ss := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, cfgDir) }
 	o := run(t, ss, map[string]any{"cwd": work, "source": "compact", "session_id": "abcdef123456"})
-	if text := o["additionalContext"].(string); !strings.Contains(text, "just compacted") || !strings.Contains(text, "task "+id) {
+	if text := o["additionalContext"].(string); !strings.Contains(text, "just compacted") || !strings.Contains(text, "task_park") || !strings.Contains(text, "can be wrong") {
 		t.Errorf("after compaction:\n%s", text)
 	}
 	o = run(t, ss, map[string]any{"cwd": work, "source": "startup", "session_id": "other"})

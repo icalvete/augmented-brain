@@ -112,7 +112,7 @@ The assistant works in the same account as you, so the guard cannot be a wall. I
 three things so that the lists stay yours:
 
 - **It asks before a write to the guard's files** (`config.toml`, `guard.toml`,
-  `secrets.toml`, `remote.toml`, and Claude Code's settings).
+  `secrets.toml`, `remote.toml`, `session.toml`, and Claude Code's settings).
 - **It denies reaching the panel.** Reading `panel.json` (the panel's key) with a tool
   or a command, and calling a panel page from a command, are denied: the panel's Guard
   page is how you change the lists, and it works with that key.

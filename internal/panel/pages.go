@@ -70,6 +70,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /guard/list", s.write(s.guardList))
 	m.HandleFunc("POST /guard/root", s.write(s.guardRootAsk))
 	m.HandleFunc("POST /guard/accept", s.write(s.guardAccept))
+	m.HandleFunc("POST /guard/model", s.write(s.guardModel))
 	m.HandleFunc("POST /stop", s.handleStop)
 	return m
 }
