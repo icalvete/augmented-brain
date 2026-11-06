@@ -53,8 +53,19 @@ echo "2. run the installer, hands-off"
 [ "${AB_CHECK_DESKTOP:-}" = 1 ] || AB_NO_DESKTOP=1
 AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP="${AB_NO_DESKTOP:-}" \
   AB_RELEASE_URL="file://$TMP/release" AB_MARKETPLACE="$ROOT" \
-  sh "$ROOT/install.sh" </dev/null >"$TMP/install.log" 2>&1 || { cat "$TMP/install.log"; bad "install.sh exited with an error"; }
-sed 's/^/    | /' "$TMP/install.log"
+  sh "$ROOT/install.sh" </dev/null >"$TMP/install.log" 2>&1 &
+installer=$!
+# The installer's output as it comes, not only at the end: when CI stops a run that
+# hangs (timeout-minutes), its log must say on which step.
+# GNU tail follows until the installer ends; macOS's tail has no --pid, so there the log
+# is shown once it is done.
+if tail --pid=$$ -n 0 /dev/null >/dev/null 2>&1; then
+  tail -n +1 -f --pid="$installer" "$TMP/install.log" | sed -u 's/^/    | /'
+else
+  while kill -0 "$installer" 2>/dev/null; do sleep 2; done
+  sed 's/^/    | /' "$TMP/install.log"
+fi
+wait "$installer" || bad "install.sh exited with an error"
 
 echo "3. what a newcomer gets"
 AB="$HOME/.local/bin/augmented-brain"
