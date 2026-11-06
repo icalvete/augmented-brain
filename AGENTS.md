@@ -122,6 +122,9 @@ Heavier checks, before a release or when you touch what they cover:
   `format.NotesMigrations` (or `ConfigMigrations` for the configuration folder), which
   raises the format version by one: the step must be safe to repeat, and gets a test
   that runs it on notes written the old way.
+- **A test package that runs git calls `testenv.CleanGit()` first in its `TestMain`.**
+  Git hands its hooks `GIT_DIR` and friends: without this, tests run from the pre-push
+  hook make their throwaway repositories inside the real one.
 - **Replace files with `paths.WriteAtomic`** (a crash never leaves half a file), and run
   git through the backup package's runner, which never waits for a password.
 - **A new MCP tool** goes in `internal/mcpserver/server.go`, does its work in

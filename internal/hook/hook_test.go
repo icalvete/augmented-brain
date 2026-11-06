@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/icalvete/augmented-brain/internal/testenv"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -155,6 +156,7 @@ func TestSessionStartBrokenConfig(t *testing.T) {
 
 // No test asks GitHub: the latest version is whatever each test says.
 func TestMain(m *testing.M) {
+	testenv.CleanGit()
 	LatestVersion = func() (string, error) { return "", nil }
 	state.ScanProc = false // the Claude sessions open on the machine running the tests are not theirs
 	Processes = nil        // nor is the memory of the window running them
