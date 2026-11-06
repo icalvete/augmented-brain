@@ -67,7 +67,8 @@ Heavier checks, before a release or when you touch what they cover:
 - `scripts/install-check.sh`: the installer from nothing, hands-off, and 12 checks of the
   result (13 with the desktop app). It installs Claude Code for whoever runs it, so use
   `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on macOS and Ubuntu in
-  every pull request that touches the installer, the plugin or the code (`install.yml`).
+  every pull request that touches the installer, the plugin or the code (`install.yml`);
+  the Intel Mac only on `main`.
 - `scripts/compat-check.sh`: what this version writes (tasks, people, secrets' names, what a repository is,
   captures, rules, a backup), the last two releases must still read: their `doctor`,
   `check`, MCP tools, session start and restore. After an update, open Claude sessions
