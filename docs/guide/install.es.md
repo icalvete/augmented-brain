@@ -150,8 +150,13 @@ actualizarlo. También puedes hacerlo tú:
 augmented-brain update
 ```
 
-Actualiza el programa y el plugin de Claude Code. Volver a lanzar el comando de
-instalación hace lo mismo. `augmented-brain update --plugin` actualiza solo el plugin.
+Actualiza el programa y el plugin de Claude Code. Antes, revisa la instalación (y enseña lo
+que encuentre) y hace la copia de seguridad de cada espacio que la tenga; si falla una
+copia, no actualiza nada.
+Después, dice qué sesiones abiertas siguen con la versión vieja y qué tarea está activa
+en cada espacio: pide a esas sesiones que aparquen su tarea. Volver a lanzar el comando
+de instalación también actualiza, sin esos pasos. `augmented-brain update --plugin`
+actualiza solo el plugin.
 
 Después, cierra y abre Claude. Una sesión que estaba abierta sigue con el programa viejo
 hasta que lo hagas, y sus herramientas de augmented brain pueden fallar.

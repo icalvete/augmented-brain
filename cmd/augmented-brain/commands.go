@@ -50,7 +50,7 @@ var commands = []command{
 	{name: "remote install"},
 	{name: "remote uninstall"},
 	{name: "remote status"},
-	{name: "update", run: withoutIn(cmdUpdate), flags: func() []string { fs, _ := updateFlags(io.Discard); return flagNames(fs) }},
+	{name: "update", run: withoutIn(cmdUpdate), flags: func() []string { fs, _, _ := updateFlags(io.Discard); return flagNames(fs) }},
 	{name: "uninstall", run: cmdUninstall, flags: func() []string { fs, _, _, _ := uninstallFlags(io.Discard); return flagNames(fs) }},
 	{name: "mcp", run: func(_ []string, _ io.Reader, _, errOut io.Writer) int { return cmdMCP(errOut) }},
 	{name: "hook", run: cmdHook, words: func() []string {
