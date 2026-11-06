@@ -42,6 +42,8 @@ type guardData struct {
 	Protected   []string
 	Changed     bool   // the lists are not the ones last sealed
 	Problem     string // why guard.toml cannot be read, when it cannot
+	Model       string // preferred_model of session.toml
+	LastStart   string // what the last session start said about its model
 	Language    string
 }
 
@@ -52,6 +54,20 @@ func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
 		d.Problem = err.Error()
 	}
 	d.Untouchable = g.UntouchableRepos
+	if ss, err := config.LoadSession(v.c.Dir); err == nil {
+		d.Model = ss.PreferredModel
+	} else if d.Problem == "" {
+		d.Problem = err.Error()
+	}
+	if d.Model != "" {
+		if ls, ok := state.LastStartModel(v.c.Dir); ok {
+			said := v.t("guard.model.none")
+			if ls.Model != "" {
+				said = ls.Model
+			}
+			d.LastStart = v.t("guard.model.last", said)
+		}
+	}
 	for _, name := range v.c.SpaceNames() {
 		sp := v.c.Spaces[name]
 		d.Spaces = append(d.Spaces, guardSpace{name, sp.GitAllowedRepos, sp.GitAskRepos})
@@ -74,7 +90,7 @@ func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
 			d.OtherHosts = append(d.OtherHosts, x)
 		}
 	}
-	for _, f := range []string{config.FileName, config.GuardFile, config.SecretsFile, "remote.toml", "panel.json"} {
+	for _, f := range []string{config.FileName, config.GuardFile, config.SecretsFile, config.SessionFile, "remote.toml", "panel.json"} {
 		d.Protected = append(d.Protected, paths.Tilde(filepath.Join(v.c.Dir, f)))
 	}
 	if seal := state.ReadSeal(v.c.Dir); seal != "" && seal != v.c.GuardFingerprint(g) {
@@ -251,4 +267,13 @@ func (s *Server) guardAccept(v *view, r *http.Request) (string, error) {
 		return "", err
 	}
 	return "/guard", state.WriteSeal(v.c.Dir, v.c.GuardFingerprint(g))
+}
+
+// guardModel saves the preferred model of session.toml (empty: no check).
+func (s *Server) guardModel(v *view, r *http.Request) (string, error) {
+	value := field(r, "value")
+	if len(value) > 100 || strings.ContainsAny(value, "\r\n\"\\") {
+		return "", errors.New(v.t("err.required", v.t("f.model")))
+	}
+	return "/guard", config.SaveSession(v.c.Dir, config.Session{PreferredModel: value})
 }

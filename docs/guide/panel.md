@@ -141,6 +141,9 @@ Every list the guard answers to, in one page, to read and change:
 - **Root exceptions**, with the date each ends (the ones that ended are marked). Adding
   one asks you to type the machine's name again.
 - **Production profiles** and **untouchable machines**.
+- **The model of your sessions** (`preferred_model` in `session.toml`): when a session
+  answers with another one, Claude tells you. Below it, what Claude Code said about its
+  model at the last session start.
 - The files Claude cannot change on its own.
 
 Your comments in `config.toml` stay where they are. If the lists are not the ones you last

@@ -145,6 +145,9 @@ Todas las listas a las que responde el guardia, en una página, para leerlas y c
 - **Excepciones de root**, con la fecha en que acaba cada una (las que ya acabaron se
   marcan). Añadir una te pide escribir otra vez el nombre de la máquina.
 - **Perfiles de producción** y **máquinas intocables**.
+- **El modelo de tus sesiones** (`preferred_model` en `session.toml`): si una sesión
+  responde con otro, Claude te lo dice. Debajo, lo que Claude Code dijo de su modelo en el
+  último inicio de sesión.
 - Los ficheros que Claude no puede cambiar por su cuenta.
 
 Tus comentarios de `config.toml` se quedan donde están. Si las listas no son las que viste

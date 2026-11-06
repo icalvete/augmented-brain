@@ -92,7 +92,10 @@ puede acabar en cualquier momento, y lo que no está en la nota se pierde.
 Si hay una tarea abierta y en 20 minutos no se ha escrito nada en ella, Claude recibe un
 recordatorio al final de su respuesta, una vez. Cuando una conversación larga se compacta
 (Claude Code cambia los detalles por un resumen), el resumen se guarda en
-`archive/sessions/`, y el diario apunta a él.
+`archive/sessions/`, y el diario apunta a él. El resumen puede estar mal, así que a
+Claude se le pide que no lo tome como un hecho, que compruebe antes de afirmar algo de
+antes, y que te diga que la sesión se ha compactado y te proponga aparcar la tarea y
+seguir en una sesión nueva, que empieza desde las notas.
 
 ## Pasos y subtareas
 

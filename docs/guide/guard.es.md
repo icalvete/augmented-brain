@@ -115,7 +115,7 @@ El asistente trabaja en la misma cuenta que tú, así que el guardia no puede se
 Hace tres cosas para que las listas sigan siendo tuyas:
 
 - **Pregunta antes de escribir en los ficheros del guardia** (`config.toml`,
-  `guard.toml`, `secrets.toml`, `remote.toml` y los ajustes de Claude Code).
+  `guard.toml`, `secrets.toml`, `remote.toml`, `session.toml` y los ajustes de Claude Code).
 - **Deniega llegar al panel.** Leer `panel.json` (la clave del panel) con una herramienta
   o un comando, y llamar a una página del panel desde un comando, se deniega: la página
   Guardia del panel es como tú cambias las listas, y funciona con esa clave.

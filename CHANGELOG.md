@@ -18,6 +18,15 @@
   moves a rule, reference or lesson to `archive/` with the reason and what replaces it:
   it stays, but a retired rule no longer loads. No new field in the notes, so earlier
   versions read them as before.
+- **Know which model is answering.** A new setting, `preferred_model` in a new file,
+  `session.toml` (or the panel's Guard page): when a session answers with another model,
+  Claude tells you, at the start if Claude Code names it and otherwise right after the
+  first answer, once per session and model. It never changes the model itself. Empty by
+  default: nothing is checked.
+- **After a compaction, the summary is not taken as fact.** Claude used to be asked to
+  write the journal from the summary; now it is asked to check before stating anything
+  from before, and to tell you the session was compacted and suggest parking the task
+  and going on in a new session.
 
 - **Repositories Claude never touches, and a guard Claude cannot loosen.** A new list of
   **untouchable repositories** (`untouchable_repos` in a new file, `guard.toml`) where the

@@ -92,7 +92,10 @@ it. A session can end at any time, and what is not in the note is lost.
 If a task is open and nothing has been written in it for 20 minutes, Claude gets a
 reminder at the end of its answer, once. When a long conversation is compacted (Claude
 Code replaces the details with a summary), the summary is kept in `archive/sessions/`,
-and the journal points at it.
+and the journal points at it. The summary can be wrong, so Claude is asked not to take it
+as fact, to check before stating anything from before, and to tell you the session was
+compacted and suggest parking the task and going on in a new session, which starts from
+the notes.
 
 ## Steps and subtasks
 

@@ -597,7 +597,10 @@ it. A session can end at any time, and what is not in the note is lost.
 If a task is open and nothing has been written in it for 20 minutes, Claude gets a
 reminder at the end of its answer, once. When a long conversation is compacted (Claude
 Code replaces the details with a summary), the summary is kept in `archive/sessions/`,
-and the journal points at it.
+and the journal points at it. The summary can be wrong, so Claude is asked not to take it
+as fact, to check before stating anything from before, and to tell you the session was
+compacted and suggest parking the task and going on in a new session, which starts from
+the notes.
 
 ## Steps and subtasks
 
@@ -886,7 +889,7 @@ The assistant works in the same account as you, so the guard cannot be a wall. I
 three things so that the lists stay yours:
 
 - **It asks before a write to the guard's files** (`config.toml`, `guard.toml`,
-  `secrets.toml`, `remote.toml`, and Claude Code's settings).
+  `secrets.toml`, `remote.toml`, `session.toml`, and Claude Code's settings).
 - **It denies reaching the panel.** Reading `panel.json` (the panel's key) with a tool
   or a command, and calling a panel page from a command, are denied: the panel's Guard
   page is how you change the lists, and it works with that key.
@@ -1318,6 +1321,9 @@ Every list the guard answers to, in one page, to read and change:
 - **Root exceptions**, with the date each ends (the ones that ended are marked). Adding
   one asks you to type the machine's name again.
 - **Production profiles** and **untouchable machines**.
+- **The model of your sessions** (`preferred_model` in `session.toml`): when a session
+  answers with another one, Claude tells you. Below it, what Claude Code said about its
+  model at the last session start.
 - The files Claude cannot change on its own.
 
 Your comments in `config.toml` stay where they are. If the lists are not the ones you last
@@ -2605,6 +2611,24 @@ cannot be read, the guard asks before every commit and push. It is a file of its
 the same reason as `secrets.toml`: versions before this one refuse a setting of
 `config.toml` they do not know, and ignore a file they do not know. A session that still
 runs such a version does not enforce the list. It is not carried by backups.
+
+## `session.toml`
+
+Next to `config.toml`, `session.toml` holds how you want your sessions:
+
+```toml
+preferred_model = "opus"
+```
+
+- `preferred_model`: the model you expect to answer (`opus`, `sonnet`, `haiku` or a full
+  name such as `claude-opus-5-5`). When a session answers with another one, Claude tells
+  you: at the start, if Claude Code says which model it starts with, and otherwise right
+  after its first answer, and again if the model changes in the middle. Once per session
+  and model. It never changes the model itself: you do, with `/model` or the model picker.
+
+The panel's Guard page writes it, and the guard asks before Claude writes it. If the file
+is missing or the setting is empty, nothing is checked. It is a file of its own for the
+same reason as `guard.toml`. It is not carried by backups.
 
 ## `remote.toml`
 

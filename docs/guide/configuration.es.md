@@ -150,6 +150,25 @@ misma razón que `secrets.toml`: las versiones anteriores a esta rechazan un aju
 ejecuta una de esas versiones no hace cumplir la lista. Las copias de seguridad no lo
 llevan.
 
+## `session.toml`
+
+Junto a `config.toml`, `session.toml` guarda cómo quieres tus sesiones:
+
+```toml
+preferred_model = "opus"
+```
+
+- `preferred_model`: el modelo que esperas que responda (`opus`, `sonnet`, `haiku` o un
+  nombre completo como `claude-opus-5-5`). Si una sesión responde con otro, Claude te lo
+  dice: al empezar, si Claude Code dice con qué modelo arranca, y si no, justo después de
+  su primera respuesta, y otra vez si el modelo cambia a mitad. Una vez por sesión y
+  modelo. Nunca cambia el modelo por su cuenta: lo cambias tú, con `/model` o con el
+  selector de modelo.
+
+La página Guardia del panel lo escribe, y el guardia pregunta antes de que Claude lo
+escriba. Si el fichero falta o el ajuste está vacío, no se comprueba nada. Es un fichero
+aparte por la misma razón que `guard.toml`. Las copias de seguridad no lo llevan.
+
 ## `remote.toml`
 
 Junto a `config.toml`, `remote.toml` guarda los ajustes del [acceso remoto](remote.es.md),

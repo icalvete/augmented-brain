@@ -38,6 +38,8 @@ type input struct {
 	TranscriptPath string `json:"transcript_path"`
 	// SessionStart: startup, resume, clear, compact or fork.
 	Source string `json:"source"`
+	// SessionStart: the model, when Claude Code sends it (it may not).
+	Model string `json:"model"`
 	// Stop: true while the assistant goes on because of a Stop hook.
 	StopHookActive bool `json:"stop_hook_active"`
 	// PostCompact: manual or auto, and the summary Claude Code wrote.
@@ -139,6 +141,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string
 	}
 	note += migrate(c, s, cfgDir)
 	note += sessionStarted(c, s, i, cfgDir)
+	note += modelStartNote(c.Language, cfgDir, i)
 	note += askSafety(c, cfgDir)
 	note += rootNote(c)
 	note += oldServersNote(c)
@@ -293,7 +296,8 @@ func written(v any) string {
 // switch the plugin, and so the guard, off.
 func protectedFiles(cfgDir, dir string) []string {
 	list := []string{filepath.Join(cfgDir, config.FileName), filepath.Join(cfgDir, config.GuardFile),
-		filepath.Join(cfgDir, config.SecretsFile), filepath.Join(cfgDir, "remote.toml")}
+		filepath.Join(cfgDir, config.SecretsFile), filepath.Join(cfgDir, "remote.toml"),
+		filepath.Join(cfgDir, config.SessionFile)}
 	if home, err := paths.Home(); err == nil {
 		for _, f := range []string{"settings.json", "settings.local.json"} {
 			list = append(list, filepath.Join(home, ".claude", f))

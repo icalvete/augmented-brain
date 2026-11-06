@@ -121,3 +121,29 @@ func TestGuardPageSaysOutsideChangesAndAccepts(t *testing.T) {
 		t.Error("still warns after accepting")
 	}
 }
+
+// The Guard page saves the preferred model in session.toml, and empties it.
+func TestGuardPageModel(t *testing.T) {
+	s, cfg := fixture(t, "es")
+	if body := s.get(t, "/guard?s=work").Body.String(); !strings.Contains(body, "Modelo de tus sesiones") {
+		t.Fatalf("no model section: %.200s", body)
+	}
+	if w := s.post(t, "/guard/model", url.Values{"s": {"work"}, "value": {"opus"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("save: %d", w.Code)
+	}
+	if ss, err := config.LoadSession(cfg); err != nil || ss.PreferredModel != "opus" {
+		t.Fatalf("saved: %+v %v", ss, err)
+	}
+	if body := s.get(t, "/guard?s=work").Body.String(); !strings.Contains(body, `value="opus"`) {
+		t.Error("the page does not show the saved model")
+	}
+	if w := s.post(t, "/guard/model", url.Values{"s": {"work"}, "value": {"a\nb"}}); w.Code != http.StatusBadRequest {
+		t.Errorf("a bad value: %d", w.Code)
+	}
+	if w := s.post(t, "/guard/model", url.Values{"s": {"work"}, "value": {""}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("empty: %d", w.Code)
+	}
+	if ss, _ := config.LoadSession(cfg); ss.PreferredModel != "" {
+		t.Errorf("not emptied: %+v", ss)
+	}
+}

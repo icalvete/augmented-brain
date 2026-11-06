@@ -19,6 +19,15 @@
   `note_retire`, pasa una regla, referencia o lección a `archive/` con el motivo y qué
   la sustituye: se conserva, pero una regla retirada deja de cargarse. Sin campos nuevos
   en las notas, así que las versiones anteriores las leen igual.
+- **Saber qué modelo responde.** Un ajuste nuevo, `preferred_model` en un fichero nuevo,
+  `session.toml` (o en la página Guardia del panel): si una sesión responde con otro
+  modelo, Claude te lo dice, al empezar si Claude Code lo nombra y si no justo después de
+  la primera respuesta, una vez por sesión y modelo. Nunca cambia el modelo por su
+  cuenta. Vacío por defecto: no se comprueba nada.
+- **Tras una compactación, el resumen no se toma como un hecho.** Antes se le pedía a
+  Claude escribir el diario desde el resumen; ahora se le pide comprobar antes de afirmar
+  algo de antes, y decirte que la sesión se ha compactado y proponerte aparcar la tarea y
+  seguir en una sesión nueva.
 
 - **Repositorios que Claude nunca toca, y un guardia que Claude no puede aflojar.** Una
   lista nueva de **repositorios intocables** (`untouchable_repos` en un fichero nuevo,

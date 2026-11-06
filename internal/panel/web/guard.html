@@ -100,6 +100,15 @@
   <button type="submit">{{t "add"}}</button>
 </form>
 
+<h2>{{t "guard.model"}}</h2>
+<p class="hint">{{t "guard.model.hint"}}</p>
+<form method="post" action="{{$.Base}}/guard/model" class="stack">
+  {{template "fields" (fields $)}}
+  <label>{{t "f.model"}} <input name="value" maxlength="100" value="{{.Model}}"></label>
+  <button type="submit">{{t "save"}}</button>
+</form>
+{{if .LastStart}}<p class="hint">{{.LastStart}}</p>{{end}}
+
 <h2>{{t "guard.protected"}}</h2>
 <p class="hint">{{t "guard.protected.hint"}}</p>
 <ul class="plain">{{range .Protected}}<li><code>{{.}}</code></li>{{end}}</ul>
