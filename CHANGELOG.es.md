@@ -23,8 +23,8 @@ Publicada el 2026-11-06.
   en las notas, así que las versiones anteriores las leen igual.
 - **Saber qué modelo responde.** Un ajuste nuevo, `preferred_model` en un fichero nuevo,
   `session.toml` (o en la página Guardia del panel): si una sesión responde con otro
-  modelo, Claude te lo dice, al empezar si Claude Code lo nombra y si no justo después de
-  la primera respuesta, una vez por sesión y modelo. Nunca cambia el modelo por su
+  modelo, Claude te lo dice, al empezar si Claude Code lo nombra y si no después de una
+  respuesta (en una sesión nueva, como tarde la segunda), una vez por sesión y modelo. Nunca cambia el modelo por su
   cuenta. Vacío por defecto: no se comprueba nada.
 - **Tras una compactación, el resumen no se toma como un hecho.** Antes se le pedía a
   Claude escribir el diario desde el resumen; ahora se le pide comprobar antes de afirmar

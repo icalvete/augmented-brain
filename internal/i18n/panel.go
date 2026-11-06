@@ -127,8 +127,8 @@ var panelMessages = map[string]msg{
 		es: "Último inicio de sesión: Claude Code dijo %s.",
 	},
 	"panel.guard.model.none": {
-		en: "nothing about its model (the check then comes after the first answer)",
-		es: "nada de su modelo (entonces el aviso llega tras la primera respuesta)",
+		en: "nothing about its model (the check then comes after an answer, the second at the latest)",
+		es: "nada de su modelo (entonces el aviso llega tras una respuesta, como tarde la segunda)",
 	},
 	"panel.f.model": {
 		en: "Model",

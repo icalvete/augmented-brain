@@ -160,8 +160,9 @@ preferred_model = "opus"
 
 - `preferred_model`: el modelo que esperas que responda (`opus`, `sonnet`, `haiku` o un
   nombre completo como `claude-opus-5-5`). Si una sesión responde con otro, Claude te lo
-  dice: al empezar, si Claude Code dice con qué modelo arranca, y si no, justo después de
-  su primera respuesta, y otra vez si el modelo cambia a mitad. Una vez por sesión y
+  dice: al empezar, si Claude Code dice con qué modelo arranca, y si no, después de una
+  respuesta (en una sesión nueva, como tarde la segunda: la primera aún no está en disco
+  cuando Claude Code pregunta), y otra vez si el modelo cambia a mitad. Una vez por sesión y
   modelo. Nunca cambia el modelo por su cuenta: lo cambias tú, con `/model` o con el
   selector de modelo.
 
