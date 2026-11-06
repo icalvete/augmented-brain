@@ -3,11 +3,15 @@
 #
 #   scripts/precheck.sh          # the quick part (about a minute): run by the pre-push hook
 #   scripts/precheck.sh --full   # also compat-check against the last two releases
+#   scripts/precheck.sh --windows  # also the tests run on Windows, in the VM (3 minutes)
 #
 # The quick part: format; vet compiled for Linux, Windows and macOS; the tests compiled
 # for Windows and macOS too (a test that does not build there fails CI); the tests with
 # -race; the privacy check of what is committed; and the generated guides up to date.
-# Windows and macOS are only compiled here, not run: CI runs them.
+# Windows and macOS are only compiled here, not run: CI runs them. --windows runs the
+# tests on Windows too (scripts/test-windows.sh, in the VM of test/vm/windows-11): for
+# a change to paths, files, permissions, hooks or commands, the kind that passed on
+# Linux and failed on Windows in CI. The flags can go together.
 set -eu
 cd "$(git rev-parse --show-toplevel)"
 # Run from a git hook, git hands down GIT_DIR, GIT_INDEX_FILE and the like: the tests
@@ -16,7 +20,14 @@ cd "$(git rev-parse --show-toplevel)"
 # its folder, as from a terminal.
 for v in $(git rev-parse --local-env-vars); do unset "$v"; done
 full=0
-[ "${1:-}" = "--full" ] && full=1
+windows=0
+for a in "$@"; do
+  case "$a" in
+    --full) full=1 ;;
+    --windows) windows=1 ;;
+    *) echo "precheck: unknown option $a (--full, --windows)"; exit 2 ;;
+  esac
+done
 
 fail=0
 step() { printf '%s… ' "$1"; }
@@ -54,6 +65,11 @@ if [ "$full" = 1 ]; then
   go build -o "$dir/ab" ./cmd/augmented-brain
   if out=$(COMPAT_DIR="$dir/run" scripts/compat-check.sh "$dir/ab" 2>&1); then ok; else bad "$(printf '%s\n' "$out" | grep -E 'FAIL|compat-check:')"; fi
   echo "  (compat-check left its files in $dir)"
+fi
+
+if [ "$windows" = 1 ]; then
+  step "tests on Windows (VM)"
+  if out=$(scripts/test-windows.sh 2>&1); then ok; else bad "$(printf '%s\n' "$out" | grep -v '^ok ')"; fi
 fi
 
 if [ "$fail" = 1 ]; then

@@ -38,6 +38,7 @@ it feels to a newcomer.
 | `internal/rules`, `internal/templates` | The common rules and the starter files, in English and Spanish. |
 | `plugin/` | The Claude Code plugin: `hooks/hooks.json`, `.mcp.json`, `commands/panel.md` (`/brain:panel`). `.claude-plugin/marketplace.json` makes this repo its marketplace. |
 | `install.sh` | The installer people run with `curl … \| sh`. |
+| `internal/portcheck` | Used only by tests: reads the repository's tests for what passes on Linux and fails on Windows (`.Perm()` in a test that never looks at `runtime.GOOS`; JSON joined by hand around a path). A line that is fine says `// windows-ok`. |
 | `internal/doccheck` | Used only by tests: whether the reference pages (`docs/guide/commands`, `mcp-tools`, `configuration`, each with its `.es` twin) cover every command and flag (`commands` in `cmd/augmented-brain/commands.go`), MCP tool and parameter, and `config.toml` setting. `AB_DOCS_DIR` points the tests at other pages. |
 | `docs/` | The website (GitHub Pages, served from `main`): the landing pages, the documentation in `docs/guide/` (Markdown sources, rendered with a sidebar by `scripts/build-guides.py`, which also writes `docs/llms-full.txt`) and the format spec. |
 | `scripts/` | Checks, builders and release helpers (below). |
@@ -58,7 +59,12 @@ go build ./cmd/augmented-brain
 `scripts/precheck.sh` runs all of that and more before every push (the `pre-push` hook,
 with `git config core.hooksPath .githooks`): vet compiled for Linux, Windows and macOS,
 the tests compiled for Windows and macOS, the privacy check and the generated guides,
-in well under a minute. `--full` adds `compat-check`. CI runs once per change, in its
+in well under a minute. `--full` adds `compat-check`. `--windows` also runs every
+package's tests on Windows, in the VM of `test/vm/windows-11` (`scripts/test-windows.sh`,
+about 3 minutes): use it for a change to paths, files, permissions, hooks or commands,
+the kind that passed on Linux and failed on Windows in CI. `internal/portcheck` catches
+the two such patterns a reader can see (permission bits checked without looking at
+`runtime.GOOS`, JSON written by hand around a path) in every `go test`. CI runs once per change, in its
 pull request and again on `main`: a branch with no pull request gets no CI, so this is
 how it gets tried. Never push without it.
 
