@@ -55,17 +55,24 @@ go test -race ./...
 go build ./cmd/augmented-brain
 ```
 
+`scripts/precheck.sh` runs all of that and more before every push (the `pre-push` hook,
+with `git config core.hooksPath .githooks`): vet compiled for Linux, Windows and macOS,
+the tests compiled for Windows and macOS, the privacy check and the generated guides,
+in well under a minute. `--full` adds `compat-check`. CI runs once per change, in its
+pull request and again on `main`: a branch with no pull request gets no CI, so this is
+how it gets tried. Never push without it.
+
 Heavier checks, before a release or when you touch what they cover:
 
 - `scripts/install-check.sh`: the installer from nothing, hands-off, and 12 checks of the
   result (13 with the desktop app). It installs Claude Code for whoever runs it, so use
-  `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on macOS and Ubuntu on
-  every push that touches the installer, the plugin or the code (`install.yml`).
+  `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on macOS and Ubuntu in
+  every pull request that touches the installer, the plugin or the code (`install.yml`).
 - `scripts/compat-check.sh`: what this version writes (tasks, people, secrets' names, what a repository is,
   captures, rules, a backup), the last two releases must still read: their `doctor`,
   `check`, MCP tools, session start and restore. After an update, open Claude sessions
-  keep the old program, and other machines may not be updated yet. CI runs it on every
-  push (`compat` in `ci.yml`). By hand: `COMPAT_DIR=<folder> scripts/compat-check.sh
+  keep the old program, and other machines may not be updated yet. CI runs it in every
+  pull request (`compat` in `ci.yml`). By hand: `COMPAT_DIR=<folder> scripts/compat-check.sh
   <new binary> [versions]`; it leaves the folder for you to delete.
 - `scripts/install-check-mac.sh`: what only a Mac can get wrong in the installer (the PATH
   file for zsh and bash, macOS 13 or later, Apple's stub git), with fakes for `sw_vers`
@@ -132,7 +139,9 @@ Heavier checks, before a release or when you touch what they cover:
 
 - Small commits that stand on their own, with a message that says why. Nothing is pushed
   to `main` that the website should not show yet: Pages publishes `main` right away, so
-  try work on a branch (CI's install check runs on any branch).
+  try work on a branch, with `scripts/precheck.sh` and then a pull request (CI runs in
+  pull requests, not on bare branches). Every CI job stops at 10 minutes, so a stuck
+  runner fails instead of waiting for hours.
 - Before a release, the rehearsal in the VMs (Ubuntu and Windows, from `clean`), with
   the release built by `scripts/release-build.sh`; a new version is installed on a
   real machine only after it.

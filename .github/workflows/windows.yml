@@ -1,9 +1,11 @@
 name: windows
 
-# The installer and the tests on Windows, apart from ci.yml: every push that touches
-# what they cover, on any branch, and every pull request.
+# The installer and the tests on Windows, apart from ci.yml: once per change, in its
+# pull request (every one: "test" is a required check, and a filtered-out workflow
+# would leave it missing), and again on main when the change touches what they cover.
 on:
-  push:            # any branch: a branch is how a change gets tried before main
+  push:
+    branches: [main]
     paths: [install.ps1, scripts/install-check.ps1, plugin/**, cmd/**, internal/**, go.mod, go.sum, .github/workflows/windows.yml]
   pull_request:
   workflow_dispatch:
@@ -11,16 +13,15 @@ on:
 permissions:
   contents: read
 
-# As in ci.yml and install.yml (where it keeps the few macOS runners free): a newer
-# push to the same branch or pull request stops an older run of this workflow, except
-# on main, where every commit keeps its result. The group tells events apart, so a
-# push never stops a pull_request run: every check still runs on the last commit.
+# As in ci.yml: a newer push to the same pull request stops an older run, except on
+# main, where every commit keeps its result.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
+    timeout-minutes: 10
     runs-on: windows-latest
     steps:
       # Keep the files as they are in the repository: Git for Windows would otherwise
@@ -42,6 +43,7 @@ jobs:
 
   # The installer from nothing, hands-off, on a clean Windows: install-check.ps1.
   install:
+    timeout-minutes: 10
     runs-on: windows-latest
     steps:
       - run: git config --global core.autocrlf false

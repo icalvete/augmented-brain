@@ -1,0 +1,7 @@
+#!/bin/sh
+# Before a push, what CI would say: scripts/precheck.sh (about a minute). A push that
+# only deletes a branch or moves a tag has nothing to try.
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$local_ref" in refs/heads/*) exec "$(git rev-parse --show-toplevel)/scripts/precheck.sh" ;; esac
+done
+exit 0

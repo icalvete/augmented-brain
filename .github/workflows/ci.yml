@@ -1,25 +1,27 @@
 name: ci
 
+# Each change runs once: in its pull request (forks included), and again on main when
+# it lands. A branch with no pull request gets no CI: scripts/precheck.sh (run by the
+# pre-push hook) tries it on your computer first.
 on:
-  push:            # any branch: a branch is how a change gets tried before main
+  push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-# macOS runners are few, and a push to a pull request's branch starts several Mac jobs
-# at once (ci on push and on pull_request, install's Mac rows): some waited so long
-# they were cancelled. A newer push to the same branch or pull request makes an older
-# run of this workflow moot, so it is stopped (cancel-in-progress) instead of holding
-# runners; a run on main is never stopped, so every commit of main keeps its result.
-# The group tells events apart, so a push never stops a pull_request run (or the
-# other way round): every check still runs on the last commit. Nothing is skipped.
+# A newer push to the same pull request makes an older run of this workflow moot, so it
+# is stopped (cancel-in-progress) instead of holding the few macOS runners; a run on
+# main is never stopped, so every commit of main keeps its result.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test:
+    timeout-minutes: 10   # a stuck runner fails here instead of waiting six hours
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -41,6 +43,7 @@ jobs:
   # What this version writes, the last two releases must still read: after an update,
   # open Claude sessions keep the old program, and other machines may not be updated.
   compat:
+    timeout-minutes: 10   # a stuck runner fails here instead of waiting six hours
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -58,6 +61,7 @@ jobs:
           scripts/compat-check.sh /tmp/ab-new
 
   privacy:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       # In a pull request, the branch's own last commit, not the merge commit GitHub makes
@@ -73,5 +77,5 @@ jobs:
       - name: No personal data in the repository
         env:
           AB_PRIVACY_KEY: ${{ secrets.AB_PRIVACY_KEY }}
-          AB_PRIVACY_REQUIRED: ${{ github.event_name == 'push' && github.repository == 'icalvete/augmented-brain' }}
+          AB_PRIVACY_REQUIRED: ${{ github.repository == 'icalvete/augmented-brain' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
         run: python3 -I scripts/privacy-hashed.py scan
