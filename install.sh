@@ -239,7 +239,10 @@ desktop_install() {
   case "$os" in
     linux)
       command -v apt-get >/dev/null 2>&1 || return 1
-      sudo sh -c "curl -fsSLo '$DESKTOP_KEY' '$DESKTOP_KEY_URL' && echo '$DESKTOP_REPO' > /etc/apt/sources.list.d/claude-desktop.list && apt-get update -q && apt-get install -y claude-desktop"
+      # No questions while it installs: it runs with no terminal (see busy), so a question
+      # from debconf or from needrestart (Ubuntu 24.04 asks which services to restart)
+      # would wait for an answer that never comes. Both take their default instead.
+      sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a sh -c "curl -fsSLo '$DESKTOP_KEY' '$DESKTOP_KEY_URL' && echo '$DESKTOP_REPO' > /etc/apt/sources.list.d/claude-desktop.list && apt-get update -q && apt-get install -y claude-desktop"
       ;;
     darwin)
       if command -v brew >/dev/null 2>&1; then
