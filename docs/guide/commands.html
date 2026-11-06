@@ -177,8 +177,9 @@ augmented-brain check</code></pre>
   <h2 id="augmented-brain-update">augmented-brain update</h2>
   <p>Updates augmented brain and its Claude Code plugin.</p>
   <pre><code>augmented-brain update</code></pre>
-  <p>If there is a newer version, it runs the published installer, which replaces the program and then updates the plugin. If not, it only updates the plugin. Close and open Claude afterwards, so the sessions use the new version.</p>
-  <ul><li><code>--plugin</code>: update only the Claude Code plugin. The installer uses it.</li></ul>
+  <p>If there is a newer version, it runs the published installer, which replaces the program and then updates the plugin. If not, it only updates the plugin. Around a new version it does what you would otherwise do by hand:</p>
+  <ul><li><strong>Before:</strong> the health check of <code>doctor</code> (what it finds is shown, so it is not taken for a problem of the new version), and a backup of every space that has one. If a backup fails, it stops and updates nothing: that copy is the way back.</li><li><strong>After:</strong> how many open Claude sessions still run the old version, and which task is active in each space, so you ask its session to park it before restarting. Then close and open Claude, so the sessions use the new version.</li></ul>
+  <ul><li><code>--plugin</code>: update only the Claude Code plugin. The installer uses it.</li><li><code>--force</code>: update even when the backup before it fails.</li></ul>
   <h2 id="augmented-brain-uninstall">augmented-brain uninstall</h2>
   <p>Removes the program and the Claude Code plugin. Your notes stay.</p>
   <pre><code>augmented-brain uninstall</code></pre>

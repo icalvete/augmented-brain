@@ -312,8 +312,12 @@ update it. You can also do it yourself:
 augmented-brain update
 ```
 
-It updates the program and the Claude Code plugin. Running the install command again
-does the same. `augmented-brain update --plugin` updates only the plugin.
+It updates the program and the Claude Code plugin. Before, it checks the installation
+(and shows what it finds) and backs up every space that has a backup; if a backup fails,
+it updates nothing. After,
+it says which open sessions still run the old version and which task each space has
+active: ask those sessions to park their task. Running the install command again also
+updates, without those steps. `augmented-brain update --plugin` updates only the plugin.
 
 Then close and open Claude. A session that was open keeps the old program until you do,
 and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new
@@ -2091,10 +2095,18 @@ augmented-brain update
 ```
 
 If there is a newer version, it runs the published installer, which replaces the program
-and then updates the plugin. If not, it only updates the plugin. Close and open Claude
-afterwards, so the sessions use the new version.
+and then updates the plugin. If not, it only updates the plugin. Around a new version it
+does what you would otherwise do by hand:
+
+- **Before:** the health check of `doctor` (what it finds is shown, so it is not taken
+  for a problem of the new version), and a backup of every space that has one. If a
+  backup fails, it stops and updates nothing: that copy is the way back.
+- **After:** how many open Claude sessions still run the old version, and which task is
+  active in each space, so you ask its session to park it before restarting. Then close
+  and open Claude, so the sessions use the new version.
 
 - `--plugin`: update only the Claude Code plugin. The installer uses it.
+- `--force`: update even when the backup before it fails.
 
 ## augmented-brain uninstall
 

@@ -261,6 +261,38 @@ var commandMessages = map[string]msg{
 		en: "the update did not finish: %v",
 		es: "la actualización no ha terminado: %v",
 	},
+	"update.before.check": {
+		en: "Before updating, the health check found this (it was there before the new version):",
+		es: "Antes de actualizar, la revisión ha encontrado esto (ya estaba antes de la versión nueva):",
+	},
+	"update.before.stop": {
+		en: "The backup failed, so nothing was updated: that copy is the way back. Fix it and run `augmented-brain update` again (or `augmented-brain update --force` to update anyway).",
+		es: "La copia de seguridad ha fallado, así que no se ha actualizado nada: esa copia es la vuelta atrás. Arréglalo y vuelve a lanzar `augmented-brain update` (o `augmented-brain update --force` para actualizar igualmente).",
+	},
+	"update.before.ok": {
+		en: "✓ Health check before updating: nothing wrong.",
+		es: "✓ Revisión antes de actualizar: todo bien.",
+	},
+	"update.before.backup": {
+		en: "Backing up every space before updating…",
+		es: "Copia de seguridad de todos los espacios antes de actualizar…",
+	},
+	"update.after.none": {
+		en: "✓ No Claude session is still running the old version.",
+		es: "✓ Ninguna sesión de Claude sigue con la versión vieja.",
+	},
+	"update.after.old": {
+		en: "%d open Claude sessions still run the old version: their augmented brain tools may fail until they are restarted.",
+		es: "%d sesiones de Claude abiertas siguen con la versión vieja: sus herramientas de augmented brain pueden fallar hasta que las reinicies.",
+	},
+	"update.after.task": {
+		en: "  · space %s: task %s is active. Ask its session to park it first.",
+		es: "  · espacio %s: la tarea %s está activa. Pide antes a su sesión que la aparque.",
+	},
+	"update.after.restart": {
+		en: "Then close and open Claude (the whole app, or each session), and run `augmented-brain doctor` to check none is left.",
+		es: "Después cierra y abre Claude (la app entera, o cada sesión) y lanza `augmented-brain doctor` para ver que no queda ninguna.",
+	},
 	"update.plugin": {
 		en: "✓ Claude Code plugin up to date. Restart Claude (close and open the app or the session) to use it.",
 		es: "✓ Plugin de Claude Code al día. Reinicia Claude (cierra y abre la app o la sesión) para usarlo.",

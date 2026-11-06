@@ -85,8 +85,12 @@ func cmdBackup(args []string, out, errOut io.Writer) int {
 		}
 		c, spaces = cc, []*config.Space{s}
 	}
-	// backup.Run takes the locks: backups run one at a time, and never during a write of
-	// the assistant.
+	return backupSpaces(c, spaces, out, errOut)
+}
+
+// backupSpaces backs up each space and says how it went; 1 when any failed. backup.Run
+// takes the locks: backups run one at a time, and never during a write of the assistant.
+func backupSpaces(c *config.Config, spaces []*config.Space, out, errOut io.Writer) int {
 	host, _ := os.Hostname()
 	code := 0
 	for _, s := range spaces {

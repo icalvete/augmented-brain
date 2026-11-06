@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## Unreleased
+
+- **`update` hace las comprobaciones de alrededor.** Antes de una versión nueva, revisa la
+  instalación (y enseña lo que encuentre) y hace la copia de seguridad de cada espacio que
+  la tenga; si falla una copia, no actualiza nada (`--force` actualiza igualmente). Después, dice cuántas sesiones de
+  Claude abiertas siguen con la versión vieja y qué tarea está activa en cada espacio,
+  para aparcarla antes de reiniciar Claude.
+
 ## 0.9.0-alpha
 
 Publicada el 2026-11-06.

@@ -297,10 +297,18 @@ augmented-brain update
 ```
 
 If there is a newer version, it runs the published installer, which replaces the program
-and then updates the plugin. If not, it only updates the plugin. Close and open Claude
-afterwards, so the sessions use the new version.
+and then updates the plugin. If not, it only updates the plugin. Around a new version it
+does what you would otherwise do by hand:
+
+- **Before:** the health check of `doctor` (what it finds is shown, so it is not taken
+  for a problem of the new version), and a backup of every space that has one. If a
+  backup fails, it stops and updates nothing: that copy is the way back.
+- **After:** how many open Claude sessions still run the old version, and which task is
+  active in each space, so you ask its session to park it before restarting. Then close
+  and open Claude, so the sessions use the new version.
 
 - `--plugin`: update only the Claude Code plugin. The installer uses it.
+- `--force`: update even when the backup before it fails.
 
 ## augmented-brain uninstall
 

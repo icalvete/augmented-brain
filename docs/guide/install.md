@@ -147,8 +147,12 @@ update it. You can also do it yourself:
 augmented-brain update
 ```
 
-It updates the program and the Claude Code plugin. Running the install command again
-does the same. `augmented-brain update --plugin` updates only the plugin.
+It updates the program and the Claude Code plugin. Before, it checks the installation
+(and shows what it finds) and backs up every space that has a backup; if a backup fails,
+it updates nothing. After,
+it says which open sessions still run the old version and which task each space has
+active: ask those sessions to park their task. Running the install command again also
+updates, without those steps. `augmented-brain update --plugin` updates only the plugin.
 
 Then close and open Claude. A session that was open keeps the old program until you do,
 and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **`update` does the checks around it.** Before a new version, it runs the health check
+  (and shows what it finds) and backs up every space that has a backup; if a backup
+  fails, nothing is updated (`--force` updates anyway). After, it says how many open Claude sessions still run the
+  old version and which task each space has active, to park before restarting Claude.
+
 ## 0.9.0-alpha
 
 Released 2026-11-06.

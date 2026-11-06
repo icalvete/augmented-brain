@@ -8,27 +8,37 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/doctor"
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/update"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
-// updateFlags are update's flags: --plugin.
-func updateFlags(errOut io.Writer) (*flag.FlagSet, *bool) {
+// updateFlags are update's flags: --plugin and --force.
+func updateFlags(errOut io.Writer) (*flag.FlagSet, *bool, *bool) {
 	fs := flag.NewFlagSet("update", flag.ContinueOnError)
 	fs.SetOutput(errOut)
-	return fs, fs.Bool("plugin", false, "update only the Claude Code plugin")
+	plugin := fs.Bool("plugin", false, "update only the Claude Code plugin")
+	force := fs.Bool("force", false, "update even when the backup before it fails")
+	return fs, plugin, force
 }
 
 // cmdUpdate brings augmented brain up to date: the program through the published
 // installer (the one people run, so there is a single way to install), and then the
 // Claude Code plugin. --plugin updates only the plugin; the installer calls it.
+//
+// Around a new version it does what people used to do by hand: before, the health
+// check (its problems are shown, so they are not taken for the new version's) and a
+// backup of every space that has one (a failed backup stops it, unless --force); after, which open Claude sessions still run the old program and which task
+// each space has active, to park before restarting Claude.
 func cmdUpdate(args []string, out, errOut io.Writer) int {
-	fs, pluginOnly := updateFlags(errOut)
+	fs, pluginOnly, force := updateFlags(errOut)
 	if _, ok := parseArgs(fs, args, 0, errOut); !ok {
 		return 2
 	}
@@ -56,6 +66,9 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(out, i18n.T(lang, "update.found", version.Version, latest))
 		base = "https://github.com/" + update.Repo + "/releases/latest/download"
 	}
+	if code := beforeUpdate(lang, *force, out, errOut); code != 0 {
+		return code
+	}
 	// The installer replaces the program and, as the configuration exists, then runs
 	// `augmented-brain update --plugin` with the new program.
 	cmd := exec.Command("sh", "-c", `curl -fsSL "$1/install.sh" | sh`, "sh", base)
@@ -71,7 +84,100 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, i18n.T(lang, "update.failed", err))
 		return 1
 	}
+	afterUpdate(lang, installedVersion(), out)
 	return 0
+}
+
+// beforeUpdate checks the installation and backs up every space that has a backup,
+// before a new version replaces the program. A problem the check finds is shown, not a
+// reason to stop: an update makes none of them worse (a missing Claude Code is even
+// installed by it). A backup that fails stops it: that copy is the way back. Without a configuration that loads there
+// is nothing to check or back up: the update may be what fixes it (a newer format, a
+// setting this version does not know). 1 stops the update.
+func beforeUpdate(lang string, force bool, out, errOut io.Writer) int {
+	dir, err := config.Dir()
+	if err != nil {
+		return 0
+	}
+	c, err := config.Load(dir)
+	if err != nil {
+		return 0
+	}
+	wd, _ := os.Getwd()
+	var failed []doctor.Check
+	for _, ch := range doctor.Run(doctor.Env{ConfigDir: dir, WorkDir: wd, Lang: lang}) {
+		if ch.Status == doctor.Failed {
+			failed = append(failed, ch)
+		}
+	}
+	if len(failed) > 0 {
+		fmt.Fprintln(errOut, i18n.T(lang, "update.before.check"))
+		for _, ch := range failed {
+			fmt.Fprintf(errOut, "✗ %s\n", ch.What)
+			if ch.Fix != "" {
+				fmt.Fprintf(errOut, "    → %s\n", ch.Fix)
+			}
+		}
+	} else {
+		fmt.Fprintln(out, i18n.T(lang, "update.before.ok"))
+	}
+	var spaces []*config.Space
+	for _, n := range c.SpaceNames() {
+		if c.Spaces[n].Backup != "" {
+			spaces = append(spaces, c.Spaces[n])
+		}
+	}
+	if len(spaces) == 0 {
+		return 0
+	}
+	fmt.Fprintln(out, i18n.T(lang, "update.before.backup"))
+	if backupSpaces(c, spaces, out, errOut) != 0 && !force {
+		fmt.Fprintln(errOut, i18n.T(lang, "update.before.stop"))
+		return 1
+	}
+	return 0
+}
+
+// afterUpdate says which open Claude sessions still run the old program, and which
+// task each space has active: park it, then close and open Claude.
+func afterUpdate(lang, now string, out io.Writer) {
+	dir, err := config.Dir()
+	if err != nil {
+		return
+	}
+	c, err := config.Load(dir)
+	if err != nil {
+		return
+	}
+	if now == "" {
+		return
+	}
+	old := state.OldServers(dir, now)
+	if len(old) == 0 {
+		fmt.Fprintln(out, i18n.T(lang, "update.after.none"))
+		return
+	}
+	fmt.Fprintln(out, i18n.T(lang, "update.after.old", len(old)))
+	for _, n := range c.SpaceNames() {
+		if t := state.Read(dir, n).Task; t != "" {
+			fmt.Fprintln(out, i18n.T(lang, "update.after.task", n, t))
+		}
+	}
+	fmt.Fprintln(out, i18n.T(lang, "update.after.restart"))
+}
+
+// installedVersion is the version of the program the installer just put in place (this
+// one may still be the old one, running from memory), or "" when it cannot tell.
+func installedVersion() string {
+	exe, err := os.Executable()
+	if err != nil {
+		return ""
+	}
+	o, err := exec.Command(exe, "version").Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(o))
 }
 
 func updatePlugin(lang string, out, errOut io.Writer) int {

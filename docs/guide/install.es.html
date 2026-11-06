@@ -120,7 +120,7 @@
   <h2 id="actualizar">Actualizar</h2>
   <p>Cuando hay versión nueva, Claude te lo dice al empezar una sesión y se ofrece a actualizarlo. También puedes hacerlo tú:</p>
   <pre><code>augmented-brain update</code></pre>
-  <p>Actualiza el programa y el plugin de Claude Code. Volver a lanzar el comando de instalación hace lo mismo. <code>augmented-brain update --plugin</code> actualiza solo el plugin.</p>
+  <p>Actualiza el programa y el plugin de Claude Code. Antes, revisa la instalación (y enseña lo que encuentre) y hace la copia de seguridad de cada espacio que la tenga; si falla una copia, no actualiza nada. Después, dice qué sesiones abiertas siguen con la versión vieja y qué tarea está activa en cada espacio: pide a esas sesiones que aparquen su tarea. Volver a lanzar el comando de instalación también actualiza, sin esos pasos. <code>augmented-brain update --plugin</code> actualiza solo el plugin.</p>
   <p>Después, cierra y abre Claude. Una sesión que estaba abierta sigue con el programa viejo hasta que lo hagas, y sus herramientas de augmented brain pueden fallar. <code>augmented-brain doctor</code> y el arranque de una sesión nueva te dicen cuántas sesiones siguen con la versión vieja.</p>
   <p>Tus notas y tus ajustes se quedan como están. A veces una versión nueva guarda las notas de otra manera. Entonces la primera sesión las pasa a la manera nueva, después de guardar una copia completa en la carpeta <code>migrations/</code> de la configuración, y Claude te lo dice. Una versión más vieja nunca estropea notas escritas por una más nueva: se niega a abrirlas y pide que la actualices. Así que actualiza todos los ordenadores que uses.</p>
   <h2 id="desinstalar">Desinstalar</h2>
