@@ -5,3 +5,6 @@ __pycache__/
 /augmented-brain
 /dist/
 .vagrant/
+
+# Logs of test/rehearsal/rehearse.sh
+test/rehearsal/logs/
