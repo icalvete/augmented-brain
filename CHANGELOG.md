@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.11.0-alpha
+
+Released 2026-11-07.
 
 - **Open the panel from your phone or another computer.** A new command,
   `augmented-brain panel remote`, publishes the panel in your own

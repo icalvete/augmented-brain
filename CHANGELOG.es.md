@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Unreleased
+## 0.11.0-alpha
+
+Publicada el 2026-11-07.
 
 - **Abre el panel desde el móvil u otro ordenador.** Un comando nuevo,
   `augmented-brain panel remote`, publica el panel en tu propia red de
