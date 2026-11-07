@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **El acceso remoto arranca donde trabajas.** La sesión de cada espacio arranca ahora en
+  la primera carpeta de trabajo del espacio, no en una carpeta nueva dentro de la
+  configuración. Si ya usas Claude ahí, ya confía en ella y no hay nada más que aceptar.
+  Un ajuste nuevo, `folders` en `remote.toml`, elige otra carpeta dentro del espacio. Solo
+  un espacio sin carpetas de trabajo sigue teniendo una propia. Vuelve a lanzar
+  `augmented-brain remote install` para mover un servicio que ya tengas.
 - **`update` hace las comprobaciones de alrededor.** Antes de una versión nueva, revisa la
   instalación (y enseña lo que encuentre) y hace la copia de seguridad de cada espacio que
   la tenga; si falla una copia, no actualiza nada (`--force` actualiza igualmente). Después, dice cuántas sesiones de

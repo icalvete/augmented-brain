@@ -193,26 +193,26 @@ func TestSettings(t *testing.T) {
 	}
 }
 
-// Install makes the folder, adds it to the space's work folders, writes the unit, reloads
-// systemd and enables the service; running it again changes nothing.
+// Install starts each service in the space's first work folder (no folder of its own,
+// config.toml untouched), writes the unit, reloads systemd and enables the service;
+// running it again changes nothing.
 func TestInstallIsRepeatable(t *testing.T) {
 	f := newFake(t)
 	c, set := f.load()
 	set.Spaces = []string{"personal", "work"}
+	before0, _ := os.ReadFile(filepath.Join(f.cfgDir, config.FileName))
 	res, err := f.sys.Install(c, set)
 	if err != nil {
 		t.Fatal(err)
 	}
-	folder := filepath.Join(f.cfgDir, "remote", "personal")
-	if st, err := os.Stat(folder); err != nil || !st.IsDir() || (runtime.GOOS != "windows" && st.Mode().Perm() != 0o700) { // Windows has no modes
-		t.Errorf("folder: %v %v", st, err)
+	if got := []string{res.Services[0].Folder, res.Services[1].Folder}; !slices.Equal(got, []string{filepath.Join(f.root, "p"), filepath.Join(f.root, "w")}) {
+		t.Errorf("folders = %q, want each space's first work folder", got)
 	}
-	c2, _ := f.load()
-	if s, isDefault := c2.SpaceAt(folder); s == nil || s.Name != "personal" || isDefault {
-		t.Errorf("a session in %s must belong to personal, got %v (default %v)", folder, s, isDefault)
+	if _, err := os.Stat(filepath.Join(f.cfgDir, "remote")); err == nil {
+		t.Error("a space with work folders needs no folder of its own")
 	}
-	if s := c2.SpaceFor(filepath.Join(f.cfgDir, "remote", "work")); s == nil || s.Name != "work" {
-		t.Errorf("the work service's folder must belong to work, got %v", s)
+	if after0, _ := os.ReadFile(filepath.Join(f.cfgDir, config.FileName)); string(after0) != string(before0) {
+		t.Errorf("config.toml changed:\n%s", after0)
 	}
 	unit, err := os.ReadFile(filepath.Join(f.sys.UnitDir, "augmented-brain-remote-personal.service"))
 	if err != nil {
@@ -229,7 +229,7 @@ func TestInstallIsRepeatable(t *testing.T) {
 	if got := filterCalls(f.calls, "systemctl"); !slices.Equal(got, wantCalls) {
 		t.Errorf("systemctl calls = %q", got)
 	}
-	if len(res.Added) != 2 || len(res.Untrusted) != 2 || res.Linger != LingerOff {
+	if len(res.Added) != 0 || len(res.Untrusted) != 2 || res.Linger != LingerOff {
 		t.Errorf("result = %+v", res)
 	}
 	if !strings.Contains(f.sys.LingerCommand(), "sudo loginctl enable-linger lucia") {
@@ -273,6 +273,67 @@ func TestInstallIsRepeatable(t *testing.T) {
 	}
 	if !slices.Contains(f.calls, "systemctl --user restart augmented-brain-remote-personal.service") {
 		t.Errorf("no restart after the unit changed: %q", f.calls)
+	}
+}
+
+// A space with no work folder gets a folder of its own, made a work folder of the space.
+func TestInstallOwnFolder(t *testing.T) {
+	f := newFake(t)
+	if err := config.SetSpaceList(f.cfgDir, "work", "work_folders", nil); err != nil {
+		t.Fatal(err)
+	}
+	c, set := f.load()
+	set.Spaces = []string{"personal", "work"}
+	res, err := f.sys.Install(c, set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	folder := filepath.Join(f.cfgDir, "remote", "work")
+	if st, err := os.Stat(folder); err != nil || !st.IsDir() || (runtime.GOOS != "windows" && st.Mode().Perm() != 0o700) { // Windows has no modes
+		t.Errorf("folder: %v %v", st, err)
+	}
+	if len(res.Added) != 1 || res.Added[0].Space != "work" || !res.Services[1].Own || res.Services[0].Own {
+		t.Errorf("result = %+v", res)
+	}
+	c2, _ := f.load()
+	if s, isDefault := c2.SpaceAt(folder); s == nil || s.Name != "work" || isDefault {
+		t.Errorf("a session in %s must belong to work, got %v (default %v)", folder, s, isDefault)
+	}
+	if _, err := os.Stat(filepath.Join(f.cfgDir, "remote", "personal")); err == nil {
+		t.Error("personal has a work folder: no folder of its own")
+	}
+}
+
+// folders in remote.toml picks another folder, inside a work folder of the space.
+func TestFoldersSetting(t *testing.T) {
+	f := newFake(t)
+	sub := filepath.Join(f.root, "p", "sub")
+	if err := os.MkdirAll(sub, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	write := func(text string) {
+		if err := os.WriteFile(filepath.Join(f.cfgDir, SettingsFile), []byte(text), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("folders = { personal = \"~/p/sub\" }\n")
+	c, set := f.load()
+	if got := Services(c, set)[0].Folder; got != sub {
+		t.Errorf("folder = %q, want %q", got, sub)
+	}
+	write("folders = { personal = \"~/p/missing\" }\n")
+	c, set = f.load()
+	if _, err := f.sys.Install(c, set); err == nil || !strings.Contains(err.Error(), "missing") {
+		t.Errorf("a missing folder: %v", err)
+	}
+	for _, bad := range []struct{ text, want string }{
+		{"folders = { personal = \"~/w\" }\n", "work_folders"},
+		{"folders = { nowhere = \"~/p\" }\n", "nowhere"},
+	} {
+		write(bad.text)
+		if _, err := LoadSettings(c, "box"); err == nil || !strings.Contains(err.Error(), bad.want) {
+			t.Errorf("%s: error = %v", bad.text, err)
+		}
 	}
 }
 
@@ -352,12 +413,12 @@ func TestTrust(t *testing.T) {
 	if err != nil || st.Spaces[0].Trusted {
 		t.Fatalf("no claude.json: %+v %v", st, err)
 	}
-	folder := filepath.Join(f.cfgDir, "remote", "personal")
+	folder := filepath.Join(f.root, "p")
 	f.trust(folder)
 	if st, _ = f.sys.Status(c, set); !st.Spaces[0].Trusted {
 		t.Error("the folder itself is trusted")
 	}
-	f.trust(f.cfgDir)
+	f.trust(f.root)
 	if st, _ = f.sys.Status(c, set); !st.Spaces[0].Trusted {
 		t.Error("a parent is trusted")
 	}
@@ -385,7 +446,7 @@ func TestStatus(t *testing.T) {
 		t.Fatal(err)
 	}
 	f.active["augmented-brain-remote-personal.service"] = "active"
-	f.trust(filepath.Join(f.cfgDir, "remote", "personal"))
+	f.trust(filepath.Join(f.root, "p"))
 	f.linger = "yes"
 	st, _ = f.sys.Status(c, set)
 	x := st.Spaces[0]
@@ -401,7 +462,7 @@ func TestStatus(t *testing.T) {
 	f.linger = "no"
 	st, _ = f.sys.Status(c, set)
 	text := strings.Join(f.sys.StatusLines("es", st), "\n")
-	for _, want := range []string{"ha fallado", "cd " + filepath.Join(f.cfgDir, "remote", "personal") + " && claude", "sudo loginctl enable-linger lucia", "box.local-personal"} {
+	for _, want := range []string{"ha fallado", "cd " + filepath.Join(f.root, "p") + " && claude", "sudo loginctl enable-linger lucia", "box.local-personal"} {
 		if !strings.Contains(text, want) {
 			t.Errorf("status lacks %q:\n%s", want, text)
 		}
@@ -417,7 +478,7 @@ func TestStatus(t *testing.T) {
 }
 
 // Uninstall stops and removes our units and nothing else: a file that is not ours, the
-// folder and the work_folders entry stay.
+// folder and the work_folders stay.
 func TestUninstall(t *testing.T) {
 	f := newFake(t)
 	c, set := f.load()
@@ -441,7 +502,7 @@ func TestUninstall(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(f.sys.UnitDir, "augmented-brain-remote-personal.service")); err == nil {
 		t.Error("the unit is still there")
 	}
-	for _, p := range []string{foreign, other, filepath.Join(f.cfgDir, "remote", "personal")} {
+	for _, p := range []string{foreign, other, filepath.Join(f.root, "p")} {
 		if _, err := os.Stat(p); err != nil {
 			t.Errorf("%s was removed", p)
 		}
@@ -454,8 +515,8 @@ func TestUninstall(t *testing.T) {
 	if set2.Enabled {
 		t.Error("still enabled")
 	}
-	if s := c2.SpaceFor(filepath.Join(f.cfgDir, "remote", "personal")); s == nil {
-		t.Error("the work_folders entry must stay")
+	if s := c2.SpaceFor(filepath.Join(f.root, "p")); s == nil || s.Name != "personal" {
+		t.Error("the work_folders must stay")
 	}
 	// Again: nothing to do, and no error.
 	if removed, err := f.sys.Uninstall(c2); err != nil || len(removed) != 0 {
@@ -514,7 +575,7 @@ func TestSettingsDocumented(t *testing.T) {
 		if code == nil {
 			t.Errorf("%s: no section \"## `%s`\"", file, SettingsFile)
 		}
-		for _, name := range []string{"enabled", "spaces", "name_prefix", "permission_mode"} {
+		for _, name := range []string{"enabled", "spaces", "name_prefix", "permission_mode", "folders"} {
 			if !doccheck.Mentions(code, name) {
 				t.Errorf("%s: the remote.toml section lacks `%s`", file, name)
 			}

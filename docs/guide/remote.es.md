@@ -20,23 +20,30 @@ puerta empieza en una carpeta que es de ese espacio, así que Claude carga las n
 reglas de ese espacio, y nada se cruza entre espacios. Por defecto solo tu espacio por
 defecto tiene puerta. Para abrir otra para trabajo, mira [Configuración](configuration.es.md).
 
+Esa carpeta es la primera carpeta de trabajo del espacio, la que pusiste al crearlo: donde
+ya trabajas, así que una sesión abierta desde el móvil empieza donde la abrirías delante
+del ordenador. Para que empiece en otra carpeta dentro del espacio, usa `folders` en
+[`remote.toml`](configuration.es.md). Solo un espacio sin carpetas de trabajo tiene una
+carpeta propia, `~/.config/augmented-brain/remote/<espacio>`.
+
 ## Instálalo
 
 ```bash
 augmented-brain remote install
 ```
 
-Crea la carpeta, escribe el servicio y lo arranca. Luego te dice lo que falta. Siempre
-faltan dos cosas, porque solo puedes hacerlas tú.
+Escribe el servicio y lo arranca. Luego te dice lo que falta, si falta algo: dos cosas que
+solo puedes hacer tú.
 
 ### 1. Que Claude confíe en la carpeta
 
 Claude se niega a trabajar en una carpeta de la que no le han dicho que se fíe, y cuando
-arranca solo no hay nadie al teclado para contestar. Así que, una vez por cada carpeta que
+arranca solo no hay nadie al teclado para contestar. Si ya usas Claude en tu carpeta de
+trabajo, ya confía en ella y no hay nada que hacer. Si no, una vez por cada carpeta que
 nombre `install`, abre Claude ahí y acepta la pregunta:
 
 ```bash
-cd ~/.config/augmented-brain/remote/personal && claude
+cd ~/proyectos && claude
 ```
 
 Acepta «confiar en esta carpeta» y cierra Claude (`/exit`). augmented brain nunca toca por
