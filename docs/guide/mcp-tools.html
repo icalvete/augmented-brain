@@ -118,11 +118,14 @@
   <p>Pauses a task without losing anything, before switching to other work.</p>
   <ul><li><code>id</code>: the task's id.</li><li><code>next</code>: exactly how to resume: a command, a file or a decision.</li><li><code>waiting_on</code> (optional): who it waits on now.</li><li><code>essentials</code> (optional, but Claude should pass it): three to six lines that are enough to resume without the journal. They replace the task's first section. Without it, only “where it is” and “next” are updated there.</li><li><code>someday</code> (optional): <code>true</code> when it will not be touched for weeks. The task leaves the daily list.</li></ul>
   <h2 id="task_close"><code>task_close</code></h2>
-  <p>Closes a finished task with its result. It is kept, never deleted. A task with open subtasks cannot close.</p>
+  <p>Closes a finished task with its result. It is kept, never deleted. A task with open subtasks cannot close. If the task has watch dates not marked done, it says so: they still come up at the start of the session on their day, since closing is often when you write down what to check later.</p>
   <ul><li><code>id</code>: the task's id.</li><li><code>result</code>: what was achieved, in one or two lines.</li></ul>
   <h2 id="capture"><code>capture</code></h2>
   <p>Notes something in the inbox without opening a task, optionally with a day to be reminded. The weekly review processes it.</p>
-  <ul><li><code>text</code>: the idea, link or loose end, in one line.</li><li><code>remind_on</code> (optional): a date. It comes up at the start of the session from a week before, until it is dealt with.</li></ul>
+  <ul><li><code>text</code>: the idea, link or loose end, in one line.</li><li><code>remind_on</code> (optional): a date. It comes up at the start of the session from a week before, until it is dealt with.</li><li><code>space</code> (optional): another of your spaces, to send it there instead. It lands in that space's inbox marked with where it came from, <code>(from personal)</code>, and comes up at the start of every session there until it is done. For something decided in one space that has to be done in another. Claude only does it when you ask: what goes to a space is seen there and goes into its backup.</li></ul>
+  <h2 id="capture_done"><code>capture_done</code></h2>
+  <p>Takes one capture out of the inbox once it is done, or once it has become a task, without waiting for the weekly review. Above all for what another space sent, which otherwise comes up at every session start.</p>
+  <ul><li><code>date</code>: the day it was captured, as listed.</li><li><code>text</code>: its text exactly as listed, with or without its origin. Another capture with the same text stays.</li></ul>
   <h2 id="weekly_review"><code>weekly_review</code></h2>
   <p>Lists what the weekly review goes through: the inbox, live tasks untouched for 14 days or more, and the dates due in the next 7 days. Claude then goes through it with you, one item at a time. It takes no parameters.</p>
   <h2 id="review_done"><code>review_done</code></h2>

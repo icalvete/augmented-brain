@@ -107,6 +107,9 @@
   <h2 id="compruébalo">Compruébalo</h2>
   <pre><code>augmented-brain remote status</code></pre>
   <p>Para cada espacio dice si el servicio está en marcha, si Claude confía en su carpeta y si el linger está activado, con lo que hacer con cada problema. <code>augmented-brain doctor</code> enseña lo mismo, una línea por espacio.</p>
+  <p>Cuando un servicio falla, dice por qué en el registro del sistema (el journal):</p>
+  <pre><code>journalctl --user -u augmented-brain-remote-personal -n 20</code></pre>
+  <p>Un servicio instalado por una versión anterior no guardaba sus errores en ninguna parte; <code>status</code> y <code>doctor</code> te dicen que vuelvas a lanzar <code>augmented-brain remote install</code>, que lo pone al día.</p>
   <h2 id="conéctate-desde-otro-ordenador">Conéctate desde otro ordenador</h2>
   <ol><li>Abre <a href="https://claude.ai/code">claude.ai/code</a> o Claude Desktop, con la misma cuenta de Claude que en la máquina.</li><li>Elige el entorno que se llama <code>&lt;nombre del ordenador&gt;-&lt;espacio&gt;</code>, el nombre que enseña <code>status</code>.</li><li>Empieza una sesión. Empieza las que quieras: cada una arranca en la carpeta de ese espacio.</li></ol>
   <h2 id="mantenlo-seguro">Mantenlo seguro</h2>

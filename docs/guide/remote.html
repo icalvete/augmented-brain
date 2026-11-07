@@ -107,6 +107,9 @@
   <h2 id="check-it">Check it</h2>
   <pre><code>augmented-brain remote status</code></pre>
   <p>For each space it says whether the service is running, whether Claude trusts its folder, and whether linger is on, with what to do about each problem. <code>augmented-brain doctor</code> shows the same, one line per space.</p>
+  <p>When a service fails, it says why in the system journal:</p>
+  <pre><code>journalctl --user -u augmented-brain-remote-personal -n 20</code></pre>
+  <p>A service installed by an earlier version sent its errors nowhere; <code>status</code> and <code>doctor</code> tell you to run <code>augmented-brain remote install</code> again, which brings it up to date.</p>
   <h2 id="connect-from-another-computer">Connect from another computer</h2>
   <ol><li>Open <a href="https://claude.ai/code">claude.ai/code</a> or Claude Desktop, signed in to the same Claude account as on the machine.</li><li>Choose the environment named <code>&lt;computer name&gt;-&lt;space&gt;</code>, the name <code>status</code> shows.</li><li>Start a session. Start as many as you like: each one begins in that space's folder.</li></ol>
   <h2 id="keep-it-safe">Keep it safe</h2>

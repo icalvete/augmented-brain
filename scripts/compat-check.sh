@@ -105,7 +105,19 @@ cat > "$WORK/write.json" <<'EOF'
 EOF
 echo "new program ($("$NEW" version)) writes:"
 mcp "$NEW" "$WORKDIR" "$WORK/write.json" || fail=1
-(cd "$WORKDIR" && echo '{"session_id":"s1","cwd":"'"$WORKDIR"'"}' | "$NEW" hook session-start 1 >/dev/null)
+# A capture sent from the personal space to this one: what an earlier program reads
+# here is a capture ending "(from personal) (remind: ...)".
+cat > "$WORK/send.json" <<'EOF'
+[
+ ["capture", {"text": "sent from another space", "space": "work", "remind_on": "2030-01-03"}]
+]
+EOF
+mcp "$NEW" "$HOME/augmented-brain/personal" "$WORK/send.json" || fail=1
+grep -q "sent from another space (from personal) (remind: 2030-01-03)" "$WORKDIR/notes/inbox.md" || { echo "  FAIL the capture did not reach work"; fail=1; }
+(cd "$WORKDIR" && echo '{"session_id":"s1","cwd":"'"$WORKDIR"'"}' | CLAUDE_PID=4242 "$NEW" hook session-start 1 >/dev/null)
+# What a session leaves in the configuration folder (state/seen) must not trouble them either.
+(cd "$WORKDIR" && echo '{"session_id":"s1","cwd":"'"$WORKDIR"'","prompt":"hi"}' | CLAUDE_PID=4242 "$NEW" hook user-prompt-submit >/dev/null)
+test -f "$XDG_CONFIG_HOME/augmented-brain/state/seen/pid-4242.json" || { echo "  FAIL no seen file"; fail=1; }
 (cd "$WORKDIR" && "$NEW" check >/dev/null) || fail=1
 git init -q --bare "$WORK/backup.git"
 (cd "$WORKDIR" && "$NEW" backup setup "$WORK/backup.git" >/dev/null && "$NEW" backup >/dev/null) || { echo "  FAIL backup"; fail=1; }

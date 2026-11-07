@@ -21,7 +21,24 @@ type InboxEntry struct {
 	Date   string // when it was captured
 	Text   string
 	Remind string // optional: the day to bring it up again
+	From   string // the space it was sent from (capture with space); "" when captured here
 }
+
+// full is the text as the line holds it, origin included: what an earlier program,
+// which does not know origins, reads as the text.
+func (e InboxEntry) full() string {
+	if e.From == "" {
+		return e.Text
+	}
+	return e.Text + fromMark(e.From)
+}
+
+// fromMark is how a capture sent from another space ends, before any reminder.
+func fromMark(space string) string { return " (from " + space + ")" }
+
+// fromSuffix splits the origin off a capture's text. Only the name of a space of the
+// configuration counts: "(from Amazon)" in the user's own words stays text.
+var fromSuffix = regexp.MustCompile(`^(.*) \(from ([A-Za-z0-9_.-]+)\)$`)
 
 // remindSuffix splits the text of an inbox line ("- 2026-10-17 — text", see
 // memory.DatedLine) from the reminder it may end in: " (remind: 2026-10-22)".
@@ -29,13 +46,17 @@ var remindSuffix = regexp.MustCompile(`^(.*?)(?: \(remind: (\d{4}-\d{2}-\d{2})\)
 
 // parseInboxLine reads one line of the inbox; ok is false for a line that is not a
 // capture (the heading, a paragraph).
-func parseInboxLine(l string) (e InboxEntry, ok bool) {
+func parseInboxLine(l string, spaces map[string]bool) (e InboxEntry, ok bool) {
 	date, rest, ok := memory.ParseDatedLine(l)
 	if !ok {
 		return InboxEntry{}, false
 	}
 	m := remindSuffix.FindStringSubmatch(rest)
-	return InboxEntry{Date: date, Text: m[1], Remind: m[2]}, true
+	e = InboxEntry{Date: date, Text: m[1], Remind: m[2]}
+	if f := fromSuffix.FindStringSubmatch(e.Text); f != nil && spaces[f[2]] {
+		e.Text, e.From = f[1], f[2]
+	}
+	return e, true
 }
 
 func (b *Brain) inboxPath() string { return filepath.Join(b.Mem.Dir, "inbox.md") }
@@ -51,11 +72,24 @@ func (b *Brain) Inbox() ([]InboxEntry, error) {
 	}
 	var out []InboxEntry
 	for _, l := range strings.Split(string(data), "\n") {
-		if e, ok := parseInboxLine(l); ok {
+		if e, ok := parseInboxLine(l, b.spaceSet()); ok {
 			out = append(out, e)
 		}
 	}
 	return out, nil
+}
+
+// Arrived are the captures other spaces sent to this one (CaptureTo), oldest first,
+// still in the inbox.
+func (b *Brain) Arrived() []InboxEntry {
+	all, _ := b.Inbox()
+	var out []InboxEntry
+	for _, e := range all {
+		if e.From != "" {
+			out = append(out, e)
+		}
+	}
+	return out
 }
 
 // InboxDone takes processed captures out of the inbox. Each item is the text of a
@@ -72,12 +106,33 @@ func (b *Brain) InboxDone(items []string) ([]string, error) {
 			want[it] = true
 		}
 	}
+	lines := strings.Split(string(data), "\n")
+	// A capture sent from another space is found by its text with or without the
+	// origin (an earlier program sends it with). Without it, it is only taken when no
+	// capture made here says exactly that, so asking for "X" never takes "X" and
+	// "X (from personal)" at once.
+	plain := map[string]bool{}
+	for _, l := range lines {
+		if e, ok := parseInboxLine(l, b.spaceSet()); ok && e.From == "" {
+			plain[strings.TrimSpace(e.Text)] = true
+		}
+	}
 	found := map[string]bool{}
 	var keep []string
-	for _, l := range strings.Split(string(data), "\n") {
-		if e, ok := parseInboxLine(l); ok && want[strings.TrimSpace(e.Text)] {
-			found[strings.TrimSpace(e.Text)] = true
-			continue
+	for _, l := range lines {
+		if e, ok := parseInboxLine(l, b.spaceSet()); ok {
+			text, full := strings.TrimSpace(e.Text), strings.TrimSpace(e.full())
+			switch {
+			case e.From == "" && want[text]:
+				found[text] = true
+				continue
+			case e.From != "" && want[full]:
+				found[full] = true
+				continue
+			case e.From != "" && want[text] && !plain[text]:
+				found[text] = true
+				continue
+			}
 		}
 		keep = append(keep, l)
 	}
@@ -104,7 +159,7 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 	}
 	lines := strings.Split(string(data), "\n")
 	for i, l := range lines {
-		if e, ok := parseInboxLine(l); ok && e.Date == date && e.Text == text {
+		if e, ok := parseInboxLine(l, b.spaceSet()); ok && e.Date == date && (e.Text == text || e.full() == text) {
 			lines = append(lines[:i], lines[i+1:]...)
 			return true, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o600)
 		}

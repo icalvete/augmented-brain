@@ -72,6 +72,8 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /guard/accept", s.write(s.guardAccept))
 	m.HandleFunc("POST /guard/model", s.write(s.guardModel))
 	m.HandleFunc("POST /stop", s.handleStop)
+	m.HandleFunc("POST /remote", s.handleRemote)
+	m.HandleFunc("POST /local", s.handleLocal)
 	return m
 }
 
@@ -140,7 +142,7 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 	if _, ok := s.pages[p.Lang]; !ok {
 		p.Lang = "en"
 	}
-	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote != nil
+	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote.Load() != nil
 	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "sessions", "space", "guard", "help"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
 	}

@@ -13,12 +13,18 @@ func TestParseInboxLine(t *testing.T) {
 		"- 2026-10-17 — Call the insurance (remind: 2026-10-22)":     {Date: "2026-10-17", Text: "Call the insurance", Remind: "2026-10-22"},
 		"- 2026-10-17 — Trailing spaces and a CR   \r":               {Date: "2026-10-17", Text: "Trailing spaces and a CR"},
 		"- 2026-10-17 — (remind: soon) is not a date, so it is text": {Date: "2026-10-17", Text: "(remind: soon) is not a date, so it is text"},
+		// sent from another space: the origin, before the reminder
+		"- 2026-11-07 — Purge php8.0 (from personal)":                        {Date: "2026-11-07", Text: "Purge php8.0", From: "personal"},
+		"- 2026-11-07 — Purge php8.0 (from personal) (remind: 2026-11-08)":   {Date: "2026-11-07", Text: "Purge php8.0", From: "personal", Remind: "2026-11-08"},
+		"- 2026-11-07 — Buy the cable (from Amazon)":                         {Date: "2026-11-07", Text: "Buy the cable (from Amazon)"},
+		"- 2026-11-07 — Not at the end (from personal) said someone":         {Date: "2026-11-07", Text: "Not at the end (from personal) said someone"},
+		"- 2026-11-07 — Spaces in a name are not a space (from my personal)": {Date: "2026-11-07", Text: "Spaces in a name are not a space (from my personal)"},
 	} {
-		if got, ok := parseInboxLine(line); !ok || got != want {
+		if got, ok := parseInboxLine(line, map[string]bool{"personal": true, "work": true}); !ok || got != want {
 			t.Errorf("parseInboxLine(%q) = %+v, %v", line, got, ok)
 		}
 	}
-	if _, ok := parseInboxLine("# Inbox"); ok {
+	if _, ok := parseInboxLine("# Inbox", nil); ok {
 		t.Error("a heading is not a capture")
 	}
 }

@@ -16,6 +16,9 @@ It starts the panel, publishes it in your Tailscale network, and prints its addr
 such as `https://my-laptop.example.ts.net:8443/s/…/today`, and a QR code. Point the
 phone's camera at the code, or open the address on the other computer.
 
+If the panel is already open on this computer, it is not stopped: the same panel starts
+answering through the network too, and the pages you have open go on working.
+
 ## What you need, once
 
 The command checks each of these and, when one is missing, says exactly what to do. It

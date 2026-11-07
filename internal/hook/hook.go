@@ -38,6 +38,8 @@ type input struct {
 	TranscriptPath string `json:"transcript_path"`
 	// SessionStart: startup, resume, clear, compact or fork.
 	Source string `json:"source"`
+	// SessionEnd: why it ended (clear, logout, prompt_input_exit, other...).
+	Reason string `json:"reason"`
 	// SessionStart: the model, when Claude Code sends it (it may not).
 	Model string `json:"model"`
 	// Stop: true while the assistant goes on because of a Stop hook.
@@ -119,9 +121,13 @@ func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 		}
 		text = session.Part(c, s, "", n)
 	case n == 1:
-		text = session.Part(c, s, startNote(c, s, i, cfgDir), 1)
+		note := startNote(c, s, i, cfgDir)
+		freshBaseline(c, s, i, cfgDir)
+		text = session.Part(c, s, note, 1)
 	default:
-		text = session.ContextWith(c, s, startNote(c, s, i, cfgDir))
+		note := startNote(c, s, i, cfgDir)
+		freshBaseline(c, s, i, cfgDir)
+		text = session.ContextWith(c, s, note)
 	}
 	return write(out, output{specific{HookEventName: "SessionStart", AdditionalContext: text}})
 }

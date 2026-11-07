@@ -6,6 +6,7 @@ import (
 	"os/exec"
 
 	"github.com/icalvete/augmented-brain/internal/detach"
+	"github.com/icalvete/augmented-brain/internal/fresh"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
 
@@ -31,6 +32,11 @@ var StartBackup = func(space string) error {
 // only quick work here (a small state file), and anything longer in a detached process.
 func SessionEnd(in io.Reader, cfgDir string) error {
 	i := read(in)
+	if i.Reason != "clear" {
+		// The process ends: its seen file is of no use. After /clear the same process
+		// goes on, and SessionStart takes a new one.
+		fresh.Remove(cfgDir, fresh.HookKey(Getenv))
+	}
 	c, s, err := load(cfgDir, i.Cwd)
 	if err != nil || c == nil || s == nil {
 		return nil

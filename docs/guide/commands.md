@@ -228,8 +228,9 @@ network of their own.
 augmented-brain panel remote
 ```
 
-It starts the panel, publishes it in your Tailscale network only, and prints its
-address and a QR code to open it from the phone. Only your own devices, signed in with
+It starts the panel (or, when it is already open, has that same panel answer through
+the network too, so the pages you have open keep working), publishes it in your
+Tailscale network only, and prints its address and a QR code to open it from the phone. Only your own devices, signed in with
 the account this computer belongs to, can open it; the address stops working when the
 panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your
 user publish) it explains, with the step to take: it never installs or changes anything
@@ -371,6 +372,10 @@ The events:
   the parts with something in them are sent.
 - `pre-tool-use`: before every command and file change. This is the
   [guard](guard.md). If it cannot run, Claude Code stops the command.
+- `user-prompt-submit`: before Claude answers a message. It tells Claude which tasks
+  changed outside its session since it last looked (another session closed one, the
+  panel changed its next step), so it reads them again instead of trusting what it read
+  earlier. It never holds up the message.
 - `stop`: after each answer. It reminds Claude to write in the task's journal, once,
   after 20 minutes without writing. It also looks at how much memory the window uses
   (VS Code's extension host, or Claude itself in a terminal), and has Claude warn you

@@ -71,6 +71,15 @@ For each space it says whether the service is running, whether Claude trusts its
 and whether linger is on, with what to do about each problem. `augmented-brain doctor`
 shows the same, one line per space.
 
+When a service fails, it says why in the system journal:
+
+```bash
+journalctl --user -u augmented-brain-remote-personal -n 20
+```
+
+A service installed by an earlier version sent its errors nowhere; `status` and `doctor`
+tell you to run `augmented-brain remote install` again, which brings it up to date.
+
 ## Connect from another computer
 
 1. Open [claude.ai/code](https://claude.ai/code) or Claude Desktop, signed in to the same

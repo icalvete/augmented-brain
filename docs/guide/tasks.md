@@ -124,7 +124,8 @@ it adds a **watch date** to the task. From 7 days before, and every day after, C
 tells you at the start of the session, until it is marked done.
 
 This also works on a closed task. Closing is often when you write down what to check
-later.
+later, so when Claude closes a task that still has one, it tells you it will keep coming
+up.
 
 For something that is not a task ("remind me on Thursday to call the insurance"), Claude
 uses the inbox instead: see [Areas, knowledge and the rest](notes.md#inbox).

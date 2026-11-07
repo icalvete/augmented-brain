@@ -16,6 +16,9 @@ Arranca el panel, lo publica en tu red de Tailscale y escribe su dirección, com
 `https://mi-portatil.ejemplo.ts.net:8443/s/…/today`, y un código QR. Apunta la cámara del
 móvil al código, o abre la dirección en el otro ordenador.
 
+Si el panel ya está abierto en este ordenador, no se para: el mismo panel empieza a
+responder también por la red, y las páginas que tienes abiertas siguen funcionando.
+
 ## Lo que hace falta, una vez
 
 El comando comprueba cada cosa y, si falta alguna, dice exactamente qué hacer. Nunca

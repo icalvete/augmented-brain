@@ -6,6 +6,7 @@ import (
 	"crypto/subtle"
 	"embed"
 	"encoding/hex"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"net"
@@ -46,7 +47,15 @@ type Server struct {
 
 	diagnose func(lang string) []doctor.Check // the Help page's health check; nil: doctor.Run
 
-	remote *Remote // the panel published to the user's Tailscale network; nil: local only
+	// remote is the panel published to the user's Tailscale network; nil: local only.
+	// It can change while the panel runs (POST /remote, POST /local), and every request
+	// reads it: hence atomic.
+	remote atomic.Pointer[Remote]
+	// publish finds what the panel needs to answer through the network (tailnet.Status),
+	// for POST /remote; nil: this panel cannot go remote while running.
+	publish func() (*Remote, error)
+	pid     int
+	started time.Time
 }
 
 // Remote is the panel published to the user's own Tailscale network (`panel remote`).
@@ -64,7 +73,8 @@ const OwnerHeader = "Tailscale-User-Login"
 
 // viaRemote reports whether r came through the network address.
 func (s *Server) viaRemote(r *http.Request) bool {
-	return s.remote != nil && r.Host == s.remote.Host
+	rem := s.remote.Load()
+	return rem != nil && r.Host == rem.Host
 }
 
 // origin is the scheme and host the browser sees for r: https through the network,
@@ -172,7 +182,14 @@ func Serve(ctx context.Context, cfgDir string, idle time.Duration) error {
 // ServeRemote is Serve that also answers through the user's Tailscale network when
 // remote is not nil, and takes that address back (remote.Unpublish) when it stops.
 func ServeRemote(ctx context.Context, cfgDir string, idle time.Duration, remote *Remote) error {
+	return ServeWith(ctx, cfgDir, idle, remote, nil)
+}
+
+// ServeWith is ServeRemote with publish, which lets the running panel go remote when
+// `panel remote` asks it to (POST /remote), keeping its key and the pages already open.
+func ServeWith(ctx context.Context, cfgDir string, idle time.Duration, remote *Remote, publish func() (*Remote, error)) error {
 	if remote != nil && remote.Unpublish != nil {
+		// Taken back however the panel stops, even before it listens.
 		defer func() { _ = remote.Unpublish() }()
 	}
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
@@ -185,13 +202,19 @@ func ServeRemote(ctx context.Context, cfgDir string, idle time.Duration, remote 
 		ln.Close()
 		return err
 	}
-	s.remote = remote
-	pid := os.Getpid()
-	if err := writeInfo(cfgDir, Info{PID: pid, Port: port, Token: s.token, Started: time.Now(), Remote: remote}); err != nil {
+	s.remote.Store(remote)
+	s.publish, s.pid, s.started = publish, os.Getpid(), time.Now()
+	if err := s.writeInfo(); err != nil {
 		ln.Close()
 		return err
 	}
-	defer removeInfo(cfgDir, pid)
+	defer removeInfo(cfgDir, s.pid)
+	defer func() {
+		// A panel that went remote while running takes its address back too.
+		if r := s.remote.Load(); r != nil && r != remote && r.Unpublish != nil {
+			_ = r.Unpublish()
+		}
+	}()
 	srv := &http.Server{
 		Handler:           s,
 		ReadHeaderTimeout: 10 * time.Second,
@@ -305,7 +328,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// sender must be its owner: someone else in the network (a shared machine, a guest)
 	// does not get in, even with the address.
 	remote := s.viaRemote(r)
-	if remote && !strings.EqualFold(r.Header.Get(OwnerHeader), s.remote.Owner) {
+	if rem := s.remote.Load(); remote && (rem == nil || !strings.EqualFold(r.Header.Get(OwnerHeader), rem.Owner)) {
 		forbidden(w)
 		return
 	}
@@ -354,6 +377,63 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.mux.ServeHTTP(w, r)
+}
+
+// writeInfo writes InfoFile with what the panel is now.
+func (s *Server) writeInfo() error {
+	return writeInfo(s.cfgDir, Info{PID: s.pid, Port: s.port, Token: s.token, Started: s.started, Remote: s.remote.Load()})
+}
+
+// commandOnly reports whether r is the command itself: the token in its header, on
+// 127.0.0.1. Through the network it never is, even with the token: `tailscale serve`
+// reaches the panel from 127.0.0.1 too, so the address alone proves nothing.
+func (s *Server) commandOnly(r *http.Request) bool { return s.bearer(r) && !s.viaRemote(r) }
+
+// handleRemote makes the running panel answer through the user's Tailscale network as
+// well (`panel remote` with a panel already open): same process, same key, so the
+// pages open in the browser go on working. What the network needs (the machine's name
+// and its owner) the server finds itself; nothing in the request is trusted for it.
+// The command publishes the address afterwards, and asks POST /local if that fails.
+func (s *Server) handleRemote(w http.ResponseWriter, r *http.Request) {
+	if !s.commandOnly(r) {
+		forbidden(w)
+		return
+	}
+	if s.remote.Load() != nil {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	if s.publish == nil {
+		http.Error(w, "this panel cannot go remote while running", http.StatusNotImplemented)
+		return
+	}
+	rem, err := s.publish()
+	if err != nil || rem == nil {
+		http.Error(w, fmt.Sprint("tailscale: ", err), http.StatusServiceUnavailable)
+		return
+	}
+	s.remote.Store(rem)
+	if err := s.writeInfo(); err != nil {
+		s.remote.Store(nil)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+// handleLocal takes the network back from the panel: the undo of handleRemote when
+// publishing the address failed. The address itself is the command's to take back.
+func (s *Server) handleLocal(w http.ResponseWriter, r *http.Request) {
+	if !s.commandOnly(r) {
+		forbidden(w)
+		return
+	}
+	s.remote.Store(nil)
+	if err := s.writeInfo(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) handleStop(w http.ResponseWriter, r *http.Request) {

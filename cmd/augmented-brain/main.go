@@ -23,6 +23,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/doctor"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/format"
+	"github.com/icalvete/augmented-brain/internal/fresh"
 	"github.com/icalvete/augmented-brain/internal/hook"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/mcpserver"
@@ -285,12 +286,14 @@ func cmdMCP(errOut io.Writer) int {
 		return brain.Open(c, s)
 	}
 	lockFile := ""
+	var opts []mcpserver.Option
 	if dir, err := config.Dir(); err == nil {
 		lockFile = filepath.Join(dir, backup.NotesLock)
 		// Noted, so a newer program can tell which sessions still run this one.
 		defer state.RegisterServer(dir, version.Version)()
+		opts = append(opts, mcpserver.WithFresh(dir, fresh.ServerKey(os.Getenv, os.Getppid())))
 	}
-	if err := mcpserver.New(open, lockFile).Run(context.Background(), &mcp.StdioTransport{}); err != nil {
+	if err := mcpserver.New(open, lockFile, opts...).Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
@@ -310,6 +313,7 @@ var hookEvents = []hookEvent{
 		return hook.SessionStartPart(in, out, dir, part)
 	}},
 	{"pre-tool-use", func(in io.Reader, out io.Writer, dir string, _ int) error { return hook.PreToolUse(in, out, dir) }},
+	{"user-prompt-submit", func(in io.Reader, out io.Writer, dir string, _ int) error { return hook.UserPromptSubmit(in, out, dir) }},
 	{"stop", func(in io.Reader, out io.Writer, dir string, _ int) error { return hook.Stop(in, out, dir) }},
 	{"post-compact", func(in io.Reader, _ io.Writer, dir string, _ int) error { return hook.PostCompact(in, dir) }},
 	{"session-end", func(in io.Reader, _ io.Writer, dir string, _ int) error { return hook.SessionEnd(in, dir) }},

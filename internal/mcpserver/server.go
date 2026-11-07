@@ -18,6 +18,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
+	"github.com/icalvete/augmented-brain/internal/fresh"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/version"
@@ -66,9 +67,27 @@ type Resolver func() (*brain.Brain, error)
 // opener opens the brain and returns the function that releases it.
 type opener func() (*brain.Brain, func(), error)
 
+// Option changes how New builds the server.
+type Option func(*options)
+
+type options struct {
+	freshDir, freshKey string
+}
+
+// WithFresh has every tool that holds the notes lock tell the session which tasks
+// changed outside it (package fresh), and record what the tool itself read or wrote.
+// key names the Claude process the server belongs to; "" turns it off.
+func WithFresh(cfgDir, key string) Option {
+	return func(o *options) { o.freshDir, o.freshKey = cfgDir, key }
+}
+
 // New builds the server with every tool. lockFile, when not empty, is shared by every
 // augmented brain process of the user, so two assistant sessions never write at once.
-func New(open Resolver, lockFile string) *mcp.Server {
+func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
+	var o options
+	for _, f := range opts {
+		f(&o)
+	}
 	// The SDK serves requests concurrently. Tools read and write the same files, so they
 	// run one at a time: each call sees every change made by the calls before it.
 	w := filelock.NewWriter(lockFile)
@@ -82,7 +101,19 @@ func New(open Resolver, lockFile string) *mcp.Server {
 			release()
 			return nil, nil, err
 		}
-		return b, release, nil
+		if o.freshKey == "" {
+			return b, release, nil
+		}
+		// Under the notes lock no one else writes: what changed before the tool came
+		// from outside, and what changes during it is the tool's own.
+		sp := fresh.SpaceOf(b.Space.Name, b.Mem.Dir)
+		if r, err := fresh.Check(o.freshDir, o.freshKey, sp, time.Now()); err == nil {
+			b.Fresh = fresh.Text(b.Language, r)
+		}
+		return b, func() {
+			_ = fresh.Absorb(o.freshDir, o.freshKey, sp, time.Now(), b.Read())
+			release()
+		}, nil
 	}
 	// backup_setup runs a backup, which takes the notes lock itself (after the backup
 	// lock, never before): it runs one at a time in this process, without the file lock.
@@ -290,22 +321,50 @@ func New(open Resolver, lockFile string) *mcp.Server {
 			if err == nil {
 				b.Released(in.ID)
 			}
-			return header(n, err)
+			out, err := header(n, err)
+			if err != nil {
+				return out, err
+			}
+			return out + openWatches(n), nil
 		})
 
 	type captureIn struct {
 		Text     string `json:"text" jsonschema:"the idea, link or loose end, in one line"`
 		RemindOn string `json:"remind_on,omitempty" jsonschema:"YYYY-MM-DD: bring it up again at the start of the session on that day"`
+		Space    string `json:"space,omitempty" jsonschema:"another space to send it to (its name, as in where_am_i or the configuration); only when the user asks for it to go there. Leave it out for this space's inbox"`
 	}
-	tool(s, locked, "capture", "Note something in the inbox without opening a task, optionally with a day to be reminded. The weekly review processes it.",
+	tool(s, locked, "capture", "Note something in the inbox without opening a task, optionally with a day to be reminded. The weekly review processes it. "+
+		"With space, it goes to another space's inbox instead, marked with this space as its origin, and comes up at the start of every session there until it is done (capture_done): "+
+		"for what was decided here but must be done there. Only when the user asks for it: what goes to another space is seen and backed up there.",
 		func(b *brain.Brain, in captureIn) (string, error) {
-			if err := b.Capture(in.Text, in.RemindOn); err != nil {
+			where, err := b.CaptureTo(in.Space, in.Text, in.RemindOn)
+			if err != nil {
 				return "", err
 			}
-			if in.RemindOn != "" {
-				return "Captured; it will come up on " + in.RemindOn + ".", nil
+			out := "Captured"
+			if where != b.Space.Name {
+				out += " in the inbox of space " + where + "; it comes up at the start of its sessions until it is done"
 			}
-			return "Captured.", nil
+			if in.RemindOn != "" {
+				out += "; it will come up on " + in.RemindOn
+			}
+			return out + ".", nil
+		})
+
+	type captureDoneIn struct {
+		Date string `json:"date" jsonschema:"the day it was captured, YYYY-MM-DD, as listed"`
+		Text string `json:"text" jsonschema:"its text exactly as listed (with or without its origin)"`
+	}
+	tool(s, locked, "capture_done", "Take one capture out of this space's inbox once it is done or has become a task: above all one sent from another space, which otherwise comes up at every session start. Others with the same text stay.",
+		func(b *brain.Brain, in captureDoneIn) (string, error) {
+			found, err := b.InboxDoneEntry(strings.TrimSpace(in.Date), strings.TrimSpace(in.Text))
+			if err != nil {
+				return "", err
+			}
+			if !found {
+				return "", fmt.Errorf("no capture of %s with that text in the inbox of space %s; weekly_review lists them", in.Date, b.Space.Name)
+			}
+			return "Done: taken out of the inbox.", nil
 		})
 
 	tool(s, locked, "weekly_review", "What the weekly review goes through: the inbox, live tasks untouched for two weeks or more, and the dates due this week.",
@@ -319,7 +378,11 @@ func New(open Resolver, lockFile string) *mcp.Server {
 			}
 			fmt.Fprintf(&out, "\nInbox (%d):\n", len(r.Inbox))
 			for _, e := range r.Inbox {
-				fmt.Fprintf(&out, "- [%s] %s\n", e.Date, e.Text)
+				from := ""
+				if e.From != "" {
+					from = " [from space " + e.From + "]"
+				}
+				fmt.Fprintf(&out, "- [%s] %s%s\n", e.Date, e.Text, from)
 			}
 			fmt.Fprintf(&out, "\nTasks untouched for %d days or more (%d):\n", brain.StaleDays, len(r.Stale))
 			for _, t := range r.Stale {
@@ -573,6 +636,14 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 			}
 			defer release()
 			text, err := h(b, in)
+			if b.Fresh != "" {
+				// Check already counted these as seen: they go with the answer either way.
+				if err != nil {
+					err = fmt.Errorf("%w\n\n%s", err, strings.TrimRight(b.Fresh, "\n"))
+				} else {
+					text = strings.TrimRight(text, "\n") + "\n\n" + strings.TrimRight(b.Fresh, "\n")
+				}
+			}
 			if note := brain.ProblemsNote(b.Problems, 3); note != "" {
 				// Files that are not valid notes do not stop the tools; the user hears about them.
 				if err != nil {
@@ -586,6 +657,27 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 			}
 			return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}, nil, nil
 		})
+}
+
+// openWatches tells, after closing a task, which of its watch dates are still open:
+// they keep coming up at the start of the session, on purpose (closing is when the
+// checks for later are written down), until they are marked done.
+func openWatches(n *memory.Note) string {
+	var open []memory.Watch
+	for _, w := range n.Header.Watch {
+		if !w.Done {
+			open = append(open, w)
+		}
+	}
+	if len(open) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "\nIt keeps %d open watch date(s). They still come up at the start of the session on their day, until marked done (task_update with watch_done); tell the user:\n", len(open))
+	for _, w := range open {
+		fmt.Fprintf(&b, "- %s: %s\n", w.Date, w.What)
+	}
+	return b.String()
 }
 
 func taskRef(id string) string {
