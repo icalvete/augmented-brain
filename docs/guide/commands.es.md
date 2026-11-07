@@ -226,6 +226,23 @@ Hoy, con el espacio de esta carpeta. Vuelve enseguida. El panel se para solo des
 
 Lo tienes en [El panel](panel.es.md).
 
+## augmented-brain panel remote
+
+Abre el panel para tus otros dispositivos (otro ordenador, el móvil), a través de
+[Tailscale](https://tailscale.com), una aplicación gratuita que une tus dispositivos en una
+red privada solo suya.
+
+```bash
+augmented-brain panel remote
+```
+
+Arranca el panel, lo publica solo en tu red de Tailscale, y escribe su dirección y un
+código QR para abrirla desde el móvil. Solo pueden abrirla tus dispositivos, con la cuenta
+a la que pertenece este ordenador; la dirección deja de funcionar cuando el panel se para.
+Lo que falte (el propio Tailscale, HTTPS en tu red, dejar publicar a tu usuario) lo
+explica, con el paso que hay que dar: nunca instala ni cambia nada de Tailscale por ti.
+Lo tienes en [El panel desde otro dispositivo](panel-remote.es.md).
+
 ## augmented-brain panel stop
 
 Para el panel ahora.

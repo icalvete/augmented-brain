@@ -674,6 +674,14 @@ var panelMessages = map[string]msg{
 		en: "Only on this computer. It stops by itself after 30 minutes without use.",
 		es: "Solo en este ordenador. Se para solo tras 30 minutos sin uso.",
 	},
+	"panel.menu": {
+		en: "Menu",
+		es: "Menú",
+	},
+	"panel.footer.remote": {
+		en: "On this computer and your devices in Tailscale, only with your account. It stops by itself after 30 minutes without use.",
+		es: "En este ordenador y en tus dispositivos de Tailscale, solo con tu cuenta. Se para solo tras 30 minutos sin uso.",
+	},
 	"panel.stop": {
 		en: "Stop the panel",
 		es: "Parar el panel",
@@ -1257,6 +1265,39 @@ var panelMessages = map[string]msg{
 	"panel.cli.none": {
 		en: "No panel is running.",
 		es: "No hay ningún panel en marcha.",
+	},
+	// panel remote: the panel published to the user's own Tailscale network.
+	"panel.remote.open": {
+		en: "The panel is open for your other devices at:\n  %s",
+		es: "El panel está abierto para tus otros dispositivos en:\n  %s",
+	},
+	"panel.remote.qr": {
+		en: "On your phone, point the camera at this code:",
+		es: "En el móvil, apunta la cámara a este código:",
+	},
+	"panel.remote.idle": {
+		en: "Only your devices in your Tailscale network, signed in with your account (%s), can open it. The address stops working when the panel stops: after 30 minutes without use, or with augmented-brain panel stop.",
+		es: "Solo pueden abrirla tus dispositivos de tu red de Tailscale, con tu cuenta (%s). La dirección deja de funcionar cuando el panel se para: tras 30 minutos sin uso, o con augmented-brain panel stop.",
+	},
+	"panel.remote.missing": {
+		en: "To open the panel from your other devices, augmented brain uses Tailscale, a free app that joins your devices in a private network of their own. It is not installed here.\nInstall it on this computer and on the device you want to use (the same account on both): https://tailscale.com/download\nThen run augmented-brain panel remote again.",
+		es: "Para abrir el panel desde tus otros dispositivos, augmented brain usa Tailscale, una aplicación gratuita que une tus dispositivos en una red privada solo suya. Aquí no está instalada.\nInstálala en este ordenador y en el dispositivo que quieras usar (con la misma cuenta en los dos): https://tailscale.com/download\nLuego lanza otra vez augmented-brain panel remote.",
+	},
+	"panel.remote.stopped": {
+		en: "Tailscale is installed but not connected. Open it and sign in (or run: tailscale up), then run augmented-brain panel remote again.",
+		es: "Tailscale está instalado pero no está conectado. Ábrelo e inicia sesión (o lanza: tailscale up), y luego otra vez augmented-brain panel remote.",
+	},
+	"panel.remote.nohttps": {
+		en: "Your Tailscale network does not give out HTTPS certificates yet, and the panel only travels encrypted. Turn them on once, in Tailscale's admin page: %s → HTTPS Certificates → Enable HTTPS. (The names of your machines then appear in public certificate logs; nobody outside your devices can reach them.)\nThen run augmented-brain panel remote again.",
+		es: "Tu red de Tailscale aún no da certificados HTTPS, y el panel solo viaja cifrado. Actívalos una vez en la página de administración de Tailscale: %s → HTTPS Certificates → Enable HTTPS. (Los nombres de tus máquinas pasan entonces a registros públicos de certificados; nadie fuera de tus dispositivos puede llegar a ellas.)\nLuego lanza otra vez augmented-brain panel remote.",
+	},
+	"panel.remote.operator": {
+		en: "Tailscale lets only an administrator publish on this computer. Let your user do it, once, with this command (it needs your administrator password; augmented brain does not run it for you):\n  %s\nThen run augmented-brain panel remote again.",
+		es: "Tailscale solo deja publicar en este ordenador a un administrador. Deja que lo haga tu usuario, una vez, con este comando (pide tu contraseña de administrador; augmented brain no lo lanza por ti):\n  %s\nLuego lanza otra vez augmented-brain panel remote.",
+	},
+	"panel.remote.taken": {
+		en: "You already publish something else on port %d of your Tailscale network, and augmented brain never touches it. Take it off (tailscale serve status shows it) and run augmented-brain panel remote again.",
+		es: "Ya publicas otra cosa en el puerto %d de tu red de Tailscale, y augmented brain nunca la toca. Quítala (tailscale serve status la enseña) y lanza otra vez augmented-brain panel remote.",
 	},
 	"panel.sessions": {
 		en: "Sessions",

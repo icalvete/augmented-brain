@@ -11,6 +11,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/setup"
 	"github.com/icalvete/augmented-brain/internal/state"
+	"github.com/icalvete/augmented-brain/internal/tailnet"
 )
 
 func find(checks []Check, text string) *Check {
@@ -274,5 +275,50 @@ func TestRemoteLines(t *testing.T) {
 	if c == nil || c.Status != Warning || !strings.Contains(c.What, "box-work") ||
 		!strings.Contains(c.Fix, "claude") || !strings.Contains(c.Fix, "enable-linger lucia") {
 		t.Errorf("remote line = %+v", c)
+	}
+}
+
+// The remote panel gets a line only once it has been used, and doctor warns of an
+// address of the panel left published with no remote panel running.
+func TestPanelRemoteLine(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: "~/work", Memory: "~/brain/work"}); err != nil {
+		t.Fatal(err)
+	}
+	served := "{}"
+	tn := &tailnet.Tailnet{
+		Run: func(name string, args ...string) (string, error) {
+			switch strings.Join(args, " ") {
+			case "status --json":
+				return `{"BackendState":"Running","Self":{"DNSName":"box.example.ts.net.","UserID":1},"User":{"1":{"LoginName":"lucia@example.com"}},"CertDomains":["box.example.ts.net"]}`, nil
+			case "serve status --json":
+				return served, nil
+			}
+			return "", errors.New("unexpected")
+		},
+		LookPath: func(string) (string, error) { return "/usr/bin/tailscale", nil }, GOOS: "linux",
+	}
+	env := Env{ConfigDir: cfg, WorkDir: home, LookPath: allTools, Plugin: yes, Hook: denies, Remote: &remote.System{GOOS: "darwin", Hostname: func() (string, error) { return "box", nil }}, Tailnet: tn}
+	if c := find(Run(env), "remote panel"); c != nil {
+		t.Errorf("never used, yet doctor says: %+v", c)
+	}
+	if err := tailnet.MarkUsed(cfg); err != nil {
+		t.Fatal(err)
+	}
+	if c := find(Run(env), "remote panel"); c == nil || c.Status != OK || !strings.Contains(c.What, "box.example.ts.net") {
+		t.Errorf("ready: %+v", c)
+	}
+	served = `{"TCP":{"8443":{"HTTPS":true}},"Web":{"box.example.ts.net:8443":{"Handlers":{"/":{"Proxy":"http://127.0.0.1:4321"}}}}}`
+	if c := find(Run(env), "remote panel"); c == nil || c.Status != Warning || !strings.Contains(c.Fix, "tailscale serve --https=8443 off") {
+		t.Errorf("leftover: %+v", c)
+	}
+	// While a remote panel runs, that address is its own.
+	if err := os.WriteFile(filepath.Join(cfg, "panel.json"), []byte(`{"pid":1,"port":4321,"token":"x","remote":{"host":"box.example.ts.net:8443","owner":"lucia@example.com"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if c := find(Run(env), "remote panel"); c == nil || c.Status != OK {
+		t.Errorf("running: %+v", c)
 	}
 }

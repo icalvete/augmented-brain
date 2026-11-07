@@ -31,7 +31,7 @@ for t in $TARGETS; do
   (cd "$ROOT" && CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath \
     -ldflags "-s -w -X github.com/icalvete/augmented-brain/internal/version.Version=$VERSION" \
     -o "$WORK/$name/$exe" ./cmd/augmented-brain)
-  cp "$ROOT/LICENSE" "$ROOT/README.md" "$WORK/$name/"
+  cp "$ROOT/LICENSE" "$ROOT/THIRD_PARTY_NOTICES.md" "$ROOT/README.md" "$WORK/$name/"
   if [ "$os" = windows ]; then
     # Windows opens a .zip by itself; install.ps1 unpacks it with Expand-Archive.
     (cd "$WORK" && zip -qr "$OUT/$name.zip" "$name")

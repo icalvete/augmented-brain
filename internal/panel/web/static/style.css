@@ -66,17 +66,54 @@ footer {
 }
 main { width: 100%; max-width: 48rem; padding: 2.5rem 2.5rem 4rem; }
 
+.menu { display: none; }
+
+/* A phone: the sidebar's pieces become the page's own rows. One bar on top (logo, a
+   menu button that says where you are, the space), the menu opening below it as a
+   plain list, the content, and the profile and the footer last. */
 @media (max-width: 760px) {
-  .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-  .brand img { width: 7rem; }
-  .side {
-    position: static; height: auto; gap: .75rem; padding: .75rem 1rem;
-    border-right: 0; border-bottom: 1px solid var(--line);
+  .app {
+    position: relative; display: grid; grid-template-columns: auto 1fr auto; min-height: 100vh;
+    grid-template-areas: "brand menu spaces" "main main main" "me me me" "foot foot foot";
+    grid-template-rows: auto 1fr auto auto;
   }
-  .sections { display: flex; overflow-x: auto; gap: .25rem; }
-  .sections a { white-space: nowrap; }
-  footer { margin-top: 0; display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
-  main { padding: 1.5rem 1rem 3rem; }
+  .app::before {
+    content: ""; grid-row: 1; grid-column: 1 / -1; background: var(--side);
+    border-bottom: 1px solid var(--line);
+  }
+  .side { display: contents; }
+  .sections, .find { display: none; }
+  .brand { grid-area: brand; align-self: center; padding: .5rem .25rem .5rem 1rem; z-index: 1; }
+  .brand img { width: 2.6rem; }
+  .spaces { grid-area: spaces; align-self: center; padding: .5rem 1rem .5rem .25rem; z-index: 1; }
+  .spaces label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .spaces select { max-width: 8.5rem; padding: .45rem .5rem; }
+  .menu { display: block; grid-area: menu; align-self: center; padding: .5rem .25rem; z-index: 3; }
+  .menu summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    gap: .5rem; padding: .45rem .7rem; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg); font-weight: 600; color: var(--accent);
+  }
+  .menu summary::-webkit-details-marker { display: none; }
+  .menu summary::after { content: "▾"; color: var(--muted); font-weight: 400; }
+  .menu[open] summary::after { content: "▴"; }
+  .menu-list {
+    position: absolute; left: 0; right: 0; top: 3.6rem;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: 0 8px 24px rgba(20, 48, 36, .12); padding: .6rem .75rem .75rem;
+    max-height: calc(100vh - 4rem); overflow-y: auto;
+  }
+  .menu-list input { width: 100%; padding: .55rem .7rem; margin-bottom: .4rem; }
+  .menu-list nav { display: grid; }
+  .menu-list nav a { padding: .65rem .6rem; border-radius: 6px; color: var(--text); font-weight: 500; }
+  .menu-list nav a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  main { grid-area: main; padding: 1.25rem 1rem 2rem; }
+  .me { grid-area: me; margin: 0 1rem; }
+  footer { grid-area: foot; margin: 0; padding: 1rem 1rem 2rem; display: grid; gap: .4rem; }
+  h1 { font-size: 1.35rem; margin-bottom: 1rem; }
+  h2 { margin-top: 1.75rem; }
+  .card { padding: .75rem .25rem; }
+  .card .title { font-size: .97rem; }
 }
 
 /* Type */

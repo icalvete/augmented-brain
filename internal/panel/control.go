@@ -30,7 +30,19 @@ import (
 	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/tailnet"
 )
+
+// UnpublishLeftover takes back a Tailscale address of the panel that outlived it (a
+// panel that crashed, or a reboot: Tailscale brings back what was published), so that
+// whatever takes that local port later is never reachable from the network. It does
+// nothing without Tailscale. Tests replace it.
+var UnpublishLeftover = func() error {
+	if err := tailnet.New().Unserve(); err != nil && !errors.Is(err, tailnet.ErrMissing) {
+		return err
+	}
+	return nil
+}
 
 // InfoFile, in the configuration folder, says where the running panel listens. It
 // holds the token, so only the user can read it.
@@ -56,6 +68,8 @@ type Info struct {
 	Port    int       `json:"port"`
 	Token   string    `json:"token"`
 	Started time.Time `json:"started"`
+	// Remote is set while the panel is published to the user's Tailscale network.
+	Remote *Remote `json:"remote,omitempty"`
 }
 
 // mac is HMAC-SHA256 of msg under the token, in hex.
@@ -81,6 +95,15 @@ func (i Info) URL() string {
 }
 
 func (i Info) origin() string { return fmt.Sprintf("http://127.0.0.1:%d", i.Port) }
+
+// RemoteURL is the address to open from another device of the user's Tailscale
+// network, or "" when the panel is not published there.
+func (i Info) RemoteURL() string {
+	if i.Remote == nil || i.Remote.Host == "" {
+		return ""
+	}
+	return fmt.Sprintf("https://%s/s/%s/", i.Remote.Host, sessionOf(i.Token))
+}
 
 // ReadInfo returns the panel the configuration folder knows about, if any. It may have
 // stopped since: Alive tells.
@@ -217,6 +240,9 @@ func end(pid int) bool {
 func clearStale(cfgDir string, i Info) bool {
 	ended := end(i.PID)
 	_ = os.Remove(filepath.Join(cfgDir, InfoFile))
+	if i.Remote != nil {
+		_ = UnpublishLeftover()
+	}
 	return ended
 }
 
@@ -234,24 +260,43 @@ func home() string {
 // panel lock is held the whole time, so several at once start one server only, and
 // all of them get its address.
 func Start(cfgDir, self string) (info Info, started bool, err error) {
+	return StartMode(cfgDir, self, false)
+}
+
+// StartMode is Start; with remote, the panel also answers through the user's Tailscale
+// network (`self panel serve --remote`). A panel already running only on 127.0.0.1 is
+// stopped and started again in remote mode; a remote one serves a local request as is.
+func StartMode(cfgDir, self string, remote bool) (info Info, started bool, err error) {
 	unlock, err := lock(cfgDir)
 	if err != nil {
 		return Info{}, false, err
 	}
 	defer unlock()
 	if i, ok := ReadInfo(cfgDir); ok {
-		if Alive(i) {
+		if Alive(i) && (!remote || i.Remote != nil) {
 			return i, false, nil
 		}
-		clearStale(cfgDir, i)
+		if Alive(i) {
+			if err := stopRunning(cfgDir, i); err != nil {
+				return Info{}, false, err
+			}
+		} else {
+			clearStale(cfgDir, i)
+		}
 	}
+	// No panel answers now: nothing of ours should be published.
+	_ = UnpublishLeftover()
 	logPath := filepath.Join(cfgDir, logFile)
 	log, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
 	if err != nil {
 		return Info{}, false, err
 	}
 	defer log.Close()
-	cmd := exec.Command(self, "panel", "serve")
+	args := []string{"panel", "serve"}
+	if remote {
+		args = append(args, "--remote")
+	}
+	cmd := exec.Command(self, args...)
 	// Nothing of the caller's terminal or pipes: the assistant's shell tool waits until
 	// every copy of its pipes is closed.
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, log, log
@@ -293,9 +338,18 @@ func Stop(cfgDir string) (bool, error) {
 	if !Alive(i) {
 		return clearStale(cfgDir, i), nil
 	}
+	if err := stopRunning(cfgDir, i); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// stopRunning asks the live panel i to stop and waits for its process to end; the
+// caller holds the panel lock.
+func stopRunning(cfgDir string, i Info) error {
 	req, err := http.NewRequest(http.MethodPost, i.origin()+"/stop", nil)
 	if err != nil {
-		return false, err
+		return err
 	}
 	req.Header.Set("Authorization", "Bearer "+i.Token)
 	req.Header.Set("Origin", i.origin())
@@ -314,18 +368,18 @@ func Stop(cfgDir string) (bool, error) {
 			}
 			time.Sleep(50 * time.Millisecond)
 		}
-		return err == nil, err
+		return err
 	}
 	if err != nil || !waitExit(i.PID, stopWait) {
 		if !end(i.PID) && pidAlive(i.PID) {
 			if err == nil {
 				err = fmt.Errorf("the panel (process %d) did not stop", i.PID)
 			}
-			return false, err
+			return err
 		}
 	}
 	removeInfo(cfgDir, i.PID)
-	return true, nil
+	return nil
 }
 
 // OpenBrowser opens url in the person's browser, without waiting for it. It fails

@@ -154,6 +154,43 @@ var remoteMessages = map[string]msg{
 		en: "remote access, space %s (session %q): service %s, folder %s, linger %s",
 		es: "acceso remoto, espacio %s (sesión %q): servicio %s, carpeta %s, linger %s",
 	},
+	// doctor's line about the remote panel (panel remote), once it has been used.
+	"doctor.panelremote.ok": {
+		en: "remote panel: Tailscale is ready (%s)",
+		es: "panel remoto: Tailscale está listo (%s)",
+	},
+	"doctor.panelremote.missing": {
+		en: "remote panel: Tailscale is no longer installed",
+		es: "panel remoto: Tailscale ya no está instalado",
+	},
+	"doctor.panelremote.missing.fix": {
+		en: "install it again to open the panel from your other devices: https://tailscale.com/download",
+		es: "vuelve a instalarlo para abrir el panel desde tus otros dispositivos: https://tailscale.com/download",
+	},
+	"doctor.panelremote.stopped": {
+		en: "remote panel: Tailscale is not connected",
+		es: "panel remoto: Tailscale no está conectado",
+	},
+	"doctor.panelremote.stopped.fix": {
+		en: "open Tailscale and sign in (or run: tailscale up)",
+		es: "abre Tailscale e inicia sesión (o lanza: tailscale up)",
+	},
+	"doctor.panelremote.nohttps": {
+		en: "remote panel: your Tailscale network no longer gives HTTPS certificates",
+		es: "panel remoto: tu red de Tailscale ya no da certificados HTTPS",
+	},
+	"doctor.panelremote.nohttps.fix": {
+		en: "turn them on in https://login.tailscale.com/admin/dns → HTTPS Certificates",
+		es: "actívalos en https://login.tailscale.com/admin/dns → HTTPS Certificates",
+	},
+	"doctor.panelremote.leftover": {
+		en: "remote panel: port %d of your Tailscale network still points at %s, but no remote panel is running",
+		es: "panel remoto: el puerto %d de tu red de Tailscale sigue apuntando a %s, pero no hay ningún panel remoto en marcha",
+	},
+	"doctor.panelremote.leftover.fix": {
+		en: "take it back: tailscale serve --https=%d off (starting the panel again does it too)",
+		es: "quítalo: tailscale serve --https=%d off (también lo hace volver a arrancar el panel)",
+	},
 	"remote.doctor.bad": {
 		en: "remote access: %v",
 		es: "acceso remoto: %v",

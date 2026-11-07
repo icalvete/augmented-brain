@@ -1,5 +1,21 @@
 # Registro de cambios
 
+## Unreleased
+
+- **Abre el panel desde el móvil u otro ordenador.** Un comando nuevo,
+  `augmented-brain panel remote`, publica el panel en tu propia red de
+  [Tailscale](https://tailscale.com) y escribe su dirección y un código QR. Solo tus
+  dispositivos llegan a él, y solo entra tu cuenta de Tailscale; la dirección deja de
+  funcionar cuando el panel se para, y una que se quede colgada se quita en el siguiente
+  arranque. Tailscale es opcional: sin él, el comando explica qué es y cómo conseguirlo, y
+  lo mismo para HTTPS en tu red y, en Linux, para dejar publicar a tu usuario. `doctor`
+  tiene una línea sobre esto en cuanto lo has usado. Guía nueva: «El panel desde otro
+  dispositivo». El código QR usa `rsc.io/qr` (licencia BSD).
+- **El panel en el móvil.** En una pantalla estrecha, la barra lateral pasa a ser una sola
+  barra arriba (logo, un botón de menú que dice dónde estás, el espacio) y las secciones
+  se abren debajo como una lista, con el buscador; el perfil y el pie van al final de la
+  página. El pie dice cuándo el panel está abierto también en tus dispositivos de
+  Tailscale.
 ## 0.10.0-alpha
 
 Publicada el 2026-11-07.

@@ -190,6 +190,8 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
 - It runs **only while you use it**. After 30 minutes without use it stops by itself. To
   stop it now: `augmented-brain panel stop`, or the link at the bottom of the page.
 - It works **only on this computer**. Other machines on your network cannot reach it.
+  To open it from your phone or another computer of yours, use
+  `augmented-brain panel remote`: see [The panel from another device](panel-remote.md).
 - The address carries a **key**, made new each time the panel starts. Without it the
   panel answers nothing, so another program or web page on your computer cannot use it.
   Treat the address like a password: do not share it. It stops working when the panel

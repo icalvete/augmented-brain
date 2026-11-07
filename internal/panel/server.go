@@ -45,6 +45,35 @@ type Server struct {
 	stop    sync.Once
 
 	diagnose func(lang string) []doctor.Check // the Help page's health check; nil: doctor.Run
+
+	remote *Remote // the panel published to the user's Tailscale network; nil: local only
+}
+
+// Remote is the panel published to the user's own Tailscale network (`panel remote`).
+// Requests that come through it carry Host and the login of whoever sent them, which
+// Tailscale itself sets (and strips when a request brings its own): only Owner gets in.
+type Remote struct {
+	Host  string `json:"host"`  // the Host header of the network address, "box.example.ts.net:8443"
+	Owner string `json:"owner"` // the login of the machine's owner in the network
+	// Unpublish takes the address back when the panel stops; nil: nothing to take back.
+	Unpublish func() error `json:"-"`
+}
+
+// OwnerHeader is the header Tailscale puts the sender's login in.
+const OwnerHeader = "Tailscale-User-Login"
+
+// viaRemote reports whether r came through the network address.
+func (s *Server) viaRemote(r *http.Request) bool {
+	return s.remote != nil && r.Host == s.remote.Host
+}
+
+// origin is the scheme and host the browser sees for r: https through the network,
+// http on 127.0.0.1.
+func (s *Server) origin(r *http.Request) string {
+	if s.viaRemote(r) {
+		return "https://" + r.Host
+	}
+	return "http://" + r.Host
 }
 
 func random() (string, error) {
@@ -137,6 +166,15 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 // for idle. It listens on 127.0.0.1 only, on a free port, and writes InfoFile so the
 // command can find it; the file goes away when it stops.
 func Serve(ctx context.Context, cfgDir string, idle time.Duration) error {
+	return ServeRemote(ctx, cfgDir, idle, nil)
+}
+
+// ServeRemote is Serve that also answers through the user's Tailscale network when
+// remote is not nil, and takes that address back (remote.Unpublish) when it stops.
+func ServeRemote(ctx context.Context, cfgDir string, idle time.Duration, remote *Remote) error {
+	if remote != nil && remote.Unpublish != nil {
+		defer func() { _ = remote.Unpublish() }()
+	}
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		return err
@@ -147,8 +185,9 @@ func Serve(ctx context.Context, cfgDir string, idle time.Duration) error {
 		ln.Close()
 		return err
 	}
+	s.remote = remote
 	pid := os.Getpid()
-	if err := writeInfo(cfgDir, Info{PID: pid, Port: port, Token: s.token, Started: time.Now()}); err != nil {
+	if err := writeInfo(cfgDir, Info{PID: pid, Port: port, Token: s.token, Started: time.Now(), Remote: remote}); err != nil {
 		ln.Close()
 		return err
 	}
@@ -235,7 +274,7 @@ func (s *Server) ping(w http.ResponseWriter, r *http.Request) {
 // sameOrigin reports whether a POST comes from one of the panel's own pages: its
 // Origin header, or its Referer when there is no Origin.
 func (s *Server) sameOrigin(r *http.Request) bool {
-	own := "http://" + r.Host
+	own := s.origin(r)
 	if o := r.Header.Get("Origin"); o != "" {
 		return o == own
 	}
@@ -262,12 +301,19 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.Set("Cache-Control", "no-store")
 
 	// DNS rebinding: a page of another site whose name now points to 127.0.0.1 sends
-	// its own name as Host.
-	if !sameHost(r.Host, s.port) {
+	// its own name as Host. Through the network, the name is the machine's own, and the
+	// sender must be its owner: someone else in the network (a shared machine, a guest)
+	// does not get in, even with the address.
+	remote := s.viaRemote(r)
+	if remote && !strings.EqualFold(r.Header.Get(OwnerHeader), s.remote.Owner) {
 		forbidden(w)
 		return
 	}
-	if r.URL.Path == "/ping" && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
+	if !remote && !sameHost(r.Host, s.port) {
+		forbidden(w)
+		return
+	}
+	if !remote && r.URL.Path == "/ping" && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
 		s.ping(w, r)
 		return
 	}
@@ -276,7 +322,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, s.base()+"/", http.StatusSeeOther)
 		return
 	}
-	bearer := !browser && s.bearer(r)
+	bearer := !browser && !remote && s.bearer(r) // the command talks to 127.0.0.1 only
 	if !browser && !bearer {
 		forbidden(w)
 		return

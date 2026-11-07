@@ -22,6 +22,7 @@ import (
 // AB_PANEL_TEST_HANG=1, a process of this program that never answers.
 func TestMain(m *testing.M) {
 	testenv.CleanGit()
+	UnpublishLeftover = func() error { return nil } // never the real Tailscale
 	if len(os.Args) == 3 && os.Args[1] == "panel" && os.Args[2] == "serve" && os.Getenv("AB_PANEL_TEST_CFG") != "" {
 		if err := Serve(context.Background(), os.Getenv("AB_PANEL_TEST_CFG"), time.Minute); err != nil {
 			os.Exit(1)
