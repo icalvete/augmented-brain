@@ -13,6 +13,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/doccheck"
+	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/setup"
 )
 
@@ -31,7 +32,12 @@ type fake struct {
 
 func newFake(t *testing.T) *fake {
 	t.Helper()
-	root := t.TempDir()
+	// Resolved, as the configuration resolves work folders: on macOS the temporary folder
+	// is behind a link (/var is /private/var), on Windows it may be a short 8.3 name.
+	root, err := paths.Resolve(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	t.Setenv("HOME", root)
 	t.Setenv("AB_CONFIG_DIR", "")
 	f := &fake{t: t, root: root, active: map[string]string{}, linger: "no", cfgDir: filepath.Join(root, ".config", "augmented-brain")}
