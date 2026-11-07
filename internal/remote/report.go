@@ -62,6 +62,9 @@ func (s System) Advice(l string, st SpaceStatus, g Linger) []string {
 	case !st.Running():
 		out = append(out, i18n.T(l, "remote.fix.restart", st.Unit))
 	}
+	if st.Installed && st.Outdated {
+		out = append(out, i18n.T(l, "remote.fix.update"))
+	}
 	if g == LingerOff {
 		out = append(out, i18n.T(l, "remote.fix.linger", s.LingerCommand()))
 	}

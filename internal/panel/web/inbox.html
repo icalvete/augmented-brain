@@ -10,7 +10,7 @@
 {{if .Entries}}<ul class="cards">
 {{range .Entries}}<li class="card">
   <div class="title">{{inline .Text}}</div>
-  <div class="meta"><span>{{.Date}}</span>{{if .Remind}}<span class="badge">{{t "f.remind"}}: {{.Remind}}</span>{{end}}</div>
+  <div class="meta"><span>{{.Date}}</span>{{if .Remind}}<span class="badge">{{t "f.remind"}}: {{.Remind}}</span>{{end}}{{if .From}}<span class="badge">{{t "f.from"}} {{.From}}</span>{{end}}</div>
   <div class="actions">
   <form method="post" action="{{$.Base}}/review/capture" class="inline">{{template "fields" (fields $ "date" .Date "text" .Text "as" "task" "back" "inbox")}}<button type="submit" class="small">{{t "inbox.totask"}}</button></form>
   <form method="post" action="{{$.Base}}/inbox/done" class="inline">{{template "fields" (fields $ "date" .Date "text" .Text)}}<button type="submit" class="small">{{t "inbox.done"}}</button></form>

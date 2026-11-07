@@ -38,6 +38,7 @@ func (b *Brain) LastEntry(id string) time.Time {
 // task is active and when it was last written, for the Stop hook's reminder. The MCP
 // tools and the panel call them after a change; a failure there never fails the change.
 func (b *Brain) Touched(id string, write bool) {
+	b.read = append(b.read, id)
 	if b.ConfigDir != "" {
 		_ = state.Touched(b.ConfigDir, b.Space.Name, id, time.Now(), write)
 	}

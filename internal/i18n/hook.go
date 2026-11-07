@@ -3,6 +3,30 @@ package i18n
 // What the hooks tell the assistant in the language of the configuration. These are
 // instructions to the assistant, which passes them on in the user's language.
 var hookMessages = map[string]msg{
+	"fresh.head": {
+		en: "augmented brain: since this session last looked, these tasks changed outside it (another session, the panel or a hand edit). What you read about them earlier (the index at the start, an earlier answer) is out of date: before you state their status, say they are pending or done, or act on them, read them with task_get. Mention it to the user only when it bears on what you are doing.\n",
+		es: "augmented brain: desde la última vez que esta sesión miró, estas tareas han cambiado fuera de ella (otra sesión, el panel o una edición a mano). Lo que leíste de ellas antes (el índice del inicio, una respuesta anterior) está desfasado: antes de decir su estado, darlas por pendientes o hechas, o actuar sobre ellas, léelas con task_get. Coméntaselo al usuario solo si afecta a lo que estás haciendo.\n",
+	},
+	"fresh.changed": {
+		en: "- %s (%s): now %s, waits on %s, next: %s\n",
+		es: "- %s (%s): ahora %s, espera a %s, siguiente: %s\n",
+	},
+	"fresh.new": {
+		en: "- %s (%s): new task, %s\n",
+		es: "- %s (%s): tarea nueva, %s\n",
+	},
+	"fresh.gone": {
+		en: "- %s: no longer exists in this space\n",
+		es: "- %s: ya no existe en este espacio\n",
+	},
+	"fresh.more": {
+		en: "- and %d more: see pending\n",
+		es: "- y %d más: mira pending\n",
+	},
+	"fresh.format": {
+		en: "augmented brain: the notes of this space moved to a new format version since this session started, so every note may have been rewritten. What you read earlier may be out of date: read again (task_get, pending) whatever you are going to state or act on.\n",
+		es: "augmented brain: las notas de este espacio han pasado a otra versión de formato desde que empezó esta sesión, así que cualquier nota puede haberse reescrito. Lo que leíste antes puede estar desfasado: vuelve a leer (task_get, pending) lo que vayas a afirmar o sobre lo que vayas a actuar.\n",
+	},
 	"hook.memory.vscode": {
 		en: "augmented brain: this VS Code window's extension host (the process that runs Claude and the other extensions of the window) is using %s GB of memory; normal is about 0.5 GB. " +
 			"If it keeps growing, the system may kill it, and every Claude session of this window with it. " +

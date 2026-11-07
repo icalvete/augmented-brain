@@ -57,17 +57,25 @@ func cmdPanel(args []string, out, errOut io.Writer) int {
 		// The detached server itself; `augmented-brain panel` starts it.
 		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 		defer stop()
-		var r *panel.Remote
-		if remote {
-			tn := panelTailnet()
+		tn := panelTailnet()
+		// What the panel needs to answer through the network; also asked later, when
+		// `panel remote` finds this panel running and has it switch in place.
+		publish := func() (*panel.Remote, error) {
 			st, err := tn.Status()
 			if err != nil {
+				return nil, err
+			}
+			return &panel.Remote{Host: st.Host(), Owner: st.Owner, Unpublish: tn.Unserve}, nil
+		}
+		var r *panel.Remote
+		if remote {
+			var err error
+			if r, err = publish(); err != nil {
 				fmt.Fprintln(errOut, err)
 				return 1
 			}
-			r = &panel.Remote{Host: st.Host(), Owner: st.Owner, Unpublish: tn.Unserve}
 		}
-		if err := panel.ServeRemote(ctx, dir, panel.Idle, r); err != nil {
+		if err := panel.ServeWith(ctx, dir, panel.Idle, r, publish); err != nil {
 			fmt.Fprintln(errOut, err)
 			return 1
 		}
@@ -146,14 +154,22 @@ func panelRemote(c *config.Config, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
-	info, _, err := panel.StartMode(c.Dir, self, true)
+	info, how, err := panel.GoRemote(c.Dir, self)
 	if err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
 	if err := tn.Serve(info.Port); err != nil {
+		if how == panel.Switched {
+			// The panel was open and went remote for this: it goes back to local only,
+			// and the pages open in the browser go on as they were.
+			_ = panel.GoLocal(c.Dir)
+		}
 		fmt.Fprintln(errOut, explainTailnet(l, err))
 		return 1
+	}
+	if how == panel.Restarted {
+		fmt.Fprintln(out, i18n.T(l, "panel.remote.restarted"))
 	}
 	_ = tailnet.MarkUsed(c.Dir)
 	wd, _ := os.Getwd()

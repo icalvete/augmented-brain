@@ -236,8 +236,9 @@ red privada solo suya.
 augmented-brain panel remote
 ```
 
-Arranca el panel, lo publica solo en tu red de Tailscale, y escribe su dirección y un
-código QR para abrirla desde el móvil. Solo pueden abrirla tus dispositivos, con la cuenta
+Arranca el panel (o, si ya está abierto, hace que ese mismo panel responda también por la
+red, así que las páginas que tienes abiertas siguen funcionando), lo publica solo en tu red
+de Tailscale, y escribe su dirección y un código QR para abrirla desde el móvil. Solo pueden abrirla tus dispositivos, con la cuenta
 a la que pertenece este ordenador; la dirección deja de funcionar cuando el panel se para.
 Lo que falte (el propio Tailscale, HTTPS en tu red, dejar publicar a tu usuario) lo
 explica, con el paso que hay que dar: nunca instala ni cambia nada de Tailscale por ti.
@@ -383,6 +384,10 @@ Los eventos:
   caracteres. Solo se mandan las partes que tienen algo.
 - `pre-tool-use`: antes de cada comando y de cada cambio de fichero. Es el
   [guardia](guard.es.md). Si no puede ejecutarse, Claude Code para el comando.
+- `user-prompt-submit`: antes de que Claude responda a un mensaje. Le dice qué tareas
+  han cambiado fuera de su sesión desde la última vez que miró (otra sesión cerró una, el
+  panel cambió su siguiente paso), para que las vuelva a leer en vez de fiarse de lo que
+  leyó antes. Nunca retiene el mensaje.
 - `stop`: después de cada respuesta. Le recuerda a Claude que escriba en el diario de la
   tarea, una vez, después de 20 minutos sin escribir. También mira cuánta memoria usa la
   ventana (el host de extensiones de VS Code, o el propio Claude en un terminal), y hace

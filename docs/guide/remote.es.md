@@ -71,6 +71,16 @@ Para cada espacio dice si el servicio está en marcha, si Claude confía en su c
 el linger está activado, con lo que hacer con cada problema. `augmented-brain doctor`
 enseña lo mismo, una línea por espacio.
 
+Cuando un servicio falla, dice por qué en el registro del sistema (el journal):
+
+```bash
+journalctl --user -u augmented-brain-remote-personal -n 20
+```
+
+Un servicio instalado por una versión anterior no guardaba sus errores en ninguna parte;
+`status` y `doctor` te dicen que vuelvas a lanzar `augmented-brain remote install`, que lo
+pone al día.
+
 ## Conéctate desde otro ordenador
 
 1. Abre [claude.ai/code](https://claude.ai/code) o Claude Desktop, con la misma cuenta de

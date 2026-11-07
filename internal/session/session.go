@@ -347,7 +347,32 @@ func heading(c *config.Config, s *config.Space, m *memory.Memory, problems []mem
 		return head + firstSession(c.Language)
 	}
 	b := &brain.Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: Now}
-	return head + dueNote(b) + reviewNote(b)
+	b.KnowSpaces(c.SpaceNames())
+	return head + arrivedNote(b) + dueNote(b) + reviewNote(b)
+}
+
+// maxArrived is the most captures from other spaces the session start lists.
+const maxArrived = 10
+
+// arrivedNote lists what other spaces sent to this one (capture with space): work
+// approved elsewhere for this space, which must not wait for the weekly review to be
+// seen. It comes up at every start until it is done (capture_done) or processed.
+func arrivedNote(b *brain.Brain) string {
+	got := b.Arrived()
+	if len(got) == 0 {
+		return ""
+	}
+	var out strings.Builder
+	out.WriteString("\n## Sent from other spaces\n\nOther spaces sent these to this one. Mention them in your first answer, briefly, after what is due. " +
+		"When one is done (or becomes a task), take it out with capture_done, giving its date and text as listed:\n")
+	for i, e := range got {
+		if i == maxArrived {
+			fmt.Fprintf(&out, "- and %d more: see weekly_review\n", len(got)-maxArrived)
+			break
+		}
+		fmt.Fprintf(&out, "- %s — %s [from %s]\n", e.Date, e.Text, e.From)
+	}
+	return out.String()
 }
 
 // fit adds the user's rules, shared and of the space, and returns the text within
