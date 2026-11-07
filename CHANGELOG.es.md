@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Unreleased
+## 0.10.0-alpha
+
+Publicada el 2026-11-07.
 
 - **El acceso remoto arranca donde trabajas.** La sesión de cada espacio arranca ahora en
   la primera carpeta de trabajo del espacio, no en una carpeta nueva dentro de la

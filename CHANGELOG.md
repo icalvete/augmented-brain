@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.10.0-alpha
+
+Released 2026-11-07.
 
 - **Remote access starts where you work.** Each space's session now starts in the space's
   first work folder, not in a new folder under the configuration. If you already use
