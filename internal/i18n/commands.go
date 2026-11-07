@@ -362,7 +362,7 @@ Usage:
   augmented-brain backup       save this folder's space to its private repository (--all: every space)
   augmented-brain backup setup URL   connect this folder's space to a private git repository
   augmented-brain restore URL  bring a space back from its backup, on a new machine
-  augmented-brain panel        open the panel in your browser: see and edit your tasks, inbox, profile… (panel stop: stop it)
+  augmented-brain panel        open the panel in your browser: see and edit your tasks, inbox, profile… (panel remote: from your other devices) (panel stop: stop it)
   augmented-brain remote install    keep Claude reachable from another computer, also after a reboot (Linux)
   augmented-brain remote uninstall  stop that and remove it
   augmented-brain remote status     say whether it runs, and what is missing
@@ -384,7 +384,7 @@ Uso:
   augmented-brain backup       guarda el espacio de esta carpeta en su repositorio privado (--all: todos los espacios)
   augmented-brain backup setup URL   conecta el espacio de esta carpeta a un repositorio git privado
   augmented-brain restore URL  recupera un espacio de su copia, en una máquina nueva
-  augmented-brain panel        abre el panel en el navegador: ve y cambia tus tareas, buzón, perfil… (panel stop: lo para)
+  augmented-brain panel        abre el panel en el navegador: ve y cambia tus tareas, buzón, perfil… (panel remote: desde tus otros dispositivos) (panel stop: lo para)
   augmented-brain remote install    mantiene Claude accesible desde otro ordenador, también tras reiniciar (Linux)
   augmented-brain remote uninstall  lo para y lo quita
   augmented-brain remote status     dice si funciona y qué falta
@@ -430,8 +430,8 @@ Uso:
 		es: "uso: augmented-brain restore <url de la copia del espacio> [--memory carpeta] [--work carpeta]",
 	},
 	"usage.panel": {
-		en: "usage: augmented-brain panel [--no-browser] | panel stop",
-		es: "uso: augmented-brain panel [--no-browser] | panel stop",
+		en: "usage: augmented-brain panel [--no-browser] | panel remote | panel stop",
+		es: "uso: augmented-brain panel [--no-browser] | panel remote | panel stop",
 	},
 	"space.unknown": {
 		en: "there is no space called %q",

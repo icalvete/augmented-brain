@@ -270,6 +270,9 @@ try {
   Write-Host ''
   Say "This is an alpha version: it may have bugs and may change. Disclaimer:" "Es una versi\u00f3n alfa: puede tener errores y cambiar. Aviso legal:"
   Write-Host "  https://github.com/$Repo/blob/main/DISCLAIMER.md"
+  if (Get-Command tailscale -ErrorAction SilentlyContinue) {
+    Say "You have Tailscale: augmented-brain panel remote opens your panel from your other devices." "Tienes Tailscale: augmented-brain panel remote abre tu panel desde tus otros dispositivos."
+  }
 
   # --- 4. Set up ----------------------------------------------------------------------
   if ($env:AB_NO_INIT -eq '1') { return }

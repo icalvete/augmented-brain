@@ -218,6 +218,23 @@ after 30 minutes without use.
 
 See [The panel](panel.md).
 
+## augmented-brain panel remote
+
+Opens the panel for your other devices (another computer, your phone), through
+[Tailscale](https://tailscale.com), a free app that joins your devices in a private
+network of their own.
+
+```bash
+augmented-brain panel remote
+```
+
+It starts the panel, publishes it in your Tailscale network only, and prints its
+address and a QR code to open it from the phone. Only your own devices, signed in with
+the account this computer belongs to, can open it; the address stops working when the
+panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your
+user publish) it explains, with the step to take: it never installs or changes anything
+of Tailscale's for you. See [The panel from another device](panel-remote.md).
+
 ## augmented-brain panel stop
 
 Stops the panel now.

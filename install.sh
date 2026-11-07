@@ -456,6 +456,10 @@ echo
 say "This is an alpha version: it may have bugs and may change. Disclaimer:" \
     "Es una versión alfa: puede tener errores y cambiar. Aviso legal:"
 echo "  https://github.com/$REPO/blob/main/DISCLAIMER.md"
+if command -v tailscale >/dev/null 2>&1 || [ -x /Applications/Tailscale.app/Contents/MacOS/Tailscale ]; then
+  say "You have Tailscale: augmented-brain panel remote opens your panel from your other devices." \
+      "Tienes Tailscale: augmented-brain panel remote abre tu panel desde tus otros dispositivos."
+fi
 
 # --- 4. Set up --------------------------------------------------------------------
 

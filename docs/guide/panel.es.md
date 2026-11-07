@@ -196,6 +196,8 @@ dice, con un enlace para verla como está ahora.
 - Funciona **solo mientras lo usas**. Tras 30 minutos sin uso se para solo. Para pararlo
   ya: `augmented-brain panel stop`, o el enlace del pie de la página.
 - Funciona **solo en este ordenador**. Las otras máquinas de tu red no llegan a él.
+  Para abrirlo desde el móvil u otro ordenador tuyo, usa `augmented-brain panel remote`:
+  mira [El panel desde otro dispositivo](panel-remote.es.md).
 - La dirección lleva una **llave**, nueva cada vez que el panel arranca. Sin ella el panel
   no responde nada, así que ningún otro programa ni página web de tu ordenador puede
   usarlo. Trata la dirección como una contraseña: no la compartas. Deja de valer cuando el

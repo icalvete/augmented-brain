@@ -90,6 +90,7 @@ type page struct {
 	Spaces                            []string
 	Nav                               []link
 	OK                                bool
+	Remote                            bool // also open through the user's Tailscale network
 	Problems                          int
 	D                                 any
 }
@@ -139,7 +140,7 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 	if _, ok := s.pages[p.Lang]; !ok {
 		p.Lang = "en"
 	}
-	p.CSRF, p.Base = s.csrf, s.base()
+	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote != nil
 	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "sessions", "space", "guard", "help"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
 	}
@@ -233,8 +234,8 @@ func (s *Server) fail(w http.ResponseWriter, r *http.Request, v *view, status in
 	}
 	p.Title = i18n.T(lang, "panel.err")
 	back := ""
-	if ref := r.Header.Get("Referer"); strings.HasPrefix(ref, "http://"+r.Host+"/") {
-		back = strings.TrimPrefix(ref, "http://"+r.Host)
+	if ref, own := r.Header.Get("Referer"), s.origin(r); strings.HasPrefix(ref, own+"/") {
+		back = strings.TrimPrefix(ref, own)
 	}
 	p.D = message{Heading: p.Title, Text: text, Back: back}
 	s.render(w, status, "message", p)

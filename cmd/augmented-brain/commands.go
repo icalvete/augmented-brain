@@ -44,6 +44,7 @@ var commands = []command{
 	{name: "restore", run: withoutIn(cmdRestore), flags: func() []string { fs, _ := restoreFlags(io.Discard); return flagNames(fs) }},
 	{name: "panel", run: withoutIn(cmdPanel), flags: func() []string { return []string{panelNoBrowser} }},
 	{name: "panel stop"},
+	{name: "panel remote"},
 	{name: "panel serve", hidden: true}, // the detached server `panel` starts
 	// remote is hidden: its three subcommands are the ones the usage text lists.
 	{name: "remote", hidden: true, run: withoutIn(cmdRemote)},

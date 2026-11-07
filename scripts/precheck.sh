@@ -59,6 +59,9 @@ before=$(docs_sum)
 python3 -I scripts/build-guides.py >/dev/null
 if [ "$before" = "$(docs_sum)" ]; then ok; else bad "scripts/build-guides.py changed the generated pages: commit them"; fi
 
+step "third-party notices"
+if out=$(python3 -I scripts/third-party-notices.py --check 2>&1); then ok; else bad "$out"; fi
+
 if [ "$full" = 1 ]; then
   step "compat-check (last two releases)"
   dir=$(mktemp -d)

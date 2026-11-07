@@ -23,6 +23,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/state"
+	"github.com/icalvete/augmented-brain/internal/tailnet"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
@@ -60,6 +61,8 @@ type Env struct {
 	ClaudeDir string
 	// Remote is the system remote access is read from; nil means the real one.
 	Remote *remote.System
+	// Tailnet is the Tailscale the remote panel uses; nil means the real one.
+	Tailnet *tailnet.Tailnet
 }
 
 // Run returns every check, in the order they are shown. Later checks are skipped when
@@ -137,6 +140,7 @@ func Run(e Env) []Check {
 		out = append(out, space(c, c.Spaces[name])...)
 	}
 	out = append(out, remoteChecks(e, c)...)
+	out = append(out, panelRemote(e, c)...)
 	out = append(out, autoMemory(e, c)...)
 	if old := state.OldServers(c.Dir, version.Version); len(old) > 0 {
 		add(Warning, i18n.T(l, "doctor.oldservers", len(old), version.Version), i18n.T(l, "doctor.oldservers.fix"))
@@ -411,4 +415,48 @@ func remoteChecks(e Env, c *config.Config) []Check {
 		out = append(out, Check{status, what, fix})
 	}
 	return out
+}
+
+// panelRemote is one line about the remote panel, once `panel remote` has worked on this
+// computer: whether Tailscale is still ready for it, and whether an address of the panel
+// was left published with no remote panel running (a crash, a reboot), which would let
+// whatever takes that local port next be reached from the network.
+func panelRemote(e Env, c *config.Config) []Check {
+	if !tailnet.Used(c.Dir) {
+		return nil
+	}
+	l := c.Language
+	tn := e.Tailnet
+	if tn == nil {
+		real := tailnet.New()
+		tn = &real
+	}
+	st, err := tn.Status()
+	switch {
+	case errors.Is(err, tailnet.ErrMissing):
+		return []Check{{Warning, i18n.T(l, "doctor.panelremote.missing"), i18n.T(l, "doctor.panelremote.missing.fix")}}
+	case err != nil:
+		return []Check{{Warning, i18n.T(l, "doctor.panelremote.stopped"), i18n.T(l, "doctor.panelremote.stopped.fix")}}
+	case !st.HTTPS:
+		return []Check{{Warning, i18n.T(l, "doctor.panelremote.nohttps"), i18n.T(l, "doctor.panelremote.nohttps.fix")}}
+	}
+	if cur, err := tn.Served(); err == nil && cur != "" && cur != "other" && !remotePanelRunning(c.Dir) {
+		return []Check{{Warning, i18n.T(l, "doctor.panelremote.leftover", tailnet.Port, cur),
+			i18n.T(l, "doctor.panelremote.leftover.fix", tailnet.Port)}}
+	}
+	return []Check{{OK, i18n.T(l, "doctor.panelremote.ok", st.Name), ""}}
+}
+
+// remotePanelRunning reports whether the panel's info file says a remote panel runs.
+// The panel's own package cannot be used here (it uses doctor), so the file is read
+// as it is: a panel that died without removing it is cleared by the next panel start.
+func remotePanelRunning(cfgDir string) bool {
+	data, err := os.ReadFile(filepath.Join(cfgDir, "panel.json"))
+	if err != nil {
+		return false
+	}
+	var i struct {
+		Remote *struct{ Host string } `json:"remote"`
+	}
+	return json.Unmarshal(data, &i) == nil && i.Remote != nil && i.Remote.Host != ""
 }

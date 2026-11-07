@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -57,6 +58,7 @@ func fixture(t *testing.T, lang string) (*Server, string) {
 type req struct {
 	method, path, host, origin, referer string
 	bearer                              string
+	owner                               string // the Tailscale login header
 	form                                url.Values
 	body                                string
 }
@@ -88,6 +90,9 @@ func (s *Server) do(t *testing.T, r req) *httptest.ResponseRecorder {
 	}
 	if r.bearer != "" {
 		q.Header.Set("Authorization", "Bearer "+r.bearer)
+	}
+	if r.owner != "" {
+		q.Header.Set(OwnerHeader, r.owner)
 	}
 	w := httptest.NewRecorder()
 	s.ServeHTTP(w, q)
@@ -186,6 +191,61 @@ func TestAccess(t *testing.T) {
 		if h.Get("Access-Control-Allow-Origin") != "" {
 			t.Error("no CORS")
 		}
+	}
+}
+
+// Through the Tailscale network: the machine's own name, and only its owner.
+func TestRemoteAccess(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	const rhost, owner = "box.example.ts.net:8443", "lucia@example.com"
+	tasks := s.base() + "/tasks"
+	// Not published: the network's name is refused like any other.
+	if w := s.do(t, req{path: tasks, host: rhost, owner: owner}); w.Code != http.StatusForbidden {
+		t.Errorf("not published: %d", w.Code)
+	}
+	s.remote = &Remote{Host: rhost, Owner: owner}
+	if w := s.do(t, req{path: tasks, host: rhost, owner: owner}); w.Code != http.StatusOK {
+		t.Fatalf("owner: %d", w.Code)
+	}
+	if w := s.do(t, req{path: tasks, host: rhost, owner: "LUCIA@example.com"}); w.Code != http.StatusOK {
+		t.Errorf("logins ignore case: %d", w.Code)
+	}
+	for i, r := range []req{
+		{path: tasks, host: rhost},                                   // no login: not from the network
+		{path: tasks, host: rhost, owner: "guest@example.com"},       // someone else in the network
+		{path: tasks, host: "box.example.ts.net", owner: owner},      // another port
+		{path: tasks, host: "evil.example:8443", owner: owner},       // another name
+		{path: "/tasks", host: rhost, owner: owner},                  // outside the session
+		{path: "/tasks", host: rhost, owner: owner, bearer: s.token}, // the command talks to 127.0.0.1 only
+		{path: "/ping?c=" + strings.Repeat("ab", 32), host: rhost, owner: owner},
+	} {
+		if w := s.do(t, r); w.Code != http.StatusForbidden {
+			t.Errorf("case %d: %d", i, w.Code)
+		}
+	}
+	// 127.0.0.1 works as before.
+	if w := s.get(t, "/tasks"); w.Code != http.StatusOK {
+		t.Errorf("local: %d", w.Code)
+	}
+	// Writes through the network need its https origin.
+	path := s.base() + "/inbox/capture"
+	form := url.Values{"s": {"work"}, "text": {"From the phone"}, "csrf": {s.csrf}}
+	if w := s.do(t, req{method: "POST", path: path, host: rhost, owner: owner, form: form, origin: "http://" + rhost}); w.Code != http.StatusForbidden {
+		t.Errorf("http origin through the network: %d", w.Code)
+	}
+	if w := s.do(t, req{method: "POST", path: path, host: rhost, owner: owner, form: form, origin: "https://" + rhost}); w.Code != http.StatusSeeOther {
+		t.Fatalf("capture through the network: %d %s", w.Code, w.Body)
+	}
+	data, _ := os.ReadFile(filepath.Join(filepath.Dir(cfg), "brain-work", "inbox.md"))
+	if !strings.Contains(string(data), "From the phone") {
+		t.Error("the capture did not land")
+	}
+	i := Info{Port: port, Token: s.token, Remote: s.remote}
+	if i.RemoteURL() != "https://"+rhost+s.base()+"/" {
+		t.Errorf("remote URL: %s", i.RemoteURL())
+	}
+	if (Info{Port: port, Token: s.token}).RemoteURL() != "" {
+		t.Error("no remote, no remote URL")
 	}
 }
 
@@ -455,6 +515,42 @@ func TestServeAndStop(t *testing.T) {
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("the idle server did not stop")
+	}
+}
+
+// A remote panel records its network address in the info file and takes it back when
+// it stops, also when it stops by itself for being idle.
+func TestServeRemoteTakesItBack(t *testing.T) {
+	_, cfg := fixture(t, "en")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	var taken atomic.Int32
+	remote := &Remote{Host: "box.example.ts.net:8443", Owner: "lucia@example.com", Unpublish: func() error { taken.Add(1); return nil }}
+	errc := make(chan error, 1)
+	go func() { errc <- ServeRemote(ctx, cfg, 300*time.Millisecond, remote) }()
+	var info Info
+	for k := 0; k < 100 && info.Port == 0; k++ {
+		if i, ok := ReadInfo(cfg); ok {
+			info = i
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if info.Remote == nil || info.Remote.Host != remote.Host || info.Remote.Owner != remote.Owner {
+		t.Fatalf("info: %+v", info)
+	}
+	if data, _ := os.ReadFile(filepath.Join(cfg, InfoFile)); strings.Contains(string(data), "Unpublish") {
+		t.Errorf("the info file holds the function: %s", data)
+	}
+	select {
+	case err := <-errc:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("the idle server did not stop")
+	}
+	if taken.Load() != 1 {
+		t.Errorf("unpublished %d times", taken.Load())
 	}
 }
 
