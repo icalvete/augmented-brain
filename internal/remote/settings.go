@@ -39,13 +39,18 @@ type Settings struct {
 	NamePrefix string
 	// PermissionMode is the --permission-mode of the Claude server.
 	PermissionMode string
+	// Folders are where a space's session starts, when it is not the space's first work
+	// folder: space name to an absolute path. It must lie inside a work folder of the
+	// space, so the session still loads that space.
+	Folders map[string]string
 }
 
 type fileSettings struct {
-	Enabled        bool     `toml:"enabled"`
-	Spaces         []string `toml:"spaces"`
-	NamePrefix     string   `toml:"name_prefix"`
-	PermissionMode string   `toml:"permission_mode"`
+	Enabled        bool              `toml:"enabled"`
+	Spaces         []string          `toml:"spaces"`
+	NamePrefix     string            `toml:"name_prefix"`
+	PermissionMode string            `toml:"permission_mode"`
+	Folders        map[string]string `toml:"folders"`
 }
 
 // safeWord is what a name prefix may hold: it goes into a command line and a session
@@ -93,6 +98,30 @@ func LoadSettings(c *config.Config, hostname string) (Settings, error) {
 			return s, errors.New(i18n.T(l, "remote.badspace", path, name, strings.Join(c.SpaceNames(), ", ")))
 		}
 	}
+	for name, folder := range f.Folders {
+		sp, ok := c.Spaces[name]
+		if !ok {
+			return s, errors.New(i18n.T(l, "remote.badspace", path, name, strings.Join(c.SpaceNames(), ", ")))
+		}
+		abs, err := paths.Resolve(folder)
+		if err != nil || folder == "" {
+			return s, errors.New(i18n.T(l, "remote.badfolder", path, name, folder))
+		}
+		inside := false
+		for _, w := range sp.WorkFolders {
+			if paths.Within(abs, w) {
+				inside = true
+				break
+			}
+		}
+		if !inside {
+			return s, errors.New(i18n.T(l, "remote.notwork", path, folder, name))
+		}
+		if s.Folders == nil {
+			s.Folders = map[string]string{}
+		}
+		s.Folders[name] = abs
+	}
 	return s, nil
 }
 
@@ -122,6 +151,7 @@ const settingsHeader = `# augmented brain: Claude remote access (augmented-brain
 #   spaces = ["personal"]       # spaces that get a session; default: default_space
 #   name_prefix = "my-laptop"   # sessions are called <name_prefix>-<space>; default: this computer's name
 #   permission_mode = "default" # acceptEdits, auto, bypassPermissions, default, dontAsk or plan
+#   folders = { personal = "~/projects" } # where a session starts; default: the space's first work folder
 `
 
 // SetEnabled writes enabled in remote.toml of dir, keeping every other line. Turning it

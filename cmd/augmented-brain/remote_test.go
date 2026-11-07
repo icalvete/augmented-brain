@@ -41,7 +41,7 @@ func useFakeSystem(t *testing.T, h, goos string) *[]string {
 }
 
 func TestRemoteCommands(t *testing.T) {
-	h, cfg := home(t)
+	h, _ := home(t)
 	calls := useFakeSystem(t, h, "linux")
 	var out, errOut bytes.Buffer
 
@@ -53,7 +53,7 @@ func TestRemoteCommands(t *testing.T) {
 	if code := run([]string{"remote", "install"}, nil, &out, &errOut); code != 0 {
 		t.Fatalf("install: %d\n%s%s", code, out.String(), errOut.String())
 	}
-	folder := filepath.Join(cfg, "remote", "personal")
+	folder := filepath.Join(h, "augmented-brain", "personal") // the space's first work folder
 	for _, want := range []string{"box-personal", "cd " + folder + " && claude", "sudo loginctl enable-linger lucia"} {
 		if !strings.Contains(out.String(), want) {
 			t.Errorf("install output lacks %q (in Spanish, the configuration's language):\n%s", want, out.String())

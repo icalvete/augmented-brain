@@ -2,9 +2,12 @@
 // one systemd user service per space that runs `claude remote-control`, so that after a
 // reboot the machine can be reached again from Claude Desktop or claude.ai.
 //
-// Each service lives in a folder of its own, <configuration>/remote/<space>, which is a
-// work folder of its space: every session the server opens starts there, so the space
-// of the session (and its rules) is the one the service was made for.
+// Each service starts in a work folder of its space: the one remote.toml names under
+// folders, or else the space's first work folder, where the user already works (and so
+// Claude usually trusts it already). A space with no work folder gets one of its own,
+// <configuration>/remote/<space>, made a work folder of the space. Every session the
+// server opens starts there, so the space of the session (and its rules) is the one the
+// service was made for.
 //
 // Linux only for now. Everything the package touches outside the configuration folder
 // goes through System, so tests use fakes and write only to temporary folders.
@@ -102,18 +105,25 @@ type Service struct {
 	Name   string // the session's name: <prefix>-<space>
 	Folder string // where the server starts, so where every session starts
 	Unit   string // the unit's file name
+	// Own is true when Folder is the service's own folder, <configuration>/remote/<space>,
+	// because the space has no work folder: install creates it and adds it to the space.
+	Own bool
 }
 
 // Services are the services the settings ask for, in the order of the spaces.
 func Services(c *config.Config, set Settings) []Service {
 	var out []Service
 	for _, space := range set.Spaces {
-		out = append(out, Service{
-			Space:  space,
-			Name:   set.NamePrefix + "-" + space,
-			Folder: filepath.Join(c.Dir, "remote", space),
-			Unit:   unitPrefix + space + ".service",
-		})
+		svc := Service{Space: space, Name: set.NamePrefix + "-" + space, Unit: unitPrefix + space + ".service"}
+		switch sp := c.Spaces[space]; {
+		case set.Folders[space] != "":
+			svc.Folder = set.Folders[space]
+		case sp != nil && len(sp.WorkFolders) > 0:
+			svc.Folder = sp.WorkFolders[0]
+		default:
+			svc.Folder, svc.Own = filepath.Join(c.Dir, "remote", space), true
+		}
+		out = append(out, svc)
 	}
 	return out
 }
@@ -160,8 +170,9 @@ type InstallResult struct {
 	Added []Service
 }
 
-// Install sets remote access up, and is safe to repeat: it creates each service's
-// folder, makes it a work folder of the space, writes the unit, reloads systemd and
+// Install sets remote access up, and is safe to repeat: it checks each service's folder
+// exists (or, for a space with no work folder, creates its own folder and makes it a
+// work folder of the space), writes the unit, reloads systemd and
 // enables and starts the service. It does not touch Claude's own files, and never runs
 // loginctl enable-linger, which is for root: the result says what to run.
 func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) {
@@ -184,15 +195,19 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 	}
 	var restart []string
 	for _, svc := range res.Services {
-		if err := os.MkdirAll(svc.Folder, 0o700); err != nil {
-			return nil, err
-		}
-		added, err := addWorkFolder(c, svc)
-		if err != nil {
-			return nil, err
-		}
-		if added {
-			res.Added = append(res.Added, svc)
+		if svc.Own {
+			if err := os.MkdirAll(svc.Folder, 0o700); err != nil {
+				return nil, err
+			}
+			added, err := addWorkFolder(c, svc)
+			if err != nil {
+				return nil, err
+			}
+			if added {
+				res.Added = append(res.Added, svc)
+			}
+		} else if fi, err := os.Stat(svc.Folder); err != nil || !fi.IsDir() {
+			return nil, errors.New(i18n.T(c.Language, "remote.nofolder", paths.Tilde(svc.Folder), svc.Space))
 		}
 		path := filepath.Join(s.UnitDir, svc.Unit)
 		text := svc.UnitText(claude, set.PermissionMode)

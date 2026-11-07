@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Remote access starts where you work.** Each space's session now starts in the space's
+  first work folder, not in a new folder under the configuration. If you already use
+  Claude there, it trusts it, so there is nothing more to accept. A new setting,
+  `folders` in `remote.toml`, picks another folder inside the space. Only a space with no
+  work folder still gets one of its own. Run `augmented-brain remote install` again to
+  move a service you already have.
 - **`update` does the checks around it.** Before a new version, it runs the health check
   (and shows what it finds) and backs up every space that has a backup; if a backup
   fails, nothing is updated (`--force` updates anyway). After, it says how many open Claude sessions still run the

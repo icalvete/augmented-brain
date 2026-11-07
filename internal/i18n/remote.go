@@ -24,6 +24,18 @@ var remoteMessages = map[string]msg{
 		en: "%s: the space %q is not one of your spaces (%s)",
 		es: "%s: el espacio %q no es ninguno de tus espacios (%s)",
 	},
+	"remote.badfolder": {
+		en: "%s: folders: the folder of the space %s, %q, is not a valid path",
+		es: "%s: folders: la carpeta del espacio %s, %q, no es una ruta válida",
+	},
+	"remote.notwork": {
+		en: "%s: folders: %s is not inside any work folder of the space %s, so a session there would not load that space. Choose a folder inside one, or add it to the space's work_folders",
+		es: "%s: folders: %s no está dentro de ninguna carpeta de trabajo del espacio %s, así que una sesión ahí no cargaría ese espacio. Elige una carpeta dentro de alguna, o añádela a los work_folders del espacio",
+	},
+	"remote.nofolder": {
+		en: "the folder %s, where the session of the space %s starts, does not exist: create it, or choose another under folders in remote.toml",
+		es: "la carpeta %s, donde arranca la sesión del espacio %s, no existe: créala, o elige otra en folders de remote.toml",
+	},
 	"remote.nospaces": {
 		en: "no space to serve: write spaces = [\"name\"] in %s, or choose a default space",
 		es: "no hay ningún espacio que servir: escribe spaces = [\"nombre\"] en %s, o elige un espacio por defecto",

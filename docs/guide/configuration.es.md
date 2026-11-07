@@ -182,6 +182,7 @@ enabled = true
 spaces = ["personal", "trabajo"]
 name_prefix = "mi-portatil"
 permission_mode = "default"
+folders = { trabajo = "~/trabajo/clientes" }
 ```
 
 Todos son opcionales:
@@ -198,6 +199,9 @@ Todos son opcionales:
   donde Claude pregunta como siempre y el guardia sigue vigente. **No uses
   `bypassPermissions`**: deja que quien se conecte ejecute lo que quiera, sin preguntas, y
   deja el ordenador abierto.
+- `folders`: dónde arranca la sesión de un espacio, cuando no es su primera carpeta de
+  trabajo (lo normal). La carpeta tiene que existir y estar dentro de una carpeta de
+  trabajo de ese espacio, para que la sesión siga cargando ese espacio.
 
 Vuelve a lanzar `augmented-brain remote install` después de cambiarlo, para que los
 servicios lo recojan.
@@ -213,8 +217,9 @@ servicios lo recojan.
   cambiara de formato.
 - `panel.json` y `panel.lock`: dónde escucha el panel mientras está en marcha, y su
   bloqueo. El guardia nunca deja que Claude lea `panel.json`: guarda la clave del panel.
-- `remote/<espacio>/`: la carpeta donde arranca el servicio de acceso remoto de un espacio.
-  Es carpeta de trabajo de ese espacio.
+- `remote/<espacio>/`: la carpeta donde arranca el servicio de acceso remoto de un espacio,
+  solo si el espacio no tiene carpetas de trabajo. Pasa a ser carpeta de trabajo de ese
+  espacio.
 - `review-<espacio>.draft`: una revisión semanal empezada en el panel y aún sin
   terminar.
 

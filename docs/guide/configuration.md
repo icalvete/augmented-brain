@@ -174,6 +174,7 @@ enabled = true
 spaces = ["personal", "work"]
 name_prefix = "my-laptop"
 permission_mode = "default"
+folders = { work = "~/work/clients" }
 ```
 
 All are optional:
@@ -189,6 +190,9 @@ All are optional:
   where Claude asks as usual and the guard stays in force. **Do not use
   `bypassPermissions`**: it lets whoever connects run anything, with no questions, and
   leaves the computer open.
+- `folders`: where a space's session starts, when it is not the space's first work folder
+  (the default). The folder must exist and lie inside a work folder of that space, so the
+  session still loads that space.
 
 Run `augmented-brain remote install` again after changing it, so the services pick it up.
 
@@ -200,8 +204,8 @@ Run `augmented-brain remote install` again after changing it, so the services pi
 - `migrations/`: a full copy of notes before a new version moved them.
 - `panel.json` and `panel.lock`: where the panel listens while it runs, and its lock.
   The guard never lets Claude read `panel.json`: it holds the panel's key.
-- `remote/<space>/`: the folder where the remote access service of a space starts. It is a
-  work folder of that space.
+- `remote/<space>/`: the folder where the remote access service of a space starts, only for
+  a space with no work folder of its own. It is made a work folder of that space.
 - `review-<space>.draft`: a weekly review started in the panel and not finished yet.
 
 ## Environment variables

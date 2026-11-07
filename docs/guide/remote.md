@@ -20,23 +20,30 @@ starts in a folder that belongs to that space, so Claude loads that space's note
 rules, and nothing crosses between spaces. By default only your default space has a door.
 To open one for work too, see [Configuration](configuration.md).
 
+That folder is the space's first work folder, the one you named when you made the space:
+where you already work, so a session from your phone opens where you would open one at
+the computer. To start somewhere else inside the space, set `folders` in
+[`remote.toml`](configuration.md). Only a space with no work folder gets a folder of its
+own, `~/.config/augmented-brain/remote/<space>`.
+
 ## Install it
 
 ```bash
 augmented-brain remote install
 ```
 
-It creates the folder, writes the service, and starts it. It then tells you what is
-missing. Two things always are, because only you can do them.
+It writes the service and starts it. It then tells you what is missing, if anything:
+two things only you can do.
 
 ### 1. Let Claude trust the folder
 
 Claude refuses to run in a folder it has not been told to trust, and there is no one at
-the keyboard to answer when it starts by itself. So once, for each folder `install` names,
-open Claude there and accept the question:
+the keyboard to answer when it starts by itself. If you already use Claude in your work
+folder, it trusts it and there is nothing to do. Otherwise, once for each folder `install`
+names, open Claude there and accept the question:
 
 ```bash
-cd ~/.config/augmented-brain/remote/personal && claude
+cd ~/projects && claude
 ```
 
 Accept "trust this folder", then close Claude (`/exit`). augmented brain never edits
