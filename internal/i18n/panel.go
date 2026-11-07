@@ -918,6 +918,14 @@ var panelMessages = map[string]msg{
 		en: "Text",
 		es: "Texto",
 	},
+	"panel.remote.restarted": {
+		en: "The panel that was open had to be started again for this (it came from an earlier version): reload the panel's pages that were open in the browser.",
+		es: "El panel que estaba abierto se ha tenido que arrancar de nuevo para esto (era de una versión anterior): recarga las páginas del panel que tenías abiertas en el navegador.",
+	},
+	"panel.f.from": {
+		en: "from space",
+		es: "del espacio",
+	},
 	"panel.f.remind": {
 		en: "Remind me on (optional)",
 		es: "Recuérdamelo el (opcional)",

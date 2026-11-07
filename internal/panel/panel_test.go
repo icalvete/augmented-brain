@@ -203,7 +203,7 @@ func TestRemoteAccess(t *testing.T) {
 	if w := s.do(t, req{path: tasks, host: rhost, owner: owner}); w.Code != http.StatusForbidden {
 		t.Errorf("not published: %d", w.Code)
 	}
-	s.remote = &Remote{Host: rhost, Owner: owner}
+	s.remote.Store(&Remote{Host: rhost, Owner: owner})
 	if w := s.do(t, req{path: tasks, host: rhost, owner: owner}); w.Code != http.StatusOK {
 		t.Fatalf("owner: %d", w.Code)
 	}
@@ -240,7 +240,7 @@ func TestRemoteAccess(t *testing.T) {
 	if !strings.Contains(string(data), "From the phone") {
 		t.Error("the capture did not land")
 	}
-	i := Info{Port: port, Token: s.token, Remote: s.remote}
+	i := Info{Port: port, Token: s.token, Remote: s.remote.Load()}
 	if i.RemoteURL() != "https://"+rhost+s.base()+"/" {
 		t.Errorf("remote URL: %s", i.RemoteURL())
 	}
@@ -770,5 +770,25 @@ func TestInboxDoneTakesOne(t *testing.T) {
 	}
 	if w := s.post(t, "/inbox/done", url.Values{"s": {"work"}, "date": {"2026-10-02"}, "text": {"Call Ana"}}); w.Code != http.StatusBadRequest {
 		t.Errorf("done twice: %d", w.Code)
+	}
+}
+
+// A capture another space sent shows where it came from, and "done" takes it out.
+func TestInboxShowsOrigin(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	inbox := filepath.Join(filepath.Dir(cfg), "brain-work", "inbox.md")
+	start := "- 2026-11-07 — Purge php8.0 (from home)\n- 2026-11-07 — Cable (from Amazon)\n"
+	if err := os.WriteFile(inbox, []byte(start), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	page := s.get(t, "/inbox?s=work").Body.String()
+	if !strings.Contains(page, "from space home") || strings.Contains(page, "from space Amazon") {
+		t.Fatalf("inbox page:\n%s", page)
+	}
+	if w := s.post(t, "/inbox/done", url.Values{"s": {"work"}, "date": {"2026-11-07"}, "text": {"Purge php8.0"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("done: %d %s", w.Code, w.Body)
+	}
+	if data, _ := os.ReadFile(inbox); string(data) != "- 2026-11-07 — Cable (from Amazon)\n" {
+		t.Errorf("inbox:\n%s", data)
 	}
 }

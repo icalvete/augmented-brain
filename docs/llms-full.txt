@@ -633,7 +633,8 @@ it adds a **watch date** to the task. From 7 days before, and every day after, C
 tells you at the start of the session, until it is marked done.
 
 This also works on a closed task. Closing is often when you write down what to check
-later.
+later, so when Claude closes a task that still has one, it tells you it will keep coming
+up.
 
 For something that is not a task ("remind me on Thursday to call the insurance"), Claude
 uses the inbox instead: see [Areas, knowledge and the rest](https://icalvete.github.io/augmented-brain/guide/notes.html#inbox).
@@ -1408,6 +1409,9 @@ It starts the panel, publishes it in your Tailscale network, and prints its addr
 such as `https://my-laptop.example.ts.net:8443/s/…/today`, and a QR code. Point the
 phone's camera at the code, or open the address on the other computer.
 
+If the panel is already open on this computer, it is not stopped: the same panel starts
+answering through the network too, and the pages you have open go on working.
+
 ## What you need, once
 
 The command checks each of these and, when one is missing, says exactly what to do. It
@@ -1752,6 +1756,15 @@ augmented-brain remote status
 For each space it says whether the service is running, whether Claude trusts its folder,
 and whether linger is on, with what to do about each problem. `augmented-brain doctor`
 shows the same, one line per space.
+
+When a service fails, it says why in the system journal:
+
+```bash
+journalctl --user -u augmented-brain-remote-personal -n 20
+```
+
+A service installed by an earlier version sent its errors nowhere; `status` and `doctor`
+tell you to run `augmented-brain remote install` again, which brings it up to date.
 
 ## Connect from another computer
 
@@ -2116,8 +2129,9 @@ network of their own.
 augmented-brain panel remote
 ```
 
-It starts the panel, publishes it in your Tailscale network only, and prints its
-address and a QR code to open it from the phone. Only your own devices, signed in with
+It starts the panel (or, when it is already open, has that same panel answer through
+the network too, so the pages you have open keep working), publishes it in your
+Tailscale network only, and prints its address and a QR code to open it from the phone. Only your own devices, signed in with
 the account this computer belongs to, can open it; the address stops working when the
 panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your
 user publish) it explains, with the step to take: it never installs or changes anything
@@ -2259,6 +2273,10 @@ The events:
   the parts with something in them are sent.
 - `pre-tool-use`: before every command and file change. This is the
   [guard](https://icalvete.github.io/augmented-brain/guide/guard.html). If it cannot run, Claude Code stops the command.
+- `user-prompt-submit`: before Claude answers a message. It tells Claude which tasks
+  changed outside its session since it last looked (another session closed one, the
+  panel changed its next step), so it reads them again instead of trusting what it read
+  earlier. It never holds up the message.
 - `stop`: after each answer. It reminds Claude to write in the task's journal, once,
   after 20 minutes without writing. It also looks at how much memory the window uses
   (VS Code's extension host, or Claude itself in a terminal), and has Claude warn you
@@ -2421,7 +2439,9 @@ Pauses a task without losing anything, before switching to other work.
 ## `task_close`
 
 Closes a finished task with its result. It is kept, never deleted. A task with open
-subtasks cannot close.
+subtasks cannot close. If the task has watch dates not marked done, it says so: they
+still come up at the start of the session on their day, since closing is often when you
+write down what to check later.
 
 - `id`: the task's id.
 - `result`: what was achieved, in one or two lines.
@@ -2434,6 +2454,21 @@ reminded. The weekly review processes it.
 - `text`: the idea, link or loose end, in one line.
 - `remind_on` (optional): a date. It comes up at the start of the session from a week
   before, until it is dealt with.
+- `space` (optional): another of your spaces, to send it there instead. It lands in
+  that space's inbox marked with where it came from, `(from personal)`, and comes up at
+  the start of every session there until it is done. For something decided in one space
+  that has to be done in another. Claude only does it when you ask: what goes to a
+  space is seen there and goes into its backup.
+
+## `capture_done`
+
+Takes one capture out of the inbox once it is done, or once it has become a task,
+without waiting for the weekly review. Above all for what another space sent, which
+otherwise comes up at every session start.
+
+- `date`: the day it was captured, as listed.
+- `text`: its text exactly as listed, with or without its origin. Another capture with
+  the same text stays.
 
 ## `weekly_review`
 

@@ -125,7 +125,9 @@ Pauses a task without losing anything, before switching to other work.
 ## `task_close`
 
 Closes a finished task with its result. It is kept, never deleted. A task with open
-subtasks cannot close.
+subtasks cannot close. If the task has watch dates not marked done, it says so: they
+still come up at the start of the session on their day, since closing is often when you
+write down what to check later.
 
 - `id`: the task's id.
 - `result`: what was achieved, in one or two lines.
@@ -138,6 +140,21 @@ reminded. The weekly review processes it.
 - `text`: the idea, link or loose end, in one line.
 - `remind_on` (optional): a date. It comes up at the start of the session from a week
   before, until it is dealt with.
+- `space` (optional): another of your spaces, to send it there instead. It lands in
+  that space's inbox marked with where it came from, `(from personal)`, and comes up at
+  the start of every session there until it is done. For something decided in one space
+  that has to be done in another. Claude only does it when you ask: what goes to a
+  space is seen there and goes into its backup.
+
+## `capture_done`
+
+Takes one capture out of the inbox once it is done, or once it has become a task,
+without waiting for the weekly review. Above all for what another space sent, which
+otherwise comes up at every session start.
+
+- `date`: the day it was captured, as listed.
+- `text`: its text exactly as listed, with or without its origin. Another capture with
+  the same text stays.
 
 ## `weekly_review`
 

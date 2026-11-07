@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased
+
+- **Sessions hear what other sessions changed.** A session reads the task index once, when
+  it starts; another session, the panel or a hand edit may close a task a minute later.
+  Now, before Claude answers each message, augmented brain tells it which tasks changed
+  outside its session since it last looked (status, next step, who it waits on; and any
+  change in a task it is working on), so it reads them again instead of acting on what it
+  read hours ago. A journal entry of another session in a task it never touched is not
+  news, and its own writes never are. The same note comes at the end of any augmented
+  brain tool's answer, so a long piece of work hears it too. It runs in under a
+  millisecond, through a new hook (`user-prompt-submit`); a program older than the plugin
+  just says nothing.
+- **Send something to another space.** `capture` takes `space`: what was decided in one
+  space but must be done in another goes to that space's inbox, marked with where it came
+  from, and comes up at the start of every session there until it is done. A new tool,
+  `capture_done`, takes one capture out of the inbox without waiting for the weekly
+  review. The panel's inbox shows where each one came from.
+- **Closing a task says which watch dates it keeps.** They still come up at the start of
+  the session on their day, as before; now `task_close` says so.
+- **`panel remote` no longer stops the panel you have open.** The running panel starts
+  answering through your Tailscale network too, with the same key, so the pages open in
+  the browser keep working. If publishing fails, it goes back to local only.
+- **A remote access service that fails says why.** Its errors now go to the system
+  journal (`journalctl --user -u augmented-brain-remote-<space>`). `remote status` and
+  `doctor` tell you to run `augmented-brain remote install` again to update a service
+  installed by an earlier version.
+
 ## 0.11.0-alpha
 
 Released 2026-11-07.

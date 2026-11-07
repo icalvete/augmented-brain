@@ -124,7 +124,8 @@ Claude y añade una **fecha para revisar** a la tarea. Desde 7 días antes, y ca
 después, Claude te lo dice al empezar la sesión, hasta que se marque como hecha.
 
 También vale en una tarea cerrada. Al cerrar es cuando muchas veces apuntas lo que hay que
-comprobar después.
+comprobar después, así que cuando Claude cierra una tarea que aún tiene alguna, te avisa de
+que seguirá saliendo.
 
 Para algo que no es una tarea ("recuérdame el jueves que llame al seguro"), Claude usa el
 buzón: mira [Áreas, conocimiento y lo demás](notes.es.md#buzón).

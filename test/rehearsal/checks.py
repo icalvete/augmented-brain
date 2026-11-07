@@ -48,8 +48,8 @@ def spaces():
     return out
 
 
-def hook(event, payload, *extra, cwd):
-    code, out, err = ab("hook", event, *extra, cwd=cwd, inp=json.dumps(payload))
+def hook(event, payload, *extra, cwd, env=None):
+    code, out, err = ab("hook", event, *extra, cwd=cwd, inp=json.dumps(payload), env=env)
     if code == 2:
         return "deny", err
     o = json.loads(out or "{}").get("hookSpecificOutput", {})
@@ -57,8 +57,9 @@ def hook(event, payload, *extra, cwd):
 
 
 class MCP:
-    def __init__(self, cwd):
-        self.p = subprocess.Popen(["augmented-brain", "mcp"], cwd=cwd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, **ENC)
+    def __init__(self, cwd, env=None):
+        self.p = subprocess.Popen(["augmented-brain", "mcp"], cwd=cwd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
+                                  env=dict(os.environ, **(env or {})), **ENC)
         self.n = 0
         self.call({"jsonrpc": "2.0", "id": 0, "method": "initialize", "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "rehearsal", "version": "1"}}})
         self.p.stdin.write(json.dumps({"jsonrpc": "2.0", "method": "notifications/initialized"}) + "\n")
@@ -190,6 +191,48 @@ finally:
         os.remove(session_toml)
     else:
         open(session_toml, "w", encoding="utf-8", newline="\n").write(old_session)
+
+# ---- fresh state between sessions and spaces
+print("##### fresh state")
+# This script plays a Claude process: its pid is CLAUDE_PID for the hooks, and the MCP
+# server it starts with CLAUDECODE set is its child, so both name the same seen file.
+me = {"CLAUDE_PID": str(os.getpid())}
+start = {"hook_event_name": "SessionStart", "session_id": "f" + RUN, "cwd": work, "source": "startup"}
+hook("session-start", start, "1", cwd=work, env=me)
+ask = {"hook_event_name": "UserPromptSubmit", "session_id": "f" + RUN, "cwd": work, "prompt": "hi"}
+_, text = hook("user-prompt-submit", ask, cwd=work, env=me)
+report("nothing changed, nothing said", text == "", text[:80])
+outside = MCP(work)  # another session: not under this process
+e, t = outside.tool("task_new", {"title": "Fresh " + RUN})
+fid = "task-fresh-" + RUN
+_, text = hook("user-prompt-submit", ask, cwd=work, env=me)
+report("a task another session made is news", fid in text and "task_get" in text, text[:120])
+own = MCP(work, env=dict(me, CLAUDECODE="1"))
+own.tool("task_journal", {"id": fid, "entry": "my own entry"})
+own.close()
+_, text = hook("user-prompt-submit", ask, cwd=work, env=me)
+report("own writes are not news", text == "", text[:120])
+outside.tool("task_close", {"id": fid, "result": "closed elsewhere"})
+_, text = hook("user-prompt-submit", ask, cwd=work, env=me)
+report("a close by another session is news", fid in text and "closed" in text, text[:120])
+outside.close()
+code, _, _ = ab("hook", "some-future-hook", inp="{}", cwd=work)
+report("an unknown hook still fails closed (exit 2)", code == 2, code)
+names = list(spaces())
+if len(names) > 1:
+    src, dst = names[1], names[0]
+    sender = MCP(spaces()[src])
+    e, t = sender.tool("capture", {"text": "Sent " + RUN, "space": dst})
+    sender.close()
+    report("capture to another space", not e, t[:80])
+    _, text = hook("session-start", dict(start, session_id="g" + RUN, cwd=spaces()[dst]), "1", cwd=spaces()[dst])
+    report("it comes up at the start there", ("Sent " + RUN) in text and "[from " + src + "]" in text, "")
+    there = MCP(spaces()[dst])
+    e, t = there.tool("capture_done", {"date": time.strftime("%Y-%m-%d"), "text": "Sent " + RUN})
+    there.close()
+    report("capture_done takes it out", not e, t[:80])
+else:
+    report("capture to another space (needs two spaces)", True, "skipped: one space")
 
 # ---- backup and restore on a new home
 print("##### backup and restore")

@@ -131,7 +131,9 @@ Deja una tarea en pausa sin perder nada, antes de pasar a otra cosa.
 ## `task_close`
 
 Cierra una tarea terminada con su resultado. Se guarda, nunca se borra. Una tarea con
-subtareas abiertas no se puede cerrar.
+subtareas abiertas no se puede cerrar. Si la tarea tiene fechas para revisar sin marcar
+como hechas, lo dice: siguen saliendo al empezar la sesión en su día, porque cerrar suele
+ser cuando se apunta lo que hay que mirar más adelante.
 
 - `id`: el id de la tarea.
 - `result`: lo que se ha conseguido, en una o dos líneas.
@@ -144,6 +146,21 @@ revisión semanal lo procesa.
 - `text`: la idea, el enlace o el cabo suelto, en una línea.
 - `remind_on` (opcional): una fecha. Sale al empezar la sesión desde una semana antes,
   hasta que se resuelve.
+- `space` (opcional): otro de tus espacios, para mandarlo allí. Llega al buzón de ese
+  espacio marcado con su origen, `(from personal)`, y sale al empezar cada sesión allí
+  hasta que se hace. Sirve para algo que se decide en un espacio y se hace en otro.
+  Claude solo lo hace cuando se lo pides: lo que va a un espacio se ve allí y entra en
+  su copia de seguridad.
+
+## `capture_done`
+
+Quita una captura del buzón cuando ya está hecha o se ha convertido en tarea, sin
+esperar a la revisión semanal. Sobre todo para lo que ha mandado otro espacio, que si no
+sale al empezar cada sesión.
+
+- `date`: el día en que se capturó, tal como sale.
+- `text`: su texto tal como sale, con o sin el origen. Otra captura con el mismo texto
+  se queda.
 
 ## `weekly_review`
 

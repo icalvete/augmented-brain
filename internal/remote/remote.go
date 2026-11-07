@@ -129,8 +129,13 @@ func Services(c *config.Config, set Settings) []Service {
 }
 
 // Unit is the text of a service's unit file: claude is the absolute path of the claude
-// program and mode its permission mode. Nothing goes to the journal: the server
-// redraws its screen every second.
+// program and mode its permission mode. Its errors go to the journal, so a service that
+// fails at boot can say why (`journalctl --user -u <unit>`; on 7-nov one failed with
+// status 1 and nothing to read): claude remote-control writes them on stderr (measured
+// on 2.1.319: an untrusted folder, a question no one answered), and its screen and
+// prompts on stdout, which still goes nowhere, since it redraws every second. In case a
+// later version also writes on stderr all the time, the journal takes at most 200 lines
+// a minute from it.
 func (s Service) UnitText(claude, mode string) string {
 	var b strings.Builder
 	b.WriteString(Marker + "\n")
@@ -140,7 +145,9 @@ func (s Service) UnitText(claude, mode string) string {
 	b.WriteString("[Service]\n")
 	fmt.Fprintf(&b, "WorkingDirectory=%s\n", unitArg(s.Folder, false))
 	fmt.Fprintf(&b, "ExecStart=%s remote-control --name %s --permission-mode %s\n", unitArg(claude, true), s.Name, mode)
-	b.WriteString("Restart=always\nRestartSec=30\nStandardOutput=null\nStandardError=null\n\n")
+	b.WriteString("Restart=always\nRestartSec=30\nStandardOutput=null\nStandardError=journal\n")
+	fmt.Fprintf(&b, "SyslogIdentifier=augmented-brain-remote-%s\n", s.Space)
+	b.WriteString("LogRateLimitIntervalSec=60\nLogRateLimitBurst=200\n\n")
 	b.WriteString("[Install]\nWantedBy=default.target\n")
 	return b.String()
 }
@@ -348,6 +355,7 @@ func (s System) linger() Linger {
 type SpaceStatus struct {
 	Service
 	Installed bool   // the unit file exists
+	Outdated  bool   // written by an earlier program: its errors still go nowhere
 	Active    string // systemctl is-active: active, inactive, failed…; "" if unknown
 	Enabled   string // systemctl is-enabled: enabled, disabled…; "" if unknown
 	Trusted   bool   // Claude Code trusts the folder
@@ -374,6 +382,7 @@ func (s System) Status(c *config.Config, set Settings) (*Status, error) {
 		x := SpaceStatus{Service: svc, Trusted: trusted(svc.Folder)}
 		if data, err := os.ReadFile(filepath.Join(s.UnitDir, svc.Unit)); err == nil && strings.HasPrefix(string(data), Marker) {
 			x.Installed = true
+			x.Outdated = !strings.Contains(string(data), "\nStandardError=journal\n")
 			// is-active and is-enabled exit non-zero for "inactive" and "disabled":
 			// what they print is the answer.
 			a, _ := s.Run("systemctl", "--user", "is-active", svc.Unit)

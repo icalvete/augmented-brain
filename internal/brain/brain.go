@@ -36,7 +36,31 @@ type Brain struct {
 	// Problems are the files of the memory that are not valid notes. The brain works with
 	// the valid ones, and never writes over a file that could not be read.
 	Problems []memory.Problem
+	// Fresh is what changed outside this session since it last looked (package fresh),
+	// set by the MCP server before a tool runs; the tool's answer ends with it.
+	Fresh string
+	// read are the tasks read or written during this call (Touched), which the session
+	// has now seen as they are.
+	read []string
+	// spaces are the names of the configuration's spaces, to tell a capture sent from
+	// another space (its origin must be one of them).
+	spaces []string
 }
+
+// KnowSpaces tells a brain built by hand (not by Open) the spaces of the
+// configuration, so it can tell captures sent from another space.
+func (b *Brain) KnowSpaces(names []string) { b.spaces = names }
+
+func (b *Brain) spaceSet() map[string]bool {
+	set := map[string]bool{}
+	for _, n := range b.spaces {
+		set[n] = true
+	}
+	return set
+}
+
+// Read returns the tasks read or written through Touched since the brain was opened.
+func (b *Brain) Read() []string { return b.read }
 
 // Open loads the space's memory. A file that is not a valid note does not stop the
 // rest: it is left out, listed in Problems, and never written over.
@@ -48,7 +72,7 @@ func Open(c *config.Config, s *config.Space) (*Brain, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: time.Now, Problems: problems}, nil
+	return &Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: time.Now, Problems: problems, spaces: c.SpaceNames()}, nil
 }
 
 // Shared opens the shared notes, the rules and knowledge that apply in every space, to
@@ -563,10 +587,44 @@ func nest(items []Item) []Item {
 
 // Capture adds a dated line to the inbox, to be processed in the weekly review. With a
 // remind date (YYYY-MM-DD), the session start brings it up again on that day.
-func (b *Brain) Capture(text, remind string) error {
+func (b *Brain) Capture(text, remind string) error { return b.capture(text, remind, "") }
+
+// CaptureTo notes something in the inbox of another space of the configuration, marked
+// with the space it comes from; it comes up at the start of that space's next session
+// until it is done there (InboxDoneEntry, capture_done). The target space is opened
+// as any other: notes of a newer program are refused. Naming this same space is a
+// plain capture.
+func (b *Brain) CaptureTo(space, text, remind string) (string, error) {
+	space = strings.TrimSpace(space)
+	if space == "" || space == b.Space.Name {
+		return b.Space.Name, b.Capture(text, remind)
+	}
+	if b.ConfigDir == "" {
+		return "", errors.New("no configuration to find other spaces in")
+	}
+	c, err := config.Load(b.ConfigDir)
+	if err != nil {
+		return "", err
+	}
+	target, ok := c.Spaces[space]
+	if !ok {
+		return "", fmt.Errorf("there is no space %q; the spaces are: %s", space, strings.Join(c.SpaceNames(), ", "))
+	}
+	other, err := Open(c, target)
+	if err != nil {
+		return "", err
+	}
+	other.Now = b.Now
+	return space, other.capture(text, remind, b.Space.Name)
+}
+
+func (b *Brain) capture(text, remind, from string) error {
 	text = strings.TrimSpace(strings.ReplaceAll(text, "\n", " "))
 	if text == "" {
 		return errors.New("nothing to capture")
+	}
+	if from != "" {
+		text += fromMark(from)
 	}
 	if remind != "" {
 		if err := checkDate(remind); err != nil {

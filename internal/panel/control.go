@@ -272,6 +272,79 @@ func StartMode(cfgDir, self string, remote bool) (info Info, started bool, err e
 		return Info{}, false, err
 	}
 	defer unlock()
+	return startModeLocked(cfgDir, self, remote)
+}
+
+// How GoRemote got the panel into remote mode.
+const (
+	WasRemote = "was-remote" // it already was
+	Switched  = "switched"   // the running panel switched, keeping its key and open pages
+	Restarted = "restarted"  // it had to be started again (an earlier panel): open pages need reloading
+	Started   = "started"    // none was running
+)
+
+// GoRemote has the panel answer through the user's Tailscale network too. A panel
+// running only on 127.0.0.1 is asked to switch in place (POST /remote), so the pages
+// open in the browser go on working; one that cannot (an earlier program) is stopped
+// and started again in remote mode, as before. how says which.
+func GoRemote(cfgDir, self string) (info Info, how string, err error) {
+	unlock, err := lock(cfgDir)
+	if err != nil {
+		return Info{}, "", err
+	}
+	defer unlock()
+	if i, ok := ReadInfo(cfgDir); ok && Alive(i) {
+		if i.Remote != nil {
+			return i, WasRemote, nil
+		}
+		if ask(i, "/remote") == nil {
+			if now, ok := ReadInfo(cfgDir); ok && now.PID == i.PID && now.Remote != nil {
+				return now, Switched, nil
+			}
+		}
+		info, _, err := startModeLocked(cfgDir, self, true)
+		return info, Restarted, err
+	}
+	info, _, err = startModeLocked(cfgDir, self, true)
+	return info, Started, err
+}
+
+// GoLocal takes the network back from a panel that GoRemote switched, when publishing
+// its address failed: it goes on, on 127.0.0.1 only.
+func GoLocal(cfgDir string) error {
+	unlock, err := lock(cfgDir)
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	i, ok := ReadInfo(cfgDir)
+	if !ok || !Alive(i) {
+		return nil
+	}
+	return ask(i, "/local")
+}
+
+// ask posts to the running panel as the command, with its token. Any answer but 2xx
+// is an error: an earlier panel without that path answers 404, or 403.
+func ask(i Info, path string) error {
+	req, err := http.NewRequest(http.MethodPost, i.origin()+path, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", "Bearer "+i.Token)
+	req.Header.Set("Origin", i.origin())
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return fmt.Errorf("the panel answered %s to %s", resp.Status, path)
+	}
+	return nil
+}
+
+func startModeLocked(cfgDir, self string, remote bool) (info Info, started bool, err error) {
 	if i, ok := ReadInfo(cfgDir); ok {
 		if Alive(i) && (!remote || i.Remote != nil) {
 			return i, false, nil

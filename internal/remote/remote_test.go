@@ -133,7 +133,10 @@ ExecStart=/home/lucia/.local/bin/claude remote-control --name box-personal --per
 Restart=always
 RestartSec=30
 StandardOutput=null
-StandardError=null
+StandardError=journal
+SyslogIdentifier=augmented-brain-remote-personal
+LogRateLimitIntervalSec=60
+LogRateLimitBurst=200
 
 [Install]
 WantedBy=default.target
@@ -480,6 +483,44 @@ func TestStatus(t *testing.T) {
 	f.linger = "missing"
 	if st, _ = f.sys.Status(c, set); st.Linger != LingerUnknown {
 		t.Errorf("no loginctl: %v", st.Linger)
+	}
+}
+
+// A unit written by an earlier program (errors to null, 7-nov) is told apart, and the
+// fix is to install again, which rewrites and restarts it; then all is well.
+func TestOutdatedUnit(t *testing.T) {
+	f := newFake(t)
+	c, set := f.load()
+	if _, err := f.sys.Install(c, set); err != nil {
+		t.Fatal(err)
+	}
+	f.active["augmented-brain-remote-personal.service"] = "active"
+	f.trust(filepath.Join(f.root, "p"))
+	f.linger = "yes"
+	unit := filepath.Join(f.sys.UnitDir, "augmented-brain-remote-personal.service")
+	data, _ := os.ReadFile(unit)
+	old := strings.Replace(string(data), "StandardError=journal\n", "StandardError=null\n", 1)
+	if err := os.WriteFile(unit, []byte(old), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	st, _ := f.sys.Status(c, set)
+	if !st.Spaces[0].Outdated {
+		t.Fatal("an old unit was not told apart")
+	}
+	_, fix, ok := f.sys.DoctorLine("en", st.Spaces[0], st.Linger)
+	if ok || !strings.Contains(fix, "remote install") {
+		t.Fatalf("doctor: %q %v", fix, ok)
+	}
+	f.calls = nil
+	if _, err := f.sys.Install(c, set); err != nil {
+		t.Fatal(err)
+	}
+	if got := filterCalls(f.calls, "systemctl"); !slices.Contains(got, "systemctl --user restart augmented-brain-remote-personal.service") {
+		t.Fatalf("install did not restart the rewritten unit: %v", got)
+	}
+	st, _ = f.sys.Status(c, set)
+	if _, _, ok := f.sys.DoctorLine("en", st.Spaces[0], st.Linger); !ok || st.Spaces[0].Outdated {
+		t.Fatalf("still outdated after install: %+v", st.Spaces[0])
 	}
 }
 

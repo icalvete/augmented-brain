@@ -1,5 +1,33 @@
 # Registro de cambios
 
+## Unreleased
+
+- **Las sesiones se enteran de lo que cambian las demás.** Una sesión lee el índice de
+  tareas una vez, al empezar; otra sesión, el panel o una edición a mano pueden cerrar una
+  tarea un minuto después. Ahora, antes de que Claude responda a cada mensaje, augmented
+  brain le dice qué tareas han cambiado fuera de su sesión desde la última vez que miró
+  (estado, siguiente paso, a quién espera; y cualquier cambio en una tarea con la que está
+  trabajando), para que las vuelva a leer en vez de actuar sobre lo que leyó hace horas.
+  Una entrada de diario de otra sesión en una tarea que no ha tocado no es noticia, y sus
+  propias escrituras nunca lo son. El mismo aviso llega al final de la respuesta de
+  cualquier herramienta de augmented brain, así que un trabajo largo también se entera.
+  Tarda menos de un milisegundo, con un hook nuevo (`user-prompt-submit`); un programa más
+  viejo que el plugin simplemente no dice nada.
+- **Manda algo a otro espacio.** `capture` acepta `space`: lo que se decide en un espacio
+  pero hay que hacer en otro va al buzón de ese espacio, marcado con su origen, y sale al
+  empezar cada sesión allí hasta que se hace. Una herramienta nueva, `capture_done`, quita
+  una captura del buzón sin esperar a la revisión semanal. El buzón del panel dice de
+  dónde viene cada una.
+- **Cerrar una tarea dice qué fechas para revisar deja abiertas.** Siguen saliendo al
+  empezar la sesión en su día, como antes; ahora `task_close` lo dice.
+- **`panel remote` ya no para el panel que tienes abierto.** El panel en marcha empieza a
+  responder también por tu red de Tailscale, con la misma clave, así que las páginas
+  abiertas en el navegador siguen funcionando. Si publicarlo falla, vuelve a solo local.
+- **Un servicio de acceso remoto que falla dice por qué.** Sus errores van ahora al
+  registro del sistema (`journalctl --user -u augmented-brain-remote-<espacio>`).
+  `remote status` y `doctor` te dicen que vuelvas a lanzar `augmented-brain remote install`
+  para poner al día un servicio instalado por una versión anterior.
+
 ## 0.11.0-alpha
 
 Publicada el 2026-11-07.

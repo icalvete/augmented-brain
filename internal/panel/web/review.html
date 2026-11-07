@@ -7,7 +7,7 @@
 {{if .Inbox}}<ul class="cards">
 {{range .Inbox}}<li class="card">
   <div class="title">{{inline .Text}}</div>
-  <div class="meta"><span>{{.Date}}</span>{{if .Remind}}<span class="badge">{{t "f.remind"}}: {{.Remind}}</span>{{end}}</div>
+  <div class="meta"><span>{{.Date}}</span>{{if .Remind}}<span class="badge">{{t "f.remind"}}: {{.Remind}}</span>{{end}}{{if .From}}<span class="badge">{{t "f.from"}} {{.From}}</span>{{end}}</div>
   <form method="post" action="{{$.Base}}/review/capture" class="row wrap">
     {{template "fields" (fields $ "date" .Date "text" .Text)}}
     <select name="as" aria-label="{{t "f.as"}}">

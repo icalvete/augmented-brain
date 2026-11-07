@@ -118,11 +118,14 @@
   <p>Deja una tarea en pausa sin perder nada, antes de pasar a otra cosa.</p>
   <ul><li><code>id</code>: el id de la tarea.</li><li><code>next</code>: cómo retomarla exactamente: un comando, un fichero o una decisión.</li><li><code>waiting_on</code> (opcional): a quién espera ahora.</li><li><code>essentials</code> (opcional, pero Claude debería pasarlo): de tres a seis líneas que basten para retomarla sin el diario. Sustituyen a la primera sección de la tarea. Sin ellas, allí solo se actualizan “dónde está” y “siguiente”.</li><li><code>someday</code> (opcional): <code>true</code> cuando no se va a tocar en semanas. La tarea sale de la lista del día.</li></ul>
   <h2 id="task_close"><code>task_close</code></h2>
-  <p>Cierra una tarea terminada con su resultado. Se guarda, nunca se borra. Una tarea con subtareas abiertas no se puede cerrar.</p>
+  <p>Cierra una tarea terminada con su resultado. Se guarda, nunca se borra. Una tarea con subtareas abiertas no se puede cerrar. Si la tarea tiene fechas para revisar sin marcar como hechas, lo dice: siguen saliendo al empezar la sesión en su día, porque cerrar suele ser cuando se apunta lo que hay que mirar más adelante.</p>
   <ul><li><code>id</code>: el id de la tarea.</li><li><code>result</code>: lo que se ha conseguido, en una o dos líneas.</li></ul>
   <h2 id="capture"><code>capture</code></h2>
   <p>Apunta algo en el buzón sin abrir una tarea, si quieres con un día para recordártelo. La revisión semanal lo procesa.</p>
-  <ul><li><code>text</code>: la idea, el enlace o el cabo suelto, en una línea.</li><li><code>remind_on</code> (opcional): una fecha. Sale al empezar la sesión desde una semana antes, hasta que se resuelve.</li></ul>
+  <ul><li><code>text</code>: la idea, el enlace o el cabo suelto, en una línea.</li><li><code>remind_on</code> (opcional): una fecha. Sale al empezar la sesión desde una semana antes, hasta que se resuelve.</li><li><code>space</code> (opcional): otro de tus espacios, para mandarlo allí. Llega al buzón de ese espacio marcado con su origen, <code>(from personal)</code>, y sale al empezar cada sesión allí hasta que se hace. Sirve para algo que se decide en un espacio y se hace en otro. Claude solo lo hace cuando se lo pides: lo que va a un espacio se ve allí y entra en su copia de seguridad.</li></ul>
+  <h2 id="capture_done"><code>capture_done</code></h2>
+  <p>Quita una captura del buzón cuando ya está hecha o se ha convertido en tarea, sin esperar a la revisión semanal. Sobre todo para lo que ha mandado otro espacio, que si no sale al empezar cada sesión.</p>
+  <ul><li><code>date</code>: el día en que se capturó, tal como sale.</li><li><code>text</code>: su texto tal como sale, con o sin el origen. Otra captura con el mismo texto se queda.</li></ul>
   <h2 id="weekly_review"><code>weekly_review</code></h2>
   <p>Lista lo que repasa la revisión semanal: el buzón, las tareas vivas que nadie ha tocado en 14 días o más, y las fechas que llegan en los próximos 7 días. Después Claude lo repasa contigo, una cosa cada vez. No tiene parámetros.</p>
   <h2 id="review_done"><code>review_done</code></h2>
