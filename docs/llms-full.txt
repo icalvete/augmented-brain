@@ -185,7 +185,9 @@ walks you through it.
   and `personal`), in `~/augmented-brain`, the Claude Code plugin installed, and the offer to
   open Claude.
 - **Every download is checked.** The program comes from the project's latest release on
-  GitHub, and its SHA-256 must match the release's list, or nothing is installed.
+  GitHub, and its SHA-256 must match the release's list, or nothing is installed. When
+  GitHub fails to hand it out, the installer tries three times, also through GitHub's
+  API; if all fails, it says so and installs nothing.
 
 ## Linux
 
@@ -2330,7 +2332,9 @@ augmented-brain update
 ```
 
 If there is a newer version, it runs the published installer, which replaces the program
-and then updates the plugin. If not, it only updates the plugin. Around a new version it
+and then updates the plugin. If not, it only updates the plugin. If the download fails
+(three tries, also through GitHub's API) or the program is not the new version
+afterwards, it says so, ends with an error and changes nothing. Around a new version it
 does what you would otherwise do by hand:
 
 - **Before:** the health check of `doctor` (what it finds is shown, so it is not taken
@@ -3473,6 +3477,13 @@ that machine asks you each time, until the date.
 
 A session that was open keeps the old program. Close and open it. `augmented-brain
 doctor` says how many sessions still run the old version.
+
+### The installer or the update cannot download
+
+GitHub sometimes fails to hand out a release's files for a while. The installer and
+`augmented-brain update` try three times, and also through GitHub's API, which often
+keeps working when the usual address does not. If all of it fails, they say so and
+nothing changes: the program you had stays. Try again in a while.
 
 ### "Written by a newer augmented brain"
 

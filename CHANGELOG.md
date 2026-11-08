@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- **An update whose download fails no longer looks done.** `augmented-brain update` piped
+  the installer from GitHub straight into `sh`: when GitHub answered 504, as it did for
+  over an hour on 8 November, `sh` got an empty script, the update "worked" and nothing
+  had changed. Now it downloads the installer first, checks how it ended, and checks the
+  program is the new version afterwards; if not, it says so and ends with an error. On
+  Windows the installer now reports its failure to `update` too.
+- **Downloads try again, also through GitHub's API.** The installers (`install.sh`,
+  `install.ps1`) and `update` try each file three times, and when GitHub's usual address
+  fails they take the same file through its API, which kept working on 8 November. If
+  everything fails they say so, in your language, and install nothing.
+
 ## 0.13.0-alpha
 
 Released 2026-11-08.

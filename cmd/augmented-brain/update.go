@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -53,8 +54,10 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 	}
 
 	base := os.Getenv("AB_RELEASE_URL")
+	latest := ""
 	if base == "" {
-		latest, err := update.Latest(&http.Client{Timeout: 15 * time.Second})
+		var err error
+		latest, err = update.Latest(&http.Client{Timeout: 15 * time.Second})
 		if err != nil {
 			fmt.Fprintln(errOut, i18n.T(lang, "update.noreach", err))
 			return 1
@@ -64,28 +67,57 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 			return updatePlugin(lang, out, errOut)
 		}
 		fmt.Fprintln(out, i18n.T(lang, "update.found", version.Version, latest))
-		base = "https://github.com/" + update.Repo + "/releases/latest/download"
 	}
 	if code := beforeUpdate(lang, *force, out, errOut); code != 0 {
 		return code
 	}
-	// The installer replaces the program and, as the configuration exists, then runs
-	// `augmented-brain update --plugin` with the new program.
-	cmd := exec.Command("sh", "-c", `curl -fsSL "$1/install.sh" | sh`, "sh", base)
-	if runtime.GOOS == "windows" {
-		// Windows has no sh: its installer is install.ps1, run by the PowerShell that
-		// comes with Windows. It can replace this program while it runs.
-		cmd = exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
-			"irm '"+base+"/install.ps1' | iex")
-	}
-	cmd.Env = append(os.Environ(), "AB_LANGUAGE="+lang, "AB_NO_DESKTOP=1")
-	cmd.Stdout, cmd.Stderr = out, errOut
-	if err := cmd.Run(); err != nil {
+	if err := runInstaller(lang, base, latest, out, errOut); err != nil {
 		fmt.Fprintln(errOut, i18n.T(lang, "update.failed", err))
 		return 1
 	}
-	afterUpdate(lang, installedVersion(), out)
+	now := installedVersion()
+	if latest != "" && now != "" && update.Newer(latest, now) {
+		fmt.Fprintln(errOut, i18n.T(lang, "update.notdone", now, latest))
+		return 1
+	}
+	afterUpdate(lang, now, out)
 	return 0
+}
+
+// runInstaller downloads the published installer of release latest (or the one at
+// base) into a file and runs it: it replaces the program and, as the configuration
+// exists, then runs `augmented-brain update --plugin` with the new program. Never
+// `curl | sh`: there a download that failed reaches sh as an empty script, which
+// succeeds, and the update looked done when nothing had changed.
+func runInstaller(lang, base, latest string, out, errOut io.Writer) error {
+	name := "install.sh"
+	if runtime.GOOS == "windows" {
+		name = "install.ps1"
+	}
+	tmp, err := os.MkdirTemp("", "ab-update-")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tmp)
+	script := filepath.Join(tmp, name)
+	if err := update.Download(&http.Client{Timeout: time.Minute}, base, latest, name, script); err != nil {
+		return err
+	}
+	cmd := exec.Command("sh", script)
+	if runtime.GOOS == "windows" {
+		// Windows has no sh: its installer is install.ps1, run by the PowerShell that
+		// comes with Windows. It can replace this program while it runs.
+		cmd = exec.Command("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script)
+	}
+	// AB_VERSION: the installer takes the very release just checked, not whatever is
+	// latest a moment later. AB_EXIT_CODE: install.ps1 ends with an error code when it
+	// fails, which it never does in a person's own window.
+	cmd.Env = append(os.Environ(), "AB_LANGUAGE="+lang, "AB_NO_DESKTOP=1", "AB_EXIT_CODE=1")
+	if latest != "" {
+		cmd.Env = append(cmd.Env, "AB_VERSION="+latest)
+	}
+	cmd.Stdout, cmd.Stderr = out, errOut
+	return cmd.Run()
 }
 
 // beforeUpdate checks the installation and backs up every space that has a backup,

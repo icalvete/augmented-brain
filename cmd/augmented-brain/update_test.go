@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,7 +16,40 @@ import (
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/state"
+	"github.com/icalvete/augmented-brain/internal/update"
 )
+
+// A download that fails is an update that failed. On 8-nov GitHub's public download
+// address answered 504 for over an hour: `update` must say it did not update, and exit
+// with an error, never report the update done.
+func TestUpdateDownloadFails(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "gateway timeout", http.StatusGatewayTimeout)
+	}))
+	defer srv.Close()
+	t.Setenv("AB_CONFIG_DIR", t.TempDir())
+	t.Setenv("AB_RELEASE_URL", srv.URL)
+	t.Setenv("AB_LANGUAGE", "en")
+	quickRetries(t)
+	var out, errOut bytes.Buffer
+	if code := cmdUpdate(nil, &out, &errOut); code == 0 {
+		t.Fatalf("a failed download was taken for an update:\n%s%s", out.String(), errOut.String())
+	}
+	if !strings.Contains(errOut.String(), "did not finish") || !strings.Contains(errOut.String(), "504") {
+		t.Errorf("the error does not say what happened:\n%s", errOut.String())
+	}
+	if strings.Contains(out.String(), "No Claude session") {
+		t.Errorf("it went on as if updated:\n%s", out.String())
+	}
+}
+
+// quickRetries makes the downloads' retries quick, for tests.
+func quickRetries(t *testing.T) {
+	t.Helper()
+	old := update.RetryDelay
+	update.RetryDelay = time.Millisecond
+	t.Cleanup(func() { update.RetryDelay = old })
+}
 
 // Before a new version: the health check (shown, never a reason to stop), then a backup
 // of every space that has one. A backup that fails stops the update, unless --force.

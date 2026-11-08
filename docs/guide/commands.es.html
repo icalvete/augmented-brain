@@ -194,7 +194,7 @@ augmented-brain config history 3</code></pre>
   <h2 id="augmented-brain-update">augmented-brain update</h2>
   <p>Actualiza augmented brain y su plugin de Claude Code.</p>
   <pre><code>augmented-brain update</code></pre>
-  <p>Si hay una versión más nueva, lanza el instalador publicado, que cambia el programa y después actualiza el plugin. Si no, solo actualiza el plugin. Alrededor de una versión nueva hace lo que de otro modo harías a mano:</p>
+  <p>Si hay una versión más nueva, lanza el instalador publicado, que cambia el programa y después actualiza el plugin. Si no, solo actualiza el plugin. Si la descarga falla (tres intentos, también por la API de GitHub) o el programa no queda en la versión nueva, lo dice, acaba con error y no cambia nada. Alrededor de una versión nueva hace lo que de otro modo harías a mano:</p>
   <ul><li><strong>Antes:</strong> la revisión de <code>doctor</code> (lo que encuentre se enseña, para no tomarlo por un problema de la versión nueva) y una copia de seguridad de cada espacio que la tenga. Si falla una copia, para y no actualiza nada: esa copia es la vuelta atrás.</li><li><strong>Después:</strong> cuántas sesiones de Claude abiertas siguen con la versión vieja y qué tarea está activa en cada espacio, para que pidas a su sesión que la aparque antes de reiniciar. Después cierra Claude y vuelve a abrirlo, para que las sesiones usen la versión nueva.</li></ul>
   <ul><li><code>--plugin</code>: actualiza solo el plugin de Claude Code. Lo usa el instalador.</li><li><code>--force</code>: actualiza aunque falle la copia de antes.</li></ul>
   <h2 id="augmented-brain-uninstall">augmented-brain uninstall</h2>

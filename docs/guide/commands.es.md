@@ -364,8 +364,10 @@ augmented-brain update
 ```
 
 Si hay una versión más nueva, lanza el instalador publicado, que cambia el programa y
-después actualiza el plugin. Si no, solo actualiza el plugin. Alrededor de una versión
-nueva hace lo que de otro modo harías a mano:
+después actualiza el plugin. Si no, solo actualiza el plugin. Si la descarga falla (tres
+intentos, también por la API de GitHub) o el programa no queda en la versión nueva, lo
+dice, acaba con error y no cambia nada. Alrededor de una versión nueva hace lo que de
+otro modo harías a mano:
 
 - **Antes:** la revisión de `doctor` (lo que encuentre se enseña, para no tomarlo por un
   problema de la versión nueva) y una copia de seguridad de cada espacio que la tenga. Si
