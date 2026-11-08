@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.13.0-alpha
+
+Released 2026-11-08.
 
 - **Your configuration keeps its last 10 versions.** A list of the guard emptied by
   mistake, a space pointing to the wrong folder: until now there was no way back. Every
