@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **`remote install` without systemd changes nothing.** On a machine without systemd's
+  user services (a container, WSL without systemd) it wrote the services and turned
+  remote access on before systemd refused them, and `doctor` then reported it broken.
+  Now it asks systemd first and stops there, saying why; and remote access is turned on
+  only once systemd has taken the services.
 - **A backup no longer hangs on a network that half works.** git had no time limit, and
   a backup holds a lock while it runs: one left hanging (the one at the end of a
   session, in the background) made every later backup wait behind it, including the one

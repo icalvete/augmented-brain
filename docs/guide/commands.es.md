@@ -289,7 +289,8 @@ Luego dice lo que aún falta, y no hace nada de ello por ti:
   sin que nadie haya entrado. Escribe el comando, `sudo loginctl enable-linger <tú>`,
   para que lo lances tú.
 
-No tiene opciones. Los ajustes están en `remote.toml` (mira [Configuración](configuration.es.md)).
+Sin los servicios de usuario de systemd (un contenedor, o WSL sin systemd) lo dice y no
+cambia nada. No tiene opciones. Los ajustes están en `remote.toml` (mira [Configuración](configuration.es.md)).
 
 ## augmented-brain remote uninstall
 

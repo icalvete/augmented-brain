@@ -171,7 +171,7 @@ augmented-brain check</code></pre>
   <p>For each space named in <code>remote.toml</code> (by default, the default space) it creates a folder inside the configuration folder, makes it a work folder of that space, writes a <code>systemd</code> user service that runs <code>claude remote-control</code> there, and starts it. You can run it again at any time: it changes only what is different.</p>
   <p>It then says what is still missing, and does none of it for you:</p>
   <ul><li>Claude must <strong>trust each folder</strong>. It prints <code>cd &lt;folder&gt; &amp;&amp; claude</code> for each one that is not trusted yet: run it once and accept the question.</li><li><strong>Linger</strong> must be on for the services to start after a reboot with nobody logged in. It prints the command, <code>sudo loginctl enable-linger &lt;you&gt;</code>, for you to run.</li></ul>
-  <p>It takes no options. The settings are in <code>remote.toml</code> (see <a href="configuration.html">Configuration</a>).</p>
+  <p>Without systemd's user services (a container, or WSL without systemd) it says so and changes nothing. It takes no options. The settings are in <code>remote.toml</code> (see <a href="configuration.html">Configuration</a>).</p>
   <h2 id="augmented-brain-remote-uninstall">augmented-brain remote uninstall</h2>
   <p>Stops remote access and removes it.</p>
   <pre><code>augmented-brain remote uninstall</code></pre>

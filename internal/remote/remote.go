@@ -196,6 +196,12 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 	if claude, err = filepath.Abs(claude); err != nil {
 		return nil, err
 	}
+	// Ask systemd's user manager first: without one (a container, WSL without systemd,
+	// a session with no user bus) the units would be written, enabled set, and nothing
+	// would ever run them.
+	if _, err := s.Run("systemctl", "--user", "show-environment"); err != nil {
+		return nil, errors.New(i18n.T(c.Language, "remote.nosystemd", err))
+	}
 	res := &InstallResult{Services: Services(c, set), Claude: claude}
 	if err := os.MkdirAll(s.UnitDir, 0o755); err != nil {
 		return nil, err
@@ -228,9 +234,6 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 			}
 		}
 	}
-	if err := SetEnabled(c.Dir, true); err != nil {
-		return nil, err
-	}
 	if _, err := s.Run("systemctl", "--user", "daemon-reload"); err != nil {
 		return nil, errors.New(i18n.T(c.Language, "remote.systemctl", "daemon-reload", err))
 	}
@@ -243,6 +246,11 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 		if _, err := s.Run("systemctl", "--user", "restart", unit); err != nil {
 			return nil, errors.New(i18n.T(c.Language, "remote.systemctl", "restart "+unit, err))
 		}
+	}
+	// Enabled only once systemd took the services: a failed install does not leave
+	// remote access set as on, which doctor would then report as broken.
+	if err := SetEnabled(c.Dir, true); err != nil {
+		return nil, err
 	}
 	trusted := s.trustedFolders()
 	for _, svc := range res.Services {
