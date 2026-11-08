@@ -167,3 +167,47 @@ func TestReposPageSpanish(t *testing.T) {
 		t.Errorf("the page is not in Spanish:\n%s", page)
 	}
 }
+
+// "forgotten?" marks work only on this computer that nobody is on: a repository named
+// only by parked tasks gets it if it holds pending changes, never if it is clean.
+func TestReposForgottenOnlyWithPending(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("no git")
+	}
+	s, cfg := fixture(t, "en")
+	work := filepath.Join(filepath.Dir(cfg), "work")
+	gitInit(t, filepath.Join(work, "dirty"))
+	if err := os.WriteFile(filepath.Join(work, "dirty", "new.txt"), []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	gitInit(t, filepath.Join(work, "clean"))
+
+	id := idIn(saved(t, s.post(t, "/task/new", url.Values{"s": {"work"}, "title": {"Old work"}}), "new task"))
+	path := filepath.Join(filepath.Dir(cfg), "brain-work", "tasks", id+".md")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	with := strings.Replace(string(data), "\ntype: task\n", "\ntype: task\nrepos:\n  - dirty\n  - clean\n", 1)
+	if err := os.WriteFile(path, []byte(with), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	saved(t, s.post(t, "/task/park", url.Values{"s": {"work"}, "id": {id}, "next": {"Later"}}), "park")
+
+	page := s.get(t, "/repos?s=work").Body.String()
+	card := func(name string) string {
+		for _, c := range strings.Split(page, `<li class="card`) {
+			if strings.Contains(c, `<div class="title">`+name+" ") {
+				return c
+			}
+		}
+		t.Fatalf("no card for %s", name)
+		return ""
+	}
+	if !strings.Contains(card("dirty"), "forgotten?") {
+		t.Error("a repository with pending changes and only parked tasks is not marked")
+	}
+	if strings.Contains(card("clean"), "forgotten?") {
+		t.Error("a clean repository is marked forgotten")
+	}
+}

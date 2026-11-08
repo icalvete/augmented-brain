@@ -29,7 +29,8 @@ La primera página: todos los espacios a la vez. De cada uno:
 
 Debajo, **Repositorios**: los que tus tareas abiertas nombran en `repos:` y tienen
 cambios sin commit o commits sin subir. Es trabajo que solo está en este ordenador. Si
-todas sus tareas están aparcadas (o para algún día), sale marcado «¿olvidado?». Una rama
+todas sus tareas están aparcadas (o para algún día), sale marcado «¿olvidado?», aquí y
+en el mapa completo; uno limpio, nunca. Una rama
 que nunca se subió solo cuenta si el repositorio tiene un remoto al que subirla. **Ver
 todos los repositorios** lleva al mapa completo.
 
