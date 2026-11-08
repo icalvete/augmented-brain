@@ -70,6 +70,10 @@ var panelMessages = map[string]msg{
 		en: "The guard's lists are not the ones you last saw: something changed them outside this page (you by hand, or an assistant). Until you accept them, a commit, push or merge that the lists allow asks first.",
 		es: "Las listas del guardia no son las que viste por última vez: algo las cambió fuera de esta página (tú a mano, o un asistente). Hasta que las aceptes, un commit, push o merge que las listas permiten pregunta antes.",
 	},
+	"panel.task.reopened.panel": {
+		en: "from the panel",
+		es: "desde el panel",
+	},
 	"panel.guard.changes": {
 		en: "What changed since you last saw them (+ added, - removed):",
 		es: "Qué ha cambiado desde la última vez que las viste (+ añadido, - quitado):",

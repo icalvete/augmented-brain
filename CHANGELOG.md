@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Phases skipped are written down, and a closed task stays closed.** A task could jump
+  phases, or be closed a second time, writing over the result it was closed with, and
+  nothing said so. Now skipping phases is still allowed, and the journal names the phases
+  skipped; closing a closed task is refused; and opening it again needs a reason
+  (`reopen` in `task_update`), which goes to the journal. From the panel, choosing a new
+  status for a closed task is that reason.
 - **Missing backups are said out loud.** Nothing warned when a space had no backup.
   Now `doctor` says so for each space, with how to set it up; `update` says when it goes
   ahead with no copy to go back to; and `uninstall --all` warns that notes with no

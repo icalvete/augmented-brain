@@ -262,11 +262,13 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		WatchDate string `json:"watch_date,omitempty" jsonschema:"add a date (YYYY-MM-DD) to look at something again; needs watch_what"`
 		WatchWhat string `json:"watch_what,omitempty" jsonschema:"what to look at on watch_date, one line"`
 		WatchDone string `json:"watch_done,omitempty" jsonschema:"mark the watch date on this day (YYYY-MM-DD) as done"`
+		Reopen    string `json:"reopen,omitempty" jsonschema:"only to open a closed task again, with a new status: why, in a few words; it goes to the journal. Ask the user first"`
 	}
-	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal.",
+	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. A closed task opens again only with reopen.",
 		func(b *brain.Brain, in updateIn) (string, error) {
 			u := brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn, Next: in.Next,
-				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone}
+				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone,
+				Reopen: in.Reopen}
 			if in.Status+in.WaitingOn+in.Next+in.Summary+in.Area+in.WatchDate+in.WatchDone == "" {
 				return "", errors.New("nothing to change: give at least one field")
 			}
@@ -316,7 +318,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		ID     string `json:"id"`
 		Result string `json:"result" jsonschema:"what was achieved, in one or two lines"`
 	}
-	tool(s, locked, "task_close", "Close a finished task with its result. It is kept, never deleted.",
+	tool(s, locked, "task_close", "Close a finished task with its result. It is kept, never deleted. A task already closed is refused: its result stays.",
 		func(b *brain.Brain, in closeIn) (string, error) {
 			n, err := b.Close(in.ID, in.Result)
 			if err == nil {

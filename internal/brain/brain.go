@@ -289,7 +289,14 @@ type UpdateInput struct {
 	Clear []string
 	// WatchDate and WatchWhat add a watch date; WatchDone marks those of that day done.
 	WatchDate, WatchWhat, WatchDone string
+	// Reopen says why a closed task opens again: a closed task changes status only with
+	// it, so it never reopens by a slip.
+	Reopen string
 }
+
+// phaseOrder are the phases a task goes through, in order; parked and someday pause it
+// and are not in it.
+var phaseOrder = []string{"definition", "analysis", "plan", "execution", "validation", "closed"}
 
 // Update changes a task's header, all of it or nothing: the note is written once, after
 // every change has been checked. A change of status is written in the journal.
@@ -361,8 +368,22 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 			return nil, err
 		}
 	}
+	reopen := strings.TrimSpace(in.Reopen)
+	if old == "closed" && h.Status != "closed" && slices.Contains(memory.Statuses, h.Status) && reopen == "" {
+		return nil, fmt.Errorf("task %s is closed: to open it again, say why with reopen", in.ID)
+	}
 	if h.Status != old {
-		cp.Body = b.journalLine(cp.Body, fmt.Sprintf(b.text("status"), old, h.Status))
+		// Skipping phases is allowed (a small task may go straight to execution), and
+		// written down, so it is seen; reopening says why.
+		line := fmt.Sprintf(b.text("status"), old, h.Status)
+		from, to := slices.Index(phaseOrder, old), slices.Index(phaseOrder, h.Status)
+		if from >= 0 && to > from+1 {
+			line = fmt.Sprintf(b.text("status.skipped"), old, h.Status, strings.Join(phaseOrder[from+1:to], ", "))
+		}
+		if old == "closed" {
+			line = fmt.Sprintf(b.text("status.reopened"), h.Status, oneLine(reopen))
+		}
+		cp.Body = b.journalLine(cp.Body, line)
 	}
 	return &cp, b.save(&cp)
 }
@@ -451,6 +472,10 @@ func (b *Brain) Close(id, result string) (*memory.Note, error) {
 	n, err := b.Task(id)
 	if err != nil {
 		return nil, err
+	}
+	// Closing again would write over the result it was closed with.
+	if n.Header.Status == "closed" {
+		return nil, fmt.Errorf("task %s is already closed: its result stays; to add to it, write in its journal", id)
 	}
 	if err := b.openChildren(id); err != nil {
 		return nil, err
