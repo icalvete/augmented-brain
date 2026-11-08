@@ -151,30 +151,28 @@ func askSpace(a *asker, o *setup.Options, lang, def string) {
 	o.Memory = a.ask(msg(lang, "memory"), o.Memory)
 }
 
-// createSpaces writes the configuration with the first space and adds the others,
-// saying what it created when verbose. With more than one, personal becomes the
-// default space.
+// createSpaces writes the configuration with every space at once, saying what it
+// created when verbose. With more than one, personal becomes the default space. The
+// configuration file is written last, so an init stopped half way leaves none and the
+// installer runs init again.
 func createSpaces(spaces []setup.Options, lang string, verbose bool, out io.Writer) error {
 	dir, err := config.Dir()
 	if err != nil {
 		return err
 	}
-	for i, sp := range spaces {
-		create := setup.AddSpace
-		if i == 0 {
-			create = setup.Init
-		}
-		res, err := create(dir, sp)
-		if err != nil {
-			return err
-		}
-		if verbose {
-			report(out, lang, res)
-		}
-	}
+	def := ""
 	if len(spaces) > 1 {
 		// Sessions outside every folder (the desktop app's scratch folder) use personal.
-		return config.SetDefaultSpace(dir, "personal")
+		def = "personal"
+	}
+	results, err := setup.InitSpaces(dir, spaces, def)
+	if err != nil {
+		return err
+	}
+	if verbose {
+		for _, res := range results {
+			report(out, lang, res)
+		}
 	}
 	return nil
 }
