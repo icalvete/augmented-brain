@@ -74,8 +74,9 @@ how it gets tried. Never push without it.
 
 Heavier checks, before a release or when you touch what they cover:
 
-- `scripts/install-check.sh`: the installer from nothing, hands-off, and 12 checks of the
-  result (13 with the desktop app). It installs Claude Code for whoever runs it, so use
+- `scripts/install-check.sh`: the installer from nothing, hands-off, and checks of the
+  result; then uninstall and install again, `--config`, a home with spaces and accents,
+  `--all`, and the update from the release published last. It installs Claude Code for whoever runs it, so use
   `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on macOS and Ubuntu in
   every pull request that touches the installer, the plugin or the code (`install.yml`);
   the Intel Mac only on `main`.
