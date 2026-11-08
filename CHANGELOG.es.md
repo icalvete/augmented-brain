@@ -2,6 +2,13 @@
 
 ## Sin publicar
 
+- **La copia de seguridad ya no se queda colgada con la red a medias.** git no tenía
+  tiempo máximo, y una copia mantiene un bloqueo mientras corre: una colgada (la del
+  final de una sesión, en segundo plano) hacía esperar detrás a todas las siguientes,
+  también a la que hace `update` antes de actualizar. Ahora cada llamada a git de una
+  copia o una restauración se para tras 3 minutos sin respuesta (y por https, con una
+  transferencia de menos de 1 KB por segundo durante un minuto), y una copia espera
+  como mucho 10 minutos a otra; las dos dicen por qué.
 - **Una instalación cortada a medias se puede repetir.** `init` escribía la
   configuración tras el primer espacio y después añadía el segundo: si se cortaba entre
   medias (Ctrl+C, una carpeta que no podía crear), dejaba una configuración sin
