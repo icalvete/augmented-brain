@@ -157,6 +157,14 @@ aceptarlas; hasta entonces un push o merge que las listas permiten pregunta ante
 no puede abrir esta página: el guardia le niega la clave del panel. Mira
 [El guardia](guard.md).
 
+## Versiones
+
+Las 10 últimas versiones de tu configuración (espacios, guardia, acceso remoto, perfil),
+guardadas solo en este ordenador, la más reciente primero, con cuándo y quién la cambió.
+**Qué cambió** enseña las líneas de cada una; **Volver a esta** la convierte otra vez en
+la configuración, guardando antes como versión la que tenías. Desde otro dispositivo la
+página solo enseña. Mira [Versiones de la configuración](config-history.es.md).
+
 ## Salud
 
 La carpeta de notas y las carpetas de trabajo del espacio, si es el espacio por defecto,

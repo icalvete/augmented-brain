@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -141,6 +142,7 @@ func Run(e Env) []Check {
 	}
 	out = append(out, remoteChecks(e, c)...)
 	out = append(out, panelRemote(e, c)...)
+	out = append(out, configHistory(c)...)
 	out = append(out, autoMemory(e, c)...)
 	if old := state.OldServers(c.Dir, version.Version); len(old) > 0 {
 		add(Warning, i18n.T(l, "doctor.oldservers", len(old), version.Version), i18n.T(l, "doctor.oldservers.fix"))
@@ -445,6 +447,20 @@ func panelRemote(e Env, c *config.Config) []Check {
 			i18n.T(l, "doctor.panelremote.leftover.fix", tailnet.Port)}}
 	}
 	return []Check{{OK, i18n.T(l, "doctor.panelremote.ok", st.Name), ""}}
+}
+
+// configHistory says how many versions of the configuration are kept, and whether it
+// changed after the newest one in a way that kept none (by hand, an earlier program).
+func configHistory(c *config.Config) []Check {
+	l := c.Language
+	vs, err := confighistory.List(c.Dir)
+	if err != nil || len(vs) == 0 {
+		return nil
+	}
+	if changed, _ := confighistory.Changed(c.Dir); changed {
+		return []Check{{Info, i18n.T(l, "doctor.history.changed", vs[0].Time.Local().Format("2006-01-02 15:04")), i18n.T(l, "doctor.history.changed.fix")}}
+	}
+	return []Check{{OK, i18n.T(l, "doctor.history.ok", len(vs), vs[0].Time.Local().Format("2006-01-02 15:04")), ""}}
 }
 
 // remotePanelRunning reports whether the panel's info file says a remote panel runs.

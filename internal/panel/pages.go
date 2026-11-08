@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"net/http"
 	"net/url"
 	"strings"
@@ -40,6 +41,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("GET /sessions", s.read("sessions", s.sessions))
 	m.HandleFunc("GET /repos", s.read("repos", s.repos))
 	m.HandleFunc("GET /guard", s.read("guard", s.guardPage))
+	m.HandleFunc("GET /versions", s.read("versions", s.versionsPage))
 	m.HandleFunc("GET /help", s.read("help", s.help))
 	m.HandleFunc("GET /help/report", s.helpReport)
 
@@ -71,6 +73,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /guard/root", s.write(s.guardRootAsk))
 	m.HandleFunc("POST /guard/accept", s.write(s.guardAccept))
 	m.HandleFunc("POST /guard/model", s.write(s.guardModel))
+	m.HandleFunc("POST /versions/restore", s.write(s.versionsRestore))
 	m.HandleFunc("POST /stop", s.handleStop)
 	m.HandleFunc("POST /remote", s.handleRemote)
 	m.HandleFunc("POST /local", s.handleLocal)
@@ -143,7 +146,7 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 		p.Lang = "en"
 	}
 	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote.Load() != nil
-	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "sessions", "space", "guard", "help"} {
+	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "sessions", "space", "guard", "versions", "help"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
 	}
 	var buf bytes.Buffer
@@ -283,7 +286,9 @@ func (s *Server) write(h func(*view, *http.Request) (string, error)) http.Handle
 		var to string
 		func() {
 			defer release()
+			_, _ = confighistory.Record(s.cfgDir, confighistory.ByOutside, "")
 			to, err = h(v, r)
+			_, _ = confighistory.Record(s.cfgDir, confighistory.ByPanel, r.URL.Path)
 			if err == nil {
 				_, err = v.b.Mem.WriteIndex(v.lang)
 			}

@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **Tu configuración guarda sus 10 últimas versiones.** Una lista del guardia vaciada sin
+  querer, un espacio que apunta a la carpeta que no es: hasta ahora no había vuelta
+  atrás. Cada cambio de `config.toml`, `guard.toml`, `remote.toml`, `session.toml`, el
+  perfil o los nombres de tus secretos se guarda ahora como una versión, con quién lo hizo
+  (el panel, un comando, el asistente y su herramienta, o a mano), solo en este ordenador
+  y nunca en la copia de seguridad. La nueva página Versiones del panel enseña qué cambió
+  cada una y vuelve a una (solo desde este ordenador: desde otro dispositivo solo enseña);
+  también `augmented-brain config history` y `config restore`. Volver guarda antes como
+  versión la configuración actual, y rechaza una versión que el programa no podría leer.
+  Un comando nunca acepta por ti listas nuevas del guardia: el guardia pregunta hasta que
+  lo hagas tú. `doctor` dice cuántas versiones se guardan.
 - **Un inicio de sesión más corto.** Cada sesión empezaba con unos 60.000 caracteres de
   memoria; quitando piezas una a una y pasando las mismas peticiones, la mayoría no
   cambiaban nada en la primera respuesta. Ahora cada tarea viva del índice del inicio va

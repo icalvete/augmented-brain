@@ -1340,6 +1340,14 @@ saw (something changed them outside this page), a notice says so with an accept 
 until then a push or merge that the lists allow asks first. Claude cannot open this page:
 the guard denies it the panel's key. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
 
+## Versions
+
+The last 10 versions of your configuration (spaces, guard, remote access, profile),
+kept only on this computer, newest first, with when and who changed it. **What it
+changed** shows the lines of each one; **Go back to this one** makes it the
+configuration again, keeping the one you had as a version first. From another device
+the page only shows. See [Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html).
+
 ## Health
 
 The space's notes folder and work folders, whether it is the default space, notes that
@@ -1474,6 +1482,71 @@ leaves it alone and says so.
 `augmented-brain doctor` has a line about the remote panel once you have used it:
 whether Tailscale is still installed, connected and with HTTPS, and whether an address
 of the panel was left published.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/config-history.html
+
+# Configuration versions
+
+
+Your configuration is what augmented brain knows about this computer and about you:
+your spaces, the guard's lists, remote access, your profile and the names of your
+secrets. A wrong change there (a list emptied by mistake, a space pointing to the wrong
+folder) used to have no way back. Now every change is kept as a **version**, and you can
+see what changed and go back.
+
+## What is kept
+
+A version is a copy of these files, in the configuration folder, as they were at one
+moment: `config.toml`, `guard.toml`, `remote.toml`, `session.toml`, `profile.md` and
+`secrets.toml` (only the names of your secrets, never a value). It also says who made the
+change: the panel, a command, the assistant (and with which tool), going back to an
+earlier version, or by hand.
+
+- A new version is kept every time the configuration changes. A change made by hand, or
+  by an older program, is kept the next time augmented brain looks: when a session
+  starts, a command runs, the assistant uses a tool or you save something in the panel.
+- The last **10** are kept. When there is one more, the oldest goes.
+- They stay **only on this computer**, in the `history` folder of the configuration
+  folder. They never go into the backup: the guard's lists may name work machines, and
+  the backup leaves them out on purpose.
+- Your notes are not here. Tasks, rules, knowledge and people (shared ones too) have
+  their own history in the [backup](https://icalvete.github.io/augmented-brain/guide/backup.html).
+
+## In the panel
+
+The panel's **Versions** page lists them, newest first, with when and who. Under each
+one, **What it changed** shows the lines that changed from the version before: green
+what was added, red what was taken away. **Go back to this one** makes it the
+configuration again.
+
+Going back keeps the configuration you had as a version first, so it can be undone the
+same way. A version that would leave a file the program cannot read is refused, and
+nothing changes. If the guard's lists change, going back from the panel counts as you
+accepting them, as any change on the [Guard](https://icalvete.github.io/augmented-brain/guide/guard.html) page does.
+
+From another device ([the panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html)) the page only
+shows the versions: going back is only from the panel on this computer, because it can
+change what the guard allows.
+
+## With commands
+
+```bash
+augmented-brain config history
+augmented-brain config history 3
+augmented-brain config restore 3
+```
+
+`config history` lists the versions; with a number, it shows what that one changed.
+`config restore` goes back to one. A command can be run by the assistant, so going back
+this way never accepts new guard lists for you: until you accept them in the panel's
+Guard page, or start a new session, the guard asks before every commit, push or merge it
+used to allow. See [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html#augmented-brain-config-history).
+
+`augmented-brain doctor` has a line with how many versions are kept, and says when the
+configuration changed after the newest one.
 
 
 ---
@@ -2210,6 +2283,43 @@ augmented-brain remote status
 For each space: the session's name (what you pick in Claude Desktop or claude.ai), whether
 the service is running and starts by itself, and whether Claude trusts its folder. Then
 whether linger is on. Under each problem, `→` says what to do. It takes no options.
+
+## augmented-brain config
+
+The versions of your configuration: two commands, `history` and `restore`, each with its
+own section below. Without a subcommand, `config` prints its usage. See
+[Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html).
+
+## augmented-brain config history
+
+Lists the last versions of your configuration, newest first, and changes nothing.
+
+```bash
+augmented-brain config history
+augmented-brain config history 3
+```
+
+A version is a copy of `config.toml`, `guard.toml`, `remote.toml`, `session.toml`,
+`profile.md` and `secrets.toml` as they were at one moment, with who changed them: the
+panel, a command, the assistant (and which tool), going back to a version, or by hand.
+The last 10 are kept, only on this computer. With a number, it shows what that version
+changed from the one before it, line by line. It takes no options.
+
+## augmented-brain config restore
+
+Goes back to one version of the configuration.
+
+```bash
+augmented-brain config restore 3
+```
+
+It shows what changes and writes it. The configuration you had is kept as a version
+first, so going back can be undone the same way. A version that would leave a file the
+program cannot read is refused, and nothing changes. If the guard's lists end up
+different from the ones you accepted, the guard asks before every commit, push or merge
+it used to allow, until you accept them in the panel's Guard page or start a new session:
+a command can be run by the assistant, so it never accepts them for you. Going back from
+the panel's Versions page does accept them. It takes no options.
 
 ## augmented-brain update
 
