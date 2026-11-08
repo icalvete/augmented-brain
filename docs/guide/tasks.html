@@ -123,6 +123,7 @@ Done: the new host is ready. Next: copy the database.
   <ol><li><strong>Definition</strong>: what we want, what is out, and how we will know it worked.</li><li><strong>Analysis</strong>: how things really are, measured, not assumed.</li><li><strong>Plan</strong>: ordered steps, each with how to undo it.</li><li><strong>Execution</strong>: doing it, writing in the journal as we go.</li><li><strong>Validation</strong>: proving the “done” criterion.</li><li><strong>Closed</strong>: finished. It is kept, never deleted.</li></ol>
   <p>The phase is the task's <code>status</code>. Two more statuses pause a task without losing anything:</p>
   <ul><li><strong>parked</strong>: paused, to resume soon. <code>next</code> says exactly how.</li><li><strong>someday</strong>: not for weeks. It leaves the list Claude reads at the start, and stays in its area.</li></ul>
+  <p>A small task may skip phases (straight from definition to execution): it is allowed, and the journal says which phases it skipped. A closed task stays closed: closing it again is refused, so its result is never written over, and opening it again needs a reason, which goes to the journal.</p>
   <h2 id="who-it-waits-on-and-what-comes-next">Who it waits on, and what comes next</h2>
   <p>Every task says two more things:</p>
   <ul><li><strong>waiting_on</strong>: <code>me</code> (you), <code>nobody</code>, a person's name, or another task.</li><li><strong>next</strong>: the single next action, in one line.</li></ul>
