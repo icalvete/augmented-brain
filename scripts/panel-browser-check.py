@@ -103,7 +103,8 @@ try:
             cal.goto("http://calibration.invalid/")
             cal.wait_for_timeout(200)
             cal.close()
-            known = {e for e in noise if "style-src" in e or e.startswith("CSP style-src-attr")}
+            same = lambda e: re.sub(r":\d+", ":N", e)  # the same report on another line
+            known = {same(e) for e in noise if "style-src" in e}
             if known:
                 print(f"    ({engine} reports its own <select> under the panel's policy: {len(known)} known line(s), not counted)")
             for size, viewport in (("desktop", {"width": 1280, "height": 800}), ("phone", {"width": 375, "height": 740})):
@@ -121,7 +122,7 @@ try:
                     del errors[:], failed[:]
                     resp = page.goto(f"{base}/{path}{'&' if '?' in path else '?'}s=work")
                     page.wait_for_load_state("networkidle")
-                    errors[:] = [e for e in errors if e not in known]
+                    errors[:] = [e for e in errors if same(e) not in known]
                     ok = resp is not None and resp.status == 200 and not errors and not failed
                     report(f"{engine} {size}: {path.split('?')[0]} loads clean", ok, [e for e in errors if e.startswith('CSP')][:1] + (errors + failed)[:1] or (resp.status if resp else "no answer"))
                     if size == "phone":
