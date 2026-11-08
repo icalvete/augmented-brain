@@ -73,6 +73,14 @@ Así root en esa máquina te pregunta cada vez, hasta esa fecha.
 Una sesión que estaba abierta sigue con el programa antiguo. Ciérrala y vuelve a abrirla.
 `augmented-brain doctor` dice cuántas sesiones siguen con la versión antigua.
 
+### El instalador o la actualización no pueden descargar
+
+A veces GitHub deja de entregar los ficheros de una versión durante un rato. El
+instalador y `augmented-brain update` lo intentan tres veces, y también por la API de
+GitHub, que suele seguir funcionando cuando la dirección de siempre no. Si falla todo,
+lo dicen y no cambia nada: se queda el programa que tenías. Vuelve a probar dentro de un
+rato.
+
 ### "Lo escribió un augmented brain más nuevo"
 
 Una versión más nueva, en otro ordenador, pasó las notas a un formato nuevo. Actualiza

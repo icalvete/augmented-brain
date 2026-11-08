@@ -352,7 +352,9 @@ augmented-brain update
 ```
 
 If there is a newer version, it runs the published installer, which replaces the program
-and then updates the plugin. If not, it only updates the plugin. Around a new version it
+and then updates the plugin. If not, it only updates the plugin. If the download fails
+(three tries, also through GitHub's API) or the program is not the new version
+afterwards, it says so, ends with an error and changes nothing. Around a new version it
 does what you would otherwise do by hand:
 
 - **Before:** the health check of `doctor` (what it finds is shown, so it is not taken

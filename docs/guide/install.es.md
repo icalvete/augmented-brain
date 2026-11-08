@@ -22,7 +22,8 @@ llevan de la mano.
   abrir Claude.
 - **Todo lo que descarga se comprueba.** El programa sale de la última versión publicada
   del proyecto en GitHub, y su SHA-256 tiene que coincidir con la lista de esa versión; si
-  no, no se instala nada.
+  no, no se instala nada. Cuando GitHub no lo entrega, el instalador lo intenta tres
+  veces, también por la API de GitHub; si falla todo, lo dice y no instala nada.
 
 ## Linux
 

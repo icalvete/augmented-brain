@@ -1,5 +1,20 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Una actualización cuya descarga falla ya no parece hecha.** `augmented-brain update`
+  pasaba el instalador de GitHub directamente a `sh`: cuando GitHub respondía 504, como
+  pasó durante más de una hora el 8 de noviembre, `sh` recibía un script vacío, la
+  actualización «funcionaba» y no había cambiado nada. Ahora descarga antes el
+  instalador, mira cómo acaba y comprueba después que el programa es la versión nueva; si
+  no, lo dice y acaba con error. En Windows, el instalador también le cuenta ahora su
+  fallo a `update`.
+- **Las descargas se reintentan, también por la API de GitHub.** Los instaladores
+  (`install.sh`, `install.ps1`) y `update` intentan cada fichero tres veces, y cuando
+  falla la dirección de siempre de GitHub toman el mismo fichero por su API, que el 8 de
+  noviembre siguió funcionando. Si falla todo, lo dicen, en tu idioma, y no instalan
+  nada.
+
 ## 0.13.0-alpha
 
 Publicada el 2026-11-08.

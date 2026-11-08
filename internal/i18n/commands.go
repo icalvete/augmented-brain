@@ -261,6 +261,10 @@ var commandMessages = map[string]msg{
 		en: "the update did not finish: %v",
 		es: "la actualización no ha terminado: %v",
 	},
+	"update.notdone": {
+		en: "the update did not finish: the program is still %s, not %s. Nothing else changed; run `augmented-brain update` again later.",
+		es: "la actualización no ha terminado: el programa sigue siendo la %s, no la %s. No ha cambiado nada más; vuelve a lanzar `augmented-brain update` más tarde.",
+	},
 	"update.before.check": {
 		en: "Before updating, the health check found this (it was there before the new version):",
 		es: "Antes de actualizar, la revisión ha encontrado esto (ya estaba antes de la versión nueva):",

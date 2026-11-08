@@ -20,7 +20,9 @@ walks you through it.
   and `personal`), in `~/augmented-brain`, the Claude Code plugin installed, and the offer to
   open Claude.
 - **Every download is checked.** The program comes from the project's latest release on
-  GitHub, and its SHA-256 must match the release's list, or nothing is installed.
+  GitHub, and its SHA-256 must match the release's list, or nothing is installed. When
+  GitHub fails to hand it out, the installer tries three times, also through GitHub's
+  API; if all fails, it says so and installs nothing.
 
 ## Linux
 

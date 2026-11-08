@@ -15,10 +15,11 @@
 #
 # Settings: AB_YES=1 answers yes to every question, AB_LANGUAGE=en|es sets the language,
 # AB_NO_DESKTOP=1 does not offer the desktop app. For testing: AB_VERSION, AB_RELEASE_URL,
-# AB_MARKETPLACE and AB_NO_INIT=1, as in install.sh.
+# AB_MARKETPLACE, AB_NO_INIT=1, AB_API_URL and AB_RETRY_DELAY, as in install.sh.
+# AB_EXIT_CODE=1 (set by `augmented-brain update`) ends with exit 1 when it fails.
 #
 # It runs inside `irm | iex`, in the person's own PowerShell window: it never calls exit,
-# which would close that window. The Spanish messages are written with \u escapes, so
+# which would close that window (only with AB_EXIT_CODE=1, in a PowerShell of its own). The Spanish messages are written with \u escapes, so
 # they survive however the download is decoded. It works on Windows PowerShell 5.1, the
 # one that comes with Windows.
 
@@ -235,13 +236,46 @@ try {
   $tmp = Join-Path ([IO.Path]::GetTempPath()) ("ab-" + [Guid]::NewGuid().ToString('N'))
   New-Item -ItemType Directory -Path $tmp | Out-Null
   try {
-    # file:// works too, for tests: Invoke-WebRequest does not take it, WebClient does.
-    $web = New-Object Net.WebClient
-    try { $web.DownloadFile("$base/checksums.txt", "$tmp\checksums.txt") } catch { Fail "cannot download $base/checksums.txt" }
+    # GetFile <url> <file> [accept]: one address to a file. file:// works too, for
+    # tests: Invoke-WebRequest does not take it, WebClient does. GitHub's API wants a
+    # User-Agent.
+    function GetFile([string]$url, [string]$dst, [string]$accept) {
+      $web = New-Object Net.WebClient
+      $web.Headers.Add('User-Agent', 'augmented-brain-installer')
+      if ($accept) { $web.Headers.Add('Accept', $accept) }
+      $web.DownloadFile($url, $dst)
+    }
+    # Fetch <name> <file>: one file of the release. The public address has answered 504
+    # for over an hour (8-nov-2026) while GitHub's API served the same files, so when it
+    # fails the file comes through the API. Three tries, a few seconds apart.
+    # AB_API_URL, for tests, stands in for the API.
+    function Fetch([string]$name, [string]$dst) {
+      $api = if ($env:AB_API_URL) { $env:AB_API_URL.TrimEnd('/') } else { "https://api.github.com/repos/$Repo" }
+      $api = if ($Version -eq 'latest') { "$api/releases/latest" } else { "$api/releases/tags/v$($Version.TrimStart('v'))" }
+      $delay = if ($env:AB_RETRY_DELAY) { [int]$env:AB_RETRY_DELAY } else { 5 }
+      for ($try = 1; $try -le 3; $try++) {
+        try { GetFile "$base/$name" $dst ''; return $true } catch {}
+        if (-not $env:AB_RELEASE_URL -or $env:AB_API_URL) {
+          try {
+            GetFile $api "$tmp\release.json" 'application/vnd.github+json'
+            $asset = (Get-Content -Raw "$tmp\release.json" | ConvertFrom-Json).assets | Where-Object { $_.name -eq $name } | Select-Object -First 1
+            if ($asset) { GetFile $asset.url $dst 'application/octet-stream'; return $true }
+          } catch {}
+        }
+        if ($try -lt 3) { Start-Sleep -Seconds $delay }
+      }
+      Remove-Item $dst -Force -ErrorAction SilentlyContinue
+      return $false
+    }
+    function Cannot([string]$name) {
+      Fail (Text "cannot download $name from GitHub (tried 3 times, also through its API). GitHub may be having trouble: nothing was installed; try again in a while." `
+                 "no puedo descargar $name de GitHub (3 intentos, también por su API). Puede que GitHub tenga problemas: no se ha instalado nada; vuelve a probar dentro de un rato.")
+    }
+    if (-not (Fetch 'checksums.txt' "$tmp\checksums.txt")) { Cannot 'checksums.txt' }
     $line = Get-Content "$tmp\checksums.txt" | Where-Object { $_ -match "_windows_$arch\.zip$" } | Select-Object -First 1
-    if (-not $line) { Fail "the release has no archive for windows/$arch." }
+    if (-not $line) { Fail (Text "the release has no archive for windows/$arch." "la versión no tiene archivo para windows/$arch.") }
     $want, $archive = $line -split '\s+', 2
-    try { $web.DownloadFile("$base/$archive", "$tmp\$archive") } catch { Fail "cannot download $archive" }
+    if (-not (Fetch $archive "$tmp\$archive")) { Cannot $archive }
     $got = (Get-FileHash -Algorithm SHA256 "$tmp\$archive").Hash
     if ($got -ine $want) { Fail (Text 'the download does not match its checksum: not installed.' 'la descarga no coincide con su suma de comprobaci\u00f3n: no se ha instalado.') }
     Expand-Archive -Path "$tmp\$archive" -DestinationPath $tmp -Force
@@ -310,5 +344,8 @@ try {
   $m = $_.Exception.Message
   if ($m -notlike 'augmented brain:*') { $m = "augmented brain: $m" }
   Write-Host $m -ForegroundColor Red
+  # `augmented-brain update` runs this file in a PowerShell of its own, and needs to
+  # know it failed. In a person's own window, exit would close it.
+  if ($env:AB_EXIT_CODE -eq '1') { exit 1 }
 }
 }

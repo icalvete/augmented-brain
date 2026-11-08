@@ -71,6 +71,13 @@ that machine asks you each time, until the date.
 A session that was open keeps the old program. Close and open it. `augmented-brain
 doctor` says how many sessions still run the old version.
 
+### The installer or the update cannot download
+
+GitHub sometimes fails to hand out a release's files for a while. The installer and
+`augmented-brain update` try three times, and also through GitHub's API, which often
+keeps working when the usual address does not. If all of it fails, they say so and
+nothing changes: the program you had stays. Try again in a while.
+
 ### "Written by a newer augmented brain"
 
 A newer version on another computer moved the notes to a new format. Update this

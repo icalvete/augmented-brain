@@ -17,8 +17,9 @@
 # AB_NO_DESKTOP=1 does not offer the desktop app (servers, tests). For testing:
 # AB_VERSION (a version, default: latest), AB_RELEASE_URL (where the release files are,
 # default: the GitHub release), AB_MARKETPLACE (where the plugin comes from, default:
-# this repository on GitHub) and AB_NO_INIT=1 (only install the program: no checks, no
-# init).
+# this repository on GitHub), AB_NO_INIT=1 (only install the program: no checks, no
+# init), AB_API_URL (stands in for GitHub's API of the repository, the second way to
+# download) and AB_RETRY_DELAY (seconds between two tries of a download, default 5).
 set -eu
 
 # Everything runs from main, called on the last line: a download cut short runs nothing.
@@ -367,14 +368,59 @@ else
   BASE="https://github.com/$REPO/releases/download/v${VERSION#v}"
 fi
 
-fetch() { # fetch <url> <file>
+command -v curl >/dev/null 2>&1 || command -v wget >/dev/null 2>&1 ||
+  fail "$(say "needs curl or wget to download." "necesita curl o wget para descargar.")"
+
+# get <url> <file> [accept]: one address to a file. It gives up on a connection that
+# does not start in 20 seconds, or that brings less than 1 KB a second for a minute.
+get() {
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "$1" -o "$2"
-  elif command -v wget >/dev/null 2>&1; then
-    wget -qO "$2" "$1"
+    if [ -n "${3:-}" ]; then
+      curl -fsSL --connect-timeout 20 --speed-limit 1000 --speed-time 60 -H "Accept: $3" "$1" -o "$2"
+    else
+      curl -fsSL --connect-timeout 20 --speed-limit 1000 --speed-time 60 "$1" -o "$2"
+    fi
+  elif [ -n "${3:-}" ]; then
+    wget -q --tries=1 --timeout=60 --header="Accept: $3" -O "$2" "$1"
   else
-    fail "needs curl or wget to download."
+    wget -q --tries=1 --timeout=60 -O "$2" "$1"
   fi
+}
+
+# asset_url <release.json> <name>: the API address of one file of a release. In GitHub's
+# answer each file's "url" comes before its "name".
+asset_url() {
+  tr ',{}' '\n\n\n' <"$1" | awk -v n="\"name\":\"$2\"" '
+    { gsub(/[ \t\r]/, "") }
+    /^"url":"https?:\/\/[^"]*\/releases\/assets\// { u = $0 }
+    $0 == n && u != "" { sub(/^"url":"/, "", u); sub(/"$/, "", u); print u; exit }'
+}
+
+# fetch <name> <file>: one file of the release. The public address has answered 504 for
+# over an hour (8-nov-2026) while GitHub's API served the same files, so when it fails
+# the file comes through the API. Three tries, a few seconds apart. AB_API_URL, for
+# tests, stands in for the API.
+fetch() {
+  api="${AB_API_URL:-https://api.github.com/repos/$REPO}"
+  if [ "$VERSION" = latest ]; then api="$api/releases/latest"; else api="$api/releases/tags/v${VERSION#v}"; fi
+  for try in 1 2 3; do
+    rm -f "$2"
+    get "$BASE/$1" "$2" 2>/dev/null && return 0
+    if [ -z "${AB_RELEASE_URL:-}" ] || [ -n "${AB_API_URL:-}" ]; then
+      if get "$api" "$TMP/release.json" application/vnd.github+json 2>/dev/null; then
+        u="$(asset_url "$TMP/release.json" "$1")"
+        [ -n "$u" ] && get "$u" "$2" application/octet-stream 2>/dev/null && return 0
+      fi
+    fi
+    [ "$try" = 3 ] || sleep "${AB_RETRY_DELAY:-5}"
+  done
+  rm -f "$2"
+  return 1
+}
+# cannot <name>: the download failed for good.
+cannot() {
+  fail "$(say "cannot download $1 from GitHub (tried 3 times, also through its API). GitHub may be having trouble: nothing was installed; try again in a while." \
+              "no puedo descargar $1 de GitHub (3 intentos, también por su API). Puede que GitHub tenga problemas: no se ha instalado nada; vuelve a probar dentro de un rato.")"
 }
 
 if command -v sha256sum >/dev/null 2>&1; then
@@ -388,10 +434,10 @@ fi
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-fetch "$BASE/checksums.txt" "$TMP/checksums.txt" || fail "cannot download $BASE/checksums.txt"
+fetch checksums.txt "$TMP/checksums.txt" || cannot checksums.txt
 archive="$(grep "_${os}_${arch}\.tar\.gz\$" "$TMP/checksums.txt" | awk '{print $2}' | head -n 1)"
-[ -n "$archive" ] || fail "the release has no archive for ${os}/${arch}."
-fetch "$BASE/$archive" "$TMP/$archive" || fail "cannot download $archive"
+[ -n "$archive" ] || fail "$(say "the release has no archive for ${os}/${arch}." "la versión no tiene archivo para ${os}/${arch}.")"
+fetch "$archive" "$TMP/$archive" || cannot "$archive"
 
 want="$(grep " ${archive}\$" "$TMP/checksums.txt" | awk '{print $1}')"
 got="$(sha "$TMP/$archive")"
