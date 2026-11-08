@@ -133,14 +133,39 @@ cat > "$WORK/read.json" <<'EOF'
 ]
 EOF
 
+# fetch <version> <file>: the release's archive for this system, into file. The public
+# address (github.com/…/releases/download) has answered 504 for an hour while the API
+# served the same file, so each try falls back to the API (with the token, in CI), and
+# it tries three times. To a file, not through a pipe: a failed download must not reach
+# tar, which on macOS takes an empty input as an empty archive.
+fetch() {
+  name="augmented-brain_${1}_${os}_${arch}.tar.gz"
+  for try in 1 2 3; do
+    curl -fsSL -o "$2" "https://github.com/$REPO/releases/download/v$1/$name" && return 0
+    if [ -n "${GH_TOKEN:-}" ]; then
+      id=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/$REPO/releases/tags/v$1" |
+        python3 -c 'import json,sys; n=sys.argv[1]; print(next((a["id"] for a in json.load(sys.stdin)["assets"] if a["name"]==n), ""))' "$name") || id=""
+      if [ -n "$id" ] && curl -fsSL -o "$2" -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" \
+        "https://api.github.com/repos/$REPO/releases/assets/$id"; then
+        return 0
+      fi
+    fi
+    [ "$try" -lt 3 ] && sleep 10
+  done
+  return 1
+}
+
 for v in "$@"; do
   echo "release $v reads what the new one wrote:"
   dir="$WORK/old-$v"
   mkdir -p "$dir"
-  if ! curl -fsSL "https://github.com/$REPO/releases/download/v$v/augmented-brain_${v}_${os}_${arch}.tar.gz" | tar -xz -C "$dir"; then
+  if ! fetch "$v" "$dir/release.tar.gz" || ! tar -xzf "$dir/release.tar.gz" -C "$dir"; then
     echo "  FAIL could not download $v"; fail=1; continue
   fi
   OLD=$(find "$dir" -type f -name augmented-brain | head -n 1)
+  if [ -z "$OLD" ]; then
+    echo "  FAIL no program in the archive of $v"; fail=1; continue
+  fi
   # Each release reads its own copy of what the new one wrote, at the same paths as
   # where it was written, so the configuration's folders hold.
   mv "$WORK/home" "$WORK/home-before-$v"
