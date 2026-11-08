@@ -2,6 +2,12 @@
 
 ## Sin publicar
 
+- **Un llavero al que no se puede preguntar ya no cuenta como «falta».** En Linux sin
+  sesión de escritorio, `secret-tool` falla igual que cuando el secreto no está, así que
+  `restore` y la página Secretos del panel te pedían guardar otra vez secretos que ya
+  tenías. Ahora no poder preguntar es «no se ha podido comprobar», en Linux y en macOS
+  (un llavero bloqueado), y `restore` nombra también esos secretos, cuando antes, sin
+  llavero (Windows), no decía nada.
 - **La copia de seguridad ya no se queda colgada con la red a medias.** git no tenía
   tiempo máximo, y una copia mantiene un bloqueo mientras corre: una colgada (la del
   final de una sesión, en segundo plano) hacía esperar detrás a todas las siguientes,

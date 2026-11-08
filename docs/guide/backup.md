@@ -71,7 +71,8 @@ Some things are left out on purpose:
   `git_ask_repos`). Someone else may have changed the backup, so `restore` names them,
   and you add them again if you still want to.
 - **Your secrets' values.** Only their names travel. `restore` names the secrets this
-  machine's keychain does not have yet, each with the command to store it.
+  machine's keychain does not have yet, each with the command to store it, and those it
+  could not check when the keychain does not answer.
 
 ## What you get
 

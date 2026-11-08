@@ -72,7 +72,8 @@ Algunas cosas se quedan fuera a propósito:
   `git_ask_repos`). Alguien podría haber cambiado la copia, así que `restore` los nombra,
   y los vuelves a añadir si lo sigues queriendo.
 - **El valor de tus secretos.** Solo viajan sus nombres. `restore` nombra los secretos
-  que el llavero de esta máquina aún no tiene, cada uno con el comando para guardarlo.
+  que el llavero de esta máquina aún no tiene, cada uno con el comando para guardarlo, y
+  los que no ha podido comprobar cuando el llavero no responde.
 
 ## Lo que te da
 
