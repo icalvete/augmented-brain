@@ -17,7 +17,9 @@ such as `https://my-laptop.example.ts.net:8443/s/…/today`, and a QR code. Poin
 phone's camera at the code, or open the address on the other computer.
 
 If the panel is already open on this computer, it is not stopped: the same panel starts
-answering through the network too, and the pages you have open go on working.
+answering through the network too, and the pages you have open go on working. If that
+panel came from an earlier version, it has to start again: the command says so, and you
+reload those pages. If publishing fails, the panel stays on this computer only.
 
 ## What you need, once
 

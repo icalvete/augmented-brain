@@ -26,6 +26,7 @@ program writes in the notebook.
 Two words that come up a lot:
 
 - **Hook**: a call Claude Code makes at a given moment. Here: when a session starts,
+  before Claude answers each message (to tell it which tasks changed in another session),
   before every command and file change, after each answer, when a long conversation is
   compacted, and when the session ends. Each time, Claude Code starts the program, asks
   it, and the program exits.
@@ -64,7 +65,8 @@ the task before the system closes the window. See
 
 **5. You close the session.** The end hook notes that the session ended well. It starts
 the [backup](backup.md) of the space in the background, if you set one up. You wait for
-nothing. If the backup fails, Claude tells you at the start of the next session.
+nothing. If the network does not answer, the backup gives up after 3 minutes instead of
+hanging. If the backup fails, Claude tells you at the start of the next session.
 
 If a session did not end well (the window was closed by force, the computer went down),
 the next one offers to recover it. Claude reads what you both said after the task's last
@@ -98,12 +100,16 @@ The configuration folder, `~/.config/augmented-brain/` (on Windows,
 
 ```
 config.toml       the spaces and the guard's lists
+guard.toml        the repositories Claude must never touch
+remote.toml       remote access, if you set it up
+session.toml      session settings (the preferred model)
 secrets.toml      the names of your secrets, never their values
 profile.md        who you are, for every space
 shared/           rules, references and lessons for every space
 state/            what this computer knows of each space's sessions; never backed up
 migrations/       a full copy of the notes before a new version moves them
 panel.json        where the panel listens, while it runs
+history/          the last 10 versions of these files; only on this computer
 ```
 
 Each file is described in [Configuration](configuration.md) and in the
@@ -112,7 +118,9 @@ Each file is described in [Configuration](configuration.md) and in the
 ## What it does not do
 
 - **No server and no account.** If Claude is not open, nothing runs, except the panel
-  while you use it and the backup that the end of a session starts.
+  while you use it, the backup that the end of a session starts and, if you set it up,
+  [remote access](remote.md), which keeps running so you can reach your sessions from
+  another device.
 - **It sends your data to no one.** Only the backup, if you set it up, talks to your
   repository. Apart from that, once a day, it asks GitHub which version is the latest,
   sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns that off.

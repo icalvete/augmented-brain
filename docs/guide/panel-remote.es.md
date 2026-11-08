@@ -17,7 +17,9 @@ Arranca el panel, lo publica en tu red de Tailscale y escribe su dirección, com
 móvil al código, o abre la dirección en el otro ordenador.
 
 Si el panel ya está abierto en este ordenador, no se para: el mismo panel empieza a
-responder también por la red, y las páginas que tienes abiertas siguen funcionando.
+responder también por la red, y las páginas que tienes abiertas siguen funcionando. Si
+ese panel era de una versión anterior, tiene que arrancar de nuevo: el comando lo dice, y
+recargas esas páginas. Si publicarlo falla, el panel sigue solo en este ordenador.
 
 ## Lo que hace falta, una vez
 
@@ -53,7 +55,7 @@ Tres cosas hacen que sea solo tuyo:
   cuenta con la que entraste, con su contraseña y su segundo factor), y el panel solo
   deja entrar al dueño del ordenador. Otra persona de tu red, o alguien con quien
   compartes un dispositivo, recibe «forbidden» aunque tenga la dirección.
-- **La dirección lleva una clave** que cambia cada vez que arranca el panel.
+- **La dirección lleva una llave** que cambia cada vez que arranca el panel.
 
 No hay otra contraseña que teclear: tu cuenta de Tailscale es la entrada.
 

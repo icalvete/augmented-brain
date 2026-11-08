@@ -68,7 +68,8 @@ Te hace unas pocas preguntas. Para aceptar lo que te propone, basta con pulsar E
 1. **El idioma.** Español o inglés.
 2. **Lo que falte**, si falta algo: git (guarda el historial de tus notas), Claude Code
    y la app de escritorio de Claude. Te dice para qué es cada cosa antes de instalarla. Si
-   ya tenías Claude Code pero está atrasado, te ofrece actualizarlo.
+   ya tenías Claude Code pero está atrasado, te ofrece actualizarlo. Si falta Claude Code,
+   también te pregunta si tienes un plan de pago; un no no lo para.
 3. **¿Abro ahora la app de Claude?** Di que sí.
 
 Si te pide la contraseña, escríbela aunque no veas nada: la terminal no la enseña, ni
@@ -92,13 +93,17 @@ Sin elegir carpeta, trabajas en tu espacio personal. Para el de trabajo, elige c
 **Choose…** la carpeta `~/augmented-brain/trabajo`. Un **espacio** es un cajón separado
 de notas: te lo cuenta [Espacios](spaces.es.md).
 
+¿Sin app de escritorio (en Linux sin `apt`, o si dijiste que no)? El instalador te ofrece
+abrir Claude en la terminal, en tu espacio de trabajo. Las próximas veces:
+`cd ~/augmented-brain/trabajo && claude`.
+
 ## 5. Contesta a la entrevista
 
 La primera vez, Claude se presenta y te hace seis preguntas, una cada vez, diciéndote
 para qué sirve cada una: quién eres, qué cuidas, cómo quieres las respuestas, qué no se
 toca, qué herramientas usas y con quién trabajas. Puedes saltarte cualquiera.
 
-Al final te enseña lo que ha guardado y te ofrece montar la copia de seguridad. Dile que
+Al final te enseña lo que ha guardado y te ofrece configurar la copia de seguridad. Dile que
 sí: tus notas quedan en un repositorio privado tuyo, y si pierdes el ordenador no pierdes
 nada.
 
@@ -143,6 +148,8 @@ Más frases, agrupadas por lo que quieres hacer: [Qué decirle a Claude](phrases
 - **La terminal dice que no encuentra una orden** (`command not found`, o "no se reconoce"
   en Windows). Cierra la terminal y abre otra: la nueva ya encuentra los programas recién
   instalados.
+- **El instalador dice que no puede descargar de GitHub, o lo paraste.** No queda nada a
+  medias: vuelve a pegar el comando (dentro de un rato, si GitHub tiene problemas).
 - **Claude te pide un plan de pago.** Claude Code necesita Pro o superior.
 - **Otra cosa.** Mira [Si algo falla](troubleshooting.es.md).
 

@@ -110,6 +110,10 @@ While the file cannot be read, the guard does not know your lists. So it asks yo
 every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`. `augmented-brain doctor` tells you
 what is wrong.
 
+To go back to a version that worked, run `augmented-brain config history` and then
+`augmented-brain config restore <number>`: both work while the file is broken. See
+[Configuration versions](config-history.md).
+
 ## `secrets.toml`
 
 Next to `config.toml`, `secrets.toml` names the secrets you keep in your system
@@ -152,11 +156,11 @@ preferred_model = "opus"
 ```
 
 - `preferred_model`: the model you expect to answer (`opus`, `sonnet`, `haiku` or a full
-  name such as `claude-opus-5-5`). When a session answers with another one, Claude tells
-  you: at the start, if Claude Code says which model it starts with, and otherwise after
-  an answer (in a new session, the second at the latest: the first one is not on disk
-  yet when Claude Code asks), and again if the model changes in the middle. Once per
-  session and model. It never changes the model itself: you do, with `/model` or the model picker.
+  name such as `claude-opus-5-5`). When a session answers with another model, Claude
+  tells you. It checks at the start, if Claude Code says which model it starts with. If
+  not, it checks after an answer: in a new session, the second one at the latest. It
+  checks again if the model changes. Once per session and model. It never changes the
+  model itself: you do, with `/model` or the model picker.
 
 The panel's Guard page writes it, and the guard asks before Claude writes it. If the file
 is missing or the setting is empty, nothing is checked. It is a file of its own for the
@@ -174,15 +178,16 @@ enabled = true
 spaces = ["personal", "work"]
 name_prefix = "my-laptop"
 permission_mode = "default"
-folders = { work = "~/work/clients" }
+folders = { work = "~/code/clients" }
 ```
 
 All are optional:
 
 - `enabled`: whether remote access is set up. `remote install` writes `true` and
-  `remote uninstall` writes `false`. Only when it is `true` does `doctor` check it.
+  `remote uninstall` writes `false`. Only when it is `true` does `doctor` check the
+  services; a file it cannot read is a warning either way.
 - `spaces`: the spaces that get a session, each in a service of its own. Default: the
-  `default_space`.
+  `default_space`, or the only space when there is one.
 - `name_prefix`: sessions are called `<name_prefix>-<space>`, such as `my-laptop-personal`.
   One plain word: letters, digits, dot, dash and underscore. Default: the computer's name.
 - `permission_mode`: how much Claude may do without asking. One of `default`,
@@ -207,6 +212,8 @@ Run `augmented-brain remote install` again after changing it, so the services pi
 - `remote/<space>/`: the folder where the remote access service of a space starts, only for
   a space with no work folder of its own. It is made a work folder of that space.
 - `review-<space>.draft`: a weekly review started in the panel and not finished yet.
+- `history/`: the last 10 versions of your configuration, with who changed them. Only on
+  this computer, never backed up. See [Configuration versions](config-history.md).
 
 ## Environment variables
 
@@ -226,8 +233,9 @@ The installer reads a few more:
 - `AB_NO_DESKTOP=1`: do not offer the Claude desktop app.
 - `AB_INSTALL_DIR`: where to put the program. Default `~/.local/bin`.
 - `AB_NO_INIT=1`: only install the program, without setting anything up.
-- `AB_VERSION`, `AB_RELEASE_URL` and `AB_MARKETPLACE`: for testing: which version, where
-  the release files are, and where the plugin comes from.
+- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY` and `AB_MARKETPLACE`: for
+  testing: which version, where the release files are, the GitHub API to fall back on,
+  the wait between tries, and where the plugin comes from.
 
 ## Claude Code's own settings
 

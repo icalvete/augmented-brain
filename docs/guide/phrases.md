@@ -13,7 +13,7 @@ wording with the same meaning works too.
 | "New task: move the blog to a new host." | Opens a task in definition, waiting on you, and asks what "done" means |
 | "Where were we?" | Lists your live tasks, those waiting on you first, each with its next step |
 | "Let's carry on with the blog." | Reads the task, checks the real state, and picks it up where you left it |
-| "Go on to the plan." | Moves the task to its next phase; you approve each change |
+| "Go on to the plan." | Moves the task to its next phase; you approve each change. If you skip a phase, the journal says which |
 | "We go with the cheaper host." | Writes the decision in the task's journal, with the date |
 | "Add a step: switch the domain." | Adds a checkbox to the task's plan |
 | "The database is copied." | Ticks that step |
@@ -21,7 +21,8 @@ wording with the same meaning works too.
 | "On the 16th, check the certificate is renewed." | Adds a watch date to the task |
 | "Park it, we carry on tomorrow." | Writes the exact next step and the essentials, and pauses the task |
 | "Leave it for some day." | Parks it as someday: out of the daily list, kept in its area |
-| "Close the task." | Closes it with its result; it is never deleted |
+| "Close the task." | Closes it with its result; it is never deleted. A closed task stays closed: closing it again is refused |
+| "Reopen the blog task: the certificate failed again." | Opens it again; the reason goes to its journal |
 
 ## Inbox and reminders
 
@@ -69,9 +70,11 @@ At the start of a session, Claude may bring things up without being asked:
 - the weekly review, when the last one is a week old and there is something to go
   through;
 - a session that was cut off, to recover;
-- a backup that failed;
+- a backup that failed, or one that left files out;
 - a new version, to update;
-- notes with problems.
+- notes with problems;
+- what another space sent to this one, until it is done;
+- the guard's lists, if something changed them outside the panel.
 
 ## Next
 

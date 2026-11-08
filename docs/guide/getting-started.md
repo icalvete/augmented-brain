@@ -66,7 +66,8 @@ It asks a few questions. To accept what it suggests, just press Enter.
 1. **The language.** English or Spanish.
 2. **Whatever is missing**, if anything: git (keeps the history of your notes), Claude
    Code and the Claude desktop app. It tells you what each one is for before installing it.
-   If you already had Claude Code but it is behind, it offers to update it.
+   If you already had Claude Code but it is behind, it offers to update it. If Claude Code
+   is missing, it also asks whether you have a paid plan; a no does not stop it.
 3. **Open the Claude app now?** Say yes.
 
 If it asks for your password, type it even though you see nothing: the terminal does not
@@ -89,6 +90,10 @@ In the Claude app:
 Without choosing a folder, you work in your personal space. For the work one, pick the
 folder `~/augmented-brain/work` with **Choose…**. A **space** is a separate drawer of
 notes: [Spaces](spaces.md) explains them.
+
+No desktop app (on Linux without `apt`, or if you said no)? The installer offers to open
+Claude in the terminal instead, in your work space. Next times:
+`cd ~/augmented-brain/work && claude`.
 
 ## 5. Answer the interview
 
@@ -141,6 +146,8 @@ More phrases, grouped by what you want: [What to say to Claude](phrases.md).
 - **The terminal cannot find a command** (`command not found`, or "not recognized" on
   Windows). Close the terminal and open another one: the new one finds the programs just
   installed.
+- **The installer says it cannot download from GitHub, or you stopped it.** Nothing is
+  half done: paste the command again (in a while, if GitHub is having trouble).
 - **Claude asks you for a paid plan.** Claude Code needs Pro or above.
 - **Something else.** See [Troubleshooting](troubleshooting.md).
 

@@ -30,7 +30,8 @@ Below, **Repositories**: those your open tasks name in `repos:` that hold change
 committed or commits not pushed. That is work that is only on this computer. One whose
 tasks are all parked (or left for some day) is marked "forgotten?", here and on the
 whole map; a clean one never is. A branch never
-pushed counts only if the repository has a remote to push it to. **See all
+pushed counts only if the repository has a remote (a copy on a server,
+such as GitHub) to push it to. **See all
 repositories** leads to the whole map.
 
 ## Tasks
@@ -41,7 +42,9 @@ A task nobody has changed for 14 days is marked "untouched N days".
 
 Open one. Its essentials come first, the other sections folded, and the journal newest
 first. Write in its journal, change its status or next step, tick its steps, park it or
-close it. You can open new tasks too. When a task waits on a person you have a note of,
+close it. You can open new tasks too. A closed task opens again only if you choose a new
+status for it; its journal says it was reopened from the panel. If a status skips
+phases, the journal names them. When a task waits on a person you have a note of,
 "waits on" leads to them.
 
 When you save a task, only what you changed on the page is saved. If Claude changed
@@ -103,7 +106,10 @@ tasks name it. So you know which there are, and a new machine knows which to ask
 **Check the keychain** says whether each one is on this computer. It asks `secret-tool` on
 Linux and `security` on macOS; elsewhere it cannot tell. It asks only when you click,
 because a locked keychain asks you for its password. When the keychain lacks one, the
-page shows the command that stores it (that command asks you for the value).
+page shows the command that stores it (that command asks you for the value). When the
+keychain cannot be asked (on Linux with no desktop session, or a locked keychain on
+macOS), the secret shows "cannot tell here", not missing: check it there before storing
+it again.
 
 You can add a name, or take one off the list (the secret stays in the keychain). Anything
 that looks like a value is refused. The list is the same in every space, and lives in
@@ -136,7 +142,8 @@ empty for no name and no personality.
 Every list the guard answers to, in one page, to read and change:
 
 - **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
-  asks you to type the folder's name.
+  warns that the other lists decide again for it (if one lets Claude commit and push
+  there, it will), and asks you to type the folder's name.
 - **Repositories** each space lets Claude commit in, or ask you about, with a form to add
   or remove. The list where Claude commits and pushes without asking carries a warning,
   and adding to it asks you to tick that you understand.
@@ -153,12 +160,14 @@ saw (something changed them outside this page), a notice says so and shows what 
 what was added and what was removed, list by list, compared with the lists you last
 accepted (when those are no longer among the kept versions, it says so). Then an accept
 button;
-until then a push or merge that the lists allow asks first. Claude cannot open this page:
+until then (or until a new session starts) a commit, push or merge that the lists allow
+asks first. Claude cannot open this page:
 the guard denies it the panel's key. See [The guard](guard.md).
 
 ## Versions
 
-The last 10 versions of your configuration (spaces, guard, remote access, profile),
+The last 10 versions of your configuration (spaces, guard, remote access,
+session settings, profile and your secrets' names),
 kept only on this computer, newest first, with when and who changed it. **What it
 changed** shows the lines of each one; **Go back to this one** makes it the
 configuration again, keeping the one you had as a version first. From another device
@@ -194,7 +203,8 @@ The **search** box at the side looks through the notes of the space and the shar
 titles, summaries and text. A note shows up when it holds every word, in any case, with
 accents or without.
 
-Notes read as text, not as raw Markdown: headings, lists, tables, code and links. A
+Notes read as text, not as raw Markdown (the plain-text format notes are
+written in): headings, lists, tables, code and links. A
 `[[link]]` to another note takes you to it. If a note changes on disk while its page is
 open (Claude wrote in it, say), the page tells you, with a link to see it as it is now.
 

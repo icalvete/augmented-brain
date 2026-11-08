@@ -66,8 +66,9 @@ La fase es el `status` de la tarea. Dos estados más pausan una tarea sin perder
 
 Una tarea pequeña puede saltarse fases (de la definición directa a la ejecución): se puede,
 y el diario dice qué fases se saltó. Una tarea cerrada sigue cerrada: volver a cerrarla se
-rechaza, para que su resultado nunca se pise, y reabrirla pide un motivo, que va al
-diario.
+rechaza, para que su resultado nunca se pise, y reabrirla pide un motivo: Claude te pregunta
+antes, y el motivo va al diario. En el panel, elegir otro estado para una tarea cerrada
+es ese motivo.
 
 ## A quién espera, y qué viene después
 

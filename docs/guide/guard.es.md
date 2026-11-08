@@ -75,15 +75,24 @@ git_ask_repos = ["~/code/tienda"]                      # pregúntame cada vez
 - Un repositorio que está en las dos listas pregunta.
 - Las listas de todos los espacios cuentan juntas: un repositorio es tuyo, no del espacio.
 
+Lo más fácil es la página **Guardia** del panel. Al añadir un repositorio a la lista
+donde Claude hace commit y push sin preguntar, sale un aviso y tienes que marcar una
+casilla que dice que lo entiendes. Añade solo repositorios donde un error se pueda
+deshacer.
+
 **Fusionar una pull request también es un push.** `gh pr merge`, `glab mr merge` y `glab
-mr accept` van por las mismas listas. gh y glab no tienen `-C`, así que Claude escribe
-`cd ~/code/blog && gh pr merge 12`. La carpeta de ese `cd` es el repositorio. La carpeta
-de la sesión, sola, no cuenta, salvo que el propio comando nombre su repositorio
-(`gh pr merge 12 -R dueño/nombre`, o la dirección de la pull request): Claude Code quita
-un `cd` a la carpeta en la que ya está la sesión, así que ahí esa es la forma de
-escribirlo. Un repositorio que nombre el comando (`-R dueño/nombre`,
-la dirección de la pull request) tiene que ser uno de los remotos de ese repositorio, o la
-fusión se para. `gh pr merge --admin`, que se salta la protección de la rama, pregunta
+mr accept` van por las mismas listas. gh y glab no tienen `-C`, así que el comando tiene
+que decir qué repositorio es:
+
+- `cd ~/code/blog && gh pr merge 12`: la carpeta del `cd` es el repositorio.
+- En la carpeta del propio repositorio, Claude Code quita ese `cd` antes de que lo vea el
+  guardia. Ahí Claude nombra el repositorio: `gh pr merge 12 -R dueño/nombre`, o la
+  dirección de la pull request.
+- Un repositorio nombrado así tiene que ser uno de los remotos de la carpeta, o la fusión
+  se para.
+- La carpeta de la sesión, sola, no cuenta.
+
+`gh pr merge --admin`, que se salta la protección de la rama, pregunta
 siempre. Solo cuenta el comando en sí: `gh pr merge` escrito en el cuerpo de una pull
 request o en un mensaje de commit no es una fusión, y tampoco lo son una dirección o un
 `--admin` dentro del texto de `--body` o `--subject`.
@@ -104,7 +113,8 @@ untouchable_repos = ["~/work/core", "~/work/cli-*"]
 - La respuesta dice que el repositorio es intocable y que solo tú puedes cambiarlo. A
   Claude se le dice que no busque otra vía.
 - Se añaden y se quitan en la página **Guardia** del panel. Quitar uno te pide escribir
-  el nombre de la carpeta.
+  el nombre de la carpeta, y te avisa: desde ese momento deciden las otras listas, así que
+  si el repositorio está en `git_allowed_repos`, Claude hará commit y push ahí.
 
 ## Preguntas que dicen de qué van
 
@@ -119,20 +129,21 @@ Hace tres cosas para que las listas sigan siendo tuyas:
 
 - **Pregunta antes de escribir en los ficheros del guardia** (`config.toml`,
   `guard.toml`, `secrets.toml`, `remote.toml`, `session.toml` y los ajustes de Claude Code).
-- **Deniega llegar al panel.** Leer `panel.json` (la clave del panel) con una herramienta
+- **Deniega llegar al panel.** Leer `panel.json` (la llave del panel) con una herramienta
   o un comando, y llamar a una página del panel desde un comando, se deniega: la página
-  Guardia del panel es como tú cambias las listas, y funciona con esa clave.
+  Guardia del panel es como tú cambias las listas, y funciona con esa llave.
 - **Se da cuenta de un cambio que no vio.** El guardia guarda un sello de sus listas: se
   toma al empezar una sesión y al guardar en el panel. Si las listas difieren del sello,
   algo más las cambió, y un commit, push o merge que las listas dejarían pasar pregunta
-  antes, y la página Guardia y `doctor` lo dicen hasta que las aceptes.
-  La página Guardia enseña qué se ha añadido y quitado desde la última vez que las
-  aceptaste.
+  antes, y la página Guardia y `doctor` lo dicen, hasta que las aceptes en la página
+  Guardia o empiece una sesión nueva. Una sesión nueva toma las listas como están, y
+  Claude te dice en su primera respuesta que han cambiado. La página Guardia enseña qué
+  se ha añadido y quitado desde entonces.
 
 Lo que esto no para: un script que Claude escriba en línea (`python -c`, un heredoc)
 todavía puede editar los ficheros, como puede hacer cualquier cosa que tu cuenta pueda.
 El guardia nota entonces el cambio y pregunta antes de un push, pero no lo impidió. Es
-una red de seguridad, no una frontera de seguridad.
+una red contra despistes, no un muro de seguridad.
 
 ## Perfiles de producción y máquinas intocables
 
@@ -140,8 +151,9 @@ Se los das en la entrevista de la primera sesión, o cuando quieras: "el perfil 
 `tienda-prod` es producción", "no toques nunca `db01` sin preguntarme". Claude los guarda
 con la herramienta `safety_save`. Valen en toda la máquina, en todos los espacios.
 
-Claude solo puede añadir a estas listas. Para quitar uno, edita tú la configuración:
-`production_aws_profiles` y `untouchable_hosts` en [Configuración](configuration.es.md).
+Claude solo puede añadir a estas listas. Para quitar uno, usa la página **Guardia** del
+panel, o edita tú `production_aws_profiles` y `untouchable_hosts`
+([Configuración](configuration.es.md)).
 
 Estas listas no van en ninguna copia de seguridad, porque pueden nombrar máquinas de tu
 trabajo. Después de restaurar en una máquina nueva, la siguiente sesión te ofrece volver
@@ -161,6 +173,10 @@ ejecuta se sigue mirando. Pasada la fecha, root vuelve a pararse solo, y
 `augmented-brain doctor` te dice que puedes quitar la línea. La fecha es obligatoria, así
 que ninguna excepción se queda olvidada.
 
+También puedes añadirla en la página **Guardia** del panel. Te pide escribir otra vez el
+nombre de la máquina y te recuerda que hasta esa fecha Claude podrá lanzar comandos como
+root allí, después de que confirmes cada uno. Pon una fecha cercana.
+
 ## Mira por dentro
 
 El guardia lee lo que se ejecuta dentro de otros comandos: `ssh máquina '…'`,
@@ -174,14 +190,16 @@ trabajo).
 
 - **No se puede leer la configuración.** Entonces el guardia no puede saber tus listas.
   Te pregunta antes de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`, y antes de las
-  herramientas que llaman a AWS.
+  herramientas que llaman a AWS. Para volver a una versión que funcionaba, lanza
+  `augmented-brain config history` y después `augmented-brain config restore <número>`
+  ([Versiones de la configuración](config-history.es.md)).
 - **Falta el programa o está roto.** Claude Code para cada comando y cada cambio de
   fichero en vez de dejarlos pasar (Claude Code 2.1.295 o posterior).
 - **`guard.toml` no se puede leer.** El guardia pregunta antes de cada commit y push
   hasta que se arregle o se quite.
 - `augmented-brain doctor` prueba el guardia de verdad y te dice si no está funcionando.
 
-## Siguiente
+## Por dónde seguir
 
 - [Configuración](configuration.es.md): cada lista, con un ejemplo.
 - [Si algo falla](troubleshooting.es.md): cuando el guardia para algo que no debería.

@@ -11,7 +11,8 @@ tareas paradas se amontonan sin que nadie lo note.
 
 ## Lo que repasa
 
-- **El buzón.** Cada captura pasa a tarea, va a un área o al conocimiento, o se descarta.
+- **El buzón,** con lo que otros espacios mandaron aquí, marcado con su origen. Cada
+  captura pasa a tarea, va a un área o al conocimiento, o se descarta.
 - **Las tareas sin tocar desde hace 14 días o más.** Cada una sigue como está, pasa a
   algún día o se cierra.
 - **Las fechas que vencen la semana que viene**: fechas para revisar de las tareas y
@@ -19,8 +20,8 @@ tareas paradas se amontonan sin que nadie lo note.
 
 ## Cuándo sale
 
-Al empezar una sesión, cuando la última revisión tiene 7 días o más y hay algo que
-repasar. Claude te la ofrece una vez, en una línea, cuando no corta otro trabajo. También
+Al empezar una sesión, cuando la última revisión tiene 7 días o más (si aún no hubo
+ninguna, desde la captura o la tarea parada más antigua) y hay algo que repasar. Claude te la ofrece una vez, en una línea, cuando no corta otro trabajo. También
 puedes pedirla cuando quieras: "vamos con la revisión semanal".
 
 ## Con Claude

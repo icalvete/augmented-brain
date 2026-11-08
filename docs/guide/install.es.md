@@ -28,7 +28,7 @@ llevan de la mano.
 ## Linux
 
 **Necesitas:** un PC de 64 bits o un Arm (amd64 o arm64), `curl` o `wget`, y `sha256sum`
-(las distribuciones habituales los traen).
+o `shasum` (las distribuciones habituales los traen).
 
 **Instalar:** abre una terminal (en Ubuntu, `Ctrl + Alt + T`) y pega:
 
@@ -42,7 +42,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    (Fedora), `pacman` (Arch) o `zypper` (openSUSE). Te pide la contraseña.
 2. **Claude Code**, si falta, con el instalador de Anthropic, en `~/.local/bin`. Si ya lo
    tienes pero va atrasado, te ofrece actualizarlo (`claude update`).
-3. **La app de escritorio de Claude**, si la quieres, **solo en Ubuntu y Debian**: desde el
+3. **La app de escritorio de Claude**, si la quieres, **solo en sistemas con `apt`** (Ubuntu,
+   Debian y sus derivadas): desde el
    repositorio apt de Anthropic, que añade por ti; te pide la contraseña. En otras
    distribuciones usas Claude en la terminal.
 4. **El programa**, en `~/.local/bin/augmented-brain`.
@@ -152,12 +153,17 @@ augmented-brain update
 ```
 
 Actualiza el programa y el plugin de Claude Code. Antes, revisa la instalación (y enseña lo
-que encuentre) y hace la copia de seguridad de cada espacio que la tenga; si falla una
-copia, no actualiza nada.
-Después, dice qué sesiones abiertas siguen con la versión vieja y qué tarea está activa
+que falla) y hace la copia de seguridad de cada espacio que la tenga; si falla una copia,
+no actualiza nada (`--force` actualiza igualmente). Si ningún espacio tiene copia, te dice
+que sigue sin una copia a la que volver. Después, dice qué sesiones abiertas siguen con la versión vieja y qué tarea está activa
 en cada espacio: pide a esas sesiones que aparquen su tarea. Volver a lanzar el comando
 de instalación también actualiza, sin esos pasos. `augmented-brain update --plugin`
 actualiza solo el plugin.
+
+Primero pregunta a GitHub cuál es la última versión, una sola vez: si GitHub no responde,
+lo dice y se para. Después, la descarga se intenta tres veces, también por la API de
+GitHub. Si sigue fallando, o el programa no es la versión nueva al acabar, te lo dice y
+termina con error: no ha cambiado nada, vuelve a lanzarlo más tarde.
 
 Después, cierra y abre Claude. Una sesión que estaba abierta sigue con el programa viejo
 hasta que lo hagas, y sus herramientas de augmented brain pueden fallar.
@@ -185,7 +191,9 @@ lo que Claude Code guarda de él (su caché, sus datos y los registros de su ser
 - **Para empezar de cero**, `--all` borra además las notas de cada espacio. Antes te
   enseña cada carpeta con cuántas notas tiene, y te pregunta. Lo que tengas tuyo dentro
   de la carpeta de un espacio se queda. Tu copia de seguridad en GitHub no se borra: te
-  dice cuál es y cómo borrarla.
+  dice cuál es y cómo borrarla. Si un espacio no tiene copia de seguridad, te avisa de que
+  sus notas se perderán para siempre. Para conservarlas, responde que no y configura antes
+  la copia.
 - Claude Code, su app de escritorio, git y la entrada del PATH se quedan: Claude Code
   vive en esa misma carpeta.
 
@@ -199,17 +207,22 @@ Todos los comandos y sus opciones: [Comandos](commands.es.md).
 - **La terminal no encuentra una orden** (`command not found`, o "no se reconoce" en
   Windows). Abre una terminal nueva: la que usaste todavía no ve el PATH nuevo.
 - **Cualquier otra cosa después de instalar.** Lanza `augmented-brain doctor`: te dice qué
-  falta y cómo arreglarlo. También te avisa si Claude Code lleva una segunda memoria
-  propia para las carpetas de tus espacios, y si otros usuarios del ordenador podrían
-  leer tus notas.
+  falta y cómo arreglarlo. También te avisa si un espacio no tiene copia de seguridad, si
+  Claude Code lleva una segunda memoria propia para las carpetas de tus espacios, y si
+  otros usuarios del ordenador podrían leer tus notas. Si la configuración está rota, te
+  dice cómo volver a una versión que funcionaba.
 - **"Este sistema aún no está soportado".** Funciona en Linux, macOS y Windows, en PC de 64
   bits y Arm.
 - **macOS: "Claude Code necesita macOS 13".** Actualiza el Mac en Ajustes del Sistema →
   General → Actualización de software y vuelve a pegar el comando.
 - **macOS: no se abrió la ventana de las herramientas de desarrollo.** Lanza
   `xcode-select --install` y luego otra vez el comando de instalación.
-- **Linux: no te ofrece la app de escritorio.** Solo está para Ubuntu y Debian; usa Claude en
-  la terminal.
+- **Linux: no te ofrece la app de escritorio.** Solo está para sistemas con `apt` (Ubuntu,
+  Debian y sus derivadas); usa Claude en la terminal.
+- **"no puedo descargar … de GitHub".** GitHub tiene problemas. No se ha instalado nada:
+  vuelve a pegar el comando dentro de un rato.
+- **Paraste el instalador a medias** (Ctrl+C, cerraste la ventana). Vuelve a pegar el
+  comando: lo prepara todo desde el principio.
 - **Windows: "Git no se ha instalado".** El instalador prueba primero con winget y luego con
   la descarga del propio Git. Si fallan las dos, instala Git desde
   [git-scm.com](https://git-scm.com/download/win) y vuelve a lanzar el comando. La app de

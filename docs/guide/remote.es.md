@@ -10,7 +10,8 @@ tu máquina y trabajas en ella como si estuvieras delante. Para eso, un programa
 `augmented-brain remote` lo mantiene funcionando por ti. Arranca solo cuando arranca el
 ordenador, y vuelve a arrancar si se para. Se prepara una vez.
 
-Por ahora es para Linux. macOS queda pendiente.
+Por ahora es para Linux con systemd (la parte de Linux que arranca y vigila los
+servicios): no un contenedor, ni WSL sin systemd. macOS y Windows quedan pendientes.
 
 ## Una puerta por espacio
 
@@ -32,7 +33,8 @@ carpeta propia, `~/.config/augmented-brain/remote/<espacio>`.
 augmented-brain remote install
 ```
 
-Escribe el servicio y lo arranca. Luego te dice lo que falta, si falta algo: dos cosas que
+Comprueba que systemd puede mantener el servicio, lo escribe y lo arranca. Si systemd no
+puede, dice por qué y no cambia nada. Luego te dice lo que falta, si falta algo: dos cosas que
 solo puedes hacer tú.
 
 ### 1. Que Claude confíe en la carpeta
@@ -124,6 +126,6 @@ espacio, se quedan, y no se borra nada más. Bórralas a mano si quieres.
 
 ## Los ajustes
 
-`remote.toml`, en la carpeta de configuración: `enabled`, `spaces`, `name_prefix` y
-`permission_mode`. Mira [Configuración](configuration.es.md). Los comandos están en
+`remote.toml`, en la carpeta de configuración: `enabled`, `spaces`, `name_prefix`,
+`permission_mode` y `folders`. Mira [Configuración](configuration.es.md). Los comandos están en
 [Comandos](commands.es.md).
