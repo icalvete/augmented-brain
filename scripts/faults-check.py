@@ -22,6 +22,7 @@ WIN = os.name == "nt"
 EXE = ".exe" if WIN else ""
 ENC = {"encoding": "utf-8", "errors": "replace"}
 good = bad = 0
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # Windows consoles default to a code page
 
 
 def report(name, ok, evidence=""):
@@ -47,6 +48,17 @@ def tools(*names):
     d = tempfile.mkdtemp(prefix="tools-", dir=TMP)
     for n in names:
         real = REAL.get(n) or shutil.which(n)
+        if n == "fake-claude":  # a claude that is there and does nothing: CI has none
+            n, real = "claude", None
+            if WIN:
+                with open(os.path.join(d, "claude.cmd"), "w") as f:
+                    f.write("@exit /b 0\r\n")
+            else:
+                p = os.path.join(d, "claude")
+                with open(p, "w") as f:
+                    f.write("#!/bin/sh\nexit 0\n")
+                os.chmod(p, 0o755)
+            continue
         if not real:
             continue
         if WIN:
@@ -169,7 +181,7 @@ try:
     ab(["panel", "stop"])
 
     print("##### no systemd")
-    code, out = ab(["remote", "install"], cwd=work, tools_=("git", "claude"))
+    code, out = ab(["remote", "install"], cwd=work, tools_=("git", "fake-claude"))
     report("remote install without systemd says so", code != 0 and (has(out, "systemd") or has(out, "not available")), out.strip()[-160:])
     remote_toml = os.path.join(CFG, "remote.toml")
     report("…and leaves remote access off", not os.path.exists(remote_toml) or "enabled = true" not in open(remote_toml, encoding="utf-8").read(), "")
