@@ -101,6 +101,7 @@
 augmented-brain config history 3
 augmented-brain config restore 3</code></pre>
   <p><code>config history</code> lista las versiones; con un número, enseña qué cambió esa. <code>config restore</code> vuelve a una. Un comando lo puede lanzar el asistente, así que volver de esta forma nunca acepta por ti listas nuevas del guardia: hasta que las aceptes en la página Guardia del panel, o empieces una sesión nueva, el guardia pregunta antes de cada commit, push o mezcla que antes dejaba pasar. Mira <a href="commands.es.html#augmented-brain-config-history">Comandos</a>.</p>
+  <p>Los dos funcionan aunque <code>config.toml</code> esté roto y no arranque nada más: es justo cuando más ayuda volver atrás. <code>augmented-brain doctor</code> lo dice entonces, y te lleva a ellos.</p>
   <p><code>augmented-brain doctor</code> tiene una línea con cuántas versiones se guardan, y avisa cuando la configuración ha cambiado después de la más reciente.</p>
   <nav class="pager" aria-label="Anterior / Siguiente">
     <a class="prev" href="panel-remote.es.html"><span>← Anterior</span>El panel desde otro dispositivo</a>

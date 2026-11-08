@@ -352,8 +352,8 @@ que el programa no puede leer se rechaza, y no cambia nada. Si las listas del gu
 quedan distintas de las que aceptaste, el guardia pregunta antes de cada commit, push o
 mezcla que antes dejaba pasar, hasta que las aceptes en la página Guardia del panel o
 empieces una sesión nueva: un comando lo puede lanzar el asistente, así que nunca las
-acepta por ti. Volver desde la página Versiones del panel sí las acepta. No tiene
-opciones.
+acepta por ti. Volver desde la página Versiones del panel sí las acepta. Funciona aunque
+`config.toml` esté roto, igual que `config history`. No tiene opciones.
 
 ## augmented-brain update
 
