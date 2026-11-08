@@ -90,7 +90,8 @@ Heavier checks, before a release or when you touch what they cover:
   file for zsh and bash, macOS 13 or later, Apple's stub git), with fakes for `sw_vers`
   and `xcode-select`. CI runs it on every Mac row; on a Mac without Go, give it a built
   release with `AB_CHECK_RELEASE`.
-- `scripts/install-check.ps1`: the same for Windows and `install.ps1`, 14 checks. It
+- `scripts/install-check.ps1`: the same for Windows and `install.ps1`, with the update
+  from the release published last. It
   installs Git, Claude Code and the program for whoever runs it: CI runs it on
   windows-latest (`windows.yml`), and so can the Windows VM from its `clean` snapshot.
 - `scripts/faults-check.py`: what the program does when something it uses is missing,
