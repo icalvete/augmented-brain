@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **A backup no longer hangs on a network that half works.** git had no time limit, and
+  a backup holds a lock while it runs: one left hanging (the one at the end of a
+  session, in the background) made every later backup wait behind it, including the one
+  `update` makes first. Now each git call of a backup or restore stops after 3 minutes
+  without an answer (and over https, on a transfer slower than 1 KB a second for a
+  minute), and a backup waits at most 10 minutes for another one; both say why.
 - **An update whose download fails no longer looks done.** `augmented-brain update` piped
   the installer from GitHub straight into `sh`: when GitHub answered 504, as it did for
   over an hour on 8 November, `sh` got an empty script, the update "worked" and nothing

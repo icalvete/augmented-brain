@@ -6,6 +6,7 @@
 package backup
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -33,15 +34,36 @@ const MetaDir = ".augmented-brain"
 // through it: with GIT_TERMINAL_PROMPT=0, a repository that wants a password fails at
 // once instead of waiting for an answer nobody will type (the automatic backup has no
 // terminal).
+//
+// Nor does it wait forever for a network that half works: each call ends after
+// GitTimeout, and over https git gives up on a transfer slower than 1 KB a second for a
+// minute. A backup left hanging held the backup lock, so every later backup (the one at
+// the end of each session, the one before an update) waited behind it for good.
 func runGit(args ...string) (string, error) {
-	cmd := exec.Command("git", args...)
+	ctx, cancel := context.WithTimeout(context.Background(), GitTimeout)
+	defer cancel()
+	args = append([]string{"-c", "http.lowSpeedLimit=1000", "-c", "http.lowSpeedTime=60"}, args...)
+	cmd := exec.CommandContext(ctx, "git", args...)
+	// A program git started (ssh) may keep its output open after git is stopped: stop
+	// waiting for it shortly after.
+	cmd.WaitDelay = 5 * time.Second
 	// Never wait for a password; only the usual ways to reach a repository (no ext::);
 	// never take a folder above the temporary one for a repository.
 	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0", "GIT_ALLOW_PROTOCOL=file:git:https:ssh",
 		"GIT_CEILING_DIRECTORIES="+os.TempDir())
 	out, err := cmd.CombinedOutput()
+	if ctx.Err() == context.DeadlineExceeded {
+		err = fmt.Errorf("stopped after %s without an answer: is the network or the repository down? (%v)", GitTimeout, err)
+	}
 	return string(out), err
 }
+
+// GitTimeout is the longest a single git call of a backup or restore may take.
+var GitTimeout = 3 * time.Minute
+
+// LockWait is the longest a backup waits for another one to finish. A backup's git calls
+// end within GitTimeout each, so one still holding the lock after this is stuck.
+var LockWait = 10 * time.Minute
 
 // git runs git in dir and returns its output; an error carries the command and what
 // git said.
@@ -138,7 +160,10 @@ func Run(c *config.Config, s *config.Space, host string) (*Result, error) {
 	if s.Backup == "" {
 		return nil, fmt.Errorf("space %s has no backup yet: run `augmented-brain backup setup <url of a private repository>`", s.Name)
 	}
-	unlock, err := filelock.Lock(filepath.Join(c.Dir, backupLock))
+	unlock, err := filelock.LockWithin(filepath.Join(c.Dir, backupLock), LockWait)
+	if errors.Is(err, filelock.ErrBusy) {
+		return nil, fmt.Errorf("another backup has been running for over %s and did not finish: try again later", LockWait)
+	}
 	if err != nil {
 		return nil, err
 	}

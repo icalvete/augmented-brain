@@ -2,6 +2,13 @@
 
 ## Sin publicar
 
+- **La copia de seguridad ya no se queda colgada con la red a medias.** git no tenía
+  tiempo máximo, y una copia mantiene un bloqueo mientras corre: una colgada (la del
+  final de una sesión, en segundo plano) hacía esperar detrás a todas las siguientes,
+  también a la que hace `update` antes de actualizar. Ahora cada llamada a git de una
+  copia o una restauración se para tras 3 minutos sin respuesta (y por https, con una
+  transferencia de menos de 1 KB por segundo durante un minuto), y una copia espera
+  como mucho 10 minutos a otra; las dos dicen por qué.
 - **Una actualización cuya descarga falla ya no parece hecha.** `augmented-brain update`
   pasaba el instalador de GitHub directamente a `sh`: cuando GitHub respondía 504, como
   pasó durante más de una hora el 8 de noviembre, `sh` recibía un script vacío, la

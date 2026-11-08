@@ -3498,6 +3498,11 @@ folder of the space to see why:
 
 - **No network, or no access.** Check you can reach the repository. On GitHub, log in
   with `gh auth login`.
+- **"Stopped after 3m0s without an answer".** The network or the repository did not
+  answer, so the backup gave up instead of waiting for good. Try again when the network
+  works; the next backup does not wait behind this one.
+- **"Another backup has been running for over 10m0s".** A backup that no longer
+  answers is in the way. Try again later.
 - **A secret in a note.** It names the file. Take the secret out, then back up again.
   `augmented-brain check` names those files too.
 - **Two machines changed the same note.** It names the notes, and the folder where to
