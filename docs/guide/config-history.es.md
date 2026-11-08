@@ -57,5 +57,8 @@ forma nunca acepta por ti listas nuevas del guardia: hasta que las aceptes en la
 Guardia del panel, o empieces una sesión nueva, el guardia pregunta antes de cada commit,
 push o mezcla que antes dejaba pasar. Mira [Comandos](commands.es.md#augmented-brain-config-history).
 
+Los dos funcionan aunque `config.toml` esté roto y no arranque nada más: es justo cuando
+más ayuda volver atrás. `augmented-brain doctor` lo dice entonces, y te lleva a ellos.
+
 `augmented-brain doctor` tiene una línea con cuántas versiones se guardan, y avisa cuando
 la configuración ha cambiado después de la más reciente.

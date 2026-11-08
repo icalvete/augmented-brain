@@ -8,6 +8,10 @@
   `update` makes first. Now each git call of a backup or restore stops after 3 minutes
   without an answer (and over https, on a transfer slower than 1 KB a second for a
   minute), and a backup waits at most 10 minutes for another one; both say why.
+- **Going back works when the configuration is broken.** `config history` and `config
+  restore` refused to run when `config.toml` did not load, which is exactly when going
+  back to a version helps. Now they work on the files as they are, and `doctor` points
+  to them when the configuration is broken.
 - **An install stopped half way can be run again.** `init` wrote the configuration
   after the first space and then added the second: stopped in between (Ctrl+C, a folder
   it could not make), it left a configuration without `personal`, and the installer,

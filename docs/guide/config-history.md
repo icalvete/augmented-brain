@@ -56,5 +56,8 @@ this way never accepts new guard lists for you: until you accept them in the pan
 Guard page, or start a new session, the guard asks before every commit, push or merge it
 used to allow. See [Commands](commands.md#augmented-brain-config-history).
 
+Both work even when `config.toml` is broken and nothing else will start: that is when
+going back helps most. `augmented-brain doctor` then says so, and points to them.
+
 `augmented-brain doctor` has a line with how many versions are kept, and says when the
 configuration changed after the newest one.

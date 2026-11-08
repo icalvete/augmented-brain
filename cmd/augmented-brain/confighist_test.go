@@ -89,3 +89,45 @@ func TestConfigHistoryAndRestore(t *testing.T) {
 		t.Errorf("bare config: %d", code)
 	}
 }
+
+// A config.toml that no longer loads is when going back matters most: config history
+// still lists the versions (in the file's own language), config restore brings back one
+// that works, and doctor points to them.
+func TestConfigRestoreFixesABrokenConfig(t *testing.T) {
+	_, cfg := home(t)
+	var out, errOut bytes.Buffer
+	run([]string{"space"}, nil, &out, &errOut) // the first version: one that works
+	good, err := os.ReadFile(filepath.Join(cfg, config.FileName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	broken := strings.Replace(string(good), "[spaces.", "[[spaces.", 1)
+	if err := os.WriteFile(filepath.Join(cfg, config.FileName), []byte(broken), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := config.Load(cfg); err == nil {
+		t.Fatal("the configuration still loads")
+	}
+
+	out.Reset()
+	errOut.Reset()
+	if code := run([]string{"doctor"}, nil, &out, &errOut); !strings.Contains(out.String()+errOut.String(), "config restore") {
+		t.Errorf("doctor does not point to config restore: %d\n%s%s", code, out.String(), errOut.String())
+	}
+
+	out.Reset()
+	errOut.Reset()
+	if code := run([]string{"config", "history"}, nil, &out, &errOut); code != 0 || !strings.Contains(out.String(), " 1  ") || !strings.Contains(out.String(), "Versiones") {
+		t.Fatalf("history with a broken config: %d %q %q", code, out.String(), errOut.String())
+	}
+	vs, _ := confighistory.List(cfg)
+	n := strconv.Itoa(len(vs))
+	out.Reset()
+	errOut.Reset()
+	if code := run([]string{"config", "restore", n}, nil, &out, &errOut); code != 0 {
+		t.Fatalf("restore with a broken config: %d %q %q", code, out.String(), errOut.String())
+	}
+	if _, err := config.Load(cfg); err != nil {
+		t.Errorf("still broken after restore: %v", err)
+	}
+}

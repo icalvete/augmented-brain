@@ -9,6 +9,10 @@
   copia o una restauración se para tras 3 minutos sin respuesta (y por https, con una
   transferencia de menos de 1 KB por segundo durante un minuto), y una copia espera
   como mucho 10 minutos a otra; las dos dicen por qué.
+- **Volver atrás funciona con la configuración rota.** `config history` y `config
+  restore` no arrancaban si `config.toml` no se podía leer, que es justo cuando volver a
+  una versión ayuda. Ahora trabajan con los ficheros tal como están, y `doctor` te lleva
+  a ellos cuando la configuración está rota.
 - **Una instalación cortada a medias se puede repetir.** `init` escribía la
   configuración tras el primer espacio y después añadía el segundo: si se cortaba entre
   medias (Ctrl+C, una carpeta que no podía crear), dejaba una configuración sin

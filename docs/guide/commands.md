@@ -341,7 +341,8 @@ program cannot read is refused, and nothing changes. If the guard's lists end up
 different from the ones you accepted, the guard asks before every commit, push or merge
 it used to allow, until you accept them in the panel's Guard page or start a new session:
 a command can be run by the assistant, so it never accepts them for you. Going back from
-the panel's Versions page does accept them. It takes no options.
+the panel's Versions page does accept them. It works even when `config.toml` is broken,
+like `config history`. It takes no options.
 
 ## augmented-brain update
 
