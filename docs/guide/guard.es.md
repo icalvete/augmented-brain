@@ -78,7 +78,10 @@ git_ask_repos = ["~/code/tienda"]                      # pregúntame cada vez
 **Fusionar una pull request también es un push.** `gh pr merge`, `glab mr merge` y `glab
 mr accept` van por las mismas listas. gh y glab no tienen `-C`, así que Claude escribe
 `cd ~/code/blog && gh pr merge 12`. La carpeta de ese `cd` es el repositorio. La carpeta
-de la sesión, sola, no cuenta. Un repositorio que nombre el comando (`-R dueño/nombre`,
+de la sesión, sola, no cuenta, salvo que el propio comando nombre su repositorio
+(`gh pr merge 12 -R dueño/nombre`, o la dirección de la pull request): Claude Code quita
+un `cd` a la carpeta en la que ya está la sesión, así que ahí esa es la forma de
+escribirlo. Un repositorio que nombre el comando (`-R dueño/nombre`,
 la dirección de la pull request) tiene que ser uno de los remotos de ese repositorio, o la
 fusión se para. `gh pr merge --admin`, que se salta la protección de la rama, pregunta
 siempre. Solo cuenta el comando en sí: `gh pr merge` escrito en el cuerpo de una pull
@@ -123,6 +126,8 @@ Hace tres cosas para que las listas sigan siendo tuyas:
   toma al empezar una sesión y al guardar en el panel. Si las listas difieren del sello,
   algo más las cambió, y un commit, push o merge que las listas dejarían pasar pregunta
   antes, y la página Guardia y `doctor` lo dicen hasta que las aceptes.
+  La página Guardia enseña qué se ha añadido y quitado desde la última vez que las
+  aceptaste.
 
 Lo que esto no para: un script que Claude escriba en línea (`python -c`, un heredoc)
 todavía puede editar los ficheros, como puede hacer cualquier cosa que tu cuenta pueda.

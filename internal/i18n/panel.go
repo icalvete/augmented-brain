@@ -70,6 +70,34 @@ var panelMessages = map[string]msg{
 		en: "The guard's lists are not the ones you last saw: something changed them outside this page (you by hand, or an assistant). Until you accept them, a commit, push or merge that the lists allow asks first.",
 		es: "Las listas del guardia no son las que viste por última vez: algo las cambió fuera de esta página (tú a mano, o un asistente). Hasta que las aceptes, un commit, push o merge que las listas permiten pregunta antes.",
 	},
+	"panel.guard.changes": {
+		en: "What changed since you last saw them (+ added, - removed):",
+		es: "Qué ha cambiado desde la última vez que las viste (+ añadido, - quitado):",
+	},
+	"panel.guard.changes.unknown": {
+		en: "The lists you last saw are not among the kept versions of the configuration, so what changed cannot be shown: read the lists below before accepting.",
+		es: "Las listas que viste por última vez no están entre las versiones guardadas de la configuración, así que no se puede enseñar qué cambió: lee las listas de abajo antes de aceptar.",
+	},
+	"panel.guard.allowed.warn": {
+		en: "Careful: in these repositories the assistant commits and pushes without asking you each time. Add only repositories where a mistake can be undone, and where pushing publishes nothing you would regret.",
+		es: "Cuidado: en estos repositorios el asistente hace commit y push sin preguntarte cada vez. Añade solo repositorios donde un error se pueda deshacer y donde un push no publique nada de lo que te arrepientas.",
+	},
+	"panel.guard.allowed.confirm": {
+		en: "I understand the assistant will commit and push here without asking",
+		es: "Entiendo que el asistente hará commit y push aquí sin preguntar",
+	},
+	"panel.guard.err.allowedconfirm": {
+		en: "to let the assistant commit and push without asking, tick the box that says you understand",
+		es: "para dejar que el asistente haga commit y push sin preguntar, marca la casilla que dice que lo entiendes",
+	},
+	"panel.guard.untouchable.removewarn": {
+		en: "Once removed, the other lists decide again for this repository: if it is in one where the assistant may commit and push, it will.",
+		es: "Al quitarlo, las demás listas vuelven a decidir sobre este repositorio: si está en una donde el asistente puede hacer commit y push, lo hará.",
+	},
+	"panel.guard.root.warn": {
+		en: "Careful: until that date, on that machine, the assistant may run commands as root, the most powerful user, after you confirm each one. Keep the date close.",
+		es: "Cuidado: hasta esa fecha, en esa máquina, el asistente podrá lanzar comandos como root, el usuario con más poder, después de que confirmes cada uno. Pon una fecha cercana.",
+	},
 	"panel.guard.accept": {
 		en: "I have seen them, accept",
 		es: "Las he visto, aceptar",

@@ -6,11 +6,23 @@
   tenía copia de seguridad. Ahora `doctor` lo dice en cada espacio, con cómo
   configurarla; `update` avisa cuando sigue sin una copia a la que volver; y
   `uninstall --all` avisa de que las notas sin copia se perderán para siempre.
+- **Fusionar desde la carpeta del propio repositorio funciona.** Claude Code quita un
+  `cd` a la carpeta en la que ya está la sesión antes de que el guardia vea el comando,
+  así que `cd <repo> && gh pr merge` escrito ahí llegaba como un `gh pr merge` a secas y
+  se paraba. Ahora el guardia acepta también el repositorio que nombra el propio comando
+  (`-R dueño/nombre`, o la dirección de la pull request) cuando es el de esa carpeta, y
+  su mensaje lo dice.
 - **`remote install` sin systemd no cambia nada.** En una máquina sin los servicios de
   usuario de systemd (un contenedor, WSL sin systemd) escribía los servicios y encendía
   el acceso remoto antes de que systemd los rechazara, y después `doctor` lo daba por
   roto. Ahora pregunta antes a systemd y se para ahí, diciendo por qué; y el acceso
   remoto solo se enciende cuando systemd ha aceptado los servicios.
+- **La página Guardia enseña qué cambió y avisa donde importa.** Cuando las listas del
+  guardia cambian fuera de la página, ahora enseña lo añadido y lo quitado, lista por
+  lista, desde las que aceptaste por última vez, antes de que las aceptes. La lista
+  donde Claude hace commit y push sin preguntar lleva un aviso, y añadir a ella te pide
+  marcar que lo entiendes; quitar un repositorio intocable y añadir una excepción de root
+  dicen lo que permiten.
 - **Un llavero al que no se puede preguntar ya no cuenta como «falta».** En Linux sin
   sesión de escritorio, `secret-tool` falla igual que cuando el secreto no está, así que
   `restore` y la página Secretos del panel te pedían guardar otra vez secretos que ya

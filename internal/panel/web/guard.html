@@ -4,6 +4,9 @@
 {{if .Problem}}<p class="flash err" role="alert">{{tf "guard.problem" .Problem}}</p>{{end}}
 {{if .Changed}}<div class="flash warn" role="alert">
   <p>{{t "guard.changed"}}</p>
+  {{if .Changes}}<p>{{t "guard.changes"}}</p>
+  <ul class="plain">{{range .Changes}}<li><strong>{{.List}}</strong>{{range .Added}} <span class="d-add">+ <code>{{.}}</code></span>{{end}}{{range .Removed}} <span class="d-del">- <code>{{.}}</code></span>{{end}}</li>{{end}}</ul>
+  {{else if not .Known}}<p>{{t "guard.changes.unknown"}}</p>{{end}}
   <form method="post" action="{{$.Base}}/guard/accept" class="stack">
     {{template "fields" (fields $)}}
     <button type="submit" class="small">{{t "guard.accept"}}</button>
@@ -15,6 +18,7 @@
 {{if .Untouchable}}<ul class="cards">{{range .Untouchable}}<li class="card">
   <div class="title"><code>{{.}}</code></div>
   <details class="said"><summary>{{t "guard.remove"}}</summary>
+    <p class="flash warn">{{t "guard.untouchable.removewarn"}}</p>
     <form method="post" action="{{$.Base}}/guard/list" class="stack">
       {{template "fields" (fields $ "list" "untouchable" "op" "remove" "value" .)}}
       <label>{{t "guard.typename"}} <input name="confirm" required maxlength="200" autocomplete="off"></label>
@@ -32,6 +36,7 @@
 <h2>{{tf "guard.repos" $sp}}</h2>
 <h3>{{t "guard.allowed"}}</h3>
 <p class="hint">{{t "guard.allowed.hint"}}</p>
+<p class="flash warn">{{t "guard.allowed.warn"}}</p>
 {{if .Allowed}}<ul class="plain">{{range .Allowed}}<li><code>{{.}}</code>
   <form method="post" action="{{$.Base}}/guard/list" class="inline">
     {{template "fields" (fields $ "list" "allowed" "op" "remove" "space" $sp "value" .)}}
@@ -40,6 +45,7 @@
 <form method="post" action="{{$.Base}}/guard/list" class="stack">
   {{template "fields" (fields $ "list" "allowed" "op" "add" "space" $sp)}}
   <label>{{t "guard.repo"}} <input name="value" required maxlength="500"></label>
+  <label><input type="checkbox" name="confirm" value="yes" required> {{t "guard.allowed.confirm"}}</label>
   <button type="submit">{{t "add"}}</button>
 </form>
 <h3>{{t "guard.ask"}}</h3>
@@ -64,6 +70,7 @@
     {{template "fields" (fields $ "op" "remove" "value" .Entry)}}
     <button type="submit" class="small">{{t "guard.remove"}}</button>
   </form></li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.root.none"}}</p>{{end}}
+<p class="flash warn">{{t "guard.root.warn"}}</p>
 <form method="post" action="{{$.Base}}/guard/root" class="stack">
   {{template "fields" (fields $ "op" "add")}}
   <label>{{t "f.host"}} <input name="host" required maxlength="200" autocomplete="off"></label>

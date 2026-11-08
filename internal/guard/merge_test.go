@@ -165,7 +165,16 @@ func TestMergeLikePush(t *testing.T) {
 		{app, "gh pr merge 12", Deny},
 		{ops, "gh pr merge 12", Deny},
 		{lab, "glab mr merge 7", Deny},
-		{app, "gh pr merge 12 -R acme/app", Deny},
+		// The repository named in the command itself counts, as a cd would: Claude Code
+		// drops a cd to the folder the session is already in before the guard sees it.
+		{app, "gh pr merge 12 -R acme/app", Allow},
+		{app, "gh pr merge 12 --repo=Acme/app --rebase", Allow},
+		{app, "gh pr merge https://github.com/acme/app/pull/12", Allow},
+		{ops, "gh pr merge 12 -R acme/ops", Ask},
+		{app, "gh pr merge 12 -R acme/other", Deny},    // not this folder's repository
+		{other, "gh pr merge 12 -R acme/other", Deny},  // its repository, but not in the lists
+		{app, "GH_REPO=acme/app gh pr merge 12", Deny}, // a variable is not the command's words
+		{filepath.Join(app, "sub"), "gh pr merge 12 -R acme/app", Deny},
 		{app, "cd . && gh pr merge 12", Allow}, // named, if only as .
 		{app, "cd && gh pr merge 12", Deny},    // the home folder, not named
 		{app, "cd ~/code/app && popd && gh pr merge 12", Deny},

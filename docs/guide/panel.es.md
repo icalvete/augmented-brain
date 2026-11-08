@@ -142,9 +142,11 @@ Todas las listas a las que responde el guardia, en una página, para leerlas y c
 - **Repositorios intocables**, donde Claude nunca hace commit, push ni merge. Quitar uno
   te pide escribir el nombre de la carpeta.
 - **Repositorios** donde cada espacio deja que Claude haga commit, o te pregunte, con un
-  formulario para añadir o quitar.
+  formulario para añadir o quitar. La lista donde Claude hace commit y push sin preguntar
+  lleva un aviso, y añadir a ella te pide marcar que lo entiendes.
 - **Excepciones de root**, con la fecha en que acaba cada una (las que ya acabaron se
-  marcan). Añadir una te pide escribir otra vez el nombre de la máquina.
+  marcan). Añadir una avisa de lo que permite y te pide escribir otra vez el nombre de la
+  máquina.
 - **Perfiles de producción** y **máquinas intocables**.
 - **El modelo de tus sesiones** (`preferred_model` en `session.toml`): si una sesión
   responde con otro, Claude te lo dice. Debajo, lo que Claude Code dijo de su modelo en el
@@ -152,8 +154,10 @@ Todas las listas a las que responde el guardia, en una página, para leerlas y c
 - Los ficheros que Claude no puede cambiar por su cuenta.
 
 Tus comentarios de `config.toml` se quedan donde están. Si las listas no son las que viste
-por última vez (algo las cambió fuera de esta página), un aviso lo dice con un botón para
-aceptarlas; hasta entonces un push o merge que las listas permiten pregunta antes. Claude
+por última vez (algo las cambió fuera de esta página), un aviso lo dice y enseña qué
+cambió: lo añadido y lo quitado, lista por lista, frente a las listas que aceptaste por
+última vez (si esas ya no están entre las versiones guardadas, lo dice). Después, un botón
+para aceptarlas; hasta entonces un push o merge que las listas permiten pregunta antes. Claude
 no puede abrir esta página: el guardia le niega la clave del panel. Mira
 [El guardia](guard.md).
 

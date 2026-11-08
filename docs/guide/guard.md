@@ -75,7 +75,9 @@ git_ask_repos = ["~/code/shop"]                        # ask me each time
 **Merging a pull request is a push too.** `gh pr merge`, `glab mr merge` and `glab mr
 accept` follow the same lists. gh and glab have no `-C`, so Claude writes `cd ~/code/blog
 && gh pr merge 12`. The folder in that `cd` is the repository; the folder the session is
-in does not count alone. A repository the command names (`-R owner/name`, the pull
+in does not count alone, unless the command names its repository itself (`gh pr merge 12
+-R owner/name`, or the pull request's address): Claude Code drops a `cd` to the folder the
+session is already in, so there that is the way to write it. A repository the command names (`-R owner/name`, the pull
 request's address) must be one of that repository's remotes, or the merge is stopped.
 `gh pr merge --admin`, which skips the branch's protection, always asks. Only the command
 itself counts: `gh pr merge` written in a pull request's body or a commit message is not
@@ -120,6 +122,7 @@ three things so that the lists stay yours:
   when a session starts and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
   let through asks first, and the Guard page and `doctor` say so until you accept them.
+  The Guard page shows what was added and removed since you last accepted them.
 
 What this does not stop: a script that Claude writes in line (`python -c`, a heredoc) can
 still edit the files, as it can anything your account can. The guard then notices the
