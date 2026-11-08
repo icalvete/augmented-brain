@@ -115,6 +115,10 @@ Mientras no se puede leer el fichero, el guardia no conoce tus listas. Así que 
 pregunta antes de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`.
 `augmented-brain doctor` te dice qué está mal.
 
+Para volver a una versión que funcionaba, lanza `augmented-brain config history` y
+después `augmented-brain config restore <número>`: los dos funcionan aunque el fichero
+esté roto. Lo tienes en [Versiones de la configuración](config-history.es.md).
+
 ## `secrets.toml`
 
 Junto a `config.toml`, `secrets.toml` nombra los secretos que guardas en el llavero del
@@ -159,11 +163,10 @@ preferred_model = "opus"
 ```
 
 - `preferred_model`: el modelo que esperas que responda (`opus`, `sonnet`, `haiku` o un
-  nombre completo como `claude-opus-5-5`). Si una sesión responde con otro, Claude te lo
-  dice: al empezar, si Claude Code dice con qué modelo arranca, y si no, después de una
-  respuesta (en una sesión nueva, como tarde la segunda: la primera aún no está en disco
-  cuando Claude Code pregunta), y otra vez si el modelo cambia a mitad. Una vez por sesión y
-  modelo. Nunca cambia el modelo por su cuenta: lo cambias tú, con `/model` o con el
+  nombre completo como `claude-opus-5-5`). Si una sesión responde con otro modelo, Claude
+  te lo dice. Lo mira al empezar, si Claude Code dice con qué modelo arranca. Si no, lo
+  mira después de una respuesta: en una sesión nueva, como tarde la segunda. Y otra vez si
+  el modelo cambia. Una vez por sesión y modelo. Nunca cambia el modelo por su cuenta: lo cambias tú, con `/model` o con el
   selector de modelo.
 
 La página Guardia del panel lo escribe, y el guardia pregunta antes de que Claude lo
@@ -182,15 +185,16 @@ enabled = true
 spaces = ["personal", "trabajo"]
 name_prefix = "mi-portatil"
 permission_mode = "default"
-folders = { trabajo = "~/trabajo/clientes" }
+folders = { trabajo = "~/code/clientes" }
 ```
 
 Todos son opcionales:
 
 - `enabled`: si el acceso remoto está puesto. `remote install` escribe `true` y `remote
-  uninstall` escribe `false`. Solo cuando es `true` lo revisa `doctor`.
+  uninstall` escribe `false`. Solo cuando es `true` revisa `doctor` los
+  servicios; un fichero que no puede leer es un aviso siempre.
 - `spaces`: los espacios que tienen una sesión, cada uno en un servicio propio. Por
-  defecto, el `default_space`.
+  defecto, el `default_space`, o el único espacio si solo hay uno.
 - `name_prefix`: las sesiones se llaman `<name_prefix>-<espacio>`, como
   `mi-portatil-personal`. Una palabra sencilla: letras, cifras, punto, guion y guion
   bajo. Por defecto, el nombre del ordenador.
@@ -216,12 +220,15 @@ servicios lo recojan.
 - `migrations/`: una copia completa de las notas antes de que una versión nueva las
   cambiara de formato.
 - `panel.json` y `panel.lock`: dónde escucha el panel mientras está en marcha, y su
-  bloqueo. El guardia nunca deja que Claude lea `panel.json`: guarda la clave del panel.
+  bloqueo. El guardia nunca deja que Claude lea `panel.json`: guarda la llave del panel.
 - `remote/<espacio>/`: la carpeta donde arranca el servicio de acceso remoto de un espacio,
   solo si el espacio no tiene carpetas de trabajo. Pasa a ser carpeta de trabajo de ese
   espacio.
 - `review-<espacio>.draft`: una revisión semanal empezada en el panel y aún sin
   terminar.
+- `history/`: las 10 últimas versiones de tu configuración, con quién las cambió. Solo en
+  este ordenador, nunca va a la copia de seguridad. Lo tienes en
+  [Versiones de la configuración](config-history.es.md).
 
 ## Variables de entorno
 
@@ -241,8 +248,9 @@ El instalador lee alguna más:
 - `AB_NO_DESKTOP=1`: no ofrece la app de escritorio de Claude.
 - `AB_INSTALL_DIR`: dónde poner el programa. Por defecto, `~/.local/bin`.
 - `AB_NO_INIT=1`: solo instala el programa, sin preparar nada.
-- `AB_VERSION`, `AB_RELEASE_URL` y `AB_MARKETPLACE`: para pruebas: qué versión, dónde
-  están los ficheros de la versión publicada y de dónde sale el plugin.
+- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY` y `AB_MARKETPLACE`: para
+  pruebas: qué versión, dónde están los ficheros de la versión publicada, la API de GitHub
+  a la que recurrir, la espera entre intentos y de dónde sale el plugin.
 
 ## Los ajustes de Claude Code
 

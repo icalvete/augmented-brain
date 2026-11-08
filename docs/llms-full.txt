@@ -74,7 +74,8 @@ It asks a few questions. To accept what it suggests, just press Enter.
 1. **The language.** English or Spanish.
 2. **Whatever is missing**, if anything: git (keeps the history of your notes), Claude
    Code and the Claude desktop app. It tells you what each one is for before installing it.
-   If you already had Claude Code but it is behind, it offers to update it.
+   If you already had Claude Code but it is behind, it offers to update it. If Claude Code
+   is missing, it also asks whether you have a paid plan; a no does not stop it.
 3. **Open the Claude app now?** Say yes.
 
 If it asks for your password, type it even though you see nothing: the terminal does not
@@ -97,6 +98,10 @@ In the Claude app:
 Without choosing a folder, you work in your personal space. For the work one, pick the
 folder `~/augmented-brain/work` with **Choose…**. A **space** is a separate drawer of
 notes: [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html) explains them.
+
+No desktop app (on Linux without `apt`, or if you said no)? The installer offers to open
+Claude in the terminal instead, in your work space. Next times:
+`cd ~/augmented-brain/work && claude`.
 
 ## 5. Answer the interview
 
@@ -149,6 +154,8 @@ More phrases, grouped by what you want: [What to say to Claude](https://icalvete
 - **The terminal cannot find a command** (`command not found`, or "not recognized" on
   Windows). Close the terminal and open another one: the new one finds the programs just
   installed.
+- **The installer says it cannot download from GitHub, or you stopped it.** Nothing is
+  half done: paste the command again (in a while, if GitHub is having trouble).
 - **Claude asks you for a paid plan.** Claude Code needs Pro or above.
 - **Something else.** See [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html).
 
@@ -191,8 +198,8 @@ walks you through it.
 
 ## Linux
 
-**You need:** a 64-bit PC or Arm (amd64 or arm64), `curl` or `wget`, and `sha256sum` (all
-usual distributions have them).
+**You need:** a 64-bit PC or Arm (amd64 or arm64), `curl` or `wget`, and `sha256sum` or
+`shasum` (all usual distributions have them).
 
 **Install:** open a terminal (on Ubuntu, `Ctrl + Alt + T`) and paste:
 
@@ -206,7 +213,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    (Fedora), `pacman` (Arch) or `zypper` (openSUSE). It asks for your password.
 2. **Claude Code**, if missing, with Anthropic's own installer, into `~/.local/bin`. If
    you have it but it is behind, it offers to update it (`claude update`).
-3. **The Claude desktop app**, if you want it, **only on Ubuntu and Debian**: from
+3. **The Claude desktop app**, if you want it, **only on systems with `apt`** (Ubuntu,
+   Debian and their family): from
    Anthropic's apt repository, which it adds for you; it asks for your password. On other
    distributions you use Claude in the terminal.
 4. **The program**, into `~/.local/bin/augmented-brain`.
@@ -315,11 +323,16 @@ augmented-brain update
 ```
 
 It updates the program and the Claude Code plugin. Before, it checks the installation
-(and shows what it finds) and backs up every space that has a backup; if a backup fails,
-it updates nothing. After,
-it says which open sessions still run the old version and which task each space has
+(and shows what fails) and backs up every space that has a backup; if a backup fails,
+it updates nothing (`--force` updates anyway). If no space has a backup, it says that it
+goes ahead with no copy to go back to. After, it says which open sessions still run the old version and which task each space has
 active: ask those sessions to park their task. Running the install command again also
 updates, without those steps. `augmented-brain update --plugin` updates only the plugin.
+
+It first asks GitHub for the latest version, once: if GitHub does not answer, it says so
+and stops. The download is then tried three times, also through GitHub's API. If it still
+fails, or the program is not the new version afterwards, it says so and ends with an
+error: nothing changed, run it again later.
 
 Then close and open Claude. A session that was open keeps the old program until you do,
 and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new
@@ -346,7 +359,8 @@ what Claude Code keeps of it (its cache, its data and its server's logs).
 - **To start from scratch**, `--all` also removes every space's notes. First it shows each
   folder with how many notes it has, and asks. Anything of yours inside a space's folder
   stays. Your backup on GitHub is not deleted: it says which one it is and how to delete
-  it.
+  it. If a space has no backup, it warns you that its notes will be gone for good. To keep
+  them, answer no and set up the backup first.
 - Claude Code, its desktop app, git and the PATH entry stay: Claude Code lives in that
   same folder.
 
@@ -360,16 +374,22 @@ All the commands and their options: [Commands](https://icalvete.github.io/augmen
 - **The terminal cannot find a command** (`command not found`, or "not recognized" on
   Windows). Open a new terminal: the one you used does not see the new PATH yet.
 - **Anything else after installing.** Run `augmented-brain doctor`: it says what is missing
-  and how to fix it. It also warns you when Claude Code keeps a second memory of its own
-  for your spaces' folders, and when other users of the computer could read your notes.
+  and how to fix it. It also warns you when a space has no backup, when Claude Code keeps
+  a second memory of its own for your spaces' folders, and when other users of the
+  computer could read your notes. If the configuration is broken, it tells you how to go
+  back to a version that worked.
 - **"This system is not supported yet".** It works on Linux, macOS and Windows, on 64-bit PCs
   and Arm.
 - **macOS: "Claude Code needs macOS 13".** Update the Mac in System Settings → General →
   Software Update, then paste the command again.
 - **macOS: the developer tools window did not open.** Run `xcode-select --install` and then
   the install command again.
-- **Linux: no desktop app offered.** It is only for Ubuntu and Debian; use Claude in the
-  terminal.
+- **Linux: no desktop app offered.** It is only for systems with `apt` (Ubuntu, Debian
+  and their family); use Claude in the terminal.
+- **"cannot download … from GitHub".** GitHub is having trouble. Nothing was installed:
+  paste the command again in a while.
+- **You stopped the installer half way** (Ctrl+C, a closed window). Paste the command
+  again: it sets everything up from the start.
 - **Windows: "Git was not installed".** The installer tries winget first and then Git's own
   download. If both fail, install Git from [git-scm.com](https://git-scm.com/download/win)
   and run the command again. The desktop app needs winget: update "App Installer" from the
@@ -478,8 +498,9 @@ Every space shares:
 - **your profile**: who you are and how you like to work. You are the same person at
   work and at home.
 - **the shared notes**: rules, references and lessons that hold everywhere (below).
-- **the guard's lists**: production AWS profiles, machines not to touch, and the
-  repositories where Claude may commit. They hold on the whole machine. A production
+- **the guard's lists**: production AWS profiles, machines not to touch, the
+  repositories where Claude may commit and those it must never touch, and the root
+  exceptions. They hold on the whole machine. A production
   profile saved from the work space is guarded in the personal one too.
 
 Spaces never read each other's notes.
@@ -577,8 +598,9 @@ The phase is the task's `status`. Two more statuses pause a task without losing 
 
 A small task may skip phases (straight from definition to execution): it is allowed, and
 the journal says which phases it skipped. A closed task stays closed: closing it again is
-refused, so its result is never written over, and opening it again needs a reason, which
-goes to the journal.
+refused, so its result is never written over, and opening it again needs a reason: Claude asks
+you first, and the reason goes to the journal. In the panel, choosing a new status for a
+closed task is that reason.
 
 ## Who it waits on, and what comes next
 
@@ -760,11 +782,12 @@ writes it for you.
 ## The index
 
 `MEMORY.md` is the list Claude reads at the start of every session: your profile line,
-the rules, the areas, and the live tasks with their status and next step. The program
-writes it after every change. Do not edit it by hand; it would be rewritten. At the
-start, each task goes without its summary, and with its next step (its first 120 characters) only when
-it waits on you: Claude reads a task before working on it. The shared references and lessons are
-listed by title and file.
+the rules, the areas and the live tasks with their status and next step. The shared
+references and lessons are listed by title and file. At the start, Claude gets it
+shorter: tasks go without their summary, and a task shows its next step (its first 120
+characters) only when it waits on you. Claude reads a task before working on it. The
+program writes this file after every change: do not edit it by hand, it would be
+rewritten.
 
 ## Documents and the archive
 
@@ -864,13 +887,22 @@ git_ask_repos = ["~/code/shop"]                        # ask me each time
 - A repository in both lists asks.
 - The lists of every space count together: a repository is yours, not the space's.
 
+The easiest way is the panel's **Guard** page. Adding a repository to the list where
+Claude commits and pushes without asking shows a warning, and you must tick a box that
+says you understand. Add only repositories where a mistake can be undone.
+
 **Merging a pull request is a push too.** `gh pr merge`, `glab mr merge` and `glab mr
-accept` follow the same lists. gh and glab have no `-C`, so Claude writes `cd ~/code/blog
-&& gh pr merge 12`. The folder in that `cd` is the repository; the folder the session is
-in does not count alone, unless the command names its repository itself (`gh pr merge 12
--R owner/name`, or the pull request's address): Claude Code drops a `cd` to the folder the
-session is already in, so there that is the way to write it. A repository the command names (`-R owner/name`, the pull
-request's address) must be one of that repository's remotes, or the merge is stopped.
+accept` follow the same lists. gh and glab have no `-C`, so the command must say which
+repository it is:
+
+- `cd ~/code/blog && gh pr merge 12`: the folder in the `cd` is the repository.
+- In the repository's own folder, Claude Code removes that `cd` before the guard sees
+  it. There, Claude names the repository: `gh pr merge 12 -R owner/name`, or the pull
+  request's address.
+- A repository named that way must be one of the folder's remotes, or the merge is
+  stopped.
+- The folder the session is in does not count on its own.
+
 `gh pr merge --admin`, which skips the branch's protection, always asks. Only the command
 itself counts: `gh pr merge` written in a pull request's body or a commit message is not
 a merge, and neither is an address or `--admin` in the text given to `--body` or
@@ -892,7 +924,8 @@ untouchable_repos = ["~/work/core", "~/work/cli-*"]
 - The answer says the repository is untouchable and that only you can change it. Claude
   is told not to look for another way.
 - Add and remove them in the panel's **Guard** page. Removing one asks you to type the
-  folder's name.
+  folder's name, and warns you: from then on the other lists decide, so if the repository
+  is in `git_allowed_repos`, Claude will commit and push there.
 
 ## Questions that say what they are about
 
@@ -913,8 +946,10 @@ three things so that the lists stay yours:
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
   when a session starts and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
-  let through asks first, and the Guard page and `doctor` say so until you accept them.
-  The Guard page shows what was added and removed since you last accepted them.
+  let through asks first, and the Guard page and `doctor` say so, until you accept them
+  in the Guard page or a new session starts. A new session takes the lists as they are,
+  and Claude tells you in its first answer that they changed. The Guard page shows what
+  was added and removed since then.
 
 What this does not stop: a script that Claude writes in line (`python -c`, a heredoc) can
 still edit the files, as it can anything your account can. The guard then notices the
@@ -927,8 +962,9 @@ You give them in the first-session interview, or any time: "the AWS profile `sho
 is production", "never touch `db01` without asking me". Claude saves them with the
 `safety_save` tool. They hold on the whole machine, in every space.
 
-Claude can only add to these lists. To take one out, edit the configuration yourself:
-`production_aws_profiles` and `untouchable_hosts` in [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html).
+Claude can only add to these lists. To take one out, use the panel's **Guard** page, or
+edit `production_aws_profiles` and `untouchable_hosts` yourself
+([Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html)).
 
 These lists are in no backup, because they may name your work's machines. After a
 restore on a new machine, the next session offers to ask you for them again.
@@ -947,6 +983,10 @@ it runs is still checked. After the date, root is stopped again by itself, and
 `augmented-brain doctor` says the line can go. The date is required, so no exception is
 left behind.
 
+You can also add it in the panel's **Guard** page. It asks you to type the machine's name
+again, and reminds you that until that date Claude may run commands as root there, after
+you confirm each one. Keep the date close.
+
 ## It looks inside
 
 The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh -c`,
@@ -959,7 +999,9 @@ those of the helpers Claude starts (subagents and workflows).
 
 - **The configuration cannot be read.** Then the guard cannot know your lists. It asks
   you before every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before the tools
-  that call AWS.
+  that call AWS. To go back to a version that worked, run `augmented-brain config history`
+  and then `augmented-brain config restore <number>`
+  ([Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html)).
 - **The program is missing or broken.** Claude Code stops every command and file change
   instead of letting them through (Claude Code 2.1.295 or later).
 - **`guard.toml` cannot be read.** The guard asks before every commit and push until it
@@ -1003,6 +1045,7 @@ program writes in the notebook.
 Two words that come up a lot:
 
 - **Hook**: a call Claude Code makes at a given moment. Here: when a session starts,
+  before Claude answers each message (to tell it which tasks changed in another session),
   before every command and file change, after each answer, when a long conversation is
   compacted, and when the session ends. Each time, Claude Code starts the program, asks
   it, and the program exits.
@@ -1041,7 +1084,8 @@ the task before the system closes the window. See
 
 **5. You close the session.** The end hook notes that the session ended well. It starts
 the [backup](https://icalvete.github.io/augmented-brain/guide/backup.html) of the space in the background, if you set one up. You wait for
-nothing. If the backup fails, Claude tells you at the start of the next session.
+nothing. If the network does not answer, the backup gives up after 3 minutes instead of
+hanging. If the backup fails, Claude tells you at the start of the next session.
 
 If a session did not end well (the window was closed by force, the computer went down),
 the next one offers to recover it. Claude reads what you both said after the task's last
@@ -1075,12 +1119,16 @@ The configuration folder, `~/.config/augmented-brain/` (on Windows,
 
 ```
 config.toml       the spaces and the guard's lists
+guard.toml        the repositories Claude must never touch
+remote.toml       remote access, if you set it up
+session.toml      session settings (the preferred model)
 secrets.toml      the names of your secrets, never their values
 profile.md        who you are, for every space
 shared/           rules, references and lessons for every space
 state/            what this computer knows of each space's sessions; never backed up
 migrations/       a full copy of the notes before a new version moves them
 panel.json        where the panel listens, while it runs
+history/          the last 10 versions of these files; only on this computer
 ```
 
 Each file is described in [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html) and in the
@@ -1089,7 +1137,9 @@ Each file is described in [Configuration](https://icalvete.github.io/augmented-b
 ## What it does not do
 
 - **No server and no account.** If Claude is not open, nothing runs, except the panel
-  while you use it and the backup that the end of a session starts.
+  while you use it, the backup that the end of a session starts and, if you set it up,
+  [remote access](https://icalvete.github.io/augmented-brain/guide/remote.html), which keeps running so you can reach your sessions from
+  another device.
 - **It sends your data to no one.** Only the backup, if you set it up, talks to your
   repository. Apart from that, once a day, it asks GitHub which version is the latest,
   sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns that off.
@@ -1306,7 +1356,7 @@ wording with the same meaning works too.
 | "New task: move the blog to a new host." | Opens a task in definition, waiting on you, and asks what "done" means |
 | "Where were we?" | Lists your live tasks, those waiting on you first, each with its next step |
 | "Let's carry on with the blog." | Reads the task, checks the real state, and picks it up where you left it |
-| "Go on to the plan." | Moves the task to its next phase; you approve each change |
+| "Go on to the plan." | Moves the task to its next phase; you approve each change. If you skip a phase, the journal says which |
 | "We go with the cheaper host." | Writes the decision in the task's journal, with the date |
 | "Add a step: switch the domain." | Adds a checkbox to the task's plan |
 | "The database is copied." | Ticks that step |
@@ -1314,7 +1364,8 @@ wording with the same meaning works too.
 | "On the 16th, check the certificate is renewed." | Adds a watch date to the task |
 | "Park it, we carry on tomorrow." | Writes the exact next step and the essentials, and pauses the task |
 | "Leave it for some day." | Parks it as someday: out of the daily list, kept in its area |
-| "Close the task." | Closes it with its result; it is never deleted |
+| "Close the task." | Closes it with its result; it is never deleted. A closed task stays closed: closing it again is refused |
+| "Reopen the blog task: the certificate failed again." | Opens it again; the reason goes to its journal |
 
 ## Inbox and reminders
 
@@ -1362,9 +1413,11 @@ At the start of a session, Claude may bring things up without being asked:
 - the weekly review, when the last one is a week old and there is something to go
   through;
 - a session that was cut off, to recover;
-- a backup that failed;
+- a backup that failed, or one that left files out;
 - a new version, to update;
-- notes with problems.
+- notes with problems;
+- what another space sent to this one, until it is done;
+- the guard's lists, if something changed them outside the panel.
 
 ## Next
 
@@ -1407,7 +1460,8 @@ Below, **Repositories**: those your open tasks name in `repos:` that hold change
 committed or commits not pushed. That is work that is only on this computer. One whose
 tasks are all parked (or left for some day) is marked "forgotten?", here and on the
 whole map; a clean one never is. A branch never
-pushed counts only if the repository has a remote to push it to. **See all
+pushed counts only if the repository has a remote (a copy on a server,
+such as GitHub) to push it to. **See all
 repositories** leads to the whole map.
 
 ## Tasks
@@ -1418,7 +1472,9 @@ A task nobody has changed for 14 days is marked "untouched N days".
 
 Open one. Its essentials come first, the other sections folded, and the journal newest
 first. Write in its journal, change its status or next step, tick its steps, park it or
-close it. You can open new tasks too. When a task waits on a person you have a note of,
+close it. You can open new tasks too. A closed task opens again only if you choose a new
+status for it; its journal says it was reopened from the panel. If a status skips
+phases, the journal names them. When a task waits on a person you have a note of,
 "waits on" leads to them.
 
 When you save a task, only what you changed on the page is saved. If Claude changed
@@ -1480,7 +1536,10 @@ tasks name it. So you know which there are, and a new machine knows which to ask
 **Check the keychain** says whether each one is on this computer. It asks `secret-tool` on
 Linux and `security` on macOS; elsewhere it cannot tell. It asks only when you click,
 because a locked keychain asks you for its password. When the keychain lacks one, the
-page shows the command that stores it (that command asks you for the value).
+page shows the command that stores it (that command asks you for the value). When the
+keychain cannot be asked (on Linux with no desktop session, or a locked keychain on
+macOS), the secret shows "cannot tell here", not missing: check it there before storing
+it again.
 
 You can add a name, or take one off the list (the secret stays in the keychain). Anything
 that looks like a value is refused. The list is the same in every space, and lives in
@@ -1513,7 +1572,8 @@ empty for no name and no personality.
 Every list the guard answers to, in one page, to read and change:
 
 - **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
-  asks you to type the folder's name.
+  warns that the other lists decide again for it (if one lets Claude commit and push
+  there, it will), and asks you to type the folder's name.
 - **Repositories** each space lets Claude commit in, or ask you about, with a form to add
   or remove. The list where Claude commits and pushes without asking carries a warning,
   and adding to it asks you to tick that you understand.
@@ -1530,12 +1590,14 @@ saw (something changed them outside this page), a notice says so and shows what 
 what was added and what was removed, list by list, compared with the lists you last
 accepted (when those are no longer among the kept versions, it says so). Then an accept
 button;
-until then a push or merge that the lists allow asks first. Claude cannot open this page:
+until then (or until a new session starts) a commit, push or merge that the lists allow
+asks first. Claude cannot open this page:
 the guard denies it the panel's key. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
 
 ## Versions
 
-The last 10 versions of your configuration (spaces, guard, remote access, profile),
+The last 10 versions of your configuration (spaces, guard, remote access,
+session settings, profile and your secrets' names),
 kept only on this computer, newest first, with when and who changed it. **What it
 changed** shows the lines of each one; **Go back to this one** makes it the
 configuration again, keeping the one you had as a version first. From another device
@@ -1571,7 +1633,8 @@ The **search** box at the side looks through the notes of the space and the shar
 titles, summaries and text. A note shows up when it holds every word, in any case, with
 accents or without.
 
-Notes read as text, not as raw Markdown: headings, lists, tables, code and links. A
+Notes read as text, not as raw Markdown (the plain-text format notes are
+written in): headings, lists, tables, code and links. A
 `[[link]]` to another note takes you to it. If a note changes on disk while its page is
 open (Claude wrote in it, say), the page tells you, with a link to see it as it is now.
 
@@ -1615,7 +1678,9 @@ such as `https://my-laptop.example.ts.net:8443/s/…/today`, and a QR code. Poin
 phone's camera at the code, or open the address on the other computer.
 
 If the panel is already open on this computer, it is not stopped: the same panel starts
-answering through the network too, and the pages you have open go on working.
+answering through the network too, and the pages you have open go on working. If that
+panel came from an earlier version, it has to start again: the command says so, and you
+reload those pages. If publishing fails, the panel stays on this computer only.
 
 ## What you need, once
 
@@ -1761,7 +1826,8 @@ tasks pile up in silence.
 
 ## What it goes through
 
-- **The inbox.** Each capture becomes a task, goes to an area or to knowledge, or is
+- **The inbox,** with what other spaces sent here, marked with where it came from. Each
+  capture becomes a task, goes to an area or to knowledge, or is
   dropped.
 - **Tasks untouched for 14 days or more.** Each one goes on as it is, goes to someday, or
   is closed.
@@ -1769,8 +1835,8 @@ tasks pile up in silence.
 
 ## When it comes up
 
-At the start of a session, when the last review is 7 days old or more and there is
-something to go through. Claude offers it once, in one line, when it does not interrupt
+At the start of a session, when the last review is 7 days old or more (with no review yet,
+since the oldest capture or untouched task) and there is something to go through. Claude offers it once, in one line, when it does not interrupt
 other work. You can also ask for it any time: "let's do the weekly review".
 
 ## With Claude
@@ -1809,8 +1875,8 @@ Source: https://icalvete.github.io/augmented-brain/guide/backup.html
 Your laptop dies. On the new one, you install augmented brain, run one command, and open
 Claude. It carries on where you left off: tasks, notes, rules and your profile.
 
-That is the **backup**. The notes folder of each space is also a git repository. The
-backup pushes it to a private repository of yours, one per space.
+That is the **backup**. The notes folder of each space is also a git repository (git keeps
+every version of a folder and can copy it to a server). The backup pushes it to a private repository of yours, one per space.
 
 ## Set it up: ask Claude
 
@@ -1829,6 +1895,10 @@ augmented-brain backup setup git@gitlab.com:lucia/brain-work.git
 ```
 
 Use a **private** repository: your notes are in it.
+
+Until a space has a backup, augmented brain says so: `augmented-brain doctor` names each
+space with none, `update` warns when it goes ahead with no copy to go back to, and
+`uninstall --all` warns that those notes will be gone for good.
 
 ## It runs by itself
 
@@ -1876,7 +1946,8 @@ Some things are left out on purpose:
   and you add them again if you still want to.
 - **Your secrets' values.** Only their names travel. `restore` names the secrets this
   machine's keychain does not have yet, each with the command to store it, and those it
-  could not check when the keychain does not answer.
+  could not check when the keychain does not answer, or on Windows, where it cannot be
+  asked.
 
 ## What you get
 
@@ -1904,12 +1975,17 @@ Claude tells you at the start of the next session, with the reason. Running
 `augmented-brain backup` in a folder of the space shows the problem. The usual ones are
 in [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html#the-backup-failed).
 
+A backup never hangs: each step stops after 3 minutes without an answer (or a download
+slower than 1 KB a second for a minute), and a backup waits at most 10 minutes for
+another one to finish. Both say why.
+
 
 ---
 
 Source: https://icalvete.github.io/augmented-brain/guide/connect-services.html
 
 # Connect your services
+
 
 augmented brain keeps your tasks and notes. To read your calendar, your mail, your
 documents or your tickets, your assistant also needs those services. Claude Code talks to
@@ -1934,7 +2010,8 @@ tomorrow?", "summarise the open issues of this epic").
 
 ## Without a claude.ai account
 
-If you use Claude Code with an API key, claude.ai connectors are not available. You can
+If you use Claude Code with an API key (a code from the Anthropic Console instead of
+your claude.ai account), claude.ai connectors are not available. You can
 add MCP servers yourself:
 
 ```bash
@@ -1970,7 +2047,8 @@ your machine and work in it as if you were sitting there. For that, a small prog
 `augmented-brain remote` keeps it running for you. It starts by itself when the computer
 starts, and starts again if it stops. You set it up once.
 
-This is for Linux for now. macOS is still to do.
+This is for Linux with systemd (the part of Linux that starts and watches services) for
+now: not a container, nor WSL without systemd. macOS and Windows are still to do.
 
 ## One door per space
 
@@ -1992,7 +2070,8 @@ own, `~/.config/augmented-brain/remote/<space>`.
 augmented-brain remote install
 ```
 
-It writes the service and starts it. It then tells you what is missing, if anything:
+It checks that systemd can keep the service, writes it and starts it. If systemd cannot,
+it says why and changes nothing. It then tells you what is missing, if anything:
 two things only you can do.
 
 ### 1. Let Claude trust the folder
@@ -2079,8 +2158,8 @@ folders, stay, and nothing else is deleted. Remove them by hand if you want.
 
 ## The settings
 
-`remote.toml`, in the configuration folder: `enabled`, `spaces`, `name_prefix` and
-`permission_mode`. See [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html). The commands are in
+`remote.toml`, in the configuration folder: `enabled`, `spaces`, `name_prefix`,
+`permission_mode` and `folders`. See [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html). The commands are in
 [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html).
 
 
@@ -2100,12 +2179,15 @@ writes it in `~/.claude/projects/<folder>/memory/`. You can bring it into your s
 augmented-brain import ~/.claude/projects/<folder>/memory
 ```
 
+With one space, that is all. With more (a usual install has two), it first asks which
+space each note goes to: see [More than one space](https://icalvete.github.io/augmented-brain/guide/import.html#more-than-one-space) and add `--map`.
+
 That writes nothing. It shows where each note would go, and what it could not decide:
 
 - files that are not notes (an index, say);
 - notes about you: copy what matters into your profile;
 - links that would cross from one space to another;
-- ids your space already has.
+- ids (the name of each note's file, such as `task-blog`) your space already has.
 
 The folder you import from is only read, now and later.
 
@@ -2129,7 +2211,7 @@ step.
 The rest comes along too:
 
 - The captures of your old `inbox.md` (each `- …` line) go to the inbox of the space of
-  `*` (below), dated, and never twice.
+  `*` (below), or the default space, dated, and never twice.
 - `archive/` and `docs/<task>/` are copied as they are, next to their note, also when you
   import again later.
 - A file with a secret written in it (a key, a token) is imported, but named in the
@@ -2151,13 +2233,14 @@ lesson-git-small-commits = shared
 * = work
 ```
 
-`*` is for everything else. Pass the file with `--map`:
+`*` is for everything else; with one space, no file is needed. Pass the file with `--map`:
 
 ```bash
 augmented-brain import ~/.claude/projects/<folder>/memory --map map.txt
 ```
 
-If the notes name repositories in `repos:`, `--repos-base <folder>` says what those paths
+If the notes name repositories in `repos:` (the list of folders a task
+works in), `--repos-base <folder>` says what those paths
 are relative to. They are then rewritten relative to the space's work folder.
 
 ## Turn off the old memory
@@ -2384,7 +2467,7 @@ Spanish), with `personal` as the default space. Then it installs the plugin. Wit
 Claude Code, it prints the two commands that install the plugin later.
 
 If there is a configuration already, it stops and changes nothing. To add a space, use
-`space add`.
+`space add`. It writes the configuration last: if it stops half way, run it again.
 
 - `--custom`: ask for the language, the space and its folders, to make one space your way.
 - `--language`: the language, `en` or `es`. Without it, the system's (or `AB_LANGUAGE`).
@@ -2480,9 +2563,17 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
 - notes that other users of the computer could read;
 - whether there is a default space, and whether a restore left the guard's lists empty;
 - remote access, one line per space, when you set it up with `remote install`: a warning
-  when its service is not running, Claude does not trust its folder yet, or linger is off.
+  when its service is not running, Claude does not trust its folder yet, or linger is off;
+- how many versions of the configuration are kept, and whether it changed outside them
+  (by hand);
+- the guard's lists changed since you last accepted them, and a repository both
+  untouchable and allowed;
+- a Claude window using a lot of memory (2 GB or more);
+- the panel from another device, once you have used it: Tailscale, HTTPS, and an address
+  left published.
 
-It ends with an error when something fails. It takes no options. See
+It ends with an error when something fails. When the configuration cannot be read, it
+points to `config history` and `config restore`. It takes no options. See
 [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html).
 
 ## augmented-brain import
@@ -2521,7 +2612,8 @@ same note in another way, and says which. See [Backup and restore](https://icalv
 
 ## augmented-brain backup setup
 
-Connects this folder's space to a private git repository, and makes the first copy.
+Connects this folder's space to a private git repository. It does not copy anything yet:
+run `augmented-brain backup` afterwards for the first copy (it says so).
 
 ```bash
 augmented-brain backup setup git@gitlab.com:lucia/brain-work.git
@@ -2577,10 +2669,10 @@ network of their own.
 augmented-brain panel remote
 ```
 
-It starts the panel (or, when it is already open, has that same panel answer through
-the network too, so the pages you have open keep working), publishes it in your
-Tailscale network only, and prints its address and a QR code to open it from the phone. Only your own devices, signed in with
-the account this computer belongs to, can open it; the address stops working when the
+It starts the panel and publishes it in your Tailscale network only. If the panel is
+already open, that same panel answers through the network too, so the pages you have
+open keep working. It prints the address and a QR code to open it from the phone. Only
+your own devices, signed in with the account this computer belongs to, can open it; the address stops working when the
 panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your
 user publish) it explains, with the step to take: it never installs or changes anything
 of Tailscale's for you. See [The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html).
@@ -2617,9 +2709,11 @@ Sets remote access up, one service per space.
 augmented-brain remote install
 ```
 
-For each space named in `remote.toml` (by default, the default space) it creates a
-folder inside the configuration folder, makes it a work folder of that space, writes a
-`systemd` user service that runs `claude remote-control` there, and starts it. You can
+For each space named in `remote.toml` (by default, the default space) it writes a
+`systemd` user service that runs `claude remote-control` in the space's first work folder
+(or the one `folders` names in `remote.toml`), and starts it. Only a space with no work
+folder gets a folder of its own, `remote/<space>` in the configuration folder, which
+becomes its work folder. It needs `claude` on your PATH, and a folder that exists. You can
 run it again at any time: it changes only what is different.
 
 It then says what is still missing, and does none of it for you:
@@ -2689,8 +2783,9 @@ It shows what changes and writes it. The configuration you had is kept as a vers
 first, so going back can be undone the same way. A version that would leave a file the
 program cannot read is refused, and nothing changes. If the guard's lists end up
 different from the ones you accepted, the guard asks before every commit, push or merge
-it used to allow, until you accept them in the panel's Guard page or start a new session:
-a command can be run by the assistant, so it never accepts them for you. Going back from
+it used to allow. It keeps asking until you accept the lists in the panel's Guard page,
+or start a new session. A command can be run by the assistant, so it never accepts them
+for you. Going back from
 the panel's Versions page does accept them. It works even when `config.toml` is broken,
 like `config history`. It takes no options.
 
@@ -2703,12 +2798,13 @@ augmented-brain update
 ```
 
 If there is a newer version, it runs the published installer, which replaces the program
-and then updates the plugin. If not, it only updates the plugin. If the download fails
-(three tries, also through GitHub's API) or the program is not the new version
+and then updates the plugin. If not, it only updates the plugin. It first asks GitHub
+for the latest version, once: if GitHub does not answer, it says so and stops. If the
+download of the installer fails (three tries, also through GitHub's API) or the program is not the new version
 afterwards, it says so, ends with an error and changes nothing. Around a new version it
 does what you would otherwise do by hand:
 
-- **Before:** the health check of `doctor` (what it finds is shown, so it is not taken
+- **Before:** the health check of `doctor` (what fails is shown, so it is not taken
   for a problem of the new version), and a backup of every space that has one. If a
   backup fails, it stops and updates nothing: that copy is the way back. With no backup
   at all, it says it goes ahead without a copy to go back to.
@@ -2796,7 +2892,8 @@ Prints the list of commands, in your language.
 augmented-brain help
 ```
 
-`--help` and `-h` do the same. Running `augmented-brain` with nothing prints the list too.
+`--help` and `-h` do the same. Running `augmented-brain` with nothing prints the list
+too, as an error (exit code 2).
 
 
 ---
@@ -2830,7 +2927,7 @@ A few things hold for every tool:
   [`task_update`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_update), [`task_step`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_step),
   [`task_journal`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_journal), [`task_park`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_park), [`task_close`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_close).
 - **Inbox and the weekly review**: [`capture`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#capture),
-  [`weekly_review`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#weekly_review), [`review_done`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#review_done).
+  [`capture_done`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#capture_done), [`weekly_review`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#weekly_review), [`review_done`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#review_done).
 - **Notes that last**: [`area_new`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#area_new), [`knowledge_new`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#knowledge_new),
   [`rule_new`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#rule_new), [`note_retire`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#note_retire), [`person_save`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#person_save),
   [`repo_describe`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#repo_describe).
@@ -2907,7 +3004,7 @@ lists the steps.
 - `number` (optional): the step to tick or untick, 1 for the first checkbox.
 - `text` (optional): the step to tick or untick, by its text (or a part only it holds),
   when `number` is not given.
-- `done` (optional): `true` to tick the step, `false` to untick it.
+- `done` (optional): `true` to tick the step, `false` to untick it. Left out, it unticks.
 
 ## `task_journal`
 
@@ -3102,6 +3199,10 @@ by itself every time a session ends.
   creates `augmented-brain-<space>` in your GitHub account with the `gh` command line.
   When `gh` is missing or not logged in, it returns the steps to guide you through.
 
+It makes the first copy right away. If the space already has a backup, it says where it
+goes and how the last one went; it never moves it elsewhere: only you do, with
+`augmented-brain backup setup <url>`.
+
 ## `session_recover`
 
 Reads what you and Claude said in an earlier session of this space that did not end
@@ -3228,6 +3329,10 @@ While the file cannot be read, the guard does not know your lists. So it asks yo
 every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`. `augmented-brain doctor` tells you
 what is wrong.
 
+To go back to a version that worked, run `augmented-brain config history` and then
+`augmented-brain config restore <number>`: both work while the file is broken. See
+[Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html).
+
 ## `secrets.toml`
 
 Next to `config.toml`, `secrets.toml` names the secrets you keep in your system
@@ -3270,11 +3375,11 @@ preferred_model = "opus"
 ```
 
 - `preferred_model`: the model you expect to answer (`opus`, `sonnet`, `haiku` or a full
-  name such as `claude-opus-5-5`). When a session answers with another one, Claude tells
-  you: at the start, if Claude Code says which model it starts with, and otherwise after
-  an answer (in a new session, the second at the latest: the first one is not on disk
-  yet when Claude Code asks), and again if the model changes in the middle. Once per
-  session and model. It never changes the model itself: you do, with `/model` or the model picker.
+  name such as `claude-opus-5-5`). When a session answers with another model, Claude
+  tells you. It checks at the start, if Claude Code says which model it starts with. If
+  not, it checks after an answer: in a new session, the second one at the latest. It
+  checks again if the model changes. Once per session and model. It never changes the
+  model itself: you do, with `/model` or the model picker.
 
 The panel's Guard page writes it, and the guard asks before Claude writes it. If the file
 is missing or the setting is empty, nothing is checked. It is a file of its own for the
@@ -3292,15 +3397,16 @@ enabled = true
 spaces = ["personal", "work"]
 name_prefix = "my-laptop"
 permission_mode = "default"
-folders = { work = "~/work/clients" }
+folders = { work = "~/code/clients" }
 ```
 
 All are optional:
 
 - `enabled`: whether remote access is set up. `remote install` writes `true` and
-  `remote uninstall` writes `false`. Only when it is `true` does `doctor` check it.
+  `remote uninstall` writes `false`. Only when it is `true` does `doctor` check the
+  services; a file it cannot read is a warning either way.
 - `spaces`: the spaces that get a session, each in a service of its own. Default: the
-  `default_space`.
+  `default_space`, or the only space when there is one.
 - `name_prefix`: sessions are called `<name_prefix>-<space>`, such as `my-laptop-personal`.
   One plain word: letters, digits, dot, dash and underscore. Default: the computer's name.
 - `permission_mode`: how much Claude may do without asking. One of `default`,
@@ -3325,6 +3431,8 @@ Run `augmented-brain remote install` again after changing it, so the services pi
 - `remote/<space>/`: the folder where the remote access service of a space starts, only for
   a space with no work folder of its own. It is made a work folder of that space.
 - `review-<space>.draft`: a weekly review started in the panel and not finished yet.
+- `history/`: the last 10 versions of your configuration, with who changed them. Only on
+  this computer, never backed up. See [Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html).
 
 ## Environment variables
 
@@ -3344,8 +3452,9 @@ The installer reads a few more:
 - `AB_NO_DESKTOP=1`: do not offer the Claude desktop app.
 - `AB_INSTALL_DIR`: where to put the program. Default `~/.local/bin`.
 - `AB_NO_INIT=1`: only install the program, without setting anything up.
-- `AB_VERSION`, `AB_RELEASE_URL` and `AB_MARKETPLACE`: for testing: which version, where
-  the release files are, and where the plugin comes from.
+- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY` and `AB_MARKETPLACE`: for
+  testing: which version, where the release files are, the GitHub API to fall back on,
+  the wait between tries, and where the plugin comes from.
 
 ## Claude Code's own settings
 
@@ -3434,12 +3543,12 @@ space, under `.augmented-brain/shared/`, like the profile.
 
 ## File header
 
-Every file except `MEMORY.md`, `inbox.md` and what is in `archive/` starts with a YAML header between `---` lines (a byte order mark before it is fine). Keys and enumerated values are always English, whatever language you write in.
+Every file except `MEMORY.md`, `inbox.md` and what is in `docs/` and `archive/` starts with a YAML header between `---` lines (a byte order mark before it is fine). Keys and enumerated values are always English, whatever language you write in.
 
 ```yaml
 ---
 id: task-backup-restore          # unique in the space; also the file name without .md
-type: task                       # profile | area | task | reference | lesson | rule | person
+type: task                       # profile | area | task | reference | lesson | rule | person | review
 title: Backup and restore        # shown in indexes; any language
 summary: One line on what it is  # shown in indexes; any language
 area: area-platform              # tasks, references and lessons: the area they belong to
@@ -3534,6 +3643,11 @@ Two more statuses pause a task without losing anything:
 |---|---|
 | `parked` | Paused, resumed soon; `next` says exactly how |
 | `someday` | Not for weeks; leaves the session index, stays in its area |
+
+Skipping phases is allowed, and seen: the journal line of the change names the phases
+skipped (`Status: definition → execution, skipping analysis, plan.`). A closed task is
+never closed again, so its result is not written over. It opens again only with a
+reason, which goes to the journal (`Reopened (now plan): …`).
 
 ### Task body
 
@@ -3683,9 +3797,13 @@ delete, a mirror, or a refspec starting with `+` or `:`) asks.
 
 The same lists decide on merging a pull request (`gh pr merge`, `glab mr merge`, `glab mr
 accept`), which pushes to the branch it goes into. As a push counts only a repository
-written with `git -C`, a merge counts only one written in the command with a `cd` before
-it (`cd <repo> && gh pr merge 12`), never the session's folder alone: the listed folder
-itself or a worktree of it, not a folder inside it. A repository the command
+written with `git -C`, a merge counts only a repository the command names. One way is a
+`cd` before it (`cd <repo> && gh pr merge 12`). The other, in the session's own folder,
+is `-R`/`--repo` or the pull request's address, when that is one of the folder's
+remotes: Claude Code drops a `cd` to the folder the session is already in. Never the
+session's folder alone, nor `GH_REPO`, which a command may inherit unseen. The folder
+must be the listed folder itself or a worktree of it, not a folder inside it. A
+repository the command
 names (`-R`/`--repo`, `GH_REPO`, `GITLAB_REPO`, the pull request's address) must be one
 of that repository's remotes, read from its `.git/config` (includes are not followed); a
 name with no host is on `github.com` or `gitlab.com` (or `GH_HOST`, `GITLAB_HOST`).
@@ -3719,6 +3837,25 @@ assistant adds to it with the MCP tool `secret_name_save` (saving a listed name 
 what it is for); the panel lists it, adds and removes names, says which tasks name each
 one, and, only when asked, whether this computer's keychain has it. An entry that cannot
 be read is left out and counted on the panel's page.
+
+Three more files sit next to `config.toml`. None of them goes into a backup.
+
+- `guard.toml` holds `untouchable_repos`: repositories where the assistant never commits,
+  pushes or merges, whatever the other lists say, for the whole machine. Same form as
+  `git_allowed_repos`. A missing file means nothing is untouchable.
+- `session.toml` holds `preferred_model`: the model the user expects to answer (`opus`,
+  or a full name). When a session answers with another one, the assistant tells the
+  user. Empty or missing: nothing is checked.
+- `remote.toml` holds the settings of remote access: `enabled`, `spaces`, `name_prefix`,
+  `permission_mode` and `folders`.
+
+They are files of their own because earlier programs refuse a setting of `config.toml`
+they do not know. Every change of `config.toml`, `guard.toml`, `remote.toml`,
+`session.toml`, `profile.md` or `secrets.toml` is kept as a version in `history/` in the
+configuration folder, with who made it. The last 10 are kept, only on this machine, never
+in a backup. The user's guide has every setting:
+[Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html) and
+[Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html).
 
 ## Backup
 
@@ -3757,6 +3894,10 @@ that each machine changed only by adding journal entries (dated lines) and movin
 later date. Any other conflict stops the backup without pushing, naming the notes to
 merge by hand.
 
+Each git call of a backup or restore stops after 3 minutes without an answer (over
+https, also on a transfer slower than 1 KB a second for a minute), and a backup waits at
+most 10 minutes for another one to finish; both say why.
+
 ## State of this machine
 
 `state/<space>.json` in the configuration folder keeps, for this machine only (never
@@ -3764,6 +3905,11 @@ backed up, no text of the conversation): the active task and when it was last wr
 when the assistant was last reminded to write, and the sessions that started and ended,
 with the path of Claude Code's transcript of each. The Stop reminder, the request after a
 compaction and the offer to recover a session that did not end come from it.
+
+`state/guard.seal` keeps a fingerprint of the guard's lists as the user last accepted
+them: at a session start, or when the panel saved them. While the lists differ from it, a
+commit, push or merge they allow asks first. `history/` keeps the last 10 versions of the
+configuration (see Configuration).
 
 `panel.json`, also in the configuration folder and readable only by the user, says where
 the panel listens while it runs (its process, port and key); it goes away when the panel
@@ -3831,9 +3977,12 @@ PowerShell commands and Claude runs them in Git Bash instead.
 ### Claude asks before every aws or ssh command
 
 The configuration cannot be read, so the guard does not know your lists and asks to be
-safe. `augmented-brain doctor` names the problem. If it says "unknown settings" ("ajustes desconocidos" in Spanish), the file
-has a line this version does not know: a typo, or a setting of a newer version. Then
-update with `augmented-brain update`. See [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html).
+safe. `augmented-brain doctor` names the problem. If it says "unknown settings", the
+file has a line this version does not know: a typo, or a setting of a newer version. For
+a newer version's setting, update with `augmented-brain update`. For a typo, or a change
+that broke it, go back to a version that worked: `augmented-brain config history`, then
+`augmented-brain config restore <number>`. Both work while the file is broken. See
+[Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html) and [Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html).
 
 ### Claude cannot push, even when I ask
 
@@ -3843,6 +3992,13 @@ the panel's Guard page (see [The guard](https://icalvete.github.io/augmented-bra
 The guard stops `git commit` and `git push` unless the repository is listed. Push it
 yourself, or add the repository to `git_allowed_repos` (or `git_ask_repos`) and ask Claude
 to use `git -C <repo>`. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html#let-claude-commit-in-a-repository).
+
+### Claude asks before a push it used to do
+
+The guard's lists changed outside the panel since you last accepted them (by hand, with a
+command, or going back to a version). Until you accept them in the Guard page or start a
+new session, a commit, push or merge they allow asks first. `doctor` says so. Open the
+panel's Guard page, look at what changed and accept. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html#only-you-change-the-guards-lists).
 
 ### Claude needs root on a machine
 
@@ -3861,6 +4017,22 @@ GitHub sometimes fails to hand out a release's files for a while. The installer 
 `augmented-brain update` try three times, and also through GitHub's API, which often
 keeps working when the usual address does not. If all of it fails, they say so and
 nothing changes: the program you had stays. Try again in a while.
+
+What `augmented-brain update` may end with:
+
+- **"cannot reach GitHub to see the latest version"**: `update` asks for the latest
+  version once, before downloading. Try again in a while.
+- **"the program is still X, not Y"**: the installer ran but the program did not change.
+  Nothing else changed; run `augmented-brain update` again later.
+- **"The backup failed, so nothing was updated"**: fix the backup (see below) and update
+  again, or run `augmented-brain update --force`.
+
+See [Installing](https://icalvete.github.io/augmented-brain/guide/install.html#updating).
+
+### The install stopped half way
+
+Run the install command again (or `augmented-brain init`): until it finishes, there is no
+configuration, so it starts over. See [Installing](https://icalvete.github.io/augmented-brain/guide/install.html).
 
 ### "Written by a newer augmented brain"
 
@@ -3887,6 +4059,12 @@ folder of the space to see why:
   themselves.
 - **A file over 50 MB.** It is left out, and the rest is backed up. Move it out of the
   notes folder.
+
+### `doctor` says a space has no backup
+
+If this computer is lost, so are that space's notes. Ask Claude "set up the backup" in a
+folder of the space. Or run `augmented-brain backup setup <address of a private
+repository>` there, and then `augmented-brain backup`. See [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html).
 
 ### A note is not valid
 
@@ -3918,6 +4096,19 @@ yourself. The address carries a key that changes each time the panel starts, and
 panel stops after 30 minutes without use. Run `augmented-brain panel` again for a new
 address.
 
+### The panel from another device does not open
+
+`doctor` says what is missing: Tailscale stopped, HTTPS off in your network, or an
+address left published after the panel stopped (it gives the command to remove it). See
+[The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html).
+
+### Remote access does not work
+
+Run `augmented-brain remote status`: under each problem, `→` says what to do. Usually
+Claude does not trust the folder yet (run `cd <folder> && claude` once), or linger is
+off. `remote install` stops, changing nothing, on a machine without systemd's user
+services (a container, WSL without systemd). See [Remote access](https://icalvete.github.io/augmented-brain/guide/remote.html).
+
 ### A session was cut off
 
 The window was closed by force, or the computer went down. The next session offers to
@@ -3946,6 +4137,13 @@ Claude warns at 2 GB, then at 4 and 8 GB, once each. On Windows it does not look
 Backups do not carry the guard's lists. Open a Claude session: it offers to ask you for
 them. Or add `production_aws_profiles` and `untouchable_hosts` to the configuration
 yourself.
+
+### After a restore, secrets "could not be checked"
+
+The keychain could not be asked: a Linux machine without a desktop session, a locked
+macOS keychain, or Windows, where it cannot be asked. The secrets may be there. Open a
+desktop session or unlock the keychain, and look in the panel's Secrets page. Store those
+that are missing with the command shown. See [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html).
 
 ### Windows: accents look broken (`sesiÃ³n`)
 

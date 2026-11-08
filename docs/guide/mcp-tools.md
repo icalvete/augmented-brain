@@ -26,7 +26,7 @@ A few things hold for every tool:
   [`task_update`](#task_update), [`task_step`](#task_step),
   [`task_journal`](#task_journal), [`task_park`](#task_park), [`task_close`](#task_close).
 - **Inbox and the weekly review**: [`capture`](#capture),
-  [`weekly_review`](#weekly_review), [`review_done`](#review_done).
+  [`capture_done`](#capture_done), [`weekly_review`](#weekly_review), [`review_done`](#review_done).
 - **Notes that last**: [`area_new`](#area_new), [`knowledge_new`](#knowledge_new),
   [`rule_new`](#rule_new), [`note_retire`](#note_retire), [`person_save`](#person_save),
   [`repo_describe`](#repo_describe).
@@ -103,7 +103,7 @@ lists the steps.
 - `number` (optional): the step to tick or untick, 1 for the first checkbox.
 - `text` (optional): the step to tick or untick, by its text (or a part only it holds),
   when `number` is not given.
-- `done` (optional): `true` to tick the step, `false` to untick it.
+- `done` (optional): `true` to tick the step, `false` to untick it. Left out, it unticks.
 
 ## `task_journal`
 
@@ -297,6 +297,10 @@ by itself every time a session ends.
 - `repo_url` (optional): a private git repository you can push to. Without it, the tool
   creates `augmented-brain-<space>` in your GitHub account with the `gh` command line.
   When `gh` is missing or not logged in, it returns the steps to guide you through.
+
+It makes the first copy right away. If the space already has a backup, it says where it
+goes and how the last one went; it never moves it elsewhere: only you do, with
+`augmented-brain backup setup <url>`.
 
 ## `session_recover`
 

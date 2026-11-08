@@ -31,7 +31,8 @@ Debajo, **Repositorios**: los que tus tareas abiertas nombran en `repos:` y tien
 cambios sin commit o commits sin subir. Es trabajo que solo está en este ordenador. Si
 todas sus tareas están aparcadas (o para algún día), sale marcado «¿olvidado?», aquí y
 en el mapa completo; uno limpio, nunca. Una rama
-que nunca se subió solo cuenta si el repositorio tiene un remoto al que subirla. **Ver
+que nunca se subió solo cuenta si el repositorio tiene un remoto (una copia en un
+servidor, como GitHub) al que subirla. **Ver
 todos los repositorios** lleva al mapa completo.
 
 ## Tareas
@@ -43,7 +44,9 @@ marcada «parada N días».
 
 Abre una. Primero lo esencial, las demás secciones plegadas, y el diario con lo último
 arriba. Escribe en su diario, cambia su estado o su siguiente paso, marca sus pasos,
-apárcala o ciérrala. También puedes abrir tareas nuevas. Si una tarea espera a una
+apárcala o ciérrala. También puedes abrir tareas nuevas. Una tarea cerrada solo se
+reabre si le eliges un estado nuevo; su diario dice que se reabrió desde el panel. Si un
+estado se salta fases, el diario las nombra. Si una tarea espera a una
 persona de la que tienes nota, «espera a» te lleva a ella.
 
 Al guardar una tarea, solo se guarda lo que cambiaste en la página. Si Claude cambió otra
@@ -107,7 +110,10 @@ y qué tareas lo nombran. Así sabes cuáles hay, y una máquina nueva sabe cuá
 **Comprobar en el llavero** dice si cada uno está en este ordenador. Se lo pregunta a
 `secret-tool` en Linux y a `security` en macOS; en otros sistemas no lo puede saber. Solo
 pregunta cuando pulsas, porque un llavero bloqueado te pide su contraseña. Si al llavero
-le falta uno, la página enseña el comando que lo guarda (ese comando te pide el valor).
+le falta uno, la página enseña el comando que lo guarda (ese comando te pide el valor). Si no se
+puede preguntar al llavero (en Linux sin sesión de escritorio, o con el llavero de macOS
+bloqueado), el secreto sale «aquí no se puede saber», no como que falta: compruébalo
+antes de guardarlo otra vez.
 
 Puedes apuntar un nombre, o quitar uno de la lista (el secreto sigue en el llavero). Lo
 que parezca un valor se rechaza. La lista es la misma en todos los espacios, y vive en
@@ -140,7 +146,8 @@ Deja los dos campos vacíos si no quieres ni nombre ni personalidad.
 Todas las listas a las que responde el guardia, en una página, para leerlas y cambiarlas:
 
 - **Repositorios intocables**, donde Claude nunca hace commit, push ni merge. Quitar uno
-  te pide escribir el nombre de la carpeta.
+  avisa de que las demás listas vuelven a decidir sobre él (si una deja a Claude hacer
+  commit y push ahí, lo hará), y te pide escribir el nombre de la carpeta.
 - **Repositorios** donde cada espacio deja que Claude haga commit, o te pregunte, con un
   formulario para añadir o quitar. La lista donde Claude hace commit y push sin preguntar
   lleva un aviso, y añadir a ella te pide marcar que lo entiendes.
@@ -157,13 +164,15 @@ Tus comentarios de `config.toml` se quedan donde están. Si las listas no son la
 por última vez (algo las cambió fuera de esta página), un aviso lo dice y enseña qué
 cambió: lo añadido y lo quitado, lista por lista, frente a las listas que aceptaste por
 última vez (si esas ya no están entre las versiones guardadas, lo dice). Después, un botón
-para aceptarlas; hasta entonces un push o merge que las listas permiten pregunta antes. Claude
-no puede abrir esta página: el guardia le niega la clave del panel. Mira
+para aceptarlas; hasta entonces (o hasta que empiece una sesión nueva) un commit, push o merge que las
+listas permiten pregunta antes. Claude
+no puede abrir esta página: el guardia le niega la llave del panel. Mira
 [El guardia](guard.es.md).
 
 ## Versiones
 
-Las 10 últimas versiones de tu configuración (espacios, guardia, acceso remoto, perfil),
+Las 10 últimas versiones de tu configuración (espacios, guardia, acceso remoto,
+ajustes de sesión, perfil y los nombres de tus secretos),
 guardadas solo en este ordenador, la más reciente primero, con cuándo y quién la cambió.
 **Qué cambió** enseña las líneas de cada una; **Volver a esta** la convierte otra vez en
 la configuración, guardando antes como versión la que tenías. Desde otro dispositivo la
@@ -199,7 +208,8 @@ El cuadro de **búsqueda** del lateral busca en las notas del espacio y en las
 compartidas: títulos, resúmenes y texto. Sale una nota cuando tiene todas las palabras,
 en mayúsculas o minúsculas, con tildes o sin ellas.
 
-Las notas se leen como texto, no como Markdown en crudo: títulos, listas, tablas, código y
+Las notas se leen como texto, no como Markdown en crudo (el formato de texto
+en que se escriben las notas): títulos, listas, tablas, código y
 enlaces. Un `[[enlace]]` a otra nota te lleva a ella. Si una nota cambia en el disco
 mientras tienes abierta su página (Claude escribió en ella, por ejemplo), la página te lo
 dice, con un enlace para verla como está ahora.

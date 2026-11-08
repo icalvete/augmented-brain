@@ -95,11 +95,12 @@ writes it for you.
 ## The index
 
 `MEMORY.md` is the list Claude reads at the start of every session: your profile line,
-the rules, the areas, and the live tasks with their status and next step. The program
-writes it after every change. Do not edit it by hand; it would be rewritten. At the
-start, each task goes without its summary, and with its next step (its first 120 characters) only when
-it waits on you: Claude reads a task before working on it. The shared references and lessons are
-listed by title and file.
+the rules, the areas and the live tasks with their status and next step. The shared
+references and lessons are listed by title and file. At the start, Claude gets it
+shorter: tasks go without their summary, and a task shows its next step (its first 120
+characters) only when it waits on you. Claude reads a task before working on it. The
+program writes this file after every change: do not edit it by hand, it would be
+rewritten.
 
 ## Documents and the archive
 

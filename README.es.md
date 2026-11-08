@@ -105,9 +105,9 @@ fiarse de ella.
 - **Trabajo y personal por separado**: cada espacio tiene sus notas, sus reglas y su
   copia. La carpeta en la que abres Claude elige el espacio. Mira
   [Espacios](https://icalvete.github.io/augmented-brain/guide/spaces.es.html).
-- **Un guardia** que para los commits, los push, el root y los secretos salvo que tú los
-  permitas, y te pregunta antes de tocar producción o las máquinas que marques como
-  intocables. Es una red contra despistes, no un muro de seguridad. Mira
+- **Un guardia** que para los secretos y el hacerse root, para los commits y los push salvo
+  en los repositorios que permitas, y te pregunta antes de tocar producción o las máquinas
+  que marques como intocables. Es una red contra despistes, no un muro de seguridad. Mira
   [El guardia](https://icalvete.github.io/augmented-brain/guide/guard.es.html).
 - **Un panel** en tu navegador: el día de un vistazo, y cada tarea, recordatorio, nota,
   repositorio y nombre de secreto para ver y cambiar. Mira [El panel](https://icalvete.github.io/augmented-brain/guide/panel.es.html).
@@ -132,6 +132,7 @@ En el día a día le hablas a Claude. Estos son para preparar y revisar:
 | `augmented-brain backup` | Copia este espacio ahora (`backup setup <url>` lo conecta) |
 | `augmented-brain restore <url>` | Recupera un espacio en una máquina nueva |
 | `augmented-brain panel` | Abre el panel en el navegador (`panel stop` lo para) |
+| `augmented-brain config history` | Lista las últimas versiones de tu configuración (`config restore <n>` vuelve a una) |
 | `augmented-brain update` | Actualiza el programa y el plugin |
 | `augmented-brain uninstall` | Quita el programa y el plugin; tus notas se quedan |
 | `augmented-brain version` | Muestra la versión (`help` lista los comandos) |

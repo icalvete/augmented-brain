@@ -6,11 +6,12 @@ Se te muere el portátil. En el nuevo, instalas augmented brain, lanzas un coman
 Claude. Sigue donde lo dejaste: tareas, notas, reglas y tu perfil.
 
 Eso es la **copia de seguridad**. La carpeta de notas de cada espacio es también un
-repositorio git. La copia lo sube a un repositorio privado tuyo, uno por espacio.
+repositorio git (git guarda cada versión de una carpeta y puede copiarla a un servidor).
+La copia lo sube a un repositorio privado tuyo, uno por espacio.
 
-## Montarla: pídeselo a Claude
+## Configurarla: pídeselo a Claude
 
-Dile "monta la copia de seguridad". Al final de la entrevista de la primera sesión,
+Dile "configura la copia de seguridad". Al final de la entrevista de la primera sesión,
 Claude también te la ofrece.
 
 Crea en tu cuenta de GitHub un repositorio privado, `augmented-brain-<espacio>`, lo
@@ -26,6 +27,10 @@ augmented-brain backup setup git@gitlab.com:lucia/cerebro-trabajo.git
 ```
 
 Usa un repositorio **privado**: dentro van tus notas.
+
+Mientras un espacio no tenga copia, augmented brain lo dice: `augmented-brain doctor`
+nombra cada espacio sin copia, `update` avisa cuando sigue sin una copia a la que volver,
+y `uninstall --all` avisa de que esas notas se perderán para siempre.
 
 ## Se hace sola
 
@@ -73,7 +78,8 @@ Algunas cosas se quedan fuera a propósito:
   y los vuelves a añadir si lo sigues queriendo.
 - **El valor de tus secretos.** Solo viajan sus nombres. `restore` nombra los secretos
   que el llavero de esta máquina aún no tiene, cada uno con el comando para guardarlo, y
-  los que no ha podido comprobar cuando el llavero no responde.
+  los que no ha podido comprobar cuando el llavero no responde, o en Windows, donde no se
+  le puede preguntar.
 
 ## Lo que te da
 
@@ -102,3 +108,7 @@ Algunas cosas se quedan fuera a propósito:
 Claude te lo dice al empezar la siguiente sesión, con el motivo. Si lanzas
 `augmented-brain backup` en una carpeta del espacio, ves el problema. Los más comunes
 están en [Si algo falla](troubleshooting.es.md#ha-fallado-la-copia-de-seguridad).
+
+Una copia nunca se queda colgada: cada paso se para tras 3 minutos sin respuesta (o una
+descarga de menos de 1 KB por segundo durante un minuto), y una copia espera como mucho
+10 minutos a que acabe otra. En los dos casos dice por qué.

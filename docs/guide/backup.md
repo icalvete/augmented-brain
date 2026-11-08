@@ -5,8 +5,8 @@
 Your laptop dies. On the new one, you install augmented brain, run one command, and open
 Claude. It carries on where you left off: tasks, notes, rules and your profile.
 
-That is the **backup**. The notes folder of each space is also a git repository. The
-backup pushes it to a private repository of yours, one per space.
+That is the **backup**. The notes folder of each space is also a git repository (git keeps
+every version of a folder and can copy it to a server). The backup pushes it to a private repository of yours, one per space.
 
 ## Set it up: ask Claude
 
@@ -25,6 +25,10 @@ augmented-brain backup setup git@gitlab.com:lucia/brain-work.git
 ```
 
 Use a **private** repository: your notes are in it.
+
+Until a space has a backup, augmented brain says so: `augmented-brain doctor` names each
+space with none, `update` warns when it goes ahead with no copy to go back to, and
+`uninstall --all` warns that those notes will be gone for good.
 
 ## It runs by itself
 
@@ -72,7 +76,8 @@ Some things are left out on purpose:
   and you add them again if you still want to.
 - **Your secrets' values.** Only their names travel. `restore` names the secrets this
   machine's keychain does not have yet, each with the command to store it, and those it
-  could not check when the keychain does not answer.
+  could not check when the keychain does not answer, or on Windows, where it cannot be
+  asked.
 
 ## What you get
 
@@ -99,3 +104,7 @@ Some things are left out on purpose:
 Claude tells you at the start of the next session, with the reason. Running
 `augmented-brain backup` in a folder of the space shows the problem. The usual ones are
 in [Troubleshooting](troubleshooting.md#the-backup-failed).
+
+A backup never hangs: each step stops after 3 minutes without an answer (or a download
+slower than 1 KB a second for a minute), and a backup waits at most 10 minutes for
+another one to finish. Both say why.

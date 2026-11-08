@@ -11,12 +11,15 @@ Si Claude Code ya te guarda una memoria, no empiezas de cero. Claude Code la esc
 augmented-brain import ~/.claude/projects/<carpeta>/memory
 ```
 
+Con un solo espacio, ya está. Con más (una instalación normal tiene dos), primero te pide
+a qué espacio va cada nota: mira [Más de un espacio](#más-de-un-espacio) y añade `--map`.
+
 Eso no escribe nada. Enseña adónde iría cada nota, y lo que no ha podido decidir:
 
 - ficheros que no son notas (un índice, por ejemplo);
 - notas sobre ti: copia lo que importe a tu perfil;
 - enlaces que cruzarían de un espacio a otro;
-- ids que tu espacio ya tiene.
+- ids (el nombre del fichero de cada nota, como `task-blog`) que tu espacio ya tiene.
 
 La carpeta de la que importas solo se lee, ahora y después.
 
@@ -40,7 +43,7 @@ paso.
 Lo demás también viene:
 
 - Las capturas de tu `inbox.md` antiguo (cada línea `- …`) van al buzón del espacio de
-  `*` (más abajo), con su fecha y nunca dos veces.
+  `*` (más abajo), o al espacio por defecto, con su fecha y nunca dos veces.
 - `archive/` y `docs/<tarea>/` se copian tal cual, junto a su nota, también si vuelves a
   importar más tarde.
 - Un fichero con un secreto escrito (una clave, un token) se importa, pero sale en el
@@ -63,13 +66,14 @@ lesson-git-commits-pequenos = shared
 * = trabajo
 ```
 
-`*` es para todo lo demás. Pasa el fichero con `--map`:
+`*` es para todo lo demás; con un solo espacio, no hace falta el fichero. Pasa el fichero con `--map`:
 
 ```bash
 augmented-brain import ~/.claude/projects/<carpeta>/memory --map mapa.txt
 ```
 
-Si las notas nombran repositorios en `repos:`, `--repos-base <carpeta>` dice respecto a
+Si las notas nombran repositorios en `repos:` (la lista de carpetas en las
+que trabaja una tarea), `--repos-base <carpeta>` dice respecto a
 qué carpeta están esas rutas. Entonces se reescriben respecto a la carpeta de trabajo del
 espacio.
 

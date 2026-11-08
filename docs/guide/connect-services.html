@@ -98,7 +98,7 @@
   <ol><li>Open <strong>claude.ai → Settings → Connectors</strong>.</li><li>Connect the services you want: Google Calendar, Gmail, Google Drive, Atlassian (Jira and Confluence), and others. Each one asks you to sign in to that service once.</li><li><strong>Start a new Claude Code session.</strong> Connectors load when a session starts: a session that was already open will not see a connector you just added.</li><li>In Claude Code, type <code>/mcp</code> to see them. A connector marked as needing authentication is fixed from claude.ai, not from Claude Code.</li></ol>
   <p>That is all. Your assistant uses them when a task needs them (“what meetings do I have tomorrow?”, “summarise the open issues of this epic”).</p>
   <h2 id="without-a-claudeai-account">Without a claude.ai account</h2>
-  <p>If you use Claude Code with an API key, claude.ai connectors are not available. You can add MCP servers yourself:</p>
+  <p>If you use Claude Code with an API key (a code from the Anthropic Console instead of your claude.ai account), claude.ai connectors are not available. You can add MCP servers yourself:</p>
   <pre><code>claude mcp add --scope user &lt;name&gt; -- &lt;command that starts the server&gt;</code></pre>
   <p>Many services publish an official MCP server; use those when they exist. Read what a server can do before adding it: it acts with your account.</p>
   <h2 id="good-habits">Good habits</h2>

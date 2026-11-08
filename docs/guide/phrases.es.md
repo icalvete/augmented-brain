@@ -13,7 +13,7 @@ forma de decir lo mismo también.
 | "Tarea nueva: mudar el blog a otro hosting." | Abre una tarea en definición, esperándote, y te pregunta qué es "terminado" |
 | "¿En qué estábamos?" | Lista tus tareas vivas, primero las que te esperan, cada una con su siguiente paso |
 | "Seguimos con lo del blog." | Lee la tarea, mira cómo están las cosas de verdad y la retoma donde la dejaste |
-| "Pasa al plan." | Lleva la tarea a su siguiente fase; tú apruebas cada cambio |
+| "Pasa al plan." | Lleva la tarea a su siguiente fase; tú apruebas cada cambio. Si te saltas una fase, el diario dice cuál |
 | "Nos quedamos con el hosting más barato." | Apunta la decisión en el diario de la tarea, con la fecha |
 | "Añade un paso: cambiar el dominio." | Añade una casilla al plan de la tarea |
 | "La base de datos ya está copiada." | Marca ese paso |
@@ -21,7 +21,8 @@ forma de decir lo mismo también.
 | "El día 16, mira si se ha renovado el certificado." | Pone una fecha para revisar en la tarea |
 | "Apárcala, mañana seguimos." | Apunta el siguiente paso exacto y lo esencial, y pausa la tarea |
 | "Déjala para algún día." | La aparca como algún día: fuera de la lista diaria, guardada en su área |
-| "Cierra la tarea." | La cierra con su resultado; nunca se borra |
+| "Cierra la tarea." | La cierra con su resultado; nunca se borra. Una tarea cerrada se queda cerrada: cerrarla otra vez se rechaza |
+| "Reabre la tarea del blog: el certificado ha vuelto a fallar." | La abre otra vez; el motivo va a su diario |
 
 ## Buzón y recordatorios
 
@@ -56,7 +57,7 @@ forma de decir lo mismo también.
 
 | Tú dices | Qué pasa |
 |---|---|
-| "Monta la copia de seguridad." | Crea un repositorio privado en tu GitHub y hace la primera copia |
+| "Configura la copia de seguridad." | Crea un repositorio privado en tu GitHub y hace la primera copia |
 | "Recupera la sesión que se cortó." | Lee lo que se dijo después de la última entrada del diario, y apunta lo que falte |
 | "~/code/blog es el blog, hecho con Hugo." | Apunta esa línea para el repositorio, que sale en el panel |
 | `/brain:panel` | Abre el panel en tu navegador |
@@ -69,11 +70,13 @@ Al empezar una sesión, Claude puede sacar cosas sin que se lo pidas:
   pasado;
 - la revisión semanal, cuando la última tiene una semana y hay algo que repasar;
 - una sesión que se cortó, para recuperarla;
-- una copia de seguridad que falló;
+- una copia de seguridad que falló, o una que dejó ficheros fuera;
 - una versión nueva, para actualizar;
-- notas con problemas.
+- notas con problemas;
+- lo que otro espacio mandó a este, hasta que se hace;
+- las listas del guardia, si algo las cambió fuera del panel.
 
-## Siguiente
+## Por dónde seguir
 
 - [Herramientas MCP](mcp-tools.es.md): la herramienta que hay detrás de cada frase, y qué
   recibe.

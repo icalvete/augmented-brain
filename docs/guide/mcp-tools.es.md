@@ -29,7 +29,7 @@ Hay cosas que valen para todas:
   [`task_update`](#task_update), [`task_step`](#task_step),
   [`task_journal`](#task_journal), [`task_park`](#task_park), [`task_close`](#task_close).
 - **El buzón y la revisión semanal**: [`capture`](#capture),
-  [`weekly_review`](#weekly_review), [`review_done`](#review_done).
+  [`capture_done`](#capture_done), [`weekly_review`](#weekly_review), [`review_done`](#review_done).
 - **Notas que duran**: [`area_new`](#area_new), [`knowledge_new`](#knowledge_new),
   [`rule_new`](#rule_new), [`note_retire`](#note_retire), [`person_save`](#person_save),
   [`repo_describe`](#repo_describe).
@@ -109,7 +109,8 @@ el diario, y la respuesta lista los pasos.
 - `number` (opcional): el paso que marcar o desmarcar, 1 para la primera casilla.
 - `text` (opcional): el paso que marcar o desmarcar, por su texto (o un trozo que solo
   tenga él), cuando no se da `number`.
-- `done` (opcional): `true` para marcar el paso, `false` para desmarcarlo.
+- `done` (opcional): `true` para marcar el paso, `false` para desmarcarlo. Si no se da,
+  lo desmarca.
 
 ## `task_journal`
 
@@ -303,12 +304,16 @@ la enseña. Guardar un nombre que ya está en la lista cambia para qué es.
 
 ## `backup_setup`
 
-Monta la copia de seguridad de este espacio: un repositorio git privado que guarda sus
+Configura la copia de seguridad de este espacio: un repositorio git privado que guarda sus
 notas, y al que se suben solas cada vez que acaba una sesión.
 
 - `repo_url` (opcional): un repositorio git privado al que puedas subir. Sin él, la
   herramienta crea `augmented-brain-<espacio>` en tu cuenta de GitHub con la línea de
   comandos `gh`. Si falta `gh` o no has entrado con él, devuelve los pasos para guiarte.
+
+Hace la primera copia en el momento. Si el espacio ya tiene copia, dice adónde va y cómo
+fue la última; nunca la lleva a otro sitio: eso solo lo haces tú, con
+`augmented-brain backup setup <url>`.
 
 ## `session_recover`
 

@@ -26,7 +26,8 @@ programa escribe en el cuaderno.
 Dos palabras que salen mucho:
 
 - **Hook**: un aviso que Claude Code lanza en un momento concreto. Aquí, al empezar la
-  sesión, antes de cada comando y cada cambio de fichero, después de cada respuesta,
+  sesión, antes de que Claude conteste cada mensaje (para decirle qué tareas cambiaron en
+  otra sesión), antes de cada comando y cada cambio de fichero, después de cada respuesta,
   cuando una conversación larga se compacta y cuando la sesión termina. En cada aviso,
   Claude Code arranca el programa, le pregunta y el programa termina.
 - **MCP** (Model Context Protocol): un estándar abierto para dar herramientas a un
@@ -59,11 +60,12 @@ te pregunta o lo para. Mira [El guardia](guard.es.md).
 escrito nada en ella, un hook le recuerda a Claude que escriba en su diario, una vez. El
 mismo hook mira la memoria de la ventana: si ha crecido mucho más de lo normal, Claude te
 lo dice, para que aparques la tarea antes de que el sistema cierre la ventana. Mira
-[Problemas](troubleshooting.es.md#la-ventana-usa-mucha-memoria).
+[Si algo falla](troubleshooting.es.md#la-ventana-usa-mucha-memoria).
 
 **5. Cierras la sesión.** El hook de cierre apunta que la sesión acabó bien. Lanza la
-[copia de seguridad](backup.es.md) del espacio por detrás, si la tienes montada. No
-esperas a nada. Si la copia falla, Claude te lo dice al empezar la siguiente sesión.
+[copia de seguridad](backup.es.md) del espacio por detrás, si la has configurado. No
+esperas a nada. Si la red no contesta, la copia se rinde a los 3 minutos en vez de
+quedarse colgada. Si la copia falla, Claude te lo dice al empezar la siguiente sesión.
 
 Si una sesión no acabó bien (se cerró la ventana a la fuerza, se apagó el ordenador), la
 siguiente te ofrece recuperarla. Claude lee lo que os dijisteis después de la última
@@ -97,12 +99,16 @@ La carpeta de configuración, `~/.config/augmented-brain/` (en Windows,
 
 ```
 config.toml       los espacios y las listas del guardia
+guard.toml        los repositorios que Claude no debe tocar nunca
+remote.toml       el acceso remoto, si lo configuras
+session.toml      ajustes de las sesiones (el modelo preferido)
 secrets.toml      los nombres de tus secretos, nunca su valor
 profile.md        quién eres, para todos los espacios
 shared/           reglas, referencias y lecciones para todos los espacios
 state/            lo que este ordenador sabe de las sesiones de cada espacio; sin copia
 migrations/       una copia completa de las notas antes de que una versión nueva las mueva
 panel.json        dónde escucha el panel, mientras funciona
+history/          las 10 últimas versiones de estos ficheros; solo en este ordenador
 ```
 
 Cada fichero está explicado en [Configuración](configuration.es.md) y en el
@@ -111,7 +117,9 @@ Cada fichero está explicado en [Configuración](configuration.es.md) y en el
 ## Lo que no hace
 
 - **No hay servidor ni cuenta.** Si Claude no está abierto, no funciona nada, salvo el
-  panel mientras lo usas y la copia de seguridad que lanza el final de una sesión.
+  panel mientras lo usas, la copia de seguridad que lanza el final de una sesión y, si lo
+  configuras, el [acceso remoto](remote.es.md), que sigue en marcha para que llegues a tus
+  sesiones desde otro dispositivo.
 - **No envía tus datos a nadie.** Solo la copia de seguridad, si la configuras, habla con
   tu repositorio. Aparte, una vez al día, pregunta a GitHub cuál es la última versión,
   sin mandar nada tuyo. `AB_NO_UPDATE_CHECK=1` lo apaga.
