@@ -124,7 +124,7 @@ Each line starts with a mark: `✓` fine, `·` for your information, `!` a warni
 something that fails. Under a line that needs work, `→` says what to do. It checks:
 
 - the configuration, the profile and which space this folder is in;
-- each space's notes folder, its notes and its index;
+- each space's notes folder, its notes and its index, and whether it has a backup;
 - Claude Code, git and the plugin;
 - the guard, for real, with a command that must be stopped;
 - the guard's lists, the root exceptions in `root_ask`, and those that have ended;
@@ -363,7 +363,8 @@ does what you would otherwise do by hand:
 
 - **Before:** the health check of `doctor` (what it finds is shown, so it is not taken
   for a problem of the new version), and a backup of every space that has one. If a
-  backup fails, it stops and updates nothing: that copy is the way back.
+  backup fails, it stops and updates nothing: that copy is the way back. With no backup
+  at all, it says it goes ahead without a copy to go back to.
 - **After:** how many open Claude sessions still run the old version, and which task is
   active in each space, so you ask its session to park it before restarting. Then close
   and open Claude, so the sessions use the new version.
@@ -383,8 +384,8 @@ It shows what it will remove and asks first.
 
 - `--config`: also remove the configuration and the profile.
 - `--all`: start from scratch: also the configuration, the profile and every space's
-  notes. It shows each notes folder with how many notes it has. Your backups are not
-  touched.
+  notes. It shows each notes folder with how many notes it has, and warns about those
+  with no backup, which will be gone for good. Your backups are not touched.
 - `--yes`: do not ask.
 
 See [Installing](install.md#uninstalling).

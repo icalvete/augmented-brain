@@ -325,6 +325,14 @@ var commandMessages = map[string]msg{
 		en: "Claude Code, its app and git stay.",
 		es: "Claude Code, su app y git se quedan.",
 	},
+	"uninstall.nobackup": {
+		en: "⚠ These notes have no backup, so they will be gone for good: %s. To keep them, answer no and set up the backup first (augmented-brain backup setup), or copy the folders somewhere else.",
+		es: "⚠ Estas notas no tienen copia de seguridad, así que se perderán para siempre: %s. Para conservarlas, responde que no y configura antes la copia (augmented-brain backup setup), o copia las carpetas a otro sitio.",
+	},
+	"update.nobackup": {
+		en: "No space has a backup: this update goes ahead without a copy to go back to. `augmented-brain doctor` says how to set one up.",
+		es: "Ningún espacio tiene copia de seguridad: esta actualización sigue sin una copia a la que volver. `augmented-brain doctor` dice cómo configurarla.",
+	},
 	"uninstall.backups": {
 		en: "Your backups are not deleted: %s. To delete one on GitHub: gh repo delete <owner/name>.",
 		es: "Tus copias de seguridad no se borran: %s. Para borrar una en GitHub: gh repo delete <usuario/nombre>.",

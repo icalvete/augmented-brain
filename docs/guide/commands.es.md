@@ -128,7 +128,7 @@ Cada línea empieza con una marca: `✓` bien, `·` para que lo sepas, `!` un av
 algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Revisa:
 
 - la configuración, el perfil y en qué espacio está esta carpeta;
-- la carpeta de notas de cada espacio, sus notas y su índice;
+- la carpeta de notas de cada espacio, sus notas, su índice y si tiene copia de seguridad;
 - Claude Code, git y el plugin;
 - el guardia, de verdad, con un comando que tiene que parar;
 - las listas del guardia, las excepciones de root en `root_ask` y las que ya han
@@ -373,7 +373,8 @@ otro modo harías a mano:
 
 - **Antes:** la revisión de `doctor` (lo que encuentre se enseña, para no tomarlo por un
   problema de la versión nueva) y una copia de seguridad de cada espacio que la tenga. Si
-  falla una copia, para y no actualiza nada: esa copia es la vuelta atrás.
+  falla una copia, para y no actualiza nada: esa copia es la vuelta atrás. Si no hay
+  ninguna copia, dice que sigue sin una copia a la que volver.
 - **Después:** cuántas sesiones de Claude abiertas siguen con la versión vieja y qué
   tarea está activa en cada espacio, para que pidas a su sesión que la aparque antes de
   reiniciar. Después cierra Claude y vuelve a abrirlo, para que las sesiones usen la
@@ -394,8 +395,9 @@ Antes enseña lo que va a quitar y te pregunta.
 
 - `--config`: quita también la configuración y el perfil.
 - `--all`: empezar de cero: también la configuración, el perfil y las notas de todos los
-  espacios. Enseña cada carpeta de notas con cuántas notas tiene. Tus copias de seguridad
-  no se tocan.
+  espacios. Enseña cada carpeta de notas con cuántas notas tiene, y avisa de las que no
+  tienen copia de seguridad, que se perderán para siempre. Tus copias de seguridad no se
+  tocan.
 - `--yes`: no pregunta.
 
 Lo tienes en [Instalación](install.es.md#desinstalar).

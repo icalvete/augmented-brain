@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+- **La falta de copia de seguridad se dice claro.** Nada avisaba cuando un espacio no
+  tenía copia de seguridad. Ahora `doctor` lo dice en cada espacio, con cómo
+  configurarla; `update` avisa cuando sigue sin una copia a la que volver; y
+  `uninstall --all` avisa de que las notas sin copia se perderán para siempre.
 - **`remote install` sin systemd no cambia nada.** En una máquina sin los servicios de
   usuario de systemd (un contenedor, WSL sin systemd) escribía los servicios y encendía
   el acceso remoto antes de que systemd los rechazara, y después `doctor` lo daba por

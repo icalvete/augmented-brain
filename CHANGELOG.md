@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Missing backups are said out loud.** Nothing warned when a space had no backup.
+  Now `doctor` says so for each space, with how to set it up; `update` says when it goes
+  ahead with no copy to go back to; and `uninstall --all` warns that notes with no
+  backup will be gone for good.
 - **`remote install` without systemd changes nothing.** On a machine without systemd's
   user services (a container, WSL without systemd) it wrote the services and turned
   remote access on before systemd refused them, and `doctor` then reported it broken.
