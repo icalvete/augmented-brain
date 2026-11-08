@@ -1,7 +1,7 @@
 #!/bin/sh
 # rehearse.sh — the rehearsal before a release, in the VMs, from this checkout.
 #
-#   test/rehearsal/rehearse.sh [--vm ubuntu|windows|both] [--from <snapshot>] [--sessions]
+#   test/rehearsal/rehearse.sh [--vm ubuntu|windows|both] [--from <snapshot>] [--update] [--sessions]
 #
 # It builds the release from this checkout (scripts/release-build.sh, plus the plugin as
 # a marketplace), serves it over HTTP on 127.0.0.1 (a VM reaches this computer's
@@ -9,8 +9,10 @@
 # machine that never saw augmented brain; name another one, say with the last release
 # installed, to rehearse an update), starts it, installs or updates with the published
 # installer pointed at that release, runs checks.py there, and switches the VM off. The
-# logs go to test/rehearsal/logs/ (not committed). --sessions also asks a real Claude a
-# couple of things: the VM's Claude must be logged in (in a snapshot you keep for that).
+# logs go to test/rehearsal/logs/ (not committed). --update first installs the release
+# published last, from GitHub, and runs its doctor, so the release of this checkout goes in
+# as an update: the same as --from a snapshot with the last release, without keeping one.
+# --sessions also asks a real Claude a couple of things: the VM's Claude must be logged in (in a snapshot you keep for that).
 #
 # The VMs are the ones of test/vm/ubuntu-desktop and test/vm/windows-11, made once with
 # vagrant up (see their Vagrantfile). Their Vagrant state lives in the main copy of the
@@ -22,11 +24,13 @@ main=$(cd "$(git rev-parse --git-common-dir)/.." && pwd)
 vms=both
 from=clean
 sessions=""
+update=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --vm) vms=$2; shift 2 ;;
     --from) from=$2; shift 2 ;;
     --sessions) sessions=--sessions; shift ;;
+    --update) update=1; shift ;;
     *) echo "rehearse: unknown option $1"; exit 2 ;;
   esac
 done
@@ -56,7 +60,7 @@ for vm in $vms; do
   dir="$main/test/vm/ubuntu-desktop"; name=augmented-brain-ubuntu
   [ "$vm" = windows ] && { dir="$main/test/vm/windows-11"; name=augmented-brain-windows; }
   log="$logs/$vm-$(date +%Y%m%d-%H%M).log"
-  echo "rehearse: $vm, from snapshot $from (log: $log)"
+  echo "rehearse: $vm, from snapshot $from${update:+, updating the release published last} (log: $log)"
   VBoxManage snapshot "$name" restore "$from" >/dev/null
   VAGRANT_CWD="$dir" vagrant up --no-provision >/dev/null
   code=0
@@ -65,6 +69,12 @@ for vm in $vms; do
       export PATH=\$HOME/.local/bin:\$PATH AB_RELEASE_URL=$url AB_MARKETPLACE=\$HOME/ab-release/marketplace
       rm -rf ~/ab-release && mkdir -p ~/ab-release && curl -fsS $url/marketplace.tgz | tar -C ~/ab-release -xzf -
       curl -fsS $url/checks.py -o ~/ab-release/checks.py
+      if [ -n '$update' ]; then
+        echo '##### the release published last'
+        curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | env -u AB_RELEASE_URL -u AB_MARKETPLACE AB_YES=1 AB_NO_DESKTOP=1 sh
+        augmented-brain --version; augmented-brain doctor || true
+        echo '##### updating'
+      fi
       curl -fsSL $url/install.sh | AB_YES=1 AB_NO_DESKTOP=1 sh
       python3 ~/ab-release/checks.py $version $sessions" >"$log" 2>&1 || code=$?
   else
@@ -76,6 +86,15 @@ for vm in $vms; do
       Invoke-WebRequest -UseBasicParsing '$url/marketplace.tgz' -OutFile \"\$r\\m.tgz\"; tar -C \$r -xzf \"\$r\\m.tgz\"
       \$env:AB_MARKETPLACE = \"\$r\\marketplace\"
       Invoke-WebRequest -UseBasicParsing '$url/checks.py' -OutFile \"\$r\\checks.py\"
+      if ('$update') {
+        Write-Output '##### the release published last'
+        \$keep = \$env:AB_RELEASE_URL, \$env:AB_MARKETPLACE; \$env:AB_RELEASE_URL = \$null; \$env:AB_MARKETPLACE = \$null
+        irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
+        \$env:AB_RELEASE_URL, \$env:AB_MARKETPLACE = \$keep
+        \$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
+        augmented-brain --version; augmented-brain doctor
+        Write-Output '##### updating'
+      }
       irm '$url/install.ps1' | iex
       \$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
       \$py = \$false; try { & python --version 2>\$null | Out-Null; \$py = (\$LASTEXITCODE -eq 0) } catch {}

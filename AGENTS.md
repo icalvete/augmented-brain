@@ -45,7 +45,7 @@ it feels to a newcomer.
 | `internal/doccheck` | Used only by tests: whether the reference pages (`docs/guide/commands`, `mcp-tools`, `configuration`, each with its `.es` twin) cover every command and flag (`commands` in `cmd/augmented-brain/commands.go`), MCP tool and parameter, and `config.toml` setting. `AB_DOCS_DIR` points the tests at other pages. |
 | `docs/` | The website (GitHub Pages, served from `main`): the landing pages, the documentation in `docs/guide/` (Markdown sources, rendered with a sidebar by `scripts/build-guides.py`, which also writes `docs/llms-full.txt`) and the format spec. |
 | `scripts/` | Checks, builders and release helpers (below). |
-| `test/rehearsal/` | The rehearsal before a release: `rehearse.sh` builds the release from the checkout, serves it to the VMs, installs or updates from a snapshot (`--from`, `clean` by default) and runs `checks.py` there (the program, the guard, notes through MCP, the hooks, backup and restore; `--sessions` adds a real Claude), all with made-up data. Logs in `logs/`, not committed. |
+| `test/rehearsal/` | The rehearsal before a release: `rehearse.sh` builds the release from the checkout, serves it to the VMs, installs or updates from a snapshot (`--from`, `clean` by default; `--update` installs the release published last first) and runs `checks.py` there (the program, the guard, notes through MCP, the hooks, backup and restore; `--sessions` adds a real Claude), all with made-up data. Logs in `logs/`, not committed. |
 | `test/vm/ubuntu-desktop/` | A clean Ubuntu desktop VM (Vagrant + VirtualBox) to try it as a newcomer. |
 | `test/vm/windows-11/` | A clean Windows 11 VM, the same way, for the Windows work (evaluation edition, about 90 days). |
 
@@ -187,8 +187,8 @@ Heavier checks, before a release or when you touch what they cover:
   pull requests, not on bare branches). Every CI job stops at 10 minutes, so a stuck
   runner fails instead of waiting for hours.
 - Before a release, the rehearsal in the VMs: `test/rehearsal/rehearse.sh` (Ubuntu and
-  Windows, from `clean`, about 5 minutes each), and again `--from` a snapshot with the
-  last release to rehearse the update. A new version is installed on a real machine
+  Windows, from `clean`, about 5 minutes each), and again with `--update` (it installs the
+  release published last first, then this one over it) to rehearse the update. A new version is installed on a real machine
   only after it. What a release brings that its checks do not cover yet goes into
   `test/rehearsal/checks.py` with it.
 - `main` takes changes only through a pull request whose CI is green and up to date with
