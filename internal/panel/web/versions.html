@@ -1,0 +1,26 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "versions"}}</h1>
+<p class="hint">{{tf "versions.hint" .Keep}}</p>
+{{if .Remote}}<p class="flash warn" role="note">{{t "versions.remote"}}</p>{{end}}
+{{if .Changed}}<p class="flash warn" role="note">{{t "versions.changed"}}</p>{{end}}
+{{if .Versions}}<ul class="cards">{{range .Versions}}<li class="card">
+  <div class="title">{{.N}}. {{.When}} {{if .Current}}<span class="badge you">{{t "versions.current"}}</span>{{end}}</div>
+  <div class="meta">{{.Who}}</div>
+  {{if .Oldest}}<p class="hint">{{t "versions.oldest"}}</p>{{else}}
+  <details class="said"><summary>{{t "versions.what"}}</summary>
+    {{range .Diff}}<div class="diff">
+      <div class="diff-file"><code>{{.Name}}</code>{{if .Gone}} {{t "versions.filegone"}}{{end}}{{if .New}} {{t "versions.filenew"}}{{end}}</div>
+      <pre class="body">{{range .Lines}}{{if eq .Kind "skip"}}<span class="d-skip">…</span>
+{{else if eq .Kind "add"}}<span class="d-add">+ {{.Text}}</span>
+{{else if eq .Kind "del"}}<span class="d-del">- {{.Text}}</span>
+{{else}}  {{.Text}}
+{{end}}{{end}}</pre>
+    </div>{{end}}
+  </details>{{end}}
+  {{if and (not .Current) (not $.D.Remote)}}
+  <form method="post" action="{{$.Base}}/versions/restore" class="stack">
+    {{template "fields" (fields $ "id" .ID)}}
+    <button type="submit" class="small">{{t "versions.restore"}}</button>
+  </form>{{end}}
+</li>{{end}}</ul>{{else}}<p class="empty">{{t "versions.none"}}</p>{{end}}
+{{end}}{{end}}

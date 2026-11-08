@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- **Your configuration keeps its last 10 versions.** A list of the guard emptied by
+  mistake, a space pointing to the wrong folder: until now there was no way back. Every
+  change of `config.toml`, `guard.toml`, `remote.toml`, `session.toml`, the profile or the
+  names of your secrets is now kept as a version, with who made it (the panel, a command,
+  the assistant and its tool, or by hand), only on this computer and never in the backup.
+  The panel's new Versions page shows what each one changed and goes back to one (only
+  from this computer: from another device it only shows); so do
+  `augmented-brain config history` and `config restore`. Going back keeps the current
+  configuration as a version first, and refuses a version the program could not read. A
+  command never accepts new guard lists for you: the guard asks until you do. `doctor`
+  says how many versions are kept.
+
 ## 0.12.0-alpha
 
 Released 2026-11-08.

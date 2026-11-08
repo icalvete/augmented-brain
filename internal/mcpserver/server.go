@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"strings"
 	"time"
 
@@ -635,7 +636,9 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 				return nil, nil, err
 			}
 			defer release()
+			_, _ = confighistory.Record(b.ConfigDir, confighistory.ByOutside, "")
 			text, err := h(b, in)
+			_, _ = confighistory.Record(b.ConfigDir, confighistory.ByTool, name)
 			if b.Fresh != "" {
 				// Check already counted these as seen: they go with the answer either way.
 				if err != nil {

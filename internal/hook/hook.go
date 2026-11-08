@@ -8,6 +8,7 @@ package hook
 import (
 	"encoding/json"
 	"errors"
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"io"
 	"os"
 	"path/filepath"
@@ -152,6 +153,8 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string
 	note += rootNote(c)
 	note += oldServersNote(c)
 	note += guardSealNote(c, cfgDir)
+	// A change made by hand since the last version becomes one: it can be undone too.
+	_, _ = confighistory.Record(cfgDir, confighistory.ByOutside, "")
 	return note
 }
 

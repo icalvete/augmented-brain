@@ -145,6 +145,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/panel-remote.html"/>
   </url>
   <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/config-history.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/config-history.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/config-history.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/config-history.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/config-history.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/config-history.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/config-history.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/config-history.html"/>
+  </url>
+  <url>
     <loc>https://icalvete.github.io/augmented-brain/guide/weekly-review.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/weekly-review.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/weekly-review.es.html"/>

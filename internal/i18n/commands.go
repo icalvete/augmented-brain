@@ -366,6 +366,8 @@ Usage:
   augmented-brain remote install    keep Claude reachable from another computer, also after a reboot (Linux)
   augmented-brain remote uninstall  stop that and remove it
   augmented-brain remote status     say whether it runs, and what is missing
+  augmented-brain config history    the last versions of your configuration, and what changed in one (config history N)
+  augmented-brain config restore N  go back to version N (the current one is kept as a version first)
   augmented-brain update       update augmented brain and its Claude Code plugin
   augmented-brain uninstall    remove the program and the plugin (your notes stay; --all: start from scratch)
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
@@ -388,6 +390,8 @@ Uso:
   augmented-brain remote install    mantiene Claude accesible desde otro ordenador, también tras reiniciar (Linux)
   augmented-brain remote uninstall  lo para y lo quita
   augmented-brain remote status     dice si funciona y qué falta
+  augmented-brain config history    las últimas versiones de tu configuración, y qué cambió en una (config history N)
+  augmented-brain config restore N  vuelve a la versión N (antes guarda la actual como una versión más)
   augmented-brain update       actualiza augmented brain y su plugin de Claude Code
   augmented-brain uninstall    quita el programa y el plugin (tus notas se quedan; --all: empezar de cero)
   augmented-brain mcp          arranca el servidor MCP (lo arranca tu asistente, no tú)

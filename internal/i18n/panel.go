@@ -6,6 +6,58 @@ var panelMessages = map[string]msg{
 		en: "Guard",
 		es: "Guardia",
 	},
+	"panel.versions": {
+		en: "Versions",
+		es: "Versiones",
+	},
+	"panel.versions.hint": {
+		en: "The last %d versions of your configuration (spaces, guard, remote access, profile), kept only on this computer. A new one is kept every time it changes, from here, a command, the assistant or by hand. Your notes are not here: they have their own history in the backup.",
+		es: "Las %d últimas versiones de tu configuración (espacios, guardia, acceso remoto, perfil), guardadas solo en este ordenador. Se guarda una cada vez que cambia: desde aquí, con un comando, el asistente o a mano. Tus notas no están aquí: tienen su propia historia en la copia de seguridad.",
+	},
+	"panel.versions.remote": {
+		en: "You are on the panel from another device: here you can see the versions; going back to one is only from this computer's panel.",
+		es: "Estás en el panel desde otro dispositivo: aquí puedes ver las versiones; volver a una solo se puede desde el panel de este ordenador.",
+	},
+	"panel.versions.changed": {
+		en: "The configuration changed after the newest version (by hand, or by an earlier program). It is kept as a version with the next change, or before going back.",
+		es: "La configuración ha cambiado después de la versión más reciente (a mano, o con un programa anterior). Se guarda como versión con el próximo cambio, o antes de volver a otra.",
+	},
+	"panel.versions.current": {
+		en: "current",
+		es: "la actual",
+	},
+	"panel.versions.what": {
+		en: "What it changed",
+		es: "Qué cambió",
+	},
+	"panel.versions.oldest": {
+		en: "The oldest kept: there is nothing before it to compare it with.",
+		es: "La más antigua que se guarda: no hay nada antes con qué compararla.",
+	},
+	"panel.versions.filegone": {
+		en: "(removed)",
+		es: "(se quitó)",
+	},
+	"panel.versions.filenew": {
+		en: "(created)",
+		es: "(se creó)",
+	},
+	"panel.versions.restore": {
+		en: "Go back to this one",
+		es: "Volver a esta",
+	},
+	"panel.versions.none": {
+		en: "No versions yet: one is kept the first time the configuration changes.",
+		es: "Aún no hay versiones: se guarda una la primera vez que cambia la configuración.",
+	},
+	"panel.versions.localonly": {
+		en: "Going back to a version is only from this computer's panel.",
+		es: "Volver a una versión solo se puede desde el panel de este ordenador.",
+	},
+	"panel.versions.gone": {
+		en: "That version is no longer kept: reload the page.",
+		es: "Esa versión ya no se guarda: recarga la página.",
+	},
 	"panel.guard.hint": {
 		en: "What the guard allows, asks about and never allows. Only you change it, here: the assistant cannot read this panel's key or open its pages. Every change keeps your comments in the files.",
 		es: "Lo que el guardia deja pasar, lo que pregunta y lo que nunca permite. Solo lo cambias tú, aquí: el asistente no puede leer la clave de este panel ni abrir sus páginas. Cada cambio respeta tus comentarios en los ficheros.",

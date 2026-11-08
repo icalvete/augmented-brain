@@ -306,6 +306,43 @@ For each space: the session's name (what you pick in Claude Desktop or claude.ai
 the service is running and starts by itself, and whether Claude trusts its folder. Then
 whether linger is on. Under each problem, `→` says what to do. It takes no options.
 
+## augmented-brain config
+
+The versions of your configuration: two commands, `history` and `restore`, each with its
+own section below. Without a subcommand, `config` prints its usage. See
+[Configuration versions](config-history.md).
+
+## augmented-brain config history
+
+Lists the last versions of your configuration, newest first, and changes nothing.
+
+```bash
+augmented-brain config history
+augmented-brain config history 3
+```
+
+A version is a copy of `config.toml`, `guard.toml`, `remote.toml`, `session.toml`,
+`profile.md` and `secrets.toml` as they were at one moment, with who changed them: the
+panel, a command, the assistant (and which tool), going back to a version, or by hand.
+The last 10 are kept, only on this computer. With a number, it shows what that version
+changed from the one before it, line by line. It takes no options.
+
+## augmented-brain config restore
+
+Goes back to one version of the configuration.
+
+```bash
+augmented-brain config restore 3
+```
+
+It shows what changes and writes it. The configuration you had is kept as a version
+first, so going back can be undone the same way. A version that would leave a file the
+program cannot read is refused, and nothing changes. If the guard's lists end up
+different from the ones you accepted, the guard asks before every commit, push or merge
+it used to allow, until you accept them in the panel's Guard page or start a new session:
+a command can be run by the assistant, so it never accepts them for you. Going back from
+the panel's Versions page does accept them. It takes no options.
+
 ## augmented-brain update
 
 Updates augmented brain and its Claude Code plugin.
