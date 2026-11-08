@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.15.0-alpha
+
+Publicada el 2026-11-08.
 
 - **Una sesión por tarea, desde cualquier sitio.** `augmented-brain session start <tarea>`
   abre una sesión remota propia para una tarea: sale en Claude Desktop y claude.ai con el
