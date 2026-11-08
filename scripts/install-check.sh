@@ -7,6 +7,11 @@
 # everything (AB_YES=1), in Spanish, with the plugin from this checkout. Then it checks
 # what a newcomer would get: the program, the PATH line in the shell's startup file, the
 # two spaces, the default space, the plugin, the first-session interview and doctor.
+# Then the rest of its life: uninstall and install again (notes and configuration
+# stay), uninstall --config and install again (the notes come back), a home with spaces
+# and accents in its path, uninstall --all (nothing left), and the update people make,
+# from the release published last on GitHub to this checkout's (AB_CHECK_NO_NETWORK=1
+# skips that one).
 #
 # It installs Claude Code for the user who runs it, so run it on a throwaway machine:
 # GitHub Actions does (.github/workflows/install.yml). With AB_CHECK_HOME it uses that
@@ -113,7 +118,42 @@ if [ "${AB_CHECK_DESKTOP:-}" = 1 ]; then
   fi
 fi
 
-echo "4. uninstall --all: starting from scratch leaves nothing behind"
+notes() { find "$HOME/augmented-brain" -name '*.md' 2>/dev/null | wc -l | tr -d ' '; }
+reinstall() { # the installer again, from this checkout's release
+  AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP=1 AB_RELEASE_URL="file://$TMP/release" AB_MARKETPLACE="$ROOT" \
+    sh "$ROOT/install.sh" </dev/null >"$TMP/reinstall.log" 2>&1
+}
+
+echo "4. uninstall, then install again: the notes and the configuration stay"
+before="$(notes)"
+PATH="$HOME/.local/bin:$PATH" "$AB" uninstall --yes >"$TMP/uninstall.log" 2>&1 || bad "uninstall exited with an error"
+check "the program is gone" sh -c "! test -e '$AB'"
+check "the plugin is gone" sh -c "! PATH=\"$HOME/.local/bin:\$PATH\" claude plugin list 2>/dev/null | grep -q 'brain@augmented-brain'"
+check "the configuration stays" test -f "$cfg"
+check "every note stays" test "$(notes)" = "$before"
+reinstall || bad "install.sh exited with an error"
+check "installing again finds them" grep -q 'Ya estaba configurado' "$TMP/reinstall.log"
+check "the program is back" test -x "$AB"
+check "the plugin is back" sh -c "PATH=\"$HOME/.local/bin:\$PATH\" claude plugin list | grep -q 'brain@augmented-brain'"
+check "doctor is happy again" sh -c "cd '$HOME/augmented-brain/trabajo' && PATH=\"$HOME/.local/bin:\$PATH\" '$AB' doctor"
+
+echo "5. uninstall --config, then install again: the notes stay and come back"
+PATH="$HOME/.local/bin:$PATH" "$AB" uninstall --yes --config >"$TMP/uninstall.log" 2>&1 || bad "uninstall --config exited with an error"
+check "the configuration is gone" sh -c "! test -e '$cfg'"
+check "every note stays" test "$(notes)" = "$before"
+reinstall || bad "install.sh exited with an error"
+check "the spaces are made again, over the notes" test -f "$cfg"
+check "no note lost or doubled" test "$(notes)" = "$before"
+check "doctor is happy again" sh -c "cd '$HOME/augmented-brain/trabajo' && PATH=\"$HOME/.local/bin:\$PATH\" '$AB' doctor"
+
+echo "6. a home with spaces and accents in its path"
+odd="$TMP/casa de Lucía"
+mkdir -p "$odd"
+check "init there" sh -c "HOME='$odd' AB_CONFIG_DIR='$odd/cfg' AB_LANGUAGE=es '$AB' init --no-plugin"
+check "check there" sh -c "cd '$odd/augmented-brain/trabajo' && HOME='$odd' AB_CONFIG_DIR='$odd/cfg' '$AB' check"
+check "a backup there" sh -c "git init -q --bare -b main '$odd/copia.git' && cd '$odd/augmented-brain/trabajo' && HOME='$odd' AB_CONFIG_DIR='$odd/cfg' '$AB' backup setup '$odd/copia.git' && HOME='$odd' AB_CONFIG_DIR='$odd/cfg' '$AB' backup"
+
+echo "7. uninstall --all: starting from scratch leaves nothing behind"
 PATH="$HOME/.local/bin:$PATH" "$AB" uninstall --yes --all >"$TMP/uninstall.log" 2>&1 || { cat "$TMP/uninstall.log"; bad "uninstall --all exited with an error"; }
 check "the program is gone" sh -c "! test -e '$AB'"
 check "the configuration is gone" sh -c "! test -e '$HOME/.config/augmented-brain'"
@@ -128,6 +168,26 @@ find "$HOME/.local/bin" "$HOME/.config" "$HOME/augmented-brain" "$HOME/.claude" 
   -iname '*augmented*' 2>/dev/null >"$TMP/left.txt" || true  # some folders do not exist
 check "and nothing else is left" sh -c "! test -s '$TMP/left.txt'"
 sed 's/^/    left: /' "$TMP/left.txt"
+
+# The update people make: from the release published last, downloaded from GitHub, to
+# this checkout's. AB_CHECK_NO_NETWORK=1 skips it.
+if [ "${AB_CHECK_NO_NETWORK:-}" != 1 ]; then
+  echo "8. update from the release published last"
+  last="$(curl -fsSIL -o /dev/null -w '%{url_effective}' "https://github.com/icalvete/augmented-brain/releases/latest" | sed 's#.*/tag/v##')"
+  if [ -n "$last" ]; then
+    AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP=1 AB_VERSION="$last" AB_MARKETPLACE="$ROOT" \
+      sh "$ROOT/install.sh" </dev/null >"$TMP/old.log" 2>&1 || { sed 's/^/    | /' "$TMP/old.log"; bad "installing $last exited with an error"; }
+    check "release $last installed" sh -c "'$AB' version | grep -qx '$last'"
+    before="$(notes)"
+    reinstall || bad "the update exited with an error"
+    check "updated to this checkout" sh -c "'$AB' version | grep -qx '0.0.0-check'"
+    check "every note stays" test "$(notes)" = "$before"
+    check "the notes still check" sh -c "cd '$HOME/augmented-brain/trabajo' && '$AB' check"
+    check "doctor is happy after the update" sh -c "cd '$HOME/augmented-brain/trabajo' && PATH=\"$HOME/.local/bin:\$PATH\" '$AB' doctor"
+  else
+    bad "cannot tell the release published last"
+  fi
+fi
 
 echo
 if [ "$fails" -gt 0 ]; then
