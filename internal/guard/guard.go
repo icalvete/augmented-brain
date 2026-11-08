@@ -73,6 +73,10 @@ type Policy struct {
 	// ConfigProblem, when not empty, says why the configuration could not be read: the
 	// lists above are unknown, so a command they would cover asks the user every time.
 	ConfigProblem string
+	// GuardProblem, when not empty, says why guard.toml could not be read: the
+	// untouchable repositories are unknown, so a commit, push or merge the other lists
+	// would let through asks the user instead, until the file is fixed.
+	GuardProblem string
 	// RootAsk are the machines where becoming root asks the user instead of being denied,
 	// each until a time; Hostname is this machine's name, for an exception for it. Now
 	// is the time to compare with (zero: the clock).
@@ -504,7 +508,11 @@ func (p Policy) git(env map[string]string, args []string) Decision {
 			if p.untouchableRepo(d) {
 				return Decision{Deny, i18n.T(p.Lang, "guard.untouchable", paths.Tilde(d), "git "+args[i])}
 			}
-			switch p.repoVerdict(d) {
+			verdict := p.repoVerdict(d)
+			if verdict != Deny && p.GuardProblem != "" {
+				return Decision{Ask, i18n.T(p.Lang, "guard.guardfile", "git "+args[i], paths.Tilde(d), p.GuardProblem)}
+			}
+			switch verdict {
 			case Ask:
 				return Decision{Ask, i18n.T(p.Lang, "guard.git.ask", args[i], paths.Tilde(d), p.facts(d))}
 			case Allow:

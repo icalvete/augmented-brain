@@ -71,6 +71,9 @@ func (p Policy) merge(name, what string, env map[string]string, args []string) D
 	if name == "gh" && slices.ContainsFunc(args, func(a string) bool { return a == "--admin" || a == "--admin=true" }) {
 		return Decision{Ask, i18n.T(p.Lang, "guard.merge.admin", name+" "+what, paths.Tilde(dir))}
 	}
+	if p.GuardProblem != "" {
+		return Decision{Ask, i18n.T(p.Lang, "guard.guardfile", name+" "+what, paths.Tilde(dir), p.GuardProblem)}
+	}
 	if verdict == Allow && p.ConfigChanged {
 		return Decision{Ask, i18n.T(p.Lang, "guard.changed", name+" "+what, paths.Tilde(dir), p.facts(dir))}
 	}
