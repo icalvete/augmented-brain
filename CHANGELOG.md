@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.14.0-alpha
+
+Released 2026-11-08.
 
 - **Extra words are said, never ignored.** `space`, `check`, `doctor`, `mcp`, `version` and
   `help` ignored what came after them, so a typo like `space ad x` just showed the space.

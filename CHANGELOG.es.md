@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.14.0-alpha
+
+Publicada el 2026-11-08.
 
 - **Las palabras de más se dicen, nunca se ignoran.** `space`, `check`, `doctor`, `mcp`,
   `version` y `help` ignoraban lo que venía detrás, así que una errata como `space ad x`
