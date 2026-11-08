@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
 
@@ -145,5 +146,68 @@ func TestGuardPageModel(t *testing.T) {
 	}
 	if ss, _ := config.LoadSession(cfg); ss.PreferredModel != "" {
 		t.Errorf("not emptied: %+v", ss)
+	}
+}
+
+// When the lists changed outside the page, it shows what changed since the lists the
+// user last accepted (the kept version whose fingerprint is the seal), and says so when
+// that version is no longer kept.
+func TestGuardPageShowsWhatChanged(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	if err := config.SetTopList(cfg, "untouchable_hosts", []string{"old-host"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := confighistory.Record(cfg, confighistory.ByPanel, ""); err != nil {
+		t.Fatal(err)
+	}
+	sealNow(t, cfg)
+	// outside the page: a host swapped and a profile added
+	if err := config.SetTopList(cfg, "untouchable_hosts", []string{"sneaky"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := config.SetTopList(cfg, "production_aws_profiles", []string{"prod"}); err != nil {
+		t.Fatal(err)
+	}
+	body := s.get(t, "/guard?s=work").Body.String()
+	for _, want := range []string{"What changed since you last saw them", `<span class="d-add">+ <code>sneaky</code>`, `<span class="d-del">- <code>old-host</code>`, `<span class="d-add">+ <code>prod</code>`} {
+		if !strings.Contains(body, want) {
+			i := strings.Index(body, "What changed")
+			t.Errorf("missing %q in: %s", want, body[max(i, 0):min(len(body), max(i, 0)+700)])
+		}
+	}
+
+	// no kept version has the sealed lists: it says so instead
+	if err := os.RemoveAll(filepath.Join(cfg, "history")); err != nil {
+		t.Fatal(err)
+	}
+	body = s.get(t, "/guard?s=work").Body.String()
+	if !strings.Contains(body, "not among the kept versions") || strings.Contains(body, "What changed since") {
+		t.Errorf("without the sealed version:\n%s", body[:min(len(body), 3000)])
+	}
+}
+
+// The dangerous lists warn, and letting the assistant commit and push without asking
+// needs the box ticked.
+func TestGuardPageWarnsOnDangerousLists(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	sealNow(t, cfg)
+	body := s.get(t, "/guard?s=work").Body.String()
+	for _, want := range []string{"commits and pushes without asking you each time", "may run commands as root", `name="confirm" value="yes" required`} {
+		if !strings.Contains(body, want) {
+			t.Errorf("missing %q", want)
+		}
+	}
+	repo := filepath.Join(filepath.Dir(cfg), "work", "app")
+	if w := s.post(t, "/guard/list", url.Values{"s": {"work"}, "list": {"allowed"}, "space": {"work"}, "op": {"add"}, "value": {repo}}); w.Code != http.StatusBadRequest {
+		t.Errorf("allowed without the box: %d", w.Code)
+	}
+	if c, _ := config.Load(cfg); len(c.Spaces["work"].GitAllowedRepos) != 0 {
+		t.Fatal("added without confirming")
+	}
+	if w := s.post(t, "/guard/list", url.Values{"s": {"work"}, "list": {"allowed"}, "space": {"work"}, "op": {"add"}, "value": {repo}, "confirm": {"yes"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("allowed with the box: %d", w.Code)
+	}
+	if c, _ := config.Load(cfg); len(c.Spaces["work"].GitAllowedRepos) != 1 {
+		t.Error("not added after confirming")
 	}
 }

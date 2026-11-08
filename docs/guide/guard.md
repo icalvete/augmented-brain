@@ -122,6 +122,7 @@ three things so that the lists stay yours:
   when a session starts and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
   let through asks first, and the Guard page and `doctor` say so until you accept them.
+  The Guard page shows what was added and removed since you last accepted them.
 
 What this does not stop: a script that Claude writes in line (`python -c`, a heredoc) can
 still edit the files, as it can anything your account can. The guard then notices the

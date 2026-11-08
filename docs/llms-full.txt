@@ -909,6 +909,7 @@ three things so that the lists stay yours:
   when a session starts and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
   let through asks first, and the Guard page and `doctor` say so until you accept them.
+  The Guard page shows what was added and removed since you last accepted them.
 
 What this does not stop: a script that Claude writes in line (`python -c`, a heredoc) can
 still edit the files, as it can anything your account can. The guard then notices the
@@ -1330,9 +1331,10 @@ Every list the guard answers to, in one page, to read and change:
 - **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
   asks you to type the folder's name.
 - **Repositories** each space lets Claude commit in, or ask you about, with a form to add
-  or remove.
+  or remove. The list where Claude commits and pushes without asking carries a warning,
+  and adding to it asks you to tick that you understand.
 - **Root exceptions**, with the date each ends (the ones that ended are marked). Adding
-  one asks you to type the machine's name again.
+  one warns what it allows and asks you to type the machine's name again.
 - **Production profiles** and **untouchable machines**.
 - **The model of your sessions** (`preferred_model` in `session.toml`): when a session
   answers with another one, Claude tells you. Below it, what Claude Code said about its
@@ -1340,7 +1342,10 @@ Every list the guard answers to, in one page, to read and change:
 - The files Claude cannot change on its own.
 
 Your comments in `config.toml` stay where they are. If the lists are not the ones you last
-saw (something changed them outside this page), a notice says so with an accept button;
+saw (something changed them outside this page), a notice says so and shows what changed:
+what was added and what was removed, list by list, compared with the lists you last
+accepted (when those are no longer among the kept versions, it says so). Then an accept
+button;
 until then a push or merge that the lists allow asks first. Claude cannot open this page:
 the guard denies it the panel's key. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
 

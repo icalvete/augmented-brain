@@ -3,12 +3,14 @@ package panel
 import (
 	"errors"
 	"net/http"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
@@ -40,7 +42,9 @@ type guardData struct {
 	Hosts       []string
 	OtherHosts  []string
 	Protected   []string
-	Changed     bool   // the lists are not the ones last sealed
+	Changed     bool // the lists are not the ones last sealed
+	Changes     []listChange
+	Known       bool   // the sealed lists were found among the kept versions
 	Problem     string // why guard.toml cannot be read, when it cannot
 	Model       string // preferred_model of session.toml
 	LastStart   string // what the last session start said about its model
@@ -95,10 +99,104 @@ func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
 	}
 	if seal := state.ReadSeal(v.c.Dir); seal != "" && seal != v.c.GuardFingerprint(g) {
 		d.Changed = true
+		if sc, sg, ok := sealedVersion(v.c.Dir, seal); ok {
+			d.Known = true
+			d.Changes = listChanges(v, guardListsOf(sc, sg), guardListsOf(v.c, g))
+		}
 	}
 	p := v.frame("guard", v.t("guard"))
 	p.D = d
 	return "guard", p, nil
+}
+
+// listChange is what one of the guard's lists gained and lost since the user last saw
+// them.
+type listChange struct {
+	List           string
+	Added, Removed []string
+}
+
+// guardListKeys are the lists the seal covers, in the page's order, with their titles.
+var guardListKeys = []struct{ key, title string }{
+	{"untouchable", "guard.untouchable"}, {"allowed", "guard.allowed"}, {"ask", "guard.ask"},
+	{"root", "guard.root"}, {"profiles", "guard.profiles"}, {"hosts", "guard.hosts"},
+}
+
+// guardListsOf are the lists GuardFingerprint covers, by key.
+func guardListsOf(c *config.Config, g config.Guard) map[string][]string {
+	allowed, ask := c.GitLists()
+	profiles, hosts := c.GuardLists()
+	return map[string][]string{"untouchable": g.UntouchableRepos, "allowed": allowed, "ask": ask,
+		"root": c.RootAsk, "profiles": profiles, "hosts": hosts}
+}
+
+// listChanges compares the sealed lists with the current ones, list by list.
+func listChanges(v *view, before, now map[string][]string) []listChange {
+	var out []listChange
+	for _, k := range guardListKeys {
+		ch := listChange{List: v.t(k.title)}
+		for _, x := range now[k.key] {
+			if !slices.Contains(before[k.key], x) {
+				ch.Added = append(ch.Added, shown(x))
+			}
+		}
+		for _, x := range before[k.key] {
+			if !slices.Contains(now[k.key], x) {
+				ch.Removed = append(ch.Removed, shown(x))
+			}
+		}
+		if len(ch.Added)+len(ch.Removed) > 0 {
+			out = append(out, ch)
+		}
+	}
+	return out
+}
+
+// shown is an entry as the page writes it: a folder with ~, anything else as it is.
+func shown(x string) string {
+	if filepath.IsAbs(x) {
+		return paths.Tilde(x)
+	}
+	return x
+}
+
+// sealedVersion finds the lists the user last accepted: the seal is only their
+// fingerprint, so it looks for the newest kept version of the configuration whose lists
+// have it. Each version is read from a temporary copy of its files; false when none has.
+func sealedVersion(dir, seal string) (*config.Config, config.Guard, bool) {
+	vs, err := confighistory.List(dir)
+	if err != nil || len(vs) == 0 {
+		return nil, config.Guard{}, false
+	}
+	tmp, err := os.MkdirTemp("", "ab-sealed-")
+	if err != nil {
+		return nil, config.Guard{}, false
+	}
+	defer os.RemoveAll(tmp)
+	for _, ver := range vs {
+		sub := filepath.Join(tmp, ver.ID)
+		if err := os.MkdirAll(sub, 0o700); err != nil {
+			continue
+		}
+		for name, text := range ver.Files {
+			if name != filepath.Base(name) {
+				continue // only the configuration's own files, by name
+			}
+			_ = os.WriteFile(filepath.Join(sub, name), []byte(text), 0o600)
+		}
+		c, err := config.Load(sub)
+		if err != nil {
+			continue
+		}
+		g, err := config.LoadGuard(sub)
+		if err != nil {
+			continue
+		}
+		if c.GuardFingerprint(g) == seal {
+			return c, g, true
+		}
+	}
+	return nil, config.Guard{}, false
 }
 
 // sealed runs a change to the lists and, when the lists were the ones the user had
@@ -190,6 +288,11 @@ func (s *Server) guardList(v *view, r *http.Request) (string, error) {
 			sp, ok := v.c.Spaces[field(r, "space")]
 			if !ok {
 				return errNoSpace
+			}
+			// Letting the assistant commit and push without asking is the riskiest list:
+			// adding to it needs the box ticked that says so.
+			if list == "allowed" && op == "add" && field(r, "confirm") != "yes" {
+				return errors.New(v.t("guard.err.allowedconfirm"))
 			}
 			cur, key := sp.GitAllowedRepos, "git_allowed_repos"
 			if list == "ask" {
