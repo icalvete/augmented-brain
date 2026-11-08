@@ -57,7 +57,7 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 	latest := ""
 	if base == "" {
 		var err error
-		latest, err = update.Latest(&http.Client{Timeout: 15 * time.Second})
+		latest, err = latestRelease(&http.Client{Timeout: 15 * time.Second})
 		if err != nil {
 			fmt.Fprintln(errOut, i18n.T(lang, "update.noreach", err))
 			return 1
@@ -83,6 +83,9 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 	afterUpdate(lang, now, out)
 	return 0
 }
+
+// latestRelease asks GitHub for the latest version; tests replace it.
+var latestRelease = update.Latest
 
 // runInstaller downloads the published installer of release latest (or the one at
 // base) into a file and runs it: it replaces the program and, as the configuration

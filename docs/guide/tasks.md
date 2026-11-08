@@ -64,6 +64,11 @@ The phase is the task's `status`. Two more statuses pause a task without losing 
 - **someday**: not for weeks. It leaves the list Claude reads at the start, and stays in
   its area.
 
+A small task may skip phases (straight from definition to execution): it is allowed, and
+the journal says which phases it skipped. A closed task stays closed: closing it again is
+refused, so its result is never written over, and opening it again needs a reason, which
+goes to the journal.
+
 ## Who it waits on, and what comes next
 
 Every task says two more things:

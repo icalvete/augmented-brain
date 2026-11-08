@@ -2,6 +2,12 @@
 
 ## Sin publicar
 
+- **Las fases saltadas quedan escritas, y una tarea cerrada sigue cerrada.** Una tarea
+  podía saltarse fases, o cerrarse dos veces pisando el resultado con el que se cerró, y
+  nada lo decía. Ahora saltarse fases se sigue pudiendo, y el diario dice cuáles; cerrar
+  una tarea ya cerrada se rechaza; y reabrirla pide un motivo (`reopen` en
+  `task_update`), que va al diario. Desde el panel, elegir un estado nuevo para una tarea
+  cerrada es ese motivo.
 - **La falta de copia de seguridad se dice claro.** Nada avisaba cuando un espacio no
   tenía copia de seguridad. Ahora `doctor` lo dice en cada espacio, con cómo
   configurarla; `update` avisa cuando sigue sin una copia a la que volver; y
