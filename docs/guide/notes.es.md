@@ -98,7 +98,11 @@ panel, o te la escribe Claude.
 
 `MEMORY.md` es la lista que Claude lee al empezar cada sesión: la línea de tu perfil, las
 reglas, las áreas y las tareas vivas con su estado y su siguiente paso. La escribe el
-programa después de cada cambio. No la edites a mano: se reescribiría.
+programa después de cada cambio. No la edites a mano: se reescribiría. Al empezar,
+cada tarea va sin su resumen, y con su siguiente paso (los primeros 120 caracteres) solo si
+espera a ti: Claude lee una
+tarea antes de trabajar en ella. Las referencias y lecciones compartidas salen con su
+título y su fichero.
 
 ## Documentos y el archivo
 

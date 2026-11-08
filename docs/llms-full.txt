@@ -754,7 +754,10 @@ writes it for you.
 
 `MEMORY.md` is the list Claude reads at the start of every session: your profile line,
 the rules, the areas, and the live tasks with their status and next step. The program
-writes it after every change. Do not edit it by hand; it would be rewritten.
+writes it after every change. Do not edit it by hand; it would be rewritten. At the
+start, each task goes without its summary, and with its next step (its first 120 characters) only when
+it waits on you: Claude reads a task before working on it. The shared references and lessons are
+listed by title and file.
 
 ## Documents and the archive
 
@@ -2918,7 +2921,7 @@ A session that runs outside every work folder (for example, the scratch folder t
 
 A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the active task pointing at it.
 
-`MEMORY.md` is what the session start hands the assistant: it comes in up to three parts of the start (see "Rules"). An index too long for them is cut, and the assistant is told where to read it whole.
+`MEMORY.md` is the index the session start hands the assistant, a little shorter: each live task goes without its summary, and with its next step (its first 120 characters) only when it waits on you (the assistant reads a task before working on it). It comes in up to three parts of the start (see "Rules"). An index too long for them is cut, and the assistant is told where to read it whole.
 
 **Your profile** (who you are, your language, how you like answers) is the same person in every space, so it lives once, next to the configuration: `profile.md` in the configuration folder. A space's own `profile.md` only adds what applies there.
 
@@ -2934,7 +2937,7 @@ behaves, how the person likes answers). They live once, next to the configuratio
 A shared note has no area, since areas belong to one space; a task, area, person or
 review there is a problem, reported and left out. Every space sees them: a note of a
 space may name a shared note in `related`, and the session start loads the shared rules
-like the space's (see Rules) and lists the shared references and lessons. A shared note never links into a
+like the space's (see Rules) and lists the shared references and lessons, by title and file. A shared note never links into a
 space. They are migrated like a space's notes, and kept in the backup of the default
 space, under `.augmented-brain/shared/`, like the profile.
 

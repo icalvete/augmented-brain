@@ -134,3 +134,37 @@ func TestIndexBadParents(t *testing.T) {
 		t.Errorf("the area is not in the index:\n%s", idx)
 	}
 }
+
+func TestSessionIndex(t *testing.T) {
+	dir := t.TempDir()
+	writeFiles(t, dir, map[string]string{
+		"areas/area-web.md": "---\nid: area-web\ntype: area\ntitle: Website\nsummary: the public site\n---\n",
+		"tasks/task-a.md":   "---\nid: task-a\ntype: task\ntitle: task-a\nsummary: what a is\narea: area-web\nstatus: plan\nwaiting_on: me\nnext: do it\n---\n",
+		"tasks/task-d.md":   "---\nid: task-d\ntype: task\ntitle: task-d\nsummary: what d is\nstatus: parked\nwaiting_on: Ana\nnext: call her\n---\n",
+	})
+	m, problems, err := Load(dir)
+	if err != nil || len(problems) > 0 {
+		t.Fatal(err, problems)
+	}
+	idx := m.SessionIndex("en")
+	for _, want := range []string{
+		"- [Website](areas/area-web.md) — the public site", // only tasks lose their summary
+		"- [task-a](tasks/task-a.md) · plan · waits on me · next: do it\n",
+		"- [task-d](tasks/task-d.md) · parked · waits on Ana\n",
+	} {
+		if !strings.Contains(idx, want) {
+			t.Errorf("session index lacks %q:\n%s", want, idx)
+		}
+	}
+	for _, not := range []string{"what a is", "what d is", "call her"} {
+		if strings.Contains(idx, not) {
+			t.Errorf("session index has %q:\n%s", not, idx)
+		}
+	}
+	if got := clip(strings.Repeat("a", 130), maxSessionNext); len([]rune(got)) != maxSessionNext || !strings.HasSuffix(got, "…") {
+		t.Errorf("clip: %q", got)
+	}
+	if full := m.Index("en"); !strings.Contains(full, "what d is") || !strings.Contains(full, "call her") {
+		t.Errorf("MEMORY.md lost detail:\n%s", full)
+	}
+}

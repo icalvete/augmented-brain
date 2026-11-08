@@ -77,7 +77,7 @@ func TestContextShared(t *testing.T) {
 	text := Context(c, s)
 	for _, want := range []string{
 		"## Rules for every space", "### Answer briefly\nShort answers, one idea each.",
-		"## Knowledge for every space", "[Small steps win](" + filepath.Join(c.SharedDir(), "knowledge", "lesson-small-steps.md") + ") — one change at a time",
+		"## Knowledge for every space", "In " + c.SharedDir() + ":\n- Small steps win (" + filepath.Join("knowledge", "lesson-small-steps.md") + ")",
 		"a task belongs to one space", // a task in the shared folder is reported, not loaded
 	} {
 		if !strings.Contains(text, want) {

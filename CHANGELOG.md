@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **A shorter session start.** Every session started with about 60,000 characters of
+  memory; measured by taking pieces out one at a time and running the same requests, most
+  of them changed nothing in the first answer. Now each live task in the start's index
+  comes without its summary, and with its next step (its first 120 characters) only when
+  it waits on you: Claude reads a task before working on it. The shared references and
+  lessons are listed by title and file, without their summaries. `MEMORY.md` keeps every
+  detail.
+
 ## 0.12.0-alpha
 
 Released 2026-11-08.
