@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.12.0-alpha
+
+Released 2026-11-08.
 
 - **"forgotten?" only on a repository with pending work.** The panel's Repositories page
   marked a clean repository "forgotten?" just because the tasks that name it were all
