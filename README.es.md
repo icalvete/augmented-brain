@@ -155,7 +155,10 @@ y en inglés:
   [La revisión semanal](https://icalvete.github.io/augmented-brain/guide/weekly-review.es.html),
   [Copia de seguridad y restauración](https://icalvete.github.io/augmented-brain/guide/backup.es.html),
   [Conecta tus servicios](https://icalvete.github.io/augmented-brain/guide/connect-services.es.html),
-  [Trae una memoria que ya tienes](https://icalvete.github.io/augmented-brain/guide/import.es.html).
+  [Trae una memoria que ya tienes](https://icalvete.github.io/augmented-brain/guide/import.es.html),
+  [El panel desde otro dispositivo](https://icalvete.github.io/augmented-brain/guide/panel-remote.es.html),
+  [Acceso remoto](https://icalvete.github.io/augmented-brain/guide/remote.es.html),
+  [Versiones de la configuración](https://icalvete.github.io/augmented-brain/guide/config-history.es.html).
 - **Referencia**: [Comandos](https://icalvete.github.io/augmented-brain/guide/commands.es.html), [Herramientas MCP](https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html),
   [Configuración](https://icalvete.github.io/augmented-brain/guide/configuration.es.html),
   [Formato de la memoria](https://icalvete.github.io/augmented-brain/guide/memory-format.html) (en inglés).

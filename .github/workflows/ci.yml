@@ -122,3 +122,9 @@ jobs:
           AB_PRIVACY_KEY: ${{ secrets.AB_PRIVACY_KEY }}
           AB_PRIVACY_REQUIRED: ${{ github.repository == 'icalvete/augmented-brain' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
         run: python3 -I scripts/privacy-hashed.py scan
+      # The website's pages are generated from the guides' Markdown: a change to a guide
+      # that forgot to regenerate them would publish the old text.
+      - name: The website's pages match the guides
+        run: |
+          python3 scripts/build-guides.py >/dev/null
+          git diff --exit-code -- docs || { echo 'run scripts/build-guides.py and commit what it writes'; exit 1; }

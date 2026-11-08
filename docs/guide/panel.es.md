@@ -159,7 +159,7 @@ cambió: lo añadido y lo quitado, lista por lista, frente a las listas que acep
 última vez (si esas ya no están entre las versiones guardadas, lo dice). Después, un botón
 para aceptarlas; hasta entonces un push o merge que las listas permiten pregunta antes. Claude
 no puede abrir esta página: el guardia le niega la clave del panel. Mira
-[El guardia](guard.md).
+[El guardia](guard.es.md).
 
 ## Versiones
 
