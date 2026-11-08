@@ -26,8 +26,8 @@ walks you through it.
 
 ## Linux
 
-**You need:** a 64-bit PC or Arm (amd64 or arm64), `curl` or `wget`, and `sha256sum` (all
-usual distributions have them).
+**You need:** a 64-bit PC or Arm (amd64 or arm64), `curl` or `wget`, and `sha256sum` or
+`shasum` (all usual distributions have them).
 
 **Install:** open a terminal (on Ubuntu, `Ctrl + Alt + T`) and paste:
 
@@ -41,7 +41,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    (Fedora), `pacman` (Arch) or `zypper` (openSUSE). It asks for your password.
 2. **Claude Code**, if missing, with Anthropic's own installer, into `~/.local/bin`. If
    you have it but it is behind, it offers to update it (`claude update`).
-3. **The Claude desktop app**, if you want it, **only on Ubuntu and Debian**: from
+3. **The Claude desktop app**, if you want it, **only on systems with `apt`** (Ubuntu,
+   Debian and their family): from
    Anthropic's apt repository, which it adds for you; it asks for your password. On other
    distributions you use Claude in the terminal.
 4. **The program**, into `~/.local/bin/augmented-brain`.
@@ -150,11 +151,16 @@ augmented-brain update
 ```
 
 It updates the program and the Claude Code plugin. Before, it checks the installation
-(and shows what it finds) and backs up every space that has a backup; if a backup fails,
-it updates nothing. After,
-it says which open sessions still run the old version and which task each space has
+(and shows what fails) and backs up every space that has a backup; if a backup fails,
+it updates nothing (`--force` updates anyway). If no space has a backup, it says that it
+goes ahead with no copy to go back to. After, it says which open sessions still run the old version and which task each space has
 active: ask those sessions to park their task. Running the install command again also
 updates, without those steps. `augmented-brain update --plugin` updates only the plugin.
+
+It first asks GitHub for the latest version, once: if GitHub does not answer, it says so
+and stops. The download is then tried three times, also through GitHub's API. If it still
+fails, or the program is not the new version afterwards, it says so and ends with an
+error: nothing changed, run it again later.
 
 Then close and open Claude. A session that was open keeps the old program until you do,
 and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new
@@ -181,7 +187,8 @@ what Claude Code keeps of it (its cache, its data and its server's logs).
 - **To start from scratch**, `--all` also removes every space's notes. First it shows each
   folder with how many notes it has, and asks. Anything of yours inside a space's folder
   stays. Your backup on GitHub is not deleted: it says which one it is and how to delete
-  it.
+  it. If a space has no backup, it warns you that its notes will be gone for good. To keep
+  them, answer no and set up the backup first.
 - Claude Code, its desktop app, git and the PATH entry stay: Claude Code lives in that
   same folder.
 
@@ -195,16 +202,22 @@ All the commands and their options: [Commands](commands.md).
 - **The terminal cannot find a command** (`command not found`, or "not recognized" on
   Windows). Open a new terminal: the one you used does not see the new PATH yet.
 - **Anything else after installing.** Run `augmented-brain doctor`: it says what is missing
-  and how to fix it. It also warns you when Claude Code keeps a second memory of its own
-  for your spaces' folders, and when other users of the computer could read your notes.
+  and how to fix it. It also warns you when a space has no backup, when Claude Code keeps
+  a second memory of its own for your spaces' folders, and when other users of the
+  computer could read your notes. If the configuration is broken, it tells you how to go
+  back to a version that worked.
 - **"This system is not supported yet".** It works on Linux, macOS and Windows, on 64-bit PCs
   and Arm.
 - **macOS: "Claude Code needs macOS 13".** Update the Mac in System Settings → General →
   Software Update, then paste the command again.
 - **macOS: the developer tools window did not open.** Run `xcode-select --install` and then
   the install command again.
-- **Linux: no desktop app offered.** It is only for Ubuntu and Debian; use Claude in the
-  terminal.
+- **Linux: no desktop app offered.** It is only for systems with `apt` (Ubuntu, Debian
+  and their family); use Claude in the terminal.
+- **"cannot download … from GitHub".** GitHub is having trouble. Nothing was installed:
+  paste the command again in a while.
+- **You stopped the installer half way** (Ctrl+C, a closed window). Paste the command
+  again: it sets everything up from the start.
 - **Windows: "Git was not installed".** The installer tries winget first and then Git's own
   download. If both fail, install Git from [git-scm.com](https://git-scm.com/download/win)
   and run the command again. The desktop app needs winget: update "App Installer" from the

@@ -92,7 +92,8 @@ Todos los espacios comparten:
 - **las notas compartidas**: reglas, referencias y lecciones que valen en todas partes
   (abajo).
 - **las listas del guardia**: los perfiles de AWS de producción, las máquinas que no se
-  tocan y los repositorios donde Claude puede hacer commit. Valen en toda la máquina. Un
+  tocan, los repositorios donde Claude puede hacer commit y los que no debe tocar nunca, y
+  las excepciones de root. Valen en toda la máquina. Un
   perfil de producción guardado desde el espacio de trabajo también se vigila en el
   personal.
 

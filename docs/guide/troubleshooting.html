@@ -102,21 +102,30 @@
   <h3 id="every-powershell-command-is-stopped">Every PowerShell command is stopped</h3>
   <p>That is expected, on Windows. The guard reads the shell, not PowerShell, so it stops PowerShell commands and Claude runs them in Git Bash instead.</p>
   <h3 id="claude-asks-before-every-aws-or-ssh-command">Claude asks before every aws or ssh command</h3>
-  <p>The configuration cannot be read, so the guard does not know your lists and asks to be safe. <code>augmented-brain doctor</code> names the problem. If it says “unknown settings” (“ajustes desconocidos” in Spanish), the file has a line this version does not know: a typo, or a setting of a newer version. Then update with <code>augmented-brain update</code>. See <a href="configuration.html">Configuration</a>.</p>
+  <p>The configuration cannot be read, so the guard does not know your lists and asks to be safe. <code>augmented-brain doctor</code> names the problem. If it says “unknown settings”, the file has a line this version does not know: a typo, or a setting of a newer version. For a newer version's setting, update with <code>augmented-brain update</code>. For a typo, or a change that broke it, go back to a version that worked: <code>augmented-brain config history</code>, then <code>augmented-brain config restore &lt;number&gt;</code>. Both work while the file is broken. See <a href="configuration.html">Configuration</a> and <a href="config-history.html">Configuration versions</a>.</p>
   <h3 id="claude-cannot-push-even-when-i-ask">Claude cannot push, even when I ask</h3>
   <p>If it says a repository is <strong>untouchable</strong>, that is on purpose: only you can change it, in the panel's Guard page (see <a href="guard.html#repositories-claude-must-never-touch">The guard</a>).</p>
   <p>The guard stops <code>git commit</code> and <code>git push</code> unless the repository is listed. Push it yourself, or add the repository to <code>git_allowed_repos</code> (or <code>git_ask_repos</code>) and ask Claude to use <code>git -C &lt;repo&gt;</code>. See <a href="guard.html#let-claude-commit-in-a-repository">The guard</a>.</p>
+  <h3 id="claude-asks-before-a-push-it-used-to-do">Claude asks before a push it used to do</h3>
+  <p>The guard's lists changed outside the panel since you last accepted them (by hand, with a command, or going back to a version). Until you accept them in the Guard page or start a new session, a commit, push or merge they allow asks first. <code>doctor</code> says so. Open the panel's Guard page, look at what changed and accept. See <a href="guard.html#only-you-change-the-guards-lists">The guard</a>.</p>
   <h3 id="claude-needs-root-on-a-machine">Claude needs root on a machine</h3>
   <p>Claude gives you the exact command to run yourself. For a migration that needs many commands, add a dated exception, <code>root_ask = ["db01 until 2026-12-31"]</code>. Then root on that machine asks you each time, until the date.</p>
   <h3 id="augmented-brains-tools-fail-after-an-update">augmented brain's tools fail after an update</h3>
   <p>A session that was open keeps the old program. Close and open it. <code>augmented-brain doctor</code> says how many sessions still run the old version.</p>
   <h3 id="the-installer-or-the-update-cannot-download">The installer or the update cannot download</h3>
   <p>GitHub sometimes fails to hand out a release's files for a while. The installer and <code>augmented-brain update</code> try three times, and also through GitHub's API, which often keeps working when the usual address does not. If all of it fails, they say so and nothing changes: the program you had stays. Try again in a while.</p>
+  <p>What <code>augmented-brain update</code> may end with:</p>
+  <ul><li><strong>“cannot reach GitHub to see the latest version”</strong>: <code>update</code> asks for the latest version once, before downloading. Try again in a while.</li><li><strong>“the program is still X, not Y”</strong>: the installer ran but the program did not change. Nothing else changed; run <code>augmented-brain update</code> again later.</li><li><strong>“The backup failed, so nothing was updated”</strong>: fix the backup (see below) and update again, or run <code>augmented-brain update --force</code>.</li></ul>
+  <p>See <a href="install.html#updating">Installing</a>.</p>
+  <h3 id="the-install-stopped-half-way">The install stopped half way</h3>
+  <p>Run the install command again (or <code>augmented-brain init</code>): until it finishes, there is no configuration, so it starts over. See <a href="install.html">Installing</a>.</p>
   <h3 id="written-by-a-newer-augmented-brain">“Written by a newer augmented brain”</h3>
   <p>A newer version on another computer moved the notes to a new format. Update this computer too: <code>augmented-brain update</code>. The older program refuses the notes instead of breaking them.</p>
   <h3 id="the-backup-failed">The backup failed</h3>
   <p>Claude tells you at the start of the next session. Run <code>augmented-brain backup</code> in a folder of the space to see why:</p>
   <ul><li><strong>No network, or no access.</strong> Check you can reach the repository. On GitHub, log in with <code>gh auth login</code>.</li><li><strong>“Stopped after 3m0s without an answer”.</strong> The network or the repository did not answer, so the backup gave up instead of waiting for good. Try again when the network works; the next backup does not wait behind this one.</li><li><strong>“Another backup has been running for over 10m0s”.</strong> A backup that no longer answers is in the way. Try again later.</li><li><strong>A secret in a note.</strong> It names the file. Take the secret out, then back up again. <code>augmented-brain check</code> names those files too.</li><li><strong>Two machines changed the same note.</strong> It names the notes, and the folder where to merge them by hand. When each machine only added journal entries, they are joined by themselves.</li><li><strong>A file over 50 MB.</strong> It is left out, and the rest is backed up. Move it out of the notes folder.</li></ul>
+  <h3 id="doctor-says-a-space-has-no-backup"><code>doctor</code> says a space has no backup</h3>
+  <p>If this computer is lost, so are that space's notes. Ask Claude “set up the backup” in a folder of the space. Or run <code>augmented-brain backup setup &lt;address of a private repository&gt;</code> there, and then <code>augmented-brain backup</code>. See <a href="backup.html">Backup and restore</a>.</p>
   <h3 id="a-note-is-not-valid">A note is not valid</h3>
   <p><code>augmented-brain check</code> in a folder of the space lists each problem with its file. Fix the header (between the <code>---</code> lines) by hand, and run <code>check</code> again. Until then, the index is not rebuilt, but the tools keep working.</p>
   <h3 id="a-repository-is-not-on-this-computer">A repository is “not on this computer”</h3>
@@ -127,6 +136,10 @@
   <p><code>doctor</code> warns about it. Run <code>augmented-brain check</code> in a folder of the space: it makes the notes yours only.</p>
   <h3 id="the-panel-does-not-open-or-its-address-stopped-working">The panel does not open, or its address stopped working</h3>
   <p>On a computer with no screen, <code>augmented-brain panel</code> prints the address to open yourself. The address carries a key that changes each time the panel starts, and the panel stops after 30 minutes without use. Run <code>augmented-brain panel</code> again for a new address.</p>
+  <h3 id="the-panel-from-another-device-does-not-open">The panel from another device does not open</h3>
+  <p><code>doctor</code> says what is missing: Tailscale stopped, HTTPS off in your network, or an address left published after the panel stopped (it gives the command to remove it). See <a href="panel-remote.html">The panel from another device</a>.</p>
+  <h3 id="remote-access-does-not-work">Remote access does not work</h3>
+  <p>Run <code>augmented-brain remote status</code>: under each problem, <code>→</code> says what to do. Usually Claude does not trust the folder yet (run <code>cd &lt;folder&gt; &amp;&amp; claude</code> once), or linger is off. <code>remote install</code> stops, changing nothing, on a machine without systemd's user services (a container, WSL without systemd). See <a href="remote.html">Remote access</a>.</p>
   <h3 id="a-session-was-cut-off">A session was cut off</h3>
   <p>The window was closed by force, or the computer went down. The next session offers to recover it. Say yes, or go to the panel's Sessions page. Claude Code keeps each conversation for 30 days.</p>
   <h3 id="the-window-uses-a-lot-of-memory">The window uses a lot of memory</h3>
@@ -136,6 +149,8 @@
   <p>Claude warns at 2 GB, then at 4 and 8 GB, once each. On Windows it does not look.</p>
   <h3 id="after-a-restore-nothing-asks-before-production">After a restore, nothing asks before production</h3>
   <p>Backups do not carry the guard's lists. Open a Claude session: it offers to ask you for them. Or add <code>production_aws_profiles</code> and <code>untouchable_hosts</code> to the configuration yourself.</p>
+  <h3 id="after-a-restore-secrets-could-not-be-checked">After a restore, secrets “could not be checked”</h3>
+  <p>The keychain could not be asked: a Linux machine without a desktop session, a locked macOS keychain, or Windows, where it cannot be asked. The secrets may be there. Open a desktop session or unlock the keychain, and look in the panel's Secrets page. Store those that are missing with the command shown. See <a href="backup.html">Backup and restore</a>.</p>
   <h3 id="windows-accents-look-broken-sesiã³n">Windows: accents look broken (<code>sesiÃ³n</code>)</h3>
   <p>Windows PowerShell 5.1 misreads what other programs write when it captures it. The text is right: in Git Bash, or in a window, it shows well.</p>
   <h3 id="macos-the-developer-tools-window-did-not-open">macOS: the developer tools window did not open</h3>

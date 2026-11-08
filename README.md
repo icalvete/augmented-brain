@@ -99,8 +99,9 @@ trusting it.
   close. Park a task and resume it days later. See [Tasks](https://icalvete.github.io/augmented-brain/guide/tasks.html).
 - **Work and personal apart**: each space has its own notes, rules and backup. The folder
   you open Claude in picks the space. See [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html).
-- **A guard** that stops commits, pushes, root and secrets unless you allow them, and asks
-  before production and machines you mark as untouchable. It is a safety net against
+- **A guard** that stops secrets and becoming root, stops commits and pushes except in the
+  repositories you allow, and asks before production and the machines you mark as
+  untouchable. It is a safety net against
   mistakes, not a security boundary. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
 - **A panel** in your browser: today at a glance, and every task, reminder, note,
   repository and secret name to see and edit. See [The panel](https://icalvete.github.io/augmented-brain/guide/panel.html).
@@ -124,6 +125,7 @@ Day to day you talk to Claude. These are for setting up and checking:
 | `augmented-brain backup` | Back up this space now (`backup setup <url>` connects it) |
 | `augmented-brain restore <url>` | Bring a space back on a new machine |
 | `augmented-brain panel` | Open the panel in your browser (`panel stop` stops it) |
+| `augmented-brain config history` | List the last versions of your configuration (`config restore <n>` goes back to one) |
 | `augmented-brain update` | Update the program and the plugin |
 | `augmented-brain uninstall` | Remove the program and the plugin; your notes stay |
 | `augmented-brain version` | Print the version (`help` lists the commands) |

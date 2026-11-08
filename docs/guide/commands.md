@@ -37,7 +37,7 @@ Spanish), with `personal` as the default space. Then it installs the plugin. Wit
 Claude Code, it prints the two commands that install the plugin later.
 
 If there is a configuration already, it stops and changes nothing. To add a space, use
-`space add`.
+`space add`. It writes the configuration last: if it stops half way, run it again.
 
 - `--custom`: ask for the language, the space and its folders, to make one space your way.
 - `--language`: the language, `en` or `es`. Without it, the system's (or `AB_LANGUAGE`).
@@ -133,9 +133,17 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
 - notes that other users of the computer could read;
 - whether there is a default space, and whether a restore left the guard's lists empty;
 - remote access, one line per space, when you set it up with `remote install`: a warning
-  when its service is not running, Claude does not trust its folder yet, or linger is off.
+  when its service is not running, Claude does not trust its folder yet, or linger is off;
+- how many versions of the configuration are kept, and whether it changed outside them
+  (by hand);
+- the guard's lists changed since you last accepted them, and a repository both
+  untouchable and allowed;
+- a Claude window using a lot of memory (2 GB or more);
+- the panel from another device, once you have used it: Tailscale, HTTPS, and an address
+  left published.
 
-It ends with an error when something fails. It takes no options. See
+It ends with an error when something fails. When the configuration cannot be read, it
+points to `config history` and `config restore`. It takes no options. See
 [Troubleshooting](troubleshooting.md).
 
 ## augmented-brain import
@@ -174,7 +182,8 @@ same note in another way, and says which. See [Backup and restore](backup.md).
 
 ## augmented-brain backup setup
 
-Connects this folder's space to a private git repository, and makes the first copy.
+Connects this folder's space to a private git repository. It does not copy anything yet:
+run `augmented-brain backup` afterwards for the first copy (it says so).
 
 ```bash
 augmented-brain backup setup git@gitlab.com:lucia/brain-work.git
@@ -230,10 +239,10 @@ network of their own.
 augmented-brain panel remote
 ```
 
-It starts the panel (or, when it is already open, has that same panel answer through
-the network too, so the pages you have open keep working), publishes it in your
-Tailscale network only, and prints its address and a QR code to open it from the phone. Only your own devices, signed in with
-the account this computer belongs to, can open it; the address stops working when the
+It starts the panel and publishes it in your Tailscale network only. If the panel is
+already open, that same panel answers through the network too, so the pages you have
+open keep working. It prints the address and a QR code to open it from the phone. Only
+your own devices, signed in with the account this computer belongs to, can open it; the address stops working when the
 panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your
 user publish) it explains, with the step to take: it never installs or changes anything
 of Tailscale's for you. See [The panel from another device](panel-remote.md).
@@ -270,9 +279,11 @@ Sets remote access up, one service per space.
 augmented-brain remote install
 ```
 
-For each space named in `remote.toml` (by default, the default space) it creates a
-folder inside the configuration folder, makes it a work folder of that space, writes a
-`systemd` user service that runs `claude remote-control` there, and starts it. You can
+For each space named in `remote.toml` (by default, the default space) it writes a
+`systemd` user service that runs `claude remote-control` in the space's first work folder
+(or the one `folders` names in `remote.toml`), and starts it. Only a space with no work
+folder gets a folder of its own, `remote/<space>` in the configuration folder, which
+becomes its work folder. It needs `claude` on your PATH, and a folder that exists. You can
 run it again at any time: it changes only what is different.
 
 It then says what is still missing, and does none of it for you:
@@ -342,8 +353,9 @@ It shows what changes and writes it. The configuration you had is kept as a vers
 first, so going back can be undone the same way. A version that would leave a file the
 program cannot read is refused, and nothing changes. If the guard's lists end up
 different from the ones you accepted, the guard asks before every commit, push or merge
-it used to allow, until you accept them in the panel's Guard page or start a new session:
-a command can be run by the assistant, so it never accepts them for you. Going back from
+it used to allow. It keeps asking until you accept the lists in the panel's Guard page,
+or start a new session. A command can be run by the assistant, so it never accepts them
+for you. Going back from
 the panel's Versions page does accept them. It works even when `config.toml` is broken,
 like `config history`. It takes no options.
 
@@ -356,12 +368,13 @@ augmented-brain update
 ```
 
 If there is a newer version, it runs the published installer, which replaces the program
-and then updates the plugin. If not, it only updates the plugin. If the download fails
-(three tries, also through GitHub's API) or the program is not the new version
+and then updates the plugin. If not, it only updates the plugin. It first asks GitHub
+for the latest version, once: if GitHub does not answer, it says so and stops. If the
+download of the installer fails (three tries, also through GitHub's API) or the program is not the new version
 afterwards, it says so, ends with an error and changes nothing. Around a new version it
 does what you would otherwise do by hand:
 
-- **Before:** the health check of `doctor` (what it finds is shown, so it is not taken
+- **Before:** the health check of `doctor` (what fails is shown, so it is not taken
   for a problem of the new version), and a backup of every space that has one. If a
   backup fails, it stops and updates nothing: that copy is the way back. With no backup
   at all, it says it goes ahead without a copy to go back to.
@@ -449,4 +462,5 @@ Prints the list of commands, in your language.
 augmented-brain help
 ```
 
-`--help` and `-h` do the same. Running `augmented-brain` with nothing prints the list too.
+`--help` and `-h` do the same. Running `augmented-brain` with nothing prints the list
+too, as an error (exit code 2).

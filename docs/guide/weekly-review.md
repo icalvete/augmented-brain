@@ -11,7 +11,8 @@ tasks pile up in silence.
 
 ## What it goes through
 
-- **The inbox.** Each capture becomes a task, goes to an area or to knowledge, or is
+- **The inbox,** with what other spaces sent here, marked with where it came from. Each
+  capture becomes a task, goes to an area or to knowledge, or is
   dropped.
 - **Tasks untouched for 14 days or more.** Each one goes on as it is, goes to someday, or
   is closed.
@@ -19,8 +20,8 @@ tasks pile up in silence.
 
 ## When it comes up
 
-At the start of a session, when the last review is 7 days old or more and there is
-something to go through. Claude offers it once, in one line, when it does not interrupt
+At the start of a session, when the last review is 7 days old or more (with no review yet,
+since the oldest capture or untouched task) and there is something to go through. Claude offers it once, in one line, when it does not interrupt
 other work. You can also ask for it any time: "let's do the weekly review".
 
 ## With Claude

@@ -71,12 +71,12 @@ space, under `.augmented-brain/shared/`, like the profile.
 
 ## File header
 
-Every file except `MEMORY.md`, `inbox.md` and what is in `archive/` starts with a YAML header between `---` lines (a byte order mark before it is fine). Keys and enumerated values are always English, whatever language you write in.
+Every file except `MEMORY.md`, `inbox.md` and what is in `docs/` and `archive/` starts with a YAML header between `---` lines (a byte order mark before it is fine). Keys and enumerated values are always English, whatever language you write in.
 
 ```yaml
 ---
 id: task-backup-restore          # unique in the space; also the file name without .md
-type: task                       # profile | area | task | reference | lesson | rule | person
+type: task                       # profile | area | task | reference | lesson | rule | person | review
 title: Backup and restore        # shown in indexes; any language
 summary: One line on what it is  # shown in indexes; any language
 area: area-platform              # tasks, references and lessons: the area they belong to
@@ -171,6 +171,11 @@ Two more statuses pause a task without losing anything:
 |---|---|
 | `parked` | Paused, resumed soon; `next` says exactly how |
 | `someday` | Not for weeks; leaves the session index, stays in its area |
+
+Skipping phases is allowed, and seen: the journal line of the change names the phases
+skipped (`Status: definition → execution, skipping analysis, plan.`). A closed task is
+never closed again, so its result is not written over. It opens again only with a
+reason, which goes to the journal (`Reopened (now plan): …`).
 
 ### Task body
 
@@ -320,9 +325,13 @@ delete, a mirror, or a refspec starting with `+` or `:`) asks.
 
 The same lists decide on merging a pull request (`gh pr merge`, `glab mr merge`, `glab mr
 accept`), which pushes to the branch it goes into. As a push counts only a repository
-written with `git -C`, a merge counts only one written in the command with a `cd` before
-it (`cd <repo> && gh pr merge 12`), never the session's folder alone: the listed folder
-itself or a worktree of it, not a folder inside it. A repository the command
+written with `git -C`, a merge counts only a repository the command names. One way is a
+`cd` before it (`cd <repo> && gh pr merge 12`). The other, in the session's own folder,
+is `-R`/`--repo` or the pull request's address, when that is one of the folder's
+remotes: Claude Code drops a `cd` to the folder the session is already in. Never the
+session's folder alone, nor `GH_REPO`, which a command may inherit unseen. The folder
+must be the listed folder itself or a worktree of it, not a folder inside it. A
+repository the command
 names (`-R`/`--repo`, `GH_REPO`, `GITLAB_REPO`, the pull request's address) must be one
 of that repository's remotes, read from its `.git/config` (includes are not followed); a
 name with no host is on `github.com` or `gitlab.com` (or `GH_HOST`, `GITLAB_HOST`).
@@ -356,6 +365,25 @@ assistant adds to it with the MCP tool `secret_name_save` (saving a listed name 
 what it is for); the panel lists it, adds and removes names, says which tasks name each
 one, and, only when asked, whether this computer's keychain has it. An entry that cannot
 be read is left out and counted on the panel's page.
+
+Three more files sit next to `config.toml`. None of them goes into a backup.
+
+- `guard.toml` holds `untouchable_repos`: repositories where the assistant never commits,
+  pushes or merges, whatever the other lists say, for the whole machine. Same form as
+  `git_allowed_repos`. A missing file means nothing is untouchable.
+- `session.toml` holds `preferred_model`: the model the user expects to answer (`opus`,
+  or a full name). When a session answers with another one, the assistant tells the
+  user. Empty or missing: nothing is checked.
+- `remote.toml` holds the settings of remote access: `enabled`, `spaces`, `name_prefix`,
+  `permission_mode` and `folders`.
+
+They are files of their own because earlier programs refuse a setting of `config.toml`
+they do not know. Every change of `config.toml`, `guard.toml`, `remote.toml`,
+`session.toml`, `profile.md` or `secrets.toml` is kept as a version in `history/` in the
+configuration folder, with who made it. The last 10 are kept, only on this machine, never
+in a backup. The user's guide has every setting:
+[Configuration](../guide/configuration.md) and
+[Configuration versions](../guide/config-history.md).
 
 ## Backup
 
@@ -394,6 +422,10 @@ that each machine changed only by adding journal entries (dated lines) and movin
 later date. Any other conflict stops the backup without pushing, naming the notes to
 merge by hand.
 
+Each git call of a backup or restore stops after 3 minutes without an answer (over
+https, also on a transfer slower than 1 KB a second for a minute), and a backup waits at
+most 10 minutes for another one to finish; both say why.
+
 ## State of this machine
 
 `state/<space>.json` in the configuration folder keeps, for this machine only (never
@@ -401,6 +433,11 @@ backed up, no text of the conversation): the active task and when it was last wr
 when the assistant was last reminded to write, and the sessions that started and ended,
 with the path of Claude Code's transcript of each. The Stop reminder, the request after a
 compaction and the offer to recover a session that did not end come from it.
+
+`state/guard.seal` keeps a fingerprint of the guard's lists as the user last accepted
+them: at a session start, or when the panel saved them. While the lists differ from it, a
+commit, push or merge they allow asks first. `history/` keeps the last 10 versions of the
+configuration (see Configuration).
 
 `panel.json`, also in the configuration folder and readable only by the user, says where
 the panel listens while it runs (its process, port and key); it goes away when the panel

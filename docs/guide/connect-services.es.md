@@ -1,5 +1,7 @@
 # Conecta tus servicios
 
+[Read in English](connect-services.md)
+
 augmented brain guarda tus tareas y tus notas. Para leer tu calendario, tu correo, tus
 documentos o tus tickets, tu asistente necesita además esos servicios. Claude Code habla
 con ellos mediante **MCP** (Model Context Protocol): pequeños conectores que le dan
@@ -23,7 +25,8 @@ mañana?", "resúmeme las incidencias abiertas de esta épica").
 
 ## Sin cuenta de claude.ai
 
-Si usas Claude Code con una API key, los conectores de claude.ai no están disponibles.
+Si usas Claude Code con una API key (un código de la consola de Anthropic en vez
+de tu cuenta de claude.ai), los conectores de claude.ai no están disponibles.
 Puedes añadir servidores MCP tú mismo:
 
 ```bash

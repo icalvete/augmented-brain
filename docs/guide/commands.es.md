@@ -37,7 +37,7 @@ Sin opciones no pregunta nada. Toma el idioma del sistema y crea dos espacios en
 escribe los dos comandos para instalar el plugin más tarde.
 
 Si ya hay configuración, se para y no cambia nada. Para añadir un espacio, usa
-`space add`.
+`space add`. Escribe la configuración al final: si se para a medias, vuelve a lanzarlo.
 
 - `--custom`: te pregunta el idioma, el espacio y sus carpetas, para hacer un solo espacio
   a tu manera.
@@ -139,9 +139,17 @@ algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Re
 - si hay espacio por defecto, y si una recuperación dejó vacías las listas del guardia;
 - el acceso remoto, una línea por espacio, cuando lo has puesto con `remote install`: un
   aviso si su servicio no está en marcha, Claude aún no confía en su carpeta o el linger
-  está apagado.
+  está apagado;
+- cuántas versiones de la configuración se guardan, y si cambió por fuera de ellas (a
+  mano);
+- las listas del guardia cambiadas desde que las aceptaste, y un repositorio a la vez
+  intocable y permitido;
+- una ventana de Claude que usa mucha memoria (2 GB o más);
+- el panel desde otro dispositivo, si lo has usado: Tailscale, HTTPS y una dirección que
+  se quedó publicada.
 
-Acaba con error si algo falla. No tiene opciones. Lo tienes en
+Acaba con error si algo falla. Si la configuración no se puede leer, te lleva a
+`config history` y `config restore`. No tiene opciones. Lo tienes en
 [Si algo falla](troubleshooting.es.md).
 
 ## augmented-brain import
@@ -180,14 +188,15 @@ nota de otra forma, y dice cuál. Lo tienes en
 
 ## augmented-brain backup setup
 
-Conecta el espacio de esta carpeta a un repositorio git privado, y hace la primera copia.
+Conecta el espacio de esta carpeta a un repositorio git privado. Todavía no copia nada:
+lanza después `augmented-brain backup` para hacer la primera copia (te lo dice).
 
 ```bash
 augmented-brain backup setup git@gitlab.com:lucia/brain-trabajo.git
 ```
 
 Recibe un argumento, la dirección del repositorio, y no tiene opciones. Para que te cree
-el repositorio en tu cuenta de GitHub, pídeselo a Claude: "monta la copia de seguridad".
+el repositorio en tu cuenta de GitHub, pídeselo a Claude: "configura la copia de seguridad".
 
 ## augmented-brain restore
 
@@ -237,10 +246,10 @@ red privada solo suya.
 augmented-brain panel remote
 ```
 
-Arranca el panel (o, si ya está abierto, hace que ese mismo panel responda también por la
-red, así que las páginas que tienes abiertas siguen funcionando), lo publica solo en tu red
-de Tailscale, y escribe su dirección y un código QR para abrirla desde el móvil. Solo pueden abrirla tus dispositivos, con la cuenta
-a la que pertenece este ordenador; la dirección deja de funcionar cuando el panel se para.
+Arranca el panel y lo publica solo en tu red de Tailscale. Si el panel ya está abierto,
+ese mismo panel responde también por la red, así que las páginas que tienes abiertas
+siguen funcionando. Escribe la dirección y un código QR para abrirla desde el móvil. Solo
+pueden abrirla tus dispositivos, con la cuenta a la que pertenece este ordenador; la dirección deja de funcionar cuando el panel se para.
 Lo que falte (el propio Tailscale, HTTPS en tu red, dejar publicar a tu usuario) lo
 explica, con el paso que hay que dar: nunca instala ni cambia nada de Tailscale por ti.
 Lo tienes en [El panel desde otro dispositivo](panel-remote.es.md).
@@ -277,10 +286,12 @@ Pone el acceso remoto, un servicio por espacio.
 augmented-brain remote install
 ```
 
-Para cada espacio que nombra `remote.toml` (por defecto, el espacio por defecto) crea una
-carpeta dentro de la carpeta de configuración, la hace carpeta de trabajo de ese espacio,
-escribe un servicio de usuario de `systemd` que ejecuta `claude remote-control` ahí y lo
-arranca. Puedes lanzarlo otra vez cuando quieras: solo cambia lo que es distinto.
+Para cada espacio que nombra `remote.toml` (por defecto, el espacio por defecto) escribe
+un servicio de usuario de `systemd` que ejecuta `claude remote-control` en la primera
+carpeta de trabajo del espacio (o en la que diga `folders` en `remote.toml`), y lo
+arranca. Solo un espacio sin carpetas de trabajo recibe una carpeta propia,
+`remote/<espacio>` en la carpeta de configuración, que pasa a ser su carpeta de trabajo.
+Necesita `claude` en tu PATH y una carpeta que exista. Puedes lanzarlo otra vez cuando quieras: solo cambia lo que es distinto.
 
 Luego dice lo que aún falta, y no hace nada de ello por ti:
 
@@ -352,9 +363,9 @@ Enseña lo que cambia y lo escribe. Antes guarda como versión la configuración
 tenías, así que volver atrás se puede deshacer igual. Una versión que dejaría un fichero
 que el programa no puede leer se rechaza, y no cambia nada. Si las listas del guardia
 quedan distintas de las que aceptaste, el guardia pregunta antes de cada commit, push o
-mezcla que antes dejaba pasar, hasta que las aceptes en la página Guardia del panel o
-empieces una sesión nueva: un comando lo puede lanzar el asistente, así que nunca las
-acepta por ti. Volver desde la página Versiones del panel sí las acepta. Funciona aunque
+merge que antes dejaba pasar. Sigue preguntando hasta que aceptes las listas en la página
+Guardia del panel, o empieces una sesión nueva. Un comando lo puede lanzar el asistente,
+así que nunca las acepta por ti. Volver desde la página Versiones del panel sí las acepta. Funciona aunque
 `config.toml` esté roto, igual que `config history`. No tiene opciones.
 
 ## augmented-brain update
@@ -366,12 +377,13 @@ augmented-brain update
 ```
 
 Si hay una versión más nueva, lanza el instalador publicado, que cambia el programa y
-después actualiza el plugin. Si no, solo actualiza el plugin. Si la descarga falla (tres
-intentos, también por la API de GitHub) o el programa no queda en la versión nueva, lo
+después actualiza el plugin. Si no, solo actualiza el plugin. Primero pregunta a GitHub
+cuál es la última versión, una sola vez: si GitHub no responde, lo dice y se para. Si la
+descarga del instalador falla (tres intentos, también por la API de GitHub) o el programa no queda en la versión nueva, lo
 dice, acaba con error y no cambia nada. Alrededor de una versión nueva hace lo que de
 otro modo harías a mano:
 
-- **Antes:** la revisión de `doctor` (lo que encuentre se enseña, para no tomarlo por un
+- **Antes:** la revisión de `doctor` (lo que falla se enseña, para no tomarlo por un
   problema de la versión nueva) y una copia de seguridad de cada espacio que la tenga. Si
   falla una copia, para y no actualiza nada: esa copia es la vuelta atrás. Si no hay
   ninguna copia, dice que sigue sin una copia a la que volver.
@@ -438,7 +450,7 @@ Los eventos:
   ventana (el host de extensiones de VS Code, o el propio Claude en un terminal), y hace
   que Claude te avise cuando pasa de 2 GB, luego de 4 y de 8 GB, una vez cada uno. En
   Linux y macOS; tarda una fracción de milisegundo. Mira
-  [Problemas](troubleshooting.es.md#la-ventana-usa-mucha-memoria).
+  [Si algo falla](troubleshooting.es.md#la-ventana-usa-mucha-memoria).
 - `post-compact`: después de que Claude Code compacte una conversación larga. Guarda el
   resumen en `archive/sessions/` y el diario de la tarea apunta a él.
 - `session-end`: acaba la sesión. Apunta que acabó bien, y lanza la copia de seguridad
@@ -463,4 +475,4 @@ augmented-brain help
 ```
 
 `--help` y `-h` hacen lo mismo. Lanzar `augmented-brain` sin nada también muestra la
-lista.
+lista, como un error (código de salida 2).

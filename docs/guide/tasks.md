@@ -66,8 +66,9 @@ The phase is the task's `status`. Two more statuses pause a task without losing 
 
 A small task may skip phases (straight from definition to execution): it is allowed, and
 the journal says which phases it skipped. A closed task stays closed: closing it again is
-refused, so its result is never written over, and opening it again needs a reason, which
-goes to the journal.
+refused, so its result is never written over, and opening it again needs a reason: Claude asks
+you first, and the reason goes to the journal. In the panel, choosing a new status for a
+closed task is that reason.
 
 ## Who it waits on, and what comes next
 

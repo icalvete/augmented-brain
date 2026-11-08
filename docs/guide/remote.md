@@ -10,7 +10,8 @@ your machine and work in it as if you were sitting there. For that, a small prog
 `augmented-brain remote` keeps it running for you. It starts by itself when the computer
 starts, and starts again if it stops. You set it up once.
 
-This is for Linux for now. macOS is still to do.
+This is for Linux with systemd (the part of Linux that starts and watches services) for
+now: not a container, nor WSL without systemd. macOS and Windows are still to do.
 
 ## One door per space
 
@@ -32,7 +33,8 @@ own, `~/.config/augmented-brain/remote/<space>`.
 augmented-brain remote install
 ```
 
-It writes the service and starts it. It then tells you what is missing, if anything:
+It checks that systemd can keep the service, writes it and starts it. If systemd cannot,
+it says why and changes nothing. It then tells you what is missing, if anything:
 two things only you can do.
 
 ### 1. Let Claude trust the folder
@@ -119,6 +121,6 @@ folders, stay, and nothing else is deleted. Remove them by hand if you want.
 
 ## The settings
 
-`remote.toml`, in the configuration folder: `enabled`, `spaces`, `name_prefix` and
-`permission_mode`. See [Configuration](configuration.md). The commands are in
+`remote.toml`, in the configuration folder: `enabled`, `spaces`, `name_prefix`,
+`permission_mode` and `folders`. See [Configuration](configuration.md). The commands are in
 [Commands](commands.md).

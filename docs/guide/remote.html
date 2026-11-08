@@ -90,14 +90,14 @@
   <h1>Remote access</h1>
   <p>Claude Code can be reached from another computer or from your phone: from <a href="https://claude.ai/code">claude.ai/code</a> or Claude Desktop you pick a session that runs on your machine and work in it as if you were sitting there. For that, a small program, <code>claude remote-control</code>, has to be running on the machine.</p>
   <p><code>augmented-brain remote</code> keeps it running for you. It starts by itself when the computer starts, and starts again if it stops. You set it up once.</p>
-  <p>This is for Linux for now. macOS is still to do.</p>
+  <p>This is for Linux with systemd (the part of Linux that starts and watches services) for now: not a container, nor WSL without systemd. macOS and Windows are still to do.</p>
   <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#one-door-per-space">One door per space</a></li><li><a href="#install-it">Install it</a></li><li><a href="#check-it">Check it</a></li><li><a href="#connect-from-another-computer">Connect from another computer</a></li><li><a href="#keep-it-safe">Keep it safe</a></li><li><a href="#good-to-know">Good to know</a></li><li><a href="#take-it-away">Take it away</a></li><li><a href="#the-settings">The settings</a></li></ul></nav>
   <h2 id="one-door-per-space">One door per space</h2>
   <p>Each space (work, personal…) gets its own door, with its own name: <code>&lt;computer name&gt;-&lt;space&gt;</code>, such as <code>my-laptop-personal</code>. A session opened through that door starts in a folder that belongs to that space, so Claude loads that space's notes and rules, and nothing crosses between spaces. By default only your default space has a door. To open one for work too, see <a href="configuration.html">Configuration</a>.</p>
   <p>That folder is the space's first work folder, the one you named when you made the space: where you already work, so a session from your phone opens where you would open one at the computer. To start somewhere else inside the space, set <code>folders</code> in [<code>remote.toml</code>](configuration.md). Only a space with no work folder gets a folder of its own, <code>~/.config/augmented-brain/remote/&lt;space&gt;</code>.</p>
   <h2 id="install-it">Install it</h2>
   <pre><code>augmented-brain remote install</code></pre>
-  <p>It writes the service and starts it. It then tells you what is missing, if anything: two things only you can do.</p>
+  <p>It checks that systemd can keep the service, writes it and starts it. If systemd cannot, it says why and changes nothing. It then tells you what is missing, if anything: two things only you can do.</p>
   <h3 id="1-let-claude-trust-the-folder">1. Let Claude trust the folder</h3>
   <p>Claude refuses to run in a folder it has not been told to trust, and there is no one at the keyboard to answer when it starts by itself. If you already use Claude in your work folder, it trusts it and there is nothing to do. Otherwise, once for each folder <code>install</code> names, open Claude there and accept the question:</p>
   <pre><code>cd ~/projects &amp;&amp; claude</code></pre>
@@ -122,7 +122,7 @@
   <pre><code>augmented-brain remote uninstall</code></pre>
   <p>It stops and removes the services. The folders, and their place in the space's work folders, stay, and nothing else is deleted. Remove them by hand if you want.</p>
   <h2 id="the-settings">The settings</h2>
-  <p><code>remote.toml</code>, in the configuration folder: <code>enabled</code>, <code>spaces</code>, <code>name_prefix</code> and <code>permission_mode</code>. See <a href="configuration.html">Configuration</a>. The commands are in <a href="commands.html">Commands</a>.</p>
+  <p><code>remote.toml</code>, in the configuration folder: <code>enabled</code>, <code>spaces</code>, <code>name_prefix</code>, <code>permission_mode</code> and <code>folders</code>. See <a href="configuration.html">Configuration</a>. The commands are in <a href="commands.html">Commands</a>.</p>
   <nav class="pager" aria-label="Previous / Next">
     <a class="prev" href="connect-services.html"><span>← Previous</span>Connect your services</a>
     <a class="next" href="import.html"><span>Next →</span>Bring in a memory you already have</a>

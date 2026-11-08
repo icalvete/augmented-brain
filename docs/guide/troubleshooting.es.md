@@ -47,10 +47,14 @@ comandos de PowerShell y Claude los lanza en Git Bash.
 ### Claude pregunta antes de cada comando aws o ssh
 
 No se puede leer la configuración, así que el guardia no conoce tus listas y pregunta por
-si acaso. `augmented-brain doctor` nombra el problema. Si dice "ajustes desconocidos" (o
-"unknown settings", en inglés), el fichero tiene una línea que esta versión no conoce: una
-errata, o un ajuste de una versión más nueva. Entonces actualiza con
-`augmented-brain update`. Lo tienes en [Configuración](configuration.es.md).
+si acaso. `augmented-brain doctor` nombra el problema. Si dice "ajustes desconocidos", el
+fichero tiene una línea que esta versión no conoce: una errata, o un ajuste de una versión
+más nueva. Si es un ajuste de una versión más nueva, actualiza con
+`augmented-brain update`. Si es una errata, o un cambio que lo rompió, vuelve a una
+versión que funcionaba: `augmented-brain config history` y después
+`augmented-brain config restore <número>`. Los dos funcionan aunque el fichero esté roto.
+Lo tienes en [Configuración](configuration.es.md) y en
+[Versiones de la configuración](config-history.es.md).
 
 ### Claude no puede hacer push, aunque se lo pida
 
@@ -61,6 +65,14 @@ El guardia para `git commit` y `git push` salvo que el repositorio esté en la l
 tú el push, o añade el repositorio a `git_allowed_repos` (o a `git_ask_repos`) y pide a
 Claude que use `git -C <repo>`. Lo tienes en
 [El guardia](guard.es.md#deja-que-claude-haga-commit-en-un-repositorio).
+
+### Claude pregunta antes de un push que antes hacía
+
+Las listas del guardia cambiaron fuera del panel desde que las aceptaste (a mano, con un
+comando o al volver a una versión). Hasta que las aceptes en la página Guardia o empiece
+una sesión nueva, un commit, push o merge que permiten pregunta antes. `doctor` lo dice.
+Abre la página Guardia del panel, mira qué cambió y acéptalo. Lo tienes en
+[El guardia](guard.es.md#solo-tú-cambias-las-listas-del-guardia).
 
 ### Claude necesita root en una máquina
 
@@ -80,6 +92,22 @@ instalador y `augmented-brain update` lo intentan tres veces, y también por la 
 GitHub, que suele seguir funcionando cuando la dirección de siempre no. Si falla todo,
 lo dicen y no cambia nada: se queda el programa que tenías. Vuelve a probar dentro de un
 rato.
+
+Cómo puede acabar `augmented-brain update`:
+
+- **"no puedo llegar a GitHub para ver la última versión"**: `update` pregunta la última
+  versión una vez, antes de descargar. Vuelve a probar dentro de un rato.
+- **"el programa sigue siendo la X, no la Y"**: el instalador se ejecutó pero el programa
+  no cambió. No ha cambiado nada más; vuelve a lanzar `augmented-brain update` más tarde.
+- **"La copia de seguridad ha fallado, así que no se ha actualizado nada"**: arregla la
+  copia (más abajo) y vuelve a actualizar, o lanza `augmented-brain update --force`.
+
+Lo tienes en [Instalación](install.es.md#actualizar).
+
+### La instalación se paró a medias
+
+Vuelve a lanzar el comando de instalación (o `augmented-brain init`): hasta que acaba no
+hay configuración, así que empieza de nuevo. Lo tienes en [Instalación](install.es.md).
 
 ### "Lo escribió un augmented brain más nuevo"
 
@@ -105,6 +133,13 @@ carpeta del espacio para ver por qué:
   a mano. Cuando cada máquina solo añadió entradas al diario, se juntan solas.
 - **Un fichero de más de 50 MB.** Se queda fuera, y el resto se copia. Sácalo de la
   carpeta de notas.
+
+### `doctor` dice que un espacio no tiene copia de seguridad
+
+Si pierdes este ordenador, pierdes las notas de ese espacio. Pide a Claude «configura la
+copia de seguridad» en una carpeta del espacio. O lanza allí `augmented-brain backup setup
+<dirección de un repositorio privado>`, y después `augmented-brain backup`. Lo tienes en
+[Copia de seguridad y restauración](backup.es.md).
 
 ### Una nota no es válida
 
@@ -132,9 +167,23 @@ notas solo para ti.
 ### El panel no se abre, o su dirección ha dejado de funcionar
 
 En un ordenador sin pantalla, `augmented-brain panel` escribe la dirección para que la
-abras tú. La dirección lleva una clave que cambia cada vez que arranca el panel, y el
+abras tú. La dirección lleva una llave que cambia cada vez que arranca el panel, y el
 panel se para después de 30 minutos sin usarlo. Vuelve a lanzar `augmented-brain panel`
 para tener una dirección nueva.
+
+### El panel no se abre desde otro dispositivo
+
+`doctor` dice qué falta: Tailscale parado, HTTPS apagado en tu red, o una dirección que se
+quedó publicada después de parar el panel (te da el comando para quitarla). Lo tienes en
+[El panel desde otro dispositivo](panel-remote.es.md).
+
+### El acceso remoto no funciona
+
+Lanza `augmented-brain remote status`: debajo de cada problema, `→` dice qué hacer. Lo
+normal es que Claude aún no confíe en la carpeta (lanza una vez `cd <carpeta> && claude`)
+o que el linger esté apagado. `remote install` se para, sin cambiar nada, en una máquina
+sin servicios de usuario de systemd (un contenedor, WSL sin systemd). Lo tienes en
+[Acceso remoto](remote.es.md).
 
 ### Una sesión se cortó
 
@@ -168,6 +217,14 @@ lo mira.
 Las copias de seguridad no llevan las listas del guardia. Abre una sesión de Claude: se
 ofrece a preguntártelas. O añade tú `production_aws_profiles` y `untouchable_hosts` a la
 configuración.
+
+### Después de recuperar, hay secretos que "no se ha podido comprobar"
+
+No se pudo preguntar al llavero: un Linux sin sesión de escritorio, un llavero de macOS
+bloqueado, o Windows, donde no se le puede preguntar. Puede que los secretos estén. Abre
+una sesión de escritorio o desbloquea el llavero, y mira la página Secretos del panel.
+Guarda los que falten con el comando que sale. Lo tienes en
+[Copia de seguridad y restauración](backup.es.md).
 
 ### Windows: los acentos salen mal (`sesiÃ³n`)
 

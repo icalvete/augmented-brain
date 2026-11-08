@@ -92,8 +92,9 @@
   <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#primero-mira">Primero, mira</a></li><li><a href="#luego-escribe">Luego, escribe</a></li><li><a href="#en-qué-se-convierte-cada-fichero">En qué se convierte cada fichero</a></li><li><a href="#más-de-un-espacio">Más de un espacio</a></li><li><a href="#apaga-la-memoria-antigua">Apaga la memoria antigua</a></li></ul></nav>
   <h2 id="primero-mira">Primero, mira</h2>
   <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory</code></pre>
+  <p>Con un solo espacio, ya está. Con más (una instalación normal tiene dos), primero te pide a qué espacio va cada nota: mira <a href="#más-de-un-espacio">Más de un espacio</a> y añade <code>--map</code>.</p>
   <p>Eso no escribe nada. Enseña adónde iría cada nota, y lo que no ha podido decidir:</p>
-  <ul><li>ficheros que no son notas (un índice, por ejemplo);</li><li>notas sobre ti: copia lo que importe a tu perfil;</li><li>enlaces que cruzarían de un espacio a otro;</li><li>ids que tu espacio ya tiene.</li></ul>
+  <ul><li>ficheros que no son notas (un índice, por ejemplo);</li><li>notas sobre ti: copia lo que importe a tu perfil;</li><li>enlaces que cruzarían de un espacio a otro;</li><li>ids (el nombre del fichero de cada nota, como <code>task-blog</code>) que tu espacio ya tiene.</li></ul>
   <p>La carpeta de la que importas solo se lee, ahora y después.</p>
   <h2 id="luego-escribe">Luego, escribe</h2>
   <p>Cuando la lista esté bien, vuelve a lanzarlo con <code>--apply</code>:</p>
@@ -102,16 +103,16 @@
   <h2 id="en-qué-se-convierte-cada-fichero">En qué se convierte cada fichero</h2>
   <p>Cada fichero pasa a ser una nota de su tipo: por su nombre (<code>task-…</code>, <code>area-…</code>, <code>ref-…</code>, <code>lesson-…</code>, <code>rule-…</code>, <code>person-…</code>) o, si no, por lo que Claude Code dice que es. Una tarea sin estado entra aparcada, esperándote, con «revisar esta tarea importada» como siguiente paso.</p>
   <p>Lo demás también viene:</p>
-  <ul><li>Las capturas de tu <code>inbox.md</code> antiguo (cada línea <code>- …</code>) van al buzón del espacio de <code>*</code> (más abajo), con su fecha y nunca dos veces.</li><li><code>archive/</code> y <code>docs/&lt;tarea&gt;/</code> se copian tal cual, junto a su nota, también si vuelves a importar más tarde.</li><li>Un fichero con un secreto escrito (una clave, un token) se importa, pero sale en el informe. La copia de seguridad no lo sube hasta que se quite el secreto. <code>augmented-brain check</code> también lo nombra.</li><li>Una referencia o lección que es una lista de personas (una sección <code>## Nombre</code> por cada una, con una palabra como “personas” o “equipo” en su id o su título) entra tal cual, y el informe la nombra. Las personas son notas propias, así que pide a Claude que guarde cada una como persona.</li></ul>
+  <ul><li>Las capturas de tu <code>inbox.md</code> antiguo (cada línea <code>- …</code>) van al buzón del espacio de <code>*</code> (más abajo), o al espacio por defecto, con su fecha y nunca dos veces.</li><li><code>archive/</code> y <code>docs/&lt;tarea&gt;/</code> se copian tal cual, junto a su nota, también si vuelves a importar más tarde.</li><li>Un fichero con un secreto escrito (una clave, un token) se importa, pero sale en el informe. La copia de seguridad no lo sube hasta que se quite el secreto. <code>augmented-brain check</code> también lo nombra.</li><li>Una referencia o lección que es una lista de personas (una sección <code>## Nombre</code> por cada una, con una palabra como “personas” o “equipo” en su id o su título) entra tal cual, y el informe la nombra. Las personas son notas propias, así que pide a Claude que guarde cada una como persona.</li></ul>
   <h2 id="más-de-un-espacio">Más de un espacio</h2>
   <p>Un fichero pequeño dice a qué espacio va cada área, qué notas van a otro sitio que su área, y cuáles van a las notas compartidas:</p>
   <pre><code>area-familia = personal
 task-curso-de-tarde = trabajo
 lesson-git-commits-pequenos = shared
 * = trabajo</code></pre>
-  <p><code>*</code> es para todo lo demás. Pasa el fichero con <code>--map</code>:</p>
+  <p><code>*</code> es para todo lo demás; con un solo espacio, no hace falta el fichero. Pasa el fichero con <code>--map</code>:</p>
   <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory --map mapa.txt</code></pre>
-  <p>Si las notas nombran repositorios en <code>repos:</code>, <code>--repos-base &lt;carpeta&gt;</code> dice respecto a qué carpeta están esas rutas. Entonces se reescriben respecto a la carpeta de trabajo del espacio.</p>
+  <p>Si las notas nombran repositorios en <code>repos:</code> (la lista de carpetas en las que trabaja una tarea), <code>--repos-base &lt;carpeta&gt;</code> dice respecto a qué carpeta están esas rutas. Entonces se reescriben respecto a la carpeta de trabajo del espacio.</p>
   <h2 id="apaga-la-memoria-antigua">Apaga la memoria antigua</h2>
   <p>¿Claude Code llevaba esa memoria por su cuenta? Entonces la sigue llevando para las carpetas de tus espacios: una segunda memoria, junto a la del espacio, que se va separando de ella. <code>augmented-brain doctor</code> te avisa, y te dice cómo apagarla: <code>"autoMemoryEnabled": false</code> en los ajustes de Claude Code. Lo que ya tiene se queda, listo para importar.</p>
   <p>Todas las opciones: <a href="commands.es.html#augmented-brain-import">Comandos</a>.</p>

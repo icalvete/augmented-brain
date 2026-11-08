@@ -94,7 +94,7 @@
   <ol><li>Abre <strong>claude.ai → Ajustes → Conectores</strong>.</li><li>Conecta los servicios que quieras: Google Calendar, Gmail, Google Drive, Atlassian (Jira y Confluence) y otros. Cada uno te pide entrar en ese servicio una vez.</li><li><strong>Empieza una sesión nueva de Claude Code.</strong> Los conectores se cargan al empezar la sesión: una sesión que ya estaba abierta no verá un conector que acabas de añadir.</li><li>En Claude Code, escribe <code>/mcp</code> para verlos. Si alguno pide autenticación, se arregla desde claude.ai, no desde Claude Code.</li></ol>
   <p>Y ya está. Tu asistente los usa cuando una tarea los necesita (“¿qué reuniones tengo mañana?”, “resúmeme las incidencias abiertas de esta épica”).</p>
   <h2 id="sin-cuenta-de-claudeai">Sin cuenta de claude.ai</h2>
-  <p>Si usas Claude Code con una API key, los conectores de claude.ai no están disponibles. Puedes añadir servidores MCP tú mismo:</p>
+  <p>Si usas Claude Code con una API key (un código de la consola de Anthropic en vez de tu cuenta de claude.ai), los conectores de claude.ai no están disponibles. Puedes añadir servidores MCP tú mismo:</p>
   <pre><code>claude mcp add --scope user &lt;nombre&gt; -- &lt;comando que arranca el servidor&gt;</code></pre>
   <p>Muchos servicios publican un servidor MCP oficial; usa esos cuando existan. Lee qué puede hacer un servidor antes de añadirlo: actúa con tu cuenta.</p>
   <h2 id="buenos-hábitos">Buenos hábitos</h2>

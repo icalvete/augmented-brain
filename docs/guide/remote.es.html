@@ -90,14 +90,14 @@
   <h1>Acceso remoto</h1>
   <p>A Claude Code se puede llegar desde otro ordenador o desde el móvil: desde <a href="https://claude.ai/code">claude.ai/code</a> o Claude Desktop eliges una sesión que corre en tu máquina y trabajas en ella como si estuvieras delante. Para eso, un programa pequeño, <code>claude remote-control</code>, tiene que estar funcionando en la máquina.</p>
   <p><code>augmented-brain remote</code> lo mantiene funcionando por ti. Arranca solo cuando arranca el ordenador, y vuelve a arrancar si se para. Se prepara una vez.</p>
-  <p>Por ahora es para Linux. macOS queda pendiente.</p>
+  <p>Por ahora es para Linux con systemd (la parte de Linux que arranca y vigila los servicios): no un contenedor, ni WSL sin systemd. macOS y Windows quedan pendientes.</p>
   <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#una-puerta-por-espacio">Una puerta por espacio</a></li><li><a href="#instálalo">Instálalo</a></li><li><a href="#compruébalo">Compruébalo</a></li><li><a href="#conéctate-desde-otro-ordenador">Conéctate desde otro ordenador</a></li><li><a href="#mantenlo-seguro">Mantenlo seguro</a></li><li><a href="#conviene-saber">Conviene saber</a></li><li><a href="#quitarlo">Quitarlo</a></li><li><a href="#los-ajustes">Los ajustes</a></li></ul></nav>
   <h2 id="una-puerta-por-espacio">Una puerta por espacio</h2>
   <p>Cada espacio (trabajo, personal…) tiene su propia puerta, con su propio nombre: <code>&lt;nombre del ordenador&gt;-&lt;espacio&gt;</code>, como <code>mi-portatil-personal</code>. Una sesión abierta por esa puerta empieza en una carpeta que es de ese espacio, así que Claude carga las notas y las reglas de ese espacio, y nada se cruza entre espacios. Por defecto solo tu espacio por defecto tiene puerta. Para abrir otra para trabajo, mira <a href="configuration.es.html">Configuración</a>.</p>
   <p>Esa carpeta es la primera carpeta de trabajo del espacio, la que pusiste al crearlo: donde ya trabajas, así que una sesión abierta desde el móvil empieza donde la abrirías delante del ordenador. Para que empiece en otra carpeta dentro del espacio, usa <code>folders</code> en [<code>remote.toml</code>](configuration.es.md). Solo un espacio sin carpetas de trabajo tiene una carpeta propia, <code>~/.config/augmented-brain/remote/&lt;espacio&gt;</code>.</p>
   <h2 id="instálalo">Instálalo</h2>
   <pre><code>augmented-brain remote install</code></pre>
-  <p>Escribe el servicio y lo arranca. Luego te dice lo que falta, si falta algo: dos cosas que solo puedes hacer tú.</p>
+  <p>Comprueba que systemd puede mantener el servicio, lo escribe y lo arranca. Si systemd no puede, dice por qué y no cambia nada. Luego te dice lo que falta, si falta algo: dos cosas que solo puedes hacer tú.</p>
   <h3 id="1-que-claude-confíe-en-la-carpeta">1. Que Claude confíe en la carpeta</h3>
   <p>Claude se niega a trabajar en una carpeta de la que no le han dicho que se fíe, y cuando arranca solo no hay nadie al teclado para contestar. Si ya usas Claude en tu carpeta de trabajo, ya confía en ella y no hay nada que hacer. Si no, una vez por cada carpeta que nombre <code>install</code>, abre Claude ahí y acepta la pregunta:</p>
   <pre><code>cd ~/proyectos &amp;&amp; claude</code></pre>
@@ -122,7 +122,7 @@
   <pre><code>augmented-brain remote uninstall</code></pre>
   <p>Para y quita los servicios. Las carpetas, y su sitio entre las carpetas de trabajo del espacio, se quedan, y no se borra nada más. Bórralas a mano si quieres.</p>
   <h2 id="los-ajustes">Los ajustes</h2>
-  <p><code>remote.toml</code>, en la carpeta de configuración: <code>enabled</code>, <code>spaces</code>, <code>name_prefix</code> y <code>permission_mode</code>. Mira <a href="configuration.es.html">Configuración</a>. Los comandos están en <a href="commands.es.html">Comandos</a>.</p>
+  <p><code>remote.toml</code>, en la carpeta de configuración: <code>enabled</code>, <code>spaces</code>, <code>name_prefix</code>, <code>permission_mode</code> y <code>folders</code>. Mira <a href="configuration.es.html">Configuración</a>. Los comandos están en <a href="commands.es.html">Comandos</a>.</p>
   <nav class="pager" aria-label="Anterior / Siguiente">
     <a class="prev" href="connect-services.es.html"><span>← Anterior</span>Conecta tus servicios</a>
     <a class="next" href="import.es.html"><span>Siguiente →</span>Trae una memoria que ya tienes</a>

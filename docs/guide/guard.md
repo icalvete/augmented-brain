@@ -72,13 +72,22 @@ git_ask_repos = ["~/code/shop"]                        # ask me each time
 - A repository in both lists asks.
 - The lists of every space count together: a repository is yours, not the space's.
 
+The easiest way is the panel's **Guard** page. Adding a repository to the list where
+Claude commits and pushes without asking shows a warning, and you must tick a box that
+says you understand. Add only repositories where a mistake can be undone.
+
 **Merging a pull request is a push too.** `gh pr merge`, `glab mr merge` and `glab mr
-accept` follow the same lists. gh and glab have no `-C`, so Claude writes `cd ~/code/blog
-&& gh pr merge 12`. The folder in that `cd` is the repository; the folder the session is
-in does not count alone, unless the command names its repository itself (`gh pr merge 12
--R owner/name`, or the pull request's address): Claude Code drops a `cd` to the folder the
-session is already in, so there that is the way to write it. A repository the command names (`-R owner/name`, the pull
-request's address) must be one of that repository's remotes, or the merge is stopped.
+accept` follow the same lists. gh and glab have no `-C`, so the command must say which
+repository it is:
+
+- `cd ~/code/blog && gh pr merge 12`: the folder in the `cd` is the repository.
+- In the repository's own folder, Claude Code removes that `cd` before the guard sees
+  it. There, Claude names the repository: `gh pr merge 12 -R owner/name`, or the pull
+  request's address.
+- A repository named that way must be one of the folder's remotes, or the merge is
+  stopped.
+- The folder the session is in does not count on its own.
+
 `gh pr merge --admin`, which skips the branch's protection, always asks. Only the command
 itself counts: `gh pr merge` written in a pull request's body or a commit message is not
 a merge, and neither is an address or `--admin` in the text given to `--body` or
@@ -100,7 +109,8 @@ untouchable_repos = ["~/work/core", "~/work/cli-*"]
 - The answer says the repository is untouchable and that only you can change it. Claude
   is told not to look for another way.
 - Add and remove them in the panel's **Guard** page. Removing one asks you to type the
-  folder's name.
+  folder's name, and warns you: from then on the other lists decide, so if the repository
+  is in `git_allowed_repos`, Claude will commit and push there.
 
 ## Questions that say what they are about
 
@@ -121,8 +131,10 @@ three things so that the lists stay yours:
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
   when a session starts and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
-  let through asks first, and the Guard page and `doctor` say so until you accept them.
-  The Guard page shows what was added and removed since you last accepted them.
+  let through asks first, and the Guard page and `doctor` say so, until you accept them
+  in the Guard page or a new session starts. A new session takes the lists as they are,
+  and Claude tells you in its first answer that they changed. The Guard page shows what
+  was added and removed since then.
 
 What this does not stop: a script that Claude writes in line (`python -c`, a heredoc) can
 still edit the files, as it can anything your account can. The guard then notices the
@@ -135,8 +147,9 @@ You give them in the first-session interview, or any time: "the AWS profile `sho
 is production", "never touch `db01` without asking me". Claude saves them with the
 `safety_save` tool. They hold on the whole machine, in every space.
 
-Claude can only add to these lists. To take one out, edit the configuration yourself:
-`production_aws_profiles` and `untouchable_hosts` in [Configuration](configuration.md).
+Claude can only add to these lists. To take one out, use the panel's **Guard** page, or
+edit `production_aws_profiles` and `untouchable_hosts` yourself
+([Configuration](configuration.md)).
 
 These lists are in no backup, because they may name your work's machines. After a
 restore on a new machine, the next session offers to ask you for them again.
@@ -155,6 +168,10 @@ it runs is still checked. After the date, root is stopped again by itself, and
 `augmented-brain doctor` says the line can go. The date is required, so no exception is
 left behind.
 
+You can also add it in the panel's **Guard** page. It asks you to type the machine's name
+again, and reminds you that until that date Claude may run commands as root there, after
+you confirm each one. Keep the date close.
+
 ## It looks inside
 
 The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh -c`,
@@ -167,7 +184,9 @@ those of the helpers Claude starts (subagents and workflows).
 
 - **The configuration cannot be read.** Then the guard cannot know your lists. It asks
   you before every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before the tools
-  that call AWS.
+  that call AWS. To go back to a version that worked, run `augmented-brain config history`
+  and then `augmented-brain config restore <number>`
+  ([Configuration versions](config-history.md)).
 - **The program is missing or broken.** Claude Code stops every command and file change
   instead of letting them through (Claude Code 2.1.295 or later).
 - **`guard.toml` cannot be read.** The guard asks before every commit and push until it

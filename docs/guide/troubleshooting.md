@@ -47,9 +47,12 @@ PowerShell commands and Claude runs them in Git Bash instead.
 ### Claude asks before every aws or ssh command
 
 The configuration cannot be read, so the guard does not know your lists and asks to be
-safe. `augmented-brain doctor` names the problem. If it says "unknown settings" ("ajustes desconocidos" in Spanish), the file
-has a line this version does not know: a typo, or a setting of a newer version. Then
-update with `augmented-brain update`. See [Configuration](configuration.md).
+safe. `augmented-brain doctor` names the problem. If it says "unknown settings", the
+file has a line this version does not know: a typo, or a setting of a newer version. For
+a newer version's setting, update with `augmented-brain update`. For a typo, or a change
+that broke it, go back to a version that worked: `augmented-brain config history`, then
+`augmented-brain config restore <number>`. Both work while the file is broken. See
+[Configuration](configuration.md) and [Configuration versions](config-history.md).
 
 ### Claude cannot push, even when I ask
 
@@ -59,6 +62,13 @@ the panel's Guard page (see [The guard](guard.md#repositories-claude-must-never-
 The guard stops `git commit` and `git push` unless the repository is listed. Push it
 yourself, or add the repository to `git_allowed_repos` (or `git_ask_repos`) and ask Claude
 to use `git -C <repo>`. See [The guard](guard.md#let-claude-commit-in-a-repository).
+
+### Claude asks before a push it used to do
+
+The guard's lists changed outside the panel since you last accepted them (by hand, with a
+command, or going back to a version). Until you accept them in the Guard page or start a
+new session, a commit, push or merge they allow asks first. `doctor` says so. Open the
+panel's Guard page, look at what changed and accept. See [The guard](guard.md#only-you-change-the-guards-lists).
 
 ### Claude needs root on a machine
 
@@ -77,6 +87,22 @@ GitHub sometimes fails to hand out a release's files for a while. The installer 
 `augmented-brain update` try three times, and also through GitHub's API, which often
 keeps working when the usual address does not. If all of it fails, they say so and
 nothing changes: the program you had stays. Try again in a while.
+
+What `augmented-brain update` may end with:
+
+- **"cannot reach GitHub to see the latest version"**: `update` asks for the latest
+  version once, before downloading. Try again in a while.
+- **"the program is still X, not Y"**: the installer ran but the program did not change.
+  Nothing else changed; run `augmented-brain update` again later.
+- **"The backup failed, so nothing was updated"**: fix the backup (see below) and update
+  again, or run `augmented-brain update --force`.
+
+See [Installing](install.md#updating).
+
+### The install stopped half way
+
+Run the install command again (or `augmented-brain init`): until it finishes, there is no
+configuration, so it starts over. See [Installing](install.md).
 
 ### "Written by a newer augmented brain"
 
@@ -103,6 +129,12 @@ folder of the space to see why:
   themselves.
 - **A file over 50 MB.** It is left out, and the rest is backed up. Move it out of the
   notes folder.
+
+### `doctor` says a space has no backup
+
+If this computer is lost, so are that space's notes. Ask Claude "set up the backup" in a
+folder of the space. Or run `augmented-brain backup setup <address of a private
+repository>` there, and then `augmented-brain backup`. See [Backup and restore](backup.md).
 
 ### A note is not valid
 
@@ -134,6 +166,19 @@ yourself. The address carries a key that changes each time the panel starts, and
 panel stops after 30 minutes without use. Run `augmented-brain panel` again for a new
 address.
 
+### The panel from another device does not open
+
+`doctor` says what is missing: Tailscale stopped, HTTPS off in your network, or an
+address left published after the panel stopped (it gives the command to remove it). See
+[The panel from another device](panel-remote.md).
+
+### Remote access does not work
+
+Run `augmented-brain remote status`: under each problem, `→` says what to do. Usually
+Claude does not trust the folder yet (run `cd <folder> && claude` once), or linger is
+off. `remote install` stops, changing nothing, on a machine without systemd's user
+services (a container, WSL without systemd). See [Remote access](remote.md).
+
 ### A session was cut off
 
 The window was closed by force, or the computer went down. The next session offers to
@@ -162,6 +207,13 @@ Claude warns at 2 GB, then at 4 and 8 GB, once each. On Windows it does not look
 Backups do not carry the guard's lists. Open a Claude session: it offers to ask you for
 them. Or add `production_aws_profiles` and `untouchable_hosts` to the configuration
 yourself.
+
+### After a restore, secrets "could not be checked"
+
+The keychain could not be asked: a Linux machine without a desktop session, a locked
+macOS keychain, or Windows, where it cannot be asked. The secrets may be there. Open a
+desktop session or unlock the keychain, and look in the panel's Secrets page. Store those
+that are missing with the command shown. See [Backup and restore](backup.md).
 
 ### Windows: accents look broken (`sesiÃ³n`)
 

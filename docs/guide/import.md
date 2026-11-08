@@ -11,12 +11,15 @@ writes it in `~/.claude/projects/<folder>/memory/`. You can bring it into your s
 augmented-brain import ~/.claude/projects/<folder>/memory
 ```
 
+With one space, that is all. With more (a usual install has two), it first asks which
+space each note goes to: see [More than one space](#more-than-one-space) and add `--map`.
+
 That writes nothing. It shows where each note would go, and what it could not decide:
 
 - files that are not notes (an index, say);
 - notes about you: copy what matters into your profile;
 - links that would cross from one space to another;
-- ids your space already has.
+- ids (the name of each note's file, such as `task-blog`) your space already has.
 
 The folder you import from is only read, now and later.
 
@@ -40,7 +43,7 @@ step.
 The rest comes along too:
 
 - The captures of your old `inbox.md` (each `- …` line) go to the inbox of the space of
-  `*` (below), dated, and never twice.
+  `*` (below), or the default space, dated, and never twice.
 - `archive/` and `docs/<task>/` are copied as they are, next to their note, also when you
   import again later.
 - A file with a secret written in it (a key, a token) is imported, but named in the
@@ -62,13 +65,14 @@ lesson-git-small-commits = shared
 * = work
 ```
 
-`*` is for everything else. Pass the file with `--map`:
+`*` is for everything else; with one space, no file is needed. Pass the file with `--map`:
 
 ```bash
 augmented-brain import ~/.claude/projects/<folder>/memory --map map.txt
 ```
 
-If the notes name repositories in `repos:`, `--repos-base <folder>` says what those paths
+If the notes name repositories in `repos:` (the list of folders a task
+works in), `--repos-base <folder>` says what those paths
 are relative to. They are then rewritten relative to the space's work folder.
 
 ## Turn off the old memory

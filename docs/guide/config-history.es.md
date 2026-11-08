@@ -55,7 +55,7 @@ augmented-brain config restore 3
 restore` vuelve a una. Un comando lo puede lanzar el asistente, así que volver de esta
 forma nunca acepta por ti listas nuevas del guardia: hasta que las aceptes en la página
 Guardia del panel, o empieces una sesión nueva, el guardia pregunta antes de cada commit,
-push o mezcla que antes dejaba pasar. Mira [Comandos](commands.es.md#augmented-brain-config-history).
+push o merge que antes dejaba pasar. Mira [Comandos](commands.es.md#augmented-brain-config-history).
 
 Los dos funcionan aunque `config.toml` esté roto y no arranque nada más: es justo cuando
 más ayuda volver atrás. `augmented-brain doctor` lo dice entonces, y te lleva a ellos.

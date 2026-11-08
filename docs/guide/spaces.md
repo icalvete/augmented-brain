@@ -87,8 +87,9 @@ Every space shares:
 - **your profile**: who you are and how you like to work. You are the same person at
   work and at home.
 - **the shared notes**: rules, references and lessons that hold everywhere (below).
-- **the guard's lists**: production AWS profiles, machines not to touch, and the
-  repositories where Claude may commit. They hold on the whole machine. A production
+- **the guard's lists**: production AWS profiles, machines not to touch, the
+  repositories where Claude may commit and those it must never touch, and the root
+  exceptions. They hold on the whole machine. A production
   profile saved from the work space is guarded in the personal one too.
 
 Spaces never read each other's notes.
