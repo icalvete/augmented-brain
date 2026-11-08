@@ -15,6 +15,14 @@ var noteMessages = map[string]msg{
 		en: "Status: %s → %s.",
 		es: "Estado: %s → %s.",
 	},
+	"note.status.skipped": {
+		en: "Status: %s → %s, skipping %s.",
+		es: "Estado: %s → %s, saltándose %s.",
+	},
+	"note.status.reopened": {
+		en: "Reopened (now %s): %s",
+		es: "Reabierta (ahora %s): %s",
+	},
 	"note.closed": {
 		en: "Closed: %s",
 		es: "Cerrada: %s",

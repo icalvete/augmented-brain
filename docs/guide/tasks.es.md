@@ -64,6 +64,11 @@ La fase es el `status` de la tarea. Dos estados más pausan una tarea sin perder
 - **someday**: algún día, no para estas semanas. Sale de la lista que Claude lee al
   empezar, y se queda en su área.
 
+Una tarea pequeña puede saltarse fases (de la definición directa a la ejecución): se puede,
+y el diario dice qué fases se saltó. Una tarea cerrada sigue cerrada: volver a cerrarla se
+rechaza, para que su resultado nunca se pise, y reabrirla pide un motivo, que va al
+diario.
+
 ## A quién espera, y qué viene después
 
 Cada tarea dice dos cosas más:

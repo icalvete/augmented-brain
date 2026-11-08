@@ -301,6 +301,10 @@ func (s *Server) taskUpdate(v *view, r *http.Request) (string, error) {
 			return "", errors.New(v.t("err.status", val))
 		}
 		in.Status = val
+		if n.Header.Status == "closed" {
+			// From the panel the user chose it on purpose: that is saying so.
+			in.Reopen = v.t("task.reopened.panel")
+		}
 	}
 	for _, f := range textFields {
 		val, ok := changed(r, f.name)

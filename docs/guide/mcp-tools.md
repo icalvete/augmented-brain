@@ -72,7 +72,9 @@ computer. Claude reads a task before resuming it.
 ## `task_update`
 
 Changes a task. Only the fields given change. A change of status is written in the
-journal.
+journal, and when it skips phases (straight from `definition` to `execution`, say), the
+line names the ones skipped: skipping is allowed, and it is seen. A closed task opens
+again only with `reopen`.
 
 - `id`: the task's id.
 - `status` (optional): `definition`, `analysis`, `plan`, `execution`, `validation`,
@@ -84,6 +86,8 @@ journal.
 - `watch_date` (optional): add a date to look at something again. Needs `watch_what`.
 - `watch_what` (optional): what to look at on `watch_date`, in one line.
 - `watch_done` (optional): mark the watch date of this day as done.
+- `reopen` (optional): only to open a closed task again, with a new `status`: why, in a
+  few words. It goes to the journal. Claude asks you first.
 
 At least one field besides `id` is needed.
 
@@ -125,7 +129,8 @@ Pauses a task without losing anything, before switching to other work.
 ## `task_close`
 
 Closes a finished task with its result. It is kept, never deleted. A task with open
-subtasks cannot close. If the task has watch dates not marked done, it says so: they
+subtasks cannot close, and a task already closed is refused, so its result is never
+written over. If the task has watch dates not marked done, it says so: they
 still come up at the start of the session on their day, since closing is often when you
 write down what to check later.
 
