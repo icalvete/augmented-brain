@@ -82,6 +82,27 @@ jobs:
       - name: Something missing, one at a time
         run: python -I scripts/faults-check.py
 
+  # The panel in real browser engines: every page loads with no console error, fits a
+  # phone's screen, and the things a person does there work. Chromium, and WebKit
+  # (Safari's engine, the iPhone's).
+  panel:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Playwright and its browsers
+        run: |
+          python -m pip install --quiet playwright==1.64.1
+          python -m playwright install --with-deps chromium webkit
+      - name: Every page, in Chromium and WebKit
+        run: python -I scripts/panel-browser-check.py chromium webkit
+
   privacy:
     timeout-minutes: 10
     runs-on: ubuntu-latest
