@@ -37,7 +37,7 @@ func ContextWith(c *config.Config, s *config.Space, note string) string {
 		head:    heading(c, s, m, problems, note) + assistantText(c),
 		profile: section("Who the user is", profileText(c, s)),
 		common:  section("Rules", rules.Common(c.Language)),
-		index:   "\n" + m.Index(c.Language) + sharedKnowledge(shared),
+		index:   "\n" + m.SessionIndex(c.Language) + sharedKnowledge(shared),
 	}, c, s, m, shared)
 }
 
@@ -73,7 +73,7 @@ func Part(c *config.Config, s *config.Space, note string, n int) string {
 	cutNote := fmt.Sprintf("\n\n(The index was cut to fit. Read it whole in %s.)\n", where)
 	rulesEnd := "\n(Cut to fit. Read the rules in " + s.Memory + " and the shared notes in " + shared.Dir + ".)\n"
 	room := Budget - size(partTag(s.Name, Parts, Parts))
-	chunks := lines("\n"+m.Index(c.Language)+sharedKnowledge(shared), room-size(cutNote))
+	chunks := lines("\n"+m.SessionIndex(c.Language)+sharedKnowledge(shared), room-size(cutNote))
 	indexCut := len(chunks) > indexParts
 	if indexCut {
 		chunks = chunks[:indexParts]
@@ -315,23 +315,22 @@ type parts struct{ head, profile, common, userRules, index string }
 
 func (p parts) join() string { return p.head + p.profile + p.common + p.userRules + p.index }
 
-// sharedKnowledge lists the shared references and lessons, one line each, for the
-// assistant to open when one bears on the work.
+// sharedKnowledge lists the shared references and lessons, one line each with its title
+// and file, for the assistant to open when one bears on the work. The summaries stay in
+// the files: the titles say enough to know which one to open, and the list loads at
+// every start.
 func sharedKnowledge(shared *memory.Memory) string {
 	var lines []string
 	for _, typ := range []string{"reference", "lesson"} {
 		for _, n := range shared.OfType(typ) {
-			line := fmt.Sprintf("- [%s](%s)", n.Header.Title, filepath.Join(shared.Dir, filepath.FromSlash(n.Path)))
-			if n.Header.Summary != "" {
-				line += " — " + n.Header.Summary
-			}
-			lines = append(lines, line)
+			lines = append(lines, fmt.Sprintf("- %s (%s)", n.Header.Title, filepath.FromSlash(n.Path)))
 		}
 	}
 	if len(lines) == 0 {
 		return ""
 	}
-	return section("Knowledge for every space (open the file when it bears on the work)", strings.Join(lines, "\n"))
+	return section("Knowledge for every space (open the file when it bears on the work)",
+		"In "+shared.Dir+":\n"+strings.Join(lines, "\n"))
 }
 
 // heading is what always goes whole: where the memory is, the caller's note, broken

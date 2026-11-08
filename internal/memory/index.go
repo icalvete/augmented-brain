@@ -16,14 +16,22 @@ const IndexFile = "MEMORY.md"
 
 // Index builds the text of MEMORY.md: one line per profile, rule and area, and the live
 // tasks grouped by area. Closed and someday tasks stay out to keep it short.
-func (m *Memory) Index(lang string) string {
+func (m *Memory) Index(lang string) string { return m.index(lang, false) }
+
+// SessionIndex is the index as the session start gives it: like Index, but each live
+// task without its summary, and with its next step only when it waits on the user. In
+// real sessions the assistant reads a task (task_get) before working on it, so the rest
+// only took room at every start.
+func (m *Memory) SessionIndex(lang string) string { return m.index(lang, true) }
+
+func (m *Memory) index(lang string, compact bool) string {
 	// Only the program writes the index, so its headings can follow the user's language
 	// without the program ever reading them.
 	l := func(key string) string { return i18n.T(lang, "index."+key) }
 	var b strings.Builder
 	line := func(n *Note, extra string) {
 		fmt.Fprintf(&b, "- [%s](%s)", n.Header.Title, n.Path)
-		if n.Header.Summary != "" {
+		if n.Header.Summary != "" && !(compact && n.Header.Type == "task") {
 			fmt.Fprintf(&b, " — %s", n.Header.Summary)
 		}
 		b.WriteString(extra + "\n")
@@ -85,7 +93,14 @@ func (m *Memory) Index(lang string) string {
 		if done, total := StepCount(t.Body); total > 0 {
 			extra += " · " + fmt.Sprintf(l("steps"), done, total)
 		}
-		line(t, fmt.Sprintf("%s · %s %s · %s: %s", extra, l("waits"), t.Header.WaitingOn, l("next"), t.Header.Next))
+		extra += fmt.Sprintf(" · %s %s", l("waits"), t.Header.WaitingOn)
+		switch {
+		case !compact:
+			extra += fmt.Sprintf(" · %s: %s", l("next"), t.Header.Next)
+		case t.Header.WaitingOn == "me":
+			extra += fmt.Sprintf(" · %s: %s", l("next"), clip(t.Header.Next, maxSessionNext))
+		}
+		line(t, extra)
 	}
 	for _, a := range groups {
 		title := l("noarea")
@@ -129,4 +144,17 @@ func (m *Memory) WriteIndex(lang string) (bool, error) {
 		return false, nil
 	}
 	return true, paths.WriteAtomic(path, []byte(text), 0o600)
+}
+
+// maxSessionNext is the most of a task's next step the session start shows, in
+// characters: enough to say what is pending; the whole step is in the task.
+const maxSessionNext = 120
+
+// clip cuts s to max characters, ending it with "…" when it was longer.
+func clip(s string, max int) string {
+	r := []rune(s)
+	if len(r) <= max {
+		return s
+	}
+	return strings.TrimSpace(string(r[:max-1])) + "…"
 }

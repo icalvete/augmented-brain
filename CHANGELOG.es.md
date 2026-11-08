@@ -13,6 +13,13 @@
   versión la configuración actual, y rechaza una versión que el programa no podría leer.
   Un comando nunca acepta por ti listas nuevas del guardia: el guardia pregunta hasta que
   lo hagas tú. `doctor` dice cuántas versiones se guardan.
+- **Un inicio de sesión más corto.** Cada sesión empezaba con unos 60.000 caracteres de
+  memoria; quitando piezas una a una y pasando las mismas peticiones, la mayoría no
+  cambiaban nada en la primera respuesta. Ahora cada tarea viva del índice del inicio va
+  sin su resumen, y con su siguiente paso (los primeros 120 caracteres) solo si espera a
+  ti: Claude lee una tarea antes de trabajar en ella. Las referencias y lecciones
+  compartidas salen con su título y su fichero, sin su resumen. `MEMORY.md` conserva todo
+  el detalle.
 
 ## 0.12.0-alpha
 

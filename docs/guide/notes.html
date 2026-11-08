@@ -118,7 +118,7 @@
   <h2 id="repositories">Repositories</h2>
   <p>What each of your git repositories is, one line each: "<code>~/code/blog</code> — The blog, built with Hugo". It lives in one reference of the space, <code>knowledge/ref-repositories.md</code>, so the backup keeps it. You write the line in the panel's Repositories page, or Claude writes it for you.</p>
   <h2 id="the-index">The index</h2>
-  <p><code>MEMORY.md</code> is the list Claude reads at the start of every session: your profile line, the rules, the areas, and the live tasks with their status and next step. The program writes it after every change. Do not edit it by hand; it would be rewritten.</p>
+  <p><code>MEMORY.md</code> is the list Claude reads at the start of every session: your profile line, the rules, the areas, and the live tasks with their status and next step. The program writes it after every change. Do not edit it by hand; it would be rewritten. At the start, each task goes without its summary, and with its next step (its first 120 characters) only when it waits on you: Claude reads a task before working on it. The shared references and lessons are listed by title and file.</p>
   <h2 id="documents-and-the-archive">Documents and the archive</h2>
   <p>Two folders are never loaded:</p>
   <ul><li><code>docs/&lt;task&gt;/</code> keeps the long documents a task produces (a plan, an analysis), next to the notes and out of the project's repository.</li><li><code>archive/</code> keeps old things: long journals moved out, summaries of compacted conversations. Nothing there is ever deleted.</li></ul>

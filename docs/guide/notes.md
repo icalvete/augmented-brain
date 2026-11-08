@@ -96,7 +96,10 @@ writes it for you.
 
 `MEMORY.md` is the list Claude reads at the start of every session: your profile line,
 the rules, the areas, and the live tasks with their status and next step. The program
-writes it after every change. Do not edit it by hand; it would be rewritten.
+writes it after every change. Do not edit it by hand; it would be rewritten. At the
+start, each task goes without its summary, and with its next step (its first 120 characters) only when
+it waits on you: Claude reads a task before working on it. The shared references and lessons are
+listed by title and file.
 
 ## Documents and the archive
 
