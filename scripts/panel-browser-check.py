@@ -27,6 +27,10 @@ EXE = ".exe" if WIN else ""
 ENGINES = [a for a in sys.argv[1:] if not a.startswith("-")] or ["chromium"]
 PAGES = ["today", "tasks", "reminders", "inbox", "areas", "knowledge", "rules", "people", "search?q=bread",
          "review", "secrets", "profile", "space", "sessions", "repos", "guard", "versions", "help"]
+# Each blocked resource says what and where, so a report names the culprit.
+WATCH = """document.addEventListener('securitypolicyviolation', e =>
+    console.error('CSP ' + e.violatedDirective + ' blocked ' + (e.blockedURI || 'inline') +
+      ' at ' + (e.sourceFile || '?') + ':' + e.lineNumber + ' sample=' + (e.sample || '')))"""
 good = bad = 0
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -95,24 +99,25 @@ try:
             # reports a style-src-attr violation for it, from its own controls, with no
             # source; when this engine does, that one report (and only it) is not the
             # panel's, and does not count against a page.
-            cal = browser.new_page()
+            calctx = browser.new_context()
+            calctx.add_init_script(WATCH)
+            cal = calctx.new_page()
             noise = []
             cal.on("console", lambda msg: noise.append(msg.text) if msg.type == "error" else None)
             cal.route("http://calibration.invalid/", lambda route: route.fulfill(status=200, headers={"Content-Type": "text/html", "Content-Security-Policy": CSP},
                       body="<!doctype html><select><option>a</option></select>"))
             cal.goto("http://calibration.invalid/")
             cal.wait_for_timeout(200)
-            cal.close()
+            calctx.close()
             same = lambda e: re.sub(r":\d+", ":N", e)  # the same report on another line
             known = {same(e) for e in noise if "style-src" in e}
+            if known:
+                print("    known:", sorted(known))
             if known:
                 print(f"    ({engine} reports its own <select> under the panel's policy: {len(known)} known line(s), not counted)")
             for size, viewport in (("desktop", {"width": 1280, "height": 800}), ("phone", {"width": 375, "height": 740})):
                 ctx = browser.new_context(viewport=viewport)
-                # Each blocked resource says what and where, so a report names the culprit.
-                ctx.add_init_script("""document.addEventListener('securitypolicyviolation', e =>
-                    console.error('CSP ' + e.violatedDirective + ' blocked ' + (e.blockedURI || 'inline') +
-                      ' at ' + (e.sourceFile || '?') + ':' + e.lineNumber + ' sample=' + (e.sample || '')))""")
+                ctx.add_init_script(WATCH)
                 page = ctx.new_page()
                 errors, failed = [], []
                 page.on("console", lambda msg: errors.append(msg.text) if msg.type == "error" else None)
