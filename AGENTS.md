@@ -72,6 +72,10 @@ the two such patterns a reader can see (permission bits checked without looking 
 pull request and again on `main`: a branch with no pull request gets no CI, so this is
 how it gets tried. Never push without it.
 
+What each case is covered by, and what is left for a person on a real Mac, is in
+[test/COVERAGE.md](test/COVERAGE.md): a new command, tool, panel page or missing piece
+adds its row there.
+
 Heavier checks, before a release or when you touch what they cover:
 
 - `scripts/install-check.sh`: the installer from nothing, hands-off, and checks of the
