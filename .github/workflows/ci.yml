@@ -60,6 +60,28 @@ jobs:
           go build -o /tmp/ab-new ./cmd/augmented-brain
           scripts/compat-check.sh /tmp/ab-new
 
+  # What the program does when something it uses is missing (Claude Code, gh, git, the
+  # network, Tailscale, systemd, a backup, a configuration that loads, write access to the
+  # notes): it says so and leaves nothing half done. On the three systems people use.
+  faults:
+    timeout-minutes: 10   # a stuck runner fails here instead of waiting six hours
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Something missing, one at a time
+        run: python -I scripts/faults-check.py
+
   privacy:
     timeout-minutes: 10
     runs-on: ubuntu-latest
