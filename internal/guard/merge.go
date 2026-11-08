@@ -33,7 +33,7 @@ func (p Policy) merge(name, what string, env map[string]string, args []string) D
 	if d, err := paths.Resolve(p.Cwd); err == nil && p.untouchableRepo(d) {
 		return Decision{Deny, i18n.T(p.Lang, "guard.untouchable", paths.Tilde(d), name+" "+what)}
 	}
-	if !p.cdNamed {
+	if !p.cdNamed && !p.namesCwdRepo(name, args) {
 		if d, err := paths.Resolve(p.Cwd); err == nil && p.repoVerdict(d) != Deny {
 			return Decision{Deny, i18n.T(p.Lang, "guard.merge.cd", name+" "+what, name+" "+what)}
 		}
@@ -78,6 +78,34 @@ func (p Policy) merge(name, what string, env map[string]string, args []string) D
 		return Decision{Ask, i18n.T(p.Lang, "guard.merge.ask", name+" "+what, paths.Tilde(dir), p.facts(dir))}
 	}
 	return allow
+}
+
+// namesCwdRepo reports whether the command's own words (-R, --repo or the pull
+// request's address; not GH_REPO, which a command may inherit unseen) name the
+// repository of the session's folder, one of its remotes. That names the repository as
+// a cd would, and it is needed: Claude Code drops a `cd` to the folder the session is
+// already in before the guard sees the command, so `cd <repo> && gh pr merge` written
+// there arrives as `gh pr merge` alone.
+func (p Policy) namesCwdRepo(name string, args []string) bool {
+	if p.Cwd == "" || p.lost {
+		return false
+	}
+	dir, err := paths.Resolve(p.Cwd)
+	if err != nil {
+		return false
+	}
+	named, ok := mergeTargets(name, nil, nil, withoutText(name, args))
+	if !ok || len(named) == 0 {
+		return false
+	}
+	remotes := remoteURLs(dir)
+	host := defaultHost(name, nil, p.Env)
+	for _, n := range named {
+		if !slices.ContainsFunc(remotes, func(r string) bool { return sameRepo(n, r, host) }) {
+			return false
+		}
+	}
+	return true
 }
 
 // mergeText are the options of gh pr merge and glab mr merge (and mr accept) whose
