@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **An unreadable `guard.toml` asks before commits, pushes and merges.** The guides said
+  so, but only `aws` and `ssh` asked: with `guard.toml` broken, a push to a repository
+  Claude may push to went through, and the repositories nothing may touch were no longer
+  protected. Now every commit, push or merge the other lists would let through asks you
+  first, and says why, until the file is fixed.
 - **Phases skipped are written down, and a closed task stays closed.** A task could jump
   phases, or be closed a second time, writing over the result it was closed with, and
   nothing said so. Now skipping phases is still allowed, and the journal names the phases

@@ -212,6 +212,10 @@ var guardMessages = map[string]msg{
 		es: "%s llega a %s, marcado como intocable; el usuario lo confirma antes.",
 	},
 	// What may reach production (the next two), then why the configuration could not be read.
+	"guard.guardfile": {
+		en: "`%s` in %s would go through, but augmented brain cannot read guard.toml (%s), so it cannot tell whether this repository is one nothing may touch. The user confirms first; `augmented-brain doctor` shows how to fix the file.",
+		es: "`%s` en %s pasaría, pero augmented brain no puede leer guard.toml (%s), así que no puede saber si este repositorio es uno que nada puede tocar. El usuario lo confirma antes; `augmented-brain doctor` enseña cómo arreglar el fichero.",
+	},
 	"guard.config": {
 		en: "%s may reach production or an untouchable host, and augmented brain cannot tell: it cannot read its configuration (%s). The user confirms first; `augmented-brain doctor` shows how to fix the configuration.",
 		es: "%s puede llegar a producción o a un host intocable, y augmented brain no puede saberlo: no puede leer su configuración (%s). El usuario lo confirma antes; `augmented-brain doctor` enseña cómo arreglar la configuración.",
