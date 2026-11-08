@@ -184,17 +184,30 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 // have, and how to store each: the backup brings their names, never their values.
 func missingSecrets(lang, dir string, out io.Writer) {
 	names, _ := brain.SecretNames(dir)
-	var missing []brain.SecretName
+	var missing, unknown []brain.SecretName
 	for _, n := range names {
-		if keyring.Has(n.Service, n.Name) == keyring.Missing {
+		switch keyring.Has(n.Service, n.Name) {
+		case keyring.Missing:
 			missing = append(missing, n)
+		case keyring.Unknown:
+			unknown = append(unknown, n)
 		}
 	}
-	if len(missing) == 0 {
-		return
+	if len(missing) > 0 {
+		fmt.Fprintln(out, i18n.T(lang, "restore.secrets", len(missing)))
+		listSecrets(missing, out)
 	}
-	fmt.Fprintln(out, i18n.T(lang, "restore.secrets", len(missing)))
-	for _, n := range missing {
+	// No keychain to ask (Windows, a server without one) or it would not answer: say
+	// which secrets the backup names, rather than nothing.
+	if len(unknown) > 0 {
+		fmt.Fprintln(out, i18n.T(lang, "restore.secrets.unknown", len(unknown)))
+		listSecrets(unknown, out)
+	}
+}
+
+// listSecrets names each secret, what it is for and, where known, how to store it.
+func listSecrets(list []brain.SecretName, out io.Writer) {
+	for _, n := range list {
 		line := "  " + n.Key()
 		if n.What != "" {
 			line += " · " + n.What

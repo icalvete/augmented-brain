@@ -194,7 +194,9 @@ augmented-brain restore https://github.com/lucia/augmented-brain-work.git
 It replaces the empty space of the same name with yours. It leaves alone a space that
 already has notes. It installs the Claude Code plugin if it is missing. Then it names
 what it did not bring: the guard's lists, the repositories where Claude may commit, and
-the secrets this machine's keychain lacks, each with the command to store it.
+the secrets this machine's keychain lacks, each with the command to store it. When it
+cannot ask the keychain (there is none, or it is locked), it names the secrets it could
+not check.
 
 - `--memory`: where to put the space's notes. Default: where they were, inside the work
   folder.
