@@ -9,6 +9,12 @@
   copia o una restauración se para tras 3 minutos sin respuesta (y por https, con una
   transferencia de menos de 1 KB por segundo durante un minuto), y una copia espera
   como mucho 10 minutos a otra; las dos dicen por qué.
+- **Una instalación cortada a medias se puede repetir.** `init` escribía la
+  configuración tras el primer espacio y después añadía el segundo: si se cortaba entre
+  medias (Ctrl+C, una carpeta que no podía crear), dejaba una configuración sin
+  `personal`, y el instalador, al ver una configuración, ya no volvía a lanzar `init`.
+  Ahora `init` crea primero las carpetas de todos los espacios y escribe la configuración
+  una sola vez, al final.
 - **Una actualización cuya descarga falla ya no parece hecha.** `augmented-brain update`
   pasaba el instalador de GitHub directamente a `sh`: cuando GitHub respondía 504, como
   pasó durante más de una hora el 8 de noviembre, `sh` recibía un script vacío, la

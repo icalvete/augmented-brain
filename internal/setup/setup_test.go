@@ -146,3 +146,59 @@ func TestAddSpaceErrors(t *testing.T) {
 		}
 	}
 }
+
+// Several spaces at once: config.toml is written only at the end. A second space that
+// fails (as a Ctrl+C would stop it) leaves no configuration, so running it again starts
+// over; the first time, init wrote the first space and the installer never ran it again.
+func TestInitSpacesAllOrNothing(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cfgDir := filepath.Join(home, "cfg")
+	work := Options{Language: "en", Space: "work", WorkFolder: "~/ab/work", Memory: "~/ab/work/notes"}
+	personal := Options{Language: "en", Space: "personal", WorkFolder: "~/ab/personal", Memory: "~/ab/personal/notes"}
+
+	// The second space cannot be made: its work folder is a file.
+	if err := os.MkdirAll(filepath.Join(home, "ab"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(home, "ab", "personal"), []byte("x"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := InitSpaces(cfgDir, []Options{work, personal}, "personal"); err == nil {
+		t.Fatal("a space that failed was not reported")
+	}
+	if _, err := os.Stat(filepath.Join(cfgDir, config.FileName)); !os.IsNotExist(err) {
+		t.Fatalf("a configuration with a space missing was left: %v", err)
+	}
+
+	// Fixed, it runs again from the start, over the folders already made.
+	if err := os.Remove(filepath.Join(home, "ab", "personal")); err != nil {
+		t.Fatal(err)
+	}
+	res, err := InitSpaces(cfgDir, []Options{work, personal}, "personal")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(res) != 2 {
+		t.Errorf("%d results", len(res))
+	}
+	c, err := config.Load(cfgDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(c.Spaces) != 2 || c.DefaultSpace != "personal" {
+		t.Errorf("spaces %v, default %q", c.SpaceNames(), c.DefaultSpace)
+	}
+
+	// With a configuration there, it changes nothing.
+	if _, err := InitSpaces(cfgDir, []Options{work}, ""); err == nil || !strings.Contains(err.Error(), "already a configuration") {
+		t.Errorf("over a configuration: %v", err)
+	}
+	// A default space that is not one of them is refused.
+	if _, err := InitSpaces(filepath.Join(home, "cfg2"), []Options{{Language: "en", Space: "x", WorkFolder: "~/x", Memory: "~/x/notes"}}, "personal"); err == nil {
+		t.Error("an unknown default space was taken")
+	}
+	if _, err := os.Stat(filepath.Join(home, "cfg2", config.FileName)); !os.IsNotExist(err) {
+		t.Errorf("a refused configuration was written: %v", err)
+	}
+}
