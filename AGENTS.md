@@ -99,6 +99,12 @@ Heavier checks, before a release or when you touch what they cover:
   so and leave nothing half done. Tools reach it through wrappers on a PATH of its own.
   CI runs it on Linux, macOS and Windows (`faults` in `ci.yml`); by hand, `python3 -I
   scripts/faults-check.py`, about a minute.
+- `scripts/panel-browser-check.py`: the panel in real browser engines (Playwright for
+  Python): every page loads with no console error and fits a phone's screen, and a few
+  things a person does (a capture, opening a task, the Guard page's confirmations and
+  what-changed list) work. CI runs it with Chromium and WebKit (`panel` in `ci.yml`); by
+  hand, `pip install playwright && python -m playwright install chromium`, then
+  `python3 -I scripts/panel-browser-check.py chromium`. Firefox once before a release.
 - `scripts/e2e-fresh.py`: several real, isolated Claude sessions on one space: a task
   closed by another session is heard before the next answer, own writes are not, /clear
   keeps it working, a capture sent from another space comes up there. Same login and
