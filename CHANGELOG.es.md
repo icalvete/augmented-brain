@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Unreleased
+## 0.12.0-alpha
+
+Publicada el 2026-11-08.
 
 - **«¿olvidado?» solo en un repositorio con trabajo pendiente.** La página Repositorios
   del panel marcaba «¿olvidado?» un repositorio limpio solo porque las tareas que lo
