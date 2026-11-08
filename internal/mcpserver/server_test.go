@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -235,6 +236,11 @@ func TestProfileSave(t *testing.T) {
 		if !strings.Contains(string(data), want) {
 			t.Errorf("profile lacks %q:\n%s", want, data)
 		}
+	}
+	// The change is kept as a version of the configuration, made by the tool, after
+	// the one from before it.
+	if vs, _ := confighistory.List(cfgDir); len(vs) != 2 || vs[0].By != confighistory.ByTool || vs[0].Detail != "profile_save" || vs[1].By != confighistory.ByFirst {
+		t.Errorf("versions after profile_save: %+v", vs)
 	}
 	if brain.ProfileEmpty(cfgDir) {
 		t.Error("a saved profile still counts as blank")

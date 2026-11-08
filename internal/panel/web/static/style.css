@@ -317,3 +317,11 @@ a.button:hover { opacity: .85; text-decoration: none; }
 .personcard legend { padding: 0 .3rem; font-weight: 600; font-size: .9rem; }
 .personcard .ticks { display: flex; flex-wrap: wrap; gap: .4rem 1rem; align-items: center; font-size: .85rem; color: var(--muted); }
 .personcard .flash { margin: 0; }
+
+/* Versions: what a version of the configuration changed. */
+.diff { margin-top: .6rem; }
+.diff-file { font-size: .86rem; color: var(--muted); margin-bottom: .25rem; }
+.diff pre.body { white-space: pre; overflow-x: auto; overflow-wrap: normal; }
+.d-add { color: var(--good); background: var(--good-bg); }
+.d-del { color: var(--bad); background: var(--bad-bg); }
+.d-skip { color: var(--muted); }

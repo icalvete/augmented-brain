@@ -7,6 +7,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"io"
 	"os"
 	"path/filepath"
@@ -49,7 +50,29 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprintf(errOut, "%s\n\n%s", i18n.T(l, "usage.unknown", args[0]), i18n.T(l, "usage"))
 		return 2
 	}
-	return c.run(rest, in, out, errOut)
+	if !keepsHistory(c.name) {
+		return c.run(rest, in, out, errOut)
+	}
+	dir, err := config.Dir()
+	if err != nil {
+		return c.run(rest, in, out, errOut)
+	}
+	// What changed before (by hand) and what the command changes are two versions.
+	_, _ = confighistory.Record(dir, confighistory.ByOutside, "")
+	code := c.run(rest, in, out, errOut)
+	_, _ = confighistory.Record(dir, confighistory.ByCommand, c.name)
+	return code
+}
+
+// keepsHistory says whether a command may change the configuration, so its change is
+// kept as a version. The panel, the MCP server and the hooks keep their own; the rest
+// only read it.
+func keepsHistory(name string) bool {
+	switch name {
+	case "mcp", "hook", "panel serve", "version", "help", "doctor", "config history", "config restore":
+		return false
+	}
+	return true
 }
 
 // userLanguage is the language of the configuration, or the system's when there is

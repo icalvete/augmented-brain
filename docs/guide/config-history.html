@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration versions · augmented brain</title>
+<meta name="description" content="augmented brain keeps the last 10 versions of your configuration on this computer: see what changed and go back, from the panel&#x27;s Versions page or with augmented-brain config history and config restore.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/config-history.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/config-history.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/config-history.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/config-history.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Configuration versions · augmented brain">
+<meta property="og:description" content="See what changed in your configuration, and go back.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/config-history.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Configuration versions · augmented brain">
+<meta name="twitter:description" content="See what changed in your configuration, and go back.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="index.html">Docs</a>
+    <a href="config-history.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Docs">
+<details open id="docnav"><summary>Documentation menu</summary>
+<p class="docnav-group">Get started</p>
+<ul>
+  <li><a href="getting-started.html">Getting started</a></li>
+  <li><a href="install.html">Installing</a></li>
+</ul>
+<p class="docnav-group">Concepts</p>
+<ul>
+  <li><a href="spaces.html">Spaces</a></li>
+  <li><a href="tasks.html">Tasks</a></li>
+  <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="guard.html">The guard</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
+</ul>
+<p class="docnav-group">Daily use</p>
+<ul>
+  <li><a href="phrases.html">What to say to Claude</a></li>
+  <li><a href="panel.html">The panel</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
+  <li><a href="config-history.html" aria-current="page">Configuration versions</a></li>
+  <li><a href="weekly-review.html">The weekly review</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
+</ul>
+<p class="docnav-group">Reference</p>
+<ul>
+  <li><a href="commands.html">Commands</a></li>
+  <li><a href="mcp-tools.html">MCP tools</a></li>
+  <li><a href="configuration.html">Configuration</a></li>
+  <li><a href="memory-format.html">Memory format</a></li>
+</ul>
+<p class="docnav-group">Help</p>
+<ul>
+  <li><a href="troubleshooting.html">Troubleshooting</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Configuration versions</h1>
+  <p>Your configuration is what augmented brain knows about this computer and about you: your spaces, the guard's lists, remote access, your profile and the names of your secrets. A wrong change there (a list emptied by mistake, a space pointing to the wrong folder) used to have no way back. Now every change is kept as a <strong>version</strong>, and you can see what changed and go back.</p>
+  <h2 id="what-is-kept">What is kept</h2>
+  <p>A version is a copy of these files, in the configuration folder, as they were at one moment: <code>config.toml</code>, <code>guard.toml</code>, <code>remote.toml</code>, <code>session.toml</code>, <code>profile.md</code> and <code>secrets.toml</code> (only the names of your secrets, never a value). It also says who made the change: the panel, a command, the assistant (and with which tool), going back to an earlier version, or by hand.</p>
+  <ul><li>A new version is kept every time the configuration changes. A change made by hand, or by an older program, is kept the next time augmented brain looks: when a session starts, a command runs, the assistant uses a tool or you save something in the panel.</li><li>The last <strong>10</strong> are kept. When there is one more, the oldest goes.</li><li>They stay <strong>only on this computer</strong>, in the <code>history</code> folder of the configuration folder. They never go into the backup: the guard's lists may name work machines, and the backup leaves them out on purpose.</li><li>Your notes are not here. Tasks, rules, knowledge and people (shared ones too) have their own history in the <a href="backup.html">backup</a>.</li></ul>
+  <h2 id="in-the-panel">In the panel</h2>
+  <p>The panel's <strong>Versions</strong> page lists them, newest first, with when and who. Under each one, <strong>What it changed</strong> shows the lines that changed from the version before: green what was added, red what was taken away. <strong>Go back to this one</strong> makes it the configuration again.</p>
+  <p>Going back keeps the configuration you had as a version first, so it can be undone the same way. A version that would leave a file the program cannot read is refused, and nothing changes. If the guard's lists change, going back from the panel counts as you accepting them, as any change on the <a href="guard.html">Guard</a> page does.</p>
+  <p>From another device (<a href="panel-remote.html">the panel from another device</a>) the page only shows the versions: going back is only from the panel on this computer, because it can change what the guard allows.</p>
+  <h2 id="with-commands">With commands</h2>
+  <pre><code>augmented-brain config history
+augmented-brain config history 3
+augmented-brain config restore 3</code></pre>
+  <p><code>config history</code> lists the versions; with a number, it shows what that one changed. <code>config restore</code> goes back to one. A command can be run by the assistant, so going back this way never accepts new guard lists for you: until you accept them in the panel's Guard page, or start a new session, the guard asks before every commit, push or merge it used to allow. See <a href="commands.html#augmented-brain-config-history">Commands</a>.</p>
+  <p><code>augmented-brain doctor</code> has a line with how many versions are kept, and says when the configuration changed after the newest one.</p>
+  <nav class="pager" aria-label="Previous / Next">
+    <a class="prev" href="panel-remote.html"><span>← Previous</span>The panel from another device</a>
+    <a class="next" href="weekly-review.html"><span>Next →</span>The weekly review</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

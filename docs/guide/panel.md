@@ -152,6 +152,14 @@ saw (something changed them outside this page), a notice says so with an accept 
 until then a push or merge that the lists allow asks first. Claude cannot open this page:
 the guard denies it the panel's key. See [The guard](guard.md).
 
+## Versions
+
+The last 10 versions of your configuration (spaces, guard, remote access, profile),
+kept only on this computer, newest first, with when and who changed it. **What it
+changed** shows the lines of each one; **Go back to this one** makes it the
+configuration again, keeping the one you had as a version first. From another device
+the page only shows. See [Configuration versions](config-history.md).
+
 ## Health
 
 The space's notes folder and work folders, whether it is the default space, notes that
