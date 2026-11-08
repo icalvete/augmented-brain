@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **"forgotten?" only on a repository with pending work.** The panel's Repositories page
+  marked a clean repository "forgotten?" just because the tasks that name it were all
+  parked. Now, as on Today, it is marked only when it holds changes not committed or
+  commits not pushed.
 - **Sessions hear what other sessions changed.** A session reads the task index once, when
   it starts; another session, the panel or a hand edit may close a task a minute later.
   Now, before Claude answers each message, augmented brain tells it which tasks changed

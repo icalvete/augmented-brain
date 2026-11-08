@@ -17,7 +17,7 @@ type repoCard struct {
 	Name, Shown string // its folder's name, and its path written with ~
 	Description string // the user's own line, from the space's repositories note
 	Tasks       []taskLink
-	Forgotten   bool // the live tasks that name it are all parked: nobody is on it
+	Forgotten   bool // it holds pending work and the live tasks that name it are all parked: nobody is on it
 }
 
 // reposSpace is one space's repositories.
@@ -142,7 +142,7 @@ func (s *Server) repos(v *view, _ *http.Request) (string, page, error) {
 			rs.Repos = append(rs.Repos, repoCard{
 				Status: st, Name: filepath.Base(p), Shown: paths.Tilde(p),
 				Description: f.pl.b.RepoDescriptionOf(p), Tasks: tasks,
-				Forgotten: len(tasks) > 0 && !slices.ContainsFunc(tasks, func(t taskLink) bool { return t.Status != "parked" && t.Status != "someday" }),
+				Forgotten: (st.Pending() || st.Err != "") && len(tasks) > 0 && !slices.ContainsFunc(tasks, func(t taskLink) bool { return t.Status != "parked" && t.Status != "someday" }),
 			})
 		}
 		sort.SliceStable(rs.Repos, func(i, j int) bool {

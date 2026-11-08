@@ -28,7 +28,8 @@ The first page: every space at once. For each one:
 
 Below, **Repositories**: those your open tasks name in `repos:` that hold changes not
 committed or commits not pushed. That is work that is only on this computer. One whose
-tasks are all parked (or left for some day) is marked "forgotten?". A branch never
+tasks are all parked (or left for some day) is marked "forgotten?", here and on the
+whole map; a clean one never is. A branch never
 pushed counts only if the repository has a remote to push it to. **See all
 repositories** leads to the whole map.
 

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **«¿olvidado?» solo en un repositorio con trabajo pendiente.** La página Repositorios
+  del panel marcaba «¿olvidado?» un repositorio limpio solo porque las tareas que lo
+  nombran estaban todas aparcadas. Ahora, como en Hoy, solo lo marca si tiene cambios sin
+  commit o commits sin subir.
 - **Las sesiones se enteran de lo que cambian las demás.** Una sesión lee el índice de
   tareas una vez, al empezar; otra sesión, el panel o una edición a mano pueden cerrar una
   tarea un minuto después. Ahora, antes de que Claude responda a cada mensaje, augmented
