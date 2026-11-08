@@ -7,6 +7,11 @@
   solo enseñaba el espacio. Ahora dicen lo que no esperaban, como los demás comandos.
   `panel` acepta también `-no-browser` con un solo guion. En Windows, los mensajes nuevos
   del instalador sobre descargas fallidas salían con las tildes rotas; ya no.
+- **Un `guard.toml` que no se puede leer pregunta antes de commits, pushes y merges.** Las
+  guías lo decían, pero solo preguntaban `aws` y `ssh`: con `guard.toml` roto, un push a un
+  repositorio donde Claude puede hacer push pasaba, y los repositorios que nada puede tocar
+  dejaban de estar protegidos. Ahora cada commit, push o merge que las demás listas dejarían
+  pasar te pregunta antes, y dice por qué, hasta que se arregla el fichero.
 - **Las fases saltadas quedan escritas, y una tarea cerrada sigue cerrada.** Una tarea
   podía saltarse fases, o cerrarse dos veces pisando el resultado con el que se cerró, y
   nada lo decía. Ahora saltarse fases se sigue pudiendo, y el diario dice cuáles; cerrar
