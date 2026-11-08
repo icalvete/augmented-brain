@@ -126,6 +126,8 @@ Hace tres cosas para que las listas sigan siendo tuyas:
   toma al empezar una sesión y al guardar en el panel. Si las listas difieren del sello,
   algo más las cambió, y un commit, push o merge que las listas dejarían pasar pregunta
   antes, y la página Guardia y `doctor` lo dicen hasta que las aceptes.
+  La página Guardia enseña qué se ha añadido y quitado desde la última vez que las
+  aceptaste.
 
 Lo que esto no para: un script que Claude escriba en línea (`python -c`, un heredoc)
 todavía puede editar los ficheros, como puede hacer cualquier cosa que tu cuenta pueda.

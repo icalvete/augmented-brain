@@ -16,6 +16,12 @@
   remote access on before systemd refused them, and `doctor` then reported it broken.
   Now it asks systemd first and stops there, saying why; and remote access is turned on
   only once systemd has taken the services.
+- **The Guard page shows what changed, and warns where it matters.** When the guard's
+  lists changed outside the page, it now shows what was added and removed, list by list,
+  since the lists you last accepted, before you accept them. The list where Claude
+  commits and pushes without asking carries a warning, and adding to it asks you to tick
+  that you understand; removing an untouchable repository and adding a root exception
+  say what they allow.
 - **A keychain that cannot be asked is no longer "missing".** On Linux without a desktop
   session, `secret-tool` fails the same way as for a secret that is not there, so
   `restore` and the panel's Secrets page told you to store again secrets you had. Now a

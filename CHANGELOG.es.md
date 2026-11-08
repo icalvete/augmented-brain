@@ -17,6 +17,12 @@
   el acceso remoto antes de que systemd los rechazara, y después `doctor` lo daba por
   roto. Ahora pregunta antes a systemd y se para ahí, diciendo por qué; y el acceso
   remoto solo se enciende cuando systemd ha aceptado los servicios.
+- **La página Guardia enseña qué cambió y avisa donde importa.** Cuando las listas del
+  guardia cambian fuera de la página, ahora enseña lo añadido y lo quitado, lista por
+  lista, desde las que aceptaste por última vez, antes de que las aceptes. La lista
+  donde Claude hace commit y push sin preguntar lleva un aviso, y añadir a ella te pide
+  marcar que lo entiendes; quitar un repositorio intocable y añadir una excepción de root
+  dicen lo que permiten.
 - **Un llavero al que no se puede preguntar ya no cuenta como «falta».** En Linux sin
   sesión de escritorio, `secret-tool` falla igual que cuando el secreto no está, así que
   `restore` y la página Secretos del panel te pedían guardar otra vez secretos que ya
