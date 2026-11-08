@@ -254,6 +254,7 @@ func policy(cfgDir, dir string) guard.Policy {
 		p.Lang = c.Language
 		if g, err := config.LoadGuard(cfgDir); err != nil {
 			p.ConfigProblem = err.Error()
+			p.GuardProblem = err.Error()
 		} else {
 			p.UntouchableRepos = g.UntouchableRepos
 			if seal := state.ReadSeal(cfgDir); seal != "" && seal != c.GuardFingerprint(g) {

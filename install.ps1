@@ -269,11 +269,11 @@ try {
     }
     function Cannot([string]$name) {
       Fail (Text "cannot download $name from GitHub (tried 3 times, also through its API). GitHub may be having trouble: nothing was installed; try again in a while." `
-                 "no puedo descargar $name de GitHub (3 intentos, también por su API). Puede que GitHub tenga problemas: no se ha instalado nada; vuelve a probar dentro de un rato.")
+                 "no puedo descargar $name de GitHub (3 intentos, tambi\u00e9n por su API). Puede que GitHub tenga problemas: no se ha instalado nada; vuelve a probar dentro de un rato.")
     }
     if (-not (Fetch 'checksums.txt' "$tmp\checksums.txt")) { Cannot 'checksums.txt' }
     $line = Get-Content "$tmp\checksums.txt" | Where-Object { $_ -match "_windows_$arch\.zip$" } | Select-Object -First 1
-    if (-not $line) { Fail (Text "the release has no archive for windows/$arch." "la versión no tiene archivo para windows/$arch.") }
+    if (-not $line) { Fail (Text "the release has no archive for windows/$arch." "la versi\u00f3n no tiene archivo para windows/$arch.") }
     $want, $archive = $line -split '\s+', 2
     if (-not (Fetch $archive "$tmp\$archive")) { Cannot $archive }
     $got = (Get-FileHash -Algorithm SHA256 "$tmp\$archive").Hash

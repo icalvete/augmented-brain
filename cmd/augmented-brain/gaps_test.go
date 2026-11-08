@@ -163,3 +163,33 @@ func TestUpdateNothingNewer(t *testing.T) {
 		t.Errorf("offline: %d %q", code, errOut.String())
 	}
 }
+
+// A command that takes nothing says so when given more, instead of ignoring it: `space
+// ad x`, a typo of `space add x`, used to just show the space.
+func TestExtraWordsAreRefused(t *testing.T) {
+	home(t)
+	for _, args := range [][]string{{"space", "ad", "x"}, {"check", "now"}, {"doctor", "please"}, {"version", "x"}, {"help", "backup"}, {"mcp", "x"}} {
+		var out, errOut bytes.Buffer
+		if code := run(args, nil, &out, &errOut); code != 2 || !strings.Contains(errOut.String(), args[len(args)-1]) {
+			t.Errorf("%v: %d %q", args, code, errOut.String())
+		}
+	}
+}
+
+// install.ps1 runs inside `irm | iex`, which may read it in another code page: its
+// Spanish is written with \u escapes, so a letter with an accent written as is shows
+// broken on Windows PowerShell 5.1.
+func TestInstallPs1IsASCII(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "install.ps1"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i, line := range strings.Split(string(data), "\n") {
+		for _, r := range line {
+			if r > 127 {
+				t.Errorf("install.ps1:%d has %q: write it as \\u%04x", i+1, r, r)
+				break
+			}
+		}
+	}
+}

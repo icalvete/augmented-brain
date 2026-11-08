@@ -414,6 +414,17 @@ func TestPreToolUseGuardFile(t *testing.T) {
 	if got := decide("Bash", map[string]any{"command": "ssh web01 uptime"}); got != "ask" {
 		t.Errorf("broken guard.toml: %q", got)
 	}
+	// The untouchable list is unknown: a push the other lists allow asks, and the
+	// merge of a pull request too, until guard.toml is fixed.
+	if got := decide("Bash", map[string]any{"command": push}); got != "ask" {
+		t.Errorf("push with guard.toml broken: %q", got)
+	}
+	if got := decide("Bash", map[string]any{"command": "git -C " + filepath.ToSlash(repo) + " commit -m x"}); got != "ask" {
+		t.Errorf("commit with guard.toml broken: %q", got)
+	}
+	if got := decide("Bash", map[string]any{"command": "cd " + filepath.ToSlash(repo) + " && gh pr merge 12"}); got != "ask" {
+		t.Errorf("merge with guard.toml broken: %q", got)
+	}
 	if err := config.SaveGuard(cfgDir, config.Guard{}); err != nil {
 		t.Fatal(err)
 	}

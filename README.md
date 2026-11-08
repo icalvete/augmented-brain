@@ -143,12 +143,14 @@ Spanish:
 - **Get started**: [Getting started](https://icalvete.github.io/augmented-brain/guide/getting-started.html), [Installing](https://icalvete.github.io/augmented-brain/guide/install.html).
 - **Concepts**: [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html), [Tasks](https://icalvete.github.io/augmented-brain/guide/tasks.html),
   [Areas, knowledge and the rest](https://icalvete.github.io/augmented-brain/guide/notes.html), [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html),
-  [How it works inside](https://icalvete.github.io/augmented-brain/guide/how-it-works.html).
+  [How it works inside](https://icalvete.github.io/augmented-brain/guide/how-it-works.html), [What Claude may do without asking you](https://icalvete.github.io/augmented-brain/guide/what-claude-may-do.html),
+  [Where everything lives](https://icalvete.github.io/augmented-brain/guide/where-things-live.html).
 - **Daily use**: [What to say to Claude](https://icalvete.github.io/augmented-brain/guide/phrases.html), [The panel](https://icalvete.github.io/augmented-brain/guide/panel.html),
   [The weekly review](https://icalvete.github.io/augmented-brain/guide/weekly-review.html), [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html),
   [Connect your services](https://icalvete.github.io/augmented-brain/guide/connect-services.html), [Bring in a memory](https://icalvete.github.io/augmented-brain/guide/import.html),
   [The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html), [Remote access](https://icalvete.github.io/augmented-brain/guide/remote.html),
-  [Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html).
+  [Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html), [From your phone or another computer](https://icalvete.github.io/augmented-brain/guide/anywhere.html),
+  [Updating and uninstalling](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.html).
 - **Reference**: [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html), [MCP tools](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html),
   [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html), [Memory format](https://icalvete.github.io/augmented-brain/guide/memory-format.html).
 - **Help**: [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html), [Changelog](CHANGELOG.md).

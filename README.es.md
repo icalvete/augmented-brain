@@ -151,7 +151,9 @@ y en inglés:
   [Instalación](https://icalvete.github.io/augmented-brain/guide/install.es.html).
 - **Conceptos**: [Espacios](https://icalvete.github.io/augmented-brain/guide/spaces.es.html), [Tareas](https://icalvete.github.io/augmented-brain/guide/tasks.es.html),
   [Áreas, conocimiento y lo demás](https://icalvete.github.io/augmented-brain/guide/notes.es.html), [El guardia](https://icalvete.github.io/augmented-brain/guide/guard.es.html),
-  [Cómo funciona por dentro](https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html).
+  [Cómo funciona por dentro](https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html),
+  [Qué puede hacer Claude sin preguntarte](https://icalvete.github.io/augmented-brain/guide/what-claude-may-do.es.html),
+  [Dónde vive cada cosa](https://icalvete.github.io/augmented-brain/guide/where-things-live.es.html).
 - **Día a día**: [Qué decirle a Claude](https://icalvete.github.io/augmented-brain/guide/phrases.es.html), [El panel](https://icalvete.github.io/augmented-brain/guide/panel.es.html),
   [La revisión semanal](https://icalvete.github.io/augmented-brain/guide/weekly-review.es.html),
   [Copia de seguridad y restauración](https://icalvete.github.io/augmented-brain/guide/backup.es.html),
@@ -159,7 +161,9 @@ y en inglés:
   [Trae una memoria que ya tienes](https://icalvete.github.io/augmented-brain/guide/import.es.html),
   [El panel desde otro dispositivo](https://icalvete.github.io/augmented-brain/guide/panel-remote.es.html),
   [Acceso remoto](https://icalvete.github.io/augmented-brain/guide/remote.es.html),
-  [Versiones de la configuración](https://icalvete.github.io/augmented-brain/guide/config-history.es.html).
+  [Versiones de la configuración](https://icalvete.github.io/augmented-brain/guide/config-history.es.html),
+  [Desde el móvil u otro ordenador](https://icalvete.github.io/augmented-brain/guide/anywhere.es.html),
+  [Actualizar y desinstalar](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.es.html).
 - **Referencia**: [Comandos](https://icalvete.github.io/augmented-brain/guide/commands.es.html), [Herramientas MCP](https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html),
   [Configuración](https://icalvete.github.io/augmented-brain/guide/configuration.es.html),
   [Formato de la memoria](https://icalvete.github.io/augmented-brain/guide/memory-format.html) (en inglés).
