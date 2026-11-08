@@ -5,12 +5,14 @@
 package setup
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -53,7 +55,35 @@ func Init(cfgDir string, o Options) (*Result, error) {
 		lang = "en"
 	}
 	c := &config.Config{Language: lang, Spaces: map[string]*config.Space{}, Dir: cfgDir}
-	return addSpace(c, o, true)
+	return addSpace(c, o, true, true)
+}
+
+// InitSpaces creates the configuration with several spaces at once, def the default
+// one. Every space's folders come first and config.toml is written once, at the end:
+// stopped half way (Ctrl+C, a space that fails), it leaves no configuration, so running
+// it again (or the installer, which runs it only when there is none) starts over
+// instead of finding a configuration with a space missing.
+func InitSpaces(cfgDir string, spaces []Options, def string) ([]*Result, error) {
+	if _, err := os.Stat(filepath.Join(cfgDir, config.FileName)); err == nil {
+		return nil, fmt.Errorf("there is already a configuration in %s; to add a space use `augmented-brain space add`", cfgDir)
+	}
+	if len(spaces) == 0 {
+		return nil, errors.New("no space to create")
+	}
+	if def != "" && !slices.ContainsFunc(spaces, func(o Options) bool { return o.Space == def }) {
+		return nil, fmt.Errorf("default space %q is not one of the spaces", def)
+	}
+	lang := cmp.Or(spaces[0].Language, "en")
+	c := &config.Config{Language: lang, Spaces: map[string]*config.Space{}, Dir: cfgDir, DefaultSpace: def}
+	var out []*Result
+	for i, o := range spaces {
+		res, err := addSpace(c, o, i == 0, false)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, res)
+	}
+	return out, c.Save()
 }
 
 // AddSpace adds a space to an existing configuration. With two spaces or more there must
@@ -66,7 +96,7 @@ func AddSpace(cfgDir string, o Options) (*Result, error) {
 		return nil, err
 	}
 	before := c.SpaceNames()
-	res, err := addSpace(c, o, false)
+	res, err := addSpace(c, o, false, true)
 	if err != nil || c.DefaultSpace != "" || len(before) == 0 {
 		return res, err
 	}
@@ -83,7 +113,9 @@ func AddSpace(cfgDir string, o Options) (*Result, error) {
 	return res, nil
 }
 
-func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
+// addSpace creates the space's folders and adds it to c; with save, it also writes it
+// to config.toml (the whole file for the first space).
+func addSpace(c *config.Config, o Options, first, save bool) (*Result, error) {
 	if !validName.MatchString(o.Space) {
 		return nil, fmt.Errorf("space name %q: use lowercase letters, digits and dashes, starting with a letter", o.Space)
 	}
@@ -144,6 +176,9 @@ func addSpace(c *config.Config, o Options, first bool) (*Result, error) {
 
 	sp := &config.Space{Name: o.Space, Memory: mem, WorkFolders: []string{work}}
 	c.Spaces[o.Space] = sp
+	if !save {
+		return res, nil
+	}
 	if first {
 		err = c.Save()
 	} else {

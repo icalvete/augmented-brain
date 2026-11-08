@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **An install stopped half way can be run again.** `init` wrote the configuration
+  after the first space and then added the second: stopped in between (Ctrl+C, a folder
+  it could not make), it left a configuration without `personal`, and the installer,
+  seeing a configuration, never ran `init` again. Now `init` makes every space's folders
+  first and writes the configuration once, at the end.
 - **An update whose download fails no longer looks done.** `augmented-brain update` piped
   the installer from GitHub straight into `sh`: when GitHub answered 504, as it did for
   over an hour on 8 November, `sh` got an empty script, the update "worked" and nothing
