@@ -89,6 +89,10 @@ try:
             browser = getattr(pw, engine).launch()
             for size, viewport in (("desktop", {"width": 1280, "height": 800}), ("phone", {"width": 375, "height": 740})):
                 ctx = browser.new_context(viewport=viewport)
+                # Each blocked resource says what and where, so a report names the culprit.
+                ctx.add_init_script("""document.addEventListener('securitypolicyviolation', e =>
+                    console.error('CSP ' + e.violatedDirective + ' blocked ' + (e.blockedURI || 'inline') +
+                      ' at ' + (e.sourceFile || '?') + ':' + e.lineNumber + ' sample=' + (e.sample || '')))""")
                 page = ctx.new_page()
                 errors, failed = [], []
                 page.on("console", lambda msg: errors.append(msg.text) if msg.type == "error" else None)
@@ -99,7 +103,7 @@ try:
                     resp = page.goto(f"{base}/{path}{'&' if '?' in path else '?'}s=work")
                     page.wait_for_load_state("networkidle")
                     ok = resp is not None and resp.status == 200 and not errors and not failed
-                    report(f"{engine} {size}: {path.split('?')[0]} loads clean", ok, (errors + failed)[:2] or (resp.status if resp else "no answer"))
+                    report(f"{engine} {size}: {path.split('?')[0]} loads clean", ok, [e for e in errors if e.startswith('CSP')][:1] + (errors + failed)[:1] or (resp.status if resp else "no answer"))
                     if size == "phone":
                         wide = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
                         report(f"{engine} phone: {path.split('?')[0]} fits the screen", wide <= 1, f"{wide}px wider")
