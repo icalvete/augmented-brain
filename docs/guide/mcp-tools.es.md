@@ -77,7 +77,9 @@ una tarea antes de retomarla.
 ## `task_update`
 
 Cambia una tarea. Solo cambian los campos que se le dan. Un cambio de estado se apunta en
-el diario.
+el diario, y si se salta fases (de `definition` directa a `execution`, por ejemplo), la
+línea dice cuáles: saltarlas se puede, y se ve. Una tarea cerrada solo se reabre con
+`reopen`.
 
 - `id`: el id de la tarea.
 - `status` (opcional): `definition`, `analysis`, `plan`, `execution`, `validation`,
@@ -90,6 +92,8 @@ el diario.
   `watch_what`.
 - `watch_what` (opcional): qué mirar en `watch_date`, en una línea.
 - `watch_done` (opcional): marca como hecha la fecha para revisar de este día.
+- `reopen` (opcional): solo para volver a abrir una tarea cerrada, con un `status` nuevo:
+  por qué, en pocas palabras. Va al diario. Claude te lo pregunta antes.
 
 Hace falta al menos un campo además de `id`.
 
@@ -131,7 +135,8 @@ Deja una tarea en pausa sin perder nada, antes de pasar a otra cosa.
 ## `task_close`
 
 Cierra una tarea terminada con su resultado. Se guarda, nunca se borra. Una tarea con
-subtareas abiertas no se puede cerrar. Si la tarea tiene fechas para revisar sin marcar
+subtareas abiertas no se puede cerrar, y una ya cerrada se rechaza, para que su resultado
+nunca se pise. Si la tarea tiene fechas para revisar sin marcar
 como hechas, lo dice: siguen saliendo al empezar la sesión en su día, porque cerrar suele
 ser cuando se apunta lo que hay que mirar más adelante.
 
