@@ -10,6 +10,14 @@ var doctorMessages = map[string]msg{
 		en: "run `augmented-brain init`",
 		es: "lanza `augmented-brain init`",
 	},
+	"doctor.nobackup": {
+		en: "space %s has no backup: if this computer is lost, so are its notes",
+		es: "el espacio %s no tiene copia de seguridad: si pierdes este ordenador, pierdes sus notas",
+	},
+	"doctor.nobackup.fix": {
+		en: "ask Claude \"set up the backup\" in a folder of the space, or run `augmented-brain backup setup <address of a private repository>` there",
+		es: "pide a Claude «configura la copia de seguridad» en una carpeta del espacio, o lanza allí `augmented-brain backup setup <dirección de un repositorio privado>`",
+	},
 	"doctor.badconfig.fix": {
 		en: "go back to a version that worked: `augmented-brain config history`, then `augmented-brain config restore <number>`; or fix the file by hand",
 		es: "vuelve a una versión que funcionaba: `augmented-brain config history` y después `augmented-brain config restore <número>`; o arregla el fichero a mano",

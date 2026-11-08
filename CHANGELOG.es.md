@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+- **La falta de copia de seguridad se dice claro.** Nada avisaba cuando un espacio no
+  tenía copia de seguridad. Ahora `doctor` lo dice en cada espacio, con cómo
+  configurarla; `update` avisa cuando sigue sin una copia a la que volver; y
+  `uninstall --all` avisa de que las notas sin copia se perderán para siempre.
 - **La copia de seguridad ya no se queda colgada con la red a medias.** git no tenía
   tiempo máximo, y una copia mantiene un bloqueo mientras corre: una colgada (la del
   final de una sesión, en segundo plano) hacía esperar detrás a todas las siguientes,

@@ -170,6 +170,11 @@ func space(c *config.Config, s *config.Space) []Check {
 	if string(current) != m.Index(c.Language) {
 		checks = append(checks, Check{Warning, i18n.T(l, "doctor.stale", s.Name, memory.IndexFile), i18n.T(l, "doctor.stale.fix")})
 	}
+	// Not a failure (a new install has none yet), but said: without a backup, losing
+	// this computer loses the space's notes.
+	if s.Backup == "" {
+		checks = append(checks, Check{Info, i18n.T(l, "doctor.nobackup", s.Name), i18n.T(l, "doctor.nobackup.fix")})
+	}
 	return append(checks, private...)
 }
 

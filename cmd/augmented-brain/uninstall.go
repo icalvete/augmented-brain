@@ -68,7 +68,7 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 	if *withConfig {
 		fmt.Fprintln(out, "  - "+paths.Tilde(cfgDir))
 	}
-	var notes, backups []string
+	var notes, backups, unsaved []string
 	for _, s := range spaces {
 		if *all {
 			fmt.Fprintln(out, "  - "+i18n.T(lang, "uninstall.notes", paths.Tilde(s.memory), countNotes(s.memory)))
@@ -77,6 +77,8 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 		}
 		if s.backup != "" {
 			backups = append(backups, s.backup)
+		} else {
+			unsaved = append(unsaved, paths.Tilde(s.memory))
 		}
 	}
 	if len(notes) > 0 {
@@ -86,6 +88,10 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 	}
 	if *all && len(backups) > 0 {
 		fmt.Fprintln(out, i18n.T(lang, "uninstall.backups", strings.Join(backups, ", ")))
+	}
+	// Starting from scratch deletes notes that may exist nowhere else: say so plainly.
+	if *all && len(unsaved) > 0 {
+		fmt.Fprintln(out, i18n.T(lang, "uninstall.nobackup", strings.Join(unsaved, ", ")))
 	}
 	if !*yes {
 		fmt.Fprint(out, i18n.T(lang, "uninstall.ask")+" ")

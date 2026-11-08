@@ -160,6 +160,7 @@ func beforeUpdate(lang string, force bool, out, errOut io.Writer) int {
 		}
 	}
 	if len(spaces) == 0 {
+		fmt.Fprintln(out, i18n.T(lang, "update.nobackup"))
 		return 0
 	}
 	fmt.Fprintln(out, i18n.T(lang, "update.before.backup"))

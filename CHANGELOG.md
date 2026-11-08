@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Missing backups are said out loud.** Nothing warned when a space had no backup.
+  Now `doctor` says so for each space, with how to set it up; `update` says when it goes
+  ahead with no copy to go back to; and `uninstall --all` warns that notes with no
+  backup will be gone for good.
 - **A backup no longer hangs on a network that half works.** git had no time limit, and
   a backup holds a lock while it runs: one left hanging (the one at the end of a
   session, in the background) made every later backup wait behind it, including the one
