@@ -60,6 +60,8 @@ type System struct {
 	// ClaudeJSON is Claude Code's own file, read (never written) to see which folders
 	// the user trusts.
 	ClaudeJSON string
+	// Sleep waits between looks at a launched session; nil is time.Sleep.
+	Sleep func(time.Duration)
 }
 
 // NewSystem is the real system.

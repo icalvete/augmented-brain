@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- **A session per task, from anywhere.** `augmented-brain session start <task>` opens a
+  remote session of its own for a task: it shows up in Claude Desktop and claude.ai named
+  after the task, in the task's folder, and starts by reading it. The session behind a
+  space's door cannot open sessions itself, but it can run this, so from another computer
+  you ask it "open me a session for the website task" and get one per task, also after a
+  reboot, when only the doors come back. `session stop` and `session list` close and list
+  them. The first time in a folder it tells you how to make Claude trust it: Claude's
+  server only starts in a folder trusted on its own, and serves each folder once. Linux
+  only, like `remote`.
+
 ## 0.14.0-alpha
 
 Released 2026-11-08.

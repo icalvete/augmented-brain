@@ -329,6 +329,58 @@ claude.ai), si el servicio está en marcha y arranca solo, y si Claude confía e
 carpeta. Luego, si el linger está activado. Debajo de cada problema, `→` dice qué hacer.
 No tiene opciones.
 
+## augmented-brain session
+
+Abre una sesión remota propia para una tarea, para que desde otro ordenador puedas
+trabajar en varias tareas a la vez, cada una en su sesión. Son tres comandos, `start`,
+`stop` y `list`, cada uno con su apartado abajo. Por ahora solo en Linux (usa
+`systemd`). Sin subcomando, o con otro, `session` muestra su uso. Mira
+[Acceso remoto](remote.es.md#una-sesión-por-tarea).
+
+## augmented-brain session start
+
+Abre una sesión para una tarea, en la carpeta de la tarea.
+
+```bash
+augmented-brain session start task-new-website
+augmented-brain session start task-new-website --folder ~/projects/website
+```
+
+Arranca un `claude remote-control` propio para la tarea (un servicio de usuario de
+`systemd` temporal, `augmented-brain-session-<tarea>`), con el título de la tarea como
+nombre. En menos de un minuto sale en Claude Desktop y claude.ai, y empieza leyendo su
+tarea. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
+de trabajo del espacio, o la que diga `--folder`. Lánzalo desde una carpeta del espacio
+de la tarea: la sesión remota a la que entras desde otro ordenador puede lanzarlo por ti
+(«ábreme una sesión para la tarea de la web»).
+
+Hay dos límites que pone Claude. La carpeta tiene que ser de confianza ella misma: que
+confíe en una carpeta de arriba no basta, así que la primera vez el comando te dice que
+abras Claude una vez en esa carpeta y aceptes la pregunta. Y Claude solo admite un
+servidor remoto por carpeta, así que una tarea no puede usar la carpeta del servicio del
+espacio ni una que ya use la sesión de otra tarea: dale otra con `--folder` (un worktree
+de git, por ejemplo).
+
+La sesión se cierra cuando la terminas, con `session stop` o al reiniciar el ordenador.
+Las sesiones lanzadas no vuelven solas tras un reinicio: pídelas otra vez.
+
+## augmented-brain session stop
+
+Cierra la sesión de una tarea.
+
+```bash
+augmented-brain session stop task-new-website
+```
+
+## augmented-brain session list
+
+Lista las sesiones de tareas abiertas en este ordenador: la tarea, si está en marcha y
+su carpeta.
+
+```bash
+augmented-brain session list
+```
+
 ## augmented-brain config
 
 Las versiones de tu configuración: dos comandos, `history` y `restore`, cada uno con su

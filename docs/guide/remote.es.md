@@ -92,6 +92,32 @@ pone al día.
 3. Empieza una sesión. Empieza las que quieras: cada una arranca en la carpeta de ese
    espacio.
 
+## Una sesión por tarea
+
+Las sesiones de la puerta empiezan todas en la carpeta del espacio. Para trabajar en una
+tarea en su propia sesión, en su carpeta, pídeselo a la sesión en la que estás: «ábreme una
+sesión para la tarea de la web». Lanza
+
+```bash
+augmented-brain session start task-new-website
+```
+
+y en menos de un minuto sale en claude.ai y Claude Desktop una sesión nueva, con el nombre
+de la tarea. Empieza leyendo su tarea y diciéndote cómo está. La carpeta es la del primer
+repositorio de la tarea que encuentra en las carpetas de trabajo del espacio, o la que diga
+`--folder`.
+
+- **Claude tiene que confiar en esa carpeta ella misma.** Que confíe en la carpeta del
+  espacio no basta. La primera vez, el comando dice qué hacer: en la máquina (o por
+  `ssh`), entra en la carpeta, lanza `claude`, acepta la pregunta y ciérralo con `/exit`.
+  Luego pídelo otra vez.
+- **Una sesión por carpeta.** Claude sirve cada carpeta una sola vez, así que una tarea no
+  puede usar la carpeta de la puerta ni una que ya use la sesión de otra tarea. Dale otra
+  con `--folder` (un worktree de git del repositorio, por ejemplo).
+- **Termina con su sesión**, con `augmented-brain session stop <tarea>` o al reiniciar la
+  máquina. Tras un reinicio solo vuelven las puertas: pide otra vez las sesiones de las
+  tareas. `augmented-brain session list` enseña las abiertas.
+
 ## Mantenlo seguro
 
 **Es una puerta permanente a tu ordenador.** Quien entre en tu cuenta de Claude puede

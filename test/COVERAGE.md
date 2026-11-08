@@ -40,6 +40,7 @@ row here with the test that covers it.
 | `backup`, `backup setup`, `restore` | `internal/backup` (25 tests), `cmd` `TestBackupSpaceFlag`, `TestRestoreNamesTheSecrets` |
 | `panel`, `panel remote`, `panel stop` | `internal/panel`, `cmd` `TestPanelRemoteExplains`, `TestExplainTailnet`; `scripts/panel-browser-check.py` |
 | `remote install`, `uninstall`, `status` | `internal/remote` (14 tests) |
+| `session start`, `stop`, `list` | `internal/remote` `TestStartRefuses`, `TestStartRuns`, `TestStartReportsFailure`, `TestFolderTrustedIsExact`; `internal/hook` `TestLaunchedSessionReadsItsTask`; tried by hand on Linux (a real session opened in a trusted folder) |
 | `config history`, `config restore` | `cmd` `TestConfigHistoryAndRestore`, `TestConfigRestoreFixesABrokenConfig`; `internal/confighistory` |
 | `update` | see Installing |
 | `uninstall` | see Installing |

@@ -51,6 +51,11 @@ var commands = []command{
 	{name: "remote install"},
 	{name: "remote uninstall"},
 	{name: "remote status"},
+	// session is hidden: its three subcommands are the ones the usage text lists.
+	{name: "session", hidden: true, run: withoutIn(cmdSession)},
+	{name: "session start", flags: func() []string { fs, _ := sessionFlags(io.Discard); return flagNames(fs) }},
+	{name: "session stop"},
+	{name: "session list"},
 	{name: "config", hidden: true, run: func(args []string, _ io.Reader, _, errOut io.Writer) int { return cmdConfig(args, errOut) }},
 	{name: "config history", run: withoutIn(cmdConfigHistory)},
 	{name: "config restore", run: withoutIn(cmdConfigRestore)},
