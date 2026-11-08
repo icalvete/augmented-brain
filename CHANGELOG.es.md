@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Unreleased
+## 0.13.0-alpha
+
+Publicada el 2026-11-08.
 
 - **Tu configuración guarda sus 10 últimas versiones.** Una lista del guardia vaciada sin
   querer, un espacio que apunta a la carpeta que no es: hasta ahora no había vuelta
