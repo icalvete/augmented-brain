@@ -145,7 +145,7 @@ augmented-brain check</code></pre>
   <h2 id="augmented-brain-restore">augmented-brain restore</h2>
   <p>Recupera un espacio de su copia de seguridad, en una máquina nueva.</p>
   <pre><code>augmented-brain restore https://github.com/lucia/augmented-brain-trabajo.git</code></pre>
-  <p>Cambia el espacio vacío del mismo nombre por el tuyo. Un espacio que ya tiene notas lo deja como está. Si falta el plugin de Claude Code, lo instala. Después nombra lo que no ha traído: las listas del guardia, los repositorios donde Claude puede hacer commit y los secretos que faltan en el llavero de esta máquina, cada uno con el comando para guardarlo.</p>
+  <p>Cambia el espacio vacío del mismo nombre por el tuyo. Un espacio que ya tiene notas lo deja como está. Si falta el plugin de Claude Code, lo instala. Después nombra lo que no ha traído: las listas del guardia, los repositorios donde Claude puede hacer commit y los secretos que faltan en el llavero de esta máquina, cada uno con el comando para guardarlo. Si no puede preguntar al llavero (no hay, o está bloqueado), nombra los secretos que no ha podido comprobar.</p>
   <ul><li><code>--memory</code>: dónde poner las notas del espacio. Por defecto, donde estaban, dentro de la carpeta de trabajo.</li><li><code>--work</code>: la carpeta de trabajo que elige el espacio. Por defecto, la que se guardó en la copia.</li></ul>
   <h2 id="augmented-brain-panel">augmented-brain panel</h2>
   <p>Abre el panel en el navegador: el día de un vistazo, y todas las páginas de tus espacios para verlas y cambiarlas.</p>
@@ -190,7 +190,7 @@ augmented-brain config history 3</code></pre>
   <h2 id="augmented-brain-config-restore">augmented-brain config restore</h2>
   <p>Vuelve a una versión de la configuración.</p>
   <pre><code>augmented-brain config restore 3</code></pre>
-  <p>Enseña lo que cambia y lo escribe. Antes guarda como versión la configuración que tenías, así que volver atrás se puede deshacer igual. Una versión que dejaría un fichero que el programa no puede leer se rechaza, y no cambia nada. Si las listas del guardia quedan distintas de las que aceptaste, el guardia pregunta antes de cada commit, push o mezcla que antes dejaba pasar, hasta que las aceptes en la página Guardia del panel o empieces una sesión nueva: un comando lo puede lanzar el asistente, así que nunca las acepta por ti. Volver desde la página Versiones del panel sí las acepta. No tiene opciones.</p>
+  <p>Enseña lo que cambia y lo escribe. Antes guarda como versión la configuración que tenías, así que volver atrás se puede deshacer igual. Una versión que dejaría un fichero que el programa no puede leer se rechaza, y no cambia nada. Si las listas del guardia quedan distintas de las que aceptaste, el guardia pregunta antes de cada commit, push o mezcla que antes dejaba pasar, hasta que las aceptes en la página Guardia del panel o empieces una sesión nueva: un comando lo puede lanzar el asistente, así que nunca las acepta por ti. Volver desde la página Versiones del panel sí las acepta. Funciona aunque <code>config.toml</code> esté roto, igual que <code>config history</code>. No tiene opciones.</p>
   <h2 id="augmented-brain-update">augmented-brain update</h2>
   <p>Actualiza augmented brain y su plugin de Claude Code.</p>
   <pre><code>augmented-brain update</code></pre>

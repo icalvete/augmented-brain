@@ -201,7 +201,8 @@ Cambia el espacio vacío del mismo nombre por el tuyo. Un espacio que ya tiene n
 deja como está. Si falta el plugin de Claude Code, lo instala. Después nombra lo que no
 ha traído: las listas del guardia, los repositorios donde Claude puede hacer commit y los
 secretos que faltan en el llavero de esta máquina, cada uno con el comando para
-guardarlo.
+guardarlo. Si no puede preguntar al llavero (no hay, o está bloqueado), nombra los
+secretos que no ha podido comprobar.
 
 - `--memory`: dónde poner las notas del espacio. Por defecto, donde estaban, dentro de la
   carpeta de trabajo.
@@ -353,8 +354,8 @@ que el programa no puede leer se rechaza, y no cambia nada. Si las listas del gu
 quedan distintas de las que aceptaste, el guardia pregunta antes de cada commit, push o
 mezcla que antes dejaba pasar, hasta que las aceptes en la página Guardia del panel o
 empieces una sesión nueva: un comando lo puede lanzar el asistente, así que nunca las
-acepta por ti. Volver desde la página Versiones del panel sí las acepta. No tiene
-opciones.
+acepta por ti. Volver desde la página Versiones del panel sí las acepta. Funciona aunque
+`config.toml` esté roto, igual que `config history`. No tiene opciones.
 
 ## augmented-brain update
 

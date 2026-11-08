@@ -101,6 +101,7 @@
 augmented-brain config history 3
 augmented-brain config restore 3</code></pre>
   <p><code>config history</code> lists the versions; with a number, it shows what that one changed. <code>config restore</code> goes back to one. A command can be run by the assistant, so going back this way never accepts new guard lists for you: until you accept them in the panel's Guard page, or start a new session, the guard asks before every commit, push or merge it used to allow. See <a href="commands.html#augmented-brain-config-history">Commands</a>.</p>
+  <p>Both work even when <code>config.toml</code> is broken and nothing else will start: that is when going back helps most. <code>augmented-brain doctor</code> then says so, and points to them.</p>
   <p><code>augmented-brain doctor</code> has a line with how many versions are kept, and says when the configuration changed after the newest one.</p>
   <nav class="pager" aria-label="Previous / Next">
     <a class="prev" href="panel-remote.html"><span>← Previous</span>The panel from another device</a>

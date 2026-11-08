@@ -11,8 +11,8 @@ var doctorMessages = map[string]msg{
 		es: "lanza `augmented-brain init`",
 	},
 	"doctor.badconfig.fix": {
-		en: "fix the file, or move it away and run `augmented-brain init`",
-		es: "arregla el fichero, o apártalo y lanza `augmented-brain init`",
+		en: "go back to a version that worked: `augmented-brain config history`, then `augmented-brain config restore <number>`; or fix the file by hand",
+		es: "vuelve a una versión que funcionaba: `augmented-brain config history` y después `augmented-brain config restore <número>`; o arregla el fichero a mano",
 	},
 	"doctor.config": {
 		en: "configuration: %s",

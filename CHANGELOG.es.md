@@ -7,6 +7,12 @@
   el acceso remoto antes de que systemd los rechazara, y después `doctor` lo daba por
   roto. Ahora pregunta antes a systemd y se para ahí, diciendo por qué; y el acceso
   remoto solo se enciende cuando systemd ha aceptado los servicios.
+- **Un llavero al que no se puede preguntar ya no cuenta como «falta».** En Linux sin
+  sesión de escritorio, `secret-tool` falla igual que cuando el secreto no está, así que
+  `restore` y la página Secretos del panel te pedían guardar otra vez secretos que ya
+  tenías. Ahora no poder preguntar es «no se ha podido comprobar», en Linux y en macOS
+  (un llavero bloqueado), y `restore` nombra también esos secretos, cuando antes, sin
+  llavero (Windows), no decía nada.
 - **La copia de seguridad ya no se queda colgada con la red a medias.** git no tenía
   tiempo máximo, y una copia mantiene un bloqueo mientras corre: una colgada (la del
   final de una sesión, en segundo plano) hacía esperar detrás a todas las siguientes,
@@ -14,6 +20,10 @@
   copia o una restauración se para tras 3 minutos sin respuesta (y por https, con una
   transferencia de menos de 1 KB por segundo durante un minuto), y una copia espera
   como mucho 10 minutos a otra; las dos dicen por qué.
+- **Volver atrás funciona con la configuración rota.** `config history` y `config
+  restore` no arrancaban si `config.toml` no se podía leer, que es justo cuando volver a
+  una versión ayuda. Ahora trabajan con los ficheros tal como están, y `doctor` te lleva
+  a ellos cuando la configuración está rota.
 - **Una instalación cortada a medias se puede repetir.** `init` escribía la
   configuración tras el primer espacio y después añadía el segundo: si se cortaba entre
   medias (Ctrl+C, una carpeta que no podía crear), dejaba una configuración sin

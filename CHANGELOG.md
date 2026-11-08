@@ -7,12 +7,22 @@
   remote access on before systemd refused them, and `doctor` then reported it broken.
   Now it asks systemd first and stops there, saying why; and remote access is turned on
   only once systemd has taken the services.
+- **A keychain that cannot be asked is no longer "missing".** On Linux without a desktop
+  session, `secret-tool` fails the same way as for a secret that is not there, so
+  `restore` and the panel's Secrets page told you to store again secrets you had. Now a
+  failure to ask is "could not check", on Linux and on macOS (a locked keychain), and
+  `restore` names those secrets too, where before, with no keychain at all (Windows), it
+  said nothing.
 - **A backup no longer hangs on a network that half works.** git had no time limit, and
   a backup holds a lock while it runs: one left hanging (the one at the end of a
   session, in the background) made every later backup wait behind it, including the one
   `update` makes first. Now each git call of a backup or restore stops after 3 minutes
   without an answer (and over https, on a transfer slower than 1 KB a second for a
   minute), and a backup waits at most 10 minutes for another one; both say why.
+- **Going back works when the configuration is broken.** `config history` and `config
+  restore` refused to run when `config.toml` did not load, which is exactly when going
+  back to a version helps. Now they work on the files as they are, and `doctor` points
+  to them when the configuration is broken.
 - **An install stopped half way can be run again.** `init` wrote the configuration
   after the first space and then added the second: stopped in between (Ctrl+C, a folder
   it could not make), it left a configuration without `personal`, and the installer,

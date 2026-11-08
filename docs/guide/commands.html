@@ -145,7 +145,7 @@ augmented-brain check</code></pre>
   <h2 id="augmented-brain-restore">augmented-brain restore</h2>
   <p>Brings a space back from its backup, on a new machine.</p>
   <pre><code>augmented-brain restore https://github.com/lucia/augmented-brain-work.git</code></pre>
-  <p>It replaces the empty space of the same name with yours. It leaves alone a space that already has notes. It installs the Claude Code plugin if it is missing. Then it names what it did not bring: the guard's lists, the repositories where Claude may commit, and the secrets this machine's keychain lacks, each with the command to store it.</p>
+  <p>It replaces the empty space of the same name with yours. It leaves alone a space that already has notes. It installs the Claude Code plugin if it is missing. Then it names what it did not bring: the guard's lists, the repositories where Claude may commit, and the secrets this machine's keychain lacks, each with the command to store it. When it cannot ask the keychain (there is none, or it is locked), it names the secrets it could not check.</p>
   <ul><li><code>--memory</code>: where to put the space's notes. Default: where they were, inside the work folder.</li><li><code>--work</code>: the work folder that selects the space. Default: the one saved in the backup.</li></ul>
   <h2 id="augmented-brain-panel">augmented-brain panel</h2>
   <p>Opens the panel in your browser: today at a glance, and every page of your spaces to see and edit.</p>
@@ -190,7 +190,7 @@ augmented-brain config history 3</code></pre>
   <h2 id="augmented-brain-config-restore">augmented-brain config restore</h2>
   <p>Goes back to one version of the configuration.</p>
   <pre><code>augmented-brain config restore 3</code></pre>
-  <p>It shows what changes and writes it. The configuration you had is kept as a version first, so going back can be undone the same way. A version that would leave a file the program cannot read is refused, and nothing changes. If the guard's lists end up different from the ones you accepted, the guard asks before every commit, push or merge it used to allow, until you accept them in the panel's Guard page or start a new session: a command can be run by the assistant, so it never accepts them for you. Going back from the panel's Versions page does accept them. It takes no options.</p>
+  <p>It shows what changes and writes it. The configuration you had is kept as a version first, so going back can be undone the same way. A version that would leave a file the program cannot read is refused, and nothing changes. If the guard's lists end up different from the ones you accepted, the guard asks before every commit, push or merge it used to allow, until you accept them in the panel's Guard page or start a new session: a command can be run by the assistant, so it never accepts them for you. Going back from the panel's Versions page does accept them. It works even when <code>config.toml</code> is broken, like <code>config history</code>. It takes no options.</p>
   <h2 id="augmented-brain-update">augmented-brain update</h2>
   <p>Updates augmented brain and its Claude Code plugin.</p>
   <pre><code>augmented-brain update</code></pre>

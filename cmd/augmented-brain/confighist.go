@@ -1,9 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"maps"
+	"os"
+	"path/filepath"
+	"regexp"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/confighistory"
@@ -17,6 +21,39 @@ func cmdConfig(_ []string, errOut io.Writer) int {
 	return 2
 }
 
+// historyDir is the configuration folder and its language for `config history` and
+// `config restore`. They work on the files as they are, so they do not need a
+// configuration that loads: a broken config.toml is just when going back is needed. The
+// language then comes from the file's own `language` line, or the system's.
+func historyDir(errOut io.Writer) (string, string, bool) {
+	dir, err := config.Dir()
+	if err != nil {
+		fmt.Fprintln(errOut, err)
+		return "", "", false
+	}
+	if c, err := config.Load(dir); err == nil {
+		return dir, c.Language, true
+	} else if !errors.Is(err, config.ErrNotFound) {
+		return dir, rawLanguage(dir), true
+	}
+	if vs, _ := confighistory.List(dir); len(vs) > 0 {
+		return dir, rawLanguage(dir), true // config.toml gone, its versions kept
+	}
+	fmt.Fprintln(errOut, i18n.T(i18n.FromEnv(), "config.missing", filepath.Join(dir, config.FileName)))
+	return "", "", false
+}
+
+// rawLanguage reads `language = "xx"` from a config.toml that may not load.
+func rawLanguage(dir string) string {
+	b, _ := os.ReadFile(filepath.Join(dir, config.FileName))
+	if m := languageLine.FindSubmatch(b); m != nil {
+		return string(m[1])
+	}
+	return i18n.FromEnv()
+}
+
+var languageLine = regexp.MustCompile(`(?m)^\s*language\s*=\s*"(en|es)"`)
+
 // cmdConfigHistory lists the versions of the configuration, or, given a number, says
 // what that version changed from the one before it.
 func cmdConfigHistory(args []string, out, errOut io.Writer) int {
@@ -24,12 +61,11 @@ func cmdConfigHistory(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.config"))
 		return 2
 	}
-	c, ok := loadConfig(errOut)
+	dir, l, ok := historyDir(errOut)
 	if !ok {
 		return 1
 	}
-	l := c.Language
-	vs, err := confighistory.List(c.Dir)
+	vs, err := confighistory.List(dir)
 	if err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
@@ -55,7 +91,7 @@ func cmdConfigHistory(args []string, out, errOut io.Writer) int {
 		return 0
 	}
 	fmt.Fprintln(out, i18n.T(l, "history.head", confighistory.Keep))
-	changed, _ := confighistory.Changed(c.Dir)
+	changed, _ := confighistory.Changed(dir)
 	for i, v := range vs {
 		mark := ""
 		if i == 0 && !changed {
@@ -78,12 +114,11 @@ func cmdConfigRestore(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.config"))
 		return 2
 	}
-	c, ok := loadConfig(errOut)
+	dir, l, ok := historyDir(errOut)
 	if !ok {
 		return 1
 	}
-	l := c.Language
-	vs, err := confighistory.List(c.Dir)
+	vs, err := confighistory.List(dir)
 	if err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
@@ -94,7 +129,7 @@ func cmdConfigRestore(args []string, out, errOut io.Writer) int {
 		return 1
 	}
 	v := vs[i]
-	cur, err := confighistory.Snapshot(c.Dir)
+	cur, err := confighistory.Snapshot(dir)
 	if err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
@@ -105,14 +140,17 @@ func cmdConfigRestore(args []string, out, errOut io.Writer) int {
 	}
 	fmt.Fprintln(out, i18n.T(l, "history.restoring", i+1, v.Time.Local().Format("2006-01-02 15:04")))
 	printDiff(out, l, confighistory.Compare(cur, v.Files, 2))
-	before := guardPrint(c)
-	if err := confighistory.Restore(c.Dir, v.ID, func() error { return confighistory.Check(c.Dir) }); err != nil {
+	before := ""
+	if c, err := config.Load(dir); err == nil {
+		before = guardPrint(c)
+	}
+	if err := confighistory.Restore(dir, v.ID, func() error { return confighistory.Check(dir) }); err != nil {
 		fmt.Fprintln(errOut, i18n.T(l, "history.badresult", err))
 		return 1
 	}
 	fmt.Fprintln(out, "\n"+i18n.T(l, "history.restored"))
-	if c2, err := config.Load(c.Dir); err == nil {
-		if seal, now := state.ReadSeal(c.Dir), guardPrint(c2); seal != "" && now != before && now != seal {
+	if c2, err := config.Load(dir); err == nil {
+		if seal, now := state.ReadSeal(dir), guardPrint(c2); seal != "" && now != before && now != seal {
 			fmt.Fprintln(out, i18n.T(l, "history.guardasks"))
 		}
 	}
