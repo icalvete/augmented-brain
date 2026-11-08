@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.15.0-alpha
+
+Released 2026-11-08.
 
 - **A session per task, from anywhere.** `augmented-brain session start <task>` opens a
   remote session of its own for a task: it shows up in Claude Desktop and claude.ai named
