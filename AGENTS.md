@@ -92,6 +92,12 @@ Heavier checks, before a release or when you touch what they cover:
 - `scripts/install-check.ps1`: the same for Windows and `install.ps1`, 14 checks. It
   installs Git, Claude Code and the program for whoever runs it: CI runs it on
   windows-latest (`windows.yml`), and so can the Windows VM from its `clean` snapshot.
+- `scripts/faults-check.py`: what the program does when something it uses is missing,
+  one thing at a time in a throwaway home (Claude Code, gh, git, the network, Tailscale,
+  systemd, a backup, a configuration that loads, write access to the notes): it must say
+  so and leave nothing half done. Tools reach it through wrappers on a PATH of its own.
+  CI runs it on Linux, macOS and Windows (`faults` in `ci.yml`); by hand, `python3 -I
+  scripts/faults-check.py`, about a minute.
 - `scripts/e2e-fresh.py`: several real, isolated Claude sessions on one space: a task
   closed by another session is heard before the next answer, own writes are not, /clear
   keeps it working, a capture sent from another space comes up there. Same login and
