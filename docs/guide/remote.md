@@ -89,6 +89,31 @@ tell you to run `augmented-brain remote install` again, which brings it up to da
 2. Choose the environment named `<computer name>-<space>`, the name `status` shows.
 3. Start a session. Start as many as you like: each one begins in that space's folder.
 
+## A session per task
+
+The door's own sessions all start in the space's folder. To work on a task in its own
+session, in its own folder, ask the session you are in: "open me a session for the website
+task". It runs
+
+```bash
+augmented-brain session start task-new-website
+```
+
+and within a minute a new session, named after the task, shows up in claude.ai and Claude
+Desktop. It starts by reading its task and telling you where it stands. The folder is the
+first of the task's repositories found in the space's work folders, or the one `--folder`
+gives.
+
+- **Claude must trust that folder itself.** Trusting the space's folder is not enough. The
+  first time, the command says what to do: on the machine (or through `ssh`), go to the
+  folder, run `claude`, accept the question and close it with `/exit`. Then ask again.
+- **One session per folder.** Claude serves each folder once, so a task cannot use the
+  door's own folder, or a folder another task's session is using. Give it another one with
+  `--folder` (a git worktree of the repository, for example).
+- **It ends with its session**, with `augmented-brain session stop <task>`, or when the
+  machine restarts. After a reboot only the doors come back: ask for the task sessions
+  again. `augmented-brain session list` shows the open ones.
+
 ## Keep it safe
 
 **This is a permanent door to your computer.** Anyone who gets into your Claude account

@@ -68,9 +68,11 @@ Claude Desktop.
 
 ## Starting new sessions from the phone
 
-Opening a new session for each piece of work, from the phone, with a session in Claude
-Desktop that stays open for that, is being tried and is not ready yet. Until then, start a
-new session through the space's door and say which task to resume.
+Ask the session behind the space's door to open one for a task ("open me a session for
+the website task"). It runs `augmented-brain session start`, and a session of its own for
+that task shows up in your list within a minute, named after the task, in its folder,
+already reading it. Open as many as you have tasks. The first time in a folder it tells
+you how to make Claude trust it. See [A session per task](remote.md#a-session-per-task).
 
 ## Keep it safe
 

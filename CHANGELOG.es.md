@@ -1,5 +1,17 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Una sesión por tarea, desde cualquier sitio.** `augmented-brain session start <tarea>`
+  abre una sesión remota propia para una tarea: sale en Claude Desktop y claude.ai con el
+  nombre de la tarea, en su carpeta, y empieza leyéndola. La sesión de la puerta de un
+  espacio no puede abrir sesiones ella sola, pero sí lanzar esto, así que desde otro
+  ordenador le pides «ábreme una sesión para la tarea de la web» y tienes una por tarea,
+  también tras un reinicio, cuando solo vuelven las puertas. `session stop` y `session
+  list` las cierran y las listan. La primera vez en una carpeta te dice cómo hacer que
+  Claude confíe en ella: el servidor de Claude solo arranca en una carpeta de confianza
+  ella misma, y sirve cada carpeta una sola vez. Solo en Linux, como `remote`.
+
 ## 0.14.0-alpha
 
 Publicada el 2026-11-08.

@@ -70,9 +70,11 @@ vieja en claude.ai o Claude Desktop.
 
 ## Empezar sesiones nuevas desde el móvil
 
-Abrir una sesión nueva para cada trabajo, desde el móvil, con una sesión de Claude Desktop
-que se queda abierta para eso, se está probando y aún no está lista. Mientras tanto,
-empieza una sesión nueva por la puerta del espacio y di qué tarea retomar.
+Pídele a la sesión de la puerta del espacio que abra una para una tarea («ábreme una
+sesión para la tarea de la web»). Lanza `augmented-brain session start`, y en menos de un
+minuto sale en tu lista una sesión propia para esa tarea, con su nombre, en su carpeta y
+ya leyéndola. Abre tantas como tareas tengas. La primera vez en una carpeta te dice cómo
+hacer que Claude confíe en ella. Mira [Una sesión por tarea](remote.es.md#una-sesión-por-tarea).
 
 ## Con seguridad
 

@@ -320,6 +320,57 @@ For each space: the session's name (what you pick in Claude Desktop or claude.ai
 the service is running and starts by itself, and whether Claude trusts its folder. Then
 whether linger is on. Under each problem, `→` says what to do. It takes no options.
 
+## augmented-brain session
+
+Opens a remote session of its own for one task, so that from another computer you can
+work on several tasks at once, each in its own session. It is three commands, `start`,
+`stop` and `list`, each with its own section below. Linux only for now (it uses
+`systemd`). Without a subcommand, or with another, `session` prints its usage. See
+[Remote access](remote.md#a-session-per-task).
+
+## augmented-brain session start
+
+Opens a session for a task, in the task's folder.
+
+```bash
+augmented-brain session start task-new-website
+augmented-brain session start task-new-website --folder ~/projects/website
+```
+
+It starts a `claude remote-control` of its own for the task (a temporary `systemd` user
+service, `augmented-brain-session-<task>`), named after the task's title. Within a
+minute it shows up in Claude Desktop and claude.ai, and it starts by reading its task.
+The folder is the first of the task's repositories found in the space's work folders,
+or the one `--folder` gives. Run it from a folder of the task's space: the remote
+session you reach from another computer can run it for you ("open me a session for
+the website task").
+
+Two limits come from Claude itself. The folder must be trusted on its own: trusting a
+folder above it is not enough, so the first time the command says to open Claude once
+in that folder and accept the question. And Claude allows one remote server per folder,
+so a task cannot use the folder the space's own service runs in, or one another task's
+session already uses: give it another with `--folder` (a git worktree, for example).
+
+The session closes when you end it, with `session stop`, or when the computer restarts.
+Launched sessions are not brought back after a reboot: ask for them again.
+
+## augmented-brain session stop
+
+Closes a task's session.
+
+```bash
+augmented-brain session stop task-new-website
+```
+
+## augmented-brain session list
+
+Lists the task sessions open on this computer: the task, whether it runs, and its
+folder.
+
+```bash
+augmented-brain session list
+```
+
 ## augmented-brain config
 
 The versions of your configuration: two commands, `history` and `restore`, each with its

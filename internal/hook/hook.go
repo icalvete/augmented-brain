@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
@@ -21,6 +22,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/update"
@@ -153,6 +155,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string
 	note += rootNote(c)
 	note += oldServersNote(c)
 	note += guardSealNote(c, cfgDir)
+	note += launchedNote(c)
 	// A change made by hand since the last version becomes one: it can be undone too.
 	_, _ = confighistory.Record(cfgDir, confighistory.ByOutside, "")
 	return note
@@ -354,4 +357,14 @@ func guardSealNote(c *config.Config, cfgDir string) string {
 		return "" // the first time: nothing to compare
 	}
 	return "\nThe guard's lists (repositories it allows, asks about or never allows, root exceptions, production profiles, untouchable hosts) are not the ones saved when a session last started, and the panel did not change them. If the user did not do it, say so. " + session.TellUserLine(c.Language) + ".\n"
+}
+
+// launchedNote has a session opened by `augmented-brain session start` begin with its
+// task: the server that runs it carries the task's id in its environment.
+func launchedNote(c *config.Config) string {
+	task := strings.TrimSpace(Getenv(remote.TaskEnv))
+	if task == "" {
+		return ""
+	}
+	return "\n" + i18n.T(c.Language, "hook.launched", task) + "\n"
 }
