@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Extra words are said, never ignored.** `space`, `check`, `doctor`, `mcp`, `version` and
+  `help` ignored what came after them, so a typo like `space ad x` just showed the space.
+  Now they say what they did not expect, as every other command does. `panel` takes
+  `-no-browser` with one dash too. On Windows, the installer's new messages about failed
+  downloads showed broken accents; they no longer do.
 - **An unreadable `guard.toml` asks before commits, pushes and merges.** The guides said
   so, but only `aws` and `ssh` asked: with `guard.toml` broken, a push to a repository
   Claude may push to went through, and the repositories nothing may touch were no longer

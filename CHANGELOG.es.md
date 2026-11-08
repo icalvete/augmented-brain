@@ -2,6 +2,11 @@
 
 ## Sin publicar
 
+- **Las palabras de más se dicen, nunca se ignoran.** `space`, `check`, `doctor`, `mcp`,
+  `version` y `help` ignoraban lo que venía detrás, así que una errata como `space ad x`
+  solo enseñaba el espacio. Ahora dicen lo que no esperaban, como los demás comandos.
+  `panel` acepta también `-no-browser` con un solo guion. En Windows, los mensajes nuevos
+  del instalador sobre descargas fallidas salían con las tildes rotas; ya no.
 - **Un `guard.toml` que no se puede leer pregunta antes de commits, pushes y merges.** Las
   guías lo decían, pero solo preguntaban `aws` y `ssh`: con `guard.toml` roto, un push a un
   repositorio donde Claude puede hacer push pasaba, y los repositorios que nada puede tocar

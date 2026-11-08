@@ -34,10 +34,10 @@ type command struct {
 // (internal/i18n/commands.go) and in the reference, in English and Spanish.
 var commands = []command{
 	{name: "init", run: cmdInit, flags: func() []string { fs, _, _, _, _, _ := initFlags(io.Discard); return flagNames(fs) }},
-	{name: "space", run: func(_ []string, _ io.Reader, out, errOut io.Writer) int { return cmdSpace(out, errOut) }},
+	{name: "space", run: noArgs(func(out, errOut io.Writer) int { return cmdSpace(out, errOut) })},
 	{name: "space add", run: cmdSpaceAdd, flags: func() []string { fs, _, _ := spaceFlags("space add", io.Discard); return flagNames(fs) }},
-	{name: "check", run: func(_ []string, _ io.Reader, out, errOut io.Writer) int { return cmdCheck(out, errOut) }},
-	{name: "doctor", run: func(_ []string, _ io.Reader, out, errOut io.Writer) int { return cmdDoctor(out, errOut) }},
+	{name: "check", run: noArgs(func(out, errOut io.Writer) int { return cmdCheck(out, errOut) })},
+	{name: "doctor", run: noArgs(func(out, errOut io.Writer) int { return cmdDoctor(out, errOut) })},
 	{name: "import", run: withoutIn(cmdImport), flags: func() []string { fs, _, _, _ := importFlags(io.Discard); return flagNames(fs) }},
 	{name: "backup", run: withoutIn(cmdBackup), flags: func() []string { fs, _, _, _ := backupFlags(io.Discard); return flagNames(fs) }},
 	{name: "backup setup"},
@@ -56,7 +56,7 @@ var commands = []command{
 	{name: "config restore", run: withoutIn(cmdConfigRestore)},
 	{name: "update", run: withoutIn(cmdUpdate), flags: func() []string { fs, _, _ := updateFlags(io.Discard); return flagNames(fs) }},
 	{name: "uninstall", run: cmdUninstall, flags: func() []string { fs, _, _, _ := uninstallFlags(io.Discard); return flagNames(fs) }},
-	{name: "mcp", run: func(_ []string, _ io.Reader, _, errOut io.Writer) int { return cmdMCP(errOut) }},
+	{name: "mcp", run: noArgs(func(_, errOut io.Writer) int { return cmdMCP(errOut) })},
 	{name: "hook", run: cmdHook, words: func() []string {
 		var out []string
 		for _, e := range hookEvents {
@@ -64,15 +64,27 @@ var commands = []command{
 		}
 		return out
 	}},
-	{name: "version", aliases: []string{"--version", "-v"}, run: func(_ []string, _ io.Reader, out, _ io.Writer) int {
+	{name: "version", aliases: []string{"--version", "-v"}, run: noArgs(func(out, _ io.Writer) int {
 		fmt.Fprintln(out, version.Version)
 		return 0
-	}},
+	})},
 	// It prints the usage text.
-	{name: "help", aliases: []string{"--help", "-h"}, hidden: true, run: func(_ []string, _ io.Reader, out, _ io.Writer) int {
+	{name: "help", aliases: []string{"--help", "-h"}, hidden: true, run: noArgs(func(out, _ io.Writer) int {
 		fmt.Fprint(out, i18n.T(userLanguage(), "usage"))
 		return 0
-	}},
+	})},
+}
+
+// noArgs is a command that takes nothing after its name. A word after it is said, never
+// ignored: `space ad x` (a typo of space add) used to just show the space.
+func noArgs(run func(out, errOut io.Writer) int) func([]string, io.Reader, io.Writer, io.Writer) int {
+	return func(args []string, _ io.Reader, out, errOut io.Writer) int {
+		if len(args) > 0 {
+			fmt.Fprintln(errOut, i18n.T(userLanguage(), "args.extra", strings.Join(args, " ")))
+			return 2
+		}
+		return run(out, errOut)
+	}
 }
 
 // withoutIn is a command that reads nothing from the standard input.
