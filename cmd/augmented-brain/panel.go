@@ -41,7 +41,7 @@ func cmdPanel(args []string, out, errOut io.Writer) int {
 	noBrowser := os.Getenv("AB_NO_BROWSER") == "1"
 	for _, a := range args {
 		switch a {
-		case "--" + panelNoBrowser:
+		case "--" + panelNoBrowser, "-" + panelNoBrowser: // one dash or two, as Go's other flags
 			noBrowser = true
 		case "--remote": // panel serve --remote, the detached server of panel remote
 			remote = true

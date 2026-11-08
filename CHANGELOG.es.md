@@ -2,6 +2,11 @@
 
 ## Sin publicar
 
+- **Las palabras de más se dicen, nunca se ignoran.** `space`, `check`, `doctor`, `mcp`,
+  `version` y `help` ignoraban lo que venía detrás, así que una errata como `space ad x`
+  solo enseñaba el espacio. Ahora dicen lo que no esperaban, como los demás comandos.
+  `panel` acepta también `-no-browser` con un solo guion. En Windows, los mensajes nuevos
+  del instalador sobre descargas fallidas salían con las tildes rotas; ya no.
 - **Las fases saltadas quedan escritas, y una tarea cerrada sigue cerrada.** Una tarea
   podía saltarse fases, o cerrarse dos veces pisando el resultado con el que se cerró, y
   nada lo decía. Ahora saltarse fases se sigue pudiendo, y el diario dice cuáles; cerrar

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Extra words are said, never ignored.** `space`, `check`, `doctor`, `mcp`, `version` and
+  `help` ignored what came after them, so a typo like `space ad x` just showed the space.
+  Now they say what they did not expect, as every other command does. `panel` takes
+  `-no-browser` with one dash too. On Windows, the installer's new messages about failed
+  downloads showed broken accents; they no longer do.
 - **Phases skipped are written down, and a closed task stays closed.** A task could jump
   phases, or be closed a second time, writing over the result it was closed with, and
   nothing said so. Now skipping phases is still allowed, and the journal names the phases
