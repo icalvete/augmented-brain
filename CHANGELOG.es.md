@@ -2,6 +2,11 @@
 
 ## Sin publicar
 
+- **`remote install` sin systemd no cambia nada.** En una máquina sin los servicios de
+  usuario de systemd (un contenedor, WSL sin systemd) escribía los servicios y encendía
+  el acceso remoto antes de que systemd los rechazara, y después `doctor` lo daba por
+  roto. Ahora pregunta antes a systemd y se para ahí, diciendo por qué; y el acceso
+  remoto solo se enciende cuando systemd ha aceptado los servicios.
 - **Un llavero al que no se puede preguntar ya no cuenta como «falta».** En Linux sin
   sesión de escritorio, `secret-tool` falla igual que cuando el secreto no está, así que
   `restore` y la página Secretos del panel te pedían guardar otra vez secretos que ya

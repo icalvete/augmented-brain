@@ -231,6 +231,7 @@ func TestInstallIsRepeatable(t *testing.T) {
 		t.Errorf("unit:\n%s", unit)
 	}
 	wantCalls := []string{
+		"systemctl --user show-environment",
 		"systemctl --user daemon-reload",
 		"systemctl --user enable --now augmented-brain-remote-personal.service",
 		"systemctl --user enable --now augmented-brain-remote-work.service",
@@ -391,11 +392,28 @@ func TestInstallErrors(t *testing.T) {
 	if _, err := os.Stat(f.sys.UnitDir); err == nil {
 		t.Error("it wrote before knowing it could")
 	}
+	// No systemd user manager (a container, WSL without systemd): nothing written, and
+	// remote access not left on.
+	f = newFake(t)
+	c, set = f.load()
+	f.failOn = "show-environment"
+	if _, err := f.sys.Install(c, set); err == nil || !strings.Contains(err.Error(), "systemd") {
+		t.Errorf("no systemd: %v", err)
+	}
+	if _, err := os.Stat(f.sys.UnitDir); err == nil {
+		t.Error("units written without systemd")
+	}
+	if got, _ := LoadSettings(c, "box.local"); got.Enabled {
+		t.Error("enabled without systemd")
+	}
 	f = newFake(t)
 	c, set = f.load()
 	f.failOn = "enable --now"
 	if _, err := f.sys.Install(c, set); err == nil || !strings.Contains(err.Error(), "boom") {
 		t.Errorf("systemctl failure: %v", err)
+	}
+	if got, _ := LoadSettings(c, "box.local"); got.Enabled {
+		t.Error("enabled after systemd refused the services")
 	}
 	set.Spaces = nil
 	if _, err := f.sys.Install(c, set); err == nil {

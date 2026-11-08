@@ -282,7 +282,8 @@ It then says what is still missing, and does none of it for you:
 - **Linger** must be on for the services to start after a reboot with nobody logged in.
   It prints the command, `sudo loginctl enable-linger <you>`, for you to run.
 
-It takes no options. The settings are in `remote.toml` (see [Configuration](configuration.md)).
+Without systemd's user services (a container, or WSL without systemd) it says so and
+changes nothing. It takes no options. The settings are in `remote.toml` (see [Configuration](configuration.md)).
 
 ## augmented-brain remote uninstall
 
