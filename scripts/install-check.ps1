@@ -8,7 +8,9 @@
 # checks what a newcomer would get: Git, Claude Code, the program, the PATH, the two
 # spaces, the default space, the plugin and its MCP server, the first-session interview,
 # doctor, that a second run only updates, and that uninstall removes the program and the
-# plugin, keeps the notes, and a new install brings them back.
+# plugin, keeps the notes, and a new install brings them back. Last, the update people
+# make: from the release published last on GitHub to this checkout's, keeping every note
+# (AB_CHECK_NO_NETWORK=1 skips it).
 #
 # It installs Git, Claude Code and the program for the user who runs it, so run it on a
 # throwaway machine: GitHub Actions does (.github/workflows/windows.yml), and so does the
@@ -126,6 +128,50 @@ try {
 
   if ($env:AB_CHECK_DESKTOP -eq '1') {
     Check "desktop app installed" { Get-StartApps | Where-Object { $_.Name -eq 'Claude' } }
+  }
+
+  # The update people make: from the release published last, downloaded from GitHub, to
+  # this checkout's. AB_CHECK_NO_NETWORK=1 skips it.
+  if ($env:AB_CHECK_NO_NETWORK -ne '1') {
+    Write-Host "5. update from the release published last"
+    $notes = { (Get-ChildItem -Recurse -Filter *.md "$env:USERPROFILE\augmented-brain" -ErrorAction SilentlyContinue | Measure-Object).Count }
+    $last = ''
+    try {
+      $r = Invoke-WebRequest -Uri 'https://github.com/icalvete/augmented-brain/releases/latest' -MaximumRedirection 0 -UseBasicParsing -ErrorAction SilentlyContinue
+      $last = ([string]$r.Headers.Location) -replace '.*/tag/v', ''
+    } catch {
+      $loc = $_.Exception.Response.Headers.Location
+      if ($loc) { $last = ([string]$loc) -replace '.*/tag/v', '' }
+    }
+    if (-not $last) {
+      Bad "cannot tell the release published last"
+    } else {
+      & $ab uninstall --yes 2>&1 | Out-Null
+      Start-Sleep -Seconds 5
+      $savedUrl = $env:AB_RELEASE_URL
+      Remove-Item Env:\AB_RELEASE_URL
+      $env:AB_VERSION = $last
+      try {
+        $oldlog = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
+      } finally {
+        $env:AB_RELEASE_URL = $savedUrl
+        Remove-Item Env:\AB_VERSION -ErrorAction SilentlyContinue
+      }
+      if ($oldlog -match 'augmented brain: ') { $oldlog -split "`n" | ForEach-Object { "    | $_" } }
+      Check "release $last installed" { ((& $ab version) | Out-String).Trim() -eq $last }
+      $before = & $notes
+      $upd = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
+      if ($upd -match 'augmented brain: ') { $upd -split "`n" | ForEach-Object { "    | $_" } }
+      Check "updated to this checkout" { ((& $ab version) | Out-String).Trim() -eq $version }
+      Check "every note stays" { (& $notes) -eq $before }
+      Push-Location "$env:USERPROFILE\augmented-brain\trabajo"
+      try {
+        & $ab check | Out-Null; $checkCode = $LASTEXITCODE
+        & $ab doctor | Out-Null; $doctorCode = $LASTEXITCODE
+      } finally { Pop-Location }
+      Check "the notes still check" { $checkCode -eq 0 }
+      Check "doctor is happy after the update" { $doctorCode -eq 0 }
+    }
   }
 } finally {
   Remove-Item -Recurse -Force $Tmp -ErrorAction SilentlyContinue
