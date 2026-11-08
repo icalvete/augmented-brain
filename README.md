@@ -144,7 +144,9 @@ Spanish:
   [How it works inside](https://icalvete.github.io/augmented-brain/guide/how-it-works.html).
 - **Daily use**: [What to say to Claude](https://icalvete.github.io/augmented-brain/guide/phrases.html), [The panel](https://icalvete.github.io/augmented-brain/guide/panel.html),
   [The weekly review](https://icalvete.github.io/augmented-brain/guide/weekly-review.html), [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html),
-  [Connect your services](https://icalvete.github.io/augmented-brain/guide/connect-services.html), [Bring in a memory](https://icalvete.github.io/augmented-brain/guide/import.html).
+  [Connect your services](https://icalvete.github.io/augmented-brain/guide/connect-services.html), [Bring in a memory](https://icalvete.github.io/augmented-brain/guide/import.html),
+  [The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html), [Remote access](https://icalvete.github.io/augmented-brain/guide/remote.html),
+  [Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html).
 - **Reference**: [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html), [MCP tools](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html),
   [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html), [Memory format](https://icalvete.github.io/augmented-brain/guide/memory-format.html).
 - **Help**: [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html), [Changelog](CHANGELOG.md).

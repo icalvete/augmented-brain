@@ -137,6 +137,11 @@ Heavier checks, before a release or when you touch what they cover:
   `README.md` and `README.es.md`, `CHANGELOG.md` and `CHANGELOG.es.md`,
   `docs/index.html` and `docs/es/index.html`, each guide and its `.es` twin. Change one,
   change the other.
+- **The docs are checked as people read them.** `cmd/augmented-brain/docsite_test.go`: every
+  relative link and #anchor leads somewhere, a Spanish page links Spanish guides, every
+  guide has its `.es` twin with the same headings and examples, sits in `GROUPS` and is
+  linked from both READMEs, and every `augmented-brain …` example is a real command with
+  flags it reads. CI also checks the generated pages match the guides.
 - **The docs follow the code.** A new command or flag goes in `commands` (`cmd/augmented-brain/commands.go`) and in the usage text; a new command, flag, MCP tool, tool parameter or `config.toml` setting also goes in its reference page, in both languages, or `go test` fails (`TestCommandsDocumented`, `TestToolsDocumented`, `TestSettingsDocumented`). A change people notice also updates the guide that tells it.
 - **Generated files are not edited by hand.** Change the source and regenerate:
   `docs/img/*.svg` from `docs/img/diagrams.py`; every `docs/guide/*.html`,
