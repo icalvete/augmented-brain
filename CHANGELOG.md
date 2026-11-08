@@ -6,6 +6,11 @@
   Now `doctor` says so for each space, with how to set it up; `update` says when it goes
   ahead with no copy to go back to; and `uninstall --all` warns that notes with no
   backup will be gone for good.
+- **Merging from the repository's own folder works.** Claude Code drops a `cd` to the
+  folder a session is already in before the guard sees the command, so `cd <repo> && gh
+  pr merge` written there arrived as a bare `gh pr merge` and was stopped. The guard now
+  also takes the repository named in the command itself (`-R owner/name`, or the pull
+  request's address) when it is that folder's repository, and its message says so.
 - **`remote install` without systemd changes nothing.** On a machine without systemd's
   user services (a container, WSL without systemd) it wrote the services and turned
   remote access on before systemd refused them, and `doctor` then reported it broken.

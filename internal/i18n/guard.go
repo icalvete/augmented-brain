@@ -137,8 +137,8 @@ var guardMessages = map[string]msg{
 		es: "`%s` fusiona una pull request en %s, un repositorio donde eso necesita el visto bueno del usuario cada vez (git_ask_repos). %s Antes de preguntar, enséñale qué pull request fusiona y qué cambia.",
 	},
 	"guard.merge.cd": {
-		en: "`%s` merges a pull request, and goes by git_allowed_repos and git_ask_repos only when the command names the repository, as `git -C` does for a push: write it as `cd <repo> && %s …`, with the repository's path. As it is, it is for the user.",
-		es: "`%s` fusiona una pull request, y va por git_allowed_repos y git_ask_repos solo cuando el comando nombra el repositorio, como `git -C` en un push: escríbelo como `cd <repo> && %s …`, con la ruta del repositorio. Tal como está, es para el usuario.",
+		en: "`%s` merges a pull request, and goes by git_allowed_repos and git_ask_repos only when the command names the repository, as `git -C` does for a push: write it as `cd <repo> && %s …`, with the repository's path, or, in the repository's own folder, name it with `-R owner/name`. As it is, it is for the user.",
+		es: "`%s` fusiona una pull request, y va por git_allowed_repos y git_ask_repos solo cuando el comando nombra el repositorio, como `git -C` en un push: escríbelo como `cd <repo> && %s …`, con la ruta del repositorio, o, en la carpeta del propio repositorio, nómbralo con `-R dueño/nombre`. Tal como está, es para el usuario.",
 	},
 	"guard.merge.admin": {
 		en: "`%s --admin` merges a pull request in %s skipping the branch's protection (its required checks and reviews). The user confirms it each time, even in a repository the assistant may merge in.",
