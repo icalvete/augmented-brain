@@ -194,7 +194,9 @@ augmented-brain restore https://github.com/lucia/augmented-brain-work.git
 It replaces the empty space of the same name with yours. It leaves alone a space that
 already has notes. It installs the Claude Code plugin if it is missing. Then it names
 what it did not bring: the guard's lists, the repositories where Claude may commit, and
-the secrets this machine's keychain lacks, each with the command to store it.
+the secrets this machine's keychain lacks, each with the command to store it. When it
+cannot ask the keychain (there is none, or it is locked), it names the secrets it could
+not check.
 
 - `--memory`: where to put the space's notes. Default: where they were, inside the work
   folder.
@@ -280,7 +282,8 @@ It then says what is still missing, and does none of it for you:
 - **Linger** must be on for the services to start after a reboot with nobody logged in.
   It prints the command, `sudo loginctl enable-linger <you>`, for you to run.
 
-It takes no options. The settings are in `remote.toml` (see [Configuration](configuration.md)).
+Without systemd's user services (a container, or WSL without systemd) it says so and
+changes nothing. It takes no options. The settings are in `remote.toml` (see [Configuration](configuration.md)).
 
 ## augmented-brain remote uninstall
 

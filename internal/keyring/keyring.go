@@ -6,9 +6,11 @@ package keyring
 
 import (
 	"context"
+	"errors"
 	"io"
 	"os/exec"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -38,16 +40,43 @@ func Has(service, name string) State {
 	default:
 		return Unknown
 	}
-	cmd.Stdout, cmd.Stderr = io.Discard, io.Discard
+	// The error output is read only to tell "not there" from "could not ask": it never
+	// holds the secret (without -w, security prints no password; lookup's output, the
+	// value, goes nowhere).
+	var stderr strings.Builder
+	cmd.Stdout, cmd.Stderr = io.Discard, &stderr
 	err := cmd.Run()
 	if ctx.Err() != nil {
 		return Unknown
 	}
+	return classify(runtime.GOOS, err, stderr.String())
+}
+
+// notFoundMac is the exit code of `security` for an item that is not in the keychain
+// (errSecItemNotFound). Others mean it could not look: a locked keychain, no access.
+const notFoundMac = 44
+
+// classify reads how the keychain's command ended. secret-tool ends with 1 both when
+// the secret is not there (saying nothing) and when it cannot reach the keychain (no
+// D-Bus session, no Secret Service: it says why), so only a silent 1 is "missing".
+// Taking that error for "missing" told a person to store again a secret they had.
+func classify(goos string, err error, stderr string) State {
 	if err == nil {
 		return Present
 	}
-	if _, ok := err.(*exec.ExitError); ok {
-		return Missing
+	var exit *exec.ExitError
+	if !errors.As(err, &exit) {
+		return Unknown
+	}
+	switch goos {
+	case "darwin":
+		if exit.ExitCode() == notFoundMac {
+			return Missing
+		}
+	default:
+		if exit.ExitCode() == 1 && strings.TrimSpace(stderr) == "" {
+			return Missing
+		}
 	}
 	return Unknown
 }

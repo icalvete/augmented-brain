@@ -44,6 +44,10 @@ var remoteMessages = map[string]msg{
 		en: "Claude Code (the `claude` program) is not in your PATH: install it first",
 		es: "Claude Code (el programa `claude`) no está en tu PATH: instálalo primero",
 	},
+	"remote.nosystemd": {
+		en: "remote access needs systemd's user services, and this computer does not offer them (a container, or WSL without systemd): nothing was changed (%v)",
+		es: "el acceso remoto necesita los servicios de usuario de systemd, y este ordenador no los tiene (un contenedor, o WSL sin systemd): no se ha cambiado nada (%v)",
+	},
 	"remote.systemctl": {
 		en: "systemctl --user %s failed: %v",
 		es: "systemctl --user %s ha fallado: %v",

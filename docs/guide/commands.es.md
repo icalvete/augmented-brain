@@ -201,7 +201,8 @@ Cambia el espacio vacío del mismo nombre por el tuyo. Un espacio que ya tiene n
 deja como está. Si falta el plugin de Claude Code, lo instala. Después nombra lo que no
 ha traído: las listas del guardia, los repositorios donde Claude puede hacer commit y los
 secretos que faltan en el llavero de esta máquina, cada uno con el comando para
-guardarlo.
+guardarlo. Si no puede preguntar al llavero (no hay, o está bloqueado), nombra los
+secretos que no ha podido comprobar.
 
 - `--memory`: dónde poner las notas del espacio. Por defecto, donde estaban, dentro de la
   carpeta de trabajo.
@@ -289,7 +290,8 @@ Luego dice lo que aún falta, y no hace nada de ello por ti:
   sin que nadie haya entrado. Escribe el comando, `sudo loginctl enable-linger <tú>`,
   para que lo lances tú.
 
-No tiene opciones. Los ajustes están en `remote.toml` (mira [Configuración](configuration.es.md)).
+Sin los servicios de usuario de systemd (un contenedor, o WSL sin systemd) lo dice y no
+cambia nada. No tiene opciones. Los ajustes están en `remote.toml` (mira [Configuración](configuration.es.md)).
 
 ## augmented-brain remote uninstall
 
