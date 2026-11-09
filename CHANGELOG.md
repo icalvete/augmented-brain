@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **A first session in plain words.** The first-session interview greeted a newcomer
+  as "bienvenido" before knowing who they were, and asked a freelance designer about
+  "AWS profiles that reach production". Now it greets without assuming a gender, keeps to
+  words the user has used, and fits question 4's examples to the person (a live website,
+  a client's files; AWS and servers only to someone technical). `doctor`'s backup hint
+  says what a private repository is and that Claude helps create it.
 - **A syntax check is no longer stopped.** `sh -n install.sh` (also `bash -n`, `-o
   noexec`) only reads the script to check how it is written and runs none of it, but the
   guard checked the script as if it ran, and stopped it when the same command had just
