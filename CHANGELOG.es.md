@@ -2,6 +2,14 @@
 
 ## Sin publicar
 
+- **El README cuenta lo que se encuentra quien llega.** Una prueba con alguien nuevo (un
+  agente que solo tenía el README, en Ubuntu y Windows recién instalados) tropezó en
+  cuatro cosas, que ahora se dicen donde pasan: instalar git (un Ubuntu recién instalado
+  no lo trae) y la app de escritorio en Linux piden tu contraseña, o en Windows permiso;
+  los espacios toman el idioma que eliges (`work` en inglés); el comando funciona en una
+  terminal nueva, donde `augmented-brain doctor` comprueba la instalación; y las primeras
+  preguntas llegan después de que escribas algo. El PowerShell de Windows tiene su forma
+  de `cd … && claude`.
 - **Comprobar la sintaxis ya no se para.** `sh -n install.sh` (también `bash -n` y `-o
   noexec`) solo lee el script para ver si está bien escrito y no ejecuta nada, pero el
   guardia lo revisaba como si se ejecutara, y lo paraba cuando el mismo comando acababa

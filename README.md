@@ -46,7 +46,11 @@ More phrases: [What to say to Claude](https://icalvete.github.io/augmented-brain
 ## Start in two steps
 
 You need Linux, macOS (13 or later) or Windows (10 or 11), and a paid Claude account (Pro
-or above), because Claude Code is not in the free plan. No root or administrator needed.
+or above), because Claude Code is not in the free plan. augmented brain installs in your own
+folder, without root or administrator. If git is missing (a fresh Ubuntu has none), the
+installer offers to install it, and that asks for your password, or on Windows for
+permission; so does the desktop app on Linux. Without those rights, ask whoever looks after
+your computer to install git first.
 Never opened a terminal? Follow [Getting started](https://icalvete.github.io/augmented-brain/guide/getting-started.html).
 
 **1. Install it** with one command. On Linux or a Mac, in the terminal:
@@ -62,16 +66,21 @@ irm https://github.com/icalvete/augmented-brain/releases/latest/download/install
 ```
 
 It asks the language, offers to install what is missing (git, Claude Code, the Claude
-desktop app), creates two spaces, `work` and `personal`, in `~/augmented-brain`, and
-installs the Claude Code plugin. What it does on each system: [Installing](https://icalvete.github.io/augmented-brain/guide/install.html).
+desktop app), creates two spaces, `work` and `personal`, in `~/augmented-brain` (in
+Spanish, `trabajo` and `personal`), and installs the Claude Code plugin. When it ends,
+**open a new terminal**: the one you used does not see the new command yet. There,
+`augmented-brain doctor` checks that everything is in place. What it does on each system:
+[Installing](https://icalvete.github.io/augmented-brain/guide/install.html).
 
-**2. Answer Claude.** The first time, it asks six quick questions, saying what each one is
-for: who you are, what you look after, how you want answers, what must not be touched,
-which tools you use and who you work with.
+**2. Open Claude and say hello.** Open the Claude app, click **+ New** and write anything,
+"hello" will do. Or, in a terminal, `cd ~/augmented-brain/personal && claude` (in Windows
+PowerShell, `cd ~\augmented-brain\personal; claude`). The first time, Claude answers with
+six quick questions, saying what each one is for: who you are, what you look after, how
+you want answers, what must not be touched, which tools you use and who you work with.
 
-From then on, open the Claude app, click **+ New** and write. For work, pick the folder
-`~/augmented-brain/work` with **Choose…**, or run `cd ~/augmented-brain/work && claude`.
-If something is off, `augmented-brain doctor` tells you what is missing and how to fix it.
+From then on, the same. For work, pick the folder `~/augmented-brain/work` with
+**Choose…**, or `cd` there before `claude`. If something is off, `augmented-brain doctor`
+tells you what is missing and how to fix it.
 
 ## What it looks like
 
