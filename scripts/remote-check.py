@@ -159,7 +159,10 @@ try:
         f.write(f'spaces = ["{SPACE}"]\nname_prefix = "remote-check"\n')
     os.makedirs(os.path.join(HOME, ".claude"), exist_ok=True)
     with open(os.path.join(HOME, ".claude", ".claude.json"), "w", encoding="utf-8") as f:
-        json.dump({"projects": {WORK: {"hasTrustDialogAccepted": True}, WORK.replace("\\", "/"): {"hasTrustDialogAccepted": True}}}, f)
+        # As written, resolved (macOS's /var is /private/var) and with forward slashes
+        # (Claude Code on Windows): the folder trusted, so status and doctor are all good.
+        forms = {WORK, os.path.realpath(WORK), WORK.replace("\\", "/"), os.path.realpath(WORK).replace("\\", "/")}
+        json.dump({"projects": {p: {"hasTrustDialogAccepted": True} for p in forms}}, f)
 
     code, out = ab("remote", "install")
     installed = True
@@ -173,7 +176,7 @@ try:
         if "running" in status and "fake claude: args=" in read(log_file()):
             break
         time.sleep(3)
-    report("remote status: running", code == 0 and "running" in status, status.strip())
+    report("remote status: running, folder trusted", code == 0 and "running" in status and "not trusted" not in status and "→" not in status, status.strip())
     log = read(log_file())
     report("claude got its arguments", f"args=remote-control --name remote-check-{SPACE} --permission-mode default" in log, log)
     folder = [l for l in log.splitlines() if l.startswith("fake claude: folder=")]
@@ -184,7 +187,7 @@ try:
            [os.path.normcase(p) for p in first] == [os.path.normcase(FAKEBIN), os.path.normcase(BIN)], first)
     code, out = ab("doctor")
     line = [l for l in out.splitlines() if "remote access" in l]
-    report("doctor has a line for it", bool(line) and "running" in line[0], line)
+    report("doctor has a line for it, all well", bool(line) and "running" in line[0] and "folder yes" in line[0], line)
 
     before = fake_pids()
     report("a claude is running", bool(before), before)
