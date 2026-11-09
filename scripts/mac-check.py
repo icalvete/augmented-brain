@@ -137,7 +137,12 @@ def keychain(base):
 
         html, took = secrets_page()
         report("unlocked: the Secrets page finds it", "in the keychain" in html, f"{took:.1f} s")
-        run(["security", "lock-keychain", kc], env=KEYCHAIN_ENV)
+        code, out, _ = run(["security", "lock-keychain", kc], env=KEYCHAIN_ENV)
+        # Proof that it is locked: the value needs it open, and with no one at the
+        # screen macOS refuses (or would wait for a password) instead of giving it.
+        vcode, vout, vtook = run(["security", "find-generic-password", "-s", "ab-check", "-a", "probe", "-w", kc], env=KEYCHAIN_ENV, timeout=15)
+        report("the throwaway keychain is really locked", code == 0 and vcode != 0,
+               f"lock exit {code}; reading the value: exit {vcode}, {vtook:.1f} s, {vout[:80]}")
         code, out, took = run(["security", "find-generic-password", "-s", "ab-check", "-a", "probe", kc], env=KEYCHAIN_ENV, timeout=15)
         info("locked: what security says, asked as the panel asks", f"exit {code}, {took:.1f} s: {out[:120]}")
         html, took = secrets_page()
