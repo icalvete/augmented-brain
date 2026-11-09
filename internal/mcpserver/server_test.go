@@ -2,6 +2,7 @@ package mcpserver
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/icalvete/augmented-brain/internal/confighistory"
@@ -282,6 +283,32 @@ func TestPersonSave(t *testing.T) {
 	if _, isErr := call(t, cs, "person_save", map[string]any{"name": " "}); !isErr {
 		t.Error("a person without a name was saved")
 	}
+}
+
+// With one space there is nothing to ask: the text the assistant reads must say so, or it
+// asks the user anyway and never calls the tool (e2e-claude.sh, 9-nov).
+func TestPersonSaveOneSpaceText(t *testing.T) {
+	cs := connect(t, space(t))
+	list, err := cs.ListTools(context.Background(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tl := range list.Tools {
+		if tl.Name != "person_save" {
+			continue
+		}
+		schema, err := json.Marshal(tl.InputSchema)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for what, text := range map[string]string{"description": tl.Description, "spaces": string(schema)} {
+			if !strings.Contains(text, "only one space configured") {
+				t.Errorf("person_save %s does not say one space needs no question: %s", what, text)
+			}
+		}
+		return
+	}
+	t.Fatal("no person_save tool")
 }
 
 // Safety settings go to the configuration, machine-wide; a list left out stays as it

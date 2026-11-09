@@ -1,5 +1,12 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Con un solo espacio, guardar a una persona ya no pregunta dónde.** El programa ya la
+  guardaba en el único espacio, pero el texto que lee Claude le decía que preguntara
+  siempre, así que una primera sesión preguntaba «¿en qué espacios?» con uno solo y no
+  la guardaba. Ahora dice que con un solo espacio no hay nada que preguntar.
+
 ## 0.15.0-alpha
 
 Publicada el 2026-11-08.

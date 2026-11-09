@@ -494,9 +494,9 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Aliases []string `json:"aliases,omitempty" jsonschema:"other names the user uses for them, e.g. a nickname"`
 		Role    string   `json:"role,omitempty" jsonschema:"who they are to the user, in a few words: 'my manager', 'client, runs the shop'"`
 		Notes   string   `json:"notes,omitempty" jsonschema:"anything else worth remembering about them"`
-		Spaces  []string `json:"spaces,omitempty" jsonschema:"the spaces where this is visible; ask the user which, never guess: without it nothing is saved and the answer is the question to ask"`
+		Spaces  []string `json:"spaces,omitempty" jsonschema:"the spaces where this is visible. With only one space configured, leave it out: it is saved there. With several, ask the user which, never guess: without it nothing is saved and the answer is the question to ask"`
 	}
-	tool(s, locked, "person_save", "Remember someone the user works or deals with, so a first name like 'Marcos' leads to the right person. Saving a name that exists updates it. A person can be in several spaces (the same person, with the role and notes each space is allowed to show): pass spaces, the ones the user says. Without spaces nothing is saved and the answer asks which spaces to use; ask the user and call again. The index of each space lists its people.",
+	tool(s, locked, "person_save", "Remember someone the user works or deals with, so a first name like 'Marcos' leads to the right person. Saving a name that exists updates it. A person can be in several spaces (the same person, with the role and notes each space is allowed to show): with only one space configured, call it without spaces and it is saved there, nothing to ask. With several, pass spaces, the ones the user says; without them nothing is saved and the answer asks which spaces to use: ask the user and call again. The index of each space lists its people.",
 		func(b *brain.Brain, in personIn) (string, error) {
 			c, err := config.Load(b.ConfigDir)
 			if err != nil {
