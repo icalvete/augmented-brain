@@ -10,7 +10,9 @@ On Windows, in PowerShell:
 
     irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
 
-The first session is a short guided interview. A local web panel (`augmented-brain panel`, or `/brain:panel` in Claude Code) shows today at a glance across every space and lets you see and edit tasks, reminders, the inbox, the weekly review, areas, knowledge, rules, people, the names of your secrets (never their values), sessions, the profile, health, the map of your git repositories (Repositories) and Help (links to these docs and a problem report for GitHub). A session outside every space's folder (such as a new session in the Claude desktop app with no folder chosen) uses the personal space.
+The first session is a short guided interview. A local web panel (`augmented-brain panel`, or `/brain:panel` in Claude Code) shows today at a glance across every space and lets you see and edit tasks, reminders, the inbox, the weekly review, areas, knowledge, rules, people, the names of your secrets (never their values), sessions, the profile, health, the map of your git repositories (Repositories), the guard's lists (Guard), the configuration's last versions (Versions) and Help (links to these docs and a problem report for GitHub). A session outside every space's folder (such as a new session in the Claude desktop app with no folder chosen) uses the personal space.
+
+On Linux, `augmented-brain remote install` keeps Claude on the computer reachable from claude.ai or Claude Desktop after a reboot, and `augmented-brain session start <task>` opens a remote session of its own for one task. `augmented-brain panel remote` opens the panel from a phone through the user's own Tailscale network. The configuration keeps its last 10 versions on the computer (`augmented-brain config history`, `config restore`).
 
 The documentation, as web pages: https://icalvete.github.io/augmented-brain/guide/
 
@@ -23,12 +25,19 @@ The documentation, as web pages: https://icalvete.github.io/augmented-brain/guid
 - [Areas, knowledge and the rest](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/notes.md): areas, references and lessons, people, the inbox, rules, the profile, repositories, the index
 - [The guard](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/guard.md): what it stops and what it asks; repository lists; merging pull requests; production profiles, untouchable hosts, root exceptions; a safety net, not a security boundary
 - [How it works inside](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.md): the four layers, a session step by step, where every file lives, what it does not do
+- [What Claude may do without asking you](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/what-claude-may-do.md): never, always asks, without asking; the guard and Claude Code's permissions together; the seal of the guard's lists
+- [Where everything lives](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/where-things-live.md): notes, configuration, state and secrets' names: where, how each is protected, what the backup takes
 - [What to say to Claude](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/phrases.md): phrases for tasks, the inbox, knowledge, rules, people, safety, backup and the panel
-- [The panel](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/panel.md): the local web panel and every page: Today, Tasks, Reminders, Inbox, Weekly review, Areas, Knowledge, Rules, People, Repositories, Secrets, Sessions, Profile, Health, Help
+- [The panel](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/panel.md): the local web panel and every page: Today, Tasks, Reminders, Inbox, Weekly review, Areas, Knowledge, Rules, People, Repositories, Secrets, Sessions, Profile, Guard, Versions, Health, Help
+- [The panel from another device](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/panel-remote.md): augmented-brain panel remote, through your own Tailscale network; who can open it; always temporary
+- [Configuration versions](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/config-history.md): the last 10 versions of the configuration; what changed; going back from the panel or with config history and config restore
 - [The weekly review](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/weekly-review.md): what it goes through, when it is offered, with Claude or in the panel
 - [Backup and restore](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/backup.md): a private git repository per space, automatic after each session; a new machine; what a restore does not bring
 - [Connect your services](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.md): calendar, mail, documents and Jira through MCP
+- [Remote access](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/remote.md): augmented-brain remote: Claude on this computer reachable from anywhere, also after a reboot (Linux); a session per task with session start
 - [Bring in a memory you already have](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/import.md): augmented-brain import: plan first, --apply, --map, --repos-base
+- [From your phone or another computer](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/anywhere.md): remote access and the panel together, which session to use, what to do when it stops answering
+- [Updating and uninstalling](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/update-and-uninstall.md): what update does, the three levels of uninstall, moving to a new computer
 - [Commands](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/commands.md): every command and flag, including mcp, hook and its events, version and help
 - [MCP tools](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/mcp-tools.md): every MCP tool, grouped by purpose, with every parameter
 - [Configuration](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/configuration.md): every config.toml setting with an example; secrets.toml; other files; environment variables
@@ -47,12 +56,19 @@ The documentation, as web pages: https://icalvete.github.io/augmented-brain/guid
 - [Áreas, conocimiento y lo demás](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/notes.es.md)
 - [El guardia](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/guard.es.md)
 - [Cómo funciona por dentro](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/how-it-works.es.md)
+- [Qué puede hacer Claude sin preguntarte](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/what-claude-may-do.es.md)
+- [Dónde vive cada cosa](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/where-things-live.es.md)
 - [Qué decirle a Claude](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/phrases.es.md)
 - [El panel](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/panel.es.md)
+- [El panel desde otro dispositivo](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/panel-remote.es.md)
+- [Versiones de la configuración](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/config-history.es.md)
 - [La revisión semanal](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/weekly-review.es.md)
 - [Copia de seguridad y restauración](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/backup.es.md)
 - [Conecta tus servicios](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.es.md)
+- [Acceso remoto](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/remote.es.md)
 - [Trae una memoria que ya tienes](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/import.es.md)
+- [Desde el móvil u otro ordenador](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/anywhere.es.md)
+- [Actualizar y desinstalar](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/update-and-uninstall.es.md)
 - [Comandos](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/commands.es.md)
 - [Herramientas MCP](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/mcp-tools.es.md)
 - [Configuración](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/configuration.es.md)

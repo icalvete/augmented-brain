@@ -16,6 +16,13 @@
   && sh x.sh`), te pregunta. Tus alias de git cuentan como lo que quieren decir (`git ci`
   por `git commit`), `env -S '…'` se lee, y un contenedor al que se le da la máquina
   entera (`docker run --privileged`, `-v /:/host`, `--pid=host`) cuenta como hacerse root.
+- **La web enseña una semana con él.** La demo de la portada es ahora una semana: una
+  tarea abierta el lunes, una fecha de revisión que sale el martes en otra sesión, una
+  idea al buzón y un push que para el guardia el miércoles, y la revisión semanal el
+  viernes. Unos botones saltan a cada día. La portada también cuenta el acceso remoto,
+  la sesión por tarea y las versiones de la configuración, con sus comandos, y ya no
+  promete adaptadores para otros asistentes.
+
 - **Con un solo espacio, guardar a una persona ya no pregunta dónde.** El programa ya la
   guardaba en el único espacio, pero el texto que lee Claude le decía que preguntara
   siempre, así que una primera sesión preguntaba «¿en qué espacios?» con uno solo y no

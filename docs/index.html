@@ -86,7 +86,7 @@
    "name": "Which assistants does it work with?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "Claude Code today. The method runs as an MCP server, so any assistant that speaks MCP can use it; adapters for others will follow."
+    "text": "Claude Code, today. The tools for your notes run as an MCP server, which other assistants speak too. But reading your notes at the start of a session and the guard rely on Claude Code's hooks, so no other assistant is supported yet."
    }
   },
   {
@@ -183,30 +183,44 @@
   <section id="demo">
     <div class="wrap">
       <div class="head">
-        <h2>See it at work</h2>
-        <p>Two days of work, in forty seconds.</p>
+        <h2>One week with it</h2>
+        <p>Monday to Friday, in about a minute. Pick a day to jump to it.</p>
       </div>
       <div class="demo" data-demo>
         <div class="demo-bar"><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="demo-title">Claude · ~/augmented-brain/work</span><button class="demo-play" type="button" aria-pressed="false" data-pause="Pause" data-play="Play" hidden>Pause</button></div>
+        <div class="demo-days" role="group" aria-label="Jump to a day" hidden><button type="button" data-goto="mon" hidden>Monday</button><button type="button" data-goto="tue" hidden>Tuesday</button><button type="button" data-goto="wed" hidden>Wednesday</button><button type="button" data-goto="fri" hidden>Friday</button></div>
         <div class="demo-body">
-          <p class="demo-day" data-step>Monday, 9:00 · new session</p>
-          <div class="bubble you" data-step>Where were we?</div>
-          <div class="bubble ai" data-step>You have two live tasks:<ul><li><b>Contact form</b>, parked. Next: write the plan.</li><li><b>Renew the certificate</b>, in definition. Waiting for Marcos to send you the domain.</li></ul></div>
-          <div class="bubble you" data-step>Let's carry on with the form.</div>
-          <div class="bubble ai" data-step>We agreed on name, email and message, sent by email. Here is the plan: the form, sending it, and a test. Shall I start?</div>
-          <p class="demo-note" data-step>… and you work on it all morning …</p>
-          <p class="demo-day" data-step>Monday, 18:30</p>
+          <p class="demo-day" data-step data-day="mon">Monday, 9:00 · new session</p>
+          <div class="bubble you" data-step>New task: move the blog to the new server.</div>
+          <div class="bubble ai" data-step>Opened <b>Move the blog</b>, in definition. When is it done? I'd say: the blog answers from the new server, at the same addresses. Agreed?</div>
+          <div class="bubble you" data-step>Agreed. On Tuesday, check that the old server's last backup finished.</div>
+          <div class="bubble ai" data-step>Done: the task has a date to check on Tuesday. It comes up when you open Claude that day.</div>
+          <p class="demo-note" data-step>… you work on it all day …</p>
           <div class="bubble you" data-step>Park it, we carry on tomorrow.</div>
-          <div class="bubble ai" data-step>Parked. Done: the form and sending it. Next: try it locally.</div>
-          <p class="demo-note" data-step>✓ Saved in <code>tasks/contact-form.md</code></p>
-          <p class="demo-day" data-step>Tuesday, 9:00 · new session</p>
+          <div class="bubble ai" data-step>Parked. Done: the analysis. Next: write the plan.</div>
+          <p class="demo-note" data-step>✓ Saved in <code>tasks/task-move-the-blog.md</code></p>
+          <p class="demo-day" data-step data-day="tue">Tuesday, 9:00 · another session</p>
           <div class="bubble you" data-step>Shall we carry on?</div>
-          <div class="bubble ai" data-step>Yesterday at 18:30 we left the form done, sending included. Next is trying it locally. Shall I?</div>
-          <div class="bubble you" data-step>It works. Push it to production.</div>
-          <div class="demo-guard" data-step>🛡 <b>The guard asks you first.</b> <code>aws --profile prod s3 sync …</code> uses a production profile.<div class="choices"><span>Allow</span><span>No</span></div></div>
+          <div class="bubble ai" data-step>First, due today: check that the old server's last backup finished (<b>Move the blog</b>). Then the task itself: it's parked, and next is writing the plan.</div>
+          <div class="bubble you" data-step>The backup finished. Go for the plan.</div>
+          <div class="bubble ai" data-step>Noted in its journal, and the date marked as done. The plan: copy the blog, try it on the new server, switch the address. Shall I start?</div>
+          <p class="demo-day" data-step data-day="wed">Wednesday, 11:00</p>
+          <div class="bubble you" data-step>Idea for later: a dark theme for the blog.</div>
+          <div class="bubble ai" data-step>Captured in the inbox, without opening a task. It comes up in the weekly review.</div>
+          <div class="bubble you" data-step>The copy works. Push it.</div>
+          <div class="demo-guard" data-step>🛡 <b>The guard stops it.</b> <code>git push</code> is for you: this repository is not on the list where Claude may push.</div>
+          <div class="bubble ai" data-step>Then it's yours. The change is ready and checked: three files. Run <code>git commit</code> and <code>git push</code> when you like.</div>
+          <p class="demo-day" data-step data-day="fri">Friday, 16:00 · new session</p>
+          <div class="bubble you" data-step>Anything pending?</div>
+          <div class="bubble ai" data-step><b>Move the blog</b> is in execution. Next: switch the address. And the weekly review is due: one idea in the inbox, no task stalled. About ten minutes. Shall we?</div>
+          <div class="bubble you" data-step>Go.</div>
+          <div class="bubble ai" data-step>One at a time. “A dark theme for the blog”: a task, a note for an area, or drop it?</div>
+          <div class="bubble you" data-step>A task, for next month.</div>
+          <div class="bubble ai" data-step>Opened <b>Dark theme for the blog</b>. The inbox is empty and the review is saved. Have a good weekend.</div>
+          <p class="demo-note" data-step>✓ Saved in <code>reviews/review-2026-11-13.md</code></p>
         </div>
       </div>
-      <p class="demo-caption">A recreated example. With you, the tasks are yours.</p>
+      <p class="demo-caption">A recreated example, with made-up tasks. With you, the tasks are yours.</p>
     </div>
   </section>
 
@@ -355,8 +369,8 @@ Name, email and message, sent by email.
       </figure>
       <div class="three">
         <div class="thing"><h3>Today</h3><p>What is due this week, the tasks waiting on you and their next step, in every space at once.</p></div>
-        <div class="thing"><h3>See and change</h3><p>Tasks by area, reminders, the inbox, the weekly review, people, your repositories. Edit a note without asking Claude.</p></div>
-        <div class="thing"><h3>Only yours</h3><p>It runs on your computer and nowhere else, only while you use it. After 30 minutes without use it stops by itself.</p></div>
+        <div class="thing"><h3>See and change</h3><p>Tasks by area, reminders, the inbox, the weekly review, people, your repositories, the guard's lists. Edit a note without asking Claude.</p></div>
+        <div class="thing"><h3>Only yours</h3><p>It runs on your computer, only while you use it. After 30 minutes without use it stops by itself. Want it on your phone? <a href="guide/panel-remote.html">Through your own private network</a>, and only for you.</p></div>
       </div>
       <p class="shot-more"><a href="guide/panel.html">Every page of the panel</a></p>
     </div>
@@ -398,6 +412,8 @@ Name, email and message, sent by email.
         <div class="item"><h3>Plain words</h3><p>“New task…”, “what's pending?”, “park it”, “note this for later”. No commands to learn.</p></div>
         <div class="item"><h3>Areas</h3><p>Ongoing responsibilities, like “the website” or “the servers”, group their tasks and what you learned.</p></div>
         <div class="item"><h3>Your tools</h3><p>Calendar, mail, documents and Jira can join in. <a href="guide/connect-services.html">How to connect them</a>.</p></div>
+        <div class="item"><h3>From anywhere</h3><p>Reach Claude on your computer from your phone or another computer, also after a reboot. Ask it for a session per task. Linux for now. <a href="guide/remote.html">Remote access</a>.</p></div>
+        <div class="item"><h3>Go back</h3><p>Your configuration keeps its last 10 versions. See what changed, and go back to any of them. <a href="guide/config-history.html">Configuration versions</a>.</p></div>
         <div class="item"><h3>Not tied to one AI</h3><p>The method runs as an MCP server, the open standard for AI tools. Claude Code first; others can follow.</p></div>
       </div>
     </div>
@@ -429,6 +445,10 @@ Name, email and message, sent by email.
               <tr><td><code>augmented-brain backup</code></td><td>Save the latest changes (<code>--all</code> for every space)</td></tr>
               <tr><td><code>augmented-brain restore &lt;url&gt;</code></td><td>Bring a space back on a new machine</td></tr>
               <tr><td><code>augmented-brain panel</code></td><td>Open the panel in your browser: today at a glance, and every section of your spaces to see and edit (<code>panel stop</code> to stop it)</td></tr>
+              <tr><td><code>augmented-brain panel remote</code></td><td>Open the panel from your phone or another computer, through your own Tailscale network</td></tr>
+              <tr><td><code>augmented-brain remote install</code></td><td>Keep Claude on this computer reachable from anywhere, also after a reboot (Linux)</td></tr>
+              <tr><td><code>augmented-brain session start &lt;task&gt;</code></td><td>Open a remote session of its own for a task, named after it (Linux; <code>session list</code>, <code>session stop</code>)</td></tr>
+              <tr><td><code>augmented-brain config history</code></td><td>The last versions of your configuration, and what each one changed (<code>config restore &lt;n&gt;</code> goes back)</td></tr>
               <tr><td><code>augmented-brain update</code></td><td>Update augmented brain and its Claude Code plugin (Claude tells you when there is a new version)</td></tr>
               <tr><td><code>augmented-brain uninstall</code></td><td>Remove the program and the plugin; your notes stay (<code>--config</code> removes the configuration too, <code>--all</code> starts from scratch)</td></tr>
             </tbody>
@@ -445,7 +465,7 @@ Name, email and message, sent by email.
       <div class="faq">
         <details><summary>Is it free?</summary><p>augmented brain is: open source, under the MIT license, with no account and no subscription. But it works with Claude Code, which needs a paid Claude account (Pro or above).</p></details>
         <details><summary>Do my notes leave my machine?</summary><p>augmented brain never sends them anywhere: they stay in files on your machine. Your assistant reads them to work, like any other file it opens, so they travel with the conversation. With a backup, they also go to a private git repository you choose.</p></details>
-        <details><summary>Which assistants does it work with?</summary><p>Claude Code today. The method runs as an MCP server, so any assistant that speaks MCP can use it; adapters for others will follow.</p></details>
+        <details><summary>Which assistants does it work with?</summary><p>Claude Code, today. The tools for your notes run as an MCP server, which other assistants speak too. But reading your notes at the start of a session and the guard rely on Claude Code's hooks, so no other assistant is supported yet.</p></details>
         <details><summary>Does it work on Windows?</summary><p>Yes: Windows 10 and 11, with one PowerShell command. Claude runs its commands in Git Bash, which the installer sets up, so the guard works there too. See <a href="guide/install.html">Installing</a>.</p></details>
         <details><summary>Can I edit the notes by hand?</summary><p>Yes, they are Markdown files. Afterwards, <code>augmented-brain check</code> checks them and rebuilds the index.</p></details>
         <details><summary>Does the backup run by itself?</summary><p>Yes. Once it is set up, it runs every time a Claude session ends, in the background. If it fails, Claude tells you at the start of the next session.</p></details>

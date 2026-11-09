@@ -75,7 +75,7 @@
    "name": "¿Con qué asistentes funciona?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "Hoy, con Claude Code. El método funciona como servidor MCP, así que cualquier asistente que hable MCP puede usarlo; vendrán adaptadores para otros."
+    "text": "Hoy, con Claude Code. Las herramientas de tus notas funcionan como servidor MCP, que otros asistentes también hablan. Pero leer tus notas al empezar la sesión y el guardia dependen de los hooks de Claude Code, así que aún no hay otro asistente soportado."
    }
   },
   {
@@ -172,30 +172,44 @@
   <section id="demo">
     <div class="wrap">
       <div class="head">
-        <h2>Míralo en marcha</h2>
-        <p>Dos días de trabajo, en cuarenta segundos.</p>
+        <h2>Una semana con él</h2>
+        <p>De lunes a viernes, en un minuto más o menos. Elige un día para saltar a él.</p>
       </div>
       <div class="demo" data-demo>
         <div class="demo-bar"><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="demo-title">Claude · ~/augmented-brain/trabajo</span><button class="demo-play" type="button" aria-pressed="false" data-pause="Pausa" data-play="Seguir" hidden>Pausa</button></div>
+        <div class="demo-days" role="group" aria-label="Saltar a un día" hidden><button type="button" data-goto="mon" hidden>Lunes</button><button type="button" data-goto="tue" hidden>Martes</button><button type="button" data-goto="wed" hidden>Miércoles</button><button type="button" data-goto="fri" hidden>Viernes</button></div>
         <div class="demo-body">
-          <p class="demo-day" data-step>Lunes, 9:00 · sesión nueva</p>
-          <div class="bubble you" data-step>¿En qué estábamos?</div>
-          <div class="bubble ai" data-step>Tienes dos tareas vivas:<ul><li><b>Formulario de contacto</b>, aparcada. Siguiente: escribir el plan.</li><li><b>Renovar el certificado</b>, en definición. Esperas a Marcos, que te pasa el dominio.</li></ul></div>
-          <div class="bubble you" data-step>Seguimos con el formulario.</div>
-          <div class="bubble ai" data-step>Quedamos en nombre, correo y mensaje, enviado por email. Te propongo el plan: el formulario, el envío y una prueba. ¿Empiezo?</div>
-          <p class="demo-note" data-step>… y trabajáis toda la mañana …</p>
-          <p class="demo-day" data-step>Lunes, 18:30</p>
-          <div class="bubble you" data-step>Apárcalo, mañana seguimos.</div>
-          <div class="bubble ai" data-step>Aparcada. Hecho: el formulario y el envío. Siguiente: probarlo en local.</div>
-          <p class="demo-note" data-step>✓ Guardado en <code>tasks/formulario-de-contacto.md</code></p>
-          <p class="demo-day" data-step>Martes, 9:00 · sesión nueva</p>
+          <p class="demo-day" data-step data-day="mon">Lunes, 9:00 · sesión nueva</p>
+          <div class="bubble you" data-step>Tarea nueva: mudar el blog al servidor nuevo.</div>
+          <div class="bubble ai" data-step>Abierta <b>Mudar el blog</b>, en definición. ¿Cuándo está hecha? Te propongo: el blog responde desde el servidor nuevo, en las mismas direcciones. ¿Vale?</div>
+          <div class="bubble you" data-step>Vale. El martes, comprueba que terminó la última copia del servidor viejo.</div>
+          <div class="bubble ai" data-step>Hecho: la tarea tiene una fecha para revisar el martes. Saldrá cuando abras Claude ese día.</div>
+          <p class="demo-note" data-step>… y trabajáis en ella todo el día …</p>
+          <div class="bubble you" data-step>Apárcala, mañana seguimos.</div>
+          <div class="bubble ai" data-step>Aparcada. Hecho: el análisis. Siguiente: escribir el plan.</div>
+          <p class="demo-note" data-step>✓ Guardado en <code>tasks/task-mudar-el-blog.md</code></p>
+          <p class="demo-day" data-step data-day="tue">Martes, 9:00 · otra sesión</p>
           <div class="bubble you" data-step>¿Seguimos?</div>
-          <div class="bubble ai" data-step>Ayer a las 18:30 dejamos el formulario hecho, con su envío. Toca probarlo en local. ¿Lo pruebo?</div>
-          <div class="bubble you" data-step>Funciona. Súbelo a producción.</div>
-          <div class="demo-guard" data-step>🛡 <b>El guardia te pregunta antes.</b> <code>aws --profile prod s3 sync …</code> usa un perfil de producción.<div class="choices"><span>Permitir</span><span>No</span></div></div>
+          <div class="bubble ai" data-step>Antes, para hoy: comprobar que terminó la última copia del servidor viejo (<b>Mudar el blog</b>). Luego la tarea: está aparcada, y toca escribir el plan.</div>
+          <div class="bubble you" data-step>La copia terminó. Vamos con el plan.</div>
+          <div class="bubble ai" data-step>Apuntado en su diario, y la fecha marcada como hecha. El plan: copiar el blog, probarlo en el servidor nuevo, cambiar la dirección. ¿Empiezo?</div>
+          <p class="demo-day" data-step data-day="wed">Miércoles, 11:00</p>
+          <div class="bubble you" data-step>Idea para más adelante: un tema oscuro para el blog.</div>
+          <div class="bubble ai" data-step>Apuntado en el buzón, sin abrir tarea. Saldrá en la revisión semanal.</div>
+          <div class="bubble you" data-step>La copia funciona. Súbelo.</div>
+          <div class="demo-guard" data-step>🛡 <b>El guardia lo para.</b> <code>git push</code> es cosa tuya: este repositorio no está en la lista donde Claude puede subir.</div>
+          <div class="bubble ai" data-step>Entonces es tuyo. El cambio está listo y comprobado: tres ficheros. Lanza <code>git commit</code> y <code>git push</code> cuando quieras.</div>
+          <p class="demo-day" data-step data-day="fri">Viernes, 16:00 · sesión nueva</p>
+          <div class="bubble you" data-step>¿Qué tengo pendiente?</div>
+          <div class="bubble ai" data-step><b>Mudar el blog</b> está en ejecución. Siguiente: cambiar la dirección. Y toca la revisión semanal: una idea en el buzón, ninguna tarea parada. Unos diez minutos. ¿La hacemos?</div>
+          <div class="bubble you" data-step>Venga.</div>
+          <div class="bubble ai" data-step>Una a una. «Un tema oscuro para el blog»: ¿tarea, nota de un área o la tiramos?</div>
+          <div class="bubble you" data-step>Tarea, para el mes que viene.</div>
+          <div class="bubble ai" data-step>Abierta <b>Tema oscuro para el blog</b>. El buzón está vacío y la revisión, guardada. Buen fin de semana.</div>
+          <p class="demo-note" data-step>✓ Guardado en <code>reviews/review-2026-11-13.md</code></p>
         </div>
       </div>
-      <p class="demo-caption">Un ejemplo recreado. Contigo, las tareas son las tuyas.</p>
+      <p class="demo-caption">Un ejemplo recreado, con tareas inventadas. Contigo, las tareas son las tuyas.</p>
     </div>
   </section>
 
@@ -344,8 +358,8 @@ Nombre, correo y mensaje, enviado por email.
       </figure>
       <div class="three">
         <div class="thing"><h3>Hoy</h3><p>Lo que vence esta semana, las tareas que te esperan y su siguiente paso, de todos tus espacios a la vez.</p></div>
-        <div class="thing"><h3>Ver y cambiar</h3><p>Las tareas por área, los recordatorios, el buzón, la revisión semanal, las personas, tus repositorios. Cambia una nota sin pedírselo a Claude.</p></div>
-        <div class="thing"><h3>Solo tuyo</h3><p>Funciona en tu ordenador y en ningún otro sitio, solo mientras lo usas. Tras 30 minutos sin uso, se para solo.</p></div>
+        <div class="thing"><h3>Ver y cambiar</h3><p>Las tareas por área, los recordatorios, el buzón, la revisión semanal, las personas, tus repositorios, las listas del guardia. Cambia una nota sin pedírselo a Claude.</p></div>
+        <div class="thing"><h3>Solo tuyo</h3><p>Funciona en tu ordenador, solo mientras lo usas. Tras 30 minutos sin uso, se para solo. ¿Lo quieres en el móvil? <a href="../guide/panel-remote.es.html">Por tu propia red privada</a>, y solo para ti.</p></div>
       </div>
       <p class="shot-more"><a href="../guide/panel.es.html">Todas las páginas del panel</a></p>
     </div>
@@ -387,6 +401,8 @@ Nombre, correo y mensaje, enviado por email.
         <div class="item"><h3>Con tus palabras</h3><p>“Tarea nueva…”, “¿qué tengo pendiente?”, “apárcalo”, “apunta esto para luego”. No hay comandos que aprender.</p></div>
         <div class="item"><h3>Áreas</h3><p>Lo que cuidas siempre, como “la web” o “los servidores”, agrupa sus tareas y lo que aprendiste.</p></div>
         <div class="item"><h3>Tus herramientas</h3><p>Calendario, correo, documentos y Jira pueden sumarse. <a href="../guide/connect-services.es.html">Cómo conectarlos</a>.</p></div>
+        <div class="item"><h3>Desde cualquier sitio</h3><p>Llega al Claude de tu ordenador desde el móvil u otro ordenador, también tras reiniciar. Pídele una sesión por tarea. De momento, en Linux. <a href="../guide/remote.es.html">Acceso remoto</a>.</p></div>
+        <div class="item"><h3>Vuelta atrás</h3><p>Tu configuración guarda sus 10 últimas versiones. Ves qué cambió y vuelves a cualquiera. <a href="../guide/config-history.es.html">Versiones de la configuración</a>.</p></div>
         <div class="item"><h3>No depende de una IA</h3><p>El método funciona como servidor MCP, el estándar abierto para herramientas de IA. Primero Claude Code; otros pueden venir después.</p></div>
       </div>
     </div>
@@ -418,6 +434,10 @@ Nombre, correo y mensaje, enviado por email.
               <tr><td><code>augmented-brain backup</code></td><td>Guarda los últimos cambios (<code>--all</code> para todos los espacios)</td></tr>
               <tr><td><code>augmented-brain restore &lt;url&gt;</code></td><td>Recupera un espacio en una máquina nueva</td></tr>
               <tr><td><code>augmented-brain panel</code></td><td>Abre el panel en tu navegador: el día de un vistazo, y cada sección de tus espacios para ver y editar (<code>panel stop</code> para pararlo)</td></tr>
+              <tr><td><code>augmented-brain panel remote</code></td><td>Abre el panel desde el móvil u otro ordenador, por tu propia red de Tailscale</td></tr>
+              <tr><td><code>augmented-brain remote install</code></td><td>Deja el Claude de este ordenador accesible desde cualquier sitio, también tras reiniciar (Linux)</td></tr>
+              <tr><td><code>augmented-brain session start &lt;tarea&gt;</code></td><td>Abre una sesión remota propia para una tarea, con su nombre (Linux; <code>session list</code>, <code>session stop</code>)</td></tr>
+              <tr><td><code>augmented-brain config history</code></td><td>Las últimas versiones de tu configuración, y qué cambió cada una (<code>config restore &lt;n&gt;</code> vuelve atrás)</td></tr>
               <tr><td><code>augmented-brain update</code></td><td>Actualiza augmented brain y su plugin de Claude Code (Claude te avisa cuando hay versión nueva)</td></tr>
               <tr><td><code>augmented-brain uninstall</code></td><td>Quita el programa y el plugin; tus notas se quedan (<code>--config</code> quita también la configuración, <code>--all</code> empieza de cero)</td></tr>
             </tbody>
@@ -434,7 +454,7 @@ Nombre, correo y mensaje, enviado por email.
       <div class="faq">
         <details><summary>¿Es gratis?</summary><p>augmented brain, sí: es software libre, con licencia MIT, sin cuenta y sin suscripción. Pero trabaja con Claude Code, que necesita una cuenta de Claude de pago (Pro o superior).</p></details>
         <details><summary>¿Mis notas salen de mi máquina?</summary><p>augmented brain no las envía a ningún sitio: se quedan en ficheros en tu máquina. Tu asistente las lee para trabajar, como cualquier otro fichero que abre, así que viajan con la conversación. Con una copia de seguridad, van además a un repositorio git privado que eliges tú.</p></details>
-        <details><summary>¿Con qué asistentes funciona?</summary><p>Hoy, con Claude Code. El método funciona como servidor MCP, así que cualquier asistente que hable MCP puede usarlo; vendrán adaptadores para otros.</p></details>
+        <details><summary>¿Con qué asistentes funciona?</summary><p>Hoy, con Claude Code. Las herramientas de tus notas funcionan como servidor MCP, que otros asistentes también hablan. Pero leer tus notas al empezar la sesión y el guardia dependen de los hooks de Claude Code, así que aún no hay otro asistente soportado.</p></details>
         <details><summary>¿Funciona en Windows?</summary><p>Sí: Windows 10 y 11, con un comando de PowerShell. Claude ejecuta sus comandos en Git Bash, que deja instalado el instalador, así que el guardia también funciona allí. Mira <a href="../guide/install.es.html">Instalación</a>.</p></details>
         <details><summary>¿Puedo editar las notas a mano?</summary><p>Sí, son ficheros Markdown. Después, <code>augmented-brain check</code> las revisa y rehace el índice.</p></details>
         <details><summary>¿La copia se hace sola?</summary><p>Sí. Una vez montada, se hace sola cada vez que termina una sesión de Claude, en segundo plano. Si falla, Claude te lo dice al empezar la siguiente sesión.</p></details>
