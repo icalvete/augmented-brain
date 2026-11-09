@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Known limitations: what a newcomer meets that is not ours.** Claude Code's own
+  first-run screens (Enter alone on "trust this folder" exits), the red PowerShell hook
+  error on Windows, and installing on Windows over ssh, where the installer cannot ask.
 - **A syntax check is no longer stopped.** `sh -n install.sh` (also `bash -n`, `-o
   noexec`) only reads the script to check how it is written and runs none of it, but the
   guard checked the script as if it ran, and stopped it when the same command had just
