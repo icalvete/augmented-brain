@@ -28,8 +28,9 @@ A program determined to get around it could. Read the
   `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
   Unless you let Claude in a repository (below).
 - **Becoming root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
-  without `--user`, `ssh root@…`, and on Windows `gsudo` and `runas`. Claude gives you the
-  exact command to run yourself. Running as another user (`sudo -u www-data …`) is fine.
+  without `--user`, `ssh root@…`, a container given the whole machine (`docker run
+  --privileged`, `-v /:/host`, `--pid=host`), and on Windows `gsudo` and `runas`. Claude
+  gives you the exact command to run yourself. Running as another user (`sudo -u www-data …`) is fine.
 - **Secrets.** A token or key written in a command or in a file Claude writes. Secrets are
   read from the system keychain, an environment variable or a secrets manager, never
   typed in.
@@ -51,7 +52,8 @@ A program determined to get around it could. Read the
   `--mirror`, `--prune`, a refspec starting with `+` or `:`.
 - **What it cannot read.** A program given as a variable (`$TOOL deploy`), commands
   nested too deep, `rm -rf "$DIR/"*` with a variable that may be empty, an `rm -r .` after
-  a `cd` it cannot follow.
+  a `cd` it cannot follow, a script that the same command writes in a way it cannot read
+  and then runs (`curl -o x.sh … && sh x.sh`).
 - **The guard's own settings.** Claude never changes augmented brain's configuration or
   Claude Code's settings on its own, since a line there could switch a check off.
 
@@ -176,8 +178,9 @@ you confirm each one. Keep the date close.
 
 The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh -c`,
 `docker exec`, `podman exec`, `kubectl exec`, `bash -c`, loops, what a pipe feeds a shell
-(`echo 'sudo …' | bash`), and short scripts Claude runs (`bash deploy.sh`,
-`./deploy.sh`). It checks the commands Claude leaves running to watch something, and
+(`echo 'sudo …' | bash`), short scripts Claude runs (`bash deploy.sh`,
+`./deploy.sh`), also when the same command writes them first (`echo '…' > x.sh && bash
+x.sh`), `env -S '…'`, and your git aliases (`git ci` when `ci` stands for `commit`). It checks the commands Claude leaves running to watch something, and
 those of the helpers Claude starts (subagents and workflows).
 
 ## When something is wrong with it

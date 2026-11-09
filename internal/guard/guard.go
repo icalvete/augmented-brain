@@ -96,6 +96,8 @@ type Policy struct {
 	// cdNamed says Cwd is a folder a cd earlier in the command named, not the session's:
 	// what gh and glab, which have no -C, take as the repository to merge in.
 	cdNamed bool
+	// files are the files the command line writes before it may run one as a script.
+	files *lineFiles
 }
 
 var allow = Decision{Allow, ""}
@@ -155,6 +157,7 @@ func (p Policy) Command(line string) Decision {
 	if p.panelAccess(line) {
 		return p.panelDeny()
 	}
+	p.files = &lineFiles{written: map[string]string{}, touched: map[string]bool{}}
 	return p.commands(parse(line), map[string]string{}, 0)
 }
 
@@ -193,6 +196,7 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 		if d = worse(d, p.simple(c.words, c.stdin, exported, depth)); d.Verdict == Deny {
 			return d
 		}
+		p.recordWrites(c)
 	}
 	return d
 }
@@ -327,10 +331,13 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 		if len(args) > 1 && args[0] == "compose" { // docker compose exec <service> <command>
 			args = args[1:]
 		}
+		if how := hostAccess(args); how != "" && name != "kubectl" {
+			return p.root(i18n.T(p.Lang, "guard.root.container", name+" "+args[0], how, p.rootReason()))
+		}
 		return p.exec(name, args, env, depth)
 	default:
 		if strings.Contains(raw, "/") {
-			if d := p.script(raw, env, depth); d.Verdict != Allow {
+			if d := p.runScript(raw, env, depth, shellScript(raw)); d.Verdict != Allow {
 				return d // ./deploy.sh: what the script runs
 			}
 		}
@@ -405,6 +412,33 @@ const maxScript = 64 << 10
 // env.sh) when it is a small text file already on disk; a script it cannot read is
 // let through, as before.
 func (p Policy) script(path string, env map[string]string, depth int) Decision {
+	return p.runScript(path, env, depth, true)
+}
+
+// shellScript says whether a program run by its path is named as a shell script
+// (./x.sh), not a program a build may have just made (./bin/tool).
+func shellScript(path string) bool {
+	return slices.Contains([]string{".sh", ".bash", ".zsh", ".ksh", ".dash"}, strings.ToLower(filepath.Ext(path)))
+}
+
+// runScript is script; askUnknown says whether a file this command line changed in a
+// way the guard cannot follow asks the user.
+func (p Policy) runScript(path string, env map[string]string, depth int, askUnknown bool) Decision {
+	if p.files != nil {
+		k := p.fileKey(path)
+		if text, ok := p.files.written[k]; ok {
+			q := p
+			q.inScript = true
+			inner := q.inner(text, env, depth)
+			if inner.Verdict != Allow {
+				inner.Reason = i18n.T(p.Lang, "guard.script", path, inner.Reason)
+			}
+			return inner
+		}
+		if askUnknown && p.files.touched[k] {
+			return Decision{Ask, i18n.T(p.Lang, "guard.script.written", path)}
+		}
+	}
 	d, err := p.resolve(path)
 	if err != nil {
 		return allow
@@ -454,6 +488,11 @@ func shortOf(letters string) func(string) bool {
 // Each -C is taken from the one before it, as git does. A repository given another way
 // (--git-dir, --work-tree, GIT_DIR, GIT_WORK_TREE) is never taken as listed.
 func (p Policy) git(env map[string]string, args []string) Decision {
+	return p.gitExpanded(env, args, 0)
+}
+
+// gitExpanded is git after n aliases were expanded.
+func (p Policy) gitExpanded(env map[string]string, args []string, n int) Decision {
 	dir := ""
 	elsewhere := env["GIT_DIR"] != "" || env["GIT_WORK_TREE"] != ""
 	withValue := map[string]bool{"-C": true, "-c": true, "--git-dir": true, "--work-tree": true,
@@ -478,6 +517,15 @@ func (p Policy) git(env map[string]string, args []string) Decision {
 		if k, _, _ := strings.Cut(strings.ToLower(args[j]), "="); strings.HasPrefix(k, "alias.") ||
 			slices.Contains([]string{"core.sshcommand", "core.pager", "core.editor", "core.hookspath", "core.fsmonitor", "sequence.editor", "credential.helper"}, k) {
 			return Decision{Ask, i18n.T(p.Lang, "guard.git.config", args[j])}
+		}
+	}
+	if i < len(args) && n < 5 && !gitBuiltin[args[i]] {
+		if v, ok := p.gitAlias(dir, elsewhere, args[i]); ok {
+			if shell, ok := strings.CutPrefix(v, "!"); ok { // a shell command, given the arguments
+				return p.inner(strings.Join(append([]string{shell}, args[i+1:]...), " "), env, 0)
+			}
+			expanded := append(append(slices.Clone(args[:i]), strings.Fields(v)...), args[i+1:]...)
+			return p.gitExpanded(env, expanded, n+1)
 		}
 	}
 	if i < len(args) {
@@ -1346,4 +1394,47 @@ func mainRepo(dir string) string {
 		return ""
 	}
 	return r
+}
+
+// hostAccess says how docker run (or create) gives a container the whole machine:
+// --privileged, the host's processes or network namespace, or the host's / mounted
+// inside it. Empty when it does not.
+func hostAccess(args []string) string {
+	if len(args) > 1 && args[0] == "container" {
+		args = args[1:]
+	}
+	if len(args) == 0 || args[0] != "run" && args[0] != "create" {
+		return ""
+	}
+	for i, a := range args[1:] {
+		next := ""
+		if i+2 < len(args) {
+			next = args[i+2]
+		}
+		key, value, hasValue := strings.Cut(a, "=")
+		if !hasValue {
+			value = next
+		}
+		switch {
+		case a == "--privileged" || a == "--privileged=true":
+			return "--privileged"
+		case (key == "--pid" || key == "--userns" || key == "--ipc") && value == "host":
+			return key + " host"
+		case key == "--cap-add" && (strings.EqualFold(value, "ALL") || strings.EqualFold(value, "SYS_ADMIN")):
+			return "--cap-add " + value
+		case key == "-v" || key == "--volume":
+			if src, _, _ := strings.Cut(value, ":"); src == "/" {
+				return "-v " + value
+			}
+		case strings.HasPrefix(a, "-v/:"):
+			return a
+		case key == "--mount":
+			for _, part := range strings.Split(value, ",") {
+				if k, v, _ := strings.Cut(part, "="); (k == "source" || k == "src") && v == "/" {
+					return "--mount " + value
+				}
+			}
+		}
+	}
+	return ""
 }

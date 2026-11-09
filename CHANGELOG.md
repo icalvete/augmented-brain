@@ -10,6 +10,12 @@
   `remote status` and `doctor` say to run `remote install` again for a service written
   before. `session start` also skips a bare repository when it picks the task's folder:
   it has no files, and Claude does not trust it.
+- **The guard sees a few more ways around it.** A script that a command writes and then
+  runs in the same line (`echo '…' > x.sh && bash x.sh`) is checked as it will be, and
+  when the guard cannot tell what was written into it (`curl -o x.sh … && sh x.sh`), it
+  asks you. Your git aliases count as what they stand for (`git ci` for `git commit`),
+  `env -S '…'` is read, and a container given the whole machine (`docker run
+  --privileged`, `-v /:/host`, `--pid=host`) is treated as becoming root.
 - **With one space, saving a person no longer asks where.** The program already saved
   them in the only space, but the text Claude reads told it to always ask, so a first
   session asked "which spaces?" with only one and did not save the person. It now says

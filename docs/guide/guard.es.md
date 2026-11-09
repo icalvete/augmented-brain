@@ -27,7 +27,8 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
   Salvo que dejes a Claude en un repositorio (más abajo).
 - **Hacerse root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
-  sin `--user`, `ssh root@…`, y en Windows `gsudo` y `runas`. Claude te da el comando
+  sin `--user`, `ssh root@…`, un contenedor al que se le da la máquina entera (`docker
+  run --privileged`, `-v /:/host`, `--pid=host`), y en Windows `gsudo` y `runas`. Claude te da el comando
   exacto para que lo ejecutes tú. Ejecutar como otro usuario (`sudo -u www-data …`) sí
   vale.
 - **Secretos.** Un token o una clave escritos en un comando o en un fichero que escribe
@@ -53,7 +54,8 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   `--force`, `--delete`, `--mirror`, `--prune`, una refspec que empieza por `+` o por `:`.
 - **Lo que no puede leer.** Un programa dado como variable (`$TOOL deploy`), comandos
   anidados demasiado hondo, `rm -rf "$DIR/"*` con una variable que puede estar vacía, un
-  `rm -r .` después de un `cd` que no puede seguir.
+  `rm -r .` después de un `cd` que no puede seguir, un script que el mismo comando escribe
+  de una forma que no puede leer y luego ejecuta (`curl -o x.sh … && sh x.sh`).
 - **Los ajustes del propio guardia.** Claude nunca cambia por su cuenta la configuración
   de augmented brain ni los ajustes de Claude Code, porque una línea ahí podría apagar una
   comprobación.
@@ -181,8 +183,10 @@ root allí, después de que confirmes cada uno. Pon una fecha cercana.
 
 El guardia lee lo que se ejecuta dentro de otros comandos: `ssh máquina '…'`,
 `vagrant ssh -c`, `docker exec`, `podman exec`, `kubectl exec`, `bash -c`, los bucles, lo
-que una tubería le pasa a una shell (`echo 'sudo …' | bash`) y los scripts cortos que
-lanza Claude (`bash deploy.sh`, `./deploy.sh`). Mira los comandos que Claude deja en
+que una tubería le pasa a una shell (`echo 'sudo …' | bash`), los scripts cortos que
+lanza Claude (`bash deploy.sh`, `./deploy.sh`), también cuando el mismo comando los
+escribe antes (`echo '…' > x.sh && bash x.sh`), `env -S '…'` y tus alias de git (`git ci`
+cuando `ci` quiere decir `commit`). Mira los comandos que Claude deja en
 marcha para vigilar algo, y los de los ayudantes que Claude lanza (subagentes y flujos de
 trabajo).
 

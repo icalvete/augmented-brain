@@ -1,0 +1,94 @@
+package guard
+
+import (
+	"bytes"
+	"os"
+	"slices"
+	"strings"
+)
+
+// lineFiles are the files a command line writes or changes before a later command in
+// it may run one of them as a script (echo '…' > x.sh && bash x.sh): the script is not
+// on disk yet, or not as it will be, when the guard looks.
+type lineFiles struct {
+	// written holds what a file will hold when that is known from the line alone: what
+	// echo, printf or a heredoc wrote into it (after what it already held).
+	written map[string]string
+	// touched are the files some other command writes or changes in ways the guard
+	// cannot follow (cp, curl -o, a program's output): running one of them asks.
+	touched map[string]bool
+}
+
+// readOnly are programs that name a file without changing what it holds.
+var readOnly = []string{"chmod", "chown", "chgrp", "ls", "cat", "head", "tail", "less", "more", "file",
+	"stat", "test", "[", "wc", "grep", "shellcheck", "bash", "sh", "zsh", "dash", "ksh", "source", ".",
+	"echo", "printf", "diff", "cmp", "md5sum", "sha256sum"}
+
+// fileKey is how a path is kept in lineFiles: resolved when the guard can, as written
+// otherwise (after a cd it could not follow).
+func (p Policy) fileKey(path string) string {
+	if d, err := p.resolve(path); err == nil {
+		return d
+	}
+	return "?" + path
+}
+
+// recordWrites notes the files command c writes: its output redirections (known text
+// for echo, printf and cat or tee of a heredoc), the files tee writes, and any file
+// named by a program that may change it.
+func (p Policy) recordWrites(c command) {
+	if p.files == nil {
+		return
+	}
+	_, name, args := program(c.words)
+	text, known := output(c), true
+	if name == "cat" && len(args) > 0 || text == "" && !(name == "echo" || name == "printf") {
+		known = false
+	}
+	for _, f := range c.outputs {
+		p.write(f, text, known)
+	}
+	if name == "tee" {
+		for _, a := range args {
+			if !strings.HasPrefix(a, "-") {
+				p.write(a, c.stdin, c.stdin != "")
+			}
+		}
+		return
+	}
+	if name == "" || slices.Contains(readOnly, name) {
+		return
+	}
+	for _, a := range args {
+		if a != "" && !strings.HasPrefix(a, "-") {
+			p.files.touched[p.fileKey(strings.TrimPrefix(a, "of="))] = true
+		}
+		if _, v, ok := strings.Cut(a, "="); ok && strings.HasPrefix(a, "-") && v != "" {
+			p.files.touched[p.fileKey(v)] = true // --output=x.sh
+		}
+	}
+}
+
+// write notes that path gets text (known) or something the guard cannot tell. What the
+// file held before counts too, so an append is checked whole; an overwrite may then be
+// checked against more than it holds, which only asks more.
+func (p Policy) write(path, text string, known bool) {
+	k := p.fileKey(path)
+	if !known || p.files.touched[k] {
+		p.files.touched[k] = true
+		delete(p.files.written, k)
+		return
+	}
+	before, ok := p.files.written[k]
+	if !ok && !strings.HasPrefix(k, "?") {
+		if info, err := os.Stat(k); err == nil {
+			data, err := os.ReadFile(k)
+			if err != nil || !info.Mode().IsRegular() || info.Size() > maxScript || bytes.IndexByte(data, 0) >= 0 {
+				p.files.touched[k] = true
+				return
+			}
+			before = string(data)
+		}
+	}
+	p.files.written[k] = before + text
+}
