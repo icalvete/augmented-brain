@@ -55,3 +55,20 @@ jobs:
         env:
           AB_CHECK_DESKTOP: "1"   # the desktop app too, with winget
         run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-check.ps1
+
+  # Remote access for real: a task of the Task Scheduler, with a claude that only
+  # pretends (remote-check.py).
+  remote:
+    timeout-minutes: 10
+    runs-on: windows-latest
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: remote install, status, doctor and uninstall with the Task Scheduler
+        run: python -I scripts/remote-check.py

@@ -11,16 +11,17 @@ tableta u otro ordenador. Hay dos formas, y hacen cosas distintas:
 - **Mirar tus notas** en el panel, desde cualquier sitio: [el panel desde otro
   dispositivo](panel-remote.es.md). Hoy, tus tareas, el buzón, todo lo que enseña el panel.
 
-Puedes usar una, la otra o las dos. El acceso remoto es solo para Linux por ahora; el panel
-desde otro dispositivo funciona donde funcione [Tailscale](https://tailscale.com).
+Puedes usar una, la otra o las dos. El acceso remoto funciona en Linux, macOS y Windows; el
+panel desde otro dispositivo funciona donde funcione [Tailscale](https://tailscale.com).
 
 ## Se prepara una vez
 
 En el ordenador que guarda tus notas:
 
-1. **Acceso remoto.** Lanza `augmented-brain remote install` y haz las dos cosas que pide:
-   que Claude confíe en la carpeta, y encender «linger» para que aguante un reinicio.
-   Detalles en [Acceso remoto](remote.es.md).
+1. **Acceso remoto.** Lanza `augmented-brain remote install` y haz lo que pide: que
+   Claude confíe en la carpeta y, en Linux, encender «linger» para que aguante un
+   reinicio (en macOS y Windows arranca cuando entras en tu sesión). Detalles en
+   [Acceso remoto](remote.es.md).
 2. **El panel.** Instala Tailscale en el ordenador y en el móvil, con la misma cuenta, y
    lanza `augmented-brain panel remote`. Escribe una dirección y un código QR. Detalles en
    [El panel desde otro dispositivo](panel-remote.es.md).

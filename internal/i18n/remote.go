@@ -7,9 +7,15 @@ var remoteMessages = map[string]msg{
 		en: "usage: augmented-brain remote install | uninstall | status",
 		es: "uso: augmented-brain remote install | uninstall | status",
 	},
+	// Said by `session start | stop | list`, which needs systemd; `remote` itself works on
+	// Linux, macOS and Windows.
 	"remote.unsupported": {
-		en: "remote access is not available on this system yet (Linux only for now).",
-		es: "el acceso remoto aún no está disponible en este sistema (por ahora solo en Linux).",
+		en: "this is not available on this system yet (Linux only for now).",
+		es: "esto aún no está disponible en este sistema (por ahora solo en Linux).",
+	},
+	"remote.unsupported.os": {
+		en: "remote access is available on Linux, macOS and Windows only.",
+		es: "el acceso remoto solo está disponible en Linux, macOS y Windows.",
 	},
 	// What is wrong with remote.toml, or with the machine.
 	"remote.badmode": {
@@ -48,6 +54,22 @@ var remoteMessages = map[string]msg{
 		en: "remote access needs systemd's user services, and this computer does not offer them (a container, or WSL without systemd): nothing was changed (%v)",
 		es: "el acceso remoto necesita los servicios de usuario de systemd, y este ordenador no los tiene (un contenedor, o WSL sin systemd): no se ha cambiado nada (%v)",
 	},
+	"remote.nolaunchctl": {
+		en: "remote access needs launchctl, the part of macOS that starts programs at login, and it was not found: nothing was changed (%v)",
+		es: "el acceso remoto necesita launchctl, la parte de macOS que arranca programas al entrar, y no se ha encontrado: no se ha cambiado nada (%v)",
+	},
+	"remote.launchctl": {
+		en: "launchctl %s failed: %v",
+		es: "launchctl %s ha fallado: %v",
+	},
+	"remote.notasks": {
+		en: "remote access needs the Task Scheduler of Windows (%s), and it was not found: nothing was changed (%v)",
+		es: "el acceso remoto necesita el Programador de tareas de Windows (%s), y no se ha encontrado: no se ha cambiado nada (%v)",
+	},
+	"remote.schtasks": {
+		en: "schtasks %s failed: %v",
+		es: "schtasks %s ha fallado: %v",
+	},
 	"remote.systemctl": {
 		en: "systemctl --user %s failed: %v",
 		es: "systemctl --user %s ha fallado: %v",
@@ -73,9 +95,14 @@ var remoteMessages = map[string]msg{
 		en: "  cd %s && claude",
 		es: "  cd %s && claude",
 	},
+	// PowerShell, the terminal of Windows, does not take && before version 7.
+	"remote.install.trust.cmd.win": {
+		en: "  cd \"%s\"; claude",
+		es: "  cd \"%s\"; claude",
+	},
 	"remote.install.trust.after": {
-		en: "Then close that Claude. The service tries again every 30 seconds and starts by itself.",
-		es: "Luego cierra ese Claude. El servicio lo reintenta cada 30 segundos y arranca solo.",
+		en: "Then close that Claude. The service tries again by itself within a minute.",
+		es: "Luego cierra ese Claude. El servicio lo reintenta solo en menos de un minuto.",
 	},
 	"remote.install.linger": {
 		en: "To start after a reboot, with nobody logged in, an administrator must turn on \"linger\". augmented brain does not do it for you; run:",
@@ -84,6 +111,10 @@ var remoteMessages = map[string]msg{
 	"remote.install.linger.unknown": {
 		en: "Could not check \"linger\" (loginctl is not here): without it the services only run while you are logged in.",
 		es: "No se pudo comprobar el «linger» (aquí no hay loginctl): sin él los servicios solo funcionan mientras tienes la sesión abierta.",
+	},
+	"remote.install.atlogin": {
+		en: "It starts when you log in to this computer, and again by itself if it stops. After a reboot, log in once: until then nobody can connect.",
+		es: "Arranca cuando entras en este ordenador, y otra vez solo si se para. Tras reiniciar, entra una vez: hasta entonces nadie puede conectarse.",
 	},
 	"remote.install.connect": {
 		en: "Connect from claude.ai/code or Claude Desktop and choose the environment named %s.",
@@ -119,6 +150,10 @@ var remoteMessages = map[string]msg{
 		en: "linger (start at boot without a login): %s",
 		es: "linger (arrancar sin que nadie entre): %s",
 	},
+	"remote.status.atlogin": {
+		en: "it starts when you log in to this computer (after a reboot, log in once)",
+		es: "arranca cuando entras en este ordenador (tras reiniciar, entra una vez)",
+	},
 	"remote.status.fix": {
 		en: "  → %s",
 		es: "  → %s",
@@ -145,9 +180,17 @@ var remoteMessages = map[string]msg{
 		en: "run `cd %s && claude` once and accept the question",
 		es: "lanza `cd %s && claude` una vez y acepta la pregunta",
 	},
+	"remote.fix.trust.win": {
+		en: "run `cd \"%s\"; claude` once and accept the question",
+		es: "lanza `cd \"%s\"; claude` una vez y acepta la pregunta",
+	},
 	"remote.fix.restart": {
 		en: "see why with `journalctl --user -u %[1]s -n 20` (or `systemctl --user status %[1]s`); if Claude's login expired, run `claude` and sign in",
 		es: "mira por qué con `journalctl --user -u %[1]s -n 20` (o `systemctl --user status %[1]s`); si caducó el acceso de Claude, lanza `claude` e inicia sesión",
+	},
+	"remote.fix.restart.log": {
+		en: "see why in %s; if Claude's login expired, run `claude` and sign in. `augmented-brain remote install` starts it again",
+		es: "mira por qué en %s; si caducó el acceso de Claude, lanza `claude` e inicia sesión. `augmented-brain remote install` lo vuelve a arrancar",
 	},
 	"remote.fix.update": {
 		en: "run `augmented-brain remote install` again to bring the service up to date: its sessions then find claude and augmented-brain, and when it fails it says why in the system journal (it restarts remote access)",
@@ -161,6 +204,10 @@ var remoteMessages = map[string]msg{
 	"remote.doctor": {
 		en: "remote access, space %s (session %q): service %s, folder %s, linger %s",
 		es: "acceso remoto, espacio %s (sesión %q): servicio %s, carpeta %s, linger %s",
+	},
+	"remote.doctor.atlogin": {
+		en: "remote access, space %s (session %q): service %s, folder %s, starts at login",
+		es: "acceso remoto, espacio %s (sesión %q): servicio %s, carpeta %s, arranca al entrar",
 	},
 	// doctor's line about the remote panel (panel remote), once it has been used.
 	"doctor.panelremote.ok": {

@@ -11,16 +11,16 @@ or another computer. There are two ways, and they do different things:
 - **Look at your notes** in the panel, from anywhere: [the panel from another
   device](panel-remote.md). Today, your tasks, the inbox, everything the panel shows.
 
-You can use one, the other, or both. Remote access is Linux only for now; the panel from
-another device works wherever [Tailscale](https://tailscale.com) does.
+You can use one, the other, or both. Remote access works on Linux, macOS and Windows; the
+panel from another device works wherever [Tailscale](https://tailscale.com) does.
 
 ## Set it up once
 
 On the computer that holds your notes:
 
-1. **Remote access.** Run `augmented-brain remote install`, then do the two things it asks:
-   let Claude trust the folder, and turn on "linger" so it survives a reboot. Details in
-   [Remote access](remote.md).
+1. **Remote access.** Run `augmented-brain remote install`, then do what it asks: let
+   Claude trust the folder and, on Linux, turn on "linger" so it survives a reboot (on
+   macOS and Windows it starts when you log in). Details in [Remote access](remote.md).
 2. **The panel.** Install Tailscale on the computer and on your phone, signed in to the
    same account, then run `augmented-brain panel remote`. It prints an address and a QR
    code. Details in [The panel from another device](panel-remote.md).

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Remote access on macOS and Windows.** `augmented-brain remote install`, `status` and
+  `uninstall` now work there too: a LaunchAgent on macOS, a task of the Task Scheduler on
+  Windows (no window, no administrator). On both it starts when you log in and again by
+  itself if it stops; after a reboot, log in once. Its errors go to a log file that
+  `status` names. `session start` stays Linux only.
 - **A remote session finds its programs after a reboot.** systemd does not read your
   shell's profile, so a session opened through `remote` found neither `claude` nor
   `augmented-brain`, and `session start` failed from it. `remote install` now writes a

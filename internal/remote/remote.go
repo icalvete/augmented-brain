@@ -1,6 +1,8 @@
 // Package remote keeps a Claude session reachable from another computer or the phone:
-// one systemd user service per space that runs `claude remote-control`, so that after a
-// reboot the machine can be reached again from Claude Desktop or claude.ai.
+// one service per space that runs `claude remote-control`, so that after a reboot the
+// machine can be reached again from Claude Desktop or claude.ai. The service is a
+// systemd user unit on Linux, a LaunchAgent on macOS (launchd.go) and a task of the
+// Task Scheduler on Windows (tasks.go).
 //
 // Each service starts in a work folder of its space: the one remote.toml names under
 // folders, or else the space's first work folder, where the user already works (and so
@@ -9,8 +11,8 @@
 // server opens starts there, so the space of the session (and its rules) is the one the
 // service was made for.
 //
-// Linux only for now. Everything the package touches outside the configuration folder
-// goes through System, so tests use fakes and write only to temporary folders.
+// Everything the package touches outside the configuration folder goes through System,
+// so tests use fakes and write only to temporary folders.
 package remote
 
 import (
@@ -33,12 +35,12 @@ import (
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
-// ErrUnsupported means this system has no way to keep the service yet (macOS and
-// Windows); the commands say so.
+// ErrUnsupported means this system has no way to keep the service (a system other than
+// Linux, macOS and Windows; for `session start`, anything but Linux); the commands say so.
 var ErrUnsupported = errors.New("remote access is not available on this system yet")
 
 // Marker is the line every unit starts with. Uninstall removes only units that have it.
-const Marker = "# Written by augmented-brain remote install; remove it with augmented-brain remote uninstall."
+const Marker = "# " + markerWords
 
 const unitPrefix = "augmented-brain-remote-"
 
@@ -53,10 +55,19 @@ type System struct {
 	LookPath func(string) (string, error)
 	Hostname func() (string, error)
 	GOOS     string
-	// User is who `loginctl enable-linger` is for.
+	// User is who `loginctl enable-linger` is for; on Windows, who the task runs as
+	// (DOMAIN\user).
 	User string
-	// UnitDir is where systemd keeps the user's units (~/.config/systemd/user).
+	// UID is the user's number on macOS: launchd's domain is gui/<uid>.
+	UID int
+	// UnitDir is where the services are written: systemd's folder of the user's units
+	// (~/.config/systemd/user), ~/Library/LaunchAgents on macOS, and on Windows a folder
+	// of augmented brain's own that keeps a copy of each task as it was registered.
 	UnitDir string
+	// LogDir is where a service's errors go on macOS and Windows (on Linux, the journal).
+	LogDir string
+	// SystemRoot is Windows' own folder (C:\Windows), where cmd.exe and conhost.exe are.
+	SystemRoot string
 	// ClaudeJSON is Claude Code's own file, read (never written) to see which folders
 	// the user trusts.
 	ClaudeJSON string
@@ -89,9 +100,23 @@ func NewSystem() (System, error) {
 		name = u.Username
 	}
 	self, _ := os.Executable()
-	return System{Run: realRun, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
-		User: name, UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude,
-		Home: home, Self: self}, nil
+	s := System{Run: realRun, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
+		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude,
+		Home: home, Self: self}
+	switch runtime.GOOS {
+	case "darwin":
+		s.UnitDir = filepath.Join(home, "Library", "LaunchAgents")
+		s.LogDir = filepath.Join(home, "Library", "Logs", "augmented-brain")
+	case "windows":
+		local := os.Getenv("LOCALAPPDATA")
+		if local == "" {
+			local = filepath.Join(home, "AppData", "Local")
+		}
+		s.UnitDir = filepath.Join(local, "augmented-brain", "remote")
+		s.LogDir = s.UnitDir
+		s.SystemRoot = os.Getenv("SystemRoot")
+	}
+	return s, nil
 }
 
 func realRun(name string, args ...string) (string, error) {
@@ -254,7 +279,13 @@ type InstallResult struct {
 // enables and starts the service. It does not touch Claude's own files, and never runs
 // loginctl enable-linger, which is for root: the result says what to run.
 func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) {
-	if s.GOOS != "linux" {
+	switch s.GOOS {
+	case "darwin":
+		return s.installLaunchd(c, set)
+	case "windows":
+		return s.installTasks(c, set)
+	case "linux":
+	default:
 		return nil, ErrUnsupported
 	}
 	if len(set.Spaces) == 0 {
@@ -362,7 +393,13 @@ func addWorkFolder(c *config.Config, svc Service) (bool, error) {
 // follows what is on disk, not the settings of today). The folders, the work_folders
 // entries and Claude's own files stay. It returns the units removed.
 func (s System) Uninstall(c *config.Config) ([]string, error) {
-	if s.GOOS != "linux" {
+	switch s.GOOS {
+	case "darwin":
+		return s.uninstallLaunchd(c)
+	case "windows":
+		return s.uninstallTasks(c)
+	case "linux":
+	default:
 		return nil, ErrUnsupported
 	}
 	units, _ := s.installedUnits()
@@ -410,6 +447,9 @@ const (
 	LingerUnknown Linger = iota // loginctl is not there
 	LingerOn
 	LingerOff
+	// LingerNone: the system has no such thing (macOS, Windows). The service starts
+	// when the user logs in, and only then.
+	LingerNone
 )
 
 // LingerCommand is what root runs to turn linger on. It is printed, never run.
@@ -435,6 +475,9 @@ type SpaceStatus struct {
 	Active    string // systemctl is-active: active, inactive, failed…; "" if unknown
 	Enabled   string // systemctl is-enabled: enabled, disabled…; "" if unknown
 	Trusted   bool   // Claude Code trusts the folder
+	// Log is the file the service's errors go to (macOS, Windows); "" on Linux, where
+	// they go to the journal.
+	Log string
 }
 
 // Running is whether the service is up.
@@ -449,7 +492,13 @@ type Status struct {
 // Status reads (and changes nothing): the unit files, systemctl, loginctl and Claude's
 // own file for the folders it trusts.
 func (s System) Status(c *config.Config, set Settings) (*Status, error) {
-	if s.GOOS != "linux" {
+	switch s.GOOS {
+	case "darwin":
+		return s.statusLaunchd(c, set)
+	case "windows":
+		return s.statusTasks(c, set)
+	case "linux":
+	default:
 		return nil, ErrUnsupported
 	}
 	trusted := s.trustedFolders()
@@ -491,7 +540,8 @@ func (s System) trustedFolders() func(string) bool {
 		}
 		for _, p := range cands {
 			for dir := p; ; dir = filepath.Dir(dir) {
-				if f.Projects[dir].Accepted {
+				// Claude Code on Windows writes C:/Users/…, with forward slashes.
+				if f.Projects[dir].Accepted || f.Projects[filepath.ToSlash(dir)].Accepted {
 					return true
 				}
 				if filepath.Dir(dir) == dir {

@@ -39,7 +39,7 @@ row here with the test that covers it.
 | `import` | `internal/importer`, `cmd` `TestImportMissingSource` |
 | `backup`, `backup setup`, `restore` | `internal/backup` (25 tests), `cmd` `TestBackupSpaceFlag`, `TestRestoreNamesTheSecrets` |
 | `panel`, `panel remote`, `panel stop` | `internal/panel`, `cmd` `TestPanelRemoteExplains`, `TestExplainTailnet`; `scripts/panel-browser-check.py` |
-| `remote install`, `uninstall`, `status` | `internal/remote` (14 tests) |
+| `remote install`, `uninstall`, `status` | `internal/remote` (14 tests on Linux's systemd; `TestLaunchdInstallStatusUninstall`, `TestPlistText`, `TestLaunchdErrors` for macOS; `TestTasksInstallStatusUninstall`, `TestTaskText`, `TestTasksErrors` for Windows, all with fakes); `scripts/remote-check.py` for real with a pretend claude (CI: macOS and Windows; tried in the Windows VM, also with the real claude not signed in); a real connection from claude.ai on a Mac and on Windows by hand |
 | `session start`, `stop`, `list` | `internal/remote` `TestStartRefuses`, `TestStartRuns`, `TestStartReportsFailure`, `TestFolderTrustedIsExact`; `internal/hook` `TestLaunchedSessionReadsItsTask`; tried by hand on Linux (a real session opened in a trusted folder) |
 | `config history`, `config restore` | `cmd` `TestConfigHistoryAndRestore`, `TestConfigRestoreFixesABrokenConfig`; `internal/confighistory` |
 | `update` | see Installing |
@@ -87,7 +87,7 @@ row here with the test that covers it.
 | No Tailscale | `faults-check.py`, `internal/tailnet` `TestMissing` | CI, Go |
 | No keychain, or one that does not answer | `internal/keyring` `TestClassify`, `cmd` `TestRestoreNamesTheSecrets` | Go |
 | A locked macOS keychain: no password dialog, never "missing" | `scripts/mac-check.py` (only the secret's attributes are read, which needs no unlocking) | CI: macOS |
-| No systemd | `faults-check.py`, `internal/remote` `TestInstallErrors` | CI, Go |
+| No systemd, no launchctl, no Task Scheduler | `faults-check.py` (Linux, macOS), `internal/remote` `TestInstallErrors`, `TestLaunchdErrors`, `TestTasksErrors` | CI, Go |
 | A configuration that does not load | `faults-check.py`, `cmd` `TestConfigRestoreFixesABrokenConfig` | CI, Go |
 | `guard.toml` that does not load | `internal/hook` `TestPreToolUseGuardFile` | Go |
 | Notes that cannot be written | `faults-check.py` (Unix) | CI |
@@ -115,7 +115,10 @@ What only a person on a real Mac can see, before a beta or a 1.0:
 3. Claude Desktop installed by the installer, and Tailscale with `panel remote`.
 4. Switch the network off: `backup`, `update` and `panel remote` say so and leave nothing
    half done.
-5. Open the panel in Safari and look at the console: safaridriver cannot read it, so
+5. `augmented-brain remote install` with a signed-in Claude: the session shows up in
+   claude.ai, and comes back after logging out and in again, and after a reboot and a
+   login (`remote-check.py` covers the rest with a pretend claude).
+6. Open the panel in Safari and look at the console: safaridriver cannot read it, so
    `mac-check.py` checks the pages load whole, not that the console is quiet.
 
 A locked keychain and Safari loading every page are no longer here: `mac-check.py` checks

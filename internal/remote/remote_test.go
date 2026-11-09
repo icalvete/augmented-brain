@@ -459,15 +459,15 @@ func TestInstallErrors(t *testing.T) {
 	if _, err := f.sys.Install(c, set); err == nil {
 		t.Error("no spaces must be an error")
 	}
-	f.sys.GOOS = "darwin"
+	f.sys.GOOS = "freebsd"
 	if _, err := f.sys.Install(c, set); !errors.Is(err, ErrUnsupported) {
-		t.Errorf("darwin: %v", err)
+		t.Errorf("freebsd: %v", err)
 	}
 	if _, err := f.sys.Uninstall(c); !errors.Is(err, ErrUnsupported) {
-		t.Errorf("darwin uninstall: %v", err)
+		t.Errorf("freebsd uninstall: %v", err)
 	}
 	if _, err := f.sys.Status(c, set); !errors.Is(err, ErrUnsupported) {
-		t.Errorf("darwin status: %v", err)
+		t.Errorf("freebsd status: %v", err)
 	}
 }
 

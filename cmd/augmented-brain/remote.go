@@ -47,7 +47,7 @@ func cmdRemote(args []string, out, errOut io.Writer) int {
 		runErr = remoteStatus(c, set, sys, out)
 	}
 	if errors.Is(runErr, remote.ErrUnsupported) {
-		fmt.Fprintln(errOut, i18n.T(l, "remote.unsupported"))
+		fmt.Fprintln(errOut, i18n.T(l, "remote.unsupported.os"))
 		return 1
 	}
 	if runErr != nil {
@@ -73,7 +73,11 @@ func remoteInstall(c *config.Config, set remote.Settings, sys remote.System, out
 	if len(res.Untrusted) > 0 {
 		fmt.Fprintln(out, "\n"+i18n.T(l, "remote.install.trust"))
 		for _, s := range res.Untrusted {
-			fmt.Fprintln(out, i18n.T(l, "remote.install.trust.cmd", s.Folder))
+			key := "remote.install.trust.cmd"
+			if sys.GOOS == "windows" {
+				key += ".win"
+			}
+			fmt.Fprintln(out, i18n.T(l, key, s.Folder))
 		}
 		fmt.Fprintln(out, i18n.T(l, "remote.install.trust.after"))
 	}
@@ -83,8 +87,10 @@ func remoteInstall(c *config.Config, set remote.Settings, sys remote.System, out
 		fmt.Fprintln(out, "  "+sys.LingerCommand())
 	case remote.LingerUnknown:
 		fmt.Fprintln(out, "\n"+i18n.T(l, "remote.install.linger.unknown"))
+	case remote.LingerNone:
+		fmt.Fprintln(out, "\n"+i18n.T(l, "remote.install.atlogin"))
 	}
-	if len(res.Untrusted) == 0 && res.Linger == remote.LingerOn {
+	if len(res.Untrusted) == 0 && (res.Linger == remote.LingerOn || res.Linger == remote.LingerNone) {
 		for _, s := range res.Services {
 			fmt.Fprintln(out, "\n"+i18n.T(l, "remote.install.connect", s.Name))
 		}

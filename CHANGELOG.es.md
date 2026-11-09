@@ -2,6 +2,12 @@
 
 ## Sin publicar
 
+- **Acceso remoto en macOS y Windows.** `augmented-brain remote install`, `status` y
+  `uninstall` ya funcionan también ahí: un LaunchAgent en macOS, una tarea del
+  Programador de tareas en Windows (sin ventana, sin administrador). En los dos arranca
+  cuando entras en tu sesión y otra vez solo si se para; tras reiniciar, entra una vez.
+  Sus errores van a un fichero que dice `status`. `session start` sigue siendo solo de
+  Linux.
 - **Una sesión remota encuentra sus programas tras reiniciar.** systemd no lee el perfil
   de tu shell, así que una sesión abierta con `remote` no encontraba ni `claude` ni
   `augmented-brain`, y `session start` fallaba desde ella. Ahora `remote install` escribe

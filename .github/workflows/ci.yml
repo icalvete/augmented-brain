@@ -121,6 +121,19 @@ jobs:
           AB_MAC_CHECK_KEYCHAIN: '1'
         run: python3 -I scripts/mac-check.py
 
+  # Remote access for real on macOS: a LaunchAgent loaded into launchd, with a claude
+  # that only pretends (remote-check.py). Windows runs it in windows.yml.
+  remote:
+    timeout-minutes: 10
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: remote install, status, doctor and uninstall with launchd
+        run: python3 -I scripts/remote-check.py
+
   privacy:
     timeout-minutes: 10
     runs-on: ubuntu-latest

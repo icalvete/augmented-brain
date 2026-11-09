@@ -93,31 +93,35 @@
 <main class="prose" id="main">
   <h1>Remote access</h1>
   <p>Claude Code can be reached from another computer or from your phone: from <a href="https://claude.ai/code">claude.ai/code</a> or Claude Desktop you pick a session that runs on your machine and work in it as if you were sitting there. For that, a small program, <code>claude remote-control</code>, has to be running on the machine.</p>
-  <p><code>augmented-brain remote</code> keeps it running for you. It starts by itself when the computer starts, and starts again if it stops. You set it up once.</p>
-  <p>This is for Linux with systemd (the part of Linux that starts and watches services) for now: not a container, nor WSL without systemd. macOS and Windows are still to do.</p>
+  <p><code>augmented-brain remote</code> keeps it running for you. It starts by itself, and starts again if it stops. You set it up once. It works on the three systems, each with its own way of starting programs by themselves:</p>
+  <ul><li><strong>Linux</strong>: a user service of systemd (the part of Linux that starts and watches services). It can start when the computer starts, before anyone logs in. Not in a container, nor in WSL without systemd.</li><li><strong>macOS</strong>: a LaunchAgent, the way macOS starts a program when you log in.</li><li><strong>Windows</strong>: a task of the Task Scheduler that starts when you log in, with no window.</li></ul>
+  <p>On macOS and Windows it starts <strong>when you log in</strong>, not before: after a reboot, log in once and it is back. Neither system lets an ordinary user start something with nobody logged in, and augmented brain never asks for an administrator.</p>
   <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#one-door-per-space">One door per space</a></li><li><a href="#install-it">Install it</a></li><li><a href="#check-it">Check it</a></li><li><a href="#connect-from-another-computer">Connect from another computer</a></li><li><a href="#a-session-per-task">A session per task</a></li><li><a href="#keep-it-safe">Keep it safe</a></li><li><a href="#good-to-know">Good to know</a></li><li><a href="#take-it-away">Take it away</a></li><li><a href="#the-settings">The settings</a></li></ul></nav>
   <h2 id="one-door-per-space">One door per space</h2>
   <p>Each space (work, personal…) gets its own door, with its own name: <code>&lt;computer name&gt;-&lt;space&gt;</code>, such as <code>my-laptop-personal</code>. A session opened through that door starts in a folder that belongs to that space, so Claude loads that space's notes and rules, and nothing crosses between spaces. By default only your default space has a door. To open one for work too, see <a href="configuration.html">Configuration</a>.</p>
   <p>That folder is the space's first work folder, the one you named when you made the space: where you already work, so a session from your phone opens where you would open one at the computer. To start somewhere else inside the space, set <code>folders</code> in [<code>remote.toml</code>](configuration.md). Only a space with no work folder gets a folder of its own, <code>~/.config/augmented-brain/remote/&lt;space&gt;</code>.</p>
   <h2 id="install-it">Install it</h2>
   <pre><code>augmented-brain remote install</code></pre>
-  <p>It checks that systemd can keep the service, writes it and starts it. If systemd cannot, it says why and changes nothing. It then tells you what is missing, if anything: two things only you can do.</p>
+  <p>It checks that the system can keep the service, writes it and starts it. If it cannot, it says why and changes nothing. It then tells you what is missing, if anything: one thing only you can do, two on Linux.</p>
   <h3 id="1-let-claude-trust-the-folder">1. Let Claude trust the folder</h3>
   <p>Claude refuses to run in a folder it has not been told to trust, and there is no one at the keyboard to answer when it starts by itself. If you already use Claude in your work folder, it trusts it and there is nothing to do. Otherwise, once for each folder <code>install</code> names, open Claude there and accept the question:</p>
   <pre><code>cd ~/projects &amp;&amp; claude</code></pre>
-  <p>Accept “trust this folder”, then close Claude (<code>/exit</code>). augmented brain never edits Claude's own settings for you. The service tries again every 30 seconds, so within half a minute it is running.</p>
-  <h3 id="2-turn-on-linger">2. Turn on “linger”</h3>
+  <p>On Windows, in PowerShell, <code>install</code> writes it as <code>cd "C:\Users\you\projects"; claude</code>. Accept “trust this folder”, then close Claude (<code>/exit</code>). augmented brain never edits Claude's own settings for you. The service tries again by itself (every 30 seconds, every minute on Windows), so within a minute it is running.</p>
+  <h3 id="2-on-linux-turn-on-linger">2. On Linux, turn on “linger”</h3>
   <p>A user service normally runs only while you are logged in. To have it after a reboot with nobody logged in, the system must be told to keep your services: that is called <strong>linger</strong>, and it needs an administrator. <code>install</code> prints the exact command and does not run it:</p>
   <pre><code>sudo loginctl enable-linger your-user-name</code></pre>
+  <p>macOS and Windows have no linger: there the service starts when you log in.</p>
   <h2 id="check-it">Check it</h2>
   <pre><code>augmented-brain remote status</code></pre>
-  <p>For each space it says whether the service is running, whether Claude trusts its folder, and whether linger is on, with what to do about each problem. <code>augmented-brain doctor</code> shows the same, one line per space.</p>
-  <p>When a service fails, it says why in the system journal:</p>
+  <p>For each space it says whether the service is running, whether Claude trusts its folder, and on Linux whether linger is on, with what to do about each problem. <code>augmented-brain doctor</code> shows the same, one line per space.</p>
+  <p>When a service fails, it says why. On Linux, in the system journal:</p>
   <pre><code>journalctl --user -u augmented-brain-remote-personal -n 20</code></pre>
+  <p>On macOS, in <code>~/Library/Logs/augmented-brain/augmented-brain-remote-&lt;space&gt;.log</code>; on Windows, in <code>augmented-brain-remote-&lt;space&gt;.log</code> inside <code>%LOCALAPPDATA%\augmented-brain\remote</code>. <code>status</code> names the file.</p>
   <p>A service installed by an earlier version sent its errors nowhere; <code>status</code> and <code>doctor</code> tell you to run <code>augmented-brain remote install</code> again, which brings it up to date.</p>
   <h2 id="connect-from-another-computer">Connect from another computer</h2>
   <ol><li>Open <a href="https://claude.ai/code">claude.ai/code</a> or Claude Desktop, signed in to the same Claude account as on the machine.</li><li>Choose the environment named <code>&lt;computer name&gt;-&lt;space&gt;</code>, the name <code>status</code> shows.</li><li>Start a session. Start as many as you like: each one begins in that space's folder.</li></ol>
   <h2 id="a-session-per-task">A session per task</h2>
+  <p>This part is for Linux only for now: macOS and Windows have no clean way yet to start a session of its own for a moment, the way systemd does. On them <code>session start</code> says it is not available.</p>
   <p>The door's own sessions all start in the space's folder. To work on a task in its own session, in its own folder, ask the session you are in: “open me a session for the website task”. It runs</p>
   <pre><code>augmented-brain session start task-new-website</code></pre>
   <p>and within a minute a new session, named after the task, shows up in claude.ai and Claude Desktop. It starts by reading its task and telling you where it stands. The folder is the first of the task's repositories found in the space's work folders, or the one <code>--folder</code> gives.</p>
@@ -126,10 +130,10 @@
   <p><strong>This is a permanent door to your computer.</strong> Anyone who gets into your Claude account can work on the machine through it.</p>
   <ul><li>Claude asks before it acts, as always (permission mode <code>default</code>), and the guard stays in force: it stops pushes, root and secrets, and asks before production.</li><li>**Do not set <code>permission_mode</code> to <code>bypassPermissions</code>.** It lets whoever connects run anything with no question, and leaves the machine open.</li><li>Protect your Claude account: a strong password and two-step verification.</li><li>Remove the door whenever you do not need it: <code>augmented-brain remote uninstall</code>.</li></ul>
   <h2 id="good-to-know">Good to know</h2>
-  <ul><li><strong>A laptop that sleeps drops the connection.</strong> The session is back when it wakes up. The program does not change your sleep settings.</li><li>If your Claude login expires, the service keeps running but nobody can connect. <code>status</code> and <code>doctor</code> say so; run <code>claude</code> once and sign in again.</li><li>Sessions you start from the phone belong to the space of their folder: the work door opens work notes. To reach another space, use that space's door.</li></ul>
+  <ul><li><strong>A laptop that sleeps drops the connection.</strong> The session is back when it wakes up. The program does not change your sleep settings.</li><li><strong>On macOS and Windows, a reboot leaves it off until you log in.</strong> If the computer restarts by itself (an update, a power cut), nobody can connect until someone logs in.</li><li>If your Claude login expires, the service keeps running but nobody can connect. <code>status</code> and <code>doctor</code> say so; run <code>claude</code> once and sign in again.</li><li>Sessions you start from the phone belong to the space of their folder: the work door opens work notes. To reach another space, use that space's door.</li></ul>
   <h2 id="take-it-away">Take it away</h2>
   <pre><code>augmented-brain remote uninstall</code></pre>
-  <p>It stops and removes the services. The folders, and their place in the space's work folders, stay, and nothing else is deleted. Remove them by hand if you want.</p>
+  <p>It stops and removes the services (on Windows, also the program they were running). The folders, and their place in the space's work folders, stay, and nothing else is deleted. Remove them by hand if you want.</p>
   <h2 id="the-settings">The settings</h2>
   <p><code>remote.toml</code>, in the configuration folder: <code>enabled</code>, <code>spaces</code>, <code>name_prefix</code>, <code>permission_mode</code> and <code>folders</code>. See <a href="configuration.html">Configuration</a>. The commands are in <a href="commands.html">Commands</a>.</p>
   <nav class="pager" aria-label="Previous / Next">
