@@ -126,6 +126,8 @@ gives.
 - **Claude must trust that folder itself.** Trusting the space's folder is not enough. The
   first time, the command says what to do: on the machine (or through `ssh`), go to the
   folder, run `claude`, accept the question and close it with `/exit`. Then ask again.
+  For a git worktree, Claude keeps the answer under its main repository: trusting either
+  one is enough.
 - **One session per folder.** Claude serves each folder once, so a task cannot use the
   door's own folder, or a folder another task's session is using. Give it another one with
   `--folder` (a git worktree of the repository, for example).

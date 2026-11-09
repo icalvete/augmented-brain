@@ -81,12 +81,51 @@ func (s System) FolderTrusted(folder string) bool {
 	if real, err := paths.Resolve(folder); err == nil {
 		cands = append(cands, real)
 	}
+	// Claude Code keeps the answer for a git worktree under its main repository
+	// (measured on 9-nov, 2.1.319: accepted in ~/x-main, written as ~/x), and its
+	// server then starts in the worktree.
+	if root := worktreeRoot(folder); root != "" {
+		cands = append(cands, root)
+	}
 	for _, p := range cands {
-		if f.Projects[p].Accepted {
+		if f.Projects[p].Accepted || f.Projects[filepath.ToSlash(p)].Accepted {
 			return true
 		}
 	}
 	return false
+}
+
+// worktreeRoot is the main repository of a git worktree: its .git is a file
+// ("gitdir: <repo>/.git/worktrees/<name>") whose folder holds commondir, the path of the
+// repository's git folder. The root is that folder's parent when it is called .git,
+// and the folder itself for a bare repository. "" for anything else. Read without
+// running git.
+func worktreeRoot(folder string) string {
+	data, err := os.ReadFile(filepath.Join(folder, ".git"))
+	if err != nil {
+		return "" // a folder .git, or no repository
+	}
+	line, ok := strings.CutPrefix(strings.TrimSpace(string(data)), "gitdir:")
+	if !ok {
+		return ""
+	}
+	gitdir := strings.TrimSpace(line)
+	if !filepath.IsAbs(gitdir) {
+		gitdir = filepath.Join(folder, gitdir)
+	}
+	common, err := os.ReadFile(filepath.Join(gitdir, "commondir"))
+	if err != nil {
+		return "" // a submodule, not a worktree
+	}
+	dir := strings.TrimSpace(string(common))
+	if !filepath.IsAbs(dir) {
+		dir = filepath.Join(gitdir, dir)
+	}
+	dir = filepath.Clean(dir)
+	if filepath.Base(dir) == ".git" {
+		return filepath.Dir(dir)
+	}
+	return dir
 }
 
 // Launches are the launched sessions systemd knows, running or not, sorted.

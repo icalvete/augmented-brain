@@ -355,7 +355,8 @@ the website task").
 
 Two limits come from Claude itself. The folder must be trusted on its own: trusting a
 folder above it is not enough, so the first time the command says to open Claude once
-in that folder and accept the question. And Claude allows one remote server per folder,
+in that folder and accept the question. A git worktree is the exception: Claude keeps
+the answer under its main repository, so trusting either one is enough. And Claude allows one remote server per folder,
 so a task cannot use the folder the space's own service runs in, or one another task's
 session already uses: give it another with `--folder` (a git worktree, for example).
 

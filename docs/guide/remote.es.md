@@ -129,7 +129,8 @@ repositorio de la tarea que encuentra en las carpetas de trabajo del espacio, o 
 - **Claude tiene que confiar en esa carpeta ella misma.** Que confíe en la carpeta del
   espacio no basta. La primera vez, el comando dice qué hacer: en la máquina (o por
   `ssh`), entra en la carpeta, lanza `claude`, acepta la pregunta y ciérralo con `/exit`.
-  Luego pídelo otra vez.
+  Luego pídelo otra vez. En un worktree de git, Claude guarda la respuesta con su
+  repositorio principal: basta con confiar en uno de los dos.
 - **Una sesión por carpeta.** Claude sirve cada carpeta una sola vez, así que una tarea no
   puede usar la carpeta de la puerta ni una que ya use la sesión de otra tarea. Dale otra
   con `--folder` (un worktree de git del repositorio, por ejemplo).

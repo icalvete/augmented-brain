@@ -38,6 +38,50 @@ func TestFolderTrustedIsExact(t *testing.T) {
 	}
 }
 
+// A git worktree is trusted when its main repository is: Claude Code keeps the answer
+// there (measured on 9-nov), for a repository with a .git folder and for a bare one.
+func TestFolderTrustedWorktree(t *testing.T) {
+	f := newFake(t)
+	for _, bare := range []bool{false, true} {
+		repo := filepath.Join(f.root, "p", "site")
+		if bare {
+			repo = filepath.Join(f.root, "p", "site.git")
+		}
+		common := filepath.Join(repo, ".git")
+		if bare {
+			common = repo
+		}
+		wt := repo + "-main"
+		rec := filepath.Join(common, "worktrees", "site-main")
+		for _, d := range []string{rec, wt} {
+			if err := os.MkdirAll(d, 0o755); err != nil {
+				t.Fatal(err)
+			}
+		}
+		if err := os.WriteFile(filepath.Join(wt, ".git"), []byte("gitdir: "+rec+"\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(rec, "commondir"), []byte("../..\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if got := worktreeRoot(wt); got != repo {
+			t.Errorf("bare=%v: worktreeRoot = %q, want %q", bare, got, repo)
+		}
+		f.trust(filepath.Join(f.root, "p"))
+		if f.sys.FolderTrusted(wt) {
+			t.Errorf("bare=%v: a trusted parent made the worktree trusted", bare)
+		}
+		f.trust(repo)
+		if !f.sys.FolderTrusted(wt) {
+			t.Errorf("bare=%v: the worktree of a trusted repository was not trusted", bare)
+		}
+	}
+	// A plain folder has no main repository.
+	if got := worktreeRoot(f.root); got != "" {
+		t.Errorf("worktreeRoot of a plain folder = %q", got)
+	}
+}
+
 func launchFake(t *testing.T) (*fake, string) {
 	f := newFake(t)
 	f.sys.Sleep = func(time.Duration) {}
