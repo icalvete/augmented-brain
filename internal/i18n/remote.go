@@ -150,8 +150,8 @@ var remoteMessages = map[string]msg{
 		es: "mira por qué con `journalctl --user -u %[1]s -n 20` (o `systemctl --user status %[1]s`); si caducó el acceso de Claude, lanza `claude` e inicia sesión",
 	},
 	"remote.fix.update": {
-		en: "run `augmented-brain remote install` again to bring the service up to date, so that when it fails it says why in the system journal (it restarts remote access)",
-		es: "vuelve a lanzar `augmented-brain remote install` para poner el servicio al día, y que cuando falle diga por qué en el registro del sistema (reinicia el acceso remoto)",
+		en: "run `augmented-brain remote install` again to bring the service up to date: its sessions then find claude and augmented-brain, and when it fails it says why in the system journal (it restarts remote access)",
+		es: "vuelve a lanzar `augmented-brain remote install` para poner el servicio al día: así sus sesiones encuentran claude y augmented-brain, y cuando falla dice por qué en el registro del sistema (reinicia el acceso remoto)",
 	},
 	"remote.fix.linger": {
 		en: "an administrator runs `%s`",

@@ -129,6 +129,7 @@ Wants=network-online.target
 
 [Service]
 WorkingDirectory=/home/lucia/.config/augmented-brain/remote/personal
+Environment=PATH=/home/lucia/.local/bin:/usr/bin:/bin
 ExecStart=/home/lucia/.local/bin/claude remote-control --name box-personal --permission-mode default
 Restart=always
 RestartSec=30
@@ -141,7 +142,7 @@ LogRateLimitBurst=200
 [Install]
 WantedBy=default.target
 `
-	if got := svc.UnitText("/home/lucia/.local/bin/claude", "default"); got != want {
+	if got := svc.UnitText("/home/lucia/.local/bin/claude", "default", "/home/lucia/.local/bin:/usr/bin:/bin"); got != want {
 		t.Errorf("unit:\n%s\nwant:\n%s", got, want)
 	}
 }
@@ -149,14 +150,53 @@ WantedBy=default.target
 // A path with a space, a % or a $ must reach systemd as written.
 func TestUnitTextQuotesPaths(t *testing.T) {
 	svc := Service{Space: "work", Name: "x-work", Folder: "/home/a b/100%/remote/work"}
-	got := svc.UnitText(`/opt/my claude/$bin/claude`, "plan")
+	got := svc.UnitText(`/opt/my claude/$bin/claude`, "plan", `/opt/my claude/$bin:/usr/bin`)
 	for _, line := range []string{
+		`Environment="PATH=/opt/my claude/$bin:/usr/bin"`,
 		"WorkingDirectory=/home/a b/100%%/remote/work",
 		`ExecStart="/opt/my claude/$$bin/claude" remote-control --name x-work --permission-mode plan`,
 	} {
 		if !strings.Contains(got, line+"\n") {
 			t.Errorf("missing %q in:\n%s", line, got)
 		}
+	}
+}
+
+// The PATH of a unit: claude's folder and this program's first, then the system's, each
+// once, so a remote session finds both after a reboot (9-nov: it found neither).
+func TestUnitPath(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("systemd paths") // windows-ok
+	}
+	s := System{Self: "/home/lucia/.local/bin/augmented-brain"}
+	if got, want := s.UnitPath("/home/lucia/.local/bin/claude"), "/home/lucia/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"; got != want {
+		t.Errorf("UnitPath = %q, want %q", got, want)
+	}
+	s.Self = "/opt/ab/augmented-brain"
+	if got := s.UnitPath("/usr/bin/claude"); !strings.HasPrefix(got, "/usr/bin:/opt/ab:/usr/local/sbin") {
+		t.Errorf("UnitPath = %q", got)
+	}
+}
+
+// claude out of the PATH is found where its installer puts it.
+func TestFindClaudeOutsidePath(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("executable bits") // windows-ok
+	}
+	home := t.TempDir()
+	s := System{Home: home, LookPath: func(string) (string, error) { return "", exec.ErrNotFound }}
+	if _, err := s.FindClaude(); err == nil {
+		t.Fatal("found a claude that is not there")
+	}
+	bin := filepath.Join(home, ".local", "bin", "claude")
+	if err := os.MkdirAll(filepath.Dir(bin), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(bin, []byte("#!/bin/sh\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := s.FindClaude(); err != nil || got != bin {
+		t.Errorf("FindClaude = %q, %v; want %q", got, err, bin)
 	}
 }
 
@@ -539,6 +579,20 @@ func TestOutdatedUnit(t *testing.T) {
 	st, _ = f.sys.Status(c, set)
 	if _, _, ok := f.sys.DoctorLine("en", st.Spaces[0], st.Linger); !ok || st.Spaces[0].Outdated {
 		t.Fatalf("still outdated after install: %+v", st.Spaces[0])
+	}
+	// A unit with no PATH (before 9-nov) is outdated too: its sessions find nothing.
+	data, _ = os.ReadFile(unit)
+	var kept []string
+	for _, line := range strings.Split(string(data), "\n") {
+		if !strings.HasPrefix(line, "Environment=") {
+			kept = append(kept, line)
+		}
+	}
+	if err := os.WriteFile(unit, []byte(strings.Join(kept, "\n")), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if st, _ = f.sys.Status(c, set); !st.Spaces[0].Outdated {
+		t.Fatal("a unit with no PATH was not told apart")
 	}
 }
 

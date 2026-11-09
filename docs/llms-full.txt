@@ -2740,8 +2740,10 @@ For each space named in `remote.toml` (by default, the default space) it writes 
 `systemd` user service that runs `claude remote-control` in the space's first work folder
 (or the one `folders` names in `remote.toml`), and starts it. Only a space with no work
 folder gets a folder of its own, `remote/<space>` in the configuration folder, which
-becomes its work folder. It needs `claude` on your PATH, and a folder that exists. You can
-run it again at any time: it changes only what is different.
+becomes its work folder. It needs `claude` (on your PATH, or where its installer puts it)
+and a folder that exists. The service gets a PATH with the folders of `claude` and
+`augmented-brain`, so its sessions find both after a reboot. You can run it again at any
+time: it changes only what is different.
 
 It then says what is still missing, and does none of it for you:
 
@@ -2797,8 +2799,9 @@ augmented-brain session start task-new-website --folder ~/projects/website
 It starts a `claude remote-control` of its own for the task (a temporary `systemd` user
 service, `augmented-brain-session-<task>`), named after the task's title. Within a
 minute it shows up in Claude Desktop and claude.ai, and it starts by reading its task.
-The folder is the first of the task's repositories found in the space's work folders,
-or the one `--folder` gives. Run it from a folder of the task's space: the remote
+The folder is the first of the task's repositories found in the space's work folders
+(a bare repository does not count: it has no files to work on), or the one `--folder`
+gives. Run it from a folder of the task's space: the remote
 session you reach from another computer can run it for you ("open me a session for
 the website task").
 

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **A remote session finds its programs after a reboot.** systemd does not read your
+  shell's profile, so a session opened through `remote` found neither `claude` nor
+  `augmented-brain`, and `session start` failed from it. `remote install` now writes a
+  PATH into each service with the folders of both, `session start` passes it on, and both
+  look for `claude` where its installer puts it when the PATH does not lead there.
+  `remote status` and `doctor` say to run `remote install` again for a service written
+  before. `session start` also skips a bare repository when it picks the task's folder:
+  it has no files, and Claude does not trust it.
 - **With one space, saving a person no longer asks where.** The program already saved
   them in the only space, but the text Claude reads told it to always ask, so a first
   session asked "which spaces?" with only one and did not save the person. It now says

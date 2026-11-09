@@ -133,12 +133,9 @@ func (s System) Start(c *config.Config, set Settings, l Launch) error {
 	if s.GOOS != "linux" {
 		return ErrUnsupported
 	}
-	claude, err := s.LookPath("claude")
+	claude, err := s.FindClaude()
 	if err != nil {
 		return errors.New("claude is not installed or not in the PATH")
-	}
-	if claude, err = filepath.Abs(claude); err != nil {
-		return err
 	}
 	if _, err := s.Run("systemctl", "--user", "show-environment"); err != nil {
 		return fmt.Errorf("no systemd user manager: %w", err)
@@ -174,7 +171,7 @@ func (s System) Start(c *config.Config, set Settings, l Launch) error {
 	_, _ = s.Run("systemctl", "--user", "reset-failed", unit)
 	if _, err := s.Run("systemd-run", "--user", "--unit="+unit, "--collect",
 		"--description=augmented brain: session for "+l.Task,
-		"--working-directory="+l.Folder, "--setenv="+TaskEnv+"="+l.Task,
+		"--working-directory="+l.Folder, "--setenv="+TaskEnv+"="+l.Task, "--setenv=PATH="+s.UnitPath(claude),
 		"-p", "Restart=no", "-p", "StandardOutput=null", "-p", "StandardError=journal",
 		claude, "remote-control", "--name", l.Name, "--permission-mode", set.PermissionMode, "--spawn", "session"); err != nil {
 		return fmt.Errorf("systemd-run: %w", err)

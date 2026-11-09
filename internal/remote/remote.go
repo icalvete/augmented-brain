@@ -62,6 +62,12 @@ type System struct {
 	ClaudeJSON string
 	// Sleep waits between looks at a launched session; nil is time.Sleep.
 	Sleep func(time.Duration)
+	// Home is the user's home folder, where Claude Code's installer puts claude when the
+	// PATH does not lead to it.
+	Home string
+	// Self is this program, augmented-brain: its folder goes into the PATH of every unit,
+	// so a remote session finds it.
+	Self string
 }
 
 // NewSystem is the real system.
@@ -82,8 +88,10 @@ func NewSystem() (System, error) {
 	if u, err := user.Current(); err == nil {
 		name = u.Username
 	}
+	self, _ := os.Executable()
 	return System{Run: realRun, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
-		User: name, UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude}, nil
+		User: name, UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude,
+		Home: home, Self: self}, nil
 }
 
 func realRun(name string, args ...string) (string, error) {
@@ -138,7 +146,11 @@ func Services(c *config.Config, set Settings) []Service {
 // prompts on stdout, which still goes nowhere, since it redraws every second. In case a
 // later version also writes on stderr all the time, the journal takes at most 200 lines
 // a minute from it.
-func (s Service) UnitText(claude, mode string) string {
+//
+// path is the PATH the service runs with (UnitPath): systemd's user manager does not
+// read the shell's profile, so without it a remote session found neither claude nor
+// augmented-brain (measured on 9-nov, after a reboot).
+func (s Service) UnitText(claude, mode, path string) string {
 	var b strings.Builder
 	b.WriteString(Marker + "\n")
 	b.WriteString("[Unit]\n")
@@ -146,6 +158,7 @@ func (s Service) UnitText(claude, mode string) string {
 	b.WriteString("After=network-online.target\nWants=network-online.target\n\n")
 	b.WriteString("[Service]\n")
 	fmt.Fprintf(&b, "WorkingDirectory=%s\n", unitArg(s.Folder, false))
+	fmt.Fprintf(&b, "Environment=%s\n", unitEnv("PATH="+path))
 	fmt.Fprintf(&b, "ExecStart=%s remote-control --name %s --permission-mode %s\n", unitArg(claude, true), s.Name, mode)
 	b.WriteString("Restart=always\nRestartSec=30\nStandardOutput=null\nStandardError=journal\n")
 	fmt.Fprintf(&b, "SyslogIdentifier=augmented-brain-remote-%s\n", s.Space)
@@ -165,6 +178,62 @@ func unitArg(p string, command bool) string {
 		}
 	}
 	return p
+}
+
+// unitEnv writes one VAR=value assignment for Environment=: % doubled, and in quotes
+// when it holds a space, a quote or a backslash (systemd does not expand $ there).
+func unitEnv(kv string) string {
+	kv = strings.ReplaceAll(kv, "%", "%%")
+	if strings.ContainsAny(kv, " \t\"'\\") {
+		kv = `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(kv) + `"`
+	}
+	return kv
+}
+
+// systemPath is the PATH systemd itself gives a service, the tail of UnitPath.
+var systemPath = []string{"/usr/local/sbin", "/usr/local/bin", "/usr/sbin", "/usr/bin", "/sbin", "/bin"}
+
+// UnitPath is the PATH of a service or a launched session: claude's folder and this
+// program's first, then the system's, each once.
+func (s System) UnitPath(claude string) string {
+	var dirs []string
+	seen := map[string]bool{}
+	add := func(d string) {
+		if d != "" && d != "." && !seen[d] {
+			seen[d] = true
+			dirs = append(dirs, d)
+		}
+	}
+	add(filepath.Dir(claude))
+	if s.Self != "" {
+		add(filepath.Dir(s.Self))
+	}
+	for _, d := range systemPath {
+		add(d)
+	}
+	return strings.Join(dirs, string(os.PathListSeparator))
+}
+
+// FindClaude is the claude program: the one in the PATH, or else where Claude Code's
+// installers put it (~/.local/bin, ~/.claude/local) or next to this program. A session
+// started by a service, or by systemd-run, does not always have the shell's PATH.
+func (s System) FindClaude() (string, error) {
+	if p, err := s.LookPath("claude"); err == nil {
+		return filepath.Abs(p)
+	}
+	var cands []string
+	if s.Home != "" {
+		cands = append(cands, filepath.Join(s.Home, ".local", "bin", "claude"), filepath.Join(s.Home, ".claude", "local", "claude"))
+	}
+	if s.Self != "" {
+		cands = append(cands, filepath.Join(filepath.Dir(s.Self), "claude"))
+	}
+	for _, c := range cands {
+		if fi, err := os.Stat(c); err == nil && fi.Mode().IsRegular() && fi.Mode()&0o111 != 0 {
+			return c, nil
+		}
+	}
+	return "", exec.ErrNotFound
 }
 
 // InstallResult is what Install did and what is left for the user.
@@ -191,12 +260,9 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 	if len(set.Spaces) == 0 {
 		return nil, errors.New(i18n.T(c.Language, "remote.nospaces", filepath.Join(c.Dir, SettingsFile)))
 	}
-	claude, err := s.LookPath("claude")
+	claude, err := s.FindClaude()
 	if err != nil {
 		return nil, errors.New(i18n.T(c.Language, "remote.noclaude"))
-	}
-	if claude, err = filepath.Abs(claude); err != nil {
-		return nil, err
 	}
 	// Ask systemd's user manager first: without one (a container, WSL without systemd,
 	// a session with no user bus) the units would be written, enabled set, and nothing
@@ -225,7 +291,7 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 			return nil, errors.New(i18n.T(c.Language, "remote.nofolder", paths.Tilde(svc.Folder), svc.Space))
 		}
 		path := filepath.Join(s.UnitDir, svc.Unit)
-		text := svc.UnitText(claude, set.PermissionMode)
+		text := svc.UnitText(claude, set.PermissionMode, s.UnitPath(claude))
 		old, readErr := os.ReadFile(path)
 		if readErr != nil || string(old) != text {
 			if err := paths.WriteAtomic(path, []byte(text), 0o644); err != nil {
@@ -392,7 +458,9 @@ func (s System) Status(c *config.Config, set Settings) (*Status, error) {
 		x := SpaceStatus{Service: svc, Trusted: trusted(svc.Folder)}
 		if data, err := os.ReadFile(filepath.Join(s.UnitDir, svc.Unit)); err == nil && strings.HasPrefix(string(data), Marker) {
 			x.Installed = true
-			x.Outdated = !strings.Contains(string(data), "\nStandardError=journal\n")
+			// An earlier unit had no PATH (its session found neither claude nor
+			// augmented-brain), and before 0.13 its errors went nowhere.
+			x.Outdated = !strings.Contains(string(data), "\nStandardError=journal\n") || !strings.Contains(string(data), "\nEnvironment=")
 			// is-active and is-enabled exit non-zero for "inactive" and "disabled":
 			// what they print is the answer.
 			a, _ := s.Run("systemctl", "--user", "is-active", svc.Unit)

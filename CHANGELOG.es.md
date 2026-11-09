@@ -2,6 +2,14 @@
 
 ## Sin publicar
 
+- **Una sesión remota encuentra sus programas tras reiniciar.** systemd no lee el perfil
+  de tu shell, así que una sesión abierta con `remote` no encontraba ni `claude` ni
+  `augmented-brain`, y `session start` fallaba desde ella. Ahora `remote install` escribe
+  en cada servicio un PATH con las carpetas de los dos, `session start` lo pasa, y los dos
+  buscan `claude` donde lo deja su instalador cuando el PATH no lleva a él. `remote status`
+  y `doctor` dicen que vuelvas a lanzar `remote install` para un servicio escrito antes.
+  `session start` además se salta un repositorio bare al elegir la carpeta de la tarea:
+  no tiene ficheros y Claude no confía en él.
 - **Con un solo espacio, guardar a una persona ya no pregunta dónde.** El programa ya la
   guardaba en el único espacio, pero el texto que lee Claude le decía que preguntara
   siempre, así que una primera sesión preguntaba «¿en qué espacios?» con uno solo y no
