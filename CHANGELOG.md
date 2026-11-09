@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.16.2-alpha
+
+Released 2026-11-09.
 
 - **A task of a bare repository gets a worktree of its own.** `session start` used to pick
   one of the repository's existing worktrees, so two tasks could fall in the same folder

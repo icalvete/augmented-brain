@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.16.2-alpha
+
+Publicada el 2026-11-09.
 
 - **Una tarea de un repositorio bare recibe un worktree propio.** `session start` elegía
   uno de los worktrees que ya tenía el repositorio, así que dos tareas podían caer en la
