@@ -4355,9 +4355,23 @@ and the guard rely on Claude Code's hooks, so they would get neither.
 - **Claude runs commands in Git Bash, not in PowerShell.** The guard reads the commands
   of a POSIX shell (Bash), not PowerShell, so it stops every PowerShell command, and
   Claude uses Git Bash instead. What only works in PowerShell, you run yourself: Claude
-  gives you the command.
+  gives you the command. When Claude tries PowerShell anyway, you see a red
+  `PreToolUse:PowerShell hook error`: that is the guard stopping it, and Claude goes on
+  in Bash. Nothing is wrong.
+- **Installing over ssh asks nothing.** In an ssh session Windows says nobody is at the
+  keyboard, so the installer cannot ask: it prints the commands to run instead, and winget
+  often fails there. Install from PowerShell on the desktop, or with `AB_YES=1` to answer
+  yes to everything.
 - **Accents can look broken** (`sesiÃ³n`) in Windows PowerShell 5.1. The fix is in
   [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html).
+
+## Claude Code's first run
+
+The first time you run `claude`, Claude Code shows its own screens before augmented
+brain says anything: a colour theme, your sign-in, and whether you trust the folder.
+In your space, answer **Yes, I trust this folder**: Enter alone picks "No, exit". Ctrl-C
+does not leave the theme screen; pick one with Enter. These screens belong to Claude
+Code, and augmented brain cannot change them.
 
 ## Remote access and a session per task
 
