@@ -39,6 +39,10 @@ var guardMessages = map[string]msg{
 		en: "the script %s runs a command that needs it: %s",
 		es: "el script %s ejecuta un comando que lo necesita: %s",
 	},
+	"guard.script.written": {
+		en: "the script %s is written by this same command, so augmented brain cannot read it before it runs; the user confirms it. Write the script first (with the Write tool), then run it in a command of its own.",
+		es: "el script %s lo escribe este mismo comando, así que augmented brain no puede leerlo antes de que se ejecute; el usuario lo confirma. Escribe primero el script (con la herramienta Write) y luego ejecútalo en un comando aparte.",
+	},
 	"guard.protected": {
 		en: "%s holds the guard's settings (or Claude Code's): changing it can switch a check off. Only the user changes it; ask them, showing the change.",
 		es: "%s guarda los ajustes del guardia (o los de Claude Code): cambiarlo puede apagar una comprobación. Solo lo cambia el usuario; pregúntale, enseñándole el cambio.",
@@ -60,6 +64,10 @@ var guardMessages = map[string]msg{
 	"guard.root.systemdrun": {
 		en: "`systemd-run` starts the command as a system service, as root unless --user. %s",
 		es: "`systemd-run` arranca el comando como un servicio del sistema, como root salvo con --user. %s",
+	},
+	"guard.root.container": {
+		en: "`%s` gives the container the whole machine (%s): whatever runs in it runs as root here. %s",
+		es: "`%s` le da al contenedor la máquina entera (%s): lo que se ejecute dentro se ejecuta como root aquí. %s",
 	},
 	"guard.root.machinectl": {
 		en: "`machinectl %s` opens a shell as root unless given another user. %s",

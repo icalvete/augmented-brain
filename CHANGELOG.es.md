@@ -10,6 +10,12 @@
   y `doctor` dicen que vuelvas a lanzar `remote install` para un servicio escrito antes.
   `session start` además se salta un repositorio bare al elegir la carpeta de la tarea:
   no tiene ficheros y Claude no confía en él.
+- **El guardia ve unas cuantas formas más de esquivarlo.** Un script que un comando
+  escribe y luego ejecuta en la misma línea (`echo '…' > x.sh && bash x.sh`) se revisa tal
+  como quedará, y cuando el guardia no puede saber qué se escribió en él (`curl -o x.sh …
+  && sh x.sh`), te pregunta. Tus alias de git cuentan como lo que quieren decir (`git ci`
+  por `git commit`), `env -S '…'` se lee, y un contenedor al que se le da la máquina
+  entera (`docker run --privileged`, `-v /:/host`, `--pid=host`) cuenta como hacerse root.
 - **Con un solo espacio, guardar a una persona ya no pregunta dónde.** El programa ya la
   guardaba en el único espacio, pero el texto que lee Claude le decía que preguntara
   siempre, así que una primera sesión preguntaba «¿en qué espacios?» con uno solo y no

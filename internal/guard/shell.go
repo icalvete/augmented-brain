@@ -9,6 +9,7 @@ type command struct {
 	stdin     string
 	piped     bool     // reads the output of the command before it (a | b)
 	redirects []string // the files of its redirections (> f, 2>>f, < f), not arguments
+	outputs   []string // those of them it writes to (> f, >> f, <> f)
 }
 
 // parse splits a shell command line into simple commands. It understands quotes,
@@ -43,7 +44,9 @@ type parser struct {
 	inWord     bool
 	hereString bool // the word being read is the text of a <<<, not an argument
 	redirect   bool // the word being read is the file of a redirection
+	redirectTo bool // and the redirection writes to it
 	redirects  []string
+	outputs    []string
 
 	subs    []string  // substitutions, parsed once the line is done
 	pending []heredoc // heredocs whose body starts on the next line
@@ -130,10 +133,12 @@ func (p *parser) redirection() {
 		p.inWord = false
 	}
 	p.endWord()
+	writes := p.rs[p.i] == '>'
 	for p.i+1 < len(p.rs) && strings.ContainsRune("<>&|", p.rs[p.i+1]) && !(p.rs[p.i+1] == '|' && p.rs[p.i] != '>') {
 		p.i++
+		writes = writes || p.rs[p.i] == '>'
 	}
-	p.redirect = true
+	p.redirect, p.redirectTo = true, writes
 }
 
 func isDigits(s string) bool {
@@ -212,6 +217,9 @@ func (p *parser) endWord() {
 		p.stdin, p.hereString = p.cur.String(), false
 	case p.redirect:
 		p.redirects, p.redirect = append(p.redirects, p.cur.String()), false
+		if p.redirectTo {
+			p.outputs = append(p.outputs, p.cur.String())
+		}
 	default:
 		p.words = append(p.words, p.cur.String())
 	}
@@ -224,10 +232,10 @@ func (p *parser) endCommand() {
 	p.endWord()
 	p.redirect = false
 	if len(p.words) > 0 || p.stdin != "" || len(p.redirects) > 0 {
-		p.out = append(p.out, command{words: p.words, stdin: p.stdin, piped: p.piped, redirects: p.redirects})
+		p.out = append(p.out, command{words: p.words, stdin: p.stdin, piped: p.piped, redirects: p.redirects, outputs: p.outputs})
 		p.piped = false
 	}
-	p.words, p.stdin, p.redirects = nil, "", nil
+	p.words, p.stdin, p.redirects, p.outputs = nil, "", nil, nil
 }
 
 // balanced returns the text up to the parenthesis that closes one opened just before
@@ -368,6 +376,12 @@ func program(words []string) (env map[string]string, name string, args []string)
 			if a == "--" {
 				break
 			}
+			if wrapper == "env" { // env -S 'program args': the string is split into words
+				if split, ok := envSplit(a, words, i); ok {
+					words = split
+					continue
+				}
+			}
 			if wrapper == "command" && (a == "-v" || a == "-V") {
 				return env, "", nil // a lookup, nothing runs
 			}
@@ -399,6 +413,28 @@ func program(words []string) (env map[string]string, name string, args []string)
 		return env, "", nil
 	}
 	return env, base(words[i]), words[i+1:]
+}
+
+// envSplit expands env's -S (--split-string) option a, whose word is just before i, in
+// words: its value becomes words of their own where it stood.
+func envSplit(a string, words []string, i int) ([]string, bool) {
+	var value string
+	rest := i
+	switch {
+	case a == "-S" || a == "--split-string":
+		if i >= len(words) {
+			return nil, false
+		}
+		value, rest = words[i], i+1
+	case strings.HasPrefix(a, "--split-string="):
+		value = strings.TrimPrefix(a, "--split-string=")
+	case strings.HasPrefix(a, "-S") && !strings.HasPrefix(a, "--"):
+		value = a[2:]
+	default:
+		return nil, false
+	}
+	out := append(append(append([]string{}, words[:i]...), strings.Fields(value)...), words[rest:]...)
+	return out, true
 }
 
 func isName(s string) bool {
