@@ -291,7 +291,10 @@ un servicio de usuario de `systemd` que ejecuta `claude remote-control` en la pr
 carpeta de trabajo del espacio (o en la que diga `folders` en `remote.toml`), y lo
 arranca. Solo un espacio sin carpetas de trabajo recibe una carpeta propia,
 `remote/<espacio>` en la carpeta de configuración, que pasa a ser su carpeta de trabajo.
-Necesita `claude` en tu PATH y una carpeta que exista. Puedes lanzarlo otra vez cuando quieras: solo cambia lo que es distinto.
+Necesita `claude` (en tu PATH o donde lo deja su instalador) y una carpeta que exista. El
+servicio lleva un PATH con las carpetas de `claude` y de `augmented-brain`, así que sus
+sesiones encuentran los dos tras reiniciar. Puedes lanzarlo otra vez cuando quieras: solo
+cambia lo que es distinto.
 
 Luego dice lo que aún falta, y no hace nada de ello por ti:
 
@@ -350,7 +353,8 @@ Arranca un `claude remote-control` propio para la tarea (un servicio de usuario 
 `systemd` temporal, `augmented-brain-session-<tarea>`), con el título de la tarea como
 nombre. En menos de un minuto sale en Claude Desktop y claude.ai, y empieza leyendo su
 tarea. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
-de trabajo del espacio, o la que diga `--folder`. Lánzalo desde una carpeta del espacio
+de trabajo del espacio (un repositorio bare no cuenta: no tiene ficheros con los que
+trabajar), o la que diga `--folder`. Lánzalo desde una carpeta del espacio
 de la tarea: la sesión remota a la que entras desde otro ordenador puede lanzarlo por ti
 («ábreme una sesión para la tarea de la web»).
 

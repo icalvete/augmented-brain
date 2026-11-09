@@ -267,7 +267,7 @@ func TestRemoteLines(t *testing.T) {
 	if err := os.MkdirAll(units, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	unit := remote.Service{Space: "work", Name: "box-work", Folder: filepath.Join(cfg, "remote", "work")}.UnitText("/bin/claude", "default")
+	unit := remote.Service{Space: "work", Name: "box-work", Folder: filepath.Join(cfg, "remote", "work")}.UnitText("/bin/claude", "default", "/bin")
 	if err := os.WriteFile(filepath.Join(units, "augmented-brain-remote-work.service"), []byte(unit), 0o644); err != nil {
 		t.Fatal(err)
 	}

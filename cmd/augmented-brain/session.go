@@ -161,16 +161,18 @@ func sessionList(c *config.Config, sys remote.System, out, errOut io.Writer) int
 }
 
 // taskFolder is the folder of the first of a task's repositories found inside the
-// space's work folders (by name, a few levels down), or "".
+// space's work folders (by name, a few levels down), or "". A bare repository is
+// skipped: it holds no files to work on, and Claude does not trust it (on 9-nov a
+// session was sent to one).
 func taskFolder(s *config.Space, repos []string) string {
 	for _, name := range repos {
 		for _, wf := range s.WorkFolders {
-			if direct := filepath.Join(wf, name); isGitRepo(direct) {
+			if direct := filepath.Join(wf, name); isGitRepo(direct) && !isBareRepo(direct) {
 				return direct
 			}
 			found, _ := repostat.Find(wf, 3, 500, nil)
 			for _, f := range found {
-				if filepath.Base(f) == name {
+				if filepath.Base(f) == name && !isBareRepo(f) {
 					return f
 				}
 			}
@@ -182,4 +184,26 @@ func taskFolder(s *config.Space, repos []string) string {
 func isGitRepo(p string) bool {
 	_, err := os.Lstat(filepath.Join(p, ".git"))
 	return err == nil
+}
+
+// isBareRepo says whether a folder's .git is a bare repository (core.bare = true), as
+// a folder that keeps a bare repository in .git next to stale files does. It reads the
+// file, without running git.
+func isBareRepo(p string) bool {
+	data, err := os.ReadFile(filepath.Join(p, ".git", "config"))
+	if err != nil {
+		return false
+	}
+	core := false
+	for _, line := range strings.Split(string(data), "\n") {
+		line = strings.ToLower(strings.TrimSpace(line))
+		if strings.HasPrefix(line, "[") {
+			core = strings.HasPrefix(line, "[core")
+			continue
+		}
+		if k, v, ok := strings.Cut(line, "="); core && ok && strings.TrimSpace(k) == "bare" {
+			return strings.TrimSpace(v) == "true"
+		}
+	}
+	return false
 }

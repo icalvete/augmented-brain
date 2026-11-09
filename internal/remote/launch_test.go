@@ -88,7 +88,7 @@ func TestStartRuns(t *testing.T) {
 		}
 	}
 	for _, want := range []string{"--user", "--unit=" + unit, "--working-directory=" + repo,
-		"--setenv=" + TaskEnv + "=task-site", "remote-control --name box · Site", "--permission-mode default", "--spawn session"} {
+		"--setenv=" + TaskEnv + "=task-site", "--setenv=PATH=" + filepath.Join(f.root, ".local", "bin"), "remote-control --name box · Site", "--permission-mode default", "--spawn session"} {
 		if !strings.Contains(run, want) {
 			t.Errorf("systemd-run lacks %q: %s", want, run)
 		}
