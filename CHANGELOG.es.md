@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Una tarea cuyo repositorio es bare recibe una sesión en uno de sus worktrees.**
+  `session start` se saltaba un repositorio bare pero luego no encontraba carpeta, así
+  que había que darle una con `--folder`. Ahora elige uno de los worktrees del
+  repositorio dentro de las carpetas de trabajo del espacio, primero uno en el que Claude
+  ya confíe.
+
 ## 0.16.0-alpha
 
 Publicada el 2026-11-09.
