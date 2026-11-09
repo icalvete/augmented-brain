@@ -15,8 +15,8 @@ var doctorMessages = map[string]msg{
 		es: "el espacio %s no tiene copia de seguridad: si pierdes este ordenador, pierdes sus notas",
 	},
 	"doctor.nobackup.fix": {
-		en: "ask Claude \"set up the backup\" in a folder of the space, or run `augmented-brain backup setup <address of a private repository>` there",
-		es: "pide a Claude «configura la copia de seguridad» en una carpeta del espacio, o lanza allí `augmented-brain backup setup <dirección de un repositorio privado>`",
+		en: "ask Claude \"set up the backup\" in a folder of the space: it guides you step by step (you need a private repository, a place for your files on GitHub or similar, which it helps you create). Or, if you have one, run `augmented-brain backup setup <its address>` there",
+		es: "pide a Claude «configura la copia de seguridad» en una carpeta del espacio: te guía paso a paso (hace falta un repositorio privado, un sitio para tus ficheros en GitHub o parecido, y te ayuda a crearlo). O, si ya tienes uno, lanza allí `augmented-brain backup setup <su dirección>`",
 	},
 	"doctor.badconfig.fix": {
 		en: "go back to a version that worked: `augmented-brain config history`, then `augmented-brain config restore <number>`; or fix the file by hand",

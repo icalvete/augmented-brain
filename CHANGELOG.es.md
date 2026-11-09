@@ -22,6 +22,13 @@
   cambiado el PATH, su último mensaje dice que la terminal que usaste todavía no
   encuentra `augmented-brain`, también cuando propone la app de escritorio.
 - **`doctor`** ya no dice «1 versiones guardadas».
+- **Una primera sesión con palabras sencillas.** La entrevista de la primera sesión
+  saludaba con «bienvenido» antes de saber quién eras, y preguntaba a una diseñadora
+  freelance por «perfiles de AWS que llegan a producción». Ahora saluda sin suponer el
+  género, usa las palabras que usa el usuario y adapta los ejemplos de la pregunta 4 a
+  la persona (una web publicada, los ficheros de un cliente; AWS y servidores solo a
+  alguien técnico). La pista de `doctor` sobre la copia de seguridad explica qué es un
+  repositorio privado y que Claude ayuda a crearlo.
 - **Comprobar la sintaxis ya no se para.** `sh -n install.sh` (también `bash -n` y `-o
   noexec`) solo lee el script para ver si está bien escrito y no ejecuta nada, pero el
   guardia lo revisaba como si se ejecutara, y lo paraba cuando el mismo comando acababa
