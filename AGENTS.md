@@ -110,6 +110,12 @@ Heavier checks, before a release or when you touch what they cover:
   what-changed list) work. CI runs it with Chromium and WebKit (`panel` in `ci.yml`); by
   hand, `pip install playwright && python -m playwright install chromium`, then
   `python3 -I scripts/panel-browser-check.py chromium`. Firefox once before a release.
+- `scripts/mac-check.py`: what only a real Mac can tell, with no one at the screen: what
+  Gatekeeper says of the program downloaded by a browser (and that it still runs from
+  Terminal), the Secrets page with the keychain locked (no password dialog, never
+  "missing"), and every page of the panel in Safari itself through `safaridriver`. CI runs
+  it on macOS (`mac` in `ci.yml`), with `AB_MAC_CHECK_KEYCHAIN=1` so it may add a
+  throwaway keychain; on your Mac, allow Safari's remote automation first (Develop menu).
 - `scripts/e2e-fresh.py`: several real, isolated Claude sessions on one space: a task
   closed by another session is heard before the next answer, own writes are not, /clear
   keeps it working, a capture sent from another space comes up there. Same login and
