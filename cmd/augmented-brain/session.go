@@ -198,16 +198,27 @@ func taskFolder(s *config.Space, repos []string, trusted func(string) bool) stri
 // bareWorktree is a worktree of a bare repository kept in <repo>/.git, read from git's
 // own records (.git/worktrees/<name>/gitdir, the path of the worktree's .git file),
 // without running git. Only worktrees that still exist and lie inside a work folder of
-// the space count, so the session loads this space; one Claude trusts comes first,
-// then by path. "" when there is none.
+// the space count, so the session loads this space. The one on the default branch
+// comes first, then one named after it (<repo>-main, often left on a detached commit),
+// then the rest; within each, one Claude trusts first, then by path. On 9-nov, with
+// trust read through the main repository, every worktree was trusted and the session
+// went to a leftover feature branch. "" when there is none.
 func bareWorktree(s *config.Space, repo string, trusted func(string) bool) string {
-	entries, err := os.ReadDir(filepath.Join(repo, ".git", "worktrees"))
+	gitDir := filepath.Join(repo, ".git")
+	entries, err := os.ReadDir(filepath.Join(gitDir, "worktrees"))
 	if err != nil {
 		return ""
 	}
-	var all []string
+	def := defaultBranches(gitDir)
+	type cand struct {
+		path  string
+		rank  int
+		trust bool
+	}
+	var all []cand
 	for _, e := range entries {
-		data, err := os.ReadFile(filepath.Join(repo, ".git", "worktrees", e.Name(), "gitdir"))
+		rec := filepath.Join(gitDir, "worktrees", e.Name())
+		data, err := os.ReadFile(filepath.Join(rec, "gitdir"))
 		if err != nil {
 			continue
 		}
@@ -215,23 +226,54 @@ func bareWorktree(s *config.Space, repo string, trusted func(string) bool) strin
 		if !isGitRepo(wt) {
 			continue // removed by hand, not pruned yet
 		}
+		within := false
 		for _, wf := range s.WorkFolders {
 			if paths.Within(wt, wf) {
-				all = append(all, wt)
+				within = true
 				break
 			}
 		}
+		if !within {
+			continue
+		}
+		c := cand{path: wt, rank: 2, trust: trusted != nil && trusted(wt)}
+		head, _ := os.ReadFile(filepath.Join(rec, "HEAD"))
+		for _, d := range def {
+			if strings.TrimSpace(string(head)) == "ref: refs/heads/"+d {
+				c.rank = 0
+				break
+			}
+			if strings.HasSuffix(filepath.Base(wt), "-"+d) {
+				c.rank = 1
+			}
+		}
+		all = append(all, c)
 	}
-	sort.Strings(all)
-	for _, wt := range all {
-		if trusted != nil && trusted(wt) {
-			return wt
+	sort.Slice(all, func(i, j int) bool {
+		if all[i].rank != all[j].rank {
+			return all[i].rank < all[j].rank
+		}
+		if all[i].trust != all[j].trust {
+			return all[i].trust
+		}
+		return all[i].path < all[j].path
+	})
+	if len(all) == 0 {
+		return ""
+	}
+	return all[0].path
+}
+
+// defaultBranches are the names the repository's default branch may have: the one
+// origin's HEAD points to, when git recorded it, else main and master.
+func defaultBranches(gitDir string) []string {
+	const prefix = "ref: refs/remotes/origin/"
+	if data, err := os.ReadFile(filepath.Join(gitDir, "refs", "remotes", "origin", "HEAD")); err == nil {
+		if b, ok := strings.CutPrefix(strings.TrimSpace(string(data)), prefix); ok && b != "" {
+			return []string{b}
 		}
 	}
-	if len(all) > 0 {
-		return all[0]
-	}
-	return ""
+	return []string{"main", "master"}
 }
 
 func isGitRepo(p string) bool {

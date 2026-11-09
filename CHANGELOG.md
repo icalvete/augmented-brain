@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **`session start` picks the worktree of the default branch.** For a bare repository it
+  took the first trusted worktree by name, and since 0.16.1 every worktree of a trusted
+  repository counts as trusted, so a session could open on a leftover feature branch. It
+  now prefers the worktree on the default branch, then one named after it
+  (`site-main`).
+
 ## 0.16.1-alpha
 
 Released 2026-11-09.

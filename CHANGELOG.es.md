@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **`session start` elige el worktree de la rama por defecto.** Para un repositorio bare
+  cogía el primer worktree de confianza por nombre, y desde la 0.16.1 todos los
+  worktrees de un repositorio de confianza cuentan como de confianza, así que una sesión
+  podía abrirse en una rama de trabajo que había quedado olvidada. Ahora prefiere el
+  worktree de la rama por defecto, y después uno con su nombre (`site-main`).
+
 ## 0.16.1-alpha
 
 Publicada el 2026-11-09.
