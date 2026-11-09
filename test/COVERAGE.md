@@ -106,7 +106,9 @@ row here with the test that covers it.
 
 ## The pass on a real Mac
 
-What only a person on a real Mac can see, before a beta or a 1.0:
+What only a person on a real Mac can see. There is no Mac to do it on for now (decided on
+9-nov: macOS is covered by CI), so these are written as
+[known limitations](../docs/guide/limitations.md#macos) until someone does:
 
 1. Install with the terminal, answering the questions; then download the program with a
    browser, open it from the Finder and see that "Open Anyway" works (`mac-check.py`
