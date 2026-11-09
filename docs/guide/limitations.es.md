@@ -24,10 +24,21 @@ no tendrían ninguno de los dos.
 
 ## Acceso remoto y una sesión por tarea
 
-`augmented-brain remote` (llegar a tu ordenador desde claude.ai o Claude Desktop) y
-`augmented-brain session start` (una sesión remota para una tarea) solo funcionan en
-Linux, con systemd. En macOS y Windows lo dicen y no cambian nada.
+`augmented-brain remote` (llegar a tu ordenador desde claude.ai o Claude Desktop)
+funciona en Linux, macOS y Windows. `augmented-brain session start` (una sesión remota
+para una tarea) por ahora solo funciona en Linux: en macOS y Windows lo dice y no cambia
+nada.
 
+- **En un Mac y en Windows, el acceso remoto arranca cuando entras en el ordenador**, no
+  antes. Tras reiniciar, también cuando el ordenador se reinicia solo (una actualización,
+  un corte de luz), nadie puede conectarse hasta que entres una vez. En Linux puede
+  arrancar sin que nadie entre.
+- **En Windows solo funciona mientras tienes la sesión abierta.** Si la cierras, se para.
+- **En Windows, una carpeta con `%` en el nombre** puede impedir que el acceso remoto
+  arranque en ella. Elige otra con `folders` en `remote.toml`.
+- **Una conexión real solo se ha probado en Linux.** En un Mac y en Windows, instalar,
+  ver el estado y quitarlo se prueban en la CI con un Claude de mentira; conectarse
+  desde claude.ai todavía no se ha probado.
 - Una sesión abierta con `session start` no vuelve tras reiniciar: pídela otra vez. La
   sesión remota del espacio sí vuelve.
 - Claude admite una sesión remota por carpeta, y la carpeta tiene que ser de confianza

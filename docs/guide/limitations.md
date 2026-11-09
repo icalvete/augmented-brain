@@ -23,10 +23,19 @@ and the guard rely on Claude Code's hooks, so they would get neither.
 
 ## Remote access and a session per task
 
-`augmented-brain remote` (reaching your computer from claude.ai or Claude Desktop) and
-`augmented-brain session start` (a remote session for one task) work on Linux only, with
-systemd. On macOS and Windows they say so and change nothing.
+`augmented-brain remote` (reaching your computer from claude.ai or Claude Desktop) works
+on Linux, macOS and Windows. `augmented-brain session start` (a remote session for one
+task) works on Linux only for now: on macOS and Windows it says so and changes nothing.
 
+- **On a Mac and on Windows, remote access starts when you log in**, not before. After a
+  restart, including one the computer does by itself (an update, a power cut), nobody
+  can connect until you log in once. On Linux it can start with nobody logged in.
+- **On Windows it runs only while you are logged in.** If you sign out, it stops.
+- **On Windows, a folder with `%` in its name** may keep remote access from starting
+  there. Pick another folder with `folders` in `remote.toml`.
+- **A real connection has been tried on Linux only.** On a Mac and on Windows, install,
+  status and uninstall are tested in CI with a pretend Claude; connecting from claude.ai
+  has not been tried yet.
 - A session opened with `session start` does not come back after a reboot: ask for it
   again. The space's own remote session does.
 - Claude allows one remote session per folder, and the folder must be trusted on its
