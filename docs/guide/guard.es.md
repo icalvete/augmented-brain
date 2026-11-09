@@ -186,7 +186,8 @@ El guardia lee lo que se ejecuta dentro de otros comandos: `ssh máquina '…'`,
 que una tubería le pasa a una shell (`echo 'sudo …' | bash`), los scripts cortos que
 lanza Claude (`bash deploy.sh`, `./deploy.sh`), también cuando el mismo comando los
 escribe antes (`echo '…' > x.sh && bash x.sh`), `env -S '…'` y tus alias de git (`git ci`
-cuando `ci` quiere decir `commit`). Mira los comandos que Claude deja en
+cuando `ci` quiere decir `commit`). Una shell que solo comprueba la sintaxis de un script
+(`sh -n install.sh`, `bash -o noexec`) no ejecuta nada, así que pasa. Mira los comandos que Claude deja en
 marcha para vigilar algo, y los de los ayudantes que Claude lanza (subagentes y flujos de
 trabajo).
 

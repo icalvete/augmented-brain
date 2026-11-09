@@ -1104,6 +1104,9 @@ func dropRedirections(args []string) []string {
 // shell checks the commands a shell would run: the string after -c (also -lc, -ec…),
 // or what it reads from stdin when it runs no script.
 func (p Policy) shell(args []string, stdin string, env map[string]string, depth int) Decision {
+	if noExec(args) {
+		return allow // sh -n x.sh: reads the script for its syntax, runs nothing
+	}
 	wantsC := false
 	for i := 0; i < len(args); i++ {
 		a := args[i]
@@ -1120,6 +1123,40 @@ func (p Policy) shell(args []string, stdin string, env map[string]string, depth 
 		}
 	}
 	return p.inner(stdin, env, depth)
+}
+
+// noExec says whether a shell's options turn on noexec (-n, -en, -o noexec), which
+// reads commands without running any: a syntax check. The last of -n and +n wins, as
+// in the shell; an interactive shell (-i) ignores it. Only the options before the
+// script or the -c string count: what follows them is the script's arguments.
+func noExec(args []string) bool {
+	on, interactive := false, false
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "--rcfile" || a == "--init-file":
+			i++
+			continue
+		case strings.HasPrefix(a, "--") && a != "--":
+			continue // a long option: --norc, --login…
+		case a == "--" || len(a) < 2 || a[0] != '-' && a[0] != '+':
+			return on && !interactive // the script, the -c string or --
+		}
+		set, flags := a[0] == '-', a[1:]
+		if strings.ContainsRune(flags, 'n') {
+			on = set
+		}
+		if set && strings.ContainsRune(flags, 'i') {
+			interactive = true
+		}
+		if last := flags[len(flags)-1]; (last == 'o' || last == 'O') && i+1 < len(args) {
+			i++ // the option's value: pipefail, noexec, extglob
+			if last == 'o' && args[i] == "noexec" {
+				on = set
+			}
+		}
+	}
+	return on && !interactive
 }
 
 // find checks the command of -exec, -execdir, -ok and -okdir.

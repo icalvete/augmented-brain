@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Comprobar la sintaxis ya no se para.** `sh -n install.sh` (también `bash -n` y `-o
+  noexec`) solo lee el script para ver si está bien escrito y no ejecuta nada, pero el
+  guardia lo revisaba como si se ejecutara, y lo paraba cuando el mismo comando acababa
+  de escribirlo o el script tenía algo que no deja pasar. Ahora pasa. Un `+n` después de
+  `-n`, o una shell interactiva (`-i`), sigue contando como ejecutar el script.
+
 ## 0.16.2-alpha
 
 Publicada el 2026-11-09.
