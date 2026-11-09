@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Limitaciones conocidas · augmented brain</title>
+<meta name="description" content="Lo que augmented brain todavía no sabe hacer, o hace solo en parte: solo Claude Code, PowerShell en Windows, acceso remoto solo en Linux, lo que se comprueba a mano en un Mac y lo que el guardia no ve.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/limitations.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/limitations.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/limitations.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/limitations.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Limitaciones conocidas · augmented brain">
+<meta property="og:description" content="Lo que aún no sabe hacer, y qué hacer en su lugar.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/limitations.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Limitaciones conocidas · augmented brain">
+<meta name="twitter:description" content="Lo que aún no sabe hacer, y qué hacer en su lugar.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="limitations.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+  <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
+  <li><a href="where-things-live.es.html">Dónde vive cada cosa</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
+  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="remote.es.html">Acceso remoto</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+  <li><a href="anywhere.es.html">Desde el móvil u otro ordenador</a></li>
+  <li><a href="update-and-uninstall.es.html">Actualizar y desinstalar</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="limitations.es.html" aria-current="page">Limitaciones conocidas</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Limitaciones conocidas</h1>
+  <p>Lo que augmented brain todavía no sabe hacer, o hace solo en parte. Cada punto dice qué hacer en su lugar. La lista crece cuando sale algo nuevo: si encuentras algo, cuéntanoslo desde la página de Ayuda del panel.</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#solo-claude-code">Solo Claude Code</a></li><li><a href="#windows">Windows</a></li><li><a href="#acceso-remoto-y-una-sesión-por-tarea">Acceso remoto y una sesión por tarea</a></li><li><a href="#macos">macOS</a></li><li><a href="#el-guardia">El guardia</a></li><li><a href="#probado-por-poca-gente">Probado por poca gente</a></li></ul></nav>
+  <h2 id="solo-claude-code">Solo Claude Code</h2>
+  <p>augmented brain funciona con Claude Code: la terminal, la aplicación de escritorio y las extensiones de los editores. Otros asistentes podrían usar las herramientas de notas por MCP, pero el inicio de sesión y el guardia dependen de los hooks de Claude Code, así que no tendrían ninguno de los dos.</p>
+  <h2 id="windows">Windows</h2>
+  <ul><li><strong>Claude ejecuta los comandos en Git Bash, no en PowerShell.</strong> El guardia lee los comandos de una shell POSIX (Bash), no de PowerShell, así que para cada comando de PowerShell, y Claude usa Git Bash en su lugar. Lo que solo funciona en PowerShell lo lanzas tú: Claude te da el comando.</li><li><strong>Los acentos pueden salir rotos</strong> (<code>sesiÃ³n</code>) en Windows PowerShell 5.1. El arreglo está en <a href="troubleshooting.es.html">Si algo falla</a>.</li></ul>
+  <h2 id="acceso-remoto-y-una-sesión-por-tarea">Acceso remoto y una sesión por tarea</h2>
+  <p><code>augmented-brain remote</code> (llegar a tu ordenador desde claude.ai o Claude Desktop) y <code>augmented-brain session start</code> (una sesión remota para una tarea) solo funcionan en Linux, con systemd. En macOS y Windows lo dicen y no cambian nada.</p>
+  <ul><li>Una sesión abierta con <code>session start</code> no vuelve tras reiniciar: pídela otra vez. La sesión remota del espacio sí vuelve.</li><li>Claude admite una sesión remota por carpeta, y la carpeta tiene que ser de confianza ella misma. <code>session start</code> te dice qué hacer la primera vez.</li></ul>
+  <h2 id="macos">macOS</h2>
+  <p>Cada pull request pasa las pruebas en un Mac en la CI, también el instalador, Safari y un llavero bloqueado. Unas pocas cosas solo las ve una persona delante de un Mac de verdad, y se comprueban a mano antes de cada versión:</p>
+  <ol><li>Abrir desde el Finder el programa descargado con un navegador («Abrir igualmente»).</li><li>Una sesión real de Claude Code: el guardia para un push y el inicio de sesión carga.</li><li>Claude Desktop instalado por el instalador, y Tailscale con <code>panel remote</code>.</li><li>Sin red: <code>backup</code>, <code>update</code> y <code>panel remote</code> lo dicen y no dejan nada a medias.</li><li>El panel en Safari con la consola abierta, sin errores.</li></ol>
+  <p>Si a ti te falla alguna, puede que aún no se haya visto: cuéntalo, por favor.</p>
+  <h2 id="el-guardia">El guardia</h2>
+  <p>El guardia lee cada comando como texto antes de que Claude lo ejecute. Atrapa los errores que comete un asistente; no es un muro, y no sustituye a los permisos, las copias de seguridad ni tu propia revisión. Lo que no puede ver:</p>
+  <ul><li><strong>Scripts escritos por otro programa.</strong> Si Claude escribe un script con un programa (Python, una herramienta de compilación) y lo ejecuta más tarde, el guardia solo ve lo que el script tiene cuando se ejecuta. Un script escrito y ejecutado en el mismo comando sí se revisa; uno escrito de una forma que el guardia no puede leer hace que te pregunte antes.</li><li><strong>Valores que solo se conocen al ejecutar.</strong> Cuando un programa o una carpeta salen de una variable o de la salida de otro comando, el guardia no puede saberlo antes: te pregunta, pero no puede decirte exactamente qué se ejecutará.</li><li><strong>Ajustes cambiados con un programa.</strong> El guardia pregunta antes de que Claude cambie los ajustes de augmented brain o de Claude Code con sus herramientas de ficheros o con comandos habituales. Un programa pequeño escrito en el momento (en Python, por ejemplo) aún podría cambiarlos; el guardia lo nota después y pregunta antes de un commit o un push, pero no lo impide.</li><li><strong>Alias de git en ficheros incluidos.</strong> Tus alias de git cuentan como lo que quieren decir (<code>git ci</code> por <code>git commit</code>) cuando están en tus ajustes de git habituales. Un alias en un fichero que esos ajustes incluyen con <code>include</code> no se ve.</li><li><strong>Commits locales de merge, revert y cherry-pick.</strong> El guardia para <code>git commit</code> donde Claude no puede hacer commits, pero <code>git merge</code>, <code>git revert</code> y <code>git cherry-pick</code> también hacen commits en tu ordenador. No se publican: un push sigue parado.</li><li><strong>Preguntas en los modos automáticos.</strong> Cuando el guardia pregunta, Claude Code te enseña la pregunta. Qué hace Claude Code con ella en sus modos totalmente automáticos depende de Claude Code, no de augmented brain.</li></ul>
+  <p>Más en <a href="guard.es.html">El guardia</a>.</p>
+  <h2 id="probado-por-poca-gente">Probado por poca gente</h2>
+  <p>augmented brain está en alfa. Una persona lo usa a diario en Ubuntu, y lo ha probado en macOS y Windows 11. Lo que tienes sigue funcionando de una versión a otra (mira el <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md#aviso-legal">aviso legal</a>), pero haz copia de lo importante.</p>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="troubleshooting.es.html"><span>← Anterior</span>Si algo falla</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

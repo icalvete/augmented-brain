@@ -7,6 +7,9 @@
   Windows (no window, no administrator). On both it starts when you log in and again by
   itself if it stops; after a reboot, log in once. Its errors go to a log file that
   `status` names. `session start` stays Linux only.
+- **A page of known limitations.** What augmented brain cannot do yet, or does only in
+  part, each with what to do instead: only Claude Code, PowerShell on Windows, remote
+  access, what is checked by hand on a Mac, and what the guard cannot see.
 - **A remote session finds its programs after a reboot.** systemd does not read your
   shell's profile, so a session opened through `remote` found neither `claude` nor
   `augmented-brain`, and `session start` failed from it. `remote install` now writes a
