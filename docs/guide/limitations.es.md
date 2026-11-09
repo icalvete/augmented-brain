@@ -18,9 +18,23 @@ no tendrían ninguno de los dos.
 - **Claude ejecuta los comandos en Git Bash, no en PowerShell.** El guardia lee los
   comandos de una shell POSIX (Bash), no de PowerShell, así que para cada comando de
   PowerShell, y Claude usa Git Bash en su lugar. Lo que solo funciona en PowerShell lo
-  lanzas tú: Claude te da el comando.
+  lanzas tú: Claude te da el comando. Si Claude prueba PowerShell de todos modos, ves en
+  rojo `PreToolUse:PowerShell hook error`: es el guardia parándolo, y Claude sigue en
+  Bash. No pasa nada.
+- **Instalar por ssh no pregunta nada.** En una sesión ssh, Windows dice que no hay
+  nadie delante, así que el instalador no puede preguntar: imprime los comandos que hay
+  que lanzar, y winget suele fallar ahí. Instala desde PowerShell en el escritorio, o con
+  `AB_YES=1` para contestar que sí a todo.
 - **Los acentos pueden salir rotos** (`sesiÃ³n`) en Windows PowerShell 5.1. El arreglo
   está en [Si algo falla](troubleshooting.es.md).
+
+## El primer arranque de Claude Code
+
+La primera vez que lanzas `claude`, Claude Code enseña sus propias pantallas antes de que
+augmented brain diga nada: un tema de colores, tu inicio de sesión y si confías en la
+carpeta. En tu espacio, contesta **Yes, I trust this folder**: Enter a secas elige «No,
+exit». Ctrl-C no sale de la pantalla del tema; elige uno con Enter. Esas pantallas son de
+Claude Code, y augmented brain no puede cambiarlas.
 
 ## Acceso remoto y una sesión por tarea
 

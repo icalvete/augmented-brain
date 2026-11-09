@@ -10,6 +10,10 @@
   terminal nueva, donde `augmented-brain doctor` comprueba la instalación; y las primeras
   preguntas llegan después de que escribas algo. El PowerShell de Windows tiene su forma
   de `cd … && claude`.
+- **Limitaciones conocidas: lo que se encuentra quien llega y no es nuestro.** Las
+  pantallas del primer arranque de Claude Code (Enter a secas en «confiar en la carpeta»
+  sale), el error rojo del hook de PowerShell en Windows, e instalar en Windows por ssh,
+  donde el instalador no puede preguntar.
 - **Comprobar la sintaxis ya no se para.** `sh -n install.sh` (también `bash -n` y `-o
   noexec`) solo lee el script para ver si está bien escrito y no ejecuta nada, pero el
   guardia lo revisaba como si se ejecutara, y lo paraba cuando el mismo comando acababa
