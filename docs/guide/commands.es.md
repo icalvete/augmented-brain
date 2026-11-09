@@ -358,10 +358,17 @@ Arranca un `claude remote-control` propio para la tarea (un servicio de usuario 
 `systemd` temporal, `augmented-brain-session-<tarea>`), con el título de la tarea como
 nombre. En menos de un minuto sale en Claude Desktop y claude.ai. Te espera: cuando le
 escribes, lo primero que hace es leer su tarea. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
-de trabajo del espacio (para un repositorio bare, uno de sus worktrees en esas carpetas:
-primero el de la rama por defecto, después uno con su nombre, como `site-main`; el bare
-no tiene ficheros con los que trabajar), o la que diga
-`--folder`. Lánzalo desde una carpeta del espacio
+de trabajo del espacio, o la que diga `--folder`.
+
+Un repositorio bare no tiene ficheros con los que trabajar, así que la tarea recibe un
+worktree de git propio a su lado: `site-new-website` para la tarea `task-new-website` de
+`site`, en una rama nueva con el nombre de la tarea, desde la rama por defecto de origin
+tal como está ahora (antes la trae). Dos tareas de un mismo repositorio nunca comparten
+carpeta, y una sesión nunca arranca sobre código viejo. Si se pide otra vez, usa el mismo
+worktree. Dado con `--folder`, un repositorio bare recibe uno de sus worktrees ya
+existentes: primero el de la rama por defecto.
+
+Lánzalo desde una carpeta del espacio
 de la tarea: la sesión remota a la que entras desde otro ordenador puede lanzarlo por ti
 («ábreme una sesión para la tarea de la web»).
 
@@ -384,6 +391,10 @@ Cierra la sesión de una tarea.
 ```bash
 augmented-brain session stop task-new-website
 ```
+
+Si `session start` creó un worktree para la tarea, `stop` también lo quita con su rama,
+siempre que no se pierda nada: con cambios sin commitear o commits sin subir, lo deja y
+lo dice.
 
 ## augmented-brain session list
 

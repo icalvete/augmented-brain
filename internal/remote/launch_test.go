@@ -64,7 +64,7 @@ func TestFolderTrustedWorktree(t *testing.T) {
 		if err := os.WriteFile(filepath.Join(rec, "commondir"), []byte("../..\n"), 0o644); err != nil {
 			t.Fatal(err)
 		}
-		if got := worktreeRoot(wt); got != repo {
+		if got := WorktreeRoot(wt); got != repo {
 			t.Errorf("bare=%v: worktreeRoot = %q, want %q", bare, got, repo)
 		}
 		f.trust(filepath.Join(f.root, "p"))
@@ -77,7 +77,7 @@ func TestFolderTrustedWorktree(t *testing.T) {
 		}
 	}
 	// A plain folder has no main repository.
-	if got := worktreeRoot(f.root); got != "" {
+	if got := WorktreeRoot(f.root); got != "" {
 		t.Errorf("worktreeRoot of a plain folder = %q", got)
 	}
 }

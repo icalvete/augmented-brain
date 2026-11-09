@@ -122,7 +122,8 @@ and within a minute a new session, named after the task, shows up in claude.ai a
 Desktop. It waits for you: when you write to it, it reads its task first and tells you
 where it stands. The folder is the
 first of the task's repositories found in the space's work folders, or the one `--folder`
-gives.
+gives. For a bare repository, the task gets a git worktree of its own, on a new branch
+from origin's default branch; `session stop` removes it when nothing would be lost.
 
 - **Claude must trust that folder itself.** Trusting the space's folder is not enough. The
   first time, the command says what to do: on the machine (or through `ssh`), go to the

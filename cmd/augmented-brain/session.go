@@ -61,6 +61,14 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			return sessionErr(l, err, errOut)
 		}
 		fmt.Fprintln(out, i18n.T(l, "session.stopped", args[1]))
+		switch wt, removed, why := removeTaskWorktree(c, args[1]); {
+		case removed:
+			fmt.Fprintln(out, i18n.T(l, "session.worktree.removed", tilde(wt)))
+		case why == "changes":
+			fmt.Fprintln(out, i18n.T(l, "session.worktree.kept.changes", tilde(wt)))
+		case why == "commits":
+			fmt.Fprintln(out, i18n.T(l, "session.worktree.kept.commits", tilde(wt)))
+		}
 		return 0
 	}
 	// The task may come before or after --folder.
@@ -100,7 +108,31 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			fmt.Fprintln(errOut, err)
 			return 1
 		}
-	} else if dir = taskFolder(s, task.Header.Repos, sys.FolderTrusted); dir == "" {
+		// A bare repository named by hand: one of its worktrees.
+		if isGitRepo(dir) && isBareRepo(dir) {
+			if wt := bareWorktree(s, dir, sys.FolderTrusted); wt != "" {
+				dir = wt
+			}
+		}
+	} else if repo := taskRepo(s, task.Header.Repos); repo != "" && isBareRepo(repo) {
+		wt, base, made, fetched, err := taskWorktree(c, repo, id)
+		switch {
+		case errors.Is(err, errNotOurWorktree):
+			fmt.Fprintln(errOut, i18n.T(l, "session.worktree.taken", tilde(wt), tilde(repo)))
+			return 1
+		case err != nil:
+			fmt.Fprintln(errOut, err)
+			return 1
+		}
+		if made {
+			if !fetched {
+				fmt.Fprintln(out, i18n.T(l, "session.worktree.offline", base))
+			}
+			_, branch := sessionWorktree(repo, id)
+			fmt.Fprintln(out, i18n.T(l, "session.worktree.made", tilde(wt), branch, base))
+		}
+		dir = wt
+	} else if dir = repo; dir == "" {
 		if len(task.Header.Repos) == 0 {
 			first := ""
 			if len(s.WorkFolders) > 0 {
@@ -161,41 +193,39 @@ func sessionList(c *config.Config, sys remote.System, out, errOut io.Writer) int
 	return 0
 }
 
-// taskFolder is the folder of the first of a task's repositories found inside the
-// space's work folders (by name, a few levels down), or "". A bare repository is never
-// the folder: it holds no files to work on, and Claude does not trust it (on 9-nov a
-// session was sent to one). One of its worktrees is, when it has one inside the
-// space's work folders: one Claude trusts first (trusted), so the session can start
-// without asking (on 9-nov the repository only existed as a bare one with worktrees
-// named <repo>-<branch>, and no folder was found).
-func taskFolder(s *config.Space, repos []string, trusted func(string) bool) string {
-	pick := func(repo string) string {
-		if !isBareRepo(repo) {
-			return repo
-		}
-		return bareWorktree(s, repo, trusted)
-	}
+// taskRepo is the first of a task's repositories found inside the space's work
+// folders (by name, a few levels down), or "". A working copy wins over a bare
+// repository of the same name; a bare one gets a worktree of its own for the task
+// (taskWorktree).
+func taskRepo(s *config.Space, repos []string) string {
+	bare := ""
 	for _, name := range repos {
 		for _, wf := range s.WorkFolders {
+			cands := []string{}
 			if direct := filepath.Join(wf, name); isGitRepo(direct) {
-				if dir := pick(direct); dir != "" {
-					return dir
-				}
+				cands = append(cands, direct)
 			}
 			found, _ := repostat.Find(wf, 3, 500, nil)
 			for _, f := range found {
 				if filepath.Base(f) == name {
-					if dir := pick(f); dir != "" {
-						return dir
-					}
+					cands = append(cands, f)
+				}
+			}
+			for _, f := range cands {
+				if !isBareRepo(f) {
+					return f
+				}
+				if bare == "" {
+					bare = f
 				}
 			}
 		}
 	}
-	return ""
+	return bare
 }
 
-// bareWorktree is a worktree of a bare repository kept in <repo>/.git, read from git's
+// bareWorktree, for --folder naming a bare repository, is a worktree of a bare
+// repository kept in <repo>/.git, read from git's
 // own records (.git/worktrees/<name>/gitdir, the path of the worktree's .git file),
 // without running git. Only worktrees that still exist and lie inside a work folder of
 // the space count, so the session loads this space. The one on the default branch

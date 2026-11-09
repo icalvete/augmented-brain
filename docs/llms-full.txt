@@ -2164,7 +2164,8 @@ and within a minute a new session, named after the task, shows up in claude.ai a
 Desktop. It waits for you: when you write to it, it reads its task first and tells you
 where it stands. The folder is the
 first of the task's repositories found in the space's work folders, or the one `--folder`
-gives.
+gives. For a bare repository, the task gets a git worktree of its own, on a new branch
+from origin's default branch; `session stop` removes it when nothing would be lost.
 
 - **Claude must trust that folder itself.** Trusting the space's folder is not enough. The
   first time, the command says what to do: on the machine (or through `ssh`), go to the
@@ -2835,10 +2836,17 @@ It starts a `claude remote-control` of its own for the task (a temporary `system
 service, `augmented-brain-session-<task>`), named after the task's title. Within a
 minute it shows up in Claude Desktop and claude.ai. It waits for you: when you write to
 it, it reads its task first.
-The folder is the first of the task's repositories found in the space's work folders
-(for a bare repository, one of its worktrees in those folders: the one on the default
-branch first, then one named after it, such as `site-main`; the bare one has no files to
-work on), or the one `--folder` gives. Run it from a folder of the task's space: the remote
+The folder is the first of the task's repositories found in the space's work folders,
+or the one `--folder` gives.
+
+A bare repository has no files to work on, so the task gets a git worktree of its own
+next to it: `site-new-website` for the task `task-new-website` of `site`, on a new branch
+named after the task, from the default branch of origin as it is now (it fetches first).
+Two tasks of one repository never share a folder, and a session never starts on old
+code. Asked again, it uses the same worktree. Given with `--folder`, a bare repository
+gets one of its existing worktrees: the one on the default branch first.
+
+Run it from a folder of the task's space: the remote
 session you reach from another computer can run it for you ("open me a session for
 the website task").
 
@@ -2859,6 +2867,10 @@ Closes a task's session.
 ```bash
 augmented-brain session stop task-new-website
 ```
+
+When `session start` made a worktree for the task, `stop` also removes it with its
+branch, as long as nothing would be lost: with changes not committed, or commits not
+pushed, it keeps it and says so.
 
 ## augmented-brain session list
 

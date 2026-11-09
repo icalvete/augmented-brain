@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- **A task of a bare repository gets a worktree of its own.** `session start` used to pick
+  one of the repository's existing worktrees, so two tasks could fall in the same folder
+  (Claude serves each folder once, so the second did not start) or a session could start
+  on old code. It now fetches origin and makes `<repo>-<task>` on a new branch named
+  after the task, from the default branch as it is now, and uses it again next time.
+  `session stop` removes it with its branch when it holds nothing that is not on the
+  remote, and keeps it otherwise. Picking an existing worktree stays for `--folder`
+  naming a bare repository.
 - **`session start` picks the worktree of the default branch.** For a bare repository it
   took the first trusted worktree by name, and since 0.16.1 every worktree of a trusted
   repository counts as trusted, so a session could open on a leftover feature branch. It
