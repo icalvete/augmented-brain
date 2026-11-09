@@ -87,7 +87,7 @@ func TestRemoteCommands(t *testing.T) {
 
 func TestRemoteUsageAndSystems(t *testing.T) {
 	h, _ := home(t)
-	useFakeSystem(t, h, "darwin")
+	useFakeSystem(t, h, "freebsd")
 	for _, args := range [][]string{{"remote"}, {"remote", "start"}, {"remote", "install", "now"}} {
 		var out, errOut bytes.Buffer
 		if code := run(args, nil, &out, &errOut); code != 2 || !strings.Contains(errOut.String(), "remote install | uninstall | status") {
@@ -95,7 +95,7 @@ func TestRemoteUsageAndSystems(t *testing.T) {
 		}
 	}
 	var out, errOut bytes.Buffer
-	if code := run([]string{"remote", "install"}, nil, &out, &errOut); code != 1 || !strings.Contains(errOut.String(), "aún no está disponible") {
-		t.Errorf("darwin: %d %q", code, errOut.String())
+	if code := run([]string{"remote", "install"}, nil, &out, &errOut); code != 1 || !strings.Contains(errOut.String(), "Linux, macOS y Windows") {
+		t.Errorf("freebsd: %d %q", code, errOut.String())
 	}
 }

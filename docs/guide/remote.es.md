@@ -7,11 +7,19 @@ A Claude Code se puede llegar desde otro ordenador o desde el móvil: desde
 tu máquina y trabajas en ella como si estuvieras delante. Para eso, un programa pequeño,
 `claude remote-control`, tiene que estar funcionando en la máquina.
 
-`augmented-brain remote` lo mantiene funcionando por ti. Arranca solo cuando arranca el
-ordenador, y vuelve a arrancar si se para. Se prepara una vez.
+`augmented-brain remote` lo mantiene funcionando por ti. Arranca solo, y vuelve a
+arrancar si se para. Se prepara una vez. Funciona en los tres sistemas, cada uno con su
+forma de arrancar programas solos:
 
-Por ahora es para Linux con systemd (la parte de Linux que arranca y vigila los
-servicios): no un contenedor, ni WSL sin systemd. macOS y Windows quedan pendientes.
+- **Linux**: un servicio de usuario de systemd (la parte de Linux que arranca y vigila los
+  servicios). Puede arrancar al encender el ordenador, antes de que nadie entre. No en un
+  contenedor, ni en WSL sin systemd.
+- **macOS**: un LaunchAgent, la forma que tiene macOS de arrancar un programa al entrar.
+- **Windows**: una tarea del Programador de tareas que arranca al entrar, sin ventana.
+
+En macOS y Windows arranca **cuando entras en tu sesión**, no antes: tras reiniciar, entra
+una vez y vuelve. Ninguno de los dos deja a un usuario normal arrancar algo sin que nadie
+haya entrado, y augmented brain nunca pide un administrador.
 
 ## Una puerta por espacio
 
@@ -33,9 +41,9 @@ carpeta propia, `~/.config/augmented-brain/remote/<espacio>`.
 augmented-brain remote install
 ```
 
-Comprueba que systemd puede mantener el servicio, lo escribe y lo arranca. Si systemd no
-puede, dice por qué y no cambia nada. Luego te dice lo que falta, si falta algo: dos cosas que
-solo puedes hacer tú.
+Comprueba que el sistema puede mantener el servicio, lo escribe y lo arranca. Si no
+puede, dice por qué y no cambia nada. Luego te dice lo que falta, si falta algo: una cosa
+que solo puedes hacer tú, dos en Linux.
 
 ### 1. Que Claude confíe en la carpeta
 
@@ -48,11 +56,12 @@ nombre `install`, abre Claude ahí y acepta la pregunta:
 cd ~/proyectos && claude
 ```
 
+En Windows, en PowerShell, `install` lo escribe como `cd "C:\Users\tu\proyectos"; claude`.
 Acepta «confiar en esta carpeta» y cierra Claude (`/exit`). augmented brain nunca toca por
-ti los ajustes de Claude. El servicio lo reintenta cada 30 segundos, así que en medio
-minuto está en marcha.
+ti los ajustes de Claude. El servicio lo reintenta solo (cada 30 segundos, cada minuto en
+Windows), así que en menos de un minuto está en marcha.
 
-### 2. Activa el «linger»
+### 2. En Linux, activa el «linger»
 
 Un servicio de usuario normalmente solo funciona mientras tienes la sesión abierta. Para
 que esté tras reiniciar, sin que nadie haya entrado, hay que decirle al sistema que
@@ -63,21 +72,27 @@ conserve tus servicios: se llama **linger** y lo tiene que hacer un administrado
 sudo loginctl enable-linger tu-usuario
 ```
 
+macOS y Windows no tienen linger: ahí el servicio arranca cuando entras en tu sesión.
+
 ## Compruébalo
 
 ```bash
 augmented-brain remote status
 ```
 
-Para cada espacio dice si el servicio está en marcha, si Claude confía en su carpeta y si
-el linger está activado, con lo que hacer con cada problema. `augmented-brain doctor`
-enseña lo mismo, una línea por espacio.
+Para cada espacio dice si el servicio está en marcha, si Claude confía en su carpeta y,
+en Linux, si el linger está activado, con lo que hacer con cada problema.
+`augmented-brain doctor` enseña lo mismo, una línea por espacio.
 
-Cuando un servicio falla, dice por qué en el registro del sistema (el journal):
+Cuando un servicio falla, dice por qué. En Linux, en el registro del sistema (el journal):
 
 ```bash
 journalctl --user -u augmented-brain-remote-personal -n 20
 ```
+
+En macOS, en `~/Library/Logs/augmented-brain/augmented-brain-remote-<espacio>.log`; en
+Windows, en `augmented-brain-remote-<espacio>.log` dentro de
+`%LOCALAPPDATA%\augmented-brain\remote`. `status` dice el fichero.
 
 Un servicio instalado por una versión anterior no guardaba sus errores en ninguna parte;
 `status` y `doctor` te dicen que vuelvas a lanzar `augmented-brain remote install`, que lo
@@ -93,6 +108,10 @@ pone al día.
    espacio.
 
 ## Una sesión por tarea
+
+Esta parte es solo para Linux por ahora: macOS y Windows aún no tienen una forma limpia de
+arrancar una sesión propia un rato, como hace systemd. En ellos `session start` dice que
+no está disponible.
 
 Las sesiones de la puerta empiezan todas en la carpeta del espacio. Para trabajar en una
 tarea en su propia sesión, en su carpeta, pídeselo a la sesión en la que estás: «ábreme una
@@ -135,6 +154,9 @@ trabajar en la máquina por ella.
 
 - **Un portátil que se duerme corta la conexión.** La sesión vuelve cuando despierta. El
   programa no cambia tus ajustes de suspensión.
+- **En macOS y Windows, tras reiniciar queda apagado hasta que entras.** Si el ordenador
+  se reinicia solo (una actualización, un corte de luz), nadie puede conectarse hasta que
+  alguien entra en la sesión.
 - Si caduca tu acceso a Claude, el servicio sigue en marcha pero nadie puede conectarse.
   `status` y `doctor` lo dicen; lanza `claude` una vez e inicia sesión otra vez.
 - Las sesiones que empieces desde el móvil son del espacio de su carpeta: la puerta de
@@ -147,7 +169,8 @@ trabajar en la máquina por ella.
 augmented-brain remote uninstall
 ```
 
-Para y quita los servicios. Las carpetas, y su sitio entre las carpetas de trabajo del
+Para y quita los servicios (en Windows, también el programa que tenían en marcha). Las
+carpetas, y su sitio entre las carpetas de trabajo del
 espacio, se quedan, y no se borra nada más. Bórralas a mano si quieres.
 
 ## Los ajustes

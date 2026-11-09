@@ -133,7 +133,8 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
 - notes that other users of the computer could read;
 - whether there is a default space, and whether a restore left the guard's lists empty;
 - remote access, one line per space, when you set it up with `remote install`: a warning
-  when its service is not running, Claude does not trust its folder yet, or linger is off;
+  when its service is not running, Claude does not trust its folder yet, or (on Linux)
+  linger is off;
 - how many versions of the configuration are kept, and whether it changed outside them
   (by hand);
 - the guard's lists changed since you last accepted them, and a repository both
@@ -267,8 +268,8 @@ run it by hand. It stops on its own after 30 minutes without use.
 
 Keeps Claude reachable from another computer or your phone, also after a reboot. It is
 three commands, `install`, `uninstall` and `status`, each with its own section below.
-Linux only for now (it uses a `systemd` user service); on macOS and Windows they say it
-is not available yet. Without a subcommand, or with another, `remote` prints its usage.
+It uses a `systemd` user service on Linux, a LaunchAgent on macOS and a task of the Task
+Scheduler on Windows. Without a subcommand, or with another, `remote` prints its usage.
 See [Remote access](remote.md).
 
 ## augmented-brain remote install
@@ -279,9 +280,11 @@ Sets remote access up, one service per space.
 augmented-brain remote install
 ```
 
-For each space named in `remote.toml` (by default, the default space) it writes a
-`systemd` user service that runs `claude remote-control` in the space's first work folder
-(or the one `folders` names in `remote.toml`), and starts it. Only a space with no work
+For each space named in `remote.toml` (by default, the default space) it writes a service
+that runs `claude remote-control` in the space's first work folder (or the one `folders`
+names in `remote.toml`), and starts it: a `systemd` user service on Linux, a LaunchAgent
+in `~/Library/LaunchAgents` on macOS, a task `\augmented-brain\remote-<space>` of the
+Task Scheduler on Windows (it runs while you are logged in, with no window). Only a space with no work
 folder gets a folder of its own, `remote/<space>` in the configuration folder, which
 becomes its work folder. It needs `claude` (on your PATH, or where its installer puts it)
 and a folder that exists. The service gets a PATH with the folders of `claude` and
@@ -291,12 +294,14 @@ time: it changes only what is different.
 It then says what is still missing, and does none of it for you:
 
 - Claude must **trust each folder**. It prints `cd <folder> && claude` for each one that
-  is not trusted yet: run it once and accept the question.
-- **Linger** must be on for the services to start after a reboot with nobody logged in.
-  It prints the command, `sudo loginctl enable-linger <you>`, for you to run.
+  is not trusted yet (on Windows, `cd "<folder>"; claude`): run it once and accept the
+  question.
+- On Linux, **linger** must be on for the services to start after a reboot with nobody
+  logged in. It prints the command, `sudo loginctl enable-linger <you>`, for you to run.
+  macOS and Windows have no linger: the service starts when you log in.
 
-Without systemd's user services (a container, or WSL without systemd) it says so and
-changes nothing. It takes no options. The settings are in `remote.toml` (see [Configuration](configuration.md)).
+Without systemd's user services (a container, or WSL without systemd), launchctl on macOS
+or the Task Scheduler on Windows, it says so and changes nothing. It takes no options. The settings are in `remote.toml` (see [Configuration](configuration.md)).
 
 ## augmented-brain remote uninstall
 
@@ -319,8 +324,8 @@ augmented-brain remote status
 ```
 
 For each space: the session's name (what you pick in Claude Desktop or claude.ai), whether
-the service is running and starts by itself, and whether Claude trusts its folder. Then
-whether linger is on. Under each problem, `→` says what to do. It takes no options.
+the service is running and starts by itself, and whether Claude trusts its folder. Then,
+on Linux, whether linger is on; on macOS and Windows, that it starts when you log in. Under each problem, `→` says what to do. It takes no options.
 
 ## augmented-brain session
 

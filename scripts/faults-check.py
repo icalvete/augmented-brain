@@ -4,7 +4,7 @@
     python3 -I scripts/faults-check.py
 
 Builds the program from this checkout and, in a throwaway home with made-up spaces,
-takes away one thing at a time (Claude Code, gh, git, the network, Tailscale, systemd,
+takes away one thing at a time (Claude Code, gh, git, the network, Tailscale, systemd or launchctl,
 a backup, a configuration that loads, write access to the notes) and checks two things
 each time: the program says what is missing and what to do, and it leaves nothing
 broken or half done. One line per check, "ok " or "BAD"; exit code 1 when anything is
@@ -180,11 +180,15 @@ try:
     report("panel remote without Tailscale says what to install", code != 0 and has(out, "tailscale"), out.strip()[-160:])
     ab(["panel", "stop"])
 
-    print("##### no systemd")
-    code, out = ab(["remote", "install"], cwd=work, tools_=("git", "fake-claude"))
-    report("remote install without systemd says so", code != 0 and (has(out, "systemd") or has(out, "not available")), out.strip()[-160:])
-    remote_toml = os.path.join(CFG, "remote.toml")
-    report("…and leaves remote access off", not os.path.exists(remote_toml) or "enabled = true" not in open(remote_toml, encoding="utf-8").read(), "")
+    # Windows keeps the Task Scheduler in System32, which every run here has on PATH:
+    # remote access there is tried for real by remote-check.py.
+    if not WIN:
+        what = "launchctl" if sys.platform == "darwin" else "systemd"
+        print(f"##### no {what}")
+        code, out = ab(["remote", "install"], cwd=work, tools_=("git", "fake-claude"))
+        report(f"remote install without {what} says so", code != 0 and has(out, what), out.strip()[-160:])
+        remote_toml = os.path.join(CFG, "remote.toml")
+        report("…and leaves remote access off", not os.path.exists(remote_toml) or "enabled = true" not in open(remote_toml, encoding="utf-8").read(), "")
 
     print("##### a configuration that does not load")
     ab(["space"], cwd=work)  # a command that keeps a version of the configuration

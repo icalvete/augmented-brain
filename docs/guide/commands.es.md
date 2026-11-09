@@ -138,8 +138,8 @@ algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Re
 - las notas que otros usuarios del ordenador podrían leer;
 - si hay espacio por defecto, y si una recuperación dejó vacías las listas del guardia;
 - el acceso remoto, una línea por espacio, cuando lo has puesto con `remote install`: un
-  aviso si su servicio no está en marcha, Claude aún no confía en su carpeta o el linger
-  está apagado;
+  aviso si su servicio no está en marcha, Claude aún no confía en su carpeta o (en Linux)
+  el linger está apagado;
 - cuántas versiones de la configuración se guardan, y si cambió por fuera de ellas (a
   mano);
 - las listas del guardia cambiadas desde que las aceptaste, y un repositorio a la vez
@@ -274,8 +274,8 @@ lanzas a mano. Se para solo después de 30 minutos sin usarlo.
 
 Mantiene Claude accesible desde otro ordenador o desde el móvil, también después de
 reiniciar. Son tres comandos, `install`, `uninstall` y `status`, cada uno con su sección
-más abajo. Solo en Linux por ahora (usa un servicio de usuario de `systemd`); en macOS y
-Windows dicen que aún no está disponible. Sin subcomando, o con otro, `remote` escribe su
+más abajo. Usa un servicio de usuario de `systemd` en Linux, un LaunchAgent en macOS y una
+tarea del Programador de tareas en Windows. Sin subcomando, o con otro, `remote` escribe su
 uso. Lo tienes en [Acceso remoto](remote.es.md).
 
 ## augmented-brain remote install
@@ -287,10 +287,12 @@ augmented-brain remote install
 ```
 
 Para cada espacio que nombra `remote.toml` (por defecto, el espacio por defecto) escribe
-un servicio de usuario de `systemd` que ejecuta `claude remote-control` en la primera
-carpeta de trabajo del espacio (o en la que diga `folders` en `remote.toml`), y lo
-arranca. Solo un espacio sin carpetas de trabajo recibe una carpeta propia,
-`remote/<espacio>` en la carpeta de configuración, que pasa a ser su carpeta de trabajo.
+un servicio que ejecuta `claude remote-control` en la primera carpeta de trabajo del
+espacio (o en la que diga `folders` en `remote.toml`), y lo arranca: un servicio de
+usuario de `systemd` en Linux, un LaunchAgent en `~/Library/LaunchAgents` en macOS, una
+tarea `\augmented-brain\remote-<espacio>` del Programador de tareas en Windows (funciona
+mientras tienes la sesión abierta, sin ventana). Solo un espacio sin carpetas de trabajo
+recibe una carpeta propia, `remote/<espacio>` en la carpeta de configuración, que pasa a ser su carpeta de trabajo.
 Necesita `claude` (en tu PATH o donde lo deja su instalador) y una carpeta que exista. El
 servicio lleva un PATH con las carpetas de `claude` y de `augmented-brain`, así que sus
 sesiones encuentran los dos tras reiniciar. Puedes lanzarlo otra vez cuando quieras: solo
@@ -299,13 +301,15 @@ cambia lo que es distinto.
 Luego dice lo que aún falta, y no hace nada de ello por ti:
 
 - Claude tiene que **confiar en cada carpeta**. Escribe `cd <carpeta> && claude` para cada
-  una que aún no es de confianza: lánzalo una vez y acepta la pregunta.
-- El **linger** tiene que estar activado para que los servicios arranquen tras reiniciar
-  sin que nadie haya entrado. Escribe el comando, `sudo loginctl enable-linger <tú>`,
-  para que lo lances tú.
+  una que aún no es de confianza (en Windows, `cd "<carpeta>"; claude`): lánzalo una vez
+  y acepta la pregunta.
+- En Linux, el **linger** tiene que estar activado para que los servicios arranquen tras
+  reiniciar sin que nadie haya entrado. Escribe el comando, `sudo loginctl enable-linger
+  <tú>`, para que lo lances tú. macOS y Windows no tienen linger: el servicio arranca
+  cuando entras en tu sesión.
 
-Sin los servicios de usuario de systemd (un contenedor, o WSL sin systemd) lo dice y no
-cambia nada. No tiene opciones. Los ajustes están en `remote.toml` (mira [Configuración](configuration.es.md)).
+Sin los servicios de usuario de systemd (un contenedor, o WSL sin systemd), sin launchctl
+en macOS o sin el Programador de tareas en Windows, lo dice y no cambia nada. No tiene opciones. Los ajustes están en `remote.toml` (mira [Configuración](configuration.es.md)).
 
 ## augmented-brain remote uninstall
 
@@ -329,7 +333,8 @@ augmented-brain remote status
 
 Para cada espacio: el nombre de la sesión (el que eliges en Claude Desktop o en
 claude.ai), si el servicio está en marcha y arranca solo, y si Claude confía en su
-carpeta. Luego, si el linger está activado. Debajo de cada problema, `→` dice qué hacer.
+carpeta. Luego, en Linux, si el linger está activado; en macOS y Windows, que arranca
+cuando entras en tu sesión. Debajo de cada problema, `→` dice qué hacer.
 No tiene opciones.
 
 ## augmented-brain session
