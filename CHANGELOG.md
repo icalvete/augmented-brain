@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **The README says what a newcomer meets.** A test with someone new (an agent that only
+  had the README, on clean Ubuntu and Windows machines) tripped on four things, now said
+  where they happen: installing git (missing on a fresh Ubuntu) and the desktop app on
+  Linux ask for your password, or on Windows for permission; the spaces take the
+  language you choose (`trabajo` in Spanish); the command works in a new terminal, where
+  `augmented-brain doctor` checks the install; and the first questions come after you
+  write something. Windows PowerShell gets its own form of `cd … && claude`.
 - **Known limitations: what a newcomer meets that is not ours.** Claude Code's own
   first-run screens (Enter alone on "trust this folder" exits), the red PowerShell hook
   error on Windows, and installing on Windows over ssh, where the installer cannot ask.

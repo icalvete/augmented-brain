@@ -2,6 +2,14 @@
 
 ## Sin publicar
 
+- **El README cuenta lo que se encuentra quien llega.** Una prueba con alguien nuevo (un
+  agente que solo tenía el README, en Ubuntu y Windows recién instalados) tropezó en
+  cuatro cosas, que ahora se dicen donde pasan: instalar git (un Ubuntu recién instalado
+  no lo trae) y la app de escritorio en Linux piden tu contraseña, o en Windows permiso;
+  los espacios toman el idioma que eliges (`work` en inglés); el comando funciona en una
+  terminal nueva, donde `augmented-brain doctor` comprueba la instalación; y las primeras
+  preguntas llegan después de que escribas algo. El PowerShell de Windows tiene su forma
+  de `cd … && claude`.
 - **Limitaciones conocidas: lo que se encuentra quien llega y no es nuestro.** Las
   pantallas del primer arranque de Claude Code (Enter a secas en «confiar en la carpeta»
   sale), el error rojo del hook de PowerShell en Windows, e instalar en Windows por ssh,
