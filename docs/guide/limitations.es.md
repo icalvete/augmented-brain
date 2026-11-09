@@ -37,7 +37,7 @@ Linux, con systemd. En macOS y Windows lo dicen y no cambian nada.
 
 Cada pull request pasa las pruebas en un Mac en la CI, también el instalador, Safari y un
 llavero bloqueado. Unas pocas cosas solo las ve una persona delante de un Mac de verdad,
-y se comprueban a mano antes de cada versión:
+y de momento nadie las comprueba:
 
 1. Abrir desde el Finder el programa descargado con un navegador («Abrir igualmente»).
 2. Una sesión real de Claude Code: el guardia para un push y el inicio de sesión carga.
@@ -45,7 +45,7 @@ y se comprueban a mano antes de cada versión:
 4. Sin red: `backup`, `update` y `panel remote` lo dicen y no dejan nada a medias.
 5. El panel en Safari con la consola abierta, sin errores.
 
-Si a ti te falla alguna, puede que aún no se haya visto: cuéntalo, por favor.
+Si a ti te falla alguna, nadie lo ha visto todavía: cuéntalo, por favor.
 
 ## El guardia
 

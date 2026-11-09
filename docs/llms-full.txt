@@ -4344,8 +4344,8 @@ systemd. On macOS and Windows they say so and change nothing.
 ## macOS
 
 Every pull request runs the tests on a Mac in CI, including the installer, Safari and a
-locked keychain. A few things only a person at a real Mac can see, and are checked by
-hand before a release:
+locked keychain. A few things only a person at a real Mac can see, and nobody checks
+them yet:
 
 1. Opening the program downloaded with a browser from the Finder ("Open Anyway").
 2. A real Claude Code session: the guard stops a push and the session start loads.
@@ -4354,7 +4354,7 @@ hand before a release:
    done.
 5. The panel in Safari with its console open, free of errors.
 
-If one of them fails for you, it may not have been seen yet: please report it.
+If one of them fails for you, no one has seen it yet: please report it.
 
 ## The guard
 
