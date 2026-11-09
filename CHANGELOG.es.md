@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.16.1-alpha
+
+Publicada el 2026-11-09.
 
 - **`session start` reconoce un worktree de confianza.** Claude guarda la confianza de
   un worktree de git con su repositorio principal, así que, después de aceptar la
