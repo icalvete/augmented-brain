@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.16.3-alpha
+
+Released 2026-11-09.
 
 - **The README says what a newcomer meets.** A test with someone new (an agent that only
   had the README, on clean Ubuntu and Windows machines) tripped on four things, now said

@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.16.3-alpha
+
+Publicada el 2026-11-09.
 
 - **El README cuenta lo que se encuentra quien llega.** Una prueba con alguien nuevo (un
   agente que solo tenía el README, en Ubuntu y Windows recién instalados) tropezó en
