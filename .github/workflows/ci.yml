@@ -103,6 +103,24 @@ jobs:
       - name: Every page, in Chromium and WebKit
         run: python -I scripts/panel-browser-check.py chromium webkit
 
+  # What only a real Mac can tell, with no one at the screen: Gatekeeper with a program
+  # downloaded by a browser, the Secrets page with the keychain locked, and the panel in
+  # Safari itself (not only its engine).
+  mac:
+    timeout-minutes: 10
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Let a script drive Safari
+        run: sudo safaridriver --enable
+      - name: Gatekeeper, a locked keychain and Safari
+        env:
+          AB_MAC_CHECK_KEYCHAIN: '1'
+        run: python3 -I scripts/mac-check.py
+
   privacy:
     timeout-minutes: 10
     runs-on: ubuntu-latest
