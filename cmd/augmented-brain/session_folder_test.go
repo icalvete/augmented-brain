@@ -84,3 +84,59 @@ func TestTaskFolderUsesBareWorktree(t *testing.T) {
 		t.Errorf("got %q, want the trusted worktree %q", got, b)
 	}
 }
+
+// With every worktree trusted (trust read through the main repository), the one on the
+// default branch wins, then one named after it, never a leftover feature branch by its
+// name (9-nov: the session went to site-barewt, on a merged branch).
+func TestTaskFolderPrefersDefaultBranch(t *testing.T) {
+	wf := t.TempDir()
+	bare := filepath.Join(wf, "site")
+	gitDir := filepath.Join(bare, ".git")
+	if err := os.MkdirAll(gitDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(gitDir, "config"), []byte("[core]\n\tbare = true\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	add := func(name, head string) string {
+		wt := filepath.Join(wf, name)
+		rec := filepath.Join(gitDir, "worktrees", name)
+		for _, d := range []string{wt, rec} {
+			if err := os.MkdirAll(d, 0o755); err != nil {
+				t.Fatal(err)
+			}
+		}
+		for f, body := range map[string]string{
+			filepath.Join(wt, ".git"):    "gitdir: " + rec + "\n",
+			filepath.Join(rec, "gitdir"): filepath.Join(wt, ".git") + "\n",
+			filepath.Join(rec, "HEAD"):   head + "\n",
+		} {
+			if err := os.WriteFile(f, []byte(body), 0o644); err != nil {
+				t.Fatal(err)
+			}
+		}
+		return wt
+	}
+	s := &config.Space{WorkFolders: []string{wf}}
+	all := func(string) bool { return true }
+	add("site-barewt", "ref: refs/heads/session-bare-worktree")
+	named := add("site-main", "5949f693bc8106d0d115b6ee3f3030bd89d28909")
+	if got := taskFolder(s, []string{"site"}, all); got != named {
+		t.Errorf("got %q, want the worktree named after main %q", got, named)
+	}
+	onMain := add("site-zz", "ref: refs/heads/main")
+	if got := taskFolder(s, []string{"site"}, all); got != onMain {
+		t.Errorf("got %q, want the worktree on main %q", got, onMain)
+	}
+	// The default branch is the one origin's HEAD names, when git recorded it.
+	if err := os.MkdirAll(filepath.Join(gitDir, "refs", "remotes", "origin"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(gitDir, "refs", "remotes", "origin", "HEAD"), []byte("ref: refs/remotes/origin/trunk\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	onTrunk := add("site-yy", "ref: refs/heads/trunk")
+	if got := taskFolder(s, []string{"site"}, all); got != onTrunk {
+		t.Errorf("got %q, want the worktree on trunk %q", got, onTrunk)
+	}
+}

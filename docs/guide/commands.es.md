@@ -358,8 +358,9 @@ Arranca un `claude remote-control` propio para la tarea (un servicio de usuario 
 `systemd` temporal, `augmented-brain-session-<tarea>`), con el título de la tarea como
 nombre. En menos de un minuto sale en Claude Desktop y claude.ai, y empieza leyendo su
 tarea. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
-de trabajo del espacio (para un repositorio bare, uno de sus worktrees en esas carpetas,
-primero uno de confianza: el bare no tiene ficheros con los que trabajar), o la que diga
+de trabajo del espacio (para un repositorio bare, uno de sus worktrees en esas carpetas:
+primero el de la rama por defecto, después uno con su nombre, como `site-main`; el bare
+no tiene ficheros con los que trabajar), o la que diga
 `--folder`. Lánzalo desde una carpeta del espacio
 de la tarea: la sesión remota a la que entras desde otro ordenador puede lanzarlo por ti
 («ábreme una sesión para la tarea de la web»).

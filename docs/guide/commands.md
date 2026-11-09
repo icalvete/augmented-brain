@@ -348,8 +348,9 @@ It starts a `claude remote-control` of its own for the task (a temporary `system
 service, `augmented-brain-session-<task>`), named after the task's title. Within a
 minute it shows up in Claude Desktop and claude.ai, and it starts by reading its task.
 The folder is the first of the task's repositories found in the space's work folders
-(for a bare repository, one of its worktrees in those folders, a trusted one first: the
-bare one has no files to work on), or the one `--folder` gives. Run it from a folder of the task's space: the remote
+(for a bare repository, one of its worktrees in those folders: the one on the default
+branch first, then one named after it, such as `site-main`; the bare one has no files to
+work on), or the one `--folder` gives. Run it from a folder of the task's space: the remote
 session you reach from another computer can run it for you ("open me a session for
 the website task").
 
