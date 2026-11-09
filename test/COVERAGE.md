@@ -24,7 +24,7 @@ row here with the test that covers it.
 | `uninstall --all` | `install-check.sh` step 7, `cmd` `TestSaysThereIsNoBackup` | CI, Go |
 | A home with spaces and accents | `install-check.sh` step 6 | CI |
 | macOS: shells, version, Apple's developer tools | `scripts/install-check-mac.sh` | CI |
-| macOS: downloaded with a browser (Gatekeeper) | by hand | Mac pass |
+| macOS: downloaded with a browser (Gatekeeper) | `scripts/mac-check.py` (what macOS says of it, and that it still runs from Terminal); the Finder's dialog by hand | CI: macOS; Mac pass |
 | Windows: PowerShell's policy, no winget | by hand | Windows VM rehearsal |
 | The installer's Spanish on Windows | `cmd` `TestInstallPs1IsASCII` | Go |
 
@@ -72,7 +72,7 @@ row here with the test that covers it.
 | The Guard page: what changed, the box, the warnings | `TestGuardPageShowsWhatChanged`, `TestGuardPageWarnsOnDangerousLists`, the browser check | Go, CI |
 | From another device (access, the switch) | `TestRemoteAccess`, `TestRemoteSwitchInPlace` and the others | Go |
 | Firefox | `panel-browser-check.py firefox` | by hand, before a release |
-| Safari for real | by hand | Mac pass |
+| Safari for real (every page, its stylesheet, a capture) | `scripts/mac-check.py`, through safaridriver | CI: macOS |
 
 ## When something is missing
 
@@ -86,7 +86,7 @@ row here with the test that covers it.
 | No Claude Code | `faults-check.py`, `cmd` `TestInitWarnsWithoutThePlugin` | CI, Go |
 | No Tailscale | `faults-check.py`, `internal/tailnet` `TestMissing` | CI, Go |
 | No keychain, or one that does not answer | `internal/keyring` `TestClassify`, `cmd` `TestRestoreNamesTheSecrets` | Go |
-| A locked macOS keychain asking for its password | by hand | Mac pass |
+| A locked macOS keychain: no password dialog, never "missing" | `scripts/mac-check.py` (only the secret's attributes are read, which needs no unlocking) | CI: macOS |
 | No systemd | `faults-check.py`, `internal/remote` `TestInstallErrors` | CI, Go |
 | A configuration that does not load | `faults-check.py`, `cmd` `TestConfigRestoreFixesABrokenConfig` | CI, Go |
 | `guard.toml` that does not load | `internal/hook` `TestPreToolUseGuardFile` | Go |
@@ -109,11 +109,14 @@ row here with the test that covers it.
 What only a person on a real Mac can see, before a beta or a 1.0:
 
 1. Install with the terminal, answering the questions; then download the program with a
-   browser and see what Gatekeeper says, and that "Open Anyway" works.
-2. Store a secret, lock the keychain, run `augmented-brain restore` and the panel's
-   Secrets page: does a password dialog appear?
-3. Open a real Claude Code session: the guard stops a push, the session start loads.
-4. Claude Desktop installed by the installer, and Tailscale with `panel remote`.
-5. Switch the network off: `backup`, `update` and `panel remote` say so and leave nothing
+   browser, open it from the Finder and see that "Open Anyway" works (`mac-check.py`
+   already checks what Gatekeeper says, and that it runs from Terminal).
+2. Open a real Claude Code session: the guard stops a push, the session start loads.
+3. Claude Desktop installed by the installer, and Tailscale with `panel remote`.
+4. Switch the network off: `backup`, `update` and `panel remote` say so and leave nothing
    half done.
-6. Open the panel in Safari and look at the console.
+5. Open the panel in Safari and look at the console: safaridriver cannot read it, so
+   `mac-check.py` checks the pages load whole, not that the console is quiet.
+
+A locked keychain and Safari loading every page are no longer here: `mac-check.py` checks
+them on every pull request.
