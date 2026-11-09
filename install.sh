@@ -53,9 +53,16 @@ fail() { echo "augmented brain: $*" >&2; exit 1; }
 ask() {
   [ "${AB_YES:-}" = 1 ] && return 0
   (exec </dev/tty) 2>/dev/null || return 1
-  printf '%s ' "$1" >/dev/tty
-  read -r answer </dev/tty || return 1
-  case "$answer" in [nN]*) return 1 ;; *) return 0 ;; esac
+  # Enter, yes or no: anything else asks again, so a stray word is never taken for a yes.
+  while :; do
+    printf '%s ' "$1" >/dev/tty
+    read -r answer </dev/tty || return 1
+    case "$answer" in
+      ""|[yYsS]|[yY][eE][sS]|[sS][iI]|"sí"|"Sí"|"SÍ") return 0 ;;
+      [nN]|[nN][oO]) return 1 ;;
+    esac
+    say "Answer y (yes) or n (no)." "Contesta s (sí) o n (no)." >/dev/tty
+  done
 }
 yn() { say "[Y/n]" "[S/n]"; }
 
@@ -316,7 +323,7 @@ if [ "${AB_NO_INIT:-}" != 1 ]; then
     plan_notice
     if ask "$(say "Install it now with its official installer?" "¿Lo instalo ahora con su instalador oficial?") $(yn)"; then
       say "Installing Claude Code…" "Instalando Claude Code…"
-      quiet sh -c "curl -fsSL https://claude.ai/install.sh | bash" || fail "$(say "Claude Code was not installed." "Claude Code no se ha instalado.")"
+      busy sh -c "curl -fsSL https://claude.ai/install.sh | bash" || fail "$(say "Claude Code was not installed." "Claude Code no se ha instalado.")"
       say "✓ Claude Code installed" "✓ Claude Code instalado"
       has_claude || fail "$(say "Claude Code was installed but cannot be found; open a new terminal and run this installer again." "Claude Code se instaló, pero no lo encuentro; abre una terminal nueva y vuelve a lanzar este instalador.")"
     else

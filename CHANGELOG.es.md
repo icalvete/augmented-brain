@@ -2,6 +2,26 @@
 
 ## Sin publicar
 
+- **El README cuenta lo que se encuentra quien llega.** Una prueba con alguien nuevo (un
+  agente que solo tenía el README, en Ubuntu y Windows recién instalados) tropezó en
+  cuatro cosas, que ahora se dicen donde pasan: instalar git (un Ubuntu recién instalado
+  no lo trae) y la app de escritorio en Linux piden tu contraseña, o en Windows permiso;
+  los espacios toman el idioma que eliges (`work` en inglés); el comando funciona en una
+  terminal nueva, donde `augmented-brain doctor` comprueba la instalación; y las primeras
+  preguntas llegan después de que escribas algo. El PowerShell de Windows tiene su forma
+  de `cd … && claude`.
+- **Limitaciones conocidas: lo que se encuentra quien llega y no es nuestro.** Las
+  pantallas del primer arranque de Claude Code (Enter a secas en «confiar en la carpeta»
+  sale), el error rojo del hook de PowerShell en Windows, e instalar en Windows por ssh,
+  donde el instalador no puede preguntar.
+- **El instalador solo acepta un sí de verdad.** Sus preguntas tomaban cualquier
+  respuesta menos «n» por un sí, así que una palabra suelta (alguien nuevo tecleó `cls`
+  para ver la pantalla) abría Claude. Ahora vale Enter, sí o no; cualquier otra cosa
+  vuelve a preguntar. Instalar Git y Claude Code en Windows, y Claude Code en Linux y
+  macOS, enseña puntos mientras trabaja en vez de un minuto de silencio. Y, cuando ha
+  cambiado el PATH, su último mensaje dice que la terminal que usaste todavía no
+  encuentra `augmented-brain`, también cuando propone la app de escritorio.
+- **`doctor`** ya no dice «1 versiones guardadas».
 - **Una primera sesión con palabras sencillas.** La entrevista de la primera sesión
   saludaba con «bienvenido» antes de saber quién eras, y preguntaba a una diseñadora
   freelance por «perfiles de AWS que llegan a producción». Ahora saluda sin suponer el

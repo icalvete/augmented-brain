@@ -68,8 +68,8 @@ var historyMessages = map[string]msg{
 		es: "(el fichero se crea)",
 	},
 	"doctor.history.ok": {
-		en: "configuration history: %d versions kept on this computer, the newest of %s",
-		es: "historial de la configuración: %d versiones guardadas en este ordenador, la más reciente del %s",
+		en: "configuration history: versions kept on this computer: %d; the newest, of %s",
+		es: "historial de la configuración: versiones guardadas en este ordenador: %d; la más reciente, del %s",
 	},
 	"doctor.history.changed": {
 		en: "the configuration changed after its newest version (%s), by hand or with an earlier program",

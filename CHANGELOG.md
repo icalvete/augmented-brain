@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- **The README says what a newcomer meets.** A test with someone new (an agent that only
+  had the README, on clean Ubuntu and Windows machines) tripped on four things, now said
+  where they happen: installing git (missing on a fresh Ubuntu) and the desktop app on
+  Linux ask for your password, or on Windows for permission; the spaces take the
+  language you choose (`trabajo` in Spanish); the command works in a new terminal, where
+  `augmented-brain doctor` checks the install; and the first questions come after you
+  write something. Windows PowerShell gets its own form of `cd … && claude`.
+- **Known limitations: what a newcomer meets that is not ours.** Claude Code's own
+  first-run screens (Enter alone on "trust this folder" exits), the red PowerShell hook
+  error on Windows, and installing on Windows over ssh, where the installer cannot ask.
+- **The installer only takes a real yes.** Its questions took any answer but "n" for a
+  yes, so a stray word (a newcomer typed `cls` to see the screen) opened Claude. Now
+  Enter, yes or no; anything else asks again. Installing Git and Claude Code on Windows,
+  and Claude Code on Linux and macOS, shows dots while it works instead of a minute of
+  silence. And when it changed the PATH, its last message says that the terminal you
+  used does not find `augmented-brain` yet, also when it suggests the desktop app.
+- **`doctor`** no longer says "1 versions kept".
 - **A first session in plain words.** The first-session interview greeted a newcomer
   as "bienvenido" before knowing who they were, and asked a freelance designer about
   "AWS profiles that reach production". Now it greets without assuming a gender, keeps to
