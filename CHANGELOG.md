@@ -16,6 +16,13 @@
   asks you. Your git aliases count as what they stand for (`git ci` for `git commit`),
   `env -S '…'` is read, and a container given the whole machine (`docker run
   --privileged`, `-v /:/host`, `--pid=host`) is treated as becoming root.
+- **The website shows a week with it.** The demo on the home page is now one week:
+  a task opened on Monday, a date to check that comes up on Tuesday in another session,
+  an idea for the inbox and a push the guard stops on Wednesday, and the weekly review on
+  Friday. Buttons jump to each day. The home page also tells about remote access, a
+  session per task and the configuration's versions, with their commands, and no longer
+  promises adapters for other assistants.
+
 - **With one space, saving a person no longer asks where.** The program already saved
   them in the only space, but the text Claude reads told it to always ask, so a first
   session asked "which spaces?" with only one and did not save the person. It now says
