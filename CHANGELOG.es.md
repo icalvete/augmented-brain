@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.16.0-alpha
+
+Publicada el 2026-11-09.
 
 - **Acceso remoto en macOS y Windows.** `augmented-brain remote install`, `status` y
   `uninstall` ya funcionan también ahí: un LaunchAgent en macOS, una tarea del

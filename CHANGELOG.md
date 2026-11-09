@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.16.0-alpha
+
+Released 2026-11-09.
 
 - **Remote access on macOS and Windows.** `augmented-brain remote install`, `status` and
   `uninstall` now work there too: a LaunchAgent on macOS, a task of the Task Scheduler on
