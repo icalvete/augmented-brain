@@ -18,7 +18,9 @@ assistant is Claude Code.
 You do not learn new commands. You talk to Claude as usual: "new task…", "park it",
 "where were we?".
 
-It is free and open source (MIT). It is also alpha: an early version that may change.
+It is free and open source (MIT). It is also alpha: an early version, though what you
+have keeps working from one version to the next. What it cannot do yet is in
+[Known limitations](limitations.md).
 
 This guide is for starting from scratch, even if you have never opened a terminal. It
 takes about ten minutes.

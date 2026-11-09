@@ -19,8 +19,9 @@ asistente es Claude Code.
 No aprendes comandos nuevos. Hablas con Claude como siempre: "nueva tarea…",
 "apárcala", "¿en qué estábamos?".
 
-Es gratis y de código abierto (MIT). También es alfa: una versión temprana que puede
-cambiar.
+Es gratis y de código abierto (MIT). También es alfa: una versión temprana, aunque lo
+que tienes sigue funcionando de una versión a otra. Lo que todavía no sabe hacer está en
+[Limitaciones conocidas](limitations.es.md).
 
 Esta guía es para empezar de cero, aunque nunca hayas abierto una terminal. Son unos diez
 minutos.

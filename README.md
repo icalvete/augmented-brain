@@ -12,8 +12,10 @@ All in plain text files of yours, backed up to your own git.</p>
 <p align="center"><a href="https://github.com/sponsors/icalvete"><img alt="Sponsor" src="https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white"></a></p>
 
 > [!WARNING]
-> **Alpha.** This is an early version: it may have bugs, its format and commands may
-> change. Tested by a person on Ubuntu, macOS and Windows 11. Read the [disclaimer](DISCLAIMER.md)
+> **Alpha.** This is an early version: it may have bugs. Tested by a person on Ubuntu,
+> macOS and Windows 11. What you have keeps working: each version that changes the
+> format brings the step that moves your notes forward. Read the [disclaimer](DISCLAIMER.md)
+> and the [known limitations](https://icalvete.github.io/augmented-brain/guide/limitations.html)
 > before you use it, and back up anything important.
 
 ---

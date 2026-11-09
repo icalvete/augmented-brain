@@ -31,6 +31,10 @@
   session per task and the configuration's versions, with their commands, and no longer
   promises adapters for other assistants.
 
+- **What you have keeps working.** The README, the DISCLAIMER and the website no longer
+  say the format and commands may change: every change to how notes or settings are kept
+  ships with the step that moves yours forward, and a renamed command, setting or tool
+  keeps working under its old name.
 - **With one space, saving a person no longer asks where.** The program already saved
   them in the only space, but the text Claude reads told it to always ask, so a first
   session asked "which spaces?" with only one and did not save the person. It now says
