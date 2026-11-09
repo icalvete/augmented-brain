@@ -57,8 +57,13 @@ $interactive = [Environment]::UserInteractive -and $Host.Name -eq 'ConsoleHost' 
 function Ask([string]$q) {
   if ($env:AB_YES -eq '1') { return $true }
   if (-not $interactive) { return $false }
-  $a = Read-Host "$q $(Text '[Y/n]' '[S/n]')"
-  return -not ($a -match '^\s*[nN]')
+  # Enter, yes or no: anything else asks again, so a stray word is never taken for a yes.
+  while ($true) {
+    $a = (Read-Host "$q $(Text '[Y/n]' '[S/n]')").Trim()
+    if ($a -match '^(|y|yes|s|si|s\u00ed)$') { return $true }
+    if ($a -match '^(n|no)$') { return $false }
+    Say "Answer y (yes) or n (no)." "Contesta s (s\u00ed) o n (no)."
+  }
 }
 # Quiet <scriptblock>: runs an installation without its noise; its output is shown only
 # when it fails.
@@ -179,7 +184,7 @@ try {
         Write-Host "  $cmd"; return
       }
       Say "Installing Git for Windows..." "Instalando Git for Windows..."
-      $ok = $winget -and (Quiet { winget install --id Git.Git -e --source winget --silent --accept-source-agreements --accept-package-agreements --disable-interactivity })
+      $ok = $winget -and (Busy 'winget' @('install', '--id', 'Git.Git', '-e', '--source', 'winget', '--silent', '--accept-source-agreements', '--accept-package-agreements', '--disable-interactivity'))
       if (-not $ok) {
         # No winget, or one that cannot reach its source: Git's own release, checked.
         if ($winget) { Say "winget could not install it; downloading it from Git for Windows' own page instead..." "winget no ha podido instalarlo; lo descargo de la p\u00e1gina de Git for Windows..." }
@@ -204,7 +209,7 @@ try {
         Write-Host "  $cmd"; return
       }
       Say "Installing Claude Code..." "Instalando Claude Code..."
-      if (-not (Quiet { powershell -NoProfile -ExecutionPolicy Bypass -Command $cmd })) { Fail (Text 'Claude Code was not installed.' 'Claude Code no se ha instalado.') }
+      if (-not (Busy 'powershell' @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', "`"$cmd`""))) { Fail (Text 'Claude Code was not installed.' 'Claude Code no se ha instalado.') }
       if (-not (HasClaude)) { Fail (Text 'Claude Code was installed but cannot be found; open a new terminal and run this installer again.' 'Claude Code se instal\u00f3, pero no lo encuentro; abre una terminal nueva y vuelve a lanzar este instalador.') }
       Say "+ Claude Code installed" "+ Claude Code instalado"
     } else {
