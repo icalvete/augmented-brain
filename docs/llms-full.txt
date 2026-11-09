@@ -2168,6 +2168,8 @@ gives.
 - **Claude must trust that folder itself.** Trusting the space's folder is not enough. The
   first time, the command says what to do: on the machine (or through `ssh`), go to the
   folder, run `claude`, accept the question and close it with `/exit`. Then ask again.
+  For a git worktree, Claude keeps the answer under its main repository: trusting either
+  one is enough.
 - **One session per folder.** Claude serves each folder once, so a task cannot use the
   door's own folder, or a folder another task's session is using. Give it another one with
   `--folder` (a git worktree of the repository, for example).
@@ -2839,7 +2841,8 @@ the website task").
 
 Two limits come from Claude itself. The folder must be trusted on its own: trusting a
 folder above it is not enough, so the first time the command says to open Claude once
-in that folder and accept the question. And Claude allows one remote server per folder,
+in that folder and accept the question. A git worktree is the exception: Claude keeps
+the answer under its main repository, so trusting either one is enough. And Claude allows one remote server per folder,
 so a task cannot use the folder the space's own service runs in, or one another task's
 session already uses: give it another with `--folder` (a git worktree, for example).
 

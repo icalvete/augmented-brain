@@ -366,7 +366,9 @@ de la tarea: la sesión remota a la que entras desde otro ordenador puede lanzar
 
 Hay dos límites que pone Claude. La carpeta tiene que ser de confianza ella misma: que
 confíe en una carpeta de arriba no basta, así que la primera vez el comando te dice que
-abras Claude una vez en esa carpeta y aceptes la pregunta. Y Claude solo admite un
+abras Claude una vez en esa carpeta y aceptes la pregunta. Un worktree de git es la
+excepción: Claude guarda la respuesta con su repositorio principal, así que basta con
+confiar en uno de los dos. Y Claude solo admite un
 servidor remoto por carpeta, así que una tarea no puede usar la carpeta del servicio del
 espacio ni una que ya use la sesión de otra tarea: dale otra con `--folder` (un worktree
 de git, por ejemplo).

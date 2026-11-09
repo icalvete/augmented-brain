@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+- **`session start` reconoce un worktree de confianza.** Claude guarda la confianza de
+  un worktree de git con su repositorio principal, así que, después de aceptar la
+  pregunta en un worktree, `session start` seguía diciendo que la carpeta no era de
+  confianza y se negaba. Ahora mira también ahí.
 - **Una tarea cuyo repositorio es bare recibe una sesión en uno de sus worktrees.**
   `session start` se saltaba un repositorio bare pero luego no encontraba carpeta, así
   que había que darle una con `--folder`. Ahora elige uno de los worktrees del
