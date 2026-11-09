@@ -7,6 +7,9 @@
   guardia lo revisaba como si se ejecutara, y lo paraba cuando el mismo comando acababa
   de escribirlo o el script tenía algo que no deja pasar. Ahora pasa. Un `+n` después de
   `-n`, o una shell interactiva (`-i`), sigue contando como ejecutar el script.
+- **El instalador también cumple la promesa.** Al terminar una instalación o una
+  actualización seguía diciendo que el programa «puede cambiar»; ahora dice lo mismo que
+  el README: puede tener errores, pero lo que tienes sigue funcionando.
 
 ## 0.16.2-alpha
 
