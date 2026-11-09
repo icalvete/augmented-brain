@@ -6,7 +6,8 @@
   took the first trusted worktree by name, and since 0.16.1 every worktree of a trusted
   repository counts as trusted, so a session could open on a leftover feature branch. It
   now prefers the worktree on the default branch, then one named after it
-  (`site-main`).
+  (`site-main`). Its message and the guides no longer say the session starts by reading
+  its task on its own: it waits for you, and reads its task first when you write.
 
 ## 0.16.1-alpha
 

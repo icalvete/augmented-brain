@@ -20,8 +20,8 @@ var launchMessages = map[string]msg{
 		es: "%s no nombra ningún repositorio, así que no sé en qué carpeta abrirla. Dímela con --folder DIR (una carpeta propia: el servicio remoto del espacio ya sirve %s).",
 	},
 	"session.started": {
-		en: "Opened the session \"%s\" for %s, in %s. It shows up in Claude Desktop and claude.ai within a minute, and starts by reading its task.\nIt closes when that session ends, or with: augmented-brain session stop %s",
-		es: "Abierta la sesión «%s» para %s, en %s. Sale en Claude Desktop y claude.ai en menos de un minuto, y empieza leyendo su tarea.\nSe cierra al terminar esa sesión, o con: augmented-brain session stop %s",
+		en: "Opened the session \"%s\" for %s, in %s. It shows up in Claude Desktop and claude.ai within a minute. It waits for you: when you write to it, it reads its task first.\nIt closes when that session ends, or with: augmented-brain session stop %s",
+		es: "Abierta la sesión «%s» para %s, en %s. Sale en Claude Desktop y claude.ai en menos de un minuto. Te espera: cuando le escribes, lo primero que hace es leer su tarea.\nSe cierra al terminar esa sesión, o con: augmented-brain session stop %s",
 	},
 	"session.untrusted": {
 		en: "Claude does not trust %s yet, and its server only starts in a folder that accepted the question itself (trusting a folder above it is not enough). Once, in a terminal on %s (from another computer: ssh %s):",

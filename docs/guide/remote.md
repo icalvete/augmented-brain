@@ -119,7 +119,8 @@ augmented-brain session start task-new-website
 ```
 
 and within a minute a new session, named after the task, shows up in claude.ai and Claude
-Desktop. It starts by reading its task and telling you where it stands. The folder is the
+Desktop. It waits for you: when you write to it, it reads its task first and tells you
+where it stands. The folder is the
 first of the task's repositories found in the space's work folders, or the one `--folder`
 gives.
 
