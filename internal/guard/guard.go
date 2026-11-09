@@ -275,6 +275,10 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 		}
 		return p.root(i18n.T(p.Lang, "guard.root.runuser", p.rootReason()))
 	case "systemd-run":
+		// --version and --help only print: they start nothing, as root or otherwise.
+		if len(args) == 1 && (args[0] == "--version" || args[0] == "--help" || args[0] == "-h") {
+			return allow
+		}
 		if !slices.Contains(args, "--user") {
 			return p.root(i18n.T(p.Lang, "guard.root.systemdrun", p.rootReason()))
 		}

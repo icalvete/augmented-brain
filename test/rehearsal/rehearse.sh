@@ -12,11 +12,15 @@
 # logs go to test/rehearsal/logs/ (not committed). --update first installs the release
 # published last, from GitHub, and runs its doctor, so the release of this checkout goes in
 # as an update: the same as --from a snapshot with the last release, without keeping one.
+# On Ubuntu it then runs the smoke test with a real systemd (smoke.py): remote install,
+# a reboot of the VM, the unit back with its PATH and permission mode, and session start.
 # --sessions also asks a real Claude a couple of things: the VM's Claude must be logged in (in a snapshot you keep for that).
 #
 # The VMs are the ones of test/vm/ubuntu-desktop and test/vm/windows-11, made once with
 # vagrant up (see their Vagrantfile). Their Vagrant state lives in the main copy of the
-# repository, which is where this looks for it.
+# repository, which is where this looks for it. Both take ports 2222 and 53389 on this
+# computer, and their `clean` snapshot is a saved state, where Vagrant cannot move them:
+# rehearse one only while the other is off.
 set -eu
 top=$(git rev-parse --show-toplevel)
 cd "$top"
@@ -49,7 +53,7 @@ cp install.sh install.ps1 "$work/release/"
 mkdir -p "$work/mk/marketplace"
 cp -r plugin .claude-plugin "$work/mk/marketplace/"
 tar -C "$work/mk" -czf "$work/release/marketplace.tgz" marketplace
-cp test/rehearsal/checks.py "$work/release/"
+cp test/rehearsal/checks.py test/rehearsal/smoke.py "$work/release/"
 port=$(python3 -I -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1])')
 (cd "$work/release" && exec python3 -I -m http.server --bind 127.0.0.1 "$port" >/dev/null 2>&1) &
 server=$!
@@ -69,6 +73,7 @@ for vm in $vms; do
       export PATH=\$HOME/.local/bin:\$PATH AB_RELEASE_URL=$url AB_MARKETPLACE=\$HOME/ab-release/marketplace
       rm -rf ~/ab-release && mkdir -p ~/ab-release && curl -fsS $url/marketplace.tgz | tar -C ~/ab-release -xzf -
       curl -fsS $url/checks.py -o ~/ab-release/checks.py
+      curl -fsS $url/smoke.py -o ~/ab-release/smoke.py
       if [ -n '$update' ]; then
         echo '##### the release published last'
         curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | env -u AB_RELEASE_URL -u AB_MARKETPLACE AB_YES=1 AB_NO_DESKTOP=1 sh
@@ -77,6 +82,13 @@ for vm in $vms; do
       fi
       curl -fsSL $url/install.sh | AB_YES=1 AB_NO_DESKTOP=1 sh
       python3 ~/ab-release/checks.py $version $sessions" >"$log" 2>&1 || code=$?
+    # The smoke test with a real systemd: remote install with a pretend claude, a
+    # reboot, and the unit must come back with its PATH and permission mode; then
+    # session start must run a session for a task (smoke.py).
+    smoke="export PATH=\$HOME/.local/bin:\$PATH; python3 ~/ab-release/smoke.py"
+    VAGRANT_CWD="$dir" vagrant ssh -c "$smoke before" >>"$log" 2>&1 || code=$?
+    VAGRANT_CWD="$dir" vagrant reload --no-provision >/dev/null 2>&1 || code=$?
+    VAGRANT_CWD="$dir" vagrant ssh -c "$smoke after" >>"$log" 2>&1 || code=$?
   else
     VAGRANT_CWD="$dir" vagrant winrm -s powershell -c "
       \$ProgressPreference = 'SilentlyContinue'
