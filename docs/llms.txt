@@ -12,7 +12,7 @@ On Windows, in PowerShell:
 
 The first session is a short guided interview. A local web panel (`augmented-brain panel`, or `/brain:panel` in Claude Code) shows today at a glance across every space and lets you see and edit tasks, reminders, the inbox, the weekly review, areas, knowledge, rules, people, the names of your secrets (never their values), sessions, the profile, health, the map of your git repositories (Repositories), the guard's lists (Guard), the configuration's last versions (Versions) and Help (links to these docs and a problem report for GitHub). A session outside every space's folder (such as a new session in the Claude desktop app with no folder chosen) uses the personal space.
 
-On Linux, `augmented-brain remote install` keeps Claude on the computer reachable from claude.ai or Claude Desktop after a reboot, and `augmented-brain session start <task>` opens a remote session of its own for one task. `augmented-brain panel remote` opens the panel from a phone through the user's own Tailscale network. The configuration keeps its last 10 versions on the computer (`augmented-brain config history`, `config restore`).
+`augmented-brain remote install` (Linux, macOS and Windows) keeps Claude on the computer reachable from claude.ai or Claude Desktop after a reboot, and `augmented-brain session start <task>` opens a remote session of its own for one task (Linux only). `augmented-brain panel remote` opens the panel from a phone through the user's own Tailscale network. The configuration keeps its last 10 versions on the computer (`augmented-brain config history`, `config restore`).
 
 The documentation, as web pages: https://icalvete.github.io/augmented-brain/guide/
 
@@ -34,7 +34,7 @@ The documentation, as web pages: https://icalvete.github.io/augmented-brain/guid
 - [The weekly review](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/weekly-review.md): what it goes through, when it is offered, with Claude or in the panel
 - [Backup and restore](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/backup.md): a private git repository per space, automatic after each session; a new machine; what a restore does not bring
 - [Connect your services](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.md): calendar, mail, documents and Jira through MCP
-- [Remote access](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/remote.md): augmented-brain remote: Claude on this computer reachable from anywhere, also after a reboot (Linux); a session per task with session start
+- [Remote access](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/remote.md): augmented-brain remote: Claude on this computer reachable from anywhere, also after a reboot; a session per task with session start (Linux)
 - [Bring in a memory you already have](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/import.md): augmented-brain import: plan first, --apply, --map, --repos-base
 - [From your phone or another computer](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/anywhere.md): remote access and the panel together, which session to use, what to do when it stops answering
 - [Updating and uninstalling](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/update-and-uninstall.md): what update does, the three levels of uninstall, moving to a new computer
