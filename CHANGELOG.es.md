@@ -14,6 +14,14 @@
   pantallas del primer arranque de Claude Code (Enter a secas en «confiar en la carpeta»
   sale), el error rojo del hook de PowerShell en Windows, e instalar en Windows por ssh,
   donde el instalador no puede preguntar.
+- **El instalador solo acepta un sí de verdad.** Sus preguntas tomaban cualquier
+  respuesta menos «n» por un sí, así que una palabra suelta (alguien nuevo tecleó `cls`
+  para ver la pantalla) abría Claude. Ahora vale Enter, sí o no; cualquier otra cosa
+  vuelve a preguntar. Instalar Git y Claude Code en Windows, y Claude Code en Linux y
+  macOS, enseña puntos mientras trabaja en vez de un minuto de silencio. Y, cuando ha
+  cambiado el PATH, su último mensaje dice que la terminal que usaste todavía no
+  encuentra `augmented-brain`, también cuando propone la app de escritorio.
+- **`doctor`** ya no dice «1 versiones guardadas».
 - **Comprobar la sintaxis ya no se para.** `sh -n install.sh` (también `bash -n` y `-o
   noexec`) solo lee el script para ver si está bien escrito y no ejecuta nada, pero el
   guardia lo revisaba como si se ejecutara, y lo paraba cuando el mismo comando acababa

@@ -190,6 +190,11 @@ func nextStep(lang, work string) string {
 		next = "newterm"
 	}
 	text := fmt.Sprintf(msg(lang, next), work)
+	if next != "newterm" && os.Getenv("AB_NEW_TERMINAL") == "1" {
+		// The terminal that ran the installer does not see the new PATH: said plainly, or
+		// the first augmented-brain typed there looks like a failed install.
+		text += "\n" + msg(lang, "newterm.note")
+	}
 	if runtime.GOOS == "windows" {
 		// Windows PowerShell 5.1, the one that comes with Windows, has no &&.
 		text = strings.ReplaceAll(text, " && claude", "; claude")

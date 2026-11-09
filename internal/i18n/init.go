@@ -74,6 +74,10 @@ var initMessages = map[string]msg{
 		en: "Now open a new terminal (so it finds what was just installed) and type:\n  cd %s && claude\nThe first time, Claude will ask who you are and how you like to work.",
 		es: "Ahora abre una terminal nueva (para que encuentre lo recién instalado) y escribe:\n  cd %s && claude\nLa primera vez, Claude te preguntará quién eres y cómo te gusta trabajar.",
 	},
+	"init.newterm.note": {
+		en: "This terminal does not find augmented-brain yet: for its commands, open a new one.",
+		es: "Esta terminal todavía no encuentra augmented-brain: para sus comandos, abre una nueva.",
+	},
 	"init.launch": {
 		en: "From now on, to work: open a new terminal and type\n  cd %s && claude",
 		es: "A partir de ahora, para trabajar: abre una terminal nueva y escribe\n  cd %s && claude",

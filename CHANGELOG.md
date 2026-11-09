@@ -12,6 +12,13 @@
 - **Known limitations: what a newcomer meets that is not ours.** Claude Code's own
   first-run screens (Enter alone on "trust this folder" exits), the red PowerShell hook
   error on Windows, and installing on Windows over ssh, where the installer cannot ask.
+- **The installer only takes a real yes.** Its questions took any answer but "n" for a
+  yes, so a stray word (a newcomer typed `cls` to see the screen) opened Claude. Now
+  Enter, yes or no; anything else asks again. Installing Git and Claude Code on Windows,
+  and Claude Code on Linux and macOS, shows dots while it works instead of a minute of
+  silence. And when it changed the PATH, its last message says that the terminal you
+  used does not find `augmented-brain` yet, also when it suggests the desktop app.
+- **`doctor`** no longer says "1 versions kept".
 - **A syntax check is no longer stopped.** `sh -n install.sh` (also `bash -n`, `-o
   noexec`) only reads the script to check how it is written and runs none of it, but the
   guard checked the script as if it ran, and stopped it when the same command had just
