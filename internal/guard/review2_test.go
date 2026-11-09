@@ -85,6 +85,17 @@ func TestReviewFollowUp(t *testing.T) {
 		"go build -o bin/tool && ./bin/tool":                     Allow,
 		"cp /tmp/a.sh y.sh && ./y.sh":                            Ask,
 		"bash safe.sh":                                           Allow,
+		// a syntax check (-n, noexec) reads the script and runs nothing
+		"echo '" + su + " id' > y.sh && sh -n y.sh":      Allow,
+		"cp /tmp/a.sh y.sh && bash -n y.sh":              Allow,
+		"cp /tmp/a.sh y.sh && bash -en y.sh":             Allow,
+		"cp /tmp/a.sh y.sh && bash -o noexec y.sh":       Allow,
+		"bash -n -c '" + su + " id'":                     Allow,
+		"echo '" + su + " id' > y.sh && bash -n +n y.sh": Deny, // +n turns it off
+		"echo '" + su + " id' > y.sh && bash -ni y.sh":   Deny, // ignored when interactive
+		"echo '" + su + " id' > y.sh && bash y.sh -n":    Deny, // the script's argument
+		"bash -c '" + su + " id' -n":                     Deny,
+		"bash -o pipefail -c '" + su + " id'":            Deny,
 	} {
 		if got := p.Command(cmd); got.Verdict != want {
 			t.Errorf("%q: %v (%s), want %v", cmd, got.Verdict, got.Reason, want)

@@ -997,7 +997,8 @@ The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh 
 `docker exec`, `podman exec`, `kubectl exec`, `bash -c`, loops, what a pipe feeds a shell
 (`echo 'sudo …' | bash`), short scripts Claude runs (`bash deploy.sh`,
 `./deploy.sh`), also when the same command writes them first (`echo '…' > x.sh && bash
-x.sh`), `env -S '…'`, and your git aliases (`git ci` when `ci` stands for `commit`). It checks the commands Claude leaves running to watch something, and
+x.sh`), `env -S '…'`, and your git aliases (`git ci` when `ci` stands for `commit`). A shell that only checks a script's syntax
+(`sh -n install.sh`, `bash -o noexec`) runs nothing, so it is let through. It checks the commands Claude leaves running to watch something, and
 those of the helpers Claude starts (subagents and workflows).
 
 ## When something is wrong with it

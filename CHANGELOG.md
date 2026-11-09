@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **A syntax check is no longer stopped.** `sh -n install.sh` (also `bash -n`, `-o
+  noexec`) only reads the script to check how it is written and runs none of it, but the
+  guard checked the script as if it ran, and stopped it when the same command had just
+  written it or the script held something it refuses. Now it lets it through. `+n`
+  after `-n`, or an interactive shell (`-i`), still counts as running the script.
+
 ## 0.16.2-alpha
 
 Released 2026-11-09.
