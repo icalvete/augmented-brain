@@ -7,6 +7,17 @@
   guard checked the script as if it ran, and stopped it when the same command had just
   written it or the script held something it refuses. Now it lets it through. `+n`
   after `-n`, or an interactive shell (`-i`), still counts as running the script.
+- **Arithmetic no longer asks.** `echo $(( $(date +%s)-1 ))`, the usual way to time
+  something, asked the user: the guard read `$((…))` as a command inside a subshell and
+  took the expression for a program it could not know. Now only the commands inside it
+  (`$(date +%s)`) are checked, and stopped when they should be. `systemd-run --version`
+  and `--help`, which start nothing, are no longer taken for becoming root.
+- **A net under false positives.** A corpus of everyday commands (reading git, `sh -n`,
+  `go test`, `gh pr checks`, pipelines, heredocs, loops), in the shapes of real
+  sessions, goes through the guard in every pull request: one that is stopped or asked
+  about fails the tests. And the rehearsal before a release now reboots the Ubuntu VM
+  after `remote install` and checks, with the real systemd, that the service comes back
+  with its PATH and permission mode and that `session start` runs a session.
 - **The installer keeps the promise too.** At the end of an install or an update it
   still said the program "may change"; it now says what the README says: it may have
   bugs, but what you have keeps working.

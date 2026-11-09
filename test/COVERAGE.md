@@ -39,8 +39,8 @@ row here with the test that covers it.
 | `import` | `internal/importer`, `cmd` `TestImportMissingSource` |
 | `backup`, `backup setup`, `restore` | `internal/backup` (25 tests), `cmd` `TestBackupSpaceFlag`, `TestRestoreNamesTheSecrets` |
 | `panel`, `panel remote`, `panel stop` | `internal/panel`, `cmd` `TestPanelRemoteExplains`, `TestExplainTailnet`; `scripts/panel-browser-check.py` |
-| `remote install`, `uninstall`, `status` | `internal/remote` (14 tests on Linux's systemd; `TestLaunchdInstallStatusUninstall`, `TestPlistText`, `TestLaunchdErrors` for macOS; `TestTasksInstallStatusUninstall`, `TestTaskText`, `TestTasksErrors` for Windows, all with fakes); `scripts/remote-check.py` for real with a pretend claude (CI: macOS and Windows; tried in the Windows VM, also with the real claude not signed in); a real connection from claude.ai on a Mac and on Windows by hand |
-| `session start`, `stop`, `list` | `internal/remote` `TestStartRefuses`, `TestStartRuns`, `TestStartReportsFailure`, `TestFolderTrustedIsExact`; `internal/hook` `TestLaunchedSessionReadsItsTask`; tried by hand on Linux (a real session opened in a trusted folder) |
+| `remote install`, `uninstall`, `status` | `test/rehearsal/smoke.py`: on Linux with the real systemd and a pretend claude, install, a reboot of the VM, and the unit back with its PATH (claude's folder and the program's) and permission mode (rehearsal, Ubuntu VM); `internal/remote` (14 tests on Linux's systemd; `TestLaunchdInstallStatusUninstall`, `TestPlistText`, `TestLaunchdErrors` for macOS; `TestTasksInstallStatusUninstall`, `TestTaskText`, `TestTasksErrors` for Windows, all with fakes); `scripts/remote-check.py` for real with a pretend claude (CI: macOS and Windows; tried in the Windows VM, also with the real claude not signed in); a real connection from claude.ai on a Mac and on Windows by hand |
+| `session start`, `stop`, `list` | `internal/remote` `TestStartRefuses`, `TestStartRuns`, `TestStartReportsFailure`, `TestFolderTrustedIsExact`; `internal/hook` `TestLaunchedSessionReadsItsTask`; `test/rehearsal/smoke.py` after the reboot, with the real systemd (the transient unit runs in its folder with its task, PATH and mode, and its SessionStart hook names the task); tried by hand on Linux (a real session opened in a trusted folder) |
 | A task's own worktree of a bare repository, and the sweep of those left behind | `internal/remote` `TestTaskWorktree`, `TestSweepWorktrees` (real git, pretend systemd) | CI: Linux, macOS |
 | `config history`, `config restore` | `cmd` `TestConfigHistoryAndRestore`, `TestConfigRestoreFixesABrokenConfig`; `internal/confighistory` |
 | `update` | see Installing |
@@ -49,6 +49,16 @@ row here with the test that covers it.
 | `hook` | `internal/hook` (34 tests), `test/rehearsal/checks.py` |
 | `version`, `help`, nothing, an unknown command, extra words | `cmd` `TestNoArguments`, `TestExtraWordsAreRefused`, `TestUsageListsEveryCommand` |
 | Every command and flag documented | `cmd` `TestCommandsDocumented` |
+
+## The guard
+
+| Case | Covered by | Where |
+|---|---|---|
+| What it stops: push, root, secrets, production, untouchable hosts and repositories | `internal/guard` (one test file per subject), `internal/hook` `TestPreToolUse`; `checks.py` | Go, rehearsal |
+| What it must let through: everyday commands, in the shapes of real sessions (reading git, `sh -n`, `go test`, `gh pr checks`, pipelines, heredocs, loops, `$((…))`) | `internal/hook` `TestInnocentCommands`, over `internal/hook/testdata/innocent-commands.txt` | Go, every pull request |
+
+A false positive found by hand goes into that corpus with its fix. The corpus is made up
+in the shapes of real commands: this repository is public, so no real paths or names.
 
 ## MCP tools
 

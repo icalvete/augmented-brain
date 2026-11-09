@@ -1,0 +1,398 @@
+## Innocent commands: everyday work the guard must let through without a word.
+##
+## TestInnocentCommands (innocent_test.go) runs each one through the PreToolUse hook, as
+## the Bash tool would send it, and fails if any is denied or asked about. A false
+## positive costs the user a question they should not get, or a refusal: on 9-nov a
+## fix of the same day made `sh -n` on a script written by the same command a refusal,
+## and `echo $(( $(date +%s)-1 ))` asked.
+##
+## Each entry is a whole command line, and may take several lines (heredocs, loops).
+## Entries are separated by a line with only ----. Lines starting with ## are comments.
+## The shapes come from real sessions; the names and paths are made up (~/proyecto,
+## example.com): this repository is public, so nothing personal goes here.
+##
+## When the guard stops one of these on purpose, take it out and say why in the commit.
+
+## ---- reading git
+git status
+----
+git status --short
+----
+git -C ~/proyecto status --short --branch
+----
+git log --oneline -5
+----
+git log --oneline -3 origin/main
+----
+git -C ~/proyecto log --since=2026-10-01 --format='%h %ad %an %s' --date=short | head -15
+----
+git diff --stat
+----
+git diff HEAD~1 -- internal/guard/shell.go
+----
+git show --stat HEAD
+----
+git branch -vv
+----
+git branch -a | head -30
+----
+git worktree list
+----
+git fetch -q origin && git log --oneline -5 origin/main
+----
+git remote -v
+----
+git rev-parse --show-toplevel
+----
+git rev-list --count main..feature
+----
+git ls-files | wc -l
+----
+git blame -L 10,30 README.md
+----
+git grep -n 'func Command' -- '*.go'
+----
+git tag --sort=-creatordate | head -3
+----
+git stash list
+----
+git pull -q --ff-only origin main
+----
+git -C ~/proyecto check-ignore -v next-env.d.ts
+----
+git merge-tree --write-tree HEAD origin/main
+----
+## ---- local git that touches no remote
+git add -A -- docs README.md && git status -s | head -20
+----
+git switch -q -c new-branch origin/main
+----
+git -C ~/proyecto worktree add -b fix ../proyecto-fix origin/main
+----
+for b in demo first-run getting-started; do echo "$b $(git rev-list --count main..$b)"; done | tr '\n' ' '
+----
+for r in ~/proyecto ~/otro; do echo "== $r"; git -C $r fetch -q; git -C $r status --short | head; git -C $r branch -vv; done
+----
+for d in ~/proyecto ~/otro; do git -C $d switch -q main && git -C $d pull -q --ff-only && echo "$d: $(git -C $d status -sb | head -1) $(git -C $d log -1 --format='%h %cs')"; done
+----
+## ---- syntax checks (the 9-nov false positive)
+sh -n install.sh
+----
+bash -n scripts/precheck.sh && echo ok
+----
+sh -n install.sh && dash -n install.sh && echo ok
+----
+chmod +x scripts/check.sh && sh -n scripts/check.sh && grep -n "AB_NO_INIT" install.sh | head -3
+----
+cat > /tmp/scratch/probe.sh <<'EOF'
+#!/bin/sh
+set -eu
+echo "probing $1"
+EOF
+sh -n /tmp/scratch/probe.sh && echo syntax-ok
+----
+cp /tmp/scratch/a.sh y.sh && bash -n y.sh
+----
+## ---- Go
+go test ./...
+----
+go test -race ./... 2>&1 | grep -v "no test files" | tail -20
+----
+go test -count=1 -run TestPreToolUse ./internal/hook -v 2>&1 | tail -30
+----
+go vet ./... && go test -race ./internal/... 2>&1 | tail -30
+----
+gofmt -l .
+----
+gofmt -l . ; go vet ./... && go test -race -count=1 ./... 2>&1 | grep -v "^ok\|no test files"
+----
+gofmt -w internal/guard/review2_test.go && go test ./internal/guard/ 2>&1 | tail -15
+----
+go build -o /tmp/scratch/ab ./cmd/augmented-brain && /tmp/scratch/ab version
+----
+GOOS=windows go vet ./... && GOOS=darwin go vet ./...
+----
+go mod tidy && git diff --stat go.mod go.sum
+----
+~/go/bin/golangci-lint run ./... 2>&1 | tail -40; echo "--- vuln"; ~/go/bin/govulncheck ./... 2>&1 | tail -8
+----
+scripts/precheck.sh 2>&1 | tail -5
+----
+timeout 500 scripts/precheck.sh 2>&1 | tail -1
+----
+## ---- GitHub, read only
+gh pr checks 47
+----
+gh pr checks 47 --watch
+----
+gh pr checks 47 2>&1 | awk -F'\t' '{print $2}' | sort | uniq -c
+----
+gh pr view 35 --json state,mergeable,mergeStateStatus -q '.state+" "+.mergeStateStatus'
+----
+gh pr list --json number,title,mergeStateStatus --jq '.[]|"\(.number) \(.mergeStateStatus) \(.title)"'
+----
+gh pr diff 12 | head -100
+----
+gh run list --limit 5
+----
+gh run view 123456789 --log-failed | tail -50
+----
+gh issue view 8
+----
+gh api repos/example/demo/actions/runs --jq '.workflow_runs[0].status'
+----
+gh repo view --json defaultBranchRef -q .defaultBranchRef.name
+----
+gh release view --json tagName -q .tagName
+----
+gh auth status
+----
+gh pr create --title "guard: arithmetic" --body-file /tmp/scratch/pr.md
+----
+start=$(date +%s); sleep 20; while :; do s=$(gh pr checks 17 2>/dev/null); if [ -n "$s" ] && ! echo "$s" | grep -qP '\t(pending|in_progress|queued)\t'; then echo "done in $(( ($(date +%s)-start)/60 )) min"; echo "$s" | awk -F'\t' '{print $2"\t"$1}' | sort; break; fi; sleep 30; done
+----
+## ---- reading files
+ls
+----
+ls -la ~/proyecto
+----
+ls ~/proyecto 2>&1 | head; ls ~/.local/bin | head -30
+----
+cat README.md
+----
+cat VERSION; grep -n "^## " CHANGELOG.md | head -4
+----
+head -60 docs/guide/commands.md
+----
+tail -5 app.log
+----
+tail -c 300 notes.md | od -c | tail -2
+----
+sed -n '1,40p' internal/hook/hook.go
+----
+sed -n '/^jobs:/,/runs-on/p' .github/workflows/ci.yml
+----
+sed -n '/^---$/,/^---$/!p' notes.md | head -15; command -v go && go version
+----
+wc -l internal/remote/*.go | tail -20
+----
+f=~/proyecto/notes.md; grep -n '^## ' $f; tail -3 $f | cut -c1-200
+----
+F=~/proyecto/task.md; sed -n '82,117p' $F | cut -c1-400; echo ----; tail -n 25 $F | cut -c1-700
+----
+stat -c '%y %s' go.mod
+----
+file assets/logo.png
+----
+du -sh ~/proyecto; df -h ~ | tail -1
+----
+tree -L 2 internal | head -40
+----
+diff -u a.txt b.txt
+----
+cmp -s a.bin b.bin && echo same
+----
+md5sum dist/*.tar.gz
+----
+sha256sum -c checksums.txt
+----
+## ---- searching
+grep -rn "TODO" internal | head -20
+----
+grep -n -B2 -A6 'root_ask' docs/guide/configuration.md
+----
+grep -n -iE "install.ps1|irm |powershell" README.md | head -5
+----
+grep -n 'docker run' *.sh | head; sed -n 1,40p client.py
+----
+rg -n "func parse" internal/
+----
+find . -name '*.go' -newer go.mod | head
+----
+find ~/proyecto -name '*.jsonl' -newermt '2026-11-08 12:15' -printf '%TH:%TM %s %p\n' | sort | tail -20
+----
+find test -type f | head -20; cat test/test_helper.rb
+----
+for f in internal/hook/hook_test.go internal/panel/control_test.go; do grep -n 'func TestMain' -A8 $f; done
+----
+## ---- pipelines and text tools
+ps -eo pid,lstart,etime,cmd | grep -iE 'claude' | grep -v grep | cut -c1-200 | head -20
+----
+ps -eo pid,ppid,rss,etime,args --sort=-rss | awk 'NR>1 && $3>2000000 {printf "%s %.1fGB %s\n", $1, $3/1048576, $5}'
+----
+pgrep -af "claude remote-control" || echo "nothing left"
+----
+cat data.json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("version"))'
+----
+curl -s https://example.com/api/releases.json | python3 -c "import json,sys; print(json.load(sys.stdin)[0]['tag'])"
+----
+curl -fsS -o /dev/null -w '%{http_code}\n' https://example.com/
+----
+jq -r '.items[] | .name' data.json | sort | uniq -c | sort -rn | head
+----
+awk -F, 'NR>1 {s+=$3} END {print s}' report.csv
+----
+sort -u words.txt | wc -l
+----
+echo "$PATH" | tr ':' '\n'
+----
+printf '%s\n' a b c | xargs -n1 echo
+----
+date -u '+%H:%M UTC'; date '+%H:%M %Z'
+----
+echo $(( (3-1)*2 ))
+----
+echo "took $(( $(date +%s)-1 ))s"
+----
+since=$(( $(date +%s)-7*86400 )); echo "$since"
+----
+echo "start $(( ($(date +%s)-7*86400)*1000 ))"
+----
+## ---- shell structure
+cd ~/proyecto && git status --short && git log --oneline -3
+----
+cd ~/proyecto && gofmt -l . && go vet ./... && go test ./... 2>&1 | grep -v '^ok' | head
+----
+cd ~/proyecto; sed -n 96,110p internal/panel/server.go
+----
+cd internal && ls && cd ..
+----
+(cd docs && ls guide | head)
+----
+{ echo one; echo two; } > /tmp/scratch/out.txt
+----
+if [ -f go.mod ]; then echo go; else echo other; fi
+----
+case "$(uname -s)" in Linux) echo linux ;; Darwin) echo mac ;; esac
+----
+for i in 1 2 3; do echo "try $i"; sleep 1; done
+----
+while read -r line; do echo "> $line"; done < notes.md
+----
+test -d .git && echo repo || echo none
+----
+command -v uv uvx pipx 2>&1; uv --version 2>&1 | head -1
+----
+which tmux vagrant VBoxManage; tmux -V
+----
+export GOFLAGS=-count=1 && go test ./internal/guard
+----
+D=/tmp/scratch/demo; mkdir -p $D && cd $D && ls
+----
+## ---- heredocs
+cat <<'EOF'
+Nothing here runs: it is only printed.
+sudo would be a word, not a command.
+EOF
+----
+cat > notes/plan.md <<'EOF'
+# Plan
+1. Read the code.
+2. Write the test.
+EOF
+----
+cat >> app.css <<'EOF'
+.kind { font-size: .85rem; border-radius: 999px; padding: 1px 10px; }
+EOF
+grep -n "^\.kind" app.css
+----
+python3 - <<'EOF'
+import json
+print(json.dumps({"ok": True}))
+EOF
+----
+python3 -I - <<'EOF'
+p = "docs/guide/commands.md"
+s = open(p).read()
+assert "## session" in s
+open(p, "w").write(s.replace("## session", "## Sessions", 1))
+EOF
+----
+git hash-object --stdin <<'EOF'
+only hashed, nothing is written
+EOF
+----
+psql -X -c "select 1" <<< ""
+----
+## ---- small changes in the work folder
+mkdir -p build && cp README.md build/ && ls build
+----
+rm -rf build
+----
+rm -rf /tmp/scratch/out && mkdir -p /tmp/scratch/out
+----
+sed -i 's/old-name/new-name/' docs/guide/commands.md && git diff --stat
+----
+mv draft.md notes/draft.md
+----
+touch CHANGELOG.md
+----
+chmod +x scripts/new-check.sh
+----
+tar -czf /tmp/scratch/release.tgz plugin
+----
+unzip -l package.zip | head
+----
+## ---- running the project
+python3 -I scripts/faults-check.py 2>&1 | tail -20
+----
+python3 scripts/build-guides.py
+----
+bin/rails test 2>&1 | tail -30
+----
+npm run build && npm test
+----
+make test
+----
+./scripts/precheck.sh --full
+----
+docker ps
+----
+docker logs web --since 10m 2>&1 | grep -v "/health" | tail -20
+----
+docker run --rm alpine echo hi
+----
+docker compose up -d && docker compose ps
+----
+## ---- the machine, read only
+uname -a
+----
+hostname; uptime -s
+----
+free -g | head -2
+----
+systemctl --user status demo.service --no-pager
+----
+systemctl --user list-units --all | grep ab-remote || echo "no unit"
+----
+systemctl --user is-active demo.service
+----
+systemctl --user daemon-reload
+----
+journalctl --user -u demo.service -n 20 --no-pager
+----
+timeout 15 bash -c 'until journalctl --user -u demo --no-pager -q | grep -qiE "session|error"; do sleep 1; done'; journalctl --user -u demo --no-pager -q | tail -20
+----
+systemd-run --version
+----
+systemd-run --user --unit demo-probe sleep 60
+----
+loginctl show-user "$USER" -p Linger
+----
+VBoxManage list runningvms; pgrep -af vagrant | grep -v pgrep | head -5
+----
+tailscale status 2>&1 | head -20
+----
+claude --version
+----
+claude mcp list
+----
+claude --help 2>&1 | grep -E "permission-mode|--model"
+----
+ssh -V
+----
+aws --version
+----
+aws s3 ls --profile demo-dev
+----
+sudo -u www-data ls /var/www

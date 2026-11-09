@@ -7,6 +7,19 @@
   guardia lo revisaba como si se ejecutara, y lo paraba cuando el mismo comando acababa
   de escribirlo o el script tenía algo que no deja pasar. Ahora pasa. Un `+n` después de
   `-n`, o una shell interactiva (`-i`), sigue contando como ejecutar el script.
+- **La aritmética ya no pregunta.** `echo $(( $(date +%s)-1 ))`, lo normal para medir
+  un tiempo, hacía preguntar al usuario: el guardia leía `$((…))` como un comando dentro
+  de una subshell y tomaba la expresión por un programa que no podía conocer. Ahora solo
+  se revisan los comandos de dentro (`$(date +%s)`), y se paran cuando toca.
+  `systemd-run --version` y `--help`, que no arrancan nada, ya no cuentan como hacerse
+  root.
+- **Una red contra los falsos positivos.** Un corpus de comandos de trabajo normales
+  (git de lectura, `sh -n`, `go test`, `gh pr checks`, tuberías, heredocs, bucles), con
+  la forma de los de sesiones reales, pasa por el guardia en cada pull request: si
+  alguno se para o pregunta, fallan las pruebas. Y el ensayo antes de una versión ahora
+  reinicia la VM de Ubuntu después de `remote install` y comprueba, con el systemd de
+  verdad, que el servicio vuelve con su PATH y su modo de permisos y que `session start`
+  arranca una sesión.
 - **El instalador también cumple la promesa.** Al terminar una instalación o una
   actualización seguía diciendo que el programa «puede cambiar»; ahora dice lo mismo que
   el README: puede tener errores, pero lo que tienes sigue funcionando.

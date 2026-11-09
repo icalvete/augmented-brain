@@ -96,6 +96,20 @@ func TestReviewFollowUp(t *testing.T) {
 		"echo '" + su + " id' > y.sh && bash y.sh -n":    Deny, // the script's argument
 		"bash -c '" + su + " id' -n":                     Deny,
 		"bash -o pipefail -c '" + su + " id'":            Deny,
+		// systemd-run that only prints
+		"systemd-run --version":        Allow,
+		"systemd-run --help":           Allow,
+		"systemd-run --version id":     Deny,
+		"systemd-run --user --version": Allow,
+		// arithmetic $((…)): only the substitutions inside it run
+		"echo $(( $(date +%s)-1 ))":                   Allow,
+		"echo \"took $(( ($(date +%s)-s)/60 )) min\"": Allow,
+		"echo $(( ($(date +%s)-7*86400)*1000 ))":      Allow,
+		"echo $(( $(" + su + " id)+1 ))":              Deny,
+		"echo $(( `" + su + " id`+1 ))":               Deny,
+		"echo $(( $(( $(" + su + " id) )) + 1 ))":     Deny,
+		"echo \"$(( $(git " + push + ") ))\"":         Deny,
+		"x=$((" + su + " id) )":                       Deny, // a subshell, not arithmetic
 	} {
 		if got := p.Command(cmd); got.Verdict != want {
 			t.Errorf("%q: %v (%s), want %v", cmd, got.Verdict, got.Reason, want)

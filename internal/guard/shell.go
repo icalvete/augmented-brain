@@ -73,6 +73,9 @@ func (p *parser) step() {
 		p.singleQuoted()
 	case r == '"':
 		p.doubleQuoted()
+	case r == '$' && ahead(1) == '(' && p.arithmetic(i):
+		p.cur.WriteRune(subst)
+		p.inWord = true
 	case (r == '$' || r == '<' || r == '>') && ahead(1) == '(':
 		p.substitution(i + 2)
 		p.cur.WriteRune(subst)
@@ -168,6 +171,8 @@ func (p *parser) doubleQuoted() {
 		case rs[i] == '\\' && i+1 < len(rs) && strings.ContainsRune(`"\$`+"`", rs[i+1]):
 			p.i++
 			p.cur.WriteRune(rs[p.i])
+		case rs[i] == '$' && i+1 < len(rs) && rs[i+1] == '(' && p.arithmetic(i):
+			p.cur.WriteRune(subst)
 		case rs[i] == '$' && i+1 < len(rs) && rs[i+1] == '(':
 			p.substitution(i + 2)
 			p.cur.WriteRune(subst)
@@ -185,6 +190,51 @@ func (p *parser) substitution(i int) {
 	var s string
 	s, p.i = balanced(p.rs, i)
 	p.subs = append(p.subs, s)
+}
+
+// arithmetic reads, when the $ at i opens an arithmetic expansion $((…)), the whole of
+// it: only the command substitutions inside run, and they are kept to check later. What
+// else is there is numbers and names, not programs: read as $( (…) ), the expression
+// in "$(( $(date +%s)-1 ))" would be a program the guard cannot know. It says false,
+// and reads nothing, when the text at i is not one: $( (cmd) ), or a $(( never closed.
+func (p *parser) arithmetic(i int) bool {
+	subs, end, ok := arithmeticAt(p.rs, i)
+	if !ok {
+		return false
+	}
+	p.subs = append(p.subs, subs...)
+	p.i = end
+	return true
+}
+
+// arithmeticAt is arithmetic's reading of rs: the substitutions in the $((…)) at i and
+// the index of its last parenthesis. Like bash, it is one only when the parenthesis that
+// closes the inner one is the outer's closing too: "$((a) )" is a subshell.
+func arithmeticAt(rs []rune, i int) (subs []string, end int, ok bool) {
+	if i+2 >= len(rs) || rs[i] != '$' || rs[i+1] != '(' || rs[i+2] != '(' {
+		return nil, 0, false
+	}
+	_, inner := balanced(rs, i+3)
+	if inner+1 >= len(rs) || rs[inner] != ')' || rs[inner+1] != ')' {
+		return nil, 0, false
+	}
+	for j := i + 3; j < inner; j++ {
+		switch {
+		case rs[j] == '$' && j+1 < inner && rs[j+1] == '(':
+			if more, e, ok := arithmeticAt(rs, j); ok {
+				subs, j = append(subs, more...), e
+				continue
+			}
+			var s string
+			s, j = balanced(rs, j+2)
+			subs = append(subs, s)
+		case rs[j] == '`':
+			var s string
+			s, j = backquoted(rs, j+1)
+			subs = append(subs, s)
+		}
+	}
+	return subs, inner + 1, true
 }
 
 // backquote keeps, to check later, the text of a `…` that starts at i.
