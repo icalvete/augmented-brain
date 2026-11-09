@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **With one space, saving a person no longer asks where.** The program already saved
+  them in the only space, but the text Claude reads told it to always ask, so a first
+  session asked "which spaces?" with only one and did not save the person. It now says
+  that with one space there is nothing to ask.
+
 ## 0.15.0-alpha
 
 Released 2026-11-08.
