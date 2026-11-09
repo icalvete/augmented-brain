@@ -126,7 +126,10 @@ de la tarea. Te espera: cuando le escribes, lo primero que hace es leer su tarea
 decirte cómo está. La carpeta es la del primer repositorio de la tarea que encuentra en
 las carpetas de trabajo del espacio, o la que diga `--folder`. Para un repositorio bare, la
 tarea recibe un worktree de git propio, en una rama nueva desde la rama por defecto de
-origin; `session stop` lo quita si no se pierde nada.
+origin. Se va solo cuando no se pierde nada: con `session stop`, al cerrar la tarea o, si
+la sesión terminó de otra forma (un reinicio, cerrarla desde Claude Desktop), en el
+próximo `session start` o `doctor`. Uno con cambios sin commitear o sin subir se queda, y
+`doctor` lo nombra.
 
 - **Claude tiene que confiar en esa carpeta ella misma.** Que confíe en la carpeta del
   espacio no basta. La primera vez, el comando dice qué hacer: en la máquina (o por

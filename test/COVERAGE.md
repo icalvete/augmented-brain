@@ -41,6 +41,7 @@ row here with the test that covers it.
 | `panel`, `panel remote`, `panel stop` | `internal/panel`, `cmd` `TestPanelRemoteExplains`, `TestExplainTailnet`; `scripts/panel-browser-check.py` |
 | `remote install`, `uninstall`, `status` | `internal/remote` (14 tests on Linux's systemd; `TestLaunchdInstallStatusUninstall`, `TestPlistText`, `TestLaunchdErrors` for macOS; `TestTasksInstallStatusUninstall`, `TestTaskText`, `TestTasksErrors` for Windows, all with fakes); `scripts/remote-check.py` for real with a pretend claude (CI: macOS and Windows; tried in the Windows VM, also with the real claude not signed in); a real connection from claude.ai on a Mac and on Windows by hand |
 | `session start`, `stop`, `list` | `internal/remote` `TestStartRefuses`, `TestStartRuns`, `TestStartReportsFailure`, `TestFolderTrustedIsExact`; `internal/hook` `TestLaunchedSessionReadsItsTask`; tried by hand on Linux (a real session opened in a trusted folder) |
+| A task's own worktree of a bare repository, and the sweep of those left behind | `internal/remote` `TestTaskWorktree`, `TestSweepWorktrees` (real git, pretend systemd) | CI: Linux, macOS |
 | `config history`, `config restore` | `cmd` `TestConfigHistoryAndRestore`, `TestConfigRestoreFixesABrokenConfig`; `internal/confighistory` |
 | `update` | see Installing |
 | `uninstall` | see Installing |

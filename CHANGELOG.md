@@ -8,8 +8,12 @@
   on old code. It now fetches origin and makes `<repo>-<task>` on a new branch named
   after the task, from the default branch as it is now, and uses it again next time.
   `session stop` removes it with its branch when it holds nothing that is not on the
-  remote, and keeps it otherwise. Picking an existing worktree stays for `--folder`
-  naming a bare repository.
+  remote, and keeps it otherwise. Sessions that end without `session stop` (a reboot, a
+  session closed from Claude Desktop) are swept: the next `session start` and `doctor`
+  remove their worktrees with nothing of their own, `task_close` removes the task's, and
+  `doctor` warns about one that stays with work in it. Only the worktrees `session start`
+  made are ever touched. Picking an existing worktree stays for `--folder` naming a bare
+  repository.
 - **`session start` picks the worktree of the default branch.** For a bare repository it
   took the first trusted worktree by name, and since 0.16.1 every worktree of a trusted
   repository counts as trusted, so a session could open on a leftover feature branch. It

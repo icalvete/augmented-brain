@@ -123,7 +123,10 @@ Desktop. It waits for you: when you write to it, it reads its task first and tel
 where it stands. The folder is the
 first of the task's repositories found in the space's work folders, or the one `--folder`
 gives. For a bare repository, the task gets a git worktree of its own, on a new branch
-from origin's default branch; `session stop` removes it when nothing would be lost.
+from origin's default branch. It goes away by itself when nothing would be lost: with
+`session stop`, when the task is closed, or, for a session that ended some other way (a
+reboot, closing it from Claude Desktop), at the next `session start` or `doctor`. One
+with work not committed or not pushed stays, and `doctor` names it.
 
 - **Claude must trust that folder itself.** Trusting the space's folder is not enough. The
   first time, the command says what to do: on the machine (or through `ssh`), go to the

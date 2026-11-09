@@ -2165,7 +2165,10 @@ Desktop. It waits for you: when you write to it, it reads its task first and tel
 where it stands. The folder is the
 first of the task's repositories found in the space's work folders, or the one `--folder`
 gives. For a bare repository, the task gets a git worktree of its own, on a new branch
-from origin's default branch; `session stop` removes it when nothing would be lost.
+from origin's default branch. It goes away by itself when nothing would be lost: with
+`session stop`, when the task is closed, or, for a session that ended some other way (a
+reboot, closing it from Claude Desktop), at the next `session start` or `doctor`. One
+with work not committed or not pushed stays, and `doctor` names it.
 
 - **Claude must trust that folder itself.** Trusting the space's folder is not enough. The
   first time, the command says what to do: on the machine (or through `ssh`), go to the
@@ -2870,7 +2873,10 @@ augmented-brain session stop task-new-website
 
 When `session start` made a worktree for the task, `stop` also removes it with its
 branch, as long as nothing would be lost: with changes not committed, or commits not
-pushed, it keeps it and says so.
+pushed, it keeps it and says so. Sessions that end without `stop` (a reboot, a session
+closed from Claude Desktop) leave theirs: the next `session start` and `doctor` remove
+those with nothing of their own, closing the task removes its own, and `doctor` warns
+about any that stays with work in it.
 
 ## augmented-brain session list
 
@@ -3164,7 +3170,9 @@ Closes a finished task with its result. It is kept, never deleted. A task with o
 subtasks cannot close, and a task already closed is refused, so its result is never
 written over. If the task has watch dates not marked done, it says so: they
 still come up at the start of the session on their day, since closing is often when you
-write down what to check later.
+write down what to check later. When `session start` made a git worktree for the task and
+its session no longer runs, closing removes it with its branch if it holds nothing that
+is not on the remote, and says so; otherwise it says why it stays.
 
 - `id`: the task's id.
 - `result`: what was achieved, in one or two lines.

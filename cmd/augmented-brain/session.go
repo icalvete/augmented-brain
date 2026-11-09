@@ -61,12 +61,12 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			return sessionErr(l, err, errOut)
 		}
 		fmt.Fprintln(out, i18n.T(l, "session.stopped", args[1]))
-		switch wt, removed, why := removeTaskWorktree(c, args[1]); {
+		switch wt, removed, why := remote.RemoveTaskWorktree(c.Dir, args[1]); {
 		case removed:
 			fmt.Fprintln(out, i18n.T(l, "session.worktree.removed", tilde(wt)))
-		case why == "changes":
+		case why == remote.KeptChanges:
 			fmt.Fprintln(out, i18n.T(l, "session.worktree.kept.changes", tilde(wt)))
-		case why == "commits":
+		case why == remote.KeptCommits:
 			fmt.Fprintln(out, i18n.T(l, "session.worktree.kept.commits", tilde(wt)))
 		}
 		return 0
@@ -115,9 +115,15 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			}
 		}
 	} else if repo := taskRepo(s, task.Header.Repos); repo != "" && isBareRepo(repo) {
-		wt, base, made, fetched, err := taskWorktree(c, repo, id)
+		// Leftovers of sessions that ended without session stop (a reboot, a session
+		// closed from Claude Desktop) go first.
+		removed, _ := sys.SweepWorktrees(c.Dir)
+		for _, wt := range removed {
+			fmt.Fprintln(out, i18n.T(l, "session.worktree.swept", tilde(wt)))
+		}
+		wt, base, made, fetched, err := remote.TaskWorktree(c.Dir, repo, id)
 		switch {
-		case errors.Is(err, errNotOurWorktree):
+		case errors.Is(err, remote.ErrNotOurWorktree):
 			fmt.Fprintln(errOut, i18n.T(l, "session.worktree.taken", tilde(wt), tilde(repo)))
 			return 1
 		case err != nil:
@@ -128,7 +134,7 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			if !fetched {
 				fmt.Fprintln(out, i18n.T(l, "session.worktree.offline", base))
 			}
-			_, branch := sessionWorktree(repo, id)
+			_, branch := remote.TaskWorktreePath(repo, id)
 			fmt.Fprintln(out, i18n.T(l, "session.worktree.made", tilde(wt), branch, base))
 		}
 		dir = wt
@@ -239,7 +245,7 @@ func bareWorktree(s *config.Space, repo string, trusted func(string) bool) strin
 	if err != nil {
 		return ""
 	}
-	def := defaultBranches(gitDir)
+	def := remote.DefaultBranches(gitDir)
 	type cand struct {
 		path  string
 		rank  int
@@ -292,18 +298,6 @@ func bareWorktree(s *config.Space, repo string, trusted func(string) bool) strin
 		return ""
 	}
 	return all[0].path
-}
-
-// defaultBranches are the names the repository's default branch may have: the one
-// origin's HEAD points to, when git recorded it, else main and master.
-func defaultBranches(gitDir string) []string {
-	const prefix = "ref: refs/remotes/origin/"
-	if data, err := os.ReadFile(filepath.Join(gitDir, "refs", "remotes", "origin", "HEAD")); err == nil {
-		if b, ok := strings.CutPrefix(strings.TrimSpace(string(data)), prefix); ok && b != "" {
-			return []string{b}
-		}
-	}
-	return []string{"main", "master"}
 }
 
 func isGitRepo(p string) bool {

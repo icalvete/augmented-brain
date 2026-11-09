@@ -139,7 +139,9 @@ Cierra una tarea terminada con su resultado. Se guarda, nunca se borra. Una tare
 subtareas abiertas no se puede cerrar, y una ya cerrada se rechaza, para que su resultado
 nunca se pise. Si la tarea tiene fechas para revisar sin marcar
 como hechas, lo dice: siguen saliendo al empezar la sesión en su día, porque cerrar suele
-ser cuando se apunta lo que hay que mirar más adelante.
+ser cuando se apunta lo que hay que mirar más adelante. Si `session start` creó un
+worktree de git para la tarea y su sesión ya no corre, al cerrarla lo quita con su rama
+cuando no tiene nada que no esté en el remoto, y lo dice; si no, dice por qué se queda.
 
 - `id`: el id de la tarea.
 - `result`: lo que se ha conseguido, en una o dos líneas.
