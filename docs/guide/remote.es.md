@@ -122,9 +122,9 @@ augmented-brain session start task-new-website
 ```
 
 y en menos de un minuto sale en claude.ai y Claude Desktop una sesión nueva, con el nombre
-de la tarea. Empieza leyendo su tarea y diciéndote cómo está. La carpeta es la del primer
-repositorio de la tarea que encuentra en las carpetas de trabajo del espacio, o la que diga
-`--folder`.
+de la tarea. Te espera: cuando le escribes, lo primero que hace es leer su tarea y
+decirte cómo está. La carpeta es la del primer repositorio de la tarea que encuentra en
+las carpetas de trabajo del espacio, o la que diga `--folder`.
 
 - **Claude tiene que confiar en esa carpeta ella misma.** Que confíe en la carpeta del
   espacio no basta. La primera vez, el comando dice qué hacer: en la máquina (o por

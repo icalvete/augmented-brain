@@ -6,7 +6,9 @@
   cogía el primer worktree de confianza por nombre, y desde la 0.16.1 todos los
   worktrees de un repositorio de confianza cuentan como de confianza, así que una sesión
   podía abrirse en una rama de trabajo que había quedado olvidada. Ahora prefiere el
-  worktree de la rama por defecto, y después uno con su nombre (`site-main`).
+  worktree de la rama por defecto, y después uno con su nombre (`site-main`). Su
+  mensaje y las guías ya no dicen que la sesión empieza leyendo su tarea por su cuenta:
+  te espera, y lee su tarea en cuanto le escribes.
 
 ## 0.16.1-alpha
 

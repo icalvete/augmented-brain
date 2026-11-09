@@ -356,8 +356,8 @@ augmented-brain session start task-new-website --folder ~/projects/website
 
 Arranca un `claude remote-control` propio para la tarea (un servicio de usuario de
 `systemd` temporal, `augmented-brain-session-<tarea>`), con el título de la tarea como
-nombre. En menos de un minuto sale en Claude Desktop y claude.ai, y empieza leyendo su
-tarea. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
+nombre. En menos de un minuto sale en Claude Desktop y claude.ai. Te espera: cuando le
+escribes, lo primero que hace es leer su tarea. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
 de trabajo del espacio (para un repositorio bare, uno de sus worktrees en esas carpetas:
 primero el de la rama por defecto, después uno con su nombre, como `site-main`; el bare
 no tiene ficheros con los que trabajar), o la que diga
