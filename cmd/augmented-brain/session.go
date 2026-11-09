@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
@@ -99,7 +100,7 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			fmt.Fprintln(errOut, err)
 			return 1
 		}
-	} else if dir = taskFolder(s, task.Header.Repos); dir == "" {
+	} else if dir = taskFolder(s, task.Header.Repos, sys.FolderTrusted); dir == "" {
 		if len(task.Header.Repos) == 0 {
 			first := ""
 			if len(s.WorkFolders) > 0 {
@@ -161,22 +162,74 @@ func sessionList(c *config.Config, sys remote.System, out, errOut io.Writer) int
 }
 
 // taskFolder is the folder of the first of a task's repositories found inside the
-// space's work folders (by name, a few levels down), or "". A bare repository is
-// skipped: it holds no files to work on, and Claude does not trust it (on 9-nov a
-// session was sent to one).
-func taskFolder(s *config.Space, repos []string) string {
+// space's work folders (by name, a few levels down), or "". A bare repository is never
+// the folder: it holds no files to work on, and Claude does not trust it (on 9-nov a
+// session was sent to one). One of its worktrees is, when it has one inside the
+// space's work folders: one Claude trusts first (trusted), so the session can start
+// without asking (on 9-nov the repository only existed as a bare one with worktrees
+// named <repo>-<branch>, and no folder was found).
+func taskFolder(s *config.Space, repos []string, trusted func(string) bool) string {
+	pick := func(repo string) string {
+		if !isBareRepo(repo) {
+			return repo
+		}
+		return bareWorktree(s, repo, trusted)
+	}
 	for _, name := range repos {
 		for _, wf := range s.WorkFolders {
-			if direct := filepath.Join(wf, name); isGitRepo(direct) && !isBareRepo(direct) {
-				return direct
+			if direct := filepath.Join(wf, name); isGitRepo(direct) {
+				if dir := pick(direct); dir != "" {
+					return dir
+				}
 			}
 			found, _ := repostat.Find(wf, 3, 500, nil)
 			for _, f := range found {
-				if filepath.Base(f) == name && !isBareRepo(f) {
-					return f
+				if filepath.Base(f) == name {
+					if dir := pick(f); dir != "" {
+						return dir
+					}
 				}
 			}
 		}
+	}
+	return ""
+}
+
+// bareWorktree is a worktree of a bare repository kept in <repo>/.git, read from git's
+// own records (.git/worktrees/<name>/gitdir, the path of the worktree's .git file),
+// without running git. Only worktrees that still exist and lie inside a work folder of
+// the space count, so the session loads this space; one Claude trusts comes first,
+// then by path. "" when there is none.
+func bareWorktree(s *config.Space, repo string, trusted func(string) bool) string {
+	entries, err := os.ReadDir(filepath.Join(repo, ".git", "worktrees"))
+	if err != nil {
+		return ""
+	}
+	var all []string
+	for _, e := range entries {
+		data, err := os.ReadFile(filepath.Join(repo, ".git", "worktrees", e.Name(), "gitdir"))
+		if err != nil {
+			continue
+		}
+		wt := filepath.Dir(filepath.Clean(strings.TrimSpace(string(data))))
+		if !isGitRepo(wt) {
+			continue // removed by hand, not pruned yet
+		}
+		for _, wf := range s.WorkFolders {
+			if paths.Within(wt, wf) {
+				all = append(all, wt)
+				break
+			}
+		}
+	}
+	sort.Strings(all)
+	for _, wt := range all {
+		if trusted != nil && trusted(wt) {
+			return wt
+		}
+	}
+	if len(all) > 0 {
+		return all[0]
 	}
 	return ""
 }

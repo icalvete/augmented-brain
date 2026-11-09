@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **A task whose repository is bare gets a session in one of its worktrees.**
+  `session start` skipped a bare repository but then found no folder, so you had to
+  give one with `--folder`. It now picks one of the repository's worktrees inside the
+  space's work folders, one Claude already trusts first.
+
 ## 0.16.0-alpha
 
 Released 2026-11-09.
