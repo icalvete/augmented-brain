@@ -317,4 +317,16 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/troubleshooting.html"/>
   </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/limitations.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/limitations.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/limitations.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/limitations.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/limitations.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/limitations.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/limitations.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/limitations.html"/>
+  </url>
 </urlset>

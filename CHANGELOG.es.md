@@ -8,6 +8,10 @@
   cuando entras en tu sesión y otra vez solo si se para; tras reiniciar, entra una vez.
   Sus errores van a un fichero que dice `status`. `session start` sigue siendo solo de
   Linux.
+- **Una página de limitaciones conocidas.** Lo que augmented brain todavía no sabe
+  hacer, o hace solo en parte, cada cosa con qué hacer en su lugar: solo Claude Code,
+  PowerShell en Windows, el acceso remoto, lo que se comprueba a mano en un Mac y lo que
+  el guardia no ve.
 - **Una sesión remota encuentra sus programas tras reiniciar.** systemd no lee el perfil
   de tu shell, así que una sesión abierta con `remote` no encontraba ni `claude` ni
   `augmented-brain`, y `session start` fallaba desde ella. Ahora `remote install` escribe

@@ -167,7 +167,7 @@ y en inglés:
 - **Referencia**: [Comandos](https://icalvete.github.io/augmented-brain/guide/commands.es.html), [Herramientas MCP](https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html),
   [Configuración](https://icalvete.github.io/augmented-brain/guide/configuration.es.html),
   [Formato de la memoria](https://icalvete.github.io/augmented-brain/guide/memory-format.html) (en inglés).
-- **Ayuda**: [Si algo falla](https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html),
+- **Ayuda**: [Si algo falla](https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html), [Limitaciones conocidas](https://icalvete.github.io/augmented-brain/guide/limitations.es.html),
   [Registro de cambios](CHANGELOG.es.md).
 
 Inspirado en *Building a Second Brain* de Tiago Forte y *Getting Things Done* de David

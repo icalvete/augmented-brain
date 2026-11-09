@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Known limitations · augmented brain</title>
+<meta name="description" content="What augmented brain cannot do yet, or does only in part: only Claude Code, PowerShell on Windows, remote access on Linux only, what is checked by hand on a Mac, and what the guard cannot see.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/limitations.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/limitations.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/limitations.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/limitations.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Known limitations · augmented brain">
+<meta property="og:description" content="What it cannot do yet, and what to do instead.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/limitations.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Known limitations · augmented brain">
+<meta name="twitter:description" content="What it cannot do yet, and what to do instead.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="index.html">Docs</a>
+    <a href="limitations.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Docs">
+<details open id="docnav"><summary>Documentation menu</summary>
+<p class="docnav-group">Get started</p>
+<ul>
+  <li><a href="getting-started.html">Getting started</a></li>
+  <li><a href="install.html">Installing</a></li>
+</ul>
+<p class="docnav-group">Concepts</p>
+<ul>
+  <li><a href="spaces.html">Spaces</a></li>
+  <li><a href="tasks.html">Tasks</a></li>
+  <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="guard.html">The guard</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
+  <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="where-things-live.html">Where everything lives</a></li>
+</ul>
+<p class="docnav-group">Daily use</p>
+<ul>
+  <li><a href="phrases.html">What to say to Claude</a></li>
+  <li><a href="panel.html">The panel</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
+  <li><a href="weekly-review.html">The weekly review</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
+</ul>
+<p class="docnav-group">Reference</p>
+<ul>
+  <li><a href="commands.html">Commands</a></li>
+  <li><a href="mcp-tools.html">MCP tools</a></li>
+  <li><a href="configuration.html">Configuration</a></li>
+  <li><a href="memory-format.html">Memory format</a></li>
+</ul>
+<p class="docnav-group">Help</p>
+<ul>
+  <li><a href="troubleshooting.html">Troubleshooting</a></li>
+  <li><a href="limitations.html" aria-current="page">Known limitations</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Known limitations</h1>
+  <p>What augmented brain cannot do yet, or does only in part. Each line says what to do instead. The list grows when something new turns up: if you find one, tell us from the panel's Help page.</p>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#only-claude-code">Only Claude Code</a></li><li><a href="#windows">Windows</a></li><li><a href="#remote-access-and-a-session-per-task">Remote access and a session per task</a></li><li><a href="#macos">macOS</a></li><li><a href="#the-guard">The guard</a></li><li><a href="#tested-by-few-people">Tested by few people</a></li></ul></nav>
+  <h2 id="only-claude-code">Only Claude Code</h2>
+  <p>augmented brain works with Claude Code: the terminal, the desktop app and the IDE extensions. Other assistants could use the note tools over MCP, but the session start and the guard rely on Claude Code's hooks, so they would get neither.</p>
+  <h2 id="windows">Windows</h2>
+  <ul><li><strong>Claude runs commands in Git Bash, not in PowerShell.</strong> The guard reads the commands of a POSIX shell (Bash), not PowerShell, so it stops every PowerShell command, and Claude uses Git Bash instead. What only works in PowerShell, you run yourself: Claude gives you the command.</li><li><strong>Accents can look broken</strong> (<code>sesiÃ³n</code>) in Windows PowerShell 5.1. The fix is in <a href="troubleshooting.html">Troubleshooting</a>.</li></ul>
+  <h2 id="remote-access-and-a-session-per-task">Remote access and a session per task</h2>
+  <p><code>augmented-brain remote</code> (reaching your computer from claude.ai or Claude Desktop) and <code>augmented-brain session start</code> (a remote session for one task) work on Linux only, with systemd. On macOS and Windows they say so and change nothing.</p>
+  <ul><li>A session opened with <code>session start</code> does not come back after a reboot: ask for it again. The space's own remote session does.</li><li>Claude allows one remote session per folder, and the folder must be trusted on its own. <code>session start</code> tells you what to do the first time.</li></ul>
+  <h2 id="macos">macOS</h2>
+  <p>Every pull request runs the tests on a Mac in CI, including the installer, Safari and a locked keychain. A few things only a person at a real Mac can see, and are checked by hand before a release:</p>
+  <ol><li>Opening the program downloaded with a browser from the Finder (“Open Anyway”).</li><li>A real Claude Code session: the guard stops a push and the session start loads.</li><li>Claude Desktop installed by the installer, and Tailscale with <code>panel remote</code>.</li><li>With no network: <code>backup</code>, <code>update</code> and <code>panel remote</code> say so and leave nothing half done.</li><li>The panel in Safari with its console open, free of errors.</li></ol>
+  <p>If one of them fails for you, it may not have been seen yet: please report it.</p>
+  <h2 id="the-guard">The guard</h2>
+  <p>The guard reads each command as text before Claude runs it. It catches the mistakes an assistant makes; it is not a wall, and it does not replace permissions, backups or your own review. What it cannot see:</p>
+  <ul><li><strong>Scripts written by another program.</strong> If Claude writes a script with a program (Python, a build tool) and runs it later, the guard only sees what the script holds when it runs. A script written and run in the same command is checked; one written in a way the guard cannot read makes it ask you first.</li><li><strong>Values known only when the command runs.</strong> When a program or a folder comes from a variable or from another command's output, the guard cannot know it in advance: it asks you, but it cannot tell you exactly what will run.</li><li><strong>Settings changed through a program.</strong> The guard asks before Claude edits augmented brain's or Claude Code's settings with its file tools or common commands. A small program written on the spot (in Python, say) could still change them; the guard notices afterwards and asks before a commit or a push, but it does not prevent it.</li><li><strong>Git aliases in included files.</strong> Your git aliases count as what they stand for (<code>git ci</code> for <code>git commit</code>) when they are in your usual git settings. An alias in a file those settings <code>include</code> is not seen.</li><li><strong>Local commits from merge, revert and cherry-pick.</strong> The guard stops <code>git commit</code> where Claude may not commit, but <code>git merge</code>, <code>git revert</code> and <code>git cherry-pick</code> also make commits on your computer. They are not published: a push is still stopped.</li><li><strong>Questions in automatic modes.</strong> When the guard asks, Claude Code shows you the question. What Claude Code does with it in its fully automatic modes is up to Claude Code, not augmented brain.</li></ul>
+  <p>More in <a href="guard.html">The guard</a>.</p>
+  <h2 id="tested-by-few-people">Tested by few people</h2>
+  <p>augmented brain is alpha. One person has used it every day on Ubuntu, and tried it on macOS and Windows 11. What you have keeps working from one version to the next (see the <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md">disclaimer</a>), but back up anything important.</p>
+  <nav class="pager" aria-label="Previous / Next">
+    <a class="prev" href="troubleshooting.html"><span>← Previous</span>Troubleshooting</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>
