@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.16.1-alpha
+
+Released 2026-11-09.
 
 - **`session start` knows a trusted worktree.** Claude keeps its trust for a git
   worktree under the main repository, so after you accepted the question in a worktree
