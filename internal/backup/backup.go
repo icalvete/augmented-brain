@@ -58,6 +58,10 @@ func runGit(args ...string) (string, error) {
 	return string(out), err
 }
 
+// Git runs git in dir the way this package does (no password prompt, a time limit),
+// for other commands that need git: session start makes a task's worktree with it.
+func Git(dir string, args ...string) (string, error) { return git(dir, args...) }
+
 // GitTimeout is the longest a single git call of a backup or restore may take.
 var GitTimeout = 3 * time.Minute
 

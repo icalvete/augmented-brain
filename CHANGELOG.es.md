@@ -2,6 +2,14 @@
 
 ## Sin publicar
 
+- **Una tarea de un repositorio bare recibe un worktree propio.** `session start` elegía
+  uno de los worktrees que ya tenía el repositorio, así que dos tareas podían caer en la
+  misma carpeta (Claude sirve cada carpeta una vez, y la segunda no arrancaba) o una
+  sesión podía arrancar sobre código viejo. Ahora trae origin y crea `<repo>-<tarea>` en
+  una rama nueva con el nombre de la tarea, desde la rama por defecto tal como está, y la
+  vuelve a usar la próxima vez. `session stop` lo quita con su rama cuando no tiene nada
+  que no esté en el remoto, y si no, lo deja. Elegir un worktree existente queda para
+  `--folder` con un repositorio bare.
 - **`session start` elige el worktree de la rama por defecto.** Para un repositorio bare
   cogía el primer worktree de confianza por nombre, y desde la 0.16.1 todos los
   worktrees de un repositorio de confianza cuentan como de confianza, así que una sesión

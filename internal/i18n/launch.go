@@ -23,6 +23,30 @@ var launchMessages = map[string]msg{
 		en: "Opened the session \"%s\" for %s, in %s. It shows up in Claude Desktop and claude.ai within a minute. It waits for you: when you write to it, it reads its task first.\nIt closes when that session ends, or with: augmented-brain session stop %s",
 		es: "Abierta la sesión «%s» para %s, en %s. Sale en Claude Desktop y claude.ai en menos de un minuto. Te espera: cuando le escribes, lo primero que hace es leer su tarea.\nSe cierra al terminar esa sesión, o con: augmented-brain session stop %s",
 	},
+	"session.worktree.made": {
+		en: "New worktree %s for the task, on branch %s, from %s.",
+		es: "Nuevo worktree %s para la tarea, en la rama %s, desde %s.",
+	},
+	"session.worktree.offline": {
+		en: "Could not reach origin: the worktree starts from %s as this computer last saw it.",
+		es: "No he podido llegar a origin: el worktree sale de %s tal como lo vio este ordenador la última vez.",
+	},
+	"session.worktree.taken": {
+		en: "%s is there and is not a worktree of %s. Move it, or give a folder with --folder DIR.",
+		es: "%s ya existe y no es un worktree de %s. Muévelo, o dame una carpeta con --folder DIR.",
+	},
+	"session.worktree.removed": {
+		en: "Removed its worktree %s and its branch: it held nothing that was not on the remote.",
+		es: "Quitado su worktree %s y su rama: no tenía nada que no estuviera en el remoto.",
+	},
+	"session.worktree.kept.changes": {
+		en: "Kept its worktree %s: it has changes not committed.",
+		es: "Dejo su worktree %s: tiene cambios sin commitear.",
+	},
+	"session.worktree.kept.commits": {
+		en: "Kept its worktree %s: it has commits not pushed.",
+		es: "Dejo su worktree %s: tiene commits sin subir.",
+	},
 	"session.untrusted": {
 		en: "Claude does not trust %s yet, and its server only starts in a folder that accepted the question itself (trusting a folder above it is not enough). Once, in a terminal on %s (from another computer: ssh %s):",
 		es: "Claude aún no confía en %s, y su servidor solo arranca en una carpeta que ha aceptado la pregunta ella misma (que confíe en una carpeta de arriba no basta). Una vez, en un terminal de %s (desde otro ordenador: ssh %s):",

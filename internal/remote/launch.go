@@ -84,7 +84,7 @@ func (s System) FolderTrusted(folder string) bool {
 	// Claude Code keeps the answer for a git worktree under its main repository
 	// (measured on 9-nov, 2.1.319: accepted in ~/x-main, written as ~/x), and its
 	// server then starts in the worktree.
-	if root := worktreeRoot(folder); root != "" {
+	if root := WorktreeRoot(folder); root != "" {
 		cands = append(cands, root)
 	}
 	for _, p := range cands {
@@ -95,12 +95,12 @@ func (s System) FolderTrusted(folder string) bool {
 	return false
 }
 
-// worktreeRoot is the main repository of a git worktree: its .git is a file
+// WorktreeRoot is the main repository of a git worktree: its .git is a file
 // ("gitdir: <repo>/.git/worktrees/<name>") whose folder holds commondir, the path of the
 // repository's git folder. The root is that folder's parent when it is called .git,
 // and the folder itself for a bare repository. "" for anything else. Read without
 // running git.
-func worktreeRoot(folder string) string {
+func WorktreeRoot(folder string) string {
 	data, err := os.ReadFile(filepath.Join(folder, ".git"))
 	if err != nil {
 		return "" // a folder .git, or no repository

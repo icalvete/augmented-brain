@@ -8,8 +8,8 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 )
 
-// A bare repository is never a task's folder: it holds no files, and Claude does not
-// trust it. On 9-nov a session was sent to one; the worktree next to it is the folder.
+// A working copy of a task's repository wins over a bare one of the same name; a bare
+// one alone is still the task's repository (it then gets a worktree of its own).
 func TestTaskFolderSkipsBare(t *testing.T) {
 	wf := t.TempDir()
 	bare := filepath.Join(wf, "site")
@@ -20,8 +20,8 @@ func TestTaskFolderSkipsBare(t *testing.T) {
 		t.Fatal(err)
 	}
 	s := &config.Space{WorkFolders: []string{wf}}
-	if got := taskFolder(s, []string{"site"}, nil); got != "" {
-		t.Errorf("taskFolder chose the bare repository %s", got)
+	if got := taskRepo(s, []string{"site"}); got != bare {
+		t.Errorf("taskRepo = %q, want the bare repository %s when it is the only one", got, bare)
 	}
 	// The same repository found deeper, as a working tree, is the folder.
 	work := filepath.Join(wf, "code", "site")
@@ -31,8 +31,8 @@ func TestTaskFolderSkipsBare(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(work, ".git", "config"), []byte("[core]\n\tbare = false\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if got := taskFolder(s, []string{"site"}, nil); got != work {
-		t.Errorf("taskFolder = %q, want %q", got, work)
+	if got := taskRepo(s, []string{"site"}); got != work {
+		t.Errorf("taskRepo = %q, want the working copy %q over the bare one", got, work)
 	}
 }
 
@@ -71,16 +71,16 @@ func TestTaskFolderUsesBareWorktree(t *testing.T) {
 	worktree("site-gone", wf, false)
 	worktree("site-away", outside, true)
 	s := &config.Space{WorkFolders: []string{wf}}
-	if got := taskFolder(s, []string{"site"}, nil); got != "" {
+	if got := bareWorktree(s, bare, nil); got != "" {
 		t.Errorf("chose %q: only a gone worktree and one outside the space", got)
 	}
 	a := worktree("site-a", wf, true)
 	b := worktree("site-b", wf, true)
-	if got := taskFolder(s, []string{"site"}, nil); got != a {
+	if got := bareWorktree(s, bare, nil); got != a {
 		t.Errorf("no trusted worktree: got %q, want the first by path %q", got, a)
 	}
 	trusted := func(p string) bool { return p == b }
-	if got := taskFolder(s, []string{"site"}, trusted); got != b {
+	if got := bareWorktree(s, bare, trusted); got != b {
 		t.Errorf("got %q, want the trusted worktree %q", got, b)
 	}
 }
@@ -121,11 +121,11 @@ func TestTaskFolderPrefersDefaultBranch(t *testing.T) {
 	all := func(string) bool { return true }
 	add("site-barewt", "ref: refs/heads/session-bare-worktree")
 	named := add("site-main", "5949f693bc8106d0d115b6ee3f3030bd89d28909")
-	if got := taskFolder(s, []string{"site"}, all); got != named {
+	if got := bareWorktree(s, bare, all); got != named {
 		t.Errorf("got %q, want the worktree named after main %q", got, named)
 	}
 	onMain := add("site-zz", "ref: refs/heads/main")
-	if got := taskFolder(s, []string{"site"}, all); got != onMain {
+	if got := bareWorktree(s, bare, all); got != onMain {
 		t.Errorf("got %q, want the worktree on main %q", got, onMain)
 	}
 	// The default branch is the one origin's HEAD names, when git recorded it.
@@ -136,7 +136,7 @@ func TestTaskFolderPrefersDefaultBranch(t *testing.T) {
 		t.Fatal(err)
 	}
 	onTrunk := add("site-yy", "ref: refs/heads/trunk")
-	if got := taskFolder(s, []string{"site"}, all); got != onTrunk {
+	if got := bareWorktree(s, bare, all); got != onTrunk {
 		t.Errorf("got %q, want the worktree on trunk %q", got, onTrunk)
 	}
 }

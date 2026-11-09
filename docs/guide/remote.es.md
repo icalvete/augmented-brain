@@ -124,7 +124,9 @@ augmented-brain session start task-new-website
 y en menos de un minuto sale en claude.ai y Claude Desktop una sesión nueva, con el nombre
 de la tarea. Te espera: cuando le escribes, lo primero que hace es leer su tarea y
 decirte cómo está. La carpeta es la del primer repositorio de la tarea que encuentra en
-las carpetas de trabajo del espacio, o la que diga `--folder`.
+las carpetas de trabajo del espacio, o la que diga `--folder`. Para un repositorio bare, la
+tarea recibe un worktree de git propio, en una rama nueva desde la rama por defecto de
+origin; `session stop` lo quita si no se pierde nada.
 
 - **Claude tiene que confiar en esa carpeta ella misma.** Que confíe en la carpeta del
   espacio no basta. La primera vez, el comando dice qué hacer: en la máquina (o por
