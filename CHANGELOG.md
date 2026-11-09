@@ -7,6 +7,9 @@
   guard checked the script as if it ran, and stopped it when the same command had just
   written it or the script held something it refuses. Now it lets it through. `+n`
   after `-n`, or an interactive shell (`-i`), still counts as running the script.
+- **The installer keeps the promise too.** At the end of an install or an update it
+  still said the program "may change"; it now says what the README says: it may have
+  bugs, but what you have keeps working.
 
 ## 0.16.2-alpha
 
