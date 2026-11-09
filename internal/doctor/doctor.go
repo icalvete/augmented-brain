@@ -141,6 +141,7 @@ func Run(e Env) []Check {
 		out = append(out, space(c, c.Spaces[name])...)
 	}
 	out = append(out, remoteChecks(e, c)...)
+	out = append(out, worktreeChecks(e, c)...)
 	out = append(out, panelRemote(e, c)...)
 	out = append(out, configHistory(c)...)
 	out = append(out, autoMemory(e, c)...)
@@ -383,6 +384,33 @@ func guardLists(c *config.Config, l string) []Check {
 	}
 	if seal := state.ReadSeal(c.Dir); seal != "" && seal != c.GuardFingerprint(g) {
 		out = append(out, Check{Warning, i18n.T(l, "doctor.guardchanged"), i18n.T(l, "doctor.guardchanged.fix")})
+	}
+	return out
+}
+
+// worktreeChecks sweeps the worktrees session start made for tasks whose session has
+// ended (a reboot, a session closed from Claude Desktop): those with nothing of their
+// own go, and each one that stays, with work not committed or not pushed, gets a
+// warning. Nothing when there are none.
+func worktreeChecks(e Env, c *config.Config) []Check {
+	l := c.Language
+	sys := e.Remote
+	if sys == nil {
+		s, err := remote.NewSystem()
+		if err != nil {
+			return nil
+		}
+		sys = &s
+	}
+	removed, kept := sys.SweepWorktrees(c.Dir)
+	var out []Check
+	if len(removed) > 0 {
+		out = append(out, Check{Info, i18n.T(l, "doctor.worktree.swept", len(removed)), ""})
+	}
+	for _, k := range kept {
+		out = append(out, Check{Warning,
+			i18n.T(l, "doctor.worktree.kept", paths.Tilde(k.Folder), k.Task, i18n.T(l, "session.worktree.why."+k.Why)),
+			i18n.T(l, "doctor.worktree.kept.fix")})
 	}
 	return out
 }

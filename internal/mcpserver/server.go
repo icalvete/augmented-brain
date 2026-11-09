@@ -20,7 +20,10 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/fresh"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/version"
 )
@@ -328,7 +331,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			if err != nil {
 				return out, err
 			}
-			return out + openWatches(n), nil
+			return out + openWatches(n) + closedWorktree(b, in.ID), nil
 		})
 
 	type captureIn struct {
@@ -667,6 +670,24 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 // openWatches tells, after closing a task, which of its watch dates are still open:
 // they keep coming up at the start of the session, on purpose (closing is when the
 // checks for later are written down), until they are marked done.
+// closedWorktree removes the worktree session start made for a closed task, when its
+// session no longer runs and it holds nothing of its own, and says what it did (in
+// English, like every tool's answer: the assistant tells the user in their language).
+func closedWorktree(b *brain.Brain, task string) string {
+	sys, err := remote.NewSystem()
+	if err != nil {
+		return ""
+	}
+	folder, removed, why := sys.CloseTaskWorktree(b.ConfigDir, task)
+	switch {
+	case removed:
+		return "\n" + i18n.T("en", "session.worktree.closed", paths.Tilde(folder))
+	case why != "":
+		return "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(folder), i18n.T("en", "session.worktree.why."+why))
+	}
+	return ""
+}
+
 func openWatches(n *memory.Note) string {
 	var open []memory.Watch
 	for _, w := range n.Header.Watch {

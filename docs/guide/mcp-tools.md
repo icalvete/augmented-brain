@@ -132,7 +132,9 @@ Closes a finished task with its result. It is kept, never deleted. A task with o
 subtasks cannot close, and a task already closed is refused, so its result is never
 written over. If the task has watch dates not marked done, it says so: they
 still come up at the start of the session on their day, since closing is often when you
-write down what to check later.
+write down what to check later. When `session start` made a git worktree for the task and
+its session no longer runs, closing removes it with its branch if it holds nothing that
+is not on the remote, and says so; otherwise it says why it stays.
 
 - `id`: the task's id.
 - `result`: what was achieved, in one or two lines.

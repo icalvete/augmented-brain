@@ -394,7 +394,10 @@ augmented-brain session stop task-new-website
 
 Si `session start` creó un worktree para la tarea, `stop` también lo quita con su rama,
 siempre que no se pierda nada: con cambios sin commitear o commits sin subir, lo deja y
-lo dice.
+lo dice. Las sesiones que terminan sin `stop` (un reinicio, una sesión cerrada desde
+Claude Desktop) dejan el suyo: el próximo `session start` y `doctor` quitan los que no
+tienen nada propio, cerrar la tarea quita el suyo, y `doctor` avisa de cualquiera que se
+quede con trabajo dentro.
 
 ## augmented-brain session list
 

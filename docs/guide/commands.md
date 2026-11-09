@@ -382,7 +382,10 @@ augmented-brain session stop task-new-website
 
 When `session start` made a worktree for the task, `stop` also removes it with its
 branch, as long as nothing would be lost: with changes not committed, or commits not
-pushed, it keeps it and says so.
+pushed, it keeps it and says so. Sessions that end without `stop` (a reboot, a session
+closed from Claude Desktop) leave theirs: the next `session start` and `doctor` remove
+those with nothing of their own, closing the task removes its own, and `doctor` warns
+about any that stays with work in it.
 
 ## augmented-brain session list
 

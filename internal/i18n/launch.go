@@ -47,6 +47,38 @@ var launchMessages = map[string]msg{
 		en: "Kept its worktree %s: it has commits not pushed.",
 		es: "Dejo su worktree %s: tiene commits sin subir.",
 	},
+	"session.worktree.swept": {
+		en: "Removed %s: the worktree of a session that has ended, with nothing that was not on the remote.",
+		es: "Quitado %s: el worktree de una sesión que ya terminó, sin nada que no estuviera en el remoto.",
+	},
+	"session.worktree.closed": {
+		en: "Removed the task's worktree %s and its branch: it held nothing that was not on the remote.",
+		es: "Quitado el worktree de la tarea %s y su rama: no tenía nada que no estuviera en el remoto.",
+	},
+	"session.worktree.closed.kept": {
+		en: "The task's worktree %s stays: it has %s. Push or drop that work, then remove it.",
+		es: "El worktree de la tarea %s se queda: tiene %s. Sube o descarta ese trabajo, y después quítalo.",
+	},
+	"session.worktree.why.changes": {
+		en: "changes not committed",
+		es: "cambios sin commitear",
+	},
+	"session.worktree.why.commits": {
+		en: "commits not pushed",
+		es: "commits sin subir",
+	},
+	"doctor.worktree.kept": {
+		en: "The worktree %s of task %s has %s, and its session has ended.",
+		es: "El worktree %s de la tarea %s tiene %s, y su sesión ya terminó.",
+	},
+	"doctor.worktree.kept.fix": {
+		en: "Push or drop that work; the next session start or doctor removes it then. Or ask for the task's session again: it uses it.",
+		es: "Sube o descarta ese trabajo; después lo quita el próximo session start o doctor. O pide otra vez la sesión de la tarea: lo usa.",
+	},
+	"doctor.worktree.swept": {
+		en: "Removed %d worktree(s) of sessions that had ended, with nothing that was not on the remote.",
+		es: "Quitados %d worktree(s) de sesiones que ya terminaron, sin nada que no estuviera en el remoto.",
+	},
 	"session.untrusted": {
 		en: "Claude does not trust %s yet, and its server only starts in a folder that accepted the question itself (trusting a folder above it is not enough). Once, in a terminal on %s (from another computer: ssh %s):",
 		es: "Claude aún no confía en %s, y su servidor solo arranca en una carpeta que ha aceptado la pregunta ella misma (que confíe en una carpeta de arriba no basta). Una vez, en un terminal de %s (desde otro ordenador: ssh %s):",
