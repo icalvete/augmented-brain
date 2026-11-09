@@ -33,6 +33,10 @@
   la sesión por tarea y las versiones de la configuración, con sus comandos, y ya no
   promete adaptadores para otros asistentes.
 
+- **Lo que tienes sigue funcionando.** El README, el aviso legal y la web ya no dicen que
+  el formato y los comandos pueden cambiar: cada cambio en cómo se guardan las notas o la
+  configuración llega con el paso que pone al día las tuyas, y un comando, un ajuste o una
+  herramienta que cambia de nombre sigue funcionando con el viejo.
 - **Con un solo espacio, guardar a una persona ya no pregunta dónde.** El programa ya la
   guardaba en el único espacio, pero el texto que lee Claude le decía que preguntara
   siempre, así que una primera sesión preguntaba «¿en qué espacios?» con uno solo y no

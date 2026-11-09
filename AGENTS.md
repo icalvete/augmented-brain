@@ -171,6 +171,11 @@ Heavier checks, before a release or when you touch what they cover:
   `format.NotesMigrations` (or `ConfigMigrations` for the configuration folder), which
   raises the format version by one: the step must be safe to repeat, and gets a test
   that runs it on notes written the old way.
+- **What people have keeps working.** This is a promise in the README and the
+  DISCLAIMER: every change to how notes or settings are kept ships with its migration
+  (above), and a command, flag, setting or MCP tool that is renamed or removed keeps
+  working under its old name, saying what replaced it. `compat-check` (below) is the
+  other half: what this version writes, the last two releases still read.
 - **A test package that runs git calls `testenv.CleanGit()` first in its `TestMain`.**
   Git hands its hooks `GIT_DIR` and friends: without this, tests run from the pre-push
   hook make their throwaway repositories inside the real one.

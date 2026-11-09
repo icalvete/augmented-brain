@@ -2,10 +2,15 @@
 
 [Leer en español](#aviso-legal)
 
-**augmented brain is alpha software.** It is in an early stage: it may have bugs, its
-format and commands may change between versions. A person has tested it on Ubuntu,
-macOS and Windows 11.
-Back up anything important before you rely on it.
+**augmented brain is alpha software.** It is in an early stage and may have bugs. A
+person has tested it on Ubuntu, macOS and Windows 11. Back up anything important before
+you rely on it.
+
+- **What you have keeps working.** When a version changes how notes or settings are
+  kept, it brings the step that moves yours forward, and runs it by itself after a full
+  copy. A command, setting or tool that changes name keeps working under the old one
+  and says what replaced it. What it still cannot do is in
+  [Known limitations](https://icalvete.github.io/augmented-brain/guide/limitations.html).
 
 - **No warranty.** augmented brain is provided "as is", without warranty of any kind,
   as stated in the [MIT license](LICENSE). The authors are not liable for any damage or
@@ -31,9 +36,15 @@ Back up anything important before you rely on it.
 
 ## Aviso legal
 
-**augmented brain es software en fase alfa.** Está en una etapa temprana: puede tener
-errores, y su formato y sus comandos pueden cambiar de una versión a otra. Lo ha probado
-una persona en Ubuntu, macOS y Windows 11. Haz copia de lo importante antes de confiar en él.
+**augmented brain es software en fase alfa.** Está en una etapa temprana y puede tener
+errores. Lo ha probado una persona en Ubuntu, macOS y Windows 11. Haz copia de lo
+importante antes de confiar en él.
+
+- **Lo que tienes sigue funcionando.** Cuando una versión cambia cómo se guardan las notas
+  o la configuración, trae el paso que pone al día las tuyas, y lo da sola después de una
+  copia completa. Un comando, un ajuste o una herramienta que cambia de nombre sigue
+  funcionando con el viejo y dice cuál lo sustituye. Lo que todavía no sabe hacer está en
+  [Limitaciones conocidas](https://icalvete.github.io/augmented-brain/guide/limitations.es.html).
 
 - **Sin garantía.** augmented brain se ofrece "tal cual", sin garantía de ningún tipo,
   como dice la [licencia MIT](LICENSE). Los autores no responden de ningún daño o pérdida
