@@ -89,8 +89,22 @@ func TestSessions(t *testing.T) {
 		t.Errorf("no journal line points at it:\n%s", n.Body)
 	}
 
-	if w := s.post(t, "/session/reviewed", url.Values{"s": {"work"}, "id": {"dead2"}}); w.Code != http.StatusSeeOther {
-		t.Fatalf("reviewed: %d", w.Code)
+	// Today offers the same two actions (dead1 is kept already), and comes back to itself.
+	today := s.get(t, "/today?s=home").Body.String()
+	if !strings.Contains(today, "1 session cut off") || strings.Count(today, `name="back" value="today"`) != 2 ||
+		!strings.Contains(today, `<input type="hidden" name="s" value="work"><input type="hidden" name="id" value="dead2">`) {
+		t.Error("Today does not offer to deal with the sessions that did not end, in their space")
+	}
+	w = s.post(t, "/session/reviewed", url.Values{"s": {"work"}, "id": {"dead2"}, "back": {"today"}})
+	if w.Code != http.StatusSeeOther || !strings.Contains(w.Header().Get("Location"), "/today?") {
+		t.Fatalf("reviewed from Today: %d %q", w.Code, w.Header().Get("Location"))
+	}
+	// Sessions is no longer in the menu: Health leads to it.
+	if strings.Contains(today, `aria-current="page">Sessions</a>`) || strings.Contains(today, `/sessions?s=home">Sessions</a>`) {
+		t.Error("Sessions is still in the menu")
+	}
+	if h := s.get(t, "/space?s=work").Body.String(); !strings.Contains(h, "/sessions?s=work") {
+		t.Error("Health does not lead to the Sessions page")
 	}
 	for _, l := range state.Read(cfg, "work").List(now) {
 		if l.Kind == state.Dead {

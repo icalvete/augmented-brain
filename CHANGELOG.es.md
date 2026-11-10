@@ -11,6 +11,9 @@
   guardia (con qué ganaría o perdería cada una) y pide marcar una casilla. La página dice
   además que de tus secretos están los nombres, nunca su valor, y que las versiones nunca
   van en la copia de seguridad.
+- **Las sesiones cortadas se resuelven desde Hoy.** Cada una sale en Hoy con **Guardarlo
+  en las notas** y **Dar por revisada**. La página Sesiones sale del menú, que era largo
+  para quien empieza; Salud lleva a ella.
 
 ## 0.17.0-beta
 

@@ -146,7 +146,7 @@
   <h3 id="remote-access-does-not-work">Remote access does not work</h3>
   <p>Run <code>augmented-brain remote status</code>: under each problem, <code>→</code> says what to do. Usually Claude does not trust the folder yet (run <code>cd &lt;folder&gt; &amp;&amp; claude</code> once), or linger is off. <code>remote install</code> stops, changing nothing, on a machine without systemd's user services (a container, WSL without systemd). See <a href="remote.html">Remote access</a>.</p>
   <h3 id="a-session-was-cut-off">A session was cut off</h3>
-  <p>The window was closed by force, or the computer went down. The next session offers to recover it. Say yes, or go to the panel's Sessions page. Claude Code keeps each conversation for 30 days.</p>
+  <p>The window was closed by force, or the computer went down. The next session offers to recover it. Say yes, or use the panel: Today lists it. Claude Code keeps each conversation for 30 days.</p>
   <h3 id="the-window-uses-a-lot-of-memory">The window uses a lot of memory</h3>
   <p>Claude says that the window uses a lot of memory, or <code>doctor</code> warns about a Claude window of several GB. The process that holds the window's sessions has grown far past normal: VS Code's extension host (the program inside VS Code that runs Claude and the other extensions), or Claude itself in a terminal. It normally stays near 0.5 GB for days. Now and then one grows without stopping, and the system ends up closing it, with every Claude session of the window. The length of the conversation has nothing to do with it.</p>
   <p>What to do, as soon as you see it:</p>

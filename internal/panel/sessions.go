@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
+	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
 
@@ -33,7 +34,10 @@ func size(n int64) string {
 	}
 }
 
-func (v *view) sessionRow(l state.Listed) sessionRow {
+func (v *view) sessionRow(l state.Listed) sessionRow { return sessionRowOf(l, v.b.Mem) }
+
+// sessionRowOf is the row of a session of the space whose notes are mem.
+func sessionRowOf(l state.Listed, mem *memory.Memory) sessionRow {
 	r := sessionRow{ID: l.ID, Short: l.ID, Started: l.Started.Local().Format(stamp), TaskID: l.Task}
 	if len(r.Short) > 8 {
 		r.Short = r.Short[:8]
@@ -44,7 +48,7 @@ func (v *view) sessionRow(l state.Listed) sessionRow {
 	if !l.Modified.IsZero() {
 		r.Written = l.Modified.Local().Format(stamp)
 	}
-	if n, ok := v.b.Mem.Notes[l.Task]; ok {
+	if n, ok := mem.Notes[l.Task]; ok {
 		r.TaskTitle = n.Header.Title
 	} else {
 		r.TaskTitle = l.Task
@@ -112,7 +116,16 @@ func (s *Server) sessionRecover(v *view, r *http.Request) (string, error) {
 			v.b.Touched(se.Task, true)
 		}
 	}
-	return "/sessions", state.Dismissed(v.c.Dir, v.b.Space.Name, se.ID, now)
+	return sessionsBack(r), state.Dismissed(v.c.Dir, v.b.Space.Name, se.ID, now)
+}
+
+// sessionsBack is where a change to a session that did not end goes back to: Today,
+// when it was made there, or the Sessions page.
+func sessionsBack(r *http.Request) string {
+	if field(r, "back") == "today" {
+		return "/today"
+	}
+	return "/sessions"
 }
 
 // sessionReviewed takes a dead session off the list without keeping anything.
@@ -120,7 +133,7 @@ func (s *Server) sessionReviewed(v *view, r *http.Request) (string, error) {
 	id, now := field(r, "id"), time.Now()
 	for _, se := range state.Read(v.c.Dir, v.b.Space.Name).Unclosed("", now) {
 		if se.ID == id {
-			return "/sessions", state.Dismissed(v.c.Dir, v.b.Space.Name, id, now)
+			return sessionsBack(r), state.Dismissed(v.c.Dir, v.b.Space.Name, id, now)
 		}
 	}
 	return "", errors.New(v.t("err.session"))

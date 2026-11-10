@@ -15,6 +15,7 @@
     {{if .BackupWarning}}<li class="warn sub">{{.BackupWarning}}</li>{{end}}
     <li class="sub">{{tf "space.backup.to" .Backup}}</li>
   {{else}}<li class="bad">{{t "space.backup.none"}}</li>{{end}}
+  <li class="{{if .Dead}}warn{{else}}good{{end}}"><a href="{{$.Base}}/sessions?s={{$.Space}}">{{t "space.sessions"}}</a>{{if .Dead}} · {{if eq .Dead 1}}{{t "today.dead1"}}{{else}}{{tf "today.dead" .Dead}}{{end}}{{end}}</li>
   <li class="{{if .ReviewDue}}warn{{else}}good{{end}}">{{if .LastReview}}{{tf "space.review" .LastReview}}{{else}}{{t "space.review.never"}}{{end}}{{if .ReviewDue}} · {{t "space.review.due"}}{{end}}</li>
 </ul>
 <dl class="facts">

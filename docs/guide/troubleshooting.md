@@ -182,7 +182,7 @@ services (a container, WSL without systemd). See [Remote access](remote.md).
 ### A session was cut off
 
 The window was closed by force, or the computer went down. The next session offers to
-recover it. Say yes, or go to the panel's Sessions page. Claude Code keeps each
+recover it. Say yes, or use the panel: Today lists it. Claude Code keeps each
 conversation for 30 days.
 
 ### The window uses a lot of memory
