@@ -29,6 +29,9 @@
   `session stop` también la quita de Claude Desktop y claude.ai, y funciona desde
   cualquier carpeta. Dos tareas siguen sin compartir carpeta. Las sesiones abiertas por
   una versión anterior se siguen listando y cerrando.
+- **Un repositorio bare dado con `--folder` recibe el worktree propio de la tarea.**
+  Antes reusaba uno de los worktrees del repositorio, y la sesión podía abrirse sobre el
+  código de otra rama.
 
 ## 0.17.0-beta
 

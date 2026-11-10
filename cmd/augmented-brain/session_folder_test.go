@@ -1,11 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/remote"
 )
 
 // A working copy of a task's repository wins over a bare one of the same name; a bare
@@ -36,107 +41,54 @@ func TestTaskFolderSkipsBare(t *testing.T) {
 	}
 }
 
-// A bare repository's worktree is the folder: one Claude trusts first, then by path;
-// one outside the space's work folders, or gone, never (9-nov: the repository only
-// existed as a bare one, with worktrees named site-<branch>).
-func TestTaskFolderUsesBareWorktree(t *testing.T) {
-	wf := t.TempDir()
-	bare := filepath.Join(wf, "site")
-	if err := os.MkdirAll(filepath.Join(bare, ".git"), 0o755); err != nil {
+// A bare repository given with --folder gets the task's own worktree, as one found by
+// the task's repositories does: on 10-nov it reused one of its worktrees, and the
+// session opened on another branch's code.
+func TestSessionFolderBareGetsTaskWorktree(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("no git")
+	}
+	if runtime.GOOS == "windows" {
+		t.Skip("session start is Linux only")
+	}
+	root, err := paths.Resolve(t.TempDir())
+	if err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(bare, ".git", "config"), []byte("[core]\n\tbare = true\n"), 0o644); err != nil {
+	git := func(dir string, args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", append([]string{"-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "init.defaultBranch=main"}, args...)...)
+		cmd.Dir = dir
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+	origin, repo := filepath.Join(root, "origin"), filepath.Join(root, "work", "site")
+	if err := os.MkdirAll(origin, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	outside := t.TempDir()
-	worktree := func(name, dir string, exists bool) string {
-		wt := filepath.Join(dir, name)
-		if exists {
-			if err := os.MkdirAll(wt, 0o755); err != nil {
-				t.Fatal(err)
-			}
-			if err := os.WriteFile(filepath.Join(wt, ".git"), []byte("gitdir: "+filepath.Join(bare, ".git", "worktrees", name)+"\n"), 0o644); err != nil {
-				t.Fatal(err)
-			}
-		}
-		rec := filepath.Join(bare, ".git", "worktrees", name)
-		if err := os.MkdirAll(rec, 0o755); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(filepath.Join(rec, "gitdir"), []byte(filepath.Join(wt, ".git")+"\n"), 0o644); err != nil {
-			t.Fatal(err)
-		}
-		return wt
-	}
-	worktree("site-gone", wf, false)
-	worktree("site-away", outside, true)
-	s := &config.Space{WorkFolders: []string{wf}}
-	if got := bareWorktree(s, bare, nil); got != "" {
-		t.Errorf("chose %q: only a gone worktree and one outside the space", got)
-	}
-	a := worktree("site-a", wf, true)
-	b := worktree("site-b", wf, true)
-	if got := bareWorktree(s, bare, nil); got != a {
-		t.Errorf("no trusted worktree: got %q, want the first by path %q", got, a)
-	}
-	trusted := func(p string) bool { return p == b }
-	if got := bareWorktree(s, bare, trusted); got != b {
-		t.Errorf("got %q, want the trusted worktree %q", got, b)
-	}
-}
+	git(origin, "init", "-q")
+	git(origin, "commit", "-q", "--allow-empty", "-m", "one")
+	git(root, "clone", "-q", "--bare", origin, filepath.Join(repo, ".git"))
+	git(repo, "config", "remote.origin.fetch", "+refs/heads/*:refs/remotes/origin/*")
+	// A worktree of the repository that is not the task's.
+	other := filepath.Join(root, "work", "site-other")
+	git(repo, "worktree", "add", "-q", "-b", "other", other)
 
-// With every worktree trusted (trust read through the main repository), the one on the
-// default branch wins, then one named after it, never a leftover feature branch by its
-// name (9-nov: the session went to site-barewt, on a merged branch).
-func TestTaskFolderPrefersDefaultBranch(t *testing.T) {
-	wf := t.TempDir()
-	bare := filepath.Join(wf, "site")
-	gitDir := filepath.Join(bare, ".git")
-	if err := os.MkdirAll(gitDir, 0o755); err != nil {
-		t.Fatal(err)
+	c := &config.Config{Dir: filepath.Join(root, "config"), Language: "en"}
+	s := &config.Space{Name: "personal", WorkFolders: []string{filepath.Join(root, "work")}}
+	sys := remote.System{GOOS: "linux", Run: func(string, ...string) (string, error) { return "", nil }}
+	var out, errOut bytes.Buffer
+	dir, code := sessionFolder(c, s, sys, "task-new-website", nil, repo, &out, &errOut)
+	want, _ := remote.TaskWorktreePath(repo, "task-new-website")
+	if code != 0 || dir != want {
+		t.Fatalf("folder %q (code %d, %s), want the task's worktree %q", dir, code, errOut.String(), want)
 	}
-	if err := os.WriteFile(filepath.Join(gitDir, "config"), []byte("[core]\n\tbare = true\n"), 0o644); err != nil {
-		t.Fatal(err)
+	if !isGitRepo(dir) {
+		t.Errorf("the task's worktree %s was not made", dir)
 	}
-	add := func(name, head string) string {
-		wt := filepath.Join(wf, name)
-		rec := filepath.Join(gitDir, "worktrees", name)
-		for _, d := range []string{wt, rec} {
-			if err := os.MkdirAll(d, 0o755); err != nil {
-				t.Fatal(err)
-			}
-		}
-		for f, body := range map[string]string{
-			filepath.Join(wt, ".git"):    "gitdir: " + rec + "\n",
-			filepath.Join(rec, "gitdir"): filepath.Join(wt, ".git") + "\n",
-			filepath.Join(rec, "HEAD"):   head + "\n",
-		} {
-			if err := os.WriteFile(f, []byte(body), 0o644); err != nil {
-				t.Fatal(err)
-			}
-		}
-		return wt
-	}
-	s := &config.Space{WorkFolders: []string{wf}}
-	all := func(string) bool { return true }
-	add("site-barewt", "ref: refs/heads/session-bare-worktree")
-	named := add("site-main", "5949f693bc8106d0d115b6ee3f3030bd89d28909")
-	if got := bareWorktree(s, bare, all); got != named {
-		t.Errorf("got %q, want the worktree named after main %q", got, named)
-	}
-	onMain := add("site-zz", "ref: refs/heads/main")
-	if got := bareWorktree(s, bare, all); got != onMain {
-		t.Errorf("got %q, want the worktree on main %q", got, onMain)
-	}
-	// The default branch is the one origin's HEAD names, when git recorded it.
-	if err := os.MkdirAll(filepath.Join(gitDir, "refs", "remotes", "origin"), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(gitDir, "refs", "remotes", "origin", "HEAD"), []byte("ref: refs/remotes/origin/trunk\n"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	onTrunk := add("site-yy", "ref: refs/heads/trunk")
-	if got := bareWorktree(s, bare, all); got != onTrunk {
-		t.Errorf("got %q, want the worktree on trunk %q", got, onTrunk)
+	// A plain folder given with --folder is used as it is.
+	if dir, code := sessionFolder(c, s, sys, "task-new-website", nil, other, &out, &errOut); code != 0 || dir != other {
+		t.Errorf("a working copy: %q %d", dir, code)
 	}
 }

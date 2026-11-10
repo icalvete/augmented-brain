@@ -29,6 +29,9 @@
   also takes it out of Claude Desktop and claude.ai, and works from any folder. Two
   tasks still never share a folder. Sessions opened by an earlier version are still
   listed and closed.
+- **A bare repository given with `--folder` gets the task's own worktree.** Before, it
+  reused one of the repository's worktrees, and the session could open on another
+  branch's code.
 
 ## 0.17.0-beta
 

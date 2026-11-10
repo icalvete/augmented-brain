@@ -365,8 +365,7 @@ worktree de git propio a su lado: `site-new-website` para la tarea `task-new-web
 `site`, en una rama nueva con el nombre de la tarea, desde la rama por defecto de origin
 tal como está ahora (antes la trae). Dos tareas de un mismo repositorio nunca comparten
 carpeta, y una sesión nunca arranca sobre código viejo. Si se pide otra vez, usa el mismo
-worktree. Dado con `--folder`, un repositorio bare recibe uno de sus worktrees ya
-existentes: primero el de la rama por defecto.
+worktree. Lo mismo vale para un repositorio bare dado con `--folder`.
 
 Lánzalo desde una carpeta del espacio
 de la tarea: la sesión remota a la que entras desde otro ordenador puede lanzarlo por ti

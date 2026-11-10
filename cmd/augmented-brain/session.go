@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
@@ -110,53 +109,9 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
-	dir := *folder
-	if dir != "" {
-		if dir, err = paths.Resolve(dir); err != nil {
-			fmt.Fprintln(errOut, err)
-			return 1
-		}
-		// A bare repository named by hand: one of its worktrees.
-		if isGitRepo(dir) && isBareRepo(dir) {
-			if wt := bareWorktree(s, dir, sys.FolderTrusted); wt != "" {
-				dir = wt
-			}
-		}
-	} else if repo := taskRepo(s, task.Header.Repos); repo != "" && isBareRepo(repo) {
-		// Leftovers of sessions that ended without session stop (a reboot, a session
-		// closed from Claude Desktop) go first.
-		removed, _ := sys.SweepWorktrees(c.Dir)
-		for _, wt := range removed {
-			fmt.Fprintln(out, i18n.T(l, "session.worktree.swept", tilde(wt)))
-		}
-		wt, base, made, fetched, err := remote.TaskWorktree(c.Dir, repo, id)
-		switch {
-		case errors.Is(err, remote.ErrNotOurWorktree):
-			fmt.Fprintln(errOut, i18n.T(l, "session.worktree.taken", tilde(wt), tilde(repo)))
-			return 1
-		case err != nil:
-			fmt.Fprintln(errOut, err)
-			return 1
-		}
-		if made {
-			if !fetched {
-				fmt.Fprintln(out, i18n.T(l, "session.worktree.offline", base))
-			}
-			_, branch := remote.TaskWorktreePath(repo, id)
-			fmt.Fprintln(out, i18n.T(l, "session.worktree.made", tilde(wt), branch, base))
-		}
-		dir = wt
-	} else if dir = repo; dir == "" {
-		if len(task.Header.Repos) == 0 {
-			first := ""
-			if len(s.WorkFolders) > 0 {
-				first = tilde(s.WorkFolders[0])
-			}
-			fmt.Fprintln(errOut, i18n.T(l, "session.nofolder.none", id, first))
-		} else {
-			fmt.Fprintln(errOut, i18n.T(l, "session.nofolder", id, strings.Join(task.Header.Repos, ", "), s.Name))
-		}
-		return 1
+	dir, code := sessionFolder(c, s, sys, id, task.Header.Repos, *folder, out, errOut)
+	if code != 0 {
+		return code
 	}
 	name := set.NamePrefix + " · " + task.Header.Title
 	if err := sys.Start(c, set, remote.Launch{Task: id, Name: name, Folder: dir}, i18n.T(l, "session.first", id)); err != nil {
@@ -177,6 +132,64 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 	}
 	fmt.Fprintln(out, i18n.T(l, "session.started", name, id, tilde(dir), id))
 	return 0
+}
+
+// sessionFolder is the folder a task's session opens in: the one --folder gives, or
+// the first of the task's repositories in the space's work folders. A bare repository,
+// named either way, has no files to work on: the task gets a worktree of its own, made
+// now if it is not there (on 10-nov, --folder on a bare repository reused one of its
+// worktrees, and the session opened on another branch's code). code is the exit code
+// when there is no folder.
+func sessionFolder(c *config.Config, s *config.Space, sys remote.System, id string, repos []string, folder string, out, errOut io.Writer) (string, int) {
+	l := c.Language
+	repo := ""
+	if folder != "" {
+		dir, err := paths.Resolve(folder)
+		if err != nil {
+			fmt.Fprintln(errOut, err)
+			return "", 1
+		}
+		if !isGitRepo(dir) || !isBareRepo(dir) {
+			return dir, 0
+		}
+		repo = dir
+	} else if repo = taskRepo(s, repos); repo == "" {
+		if len(repos) == 0 {
+			first := ""
+			if len(s.WorkFolders) > 0 {
+				first = tilde(s.WorkFolders[0])
+			}
+			fmt.Fprintln(errOut, i18n.T(l, "session.nofolder.none", id, first))
+		} else {
+			fmt.Fprintln(errOut, i18n.T(l, "session.nofolder", id, strings.Join(repos, ", "), s.Name))
+		}
+		return "", 1
+	} else if !isBareRepo(repo) {
+		return repo, 0
+	}
+	// Leftovers of sessions that ended without session stop (a reboot, a session
+	// closed from Claude Desktop) go first.
+	removed, _ := sys.SweepWorktrees(c.Dir)
+	for _, wt := range removed {
+		fmt.Fprintln(out, i18n.T(l, "session.worktree.swept", tilde(wt)))
+	}
+	wt, base, made, fetched, err := remote.TaskWorktree(c.Dir, repo, id)
+	switch {
+	case errors.Is(err, remote.ErrNotOurWorktree):
+		fmt.Fprintln(errOut, i18n.T(l, "session.worktree.taken", tilde(wt), tilde(repo)))
+		return "", 1
+	case err != nil:
+		fmt.Fprintln(errOut, err)
+		return "", 1
+	}
+	if made {
+		if !fetched {
+			fmt.Fprintln(out, i18n.T(l, "session.worktree.offline", base))
+		}
+		_, branch := remote.TaskWorktreePath(repo, id)
+		fmt.Fprintln(out, i18n.T(l, "session.worktree.made", tilde(wt), branch, base))
+	}
+	return wt, 0
 }
 
 func sessionErr(l string, err error, errOut io.Writer) int {
@@ -236,76 +249,6 @@ func taskRepo(s *config.Space, repos []string) string {
 		}
 	}
 	return bare
-}
-
-// bareWorktree, for --folder naming a bare repository, is a worktree of a bare
-// repository kept in <repo>/.git, read from git's
-// own records (.git/worktrees/<name>/gitdir, the path of the worktree's .git file),
-// without running git. Only worktrees that still exist and lie inside a work folder of
-// the space count, so the session loads this space. The one on the default branch
-// comes first, then one named after it (<repo>-main, often left on a detached commit),
-// then the rest; within each, one Claude trusts first, then by path. On 9-nov, with
-// trust read through the main repository, every worktree was trusted and the session
-// went to a leftover feature branch. "" when there is none.
-func bareWorktree(s *config.Space, repo string, trusted func(string) bool) string {
-	gitDir := filepath.Join(repo, ".git")
-	entries, err := os.ReadDir(filepath.Join(gitDir, "worktrees"))
-	if err != nil {
-		return ""
-	}
-	def := remote.DefaultBranches(gitDir)
-	type cand struct {
-		path  string
-		rank  int
-		trust bool
-	}
-	var all []cand
-	for _, e := range entries {
-		rec := filepath.Join(gitDir, "worktrees", e.Name())
-		data, err := os.ReadFile(filepath.Join(rec, "gitdir"))
-		if err != nil {
-			continue
-		}
-		wt := filepath.Dir(filepath.Clean(strings.TrimSpace(string(data))))
-		if !isGitRepo(wt) {
-			continue // removed by hand, not pruned yet
-		}
-		within := false
-		for _, wf := range s.WorkFolders {
-			if paths.Within(wt, wf) {
-				within = true
-				break
-			}
-		}
-		if !within {
-			continue
-		}
-		c := cand{path: wt, rank: 2, trust: trusted != nil && trusted(wt)}
-		head, _ := os.ReadFile(filepath.Join(rec, "HEAD"))
-		for _, d := range def {
-			if strings.TrimSpace(string(head)) == "ref: refs/heads/"+d {
-				c.rank = 0
-				break
-			}
-			if strings.HasSuffix(filepath.Base(wt), "-"+d) {
-				c.rank = 1
-			}
-		}
-		all = append(all, c)
-	}
-	sort.Slice(all, func(i, j int) bool {
-		if all[i].rank != all[j].rank {
-			return all[i].rank < all[j].rank
-		}
-		if all[i].trust != all[j].trust {
-			return all[i].trust
-		}
-		return all[i].path < all[j].path
-	})
-	if len(all) == 0 {
-		return ""
-	}
-	return all[0].path
 }
 
 func isGitRepo(p string) bool {

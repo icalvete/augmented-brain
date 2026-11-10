@@ -355,8 +355,8 @@ A bare repository has no files to work on, so the task gets a git worktree of it
 next to it: `site-new-website` for the task `task-new-website` of `site`, on a new branch
 named after the task, from the default branch of origin as it is now (it fetches first).
 Two tasks of one repository never share a folder, and a session never starts on old
-code. Asked again, it uses the same worktree. Given with `--folder`, a bare repository
-gets one of its existing worktrees: the one on the default branch first.
+code. Asked again, it uses the same worktree. The same goes for a bare repository given
+with `--folder`.
 
 Run it from a folder of the task's space: the remote
 session you reach from another computer can run it for you ("open me a session for
