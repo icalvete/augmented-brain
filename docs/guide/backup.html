@@ -102,6 +102,7 @@
   <p>Rather somewhere else (GitLab, your company's git)? Give Claude the repository's address, or do it yourself, in a folder of the space:</p>
   <pre><code>augmented-brain backup setup git@gitlab.com:lucia/brain-work.git</code></pre>
   <p>Use a <strong>private</strong> repository: your notes are in it.</p>
+  <p>The panel's <a href="panel.html#backup">Backup</a> page does the same with two buttons, and shows each space's last copies and a <strong>Back up now</strong>.</p>
   <p>Until a space has a backup, augmented brain says so: <code>augmented-brain doctor</code> names each space with none, <code>update</code> warns when it goes ahead with no copy to go back to, and <code>uninstall --all</code> warns that those notes will be gone for good.</p>
   <h2 id="it-runs-by-itself">It runs by itself</h2>
   <p>From then on, <strong>the backup runs every time a Claude session ends</strong>, in the background. You wait for nothing. If it fails (no network, no access to the repository), Claude tells you at the start of the next session.</p>

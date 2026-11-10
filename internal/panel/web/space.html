@@ -13,8 +13,8 @@
     {{if .BackupKnown}}<li class="{{if .BackupOK}}good{{else}}bad{{end}}">{{if .BackupOK}}{{tf "space.backup.ok" .BackupTime}}{{else}}{{tf "space.backup.failed" .BackupTime .BackupError}}{{end}}</li>
     {{else}}<li class="warn">{{t "space.backup.never"}}</li>{{end}}
     {{if .BackupWarning}}<li class="warn sub">{{.BackupWarning}}</li>{{end}}
-    <li class="sub">{{tf "space.backup.to" .Backup}}</li>
-  {{else}}<li class="bad">{{t "space.backup.none"}}</li>{{end}}
+    <li class="sub">{{tf "space.backup.to" .Backup}} · <a href="{{$.Base}}/backup?s={{$.Space}}">{{t "backup"}}</a></li>
+  {{else}}<li class="bad">{{t "space.backup.none"}} <a href="{{$.Base}}/backup?s={{$.Space}}">{{t "backup"}}</a></li>{{end}}
   <li class="{{if .Dead}}warn{{else}}good{{end}}"><a href="{{$.Base}}/sessions?s={{$.Space}}">{{t "space.sessions"}}</a>{{if .Dead}} · {{if eq .Dead 1}}{{t "today.dead1"}}{{else}}{{tf "today.dead" .Dead}}{{end}}{{end}}</li>
   <li class="{{if .ReviewDue}}warn{{else}}good{{end}}">{{if .LastReview}}{{tf "space.review" .LastReview}}{{else}}{{t "space.review.never"}}{{end}}{{if .ReviewDue}} · {{t "space.review.due"}}{{end}}</li>
 </ul>

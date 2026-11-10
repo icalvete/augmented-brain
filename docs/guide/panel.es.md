@@ -187,6 +187,26 @@ avisa antes si cambiarían las listas del guardia, con qué. Nunca van en la cop
 seguridad: tus notas sí, con su propia historia. Desde otro dispositivo la
 página solo enseña. Mira [Versiones de la configuración](config-history.es.md).
 
+## Copia de seguridad
+
+Si las notas de cada espacio tienen una copia en otro sitio, en un repositorio privado,
+para que sobrevivan si este ordenador se rompe. Un espacio sin copia lo dice en rojo.
+
+- En un espacio con copia: cómo fue la última, adónde va, las últimas copias con la
+  fecha y el ordenador que las hizo, y **Hacer una copia ahora**. La copia se hace por
+  detrás y tarda unos segundos; recarga la página para ver cómo fue. También se hace
+  sola cada vez que termina una sesión.
+- En un espacio sin copia: **Configurarla en mi GitHub** crea un repositorio privado
+  llamado `augmented-brain-<espacio>` en tu cuenta de GitHub y hace la primera copia.
+  Necesita la línea de comandos de GitHub, `gh`, instalada y conectada; si no lo está, la
+  página dice cómo. **Ya tengo un repositorio privado** toma su dirección en su lugar.
+- **Recuperar las notas en otro ordenador** enseña el comando que hay que ejecutar allí.
+  Recuperar nunca se hace desde el panel: es para un ordenador que aún no tiene las notas.
+
+Llevar a otro sitio una copia que ya existe se hace en una terminal, con
+`augmented-brain backup setup`. Desde otro dispositivo la página solo enseña. Mira
+[Copia de seguridad](backup.es.md).
+
 ## Salud
 
 La carpeta de notas y las carpetas de trabajo del espacio, si es el espacio por defecto,

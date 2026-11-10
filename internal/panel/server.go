@@ -45,7 +45,9 @@ type Server struct {
 	stopped chan struct{}
 	stop    sync.Once
 
-	diagnose func(lang string) []doctor.Check // the Help page's health check; nil: doctor.Run
+	diagnose  func(lang string) []doctor.Check   // the Help page's health check; nil: doctor.Run
+	backupNow func(space string) error           // starts a copy of a space; nil: the program, detached
+	github    func(space string) (string, error) // makes the space's GitHub repository; nil: gh
 
 	// remote is the panel published to the user's Tailscale network; nil: local only.
 	// It can change while the panel runs (POST /remote, POST /local), and every request

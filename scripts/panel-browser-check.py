@@ -26,7 +26,7 @@ WIN = os.name == "nt"
 EXE = ".exe" if WIN else ""
 ENGINES = [a for a in sys.argv[1:] if not a.startswith("-")] or ["chromium"]
 PAGES = ["today", "tasks", "reminders", "inbox", "areas", "knowledge", "rules", "people", "search?q=bread",
-         "review", "secrets", "profile", "space", "sessions", "repos", "guard", "versions", "help"]
+         "review", "secrets", "backup", "profile", "space", "sessions", "repos", "guard", "versions", "help"]
 # Each blocked resource says what and where, so a report names the culprit.
 WATCH = """document.addEventListener('securitypolicyviolation', e =>
     console.error('CSP ' + e.violatedDirective + ' blocked ' + (e.blockedURI || 'inline') +

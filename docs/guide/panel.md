@@ -182,6 +182,25 @@ box, and warns first when the guard's lists would change, with what. They are ne
 the backup: your notes are, with their own history. From another device
 the page only shows. See [Configuration versions](config-history.md).
 
+## Backup
+
+Whether the notes of each space have a copy elsewhere, in a private repository, so they
+survive if this computer breaks. A space with no backup says so in red.
+
+- For a space with a backup: how the last copy went, where it goes, the last copies
+  with the date and the computer that made them, and **Back up now**. The copy runs in
+  the background and takes a few seconds; reload the page to see how it went. It also
+  runs by itself every time a session ends.
+- For a space with none: **Set it up on my GitHub** makes a private repository called
+  `augmented-brain-<space>` in your GitHub account and the first copy. It needs the
+  GitHub command line, `gh`, installed and logged in; the page says how if it is not.
+  **I already have a private repository** takes its address instead.
+- **Bring the notes back on another computer** shows the command to run there. Restoring
+  is never done from the panel: it is for a computer that does not have the notes yet.
+
+Moving a backup that exists somewhere else is done in a terminal, with `augmented-brain
+backup setup`. From another device the page only shows. See [Backup](backup.md).
+
 ## Health
 
 The space's notes folder and work folders, whether it is the default space, notes that

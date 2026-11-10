@@ -14,6 +14,11 @@
 - **Las sesiones cortadas se resuelven desde Hoy.** Cada una sale en Hoy con **Guardarlo
   en las notas** y **Dar por revisada**. La página Sesiones sale del menú, que era largo
   para quien empieza; Salud lleva a ella.
+- **Una página Copia de seguridad en el panel.** Para cada espacio: si sus notas tienen
+  copia en otro sitio (uno sin copia lo dice en rojo), las últimas copias y **Hacer una
+  copia ahora**. Un espacio sin copia la configura en dos clics, en tu GitHub (con `gh`)
+  o en un repositorio privado que ya tengas. Recuperar sigue siendo un comando, para un
+  ordenador nuevo, y la página lo enseña. Desde otro dispositivo la página solo enseña.
 
 ## 0.17.0-beta
 
