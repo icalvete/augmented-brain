@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.17.1-beta
+
+Released 2026-11-10.
 
 - **Every page of the panel says what it is.** A few words at the top of each page,
   with a link to its part of the guide, in your language. Pages that had none (Tasks,
