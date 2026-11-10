@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **The CI's browser check no longer hangs.** It installed WebKit's system packages
+  from Ubuntu's mirror on every run, and four runs on 9 November ran out of time when
+  the mirror slowed to a trickle. It now runs inside Playwright's own image, which
+  already has them. Nothing changes in the program.
+
 ## 0.16.3-alpha
 
 Released 2026-11-09.

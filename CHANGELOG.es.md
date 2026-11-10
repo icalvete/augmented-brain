@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **La prueba en navegadores de la CI ya no se cuelga.** Instalaba en cada ejecución
+  los paquetes del sistema que necesita WebKit desde el espejo de Ubuntu, y cuatro
+  ejecuciones del 9 de noviembre se quedaron sin tiempo cuando el espejo se volvió
+  lentísimo. Ahora corre dentro de la imagen de Playwright, que ya los trae. El programa
+  no cambia.
+
 ## 0.16.3-alpha
 
 Publicada el 2026-11-09.
