@@ -1,7 +1,7 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "review"}}</h1>
+{{template "intro" (intro $ "review" (t "review.hint"))}}
 <p class="hint">{{if .Last}}{{tf "review.last" .Last}}{{else}}{{t "review.never"}}{{end}}{{if .Due}} · {{tf "today.review" .Days}}{{end}}</p>
-<p class="hint">{{t "review.hint"}}</p>
 
 <h2>{{t "inbox"}} <span class="hint">· {{len .Inbox}}</span></h2>
 {{if .Inbox}}<ul class="cards">

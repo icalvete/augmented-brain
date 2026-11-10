@@ -2,6 +2,7 @@
 <p class="crumbs"><a href="{{$.Base}}/tasks?s={{$.Space}}">← {{t "tasks"}}</a>{{with .Parent}} · {{t "partof"}}: <a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>{{end}}</p>
 {{if .Stamp}}<p class="flash warn" id="changed" hidden data-stamp="{{.Stamp}}" data-url="stamp?s={{$.Space}}&amp;id={{.H.ID}}">{{t "changed"}} <a href="">{{t "changed.reload"}}</a></p>{{end}}
 <h1>{{.H.Title}}</h1>
+{{template "intro" (intro $ "task" (t "task.intro"))}}
 <dl class="facts">
   <dt>{{t "f.status"}}</dt><dd><span class="badge s-{{.H.Status}}">{{.StatusLabel}}</span></dd>
   {{if .H.WaitingOn}}<dt>{{t "waits"}}</dt><dd>{{if eq .H.WaitingOn "me"}}{{t "you"}}{{else if eq .H.WaitingOn "nobody"}}{{t "nobody"}}{{else if .PersonID}}<a href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.PersonID}}">{{.H.WaitingOn}}</a>{{else}}{{.H.WaitingOn}}{{end}}</dd>{{end}}

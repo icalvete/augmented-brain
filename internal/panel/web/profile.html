@@ -1,6 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "profile"}}</h1>
-<p class="hint">{{tf "profile.hint" .Path}}</p>
+{{template "intro" (intro $ "profile" (tf "profile.hint" .Path))}}
 <form method="post" action="{{$.Base}}/profile" class="stack box">
   {{template "fields" (fields $)}}
   <label>{{t "f.name"}} <input name="name" value="{{.P.Name}}" required maxlength="200"></label>

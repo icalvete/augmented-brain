@@ -64,3 +64,17 @@
 <summary><h2>{{.Title}}</h2>{{if .Journal}}<span class="hint"> · {{tf "journal.count" .Entries}} · {{t "journal.newest"}}</span>{{end}}</summary>
 <div class="md">{{.HTML}}</div></details>{{else}}<div class="md">{{.HTML}}</div>{{end}}
 {{end}}</div>{{end}}
+
+{{/* intro writes what a page is, with a link to its part of the guide, or, when the
+     person hid it, only the way to show it again: {{template "intro" (intro $ "key" text)}}. */}}
+{{define "intro"}}{{if .Hidden}}<form method="post" action="{{.Base}}/hints" class="intro-show">
+  <input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="key" value="{{.Key}}"><input type="hidden" name="back" value="{{.Back}}">
+  {{if .All}}<button type="submit" name="do" value="showall" class="link">{{t "intro.showall"}}</button>{{else}}<button type="submit" name="do" value="show" class="link">{{t "intro.show"}}</button>{{end}}
+</form>{{else}}<div class="intro">
+  <p class="hint">{{.Text}}{{if .Guide}} <a href="{{.Guide}}" target="_blank" rel="noopener noreferrer">{{t "intro.guide"}}</a>{{end}}</p>
+  <form method="post" action="{{.Base}}/hints" class="intro-hide">
+    <input type="hidden" name="csrf" value="{{.CSRF}}"><input type="hidden" name="key" value="{{.Key}}"><input type="hidden" name="back" value="{{.Back}}">
+    <button type="submit" name="do" value="hide" class="link">{{t "intro.hide"}}</button>
+    <button type="submit" name="do" value="hideall" class="link">{{t "intro.hideall"}}</button>
+  </form>
+</div>{{end}}{{end}}

@@ -1,12 +1,12 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "inbox"}}</h1>
+{{template "intro" (intro $ "inbox" (t "inbox.hint"))}}
 <form method="post" action="{{$.Base}}/inbox/capture" class="stack box">
   {{template "fields" (fields $)}}
   <label>{{t "f.capture"}} <input name="text" required maxlength="1000"></label>
   <label>{{t "f.remind"}} <input type="date" name="remind_on"></label>
   <button type="submit">{{t "capture"}}</button>
 </form>
-<p class="hint">{{t "inbox.hint"}}</p>
 {{if .Entries}}<ul class="cards">
 {{range .Entries}}<li class="card">
   <div class="title">{{inline .Text}}</div>

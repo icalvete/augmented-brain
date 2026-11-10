@@ -2,6 +2,46 @@ package i18n
 
 // The panel's pages.
 var panelMessages = map[string]msg{
+	"panel.intro.guide": {
+		en: "More in the guide ↗",
+		es: "Más en la guía ↗",
+	},
+	"panel.intro.hide": {
+		en: "Hide this help",
+		es: "Ocultar esta ayuda",
+	},
+	"panel.intro.hideall": {
+		en: "Hide it on every page",
+		es: "Ocultarla en todas las páginas",
+	},
+	"panel.intro.show": {
+		en: "What is this page?",
+		es: "¿Qué es esta página?",
+	},
+	"panel.intro.showall": {
+		en: "Show the help on every page",
+		es: "Mostrar la ayuda en todas las páginas",
+	},
+	"panel.tasks.intro": {
+		en: "Every piece of work is a task. Each goes through phases (definition, analysis, plan, execution, validation, closed), and says who it waits on and what comes next. Your assistant keeps them up to date as it works; here you see them all, filter them and change them.",
+		es: "Cada trabajo es una tarea. Pasa por fases (definición, análisis, plan, ejecución, validación, cerrada) y dice a quién espera y qué viene después. Tu asistente las mantiene al día mientras trabaja; aquí las ves todas, las filtras y las cambias.",
+	},
+	"panel.task.intro": {
+		en: "One task: its phase, who it waits on, its next step, its plan and its journal (what was done and decided, newest first). The phases are approved by you; the rest, your assistant writes as it works.",
+		es: "Una tarea: su fase, a quién espera, su siguiente paso, su plan y su diario (lo hecho y lo decidido, lo último primero). Las fases las apruebas tú; lo demás lo escribe tu asistente mientras trabaja.",
+	},
+	"panel.note.intro": {
+		en: "One note of your memory: a Markdown file in your notes folder, yours to keep. Your assistant reads it when the work needs it.",
+		es: "Una nota de tu memoria: un fichero Markdown en tu carpeta de notas, tuyo. Tu asistente la lee cuando el trabajo la necesita.",
+	},
+	"panel.search.intro": {
+		en: "Looks for words in every note of this space and in the shared ones: tasks, areas, knowledge, rules and people.",
+		es: "Busca palabras en todas las notas de este espacio y en las compartidas: tareas, áreas, conocimiento, reglas y personas.",
+	},
+	"panel.space.intro": {
+		en: "Whether this space is well: its notes can be read, its index is up to date, its backup works and the weekly review is not overdue. Red means something to fix, with how.",
+		es: "Si este espacio está bien: sus notas se leen, su índice está al día, su copia de seguridad funciona y la revisión semanal no se ha pasado. En rojo, lo que hay que arreglar, con cómo.",
+	},
 	"panel.guard": {
 		en: "Guard",
 		es: "Guardia",

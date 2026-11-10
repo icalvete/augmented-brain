@@ -1,6 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "today"}}</h1>
-<p class="hint">{{t "today.hint"}}</p>
+{{template "intro" (intro $ "today" (t "today.hint"))}}
 {{if .Nothing}}<p class="empty">{{t "today.nothing"}}</p>{{end}}
 
 {{range .Spaces}}{{$sp := .Name}}

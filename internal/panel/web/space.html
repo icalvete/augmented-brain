@@ -1,5 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{tf "space.title" $.Space}}</h1>
+{{template "intro" (intro $ "space" (t "space.intro"))}}
 <ul class="health">
   <li class="{{if .Problems}}bad{{else}}good{{end}}">{{tf "space.notes" .Notes}}{{if .Problems}} · {{tf "space.invalid" (len .Problems)}}{{end}}</li>
   {{range .Problems}}<li class="bad sub"><code>{{.}}</code></li>{{end}}

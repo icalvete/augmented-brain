@@ -1,6 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "areas"}}</h1>
-<p class="hint">{{t "areas.hint"}}</p>
+{{template "intro" (intro $ "areas" (t "areas.hint"))}}
 {{if .Rows}}<ul class="cards">
 {{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
   <div class="meta">{{if .Summary}}<span>{{inline .Summary}}</span>{{end}}<span class="badge">{{tf "areas.tasks" .Count}}</span></div></li>{{end}}

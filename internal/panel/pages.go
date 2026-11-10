@@ -74,6 +74,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /guard/accept", s.write(s.guardAccept))
 	m.HandleFunc("POST /guard/model", s.write(s.guardModel))
 	m.HandleFunc("POST /versions/restore", s.write(s.versionsRestore))
+	m.HandleFunc("POST /hints", s.hintsChange)
 	m.HandleFunc("POST /stop", s.handleStop)
 	m.HandleFunc("POST /remote", s.handleRemote)
 	m.HandleFunc("POST /local", s.handleLocal)
@@ -97,6 +98,8 @@ type page struct {
 	OK                                bool
 	Remote                            bool // also open through the user's Tailscale network
 	Problems                          int
+	Hints                             hints  // which introductions the person hid
+	Here                              string // this page's address after Base, to come back to
 	D                                 any
 }
 
@@ -146,6 +149,7 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 		p.Lang = "en"
 	}
 	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote.Load() != nil
+	p.Hints = loadHints(s.cfgDir)
 	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "sessions", "space", "guard", "versions", "help"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
 	}
@@ -268,6 +272,9 @@ func (s *Server) read(section string, h func(*view, *http.Request) (string, page
 			p.Section = section
 		}
 		p.OK = r.URL.Query().Get("ok") == "1"
+		q := r.URL.Query()
+		q.Del("ok")
+		p.Here = (&url.URL{Path: r.URL.Path, RawQuery: q.Encode()}).String()
 		s.render(w, http.StatusOK, name, p)
 	}
 }

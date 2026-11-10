@@ -1,6 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "guard"}}</h1>
-<p class="hint">{{t "guard.hint"}}</p>
+{{template "intro" (intro $ "guard" (t "guard.hint"))}}
 {{if .Problem}}<p class="flash err" role="alert">{{tf "guard.problem" .Problem}}</p>{{end}}
 {{if .Changed}}<div class="flash warn" role="alert">
   <p>{{t "guard.changed"}}</p>

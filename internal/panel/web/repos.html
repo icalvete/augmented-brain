@@ -1,6 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "repos"}}</h1>
-<p class="hint">{{t "repos.page.hint"}}</p>
+{{template "intro" (intro $ "repos" (t "repos.page.hint"))}}
 
 {{range .Spaces}}{{$sp := .Name}}
 <section class="space-block">

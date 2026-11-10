@@ -1,6 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "help.title"}}</h1>
-<p class="hint">{{t "help.hint"}}</p>
+{{template "intro" (intro $ "help" (t "help.hint"))}}
 
 <h2>{{t "help.answers"}}</h2>
 <ul class="cards">

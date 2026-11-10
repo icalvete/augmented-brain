@@ -16,6 +16,11 @@ abras tú.
 El panel cambia tus notas igual que Claude, con el mismo programa, y se esperan el uno al
 otro: puedes tener los dos abiertos a la vez.
 
+Cada página empieza con unas palabras sobre qué es y para qué sirve, y un enlace a su
+parte de esta guía. Cuando ya te manejas, **Ocultar esta ayuda** la oculta en esa página,
+y **Ocultarla en todas las páginas**, en todas. El panel lo recuerda en este ordenador;
+**¿Qué es esta página?** la trae de vuelta.
+
 ## Hoy
 
 La primera página: todos los espacios a la vez. De cada uno:

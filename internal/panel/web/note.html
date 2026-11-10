@@ -2,6 +2,7 @@
 <p class="crumbs"><a href="{{$.Base}}/{{$.Section}}?s={{$.Space}}">← {{.Back}}</a></p>
 {{if .Stamp}}<p class="flash warn" id="changed" hidden data-stamp="{{.Stamp}}" data-url="stamp?s={{$.Space}}&amp;id={{.H.ID}}">{{t "changed"}} <a href="">{{t "changed.reload"}}</a></p>{{end}}
 <h1>{{.H.Title}}</h1>
+{{template "intro" (intro $ "note" (t "note.intro"))}}
 <dl class="facts">
   <dt>{{t "f.kind"}}</dt><dd>{{.Kind}}{{if .Shared}} · {{t "shared.long"}}{{end}}</dd>
   {{if .H.Summary}}<dt>{{t "f.summary"}}</dt><dd>{{inline .H.Summary}}</dd>{{end}}
