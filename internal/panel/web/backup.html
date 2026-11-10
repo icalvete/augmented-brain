@@ -1,0 +1,50 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "backup"}}</h1>
+{{template "intro" (intro $ "backup" (t "backup.hint"))}}
+{{if .Remote}}<p class="flash warn" role="note">{{t "backup.remote"}}</p>{{end}}
+{{if .None}}<p class="flash err" role="alert">{{tc "backup.none.count" .None}}</p>{{end}}
+
+{{range .Spaces}}{{$sp := .Name}}
+<section class="space-block">
+  <h2>{{tf "today.space" .Name}}</h2>
+  {{if .URL}}
+  <ul class="health">
+    {{if .Started}}<li class="good" role="status">{{t "backup.started"}}</li>{{end}}
+    {{if .Known}}<li class="{{if .OK}}good{{else}}bad{{end}}">{{if .OK}}{{tf "space.backup.ok" .Time}}{{else}}{{tf "space.backup.failed" .Time .Error}}{{end}}</li>
+    {{else}}<li class="warn">{{t "space.backup.never"}}</li>{{end}}
+    {{if .Warning}}<li class="warn sub">{{.Warning}}</li>{{end}}
+    <li class="sub">{{tf "space.backup.to" .URL}}</li>
+    {{if .Profile}}<li class="sub">{{t "backup.profile"}}</li>{{end}}
+  </ul>
+  {{if .Copies}}<h3>{{t "backup.copies"}}</h3>
+  <ul class="plain">{{range .Copies}}<li>{{.When}} · {{tf "backup.from" .What}}</li>{{end}}</ul>
+  {{else if not .NoGit}}<p class="hint">{{t "backup.copies.none"}}</p>{{end}}
+  {{if not $.D.Remote}}<form method="post" action="{{$.Base}}/backup/run" class="inline">
+    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}">
+    <button type="submit" class="small">{{t "backup.run"}}</button>
+  </form>{{end}}
+  <details class="said"><summary>{{t "backup.restore"}}</summary>
+    <p class="hint">{{t "backup.restore.hint"}}</p>
+    <pre class="body">augmented-brain restore {{.URL}}</pre>
+  </details>
+  {{else}}
+  <ul class="health"><li class="bad">{{t "backup.none"}}</li></ul>
+  {{if not $.D.Remote}}
+  <form method="post" action="{{$.Base}}/backup/setup" class="stack box">
+    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}">
+    <p class="hint">{{tf "backup.github.hint" $sp}}</p>
+    <button type="submit">{{t "backup.github"}}</button>
+  </form>
+  <details class="said"><summary>{{t "backup.own"}}</summary>
+    <form method="post" action="{{$.Base}}/backup/setup" class="stack">
+      <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}">
+      <p class="hint">{{t "backup.own.hint"}}</p>
+      <label>{{t "backup.url"}} <input name="url" required maxlength="500" autocomplete="off" placeholder="git@github.com:you/notes.git"></label>
+      <button type="submit" class="small">{{t "backup.connect"}}</button>
+    </form>
+  </details>
+  {{end}}
+  {{end}}
+</section>
+{{end}}
+{{end}}{{end}}

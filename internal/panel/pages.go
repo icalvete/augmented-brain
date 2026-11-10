@@ -38,6 +38,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("GET /secrets", s.read("secrets", s.secrets))
 	m.HandleFunc("GET /profile", s.read("profile", s.profile))
 	m.HandleFunc("GET /space", s.read("space", s.space))
+	m.HandleFunc("GET /backup", s.read("backup", s.backupPage))
 	m.HandleFunc("GET /sessions", s.read("sessions", s.sessions))
 	m.HandleFunc("GET /repos", s.read("repos", s.repos))
 	m.HandleFunc("GET /guard", s.read("guard", s.guardPage))
@@ -75,6 +76,8 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /guard/model", s.write(s.guardModel))
 	m.HandleFunc("POST /versions/restore", s.write(s.versionsRestore))
 	m.HandleFunc("POST /hints", s.hintsChange)
+	m.HandleFunc("POST /backup/run", s.write(s.backupRun))
+	m.HandleFunc("POST /backup/setup", s.backupSetup)
 	m.HandleFunc("POST /stop", s.handleStop)
 	m.HandleFunc("POST /remote", s.handleRemote)
 	m.HandleFunc("POST /local", s.handleLocal)
@@ -150,7 +153,7 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 	}
 	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote.Load() != nil
 	p.Hints = loadHints(s.cfgDir)
-	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "space", "guard", "versions", "help"} {
+	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "backup", "space", "guard", "versions", "help"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
 	}
 	var buf bytes.Buffer

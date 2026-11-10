@@ -32,7 +32,7 @@ if sys.platform != "darwin":
     raise SystemExit(2)
 good = bad = 0
 PAGES = ["today", "tasks", "reminders", "inbox", "areas", "knowledge", "rules", "people", "search?q=bread",
-         "review", "secrets", "profile", "space", "sessions", "repos", "guard", "versions", "help"]
+         "review", "secrets", "backup", "profile", "space", "sessions", "repos", "guard", "versions", "help"]
 
 
 def report(name, ok, evidence=""):

@@ -26,6 +26,9 @@ augmented-brain backup setup git@gitlab.com:lucia/brain-work.git
 
 Use a **private** repository: your notes are in it.
 
+The panel's [Backup](panel.md#backup) page does the same with two buttons, and shows
+each space's last copies and a **Back up now**.
+
 Until a space has a backup, augmented brain says so: `augmented-brain doctor` names each
 space with none, `update` warns when it goes ahead with no copy to go back to, and
 `uninstall --all` warns that those notes will be gone for good.

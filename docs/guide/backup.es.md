@@ -28,6 +28,9 @@ augmented-brain backup setup git@gitlab.com:lucia/cerebro-trabajo.git
 
 Usa un repositorio **privado**: dentro van tus notas.
 
+La página [Copia de seguridad](panel.es.md#copia-de-seguridad) del panel hace lo mismo con
+dos botones, y enseña las últimas copias de cada espacio y un **Hacer una copia ahora**.
+
 Mientras un espacio no tenga copia, augmented brain lo dice: `augmented-brain doctor`
 nombra cada espacio sin copia, `update` avisa cuando sigue sin una copia a la que volver,
 y `uninstall --all` avisa de que esas notas se perderán para siempre.

@@ -14,6 +14,11 @@
 - **Sessions that were cut off are dealt with from Today.** Each one now shows on Today
   with **Keep it in the notes** and **Mark as reviewed**. The Sessions page leaves the
   menu, which was long for a newcomer; Health links to it.
+- **A Backup page in the panel.** For every space: whether its notes have a copy
+  elsewhere (a space with none says so in red), the last copies, and **Back up now**. A
+  space with none sets one up in two clicks, on your GitHub (with `gh`) or in a private
+  repository you already have. Restoring stays a command, for a new computer, and the
+  page shows it. From another device the page only shows.
 
 ## 0.17.0-beta
 

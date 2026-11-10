@@ -2,6 +2,102 @@ package i18n
 
 // The panel's pages.
 var panelMessages = map[string]msg{
+	"panel.backup": {
+		en: "Backup",
+		es: "Copia de seguridad",
+	},
+	"panel.backup.hint": {
+		en: "A copy of each space's notes in a private repository (a folder kept on a server, such as GitHub), so they survive if this computer breaks. It runs by itself every time a session ends. Your configuration's versions are not in it: they stay on this computer.",
+		es: "Una copia de las notas de cada espacio en un repositorio privado (una carpeta guardada en un servidor, como GitHub), para que sobrevivan si este ordenador se rompe. Se hace sola cada vez que termina una sesión. Las versiones de tu configuración no van en ella: se quedan en este ordenador.",
+	},
+	"panel.backup.remote": {
+		en: "You are on the panel from another device: here you can see the backups; making a copy or setting one up is only from this computer's panel.",
+		es: "Estás en el panel desde otro dispositivo: aquí puedes ver las copias; hacer una o configurarla solo se puede desde el panel de este ordenador.",
+	},
+	"panel.backup.none.count.1": {
+		en: "1 space has no backup: if this computer breaks, its notes are lost.",
+		es: "1 espacio no tiene copia de seguridad: si este ordenador se rompe, sus notas se pierden.",
+	},
+	"panel.backup.none.count.n": {
+		en: "%d spaces have no backup: if this computer breaks, their notes are lost.",
+		es: "%d espacios no tienen copia de seguridad: si este ordenador se rompe, sus notas se pierden.",
+	},
+	"panel.backup.none": {
+		en: "No backup yet.",
+		es: "Aún sin copia de seguridad.",
+	},
+	"panel.backup.started": {
+		en: "A copy has started. It takes a few seconds: reload the page to see how it went.",
+		es: "Ha empezado una copia. Tarda unos segundos: recarga la página para ver cómo fue.",
+	},
+	"panel.backup.profile": {
+		en: "This backup also carries your profile, the names of your secrets and the notes shared by every space.",
+		es: "Esta copia lleva también tu perfil, los nombres de tus secretos y las notas compartidas por todos los espacios.",
+	},
+	"panel.backup.copies": {
+		en: "Last copies",
+		es: "Últimas copias",
+	},
+	"panel.backup.from": {
+		en: "from %s",
+		es: "desde %s",
+	},
+	"panel.backup.copies.none": {
+		en: "No copy is in the history yet.",
+		es: "Aún no hay ninguna copia en el historial.",
+	},
+	"panel.backup.run": {
+		en: "Back up now",
+		es: "Hacer una copia ahora",
+	},
+	"panel.backup.restore": {
+		en: "Bring the notes back on another computer",
+		es: "Recuperar las notas en otro ordenador",
+	},
+	"panel.backup.restore.hint": {
+		en: "On a new computer, install augmented brain, then run this in a terminal. Restoring is never done from here: it is for a computer that does not have these notes yet.",
+		es: "En un ordenador nuevo, instala augmented brain y después ejecuta esto en una terminal. Recuperar nunca se hace desde aquí: es para un ordenador que aún no tiene estas notas.",
+	},
+	"panel.backup.github.hint": {
+		en: "Makes a private repository named augmented-brain-%s in your GitHub account, with the GitHub command line (gh) already logged in, and makes the first copy.",
+		es: "Crea un repositorio privado llamado augmented-brain-%s en tu cuenta de GitHub, con la línea de comandos de GitHub (gh) ya conectada, y hace la primera copia.",
+	},
+	"panel.backup.github": {
+		en: "Set it up on my GitHub",
+		es: "Configurarla en mi GitHub",
+	},
+	"panel.backup.own": {
+		en: "I already have a private repository",
+		es: "Ya tengo un repositorio privado",
+	},
+	"panel.backup.own.hint": {
+		en: "Its address, as git uses it. It must be private, and empty or already a backup of this space.",
+		es: "Su dirección, como la usa git. Tiene que ser privado, y estar vacío o ser ya una copia de este espacio.",
+	},
+	"panel.backup.url": {
+		en: "Address of the repository",
+		es: "Dirección del repositorio",
+	},
+	"panel.backup.connect": {
+		en: "Connect and make the first copy",
+		es: "Conectar y hacer la primera copia",
+	},
+	"panel.backup.localonly": {
+		en: "Making a copy or setting one up is only from the panel on this computer.",
+		es: "Hacer una copia o configurarla solo se puede desde el panel de este ordenador.",
+	},
+	"panel.backup.err.none": {
+		en: "This space has no backup yet: set one up first.",
+		es: "Este espacio aún no tiene copia de seguridad: configúrala primero.",
+	},
+	"panel.backup.err.has": {
+		en: "This space already backs up to %s. To move it somewhere else, run `augmented-brain backup setup <address>` in a terminal, in a folder of the space.",
+		es: "Este espacio ya tiene su copia en %s. Para llevarla a otro sitio, ejecuta `augmented-brain backup setup <dirección>` en una terminal, en una carpeta del espacio.",
+	},
+	"panel.backup.err.gh": {
+		en: "The GitHub command line (gh) is not installed, or not logged in. Install it from https://cli.github.com, run `gh auth login` in a terminal, and try again. Or ask your assistant: it guides you step by step.",
+		es: "La línea de comandos de GitHub (gh) no está instalada, o no está conectada. Instálala desde https://cli.github.com, ejecuta `gh auth login` en una terminal y vuelve a probar. O pídeselo a tu asistente: te guía paso a paso.",
+	},
 	"panel.intro.guide": {
 		en: "More in the guide ↗",
 		es: "Más en la guía ↗",
@@ -1227,8 +1323,8 @@ var panelMessages = map[string]msg{
 		es: "Copia en %s",
 	},
 	"panel.space.backup.none": {
-		en: "No backup: if this computer breaks, these notes are lost. Ask your assistant to set one up.",
-		es: "Sin copia de seguridad: si este ordenador se rompe, estas notas se pierden. Pide a tu asistente que la prepare.",
+		en: "No backup: if this computer breaks, these notes are lost. Set one up on the Backup page, or ask your assistant.",
+		es: "Sin copia de seguridad: si este ordenador se rompe, estas notas se pierden. Configúrala en la página Copia de seguridad, o pídeselo a tu asistente.",
 	},
 	"panel.space.review": {
 		en: "Last weekly review: %s",

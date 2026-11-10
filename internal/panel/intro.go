@@ -76,6 +76,7 @@ var guideAnchors = map[string][2]string{ // key → English, Spanish
 	"guard":     {"guard", "guardia"},
 	"versions":  {"versions", "versiones"},
 	"space":     {"health", "salud"},
+	"backup":    {"backup", "copia-de-seguridad"},
 	"help":      {"help", "ayuda"},
 }
 
