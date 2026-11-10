@@ -18,9 +18,14 @@
     </div>{{end}}
   </details>{{end}}
   {{if and (not .Current) (not $.D.Remote)}}
+  <details class="said"><summary>{{t "versions.restore"}}</summary>
   <form method="post" action="{{$.Base}}/versions/restore" class="stack">
     {{template "fields" (fields $ "id" .ID)}}
+    <p class="hint">{{t "versions.restore.hint"}}</p>
+    {{if .Guard}}<div class="flash warn" role="note"><p>{{t "versions.restore.guard"}}</p>
+    <ul class="plain">{{range .Guard}}<li><strong>{{.List}}</strong>{{range .Added}} <span class="d-add">+ <code>{{.}}</code></span>{{end}}{{range .Removed}} <span class="d-del">- <code>{{.}}</code></span>{{end}}</li>{{end}}</ul></div>{{end}}
+    <label class="check"><input type="checkbox" name="confirm" value="yes" required> {{t "versions.restore.confirm"}}</label>
     <button type="submit" class="small">{{t "versions.restore"}}</button>
-  </form>{{end}}
+  </form></details>{{end}}
 </li>{{end}}</ul>{{else}}<p class="empty">{{t "versions.none"}}</p>{{end}}
 {{end}}{{end}}

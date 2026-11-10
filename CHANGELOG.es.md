@@ -6,6 +6,11 @@
   enlace a su parte de la guía, en tu idioma. Las que no tenían (Tareas, una tarea, una
   nota, Buscar, Salud) ya las tienen. Puedes ocultarlas en una página o en todas, y el
   panel lo recuerda en este ordenador.
+- **Volver a una versión de la configuración pregunta antes.** En Versiones, **Volver a
+  esta** ahora se despliega para decir qué hace, avisa si cambiarían las listas del
+  guardia (con qué ganaría o perdería cada una) y pide marcar una casilla. La página dice
+  además que de tus secretos están los nombres, nunca su valor, y que las versiones nunca
+  van en la copia de seguridad.
 
 ## 0.17.0-beta
 

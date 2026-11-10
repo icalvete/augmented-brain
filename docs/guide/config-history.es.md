@@ -32,7 +32,9 @@ una vuelta a una versión anterior, o a mano.
 La página **Versiones** del panel las lista, la más reciente primero, con cuándo y quién.
 Debajo de cada una, **Qué cambió** enseña las líneas que cambiaron respecto a la anterior:
 en verde lo que se añadió y en rojo lo que se quitó. **Volver a esta** la convierte otra
-vez en la configuración.
+vez en la configuración: primero se despliega, dice qué hace volver y, si cambiarían las
+listas del guardia, qué ganaría o perdería cada una. Marca la casilla para confirmar y
+vuelve.
 
 Volver guarda antes como versión la configuración que tenías, así que se puede deshacer
 igual. Una versión que dejaría un fichero que el programa no puede leer se rechaza, y no

@@ -51,8 +51,8 @@ var panelMessages = map[string]msg{
 		es: "Versiones",
 	},
 	"panel.versions.hint": {
-		en: "The last %d versions of your configuration (spaces, guard, remote access, profile), kept only on this computer. A new one is kept every time it changes, from here, a command, the assistant or by hand. Your notes are not here: they have their own history in the backup.",
-		es: "Las %d últimas versiones de tu configuración (espacios, guardia, acceso remoto, perfil), guardadas solo en este ordenador. Se guarda una cada vez que cambia: desde aquí, con un comando, el asistente o a mano. Tus notas no están aquí: tienen su propia historia en la copia de seguridad.",
+		en: "The last %d versions of your configuration (spaces, guard, remote access, preferred model, profile, and the names of your secrets, never their values), kept only on this computer and never in the backup. A new one is kept every time it changes, from here, a command, the assistant or by hand. Your notes are not here: they have their own history in the backup.",
+		es: "Las %d últimas versiones de tu configuración (espacios, guardia, acceso remoto, modelo preferido, perfil y los nombres de tus secretos, nunca su valor), guardadas solo en este ordenador y nunca en la copia de seguridad. Se guarda una cada vez que cambia: desde aquí, con un comando, el asistente o a mano. Tus notas no están aquí: tienen su propia historia en la copia de seguridad.",
 	},
 	"panel.versions.remote": {
 		en: "You are on the panel from another device: here you can see the versions; going back to one is only from this computer's panel.",
@@ -85,6 +85,18 @@ var panelMessages = map[string]msg{
 	"panel.versions.restore": {
 		en: "Go back to this one",
 		es: "Volver a esta",
+	},
+	"panel.versions.restore.hint": {
+		en: "Your whole configuration becomes this version again: spaces, guard, remote access, profile. The one you have now is kept first, so you can come back to it.",
+		es: "Toda tu configuración vuelve a ser esta versión: espacios, guardia, acceso remoto, perfil. La que tienes ahora se guarda antes, así que puedes volver a ella.",
+	},
+	"panel.versions.restore.guard": {
+		en: "Careful: this also changes what the guard lets your assistant do. Going back would change these lists:",
+		es: "Ojo: esto también cambia lo que el guardia deja hacer a tu asistente. Volver cambiaría estas listas:",
+	},
+	"panel.versions.restore.confirm": {
+		en: "I have looked at what changes, go back to this version",
+		es: "He mirado qué cambia, volver a esta versión",
 	},
 	"panel.versions.none": {
 		en: "No versions yet: one is kept the first time the configuration changes.",
