@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.16.4-alpha
+
+Released 2026-11-10.
 
 - **The CI's browser check no longer hangs.** It installed WebKit's system packages
   from Ubuntu's mirror on every run, and four runs on 9 November ran out of time when
