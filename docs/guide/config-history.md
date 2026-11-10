@@ -31,7 +31,9 @@ earlier version, or by hand.
 The panel's **Versions** page lists them, newest first, with when and who. Under each
 one, **What it changed** shows the lines that changed from the version before: green
 what was added, red what was taken away. **Go back to this one** makes it the
-configuration again.
+configuration again: it opens first, says what going back does and, when the guard's
+lists would change, which entries each list would gain or lose. Tick the box to confirm,
+then go back.
 
 Going back keeps the configuration you had as a version first, so it can be undone the
 same way. A version that would leave a file the program cannot read is refused, and

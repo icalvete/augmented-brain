@@ -6,6 +6,11 @@
   with a link to its part of the guide, in your language. Pages that had none (Tasks,
   a task, a note, Search, Health) have them now. You can hide them on one page or on
   all, and the panel remembers it on this computer.
+- **Going back to a version of the configuration asks first.** On the Versions page,
+  **Go back to this one** now opens to say what it does, warns when the guard's lists
+  would change (with what each would gain or lose), and needs a box ticked. The page
+  also says that the names of your secrets are there, never their values, and that the
+  versions never go in the backup.
 
 ## 0.17.0-beta
 

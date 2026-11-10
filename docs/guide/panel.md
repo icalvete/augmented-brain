@@ -175,7 +175,9 @@ The last 10 versions of your configuration (spaces, guard, remote access,
 session settings, profile and your secrets' names),
 kept only on this computer, newest first, with when and who changed it. **What it
 changed** shows the lines of each one; **Go back to this one** makes it the
-configuration again, keeping the one you had as a version first. From another device
+configuration again, keeping the one you had as a version first. It asks you to tick a
+box, and warns first when the guard's lists would change, with what. They are never in
+the backup: your notes are, with their own history. From another device
 the page only shows. See [Configuration versions](config-history.md).
 
 ## Health

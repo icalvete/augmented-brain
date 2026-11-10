@@ -36,11 +36,21 @@ func TestVersionsPage(t *testing.T) {
 			t.Errorf("the page lacks %q", want)
 		}
 	}
-	if strings.Count(page, "Go back to this one") != 1 {
+	if strings.Count(page, "Go back to this one") != 2 { // the fold and its button, once
 		t.Error("the current version can be gone back to")
 	}
+	// Going back would drop the repository from a guard's list: the page says so first.
+	if !strings.Contains(page, "changes what the guard lets") || !strings.Contains(page, `<span class="d-del">- <code>~/work/core</code>`) {
+		t.Error("the page does not warn that going back changes the guard's lists")
+	}
+	if w := s.post(t, "/versions/restore", url.Values{"s": {"work"}, "id": {vs[1].ID}}); w.Code != http.StatusBadRequest {
+		t.Fatalf("restore without ticking the box: %d", w.Code)
+	}
+	if g, _ := config.LoadGuard(cfg); len(g.UntouchableRepos) != 1 {
+		t.Fatal("a restore not confirmed went back")
+	}
 
-	if w := s.post(t, "/versions/restore", url.Values{"s": {"work"}, "id": {vs[1].ID}}); w.Code != http.StatusSeeOther {
+	if w := s.post(t, "/versions/restore", url.Values{"s": {"work"}, "id": {vs[1].ID}, "confirm": {"yes"}}); w.Code != http.StatusSeeOther {
 		t.Fatalf("restore: %d %s", w.Code, w.Body.String())
 	}
 	g, _ := config.LoadGuard(cfg)
@@ -54,7 +64,7 @@ func TestVersionsPage(t *testing.T) {
 	if after, _ := confighistory.List(cfg); len(after) != 3 || after[0].By != confighistory.ByRestore {
 		t.Errorf("versions after going back: %+v", after)
 	}
-	if w := s.post(t, "/versions/restore", url.Values{"s": {"work"}, "id": {"../config"}}); w.Code != http.StatusBadRequest {
+	if w := s.post(t, "/versions/restore", url.Values{"s": {"work"}, "id": {"../config"}, "confirm": {"yes"}}); w.Code != http.StatusBadRequest {
 		t.Errorf("a made-up version: %d", w.Code)
 	}
 
@@ -66,7 +76,7 @@ func TestVersionsPage(t *testing.T) {
 		t.Errorf("remote page: %d, button or note wrong", w.Code)
 	}
 	before, _ := confighistory.List(cfg)
-	form := url.Values{"s": {"work"}, "id": {before[1].ID}, "csrf": {s.csrf}}
+	form := url.Values{"s": {"work"}, "id": {before[1].ID}, "confirm": {"yes"}, "csrf": {s.csrf}}
 	if w := s.do(t, req{method: http.MethodPost, path: s.base() + "/versions/restore", host: rhost, owner: owner, origin: "https://" + rhost, form: form}); w.Code != http.StatusBadRequest {
 		t.Errorf("remote restore: %d", w.Code)
 	}

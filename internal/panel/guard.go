@@ -162,41 +162,44 @@ func shown(x string) string {
 
 // sealedVersion finds the lists the user last accepted: the seal is only their
 // fingerprint, so it looks for the newest kept version of the configuration whose lists
-// have it. Each version is read from a temporary copy of its files; false when none has.
+// have it. False when none has.
 func sealedVersion(dir, seal string) (*config.Config, config.Guard, bool) {
 	vs, err := confighistory.List(dir)
 	if err != nil || len(vs) == 0 {
 		return nil, config.Guard{}, false
 	}
-	tmp, err := os.MkdirTemp("", "ab-sealed-")
-	if err != nil {
-		return nil, config.Guard{}, false
-	}
-	defer os.RemoveAll(tmp)
 	for _, ver := range vs {
-		sub := filepath.Join(tmp, ver.ID)
-		if err := os.MkdirAll(sub, 0o700); err != nil {
-			continue
-		}
-		for name, text := range ver.Files {
-			if name != filepath.Base(name) {
-				continue // only the configuration's own files, by name
-			}
-			_ = os.WriteFile(filepath.Join(sub, name), []byte(text), 0o600)
-		}
-		c, err := config.Load(sub)
-		if err != nil {
-			continue
-		}
-		g, err := config.LoadGuard(sub)
-		if err != nil {
-			continue
-		}
-		if c.GuardFingerprint(g) == seal {
+		c, g, ok := versionLists(ver)
+		if ok && c.GuardFingerprint(g) == seal {
 			return c, g, true
 		}
 	}
 	return nil, config.Guard{}, false
+}
+
+// versionLists reads a kept version of the configuration, from a temporary copy of its
+// files, for its guard's lists; false when it does not load.
+func versionLists(ver confighistory.Version) (*config.Config, config.Guard, bool) {
+	tmp, err := os.MkdirTemp("", "ab-version-")
+	if err != nil {
+		return nil, config.Guard{}, false
+	}
+	defer os.RemoveAll(tmp)
+	for name, text := range ver.Files {
+		if name != filepath.Base(name) {
+			continue // only the configuration's own files, by name
+		}
+		_ = os.WriteFile(filepath.Join(tmp, name), []byte(text), 0o600)
+	}
+	c, err := config.Load(tmp)
+	if err != nil {
+		return nil, config.Guard{}, false
+	}
+	g, err := config.LoadGuard(tmp)
+	if err != nil {
+		return nil, config.Guard{}, false
+	}
+	return c, g, true
 }
 
 // sealed runs a change to the lists and, when the lists were the ones the user had
