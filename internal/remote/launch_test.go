@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -96,72 +97,122 @@ func TestStartRefuses(t *testing.T) {
 	f, repo := launchFake(t)
 	c, set := f.load()
 	l := Launch{Task: "task-site", Name: "box · Site", Folder: repo}
-	if err := f.sys.Start(c, set, l); !errors.Is(err, ErrUntrusted) {
+	if err := f.sys.Start(c, set, l, "go"); !errors.Is(err, ErrUntrusted) {
 		t.Fatalf("untrusted folder: %v", err)
 	}
-	// The space's service folder is served already.
-	own := filepath.Join(f.root, "p")
-	f.trust(own)
-	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: own}); !errors.Is(err, ErrServed) {
-		t.Fatalf("service folder: %v", err)
+	f.trust(repo)
+	if err := f.sys.Start(c, set, l, "go"); err != nil {
+		t.Fatal(err)
 	}
-	for _, call := range f.calls {
-		if strings.HasPrefix(call, "systemd-run") {
-			t.Fatalf("started although refused: %s", call)
-		}
+	// The same task again, and another task in the same folder.
+	if err := f.sys.Start(c, set, l, "go"); !errors.Is(err, ErrRunning) {
+		t.Fatalf("the same task twice: %v", err)
+	}
+	if err := f.sys.Start(c, set, Launch{Task: "task-other", Name: "x", Folder: repo}, "go"); !errors.Is(err, ErrServed) {
+		t.Fatalf("two tasks in one folder: %v", err)
+	}
+	if len(f.ranIn) != 1 {
+		t.Fatalf("started although refused: %v", f.ranIn)
 	}
 	f.sys.GOOS = "darwin"
-	if err := f.sys.Start(c, set, l); !errors.Is(err, ErrUnsupported) {
+	if err := f.sys.Start(c, set, l, "go"); !errors.Is(err, ErrUnsupported) {
 		t.Fatalf("macOS: %v", err)
 	}
 }
 
-func TestStartRuns(t *testing.T) {
+// A session starts in the background, in its folder, with a first message that names
+// its task, so it gets going without anyone writing to it; which session it
+// is gets recorded, and `session stop` takes it out of Claude's lists.
+func TestStartRunsAndStops(t *testing.T) {
 	f, repo := launchFake(t)
 	c, set := f.load()
 	f.trust(repo)
-	unit := LaunchUnit("task-site")
-	f.active[unit] = "active"
-	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "box · Site", Folder: repo}); err != nil {
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "box · Site", Folder: repo}, "Start with your task, task-site."); err != nil {
 		t.Fatal(err)
 	}
-	var run string
-	for _, call := range f.calls {
-		if strings.HasPrefix(call, "systemd-run") {
-			run = call
+	if len(f.ranIn) != 1 {
+		t.Fatalf("runs: %v", f.ranIn)
+	}
+	for _, want := range []string{repo + " | ", "claude --bg --remote-control box · Site -n box · Site",
+		"--permission-mode default", "Start with your task, task-site."} {
+		if !strings.Contains(f.ranIn[0], want) {
+			t.Errorf("the run lacks %q: %s", want, f.ranIn[0])
 		}
 	}
-	for _, want := range []string{"--user", "--unit=" + unit, "--working-directory=" + repo,
-		"--setenv=" + TaskEnv + "=task-site", "--setenv=PATH=" + filepath.Join(f.root, ".local", "bin"), "remote-control --name box · Site", "--permission-mode default", "--spawn session"} {
-		if !strings.Contains(run, want) {
-			t.Errorf("systemd-run lacks %q: %s", want, run)
-		}
+	got, err := f.sys.Launches(c.Dir)
+	if err != nil || len(got) != 1 || got[0].Task != "task-site" || got[0].Unit != "ab12cd34" || got[0].Active != "active" || got[0].Folder != repo {
+		t.Fatalf("launches: %+v %v", got, err)
+	}
+	f.calls = nil
+	if err := f.sys.Stop(c.Dir, "task-site"); err != nil {
+		t.Fatal(err)
+	}
+	if !slices.ContainsFunc(f.calls, func(c string) bool { return strings.HasSuffix(c, "claude rm ab12cd34") }) {
+		t.Errorf("stop did not remove the session from Claude: %v", f.calls)
+	}
+	if got, _ := f.sys.Launches(c.Dir); len(got) != 0 {
+		t.Errorf("after stop: %+v", got)
+	}
+	// A session that ended by itself is listed as ended, and the task can start again.
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	delete(f.live, "ab12cd34")
+	if got, _ := f.sys.Launches(c.Dir); len(got) != 1 || got[0].Active != "ended" {
+		t.Errorf("an ended session: %+v", got)
+	}
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Errorf("starting again after it ended: %v", err)
 	}
 }
 
-// A server that exits at once (or writes an error and waits) is reported, and stopped.
+// A session that ends at once is reported with what it wrote, and leaves no record.
 func TestStartReportsFailure(t *testing.T) {
 	f, repo := launchFake(t)
 	c, set := f.load()
 	f.trust(repo)
-	err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo})
+	f.bgOut = "\x1b[2JError: not logged in\r\n"
+	err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go")
+	if err == nil || !strings.Contains(err.Error(), "did not start: Error: not logged in") {
+		t.Fatalf("no id printed: %v", err)
+	}
+	// It printed its id, then died.
+	f.bgOut = "backgrounded · dead0001 · x\n"
+	f.sys.RunIn = func(string, string, ...string) (string, error) { return f.bgOut, nil }
+	err = f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go")
 	if err == nil || !strings.Contains(err.Error(), "did not start") {
-		t.Fatalf("a unit that is not active: %v", err)
+		t.Fatalf("a session that died: %v", err)
 	}
-	stopped := false
-	for _, call := range f.calls {
-		if call == "systemctl --user stop "+LaunchUnit("task-site") {
-			stopped = true
-		}
-	}
-	if !stopped {
-		t.Error("the failed unit was not stopped")
+	if got, _ := f.sys.Launches(c.Dir); len(got) != 0 {
+		t.Errorf("a failed start left %+v", got)
 	}
 }
 
-func TestStop(t *testing.T) {
+// While Claude starts its daemon, `claude --bg` may print no id: the session is then
+// found in `claude agents` by its name and folder.
+func TestStartFindsSessionWithoutID(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	f.live["old00001"] = true // another session, running already
+	f.named = map[string][2]string{"old00001": {"box · Site", repo}, "new00002": {"box · Site", repo}}
+	f.sys.RunIn = func(string, string, ...string) (string, error) {
+		f.live["new00002"] = true
+		return "Starting background service…\n", nil
+	}
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "box · Site", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := f.sys.Launches(c.Dir); len(got) != 1 || got[0].Unit != "new00002" {
+		t.Errorf("launches: %+v", got)
+	}
+}
+
+// A session an earlier version launched as a systemd unit is still listed and stopped.
+func TestStopEarlierUnit(t *testing.T) {
 	f, _ := launchFake(t)
-	if err := f.sys.Stop("task-site"); err != nil {
+	c, _ := f.load()
+	if err := f.sys.Stop(c.Dir, "task-site"); err != nil {
 		t.Fatal(err)
 	}
 	if len(f.calls) == 0 || f.calls[0] != "systemctl --user stop "+LaunchUnit("task-site") {

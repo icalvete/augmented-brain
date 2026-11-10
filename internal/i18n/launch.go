@@ -20,8 +20,13 @@ var launchMessages = map[string]msg{
 		es: "%s no nombra ningún repositorio, así que no sé en qué carpeta abrirla. Dímela con --folder DIR (una carpeta propia: el servicio remoto del espacio ya sirve %s).",
 	},
 	"session.started": {
-		en: "Opened the session \"%s\" for %s, in %s. It shows up in Claude Desktop and claude.ai within a minute. It waits for you: when you write to it, it reads its task first.\nIt closes when that session ends, or with: augmented-brain session stop %s",
-		es: "Abierta la sesión «%s» para %s, en %s. Sale en Claude Desktop y claude.ai en menos de un minuto. Te espera: cuando le escribes, lo primero que hace es leer su tarea.\nSe cierra al terminar esa sesión, o con: augmented-brain session stop %s",
+		en: "Opened the session \"%s\" for %s, in %s. It shows up in Claude Desktop and claude.ai within a minute, and it starts on its own: it reads its task and gets going.\nTo close it (and take it out of Claude Desktop and claude.ai): augmented-brain session stop %s",
+		es: "Abierta la sesión «%s» para %s, en %s. Sale en Claude Desktop y claude.ai en menos de un minuto, y empieza sola: lee su tarea y se pone a ello.\nPara cerrarla (y quitarla de Claude Desktop y claude.ai): augmented-brain session stop %s",
+	},
+	// The first message of a launched session: what has it start on its own.
+	"session.first": {
+		en: "This session was opened for task %s (`augmented-brain session start`). Before anything else, read it with task_get, check the real state of what it touches, and tell the user in two or three lines where it stands and what its next step is. Then get on with that step, within the phase the task is in, unless it waits on the user.",
+		es: "Esta sesión se abrió para la tarea %s (`augmented-brain session start`). Antes de nada, léela con task_get, comprueba el estado real de lo que toca y dile al usuario en dos o tres líneas cómo está y cuál es su siguiente paso. Después ponte con ese paso, dentro de la fase en la que está la tarea, salvo que espere al usuario.",
 	},
 	"session.worktree.made": {
 		en: "New worktree %s for the task, on branch %s, from %s.",
@@ -80,8 +85,8 @@ var launchMessages = map[string]msg{
 		es: "Quitados %d worktree(s) de sesiones que ya terminaron, sin nada que no estuviera en el remoto.",
 	},
 	"session.untrusted": {
-		en: "Claude does not trust %s yet, and its server only starts in a folder that accepted the question itself (trusting a folder above it is not enough). Once, in a terminal on %s (from another computer: ssh %s):",
-		es: "Claude aún no confía en %s, y su servidor solo arranca en una carpeta que ha aceptado la pregunta ella misma (que confíe en una carpeta de arriba no basta). Una vez, en un terminal de %s (desde otro ordenador: ssh %s):",
+		en: "Claude does not trust %s yet. A task's session opens only in a folder that accepted Claude's question itself (trusting a folder above it is not enough), so a repository's own settings and hooks never run unasked. Once, in a terminal on %s (from another computer: ssh %s):",
+		es: "Claude aún no confía en %s. La sesión de una tarea solo se abre en una carpeta que ha aceptado ella misma la pregunta de Claude (que confíe en una carpeta de arriba no basta), para que los ajustes y hooks de un repositorio nunca corran sin preguntar. Una vez, en un terminal de %s (desde otro ordenador: ssh %s):",
 	},
 	"session.untrusted.cmd": {
 		en: "  cd %s && claude",
@@ -92,8 +97,8 @@ var launchMessages = map[string]msg{
 		es: "acepta la pregunta, cierra ese Claude con /exit y vuelve a pedir la sesión.",
 	},
 	"session.served": {
-		en: "%s is already served by another remote session (the space's service, or another task's), and Claude allows one per folder. Give this task another folder with --folder DIR, for example a git worktree of the repository.",
-		es: "%s ya la sirve otra sesión remota (el servicio del espacio u otra tarea), y Claude solo admite una por carpeta. Dale otra carpeta a esta tarea con --folder DIR, por ejemplo un worktree de git del repositorio.",
+		en: "Another task's session already works in %s. Two tasks in one folder would step on each other's changes: give this one another folder with --folder DIR, for example a git worktree of the repository.",
+		es: "En %s ya trabaja la sesión de otra tarea. Dos tareas en una carpeta se pisarían los cambios: dale a esta otra carpeta con --folder DIR, por ejemplo un worktree de git del repositorio.",
 	},
 	"session.running": {
 		en: "%s already has its session open. To open it again: augmented-brain session stop %s",
@@ -115,10 +120,5 @@ var launchMessages = map[string]msg{
 	"hook.launcher": {
 		en: "To give a task a session of its own, use the launcher, here or from a remote session: `augmented-brain session start <task>` (Bash). It opens the session in the task's own folder (a worktree of its own for a bare repository), and it shows up in Claude Desktop and claude.ai within a minute. `--folder <dir>` says the folder when the task names none; `augmented-brain session list` shows the ones open; `augmented-brain session stop <task>` closes one. Use it rather than Claude Desktop's start_session, which does not work from a remote session.",
 		es: "Para dar a una tarea una sesión propia, usa el lanzador, aquí o desde una sesión remota: `augmented-brain session start <tarea>` (Bash). Abre la sesión en la carpeta de la tarea (en un worktree propio si es un repositorio bare) y sale en Claude Desktop y claude.ai en menos de un minuto. `--folder <dir>` dice la carpeta cuando la tarea no nombra ninguna; `augmented-brain session list` enseña las abiertas; `augmented-brain session stop <tarea>` cierra una. Úsalo en vez de start_session de Claude Desktop, que no funciona desde una sesión remota.",
-	},
-	// SessionStart, in a session opened by session start.
-	"hook.launched": {
-		en: "This session was opened for task %s (`augmented-brain session start`). Before anything else, read it with task_get, check the real state of what it touches, and tell the user in two or three lines where it stands and what its next step is.",
-		es: "Esta sesión se abrió para la tarea %s (`augmented-brain session start`). Antes de nada, léela con task_get, comprueba el estado real de lo que toca y dile al usuario en dos o tres líneas cómo está y cuál es su siguiente paso.",
 	},
 }

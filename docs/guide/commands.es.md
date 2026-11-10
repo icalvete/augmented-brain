@@ -341,8 +341,8 @@ No tiene opciones.
 
 Abre una sesión remota propia para una tarea, para que desde otro ordenador puedas
 trabajar en varias tareas a la vez, cada una en su sesión. Son tres comandos, `start`,
-`stop` y `list`, cada uno con su apartado abajo. Por ahora solo en Linux (usa
-`systemd`). Sin subcomando, o con otro, `session` muestra su uso. Mira
+`stop` y `list`, cada uno con su apartado abajo. Por ahora solo en Linux: solo
+se ha probado ahí. Sin subcomando, o con otro, `session` muestra su uso. Mira
 [Acceso remoto](remote.es.md#una-sesión-por-tarea).
 
 ## augmented-brain session start
@@ -354,10 +354,10 @@ augmented-brain session start task-new-website
 augmented-brain session start task-new-website --folder ~/projects/website
 ```
 
-Arranca un `claude remote-control` propio para la tarea (un servicio de usuario de
-`systemd` temporal, `augmented-brain-session-<tarea>`), con el título de la tarea como
-nombre. En menos de un minuto sale en Claude Desktop y claude.ai. Te espera: cuando le
-escribes, lo primero que hace es leer su tarea. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
+Arranca una sesión de Claude propia para la tarea, en segundo plano (`claude --bg
+--remote-control`), con el título de la tarea como nombre. En menos de un minuto sale
+en Claude Desktop y claude.ai. Empieza sola: su primer mensaje le pide leer su tarea,
+decirte cómo está y ponerse con el siguiente paso. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
 de trabajo del espacio, o la que diga `--folder`.
 
 Un repositorio bare no tiene ficheros con los que trabajar, así que la tarea recibe un
@@ -370,23 +370,24 @@ existentes: primero el de la rama por defecto.
 
 Lánzalo desde una carpeta del espacio
 de la tarea: la sesión remota a la que entras desde otro ordenador puede lanzarlo por ti
-(«ábreme una sesión para la tarea de la web»).
+(«ábreme una sesión para la tarea de la web»). Toda sesión en Linux sabe hacerlo.
 
-Hay dos límites que pone Claude. La carpeta tiene que ser de confianza ella misma: que
+Dos reglas la mantienen segura. La carpeta tiene que ser de confianza ella misma: que
 confíe en una carpeta de arriba no basta, así que la primera vez el comando te dice que
-abras Claude una vez en esa carpeta y aceptes la pregunta. Un worktree de git es la
-excepción: Claude guarda la respuesta con su repositorio principal, así que basta con
-confiar en uno de los dos. Y Claude solo admite un
-servidor remoto por carpeta, así que una tarea no puede usar la carpeta del servicio del
-espacio ni una que ya use la sesión de otra tarea: dale otra con `--folder` (un worktree
-de git, por ejemplo).
+abras Claude una vez en esa carpeta y aceptes la pregunta. Claude no lo preguntaría, y
+los ajustes y hooks de un repositorio no deben correr sin preguntar. Un worktree de git
+es la excepción: Claude guarda la respuesta con su repositorio principal, así que basta
+con confiar en uno de los dos. Y una tarea por carpeta: dos tareas en una carpeta se
+pisarían los cambios, así que una carpeta que ya usa la sesión de otra tarea se rechaza;
+dale otra con `--folder` (un worktree de git, por ejemplo).
 
-La sesión se cierra cuando la terminas, con `session stop` o al reiniciar el ordenador.
-Las sesiones lanzadas no vuelven solas tras un reinicio: pídelas otra vez.
+La sesión se cierra con `session stop` o al reiniciar el ordenador. Las sesiones
+lanzadas no vuelven solas tras un reinicio: pídelas otra vez.
 
 ## augmented-brain session stop
 
-Cierra la sesión de una tarea.
+Cierra la sesión de una tarea y la quita de Claude Desktop y claude.ai. Funciona desde
+cualquier carpeta.
 
 ```bash
 augmented-brain session stop task-new-website

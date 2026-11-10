@@ -34,7 +34,15 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, i18n.T(l, "usage.session"))
 		return 2
 	}
-	c, s, ok := currentSpace(errOut)
+	// Only start needs the space: stop and list work from any folder.
+	var c *config.Config
+	var s *config.Space
+	ok := false
+	if args[0] == "start" {
+		c, s, ok = currentSpace(errOut)
+	} else {
+		c, ok = loadConfig(errOut)
+	}
 	if !ok {
 		return 1
 	}
@@ -57,7 +65,7 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			fmt.Fprintln(errOut, i18n.T(l, "usage.session"))
 			return 2
 		}
-		if err := sys.Stop(args[1]); err != nil {
+		if err := sys.Stop(c.Dir, args[1]); err != nil {
 			return sessionErr(l, err, errOut)
 		}
 		fmt.Fprintln(out, i18n.T(l, "session.stopped", args[1]))
@@ -151,7 +159,7 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		return 1
 	}
 	name := set.NamePrefix + " · " + task.Header.Title
-	if err := sys.Start(c, set, remote.Launch{Task: id, Name: name, Folder: dir}); err != nil {
+	if err := sys.Start(c, set, remote.Launch{Task: id, Name: name, Folder: dir}, i18n.T(l, "session.first", id)); err != nil {
 		switch {
 		case errors.Is(err, remote.ErrUntrusted):
 			fmt.Fprintln(out, i18n.T(l, "session.untrusted", tilde(dir), host, host))
@@ -181,7 +189,7 @@ func sessionErr(l string, err error, errOut io.Writer) int {
 }
 
 func sessionList(c *config.Config, sys remote.System, out, errOut io.Writer) int {
-	launched, err := sys.Launches()
+	launched, err := sys.Launches(c.Dir)
 	if err != nil {
 		return sessionErr(c.Language, err, errOut)
 	}

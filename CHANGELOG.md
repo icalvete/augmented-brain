@@ -23,6 +23,12 @@
   each session now tells Claude about `augmented-brain session start` and how to use
   it. Before, only the command's help said so, and a session once told its user there
   was no way to do it.
+- **A task's session starts on its own and closes completely.** `session start` now
+  opens a background Claude session (`claude --bg`) whose first message has it read
+  its task and get going: before, it waited until someone wrote to it. `session stop`
+  also takes it out of Claude Desktop and claude.ai, and works from any folder. Two
+  tasks still never share a folder. Sessions opened by an earlier version are still
+  listed and closed.
 
 ## 0.17.0-beta
 

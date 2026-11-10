@@ -109,9 +109,8 @@ pone al día.
 
 ## Una sesión por tarea
 
-Esta parte es solo para Linux por ahora: macOS y Windows aún no tienen una forma limpia de
-arrancar una sesión propia un rato, como hace systemd. En ellos `session start` dice que
-no está disponible.
+Esta parte es solo para Linux por ahora: solo se ha probado ahí. En macOS y Windows
+`session start` dice que no está disponible.
 
 Las sesiones de la puerta empiezan todas en la carpeta del espacio. Para trabajar en una
 tarea en su propia sesión, en su carpeta, pídeselo a la sesión en la que estás: «ábreme una
@@ -123,8 +122,8 @@ augmented-brain session start task-new-website
 ```
 
 y en menos de un minuto sale en claude.ai y Claude Desktop una sesión nueva, con el nombre
-de la tarea. Te espera: cuando le escribes, lo primero que hace es leer su tarea y
-decirte cómo está. La carpeta es la del primer repositorio de la tarea que encuentra en
+de la tarea. Empieza sola: lee su tarea, te dice cómo está y se pone con el siguiente
+paso. La carpeta es la del primer repositorio de la tarea que encuentra en
 las carpetas de trabajo del espacio, o la que diga `--folder`. Para un repositorio bare, la
 tarea recibe un worktree de git propio, en una rama nueva desde la rama por defecto de
 origin. Se va solo cuando no se pierde nada: con `session stop`, al cerrar la tarea o, si
@@ -137,12 +136,13 @@ próximo `session start` o `doctor`. Uno con cambios sin commitear o sin subir s
   `ssh`), entra en la carpeta, lanza `claude`, acepta la pregunta y ciérralo con `/exit`.
   Luego pídelo otra vez. En un worktree de git, Claude guarda la respuesta con su
   repositorio principal: basta con confiar en uno de los dos.
-- **Una sesión por carpeta.** Claude sirve cada carpeta una sola vez, así que una tarea no
-  puede usar la carpeta de la puerta ni una que ya use la sesión de otra tarea. Dale otra
-  con `--folder` (un worktree de git del repositorio, por ejemplo).
-- **Termina con su sesión**, con `augmented-brain session stop <tarea>` o al reiniciar la
-  máquina. Tras un reinicio solo vuelven las puertas: pide otra vez las sesiones de las
-  tareas. `augmented-brain session list` enseña las abiertas.
+- **Una tarea por carpeta.** Dos tareas en una carpeta se pisarían los cambios, así que
+  una carpeta que ya usa la sesión de otra tarea se rechaza. Dale otra con `--folder`
+  (un worktree de git del repositorio, por ejemplo).
+- **Termina con `augmented-brain session stop <tarea>`**, que también la quita de Claude
+  Desktop y claude.ai, o al reiniciar la máquina. Tras un reinicio solo vuelven las
+  puertas: pide otra vez las sesiones de las tareas. `augmented-brain session list`
+  enseña las abiertas.
 
 ## Mantenlo seguro
 

@@ -23,6 +23,12 @@
   de cada sesión le cuenta ahora a Claude que existe `augmented-brain session start` y
   cómo usarlo. Antes solo lo decía la ayuda del comando, y una sesión llegó a decirle a
   su usuario que no había forma de hacerlo.
+- **La sesión de una tarea empieza sola y se cierra del todo.** `session start` abre
+  ahora una sesión de Claude en segundo plano (`claude --bg`) cuyo primer mensaje le
+  pide leer su tarea y ponerse a ello: antes esperaba a que alguien le escribiera.
+  `session stop` también la quita de Claude Desktop y claude.ai, y funciona desde
+  cualquier carpeta. Dos tareas siguen sin compartir carpeta. Las sesiones abiertas por
+  una versión anterior se siguen listando y cerrando.
 
 ## 0.17.0-beta
 
