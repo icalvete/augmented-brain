@@ -205,9 +205,9 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 .skip:focus { top: 12px; }
 section[id] { scroll-margin-top: 16px; }
 
-/* alpha notice, on top of every page */
-.alpha { background: #F3E2B0; color: #4D3A06; font-size: 0.9rem; padding-block: 8px; }
-.alpha a { color: #4D3A06; text-decoration-color: #4D3A06; }
+/* beta notice, on top of every page */
+.beta { background: #F3E2B0; color: #4D3A06; font-size: 0.9rem; padding-block: 8px; }
+.beta a { color: #4D3A06; text-decoration-color: #4D3A06; }
 
 /* diagrams in the guides: generated SVGs drawn at the size they are shown; <picture>
    swaps in the narrow, stacked version on phones, so there is never a sideways scroll */
@@ -246,7 +246,7 @@ section[id] { scroll-margin-top: 16px; }
 
 /* The demo: a week with augmented brain, played as a chat in an app window. Without
    JavaScript, or with reduced motion, every step shows at once. */
-.alpha { text-align: center; }
+.beta { text-align: center; }
 .demo { max-width: 760px; margin: 0 auto; border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
   background: var(--paper); box-shadow: 0 18px 40px -28px rgba(20, 48, 36, 0.35); }
 .demo-bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--code); border-bottom: 1px solid var(--line); }

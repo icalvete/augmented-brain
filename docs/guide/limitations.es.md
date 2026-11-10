@@ -105,7 +105,7 @@ Más en [El guardia](guard.es.md).
 
 ## Probado por poca gente
 
-augmented brain está en alfa. Una persona lo usa a diario en Ubuntu, y lo ha probado en
+augmented brain está en beta. Una persona lo usa a diario en Ubuntu, y lo ha probado en
 macOS y Windows 11. Lo que tienes sigue funcionando de una versión a otra (mira el
 [aviso legal](https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md#aviso-legal)),
 pero haz copia de lo importante.

@@ -18,6 +18,7 @@ func TestNewer(t *testing.T) {
 		{"1.0", "0.99.99", true},
 		{"0.2.1", "0.2.1-alpha", false}, // same numbers: not newer
 		{"v0.2.1-alpha", "0.2.0", true},
+		{"0.17.0-beta", "0.16.4-alpha", true}, // alpha to beta: the numbers decide
 		{"0.2.1", "0.0.1-dev", true},
 		{"0.2.1", "dev", false}, // a build without a version never asks to update
 		{"", "0.2.0", false},

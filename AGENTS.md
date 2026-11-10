@@ -10,7 +10,7 @@ augmented brain gives an AI assistant memory, a method and a guard: tasks, areas
 and rules kept as Markdown files that belong to the user, loaded at the start of every
 session, and a check on risky commands. One Go program (`augmented-brain`) does the work;
 a Claude Code plugin plugs it in through hooks and an MCP server. It is public, MIT,
-alpha, and for people who are not necessarily technical: every change is judged by how
+beta, and for people who are not necessarily technical: every change is judged by how
 it feels to a newcomer.
 
 ## Map

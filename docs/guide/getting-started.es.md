@@ -19,7 +19,7 @@ asistente es Claude Code.
 No aprendes comandos nuevos. Hablas con Claude como siempre: "nueva tarea…",
 "apárcala", "¿en qué estábamos?".
 
-Es gratis y de código abierto (MIT). También es alfa: una versión temprana, aunque lo
+Es gratis y de código abierto (MIT). También es beta: una versión todavía en pruebas, aunque lo
 que tienes sigue funcionando de una versión a otra. Lo que todavía no sabe hacer está en
 [Limitaciones conocidas](limitations.es.md).
 

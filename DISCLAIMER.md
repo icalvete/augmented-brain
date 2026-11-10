@@ -2,7 +2,7 @@
 
 [Leer en español](#aviso-legal)
 
-**augmented brain is alpha software.** It is in an early stage and may have bugs. A
+**augmented brain is beta software.** It is still being tested and may have bugs. A
 person has tested it on Ubuntu, macOS and Windows 11. Back up anything important before
 you rely on it.
 
@@ -36,7 +36,7 @@ you rely on it.
 
 ## Aviso legal
 
-**augmented brain es software en fase alfa.** Está en una etapa temprana y puede tener
+**augmented brain es software en fase beta.** Todavía está en pruebas y puede tener
 errores. Lo ha probado una persona en Ubuntu, macOS y Windows 11. Haz copia de lo
 importante antes de confiar en él.
 
