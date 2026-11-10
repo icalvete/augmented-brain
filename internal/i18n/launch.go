@@ -111,6 +111,11 @@ var launchMessages = map[string]msg{
 		en: "  %s · %s · %s",
 		es: "  %s · %s · %s",
 	},
+	// SessionStart, in every session on Linux: the launcher exists and how to use it.
+	"hook.launcher": {
+		en: "To give a task a session of its own, use the launcher, here or from a remote session: `augmented-brain session start <task>` (Bash). It opens the session in the task's own folder (a worktree of its own for a bare repository), and it shows up in Claude Desktop and claude.ai within a minute. `--folder <dir>` says the folder when the task names none; `augmented-brain session list` shows the ones open; `augmented-brain session stop <task>` closes one. Use it rather than Claude Desktop's start_session, which does not work from a remote session.",
+		es: "Para dar a una tarea una sesión propia, usa el lanzador, aquí o desde una sesión remota: `augmented-brain session start <tarea>` (Bash). Abre la sesión en la carpeta de la tarea (en un worktree propio si es un repositorio bare) y sale en Claude Desktop y claude.ai en menos de un minuto. `--folder <dir>` dice la carpeta cuando la tarea no nombra ninguna; `augmented-brain session list` enseña las abiertas; `augmented-brain session stop <tarea>` cierra una. Úsalo en vez de start_session de Claude Desktop, que no funciona desde una sesión remota.",
+	},
 	// SessionStart, in a session opened by session start.
 	"hook.launched": {
 		en: "This session was opened for task %s (`augmented-brain session start`). Before anything else, read it with task_get, check the real state of what it touches, and tell the user in two or three lines where it stands and what its next step is.",

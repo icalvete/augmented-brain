@@ -19,6 +19,10 @@
   space with none sets one up in two clicks, on your GitHub (with `gh`) or in a private
   repository you already have. Restoring stays a command, for a new computer, and the
   page shows it. From another device the page only shows.
+- **Every session knows it can open a session for a task.** On Linux, the start of
+  each session now tells Claude about `augmented-brain session start` and how to use
+  it. Before, only the command's help said so, and a session once told its user there
+  was no way to do it.
 
 ## 0.17.0-beta
 

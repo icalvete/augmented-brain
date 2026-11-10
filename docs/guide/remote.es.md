@@ -115,7 +115,8 @@ no está disponible.
 
 Las sesiones de la puerta empiezan todas en la carpeta del espacio. Para trabajar en una
 tarea en su propia sesión, en su carpeta, pídeselo a la sesión en la que estás: «ábreme una
-sesión para la tarea de la web». Lanza
+sesión para la tarea de la web». Toda sesión en Linux sabe hacerlo, aquí o desde otro
+ordenador, porque el inicio de cada una se lo cuenta. Lanza
 
 ```bash
 augmented-brain session start task-new-website

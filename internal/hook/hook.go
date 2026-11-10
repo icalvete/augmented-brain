@@ -12,6 +12,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -155,6 +156,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string
 	note += rootNote(c)
 	note += oldServersNote(c)
 	note += guardSealNote(c, cfgDir)
+	note += launcherNote(c)
 	note += launchedNote(c)
 	// A change made by hand since the last version becomes one: it can be undone too.
 	_, _ = confighistory.Record(cfgDir, confighistory.ByOutside, "")
@@ -357,6 +359,19 @@ func guardSealNote(c *config.Config, cfgDir string) string {
 		return "" // the first time: nothing to compare
 	}
 	return "\nThe guard's lists (repositories it allows, asks about or never allows, root exceptions, production profiles, untouchable hosts) are not the ones saved when a session last started, and the panel did not change them. If the user did not do it, say so. " + session.TellUserLine(c.Language) + ".\n"
+}
+
+// GOOS is the system the hook runs on; tests change it.
+var GOOS = runtime.GOOS
+
+// launcherNote tells every session that `augmented-brain session start` exists and how
+// to use it, so it never tells the user there is no way to open a session for a task.
+// Only on Linux: the launcher is Linux only.
+func launcherNote(c *config.Config) string {
+	if GOOS != "linux" {
+		return ""
+	}
+	return "\n" + i18n.T(c.Language, "hook.launcher") + "\n"
 }
 
 // launchedNote has a session opened by `augmented-brain session start` begin with its

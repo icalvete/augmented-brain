@@ -2189,7 +2189,8 @@ not available.
 
 The door's own sessions all start in the space's folder. To work on a task in its own
 session, in its own folder, ask the session you are in: "open me a session for the website
-task". It runs
+task". Every session on Linux knows how, here or from another computer, because the start
+of each one tells it. It runs
 
 ```bash
 augmented-brain session start task-new-website
