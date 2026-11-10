@@ -150,7 +150,7 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 	}
 	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote.Load() != nil
 	p.Hints = loadHints(s.cfgDir)
-	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "sessions", "space", "guard", "versions", "help"} {
+	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "space", "guard", "versions", "help"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
 	}
 	var buf bytes.Buffer

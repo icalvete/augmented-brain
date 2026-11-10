@@ -188,7 +188,7 @@ sin servicios de usuario de systemd (un contenedor, WSL sin systemd). Lo tienes 
 ### Una sesión se cortó
 
 La ventana se cerró a la fuerza, o el ordenador se apagó. La siguiente sesión te ofrece
-recuperarla. Di que sí, o ve a la página Sesiones del panel. Claude Code guarda cada
+recuperarla. Di que sí, o usa el panel: Hoy la enseña. Claude Code guarda cada
 conversación 30 días.
 
 ### La ventana usa mucha memoria

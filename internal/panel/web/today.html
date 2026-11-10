@@ -9,9 +9,19 @@
   <ul class="pills">
     {{if .Inbox}}<li><a href="{{$.Base}}/inbox?s={{$sp}}">{{tf "today.inbox" .Inbox}}</a></li>{{end}}
     {{if .ReviewDue}}<li class="warn"><a href="{{$.Base}}/review?s={{$sp}}">{{tf "today.review" .ReviewDays}}</a></li>{{end}}
-    {{if .Dead}}<li class="warn"><a href="{{$.Base}}/sessions?s={{$sp}}">{{if eq .Dead 1}}{{t "today.dead1"}}{{else}}{{tf "today.dead" .Dead}}{{end}}</a></li>{{end}}
     {{if .Problems}}<li class="bad"><a href="{{$.Base}}/space?s={{$sp}}">{{tf "problems" .Problems}}</a></li>{{end}}
   </ul>
+  {{if .DeadRows}}<h3>{{if eq .Dead 1}}{{t "today.dead1"}}{{else}}{{tf "today.dead" .Dead}}{{end}}</h3>
+  <p class="hint">{{t "sessions.dead.hint"}} <a href="{{$.Base}}/sessions?s={{$sp}}">{{t "today.dead.see"}}</a></p>
+  <ul class="cards">
+  {{range .DeadRows}}<li class="card mine">
+    <div class="title">{{if .TaskID}}<a href="{{$.Base}}/task?s={{$sp}}&amp;id={{.TaskID}}">{{.TaskTitle}}</a>{{else}}{{t "sessions.notask"}}{{end}}</div>
+    <div class="meta"><span class="badge">{{.Short}}</span><span>{{tf "sessions.started" .Started}}</span></div>
+    <div class="actions">
+      <form method="post" action="{{$.Base}}/session/recover" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}"><input type="hidden" name="id" value="{{.ID}}"><input type="hidden" name="back" value="today"><button type="submit" class="small">{{t "sessions.recover"}}</button></form>
+      <form method="post" action="{{$.Base}}/session/reviewed" class="inline"><input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}"><input type="hidden" name="id" value="{{.ID}}"><input type="hidden" name="back" value="today"><button type="submit" class="link">{{t "sessions.reviewed"}}</button></form>
+    </div>
+  </li>{{end}}</ul>{{end}}
   {{if .Reminders}}<h3>{{t "today.reminders"}}</h3><ul class="cards">
   {{range .Reminders}}<li class="card{{if le .Days 0}} mine{{end}}">
     <div class="title">{{inline .What}}</div>

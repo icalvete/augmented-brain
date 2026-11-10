@@ -11,6 +11,9 @@
   would change (with what each would gain or lose), and needs a box ticked. The page
   also says that the names of your secrets are there, never their values, and that the
   versions never go in the backup.
+- **Sessions that were cut off are dealt with from Today.** Each one now shows on Today
+  with **Keep it in the notes** and **Mark as reviewed**. The Sessions page leaves the
+  menu, which was long for a newcomer; Health links to it.
 
 ## 0.17.0-beta
 

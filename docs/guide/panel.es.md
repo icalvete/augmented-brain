@@ -29,7 +29,8 @@ La primera página: todos los espacios a la vez. De cada uno:
 - las tareas que te esperan (las aparcadas, en una línea);
 - cuántas capturas esperan en el buzón;
 - si toca la revisión semanal;
-- las sesiones que se cortaron;
+- las sesiones que se cortaron, cada una con **Guardarlo en las notas** y **Dar por
+  revisada** (mira [Sesiones](#sesiones));
 - las notas con problemas.
 
 Debajo, **Repositorios**: los que tus tareas abiertas nombran en `repos:` y tienen
@@ -126,7 +127,8 @@ que parezca un valor se rechaza. La lista es la misma en todos los espacios, y v
 
 ## Sesiones
 
-Tus sesiones de Claude en este ordenador, de los últimos 30 días.
+Tus sesiones de Claude en este ordenador, de los últimos 30 días. No está en el menú:
+ábrela desde **Salud**, o desde una sesión cortada en **Hoy**.
 
 - Las que no terminaron (cerradas a la fuerza, o cortadas al apagarse el ordenador)
   muestran lo dicho después de la última entrada del diario. Guárdalo en las notas (va a
@@ -189,7 +191,8 @@ página solo enseña. Mira [Versiones de la configuración](config-history.es.md
 
 La carpeta de notas y las carpetas de trabajo del espacio, si es el espacio por defecto,
 notas que no son válidas, repositorios a los que apuntan las notas y que ya no están en
-este ordenador, el índice, la última copia de seguridad y la última revisión semanal.
+este ordenador, el índice, la última copia de seguridad, la última revisión semanal y un
+enlace a las [Sesiones](#sesiones) del espacio.
 
 ## Ayuda
 

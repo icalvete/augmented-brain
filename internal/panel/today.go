@@ -28,6 +28,7 @@ type todaySpace struct {
 	Reminders                []todayReminder
 	Mine, MineParked         []taskRow
 	Inbox, Dead, Problems    int
+	DeadRows                 []sessionRow // the sessions that did not end, to deal with from here
 	ReviewDue                bool
 	ReviewDays, Live, Parked int
 }
@@ -94,7 +95,10 @@ func (s *Server) today(v *view, _ *http.Request) (string, page, error) {
 		entries, _ := b.Inbox()
 		ts.Inbox = len(entries)
 		ts.ReviewDue, ts.ReviewDays = b.ReviewDue()
-		ts.Dead = len(state.Read(v.c.Dir, name).Unclosed("", now))
+		for _, se := range state.Read(v.c.Dir, name).Unclosed("", now) {
+			ts.DeadRows = append(ts.DeadRows, sessionRowOf(state.Listed{Session: se}, b.Mem))
+		}
+		ts.Dead = len(ts.DeadRows)
 		d.Spaces = append(d.Spaces, ts)
 
 		for _, n := range b.Mem.OfType("task") {

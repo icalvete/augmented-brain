@@ -28,7 +28,8 @@ The first page: every space at once. For each one:
 - the tasks waiting on you (the parked ones in one line);
 - how many captures wait in the inbox;
 - whether the weekly review is due;
-- the sessions that were cut off;
+- the sessions that were cut off, each with **Keep it in the notes** and **Mark as
+  reviewed** (see [Sessions](#sessions));
 - notes with problems.
 
 Below, **Repositories**: those your open tasks name in `repos:` that hold changes not
@@ -122,7 +123,8 @@ that looks like a value is refused. The list is the same in every space, and liv
 
 ## Sessions
 
-Your Claude sessions on this computer, from the last 30 days.
+Your Claude sessions on this computer, from the last 30 days. It is not in the menu:
+open it from **Health**, or from a cut-off session on **Today**.
 
 - Those that did not end (closed by force, or cut off when the computer went down) show
   what was said after the last journal entry. Keep it in the notes (it goes to
@@ -184,7 +186,8 @@ the page only shows. See [Configuration versions](config-history.md).
 
 The space's notes folder and work folders, whether it is the default space, notes that
 are not valid, repositories that notes point at and that are no longer on this computer,
-the index, the last backup and the last weekly review.
+the index, the last backup, the last weekly review, and a link to the space's
+[Sessions](#sessions).
 
 ## Help
 

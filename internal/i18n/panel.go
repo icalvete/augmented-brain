@@ -338,6 +338,14 @@ var panelMessages = map[string]msg{
 		en: "weekly review due (%d days)",
 		es: "toca la revisión semanal (%d días)",
 	},
+	"panel.today.dead.see": {
+		en: "See what was said, on the Sessions page.",
+		es: "Mira lo que se dijo en la página Sesiones.",
+	},
+	"panel.space.sessions": {
+		en: "The Claude sessions of this space",
+		es: "Las sesiones de Claude de este espacio",
+	},
 	"panel.today.dead": {
 		en: "%d sessions cut off",
 		es: "%d sesiones cortadas",
