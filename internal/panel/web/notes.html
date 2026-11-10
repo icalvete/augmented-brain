@@ -1,6 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{.Heading}}</h1>
-<p class="hint">{{.Hint}}</p>
+{{template "intro" (intro $ $.Section .Hint)}}
 {{if .Rows}}<ul class="cards">
 {{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{if .Space}}{{.Space}}{{else}}{{$.Space}}{{end}}&amp;id={{.ID}}">{{.Title}}</a>
   <div class="meta">{{range .Badges}}<span class="badge">{{.}}</span>{{end}}{{if .Kind}}<span class="badge">{{.Kind}}</span>{{end}}{{if .Shared}}<span class="badge">{{t "shared"}}</span>{{end}}{{if .Summary}}<span>{{inline .Summary}}</span>{{end}}</div></li>{{end}}

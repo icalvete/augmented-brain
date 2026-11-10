@@ -1,5 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "search"}}</h1>
+{{template "intro" (intro $ "search" (t "search.intro"))}}
 <form method="get" action="{{$.Base}}/search" class="row">
   <input type="hidden" name="s" value="{{$.Space}}">
   <input type="search" name="q" value="{{.Q}}" aria-label="{{t "search"}}" placeholder="{{t "search.hint"}}" autofocus maxlength="200">

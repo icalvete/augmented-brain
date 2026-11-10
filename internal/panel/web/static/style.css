@@ -325,3 +325,9 @@ a.button:hover { opacity: .85; text-decoration: none; }
 .d-add { color: var(--good); background: var(--good-bg); }
 .d-del { color: var(--bad); background: var(--bad-bg); }
 .d-skip { color: var(--muted); }
+
+/* A page's introduction: what it is, a link to the guide, and the way to hide it. */
+.intro { margin-bottom: 1rem; }
+.intro .hint { margin-bottom: .25rem; }
+.intro-hide, .intro-show { display: flex; gap: 1rem; flex-wrap: wrap; font-size: .8rem; }
+.intro-show { margin-bottom: 1rem; }

@@ -155,6 +155,7 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 				}
 			},
 			"fields": fields,
+			"intro":  intro,
 		}
 		out[l] = map[string]*template.Template{}
 		for _, n := range names {

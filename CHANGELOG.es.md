@@ -1,5 +1,12 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Cada página del panel dice qué es.** Unas palabras arriba de cada página, con un
+  enlace a su parte de la guía, en tu idioma. Las que no tenían (Tareas, una tarea, una
+  nota, Buscar, Salud) ya las tienen. Puedes ocultarlas en una página o en todas, y el
+  panel lo recuerda en este ordenador.
+
 ## 0.17.0-beta
 
 Publicada el 2026-11-10.

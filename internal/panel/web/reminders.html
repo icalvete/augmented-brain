@@ -1,6 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "reminders"}}</h1>
-<p class="hint">{{tf "reminders.hint" .Within}}</p>
+{{template "intro" (intro $ "reminders" (tf "reminders.hint" .Within))}}
 {{if .Due}}<ul class="cards">
 {{range .Due}}<li class="card{{if le .Days 0}} mine{{end}}">
   <div class="title">{{inline .What}}</div>

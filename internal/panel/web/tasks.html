@@ -1,5 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "tasks"}}</h1>
+{{template "intro" (intro $ "tasks" (t "tasks.intro"))}}
 <nav class="filters">{{range .Filters}}<a href="{{$.Base}}/tasks?s={{$.Space}}{{if .Key}}&amp;f={{.Key}}{{end}}"{{if .On}} aria-current="true"{{end}}>{{.Label}}</a>{{end}}</nav>
 {{if .People}}<nav class="filters people"><span class="hint">{{t "filter.waits"}}</span>{{range .People}}<a href="{{$.Base}}/tasks?s={{$.Space}}&amp;who={{.Key}}"{{if .On}} aria-current="true"{{end}}>{{.Label}}</a>{{end}}</nav>{{end}}
 {{if lt .Shown .Total}}<p class="hint">{{tf "filter.shown" .Shown .Total}}</p>{{end}}

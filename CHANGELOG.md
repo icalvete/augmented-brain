@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **Every page of the panel says what it is.** A few words at the top of each page,
+  with a link to its part of the guide, in your language. Pages that had none (Tasks,
+  a task, a note, Search, Health) have them now. You can hide them on one page or on
+  all, and the panel remembers it on this computer.
+
 ## 0.17.0-beta
 
 Released 2026-11-10.

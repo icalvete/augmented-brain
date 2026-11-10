@@ -1,6 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "sessions"}}</h1>
-<p class="hint">{{t "sessions.hint"}}</p>
+{{template "intro" (intro $ "sessions" (t "sessions.hint"))}}
 
 <h2>{{t "sessions.dead"}}</h2>
 <p class="hint">{{t "sessions.dead.hint"}}</p>

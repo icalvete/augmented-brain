@@ -1,6 +1,6 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "versions"}}</h1>
-<p class="hint">{{tf "versions.hint" .Keep}}</p>
+{{template "intro" (intro $ "versions" (tf "versions.hint" .Keep))}}
 {{if .Remote}}<p class="flash warn" role="note">{{t "versions.remote"}}</p>{{end}}
 {{if .Changed}}<p class="flash warn" role="note">{{t "versions.changed"}}</p>{{end}}
 {{if .Versions}}<ul class="cards">{{range .Versions}}<li class="card">

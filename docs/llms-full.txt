@@ -1451,6 +1451,11 @@ cannot (on a computer with no screen, say), it prints an address to open yoursel
 The panel changes your notes the same way Claude does, with the same program, and they
 wait for each other: you can have both open at once.
 
+Every page starts with a few words on what it is and what it is for, and a link to its
+part of this guide. Once you know your way around, **Hide this help** hides it on that
+page, and **Hide it on every page** on all of them. The panel remembers it on this
+computer; **What is this page?** brings it back.
+
 ## Today
 
 The first page: every space at once. For each one:
