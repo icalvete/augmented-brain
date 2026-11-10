@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.16.4-alpha
+
+Publicada el 2026-11-10.
 
 - **La prueba en navegadores de la CI ya no se cuelga.** Instalaba en cada ejecución
   los paquetes del sistema que necesita WebKit desde el espejo de Ubuntu, y cuatro
