@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -22,6 +23,13 @@ func sessionFlags(errOut io.Writer) (*flag.FlagSet, *string) {
 	fs.SetOutput(errOut)
 	folder := fs.String("folder", "", "the folder to open the session in")
 	return fs, folder
+}
+
+func sessionStopFlags(errOut io.Writer) (*flag.FlagSet, *bool) {
+	fs := flag.NewFlagSet("session stop", flag.ContinueOnError)
+	fs.SetOutput(errOut)
+	whenIdle := fs.Bool("when-idle", false, "wait until the session has finished its answer (what closing the task uses)")
+	return fs, whenIdle
 }
 
 // cmdSession is `session start TASK | stop TASK | list`: a remote session of its own
@@ -60,9 +68,28 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		}
 		return sessionList(c, sys, out, errOut)
 	case "stop":
-		if len(args) != 2 {
+		fs, whenIdle := sessionStopFlags(errOut)
+		var task string
+		rest := args[1:]
+		if len(rest) > 0 && !strings.HasPrefix(rest[0], "-") {
+			task, rest = rest[0], rest[1:]
+		}
+		if err := fs.Parse(rest); err != nil {
+			return 2
+		}
+		if task == "" && fs.NArg() == 1 {
+			task = fs.Arg(0)
+		} else if task == "" || fs.NArg() > 0 {
 			fmt.Fprintln(errOut, i18n.T(l, "usage.session"))
 			return 2
+		}
+		args = []string{"stop", task}
+		if *whenIdle {
+			// What closing a task starts, detached: nobody reads its output.
+			if err := sys.StopWhenIdle(c.Dir, task, 30*time.Minute); err != nil {
+				return sessionErr(l, err, errOut)
+			}
+			return 0
 		}
 		if err := sys.Stop(c.Dir, args[1]); err != nil {
 			return sessionErr(l, err, errOut)

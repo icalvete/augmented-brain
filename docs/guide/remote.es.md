@@ -140,7 +140,8 @@ próximo `session start` o `doctor`. Uno con cambios sin commitear o sin subir s
   una carpeta que ya usa la sesión de otra tarea se rechaza. Dale otra con `--folder`
   (un worktree de git del repositorio, por ejemplo).
 - **Termina con `augmented-brain session stop <tarea>`**, que también la quita de Claude
-  Desktop y claude.ai, o al reiniciar la máquina. Tras un reinicio solo vuelven las
+  Desktop y claude.ai, al cerrar su tarea (cuando termina su respuesta) o al reiniciar la
+  máquina. Tras un reinicio solo vuelven las
   puertas: pide otra vez las sesiones de las tareas. `augmented-brain session list`
   enseña las abiertas.
 

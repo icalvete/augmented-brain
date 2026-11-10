@@ -384,10 +384,16 @@ augmented-brain session stop task-new-website
 
 When `session start` made a worktree for the task, `stop` also removes it with its
 branch, as long as nothing would be lost: with changes not committed, or commits not
-pushed, it keeps it and says so. Sessions that end without `stop` (a reboot, a session
-closed from Claude Desktop) leave theirs: the next `session start` and `doctor` remove
-those with nothing of their own, closing the task removes its own, and `doctor` warns
+pushed, it keeps it and says so. Closing the task closes its session too, once it has
+finished its answer, worktree and all. Sessions that end without `stop` (a reboot, a
+session closed from Claude Desktop) leave theirs: the next `session start` and `doctor`
+remove those with nothing of their own, closing the task removes its own, and `doctor` warns
 about any that stays with work in it.
+
+- `--when-idle`: wait until the session has finished its answer, then close it. Closing
+  the task runs it by itself in the background: the session closing its own task is
+  often still answering, and stopping it there would cut that answer off. It waits up
+  to 30 minutes.
 
 ## augmented-brain session list
 

@@ -4,8 +4,8 @@ package i18n
 // session start tells the assistant in it.
 var launchMessages = map[string]msg{
 	"usage.session": {
-		en: "usage: augmented-brain session start TASK [--folder DIR] | stop TASK | list",
-		es: "uso: augmented-brain session start TAREA [--folder DIR] | stop TAREA | list",
+		en: "usage: augmented-brain session start TASK [--folder DIR] | stop TASK [--when-idle] | list",
+		es: "uso: augmented-brain session start TAREA [--folder DIR] | stop TAREA [--when-idle] | list",
 	},
 	"session.notask": {
 		en: "there is no task %q in space %s.",
@@ -59,6 +59,10 @@ var launchMessages = map[string]msg{
 	"session.worktree.closed": {
 		en: "Removed the task's worktree %s and its branch: it held nothing that was not on the remote.",
 		es: "Quitado el worktree de la tarea %s y su rama: no tenía nada que no estuviera en el remoto.",
+	},
+	"session.closing": {
+		en: "The task's own session closes when it finishes this answer, and leaves Claude Desktop and claude.ai; its worktree goes with it when nothing would be lost.",
+		es: "La sesión propia de la tarea se cierra cuando termine esta respuesta, y sale de Claude Desktop y claude.ai; su worktree se va con ella si no se pierde nada.",
 	},
 	"session.worktree.closed.kept": {
 		en: "The task's worktree %s stays: it has %s. Push or drop that work, then remove it.",

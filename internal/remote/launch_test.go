@@ -208,6 +208,48 @@ func TestStartFindsSessionWithoutID(t *testing.T) {
 	}
 }
 
+// Closing a task from its own session must not cut off its answer: the session is
+// closed only once it is idle, and one that keeps answering is left alone.
+func TestStopWhenIdle(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	if !f.sys.LaunchRunning(c.Dir, "task-site") {
+		t.Fatal("the session does not run")
+	}
+	f.busy["ab12cd34"] = 3
+	f.calls = nil
+	if err := f.sys.StopWhenIdle(c.Dir, "task-site", time.Minute); err != nil {
+		t.Fatal(err)
+	}
+	looks := 0
+	for _, call := range f.calls {
+		if strings.HasSuffix(call, "agents --json") {
+			looks++
+		}
+		if strings.HasSuffix(call, "rm ab12cd34") && looks < 5 {
+			t.Errorf("removed after %d looks, while it was still answering", looks)
+		}
+	}
+	if f.sys.LaunchRunning(c.Dir, "task-site") {
+		t.Error("still running")
+	}
+	// One that keeps answering is left.
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	f.busy["ab12cd34"] = 1000
+	if err := f.sys.StopWhenIdle(c.Dir, "task-site", 10*time.Second); !errors.Is(err, ErrStillBusy) {
+		t.Errorf("a busy session: %v", err)
+	}
+	if !f.sys.LaunchRunning(c.Dir, "task-site") {
+		t.Error("a busy session was closed")
+	}
+}
+
 // A session an earlier version launched as a systemd unit is still listed and stopped.
 func TestStopEarlierUnit(t *testing.T) {
 	f, _ := launchFake(t)

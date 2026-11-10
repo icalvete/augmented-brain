@@ -29,6 +29,10 @@
   `session stop` también la quita de Claude Desktop y claude.ai, y funciona desde
   cualquier carpeta. Dos tareas siguen sin compartir carpeta. Las sesiones abiertas por
   una versión anterior se siguen listando y cerrando.
+- **Cerrar una tarea cierra su sesión.** Si la tarea tiene una sesión propia,
+  `task_close` hace que se cierre cuando termine su respuesta (`session stop
+  --when-idle`, en segundo plano) y que salga de Claude Desktop y claude.ai, con su
+  worktree si no se pierde nada.
 - **Un repositorio bare dado con `--folder` recibe el worktree propio de la tarea.**
   Antes reusaba uno de los worktrees del repositorio, y la sesión podía abrirse sobre el
   código de otra rama.

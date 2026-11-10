@@ -164,9 +164,10 @@ func readLaunch(cfgDir, task string) (launchRecord, bool) {
 
 // claudeAgent is one entry of `claude agents --json`.
 type claudeAgent struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	Cwd  string `json:"cwd"`
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Cwd    string `json:"cwd"`
+	Status string `json:"status"` // "busy" while it answers, "idle" when it waits
 }
 
 // agents are Claude's background sessions that run now.
@@ -394,6 +395,67 @@ func (s System) Stop(cfgDir, task string) error {
 		return err
 	}
 	_, _ = s.Run("systemctl", "--user", "reset-failed", LaunchUnit(task))
+	return nil
+}
+
+// LaunchRunning says whether the task has a session of its own that runs now.
+func (s System) LaunchRunning(cfgDir, task string) bool {
+	r, ok := readLaunch(cfgDir, task)
+	if !ok || s.GOOS != "linux" {
+		return false
+	}
+	claude, err := s.FindClaude()
+	if err != nil {
+		return false
+	}
+	live, err := s.liveAgents(claude)
+	return err == nil && live[r.ID]
+}
+
+// ErrStillBusy: the session kept answering for as long as StopWhenIdle waits.
+var ErrStillBusy = errors.New("the session is still answering")
+
+// StopWhenIdle closes a task's session once it has finished its answer (seen idle
+// twice in a row, a couple of seconds apart), then removes the task's worktree when
+// nothing would be lost. Closing a task is often done by its own session, in the middle
+// of an answer: stopping it there would cut that answer off. It waits at most max, and
+// leaves a session that is still answering by then.
+func (s System) StopWhenIdle(cfgDir, task string, max time.Duration) error {
+	r, ok := readLaunch(cfgDir, task)
+	if !ok {
+		return nil
+	}
+	claude, err := s.FindClaude()
+	if err != nil {
+		return err
+	}
+	idle := 0
+	for waited := time.Duration(0); idle < 2; waited += 2 * time.Second {
+		if waited > max {
+			return ErrStillBusy
+		}
+		s.sleep(2 * time.Second)
+		list, err := s.agents(claude)
+		if err != nil {
+			continue
+		}
+		state := "gone"
+		for _, a := range list {
+			if a.ID == r.ID {
+				state = a.Status
+			}
+		}
+		switch state {
+		case "idle", "gone":
+			idle++
+		default:
+			idle = 0
+		}
+	}
+	if err := s.Stop(cfgDir, task); err != nil {
+		return err
+	}
+	_, _, _ = RemoveTaskWorktree(cfgDir, task)
 	return nil
 }
 

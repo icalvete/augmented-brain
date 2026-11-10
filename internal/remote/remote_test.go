@@ -28,6 +28,7 @@ type fake struct {
 	failOn string               // a systemctl call that fails
 	live   map[string]bool      // claude's background sessions that run
 	named  map[string][2]string // id -> name and folder, for claude agents
+	busy   map[string]int       // id -> how many more looks it is still answering
 	bgOut  string               // what claude --bg prints
 	ranIn  []string             // the folder and command of each RunIn
 	sys    System
@@ -46,6 +47,7 @@ func newFake(t *testing.T) *fake {
 	t.Setenv("AB_CONFIG_DIR", "")
 	f := &fake{t: t, root: root, active: map[string]string{}, linger: "no", cfgDir: filepath.Join(root, ".config", "augmented-brain")}
 	f.live = map[string]bool{}
+	f.busy = map[string]int{}
 	f.bgOut = "Starting background service…\nbackgrounded · ab12cd34 · x\n"
 	f.sys = System{
 		Run: f.run,
@@ -84,7 +86,12 @@ func (f *fake) run(name string, args ...string) (string, error) {
 	case filepath.Base(name) == "claude" && len(args) > 0 && args[0] == "agents":
 		var list []map[string]string
 		for id := range f.live {
-			list = append(list, map[string]string{"id": id, "name": f.named[id][0], "cwd": f.named[id][1]})
+			status := "idle"
+			if f.busy[id] > 0 {
+				f.busy[id]--
+				status = "busy"
+			}
+			list = append(list, map[string]string{"id": id, "name": f.named[id][0], "cwd": f.named[id][1], "status": status})
 		}
 		data, _ := json.Marshal(list)
 		return string(data), nil

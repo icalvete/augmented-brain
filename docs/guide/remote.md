@@ -137,7 +137,8 @@ with work not committed or not pushed stays, and `doctor` names it.
   so a folder another task's session uses is refused. Give it another one with
   `--folder` (a git worktree of the repository, for example).
 - **It ends with `augmented-brain session stop <task>`**, which also takes it out of
-  Claude Desktop and claude.ai, or when the machine restarts. After a reboot only the
+  Claude Desktop and claude.ai, when its task is closed (once it has finished its
+  answer), or when the machine restarts. After a reboot only the
   doors come back: ask for the task sessions again. `augmented-brain session list`
   shows the open ones.
 

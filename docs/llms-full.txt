@@ -2214,7 +2214,8 @@ with work not committed or not pushed stays, and `doctor` names it.
   so a folder another task's session uses is refused. Give it another one with
   `--folder` (a git worktree of the repository, for example).
 - **It ends with `augmented-brain session stop <task>`**, which also takes it out of
-  Claude Desktop and claude.ai, or when the machine restarts. After a reboot only the
+  Claude Desktop and claude.ai, when its task is closed (once it has finished its
+  answer), or when the machine restarts. After a reboot only the
   doors come back: ask for the task sessions again. `augmented-brain session list`
   shows the open ones.
 
@@ -2911,10 +2912,16 @@ augmented-brain session stop task-new-website
 
 When `session start` made a worktree for the task, `stop` also removes it with its
 branch, as long as nothing would be lost: with changes not committed, or commits not
-pushed, it keeps it and says so. Sessions that end without `stop` (a reboot, a session
-closed from Claude Desktop) leave theirs: the next `session start` and `doctor` remove
-those with nothing of their own, closing the task removes its own, and `doctor` warns
+pushed, it keeps it and says so. Closing the task closes its session too, once it has
+finished its answer, worktree and all. Sessions that end without `stop` (a reboot, a
+session closed from Claude Desktop) leave theirs: the next `session start` and `doctor`
+remove those with nothing of their own, closing the task removes its own, and `doctor` warns
 about any that stays with work in it.
+
+- `--when-idle`: wait until the session has finished its answer, then close it. Closing
+  the task runs it by itself in the background: the session closing its own task is
+  often still answering, and stopping it there would cut that answer off. It waits up
+  to 30 minutes.
 
 ## augmented-brain session list
 
@@ -3210,7 +3217,10 @@ written over. If the task has watch dates not marked done, it says so: they
 still come up at the start of the session on their day, since closing is often when you
 write down what to check later. When `session start` made a git worktree for the task and
 its session no longer runs, closing removes it with its branch if it holds nothing that
-is not on the remote, and says so; otherwise it says why it stays.
+is not on the remote, and says so; otherwise it says why it stays. When the task's own
+session still runs (often the one closing it), a process of its own closes that session
+once it has finished its answer, takes it out of Claude Desktop and claude.ai, and
+removes its worktree the same way.
 
 - `id`: the task's id.
 - `result`: what was achieved, in one or two lines.
