@@ -19,6 +19,11 @@
   space with none sets one up in two clicks, on your GitHub (with `gh`) or in a private
   repository you already have. Restoring stays a command, for a new computer, and the
   page shows it. From another device the page only shows.
+- **Closing a task removes the worktrees its sessions made.** A new MCP tool,
+  `task_worktree`, makes a task's git worktree in any repository of the space, or notes
+  one made some other way; closing the task removes each one with nothing not committed
+  or not pushed, and says why any stays. The common rules ask every session to use it.
+  Before, a session that made worktrees by hand left them behind.
 - **Every session knows it can open a session for a task.** On Linux, the start of
   each session now tells Claude about `augmented-brain session start` and how to use
   it. Before, only the command's help said so, and a session once told its user there

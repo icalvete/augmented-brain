@@ -6,4 +6,5 @@
 - Para retomar una tarea, se lee (task_get) y se comprueba el estado real de lo que toca (ficheros, repositorios, servicios) antes de fiarse de la nota. Se dice lo que no cuadre.
 - Las ideas sueltas van al buzón (capture). Lo que merezca la pena más allá de una tarea se guarda como referencia o lección (knowledge_new). Los hallazgos y las decisiones se guardan sin preguntar.
 - Nunca se borra nada: las tareas se cierran, no se eliminan.
+- Cada worktree de git que necesite una tarea se crea con task_worktree, o se apunta con ella si se hizo de otra forma: así cerrar la tarea lo quita.
 - Los repositorios no se ensucian con lo nuestro. A un repositorio va solo lo que necesita su equipo (código, su documentación, lo que han pedido), y por una rama, no como cambios sueltos. Los planes, análisis, informes y borradores de una tarea van a `docs/<tarea>/` en la carpeta de notas, enlazados desde la tarea. Si un repositorio ajeno pide apuntar algo en sus ficheros, solo se hace cuando se trabaja para ese repositorio.

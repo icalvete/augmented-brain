@@ -27,7 +27,8 @@ Hay cosas que valen para todas:
 - **Dónde está cada cosa**: [`where_am_i`](#where_am_i), [`pending`](#pending).
 - **Tareas**: [`task_new`](#task_new), [`task_get`](#task_get),
   [`task_update`](#task_update), [`task_step`](#task_step),
-  [`task_journal`](#task_journal), [`task_park`](#task_park), [`task_close`](#task_close).
+  [`task_journal`](#task_journal), [`task_park`](#task_park), [`task_close`](#task_close),
+  [`task_worktree`](#task_worktree).
 - **El buzón y la revisión semanal**: [`capture`](#capture),
   [`capture_done`](#capture_done), [`weekly_review`](#weekly_review), [`review_done`](#review_done).
 - **Notas que duran**: [`area_new`](#area_new), [`knowledge_new`](#knowledge_new),
@@ -148,6 +149,23 @@ claude.ai y quita su worktree de la misma forma.
 
 - `id`: el id de la tarea.
 - `result`: lo que se ha conseguido, en una o dos líneas.
+
+## `task_worktree`
+
+Crea un worktree de git para una tarea, o apunta uno ya hecho, para que cerrar la tarea
+lo quite. Un worktree es una segunda carpeta de un repositorio, en una rama propia, para
+que una tarea cambie código sin tocar la carpeta principal. Creado aquí, es
+`<repo>-<tarea>`, al lado del repositorio, en una rama nueva con el nombre de la tarea,
+desde la rama por defecto de origin tal como está ahora; si se pide otra vez, devuelve
+el mismo. Al cerrar la tarea se quita cada worktree apuntado que no tenga nada sin
+commitear ni sin subir, con la rama creada para él (uno apuntado conserva su rama); uno
+con trabajo propio se queda, y también el de la sesión que cierra, y la respuesta dice
+por qué. Las dos rutas tienen que estar dentro de las carpetas de trabajo del espacio.
+
+- `id`: el id de la tarea.
+- `repo` (opcional): un repositorio de git: crea el worktree de la tarea en él.
+- `folder` (opcional): un worktree ya hecho para la tarea: lo apunta. Da `repo` o
+  `folder`, uno de los dos.
 
 ## `capture`
 

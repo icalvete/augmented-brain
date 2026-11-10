@@ -19,6 +19,12 @@
   copia ahora**. Un espacio sin copia la configura en dos clics, en tu GitHub (con `gh`)
   o en un repositorio privado que ya tengas. Recuperar sigue siendo un comando, para un
   ordenador nuevo, y la página lo enseña. Desde otro dispositivo la página solo enseña.
+- **Cerrar una tarea quita los worktrees que hicieron sus sesiones.** Una herramienta
+  MCP nueva, `task_worktree`, crea el worktree de git de una tarea en cualquier
+  repositorio del espacio, o apunta uno hecho de otra forma; al cerrar la tarea se quita
+  cada uno que no tenga nada sin commitear ni sin subir, y se dice por qué se queda
+  alguno. Las reglas comunes piden a toda sesión que la use. Antes, una sesión que hacía
+  worktrees a mano los dejaba atrás.
 - **Toda sesión sabe que puede abrir una sesión para una tarea.** En Linux, el inicio
   de cada sesión le cuenta ahora a Claude que existe `augmented-brain session start` y
   cómo usarlo. Antes solo lo decía la ayuda del comando, y una sesión llegó a decirle a

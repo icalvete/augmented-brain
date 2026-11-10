@@ -24,7 +24,8 @@ A few things hold for every tool:
 - **Where things are**: [`where_am_i`](#where_am_i), [`pending`](#pending).
 - **Tasks**: [`task_new`](#task_new), [`task_get`](#task_get),
   [`task_update`](#task_update), [`task_step`](#task_step),
-  [`task_journal`](#task_journal), [`task_park`](#task_park), [`task_close`](#task_close).
+  [`task_journal`](#task_journal), [`task_park`](#task_park), [`task_close`](#task_close),
+  [`task_worktree`](#task_worktree).
 - **Inbox and the weekly review**: [`capture`](#capture),
   [`capture_done`](#capture_done), [`weekly_review`](#weekly_review), [`review_done`](#review_done).
 - **Notes that last**: [`area_new`](#area_new), [`knowledge_new`](#knowledge_new),
@@ -141,6 +142,23 @@ removes its worktree the same way.
 
 - `id`: the task's id.
 - `result`: what was achieved, in one or two lines.
+
+## `task_worktree`
+
+Makes a git worktree for a task, or notes one already made, so closing the task removes
+it. A worktree is a second folder of a repository, on a branch of its own, so a task can
+change code without touching the main folder. Made here, it is `<repo>-<task>`, next to
+the repository, on a new branch named after the task, from origin's default branch as it
+is now; asked again, it returns the same one. When the task is closed, each noted
+worktree with nothing not committed and nothing not pushed is removed, with the branch
+made for it (a noted one keeps its branch); one with work of its own stays, and so does
+the one the closing session works in, and the answer says why. Both paths must lie
+inside the space's work folders.
+
+- `id`: the task's id.
+- `repo` (optional): a git repository: makes the task's worktree of it.
+- `folder` (optional): a worktree already made for the task: notes it. Give `repo` or
+  `folder`, one of the two.
 
 ## `capture`
 

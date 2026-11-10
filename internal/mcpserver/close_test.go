@@ -2,6 +2,7 @@ package mcpserver
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -66,5 +67,49 @@ func TestCloseStopsTheTaskSession(t *testing.T) {
 	mustCall(t, cs, "task_close", map[string]any{"id": "task-plain", "result": "done"})
 	if len(stopped) != 1 {
 		t.Errorf("stopped %v", stopped)
+	}
+}
+
+// task_worktree notes a worktree for the task; closing the task removes it when it
+// holds nothing of its own, and says why it stays otherwise.
+func TestTaskWorktreeTool(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("no git")
+	}
+	cs := connect(t, space(t))
+	work := filepath.Join(os.Getenv("HOME"), "work")
+	mustCall(t, cs, "task_new", map[string]any{"title": "Site"})
+	if out, isErr := call(t, cs, "task_worktree", map[string]any{"id": "task-site"}); !isErr {
+		t.Errorf("neither repo nor folder: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_worktree", map[string]any{"id": "task-site", "folder": t.TempDir()}); !isErr || !strings.Contains(out, "not inside the work folders") {
+		t.Errorf("outside the work folders: %s", out)
+	}
+	git := func(dir string, args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", append([]string{"-C", dir, "-c", "user.name=Lucia", "-c", "user.email=lucia@ejemplo.com", "-c", "init.defaultBranch=main"}, args...)...)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+	repo := filepath.Join(work, "site")
+	if err := os.MkdirAll(repo, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	git(repo, "init", "-q")
+	git(repo, "commit", "-q", "--allow-empty", "-m", "one")
+	wt := filepath.Join(work, "site-fix")
+	git(repo, "worktree", "add", "-q", "-b", "fix", wt)
+	out := mustCall(t, cs, "task_worktree", map[string]any{"id": "task-site", "folder": wt})
+	if !strings.Contains(out, "Noted") {
+		t.Fatalf("note: %s", out)
+	}
+	// No remote: its commit is on no remote, so it stays, and closing says why.
+	out = mustCall(t, cs, "task_close", map[string]any{"id": "task-site", "result": "done"})
+	if !strings.Contains(out, "site-fix stays") || !strings.Contains(out, "commits not pushed") {
+		t.Fatalf("close:\n%s", out)
+	}
+	if _, err := os.Stat(wt); err != nil {
+		t.Errorf("a worktree with work was removed: %v", err)
 	}
 }
