@@ -506,8 +506,8 @@ if [ -x "$HOME/.local/bin/claude" ]; then
 fi
 
 echo
-say "This is an alpha version: it may have bugs, but what you have keeps working. Disclaimer:" \
-    "Es una versión alfa: puede tener errores, pero lo que tienes sigue funcionando. Aviso legal:"
+say "This is a beta version: it may have bugs, but what you have keeps working. Disclaimer:" \
+    "Es una versión beta: puede tener errores, pero lo que tienes sigue funcionando. Aviso legal:"
 echo "  https://github.com/$REPO/blob/main/DISCLAIMER.md"
 if command -v tailscale >/dev/null 2>&1 || [ -x /Applications/Tailscale.app/Contents/MacOS/Tailscale ]; then
   say "You have Tailscale: augmented-brain panel remote opens your panel from your other devices." \

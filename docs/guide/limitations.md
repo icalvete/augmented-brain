@@ -101,7 +101,7 @@ More in [The guard](guard.md).
 
 ## Tested by few people
 
-augmented brain is alpha. One person has used it every day on Ubuntu, and tried it on
+augmented brain is beta. One person has used it every day on Ubuntu, and tried it on
 macOS and Windows 11. What you have keeps working from one version to the next (see the
 [disclaimer](https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md)), but
 back up anything important.

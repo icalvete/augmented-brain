@@ -12,7 +12,7 @@ Todo queda en ficheros de texto tuyos, con copia en tu propio git.</p>
 <p align="center"><a href="https://github.com/sponsors/icalvete"><img alt="Patrocina" src="https://img.shields.io/badge/Patrocina-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white"></a></p>
 
 > [!WARNING]
-> **Alfa.** Es una versión temprana: puede tener errores. Probado por una persona en
+> **Beta.** Es una versión todavía en pruebas: puede tener errores. Probado por una persona en
 > Ubuntu, macOS y Windows 11. Lo que tienes sigue funcionando: cada versión que cambia el
 > formato trae el paso que pone al día tus notas. Lee el [aviso legal](DISCLAIMER.md#aviso-legal)
 > y las [limitaciones conocidas](https://icalvete.github.io/augmented-brain/guide/limitations.es.html)

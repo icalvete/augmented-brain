@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.17.0-beta
+
+Released 2026-11-10.
+
+- **augmented brain is now beta.** It is used every day and has been tried on Ubuntu,
+  macOS and Windows 11, so it leaves the alpha stage: the README, the
+  disclaimer, the website, the guides and the installer now say beta. Nothing else
+  changes: what you have keeps working, as before. An installed 0.16 sees 0.17.0-beta
+  as newer and offers the update as usual.
+
 ## 0.16.4-alpha
 
 Released 2026-11-10.

@@ -1,5 +1,15 @@
 # Registro de cambios
 
+## 0.17.0-beta
+
+Publicada el 2026-11-10.
+
+- **augmented brain pasa a beta.** Se usa a diario y se ha probado en Ubuntu, macOS y
+  Windows 11, así que deja la fase alfa: el README, el aviso legal, la
+  web, las guías y el instalador ya dicen beta. Nada más cambia: lo que tienes sigue
+  funcionando, como antes. Una 0.16 instalada ve la 0.17.0-beta como más nueva y ofrece
+  la actualización como siempre.
+
 ## 0.16.4-alpha
 
 Publicada el 2026-11-10.

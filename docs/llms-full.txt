@@ -26,7 +26,7 @@ assistant is Claude Code.
 You do not learn new commands. You talk to Claude as usual: "new task…", "park it",
 "where were we?".
 
-It is free and open source (MIT). It is also alpha: an early version, though what you
+It is free and open source (MIT). It is also beta: a version still being tested, though what you
 have keeps working from one version to the next. What it cannot do yet is in
 [Known limitations](https://icalvete.github.io/augmented-brain/guide/limitations.html).
 
@@ -4439,7 +4439,7 @@ More in [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html)
 
 ## Tested by few people
 
-augmented brain is alpha. One person has used it every day on Ubuntu, and tried it on
+augmented brain is beta. One person has used it every day on Ubuntu, and tried it on
 macOS and Windows 11. What you have keeps working from one version to the next (see the
 [disclaimer](https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md)), but
 back up anything important.
