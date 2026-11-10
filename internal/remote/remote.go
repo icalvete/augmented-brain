@@ -51,7 +51,10 @@ type Runner func(name string, args ...string) (string, error)
 
 // System is everything outside the configuration folder the package depends on.
 type System struct {
-	Run      Runner
+	Run Runner
+	// RunIn runs a command in a folder, with this program's environment but TaskEnv:
+	// how a launched session starts.
+	RunIn    func(dir string, name string, args ...string) (string, error)
 	LookPath func(string) (string, error)
 	Hostname func() (string, error)
 	GOOS     string
@@ -100,7 +103,7 @@ func NewSystem() (System, error) {
 		name = u.Username
 	}
 	self, _ := os.Executable()
-	s := System{Run: realRun, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
+	s := System{Run: realRun, RunIn: realRunIn, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
 		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude,
 		Home: home, Self: self}
 	switch runtime.GOOS {
@@ -117,6 +120,20 @@ func NewSystem() (System, error) {
 		s.SystemRoot = os.Getenv("SystemRoot")
 	}
 	return s, nil
+}
+
+func realRunIn(dir string, name string, args ...string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, name, args...)
+	cmd.Dir = dir
+	for _, e := range os.Environ() {
+		if !strings.HasPrefix(e, TaskEnv+"=") {
+			cmd.Env = append(cmd.Env, e)
+		}
+	}
+	out, err := cmd.CombinedOutput()
+	return string(out), err
 }
 
 func realRun(name string, args ...string) (string, error) {

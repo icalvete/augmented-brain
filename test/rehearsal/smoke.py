@@ -9,8 +9,8 @@ PATH, so the session found neither claude nor augmented-brain: the Go tests used
 systemd and could not see it. Here systemd is the real one, and only claude pretends: a
 shell script, in a folder of its own (not the program's), that writes to the journal
 what it got (its arguments, folder, PATH, which augmented-brain it finds, the task) and
-then waits. For a session launched for a task it also runs the SessionStart hook, as a
-real claude would, to see the hook tell it its task.
+then waits. A session launched for a task (`claude --bg`) only writes what it got to
+~/ab-smoke/bg.log and answers `agents`, `stop` and `rm` as claude does.
 
 Everything is made up. The state between the two halves is in ~/ab-release/smoke.json.
 Prints one line per check, "ok " or "BAD", and exits 1 when anything is BAD."""
@@ -25,17 +25,33 @@ ENC = {"encoding": "utf-8", "errors": "replace"}
 good = bad = 0
 
 FAKE = r'''#!/bin/sh
-[ "$1" = remote-control ] || exit 0
+SMOKE="$HOME/ab-smoke"
+case "$1" in
+  --bg)
+    {
+      echo "args=$*"
+      echo "folder=$(pwd)"
+      echo "task=${AUGMENTED_BRAIN_TASK:-}"
+    } > "$SMOKE/bg.log"
+    touch "$SMOKE/live"
+    echo "Starting background service…"
+    echo "backgrounded · 5m0ke001 · smoke"
+    exit 0 ;;
+  agents)
+    if [ -e "$SMOKE/live" ]; then echo '[{"id":"5m0ke001","name":"smoke"}]'; else echo '[]'; fi
+    exit 0 ;;
+  stop|rm)
+    echo "$1 $2" >> "$SMOKE/stops.log"
+    rm -f "$SMOKE/live"
+    exit 0 ;;
+  remote-control) ;;
+  *) exit 0 ;;
+esac
 {
   echo "fake claude: args=$*"
   echo "fake claude: folder=$(pwd)"
   echo "fake claude: path=$PATH"
   echo "fake claude: program=$(command -v augmented-brain || echo none)"
-  echo "fake claude: task=${AUGMENTED_BRAIN_TASK:-}"
-  if [ -n "${AUGMENTED_BRAIN_TASK:-}" ]; then
-    printf '{"hook_event_name":"SessionStart","session_id":"smoke","cwd":"%s","source":"startup"}' "$(pwd)" |
-      augmented-brain hook session-start 1 | grep -q "$AUGMENTED_BRAIN_TASK" && echo "fake claude: hook=task" || echo "fake claude: hook=none"
-  fi
 } >&2
 exec sleep 3600
 '''
@@ -150,27 +166,37 @@ def after():
     code, out = run("augmented-brain", "remote", "status", cwd=work)
     report("remote status says it runs", code == 0, out[-160:])
 
-    # session start: a transient unit for one task, in a folder of its own
+    # session start: a background claude session for one task, in a folder of its own
     folder = os.path.join(work, "smoke-%06d" % random.randrange(10**6))
     os.makedirs(folder)
     trust(folder)
     task = new_task(work, "Smoke " + os.path.basename(folder))
     report("a task to launch", task, task)
+    smoke = os.path.dirname(FAKEBIN)
+    for f in ("bg.log", "stops.log", "live"):
+        if os.path.exists(os.path.join(smoke, f)):
+            os.remove(os.path.join(smoke, f))
     # The same pretend claude, found first in the shell's PATH as at install: the real
-    # one the installer put in ~/.local/bin is not signed in.
+    # one the installer put in ~/.local/bin is not signed in. A task in the environment
+    # must not reach it: Claude's daemon would hand it to every later session.
     code, out = run("augmented-brain", "session", "start", task, "--folder", folder, cwd=work,
-                    env={"PATH": FAKEBIN + ":" + os.environ["PATH"]})
+                    env={"PATH": FAKEBIN + ":" + os.environ["PATH"], "AUGMENTED_BRAIN_TASK": "task-stale"})
     report("session start", code == 0, out[-200:])
-    sunit = "augmented-brain-session-" + re.sub(r"[^A-Za-z0-9_.-]+", "-", task.removeprefix("task-")) + ".service"
-    got, raw = journal(sunit, "fake claude: hook=", 30)
-    _, state = run("systemctl", "--user", "is-active", sunit)
-    report("its unit runs", state == "active", state)
-    report("…as a session spawner, with the mode", "--spawn session" in got.get("args", "") and f"--permission-mode {MODE}" in got.get("args", ""), got.get("args"))
-    report("…in its folder, with its task", got.get("folder") == folder and got.get("task") == task, f"{got.get('folder')} {got.get('task')}")
-    check_path("the session", got, program_dir)
-    report("…and the session start tells it its task", got.get("hook") == "task", got.get("hook") or raw[-160:])
-    code, out = run("augmented-brain", "session", "stop", task, cwd=work)
-    report("session stop", code == 0, out[-120:])
+    log = {}
+    if os.path.exists(os.path.join(smoke, "bg.log")):
+        for line in open(os.path.join(smoke, "bg.log"), **ENC):
+            k, _, v = line.rstrip("\n").partition("=")
+            log[k] = v
+    args = log.get("args", "")
+    report("…in the background, reachable, with the mode", args.startswith("--bg --remote-control") and f"--permission-mode {MODE}" in args, args)
+    report("…in its folder", log.get("folder") == folder, log.get("folder"))
+    report("…its first message names its task", task in args and "task_get" in args, args[-160:])
+    report("…and no task in its environment", log.get("task") == "", log.get("task"))
+    code, out = run("augmented-brain", "session", "list", cwd=work, env={"PATH": FAKEBIN + ":" + os.environ["PATH"]})
+    report("session list shows it running", code == 0 and task in out and "active" in out, out[-160:])
+    code, out = run("augmented-brain", "session", "stop", task, cwd=H, env={"PATH": FAKEBIN + ":" + os.environ["PATH"]})
+    stops = open(os.path.join(smoke, "stops.log"), **ENC).read() if os.path.exists(os.path.join(smoke, "stops.log")) else ""
+    report("session stop, from any folder, removes it", code == 0 and "rm 5m0ke001" in stops, (out + " " + stops)[-160:])
     code, out = run("augmented-brain", "remote", "uninstall", cwd=work)
     report("remote uninstall", code == 0, out[-120:])
 

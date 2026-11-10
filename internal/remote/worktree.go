@@ -144,7 +144,7 @@ func (s System) SweepWorktrees(cfgDir string) (removed []string, kept []Leftover
 	if err != nil || len(entries) == 0 {
 		return nil, nil
 	}
-	running, ok := s.runningTasks()
+	running, ok := s.runningTasks(cfgDir)
 	if !ok {
 		return nil, nil
 	}
@@ -168,22 +168,22 @@ func (s System) SweepWorktrees(cfgDir string) (removed []string, kept []Leftover
 // CloseTaskWorktree removes a closed task's worktree, unless its session still runs
 // (often the one closing the task, working in that folder: the next sweep takes it).
 func (s System) CloseTaskWorktree(cfgDir, task string) (folder string, removed bool, why string) {
-	if running, ok := s.runningTasks(); !ok || running[task] {
+	if running, ok := s.runningTasks(cfgDir); !ok || running[task] {
 		return "", false, ""
 	}
 	return RemoveTaskWorktree(cfgDir, task)
 }
 
-// runningTasks are the tasks whose launched session is up; ok is false when systemd
-// cannot be asked.
-func (s System) runningTasks() (map[string]bool, bool) {
-	launched, err := s.Launches()
+// runningTasks are the tasks whose launched session is up; ok is false when that
+// cannot be known.
+func (s System) runningTasks(cfgDir string) (map[string]bool, bool) {
+	launched, err := s.Launches(cfgDir)
 	if err != nil {
 		return nil, false
 	}
 	running := map[string]bool{}
 	for _, x := range launched {
-		if x.Active == "active" || x.Active == "activating" {
+		if x.Active == "active" {
 			running[x.Task] = true
 		}
 	}

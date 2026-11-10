@@ -10,6 +10,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/icalvete/augmented-brain/internal/confighistory"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -18,6 +20,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/fresh"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -670,12 +673,39 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 // openWatches tells, after closing a task, which of its watch dates are still open:
 // they keep coming up at the start of the session, on purpose (closing is when the
 // checks for later are written down), until they are marked done.
+// NewRemoteSystem is the system task_close looks at for the task's session; tests
+// replace it.
+var NewRemoteSystem = remote.NewSystem
+
+// StopSessionWhenIdle starts, detached, the process that closes a task's session once
+// it has finished its answer (`session stop <task> --when-idle`). Tests replace it.
+var StopSessionWhenIdle = func(cfgDir, task string) error {
+	self, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command(self, "session", "stop", task, "--when-idle")
+	cmd.Env = append(os.Environ(), "AB_CONFIG_DIR="+cfgDir)
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
+	detach.Cmd(cmd)
+	_, err = detach.Start(cmd)
+	return err
+}
+
 // closedWorktree removes the worktree session start made for a closed task, when its
 // session no longer runs and it holds nothing of its own, and says what it did (in
 // English, like every tool's answer: the assistant tells the user in their language).
 func closedWorktree(b *brain.Brain, task string) string {
-	sys, err := remote.NewSystem()
+	sys, err := NewRemoteSystem()
 	if err != nil {
+		return ""
+	}
+	// The task has a session of its own: often the one closing it, in the middle of its
+	// answer. A process of its own closes it once it is idle, worktree and all.
+	if sys.LaunchRunning(b.ConfigDir, task) {
+		if err := StopSessionWhenIdle(b.ConfigDir, task); err == nil {
+			return "\n" + i18n.T("en", "session.closing")
+		}
 		return ""
 	}
 	folder, removed, why := sys.CloseTaskWorktree(b.ConfigDir, task)

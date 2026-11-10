@@ -19,6 +19,29 @@
   copia ahora**. Un espacio sin copia la configura en dos clics, en tu GitHub (con `gh`)
   o en un repositorio privado que ya tengas. Recuperar sigue siendo un comando, para un
   ordenador nuevo, y la página lo enseña. Desde otro dispositivo la página solo enseña.
+- **Toda sesión sabe que puede abrir una sesión para una tarea.** En Linux, el inicio
+  de cada sesión le cuenta ahora a Claude que existe `augmented-brain session start` y
+  cómo usarlo. Antes solo lo decía la ayuda del comando, y una sesión llegó a decirle a
+  su usuario que no había forma de hacerlo.
+- **La sesión de una tarea empieza sola y se cierra del todo.** `session start` abre
+  ahora una sesión de Claude en segundo plano (`claude --bg`) cuyo primer mensaje le
+  pide leer su tarea y ponerse a ello: antes esperaba a que alguien le escribiera.
+  `session stop` también la quita de Claude Desktop y claude.ai, y funciona desde
+  cualquier carpeta. Dos tareas siguen sin compartir carpeta. Las sesiones abiertas por
+  una versión anterior se siguen listando y cerrando.
+- **La sesión de una tarea avisa a la sesión que la pidió cuando para.** Su primer
+  mensaje lleva la dirección de esa sesión (la da Claude Code), así que avisa en una
+  línea cuando la tarea se cierra o se aparca, o cuando te espera.
+- **Cerrar una tarea cierra su sesión.** Si la tarea tiene una sesión propia,
+  `task_close` hace que se cierre cuando termine su respuesta (`session stop
+  --when-idle`, en segundo plano) y que salga de Claude Desktop y claude.ai, con su
+  worktree si no se pierde nada.
+- **Una tarea sin repositorio se abre en la carpeta del espacio.** Antes `session
+  start` pedía una carpeta propia, de confianza para Claude, que un recién llegado no
+  tiene forma de encontrar. Varias tareas así pueden compartirla.
+- **Un repositorio bare dado con `--folder` recibe el worktree propio de la tarea.**
+  Antes reusaba uno de los worktrees del repositorio, y la sesión podía abrirse sobre el
+  código de otra rama.
 
 ## 0.17.0-beta
 

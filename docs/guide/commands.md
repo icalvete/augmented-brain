@@ -331,8 +331,8 @@ on Linux, whether linger is on; on macOS and Windows, that it starts when you lo
 
 Opens a remote session of its own for one task, so that from another computer you can
 work on several tasks at once, each in its own session. It is three commands, `start`,
-`stop` and `list`, each with its own section below. Linux only for now (it uses
-`systemd`). Without a subcommand, or with another, `session` prints its usage. See
+`stop` and `list`, each with its own section below. Linux only for now: it has
+been tried only there. Without a subcommand, or with another, `session` prints its usage. See
 [Remote access](remote.md#a-session-per-task).
 
 ## augmented-brain session start
@@ -344,37 +344,42 @@ augmented-brain session start task-new-website
 augmented-brain session start task-new-website --folder ~/projects/website
 ```
 
-It starts a `claude remote-control` of its own for the task (a temporary `systemd` user
-service, `augmented-brain-session-<task>`), named after the task's title. Within a
-minute it shows up in Claude Desktop and claude.ai. It waits for you: when you write to
-it, it reads its task first.
+It starts a background Claude session of its own for the task (`claude --bg
+--remote-control`), named after the task's title. Within a minute it shows up in Claude
+Desktop and claude.ai. It starts on its own: its first message has it read its task,
+tell you where it stands, and get on with the next step. When another Claude session
+asked for it, the first message also has it tell that session, in one line, when it
+stops: the task closed or parked, or waiting on you.
 The folder is the first of the task's repositories found in the space's work folders,
-or the one `--folder` gives.
+or the one `--folder` gives. A task that names no repository opens in the space's first
+work folder, which several such tasks may share.
 
 A bare repository has no files to work on, so the task gets a git worktree of its own
 next to it: `site-new-website` for the task `task-new-website` of `site`, on a new branch
 named after the task, from the default branch of origin as it is now (it fetches first).
 Two tasks of one repository never share a folder, and a session never starts on old
-code. Asked again, it uses the same worktree. Given with `--folder`, a bare repository
-gets one of its existing worktrees: the one on the default branch first.
+code. Asked again, it uses the same worktree. The same goes for a bare repository given
+with `--folder`.
 
 Run it from a folder of the task's space: the remote
 session you reach from another computer can run it for you ("open me a session for
-the website task").
+the website task"). Every session on Linux knows how.
 
-Two limits come from Claude itself. The folder must be trusted on its own: trusting a
-folder above it is not enough, so the first time the command says to open Claude once
-in that folder and accept the question. A git worktree is the exception: Claude keeps
-the answer under its main repository, so trusting either one is enough. And Claude allows one remote server per folder,
-so a task cannot use the folder the space's own service runs in, or one another task's
-session already uses: give it another with `--folder` (a git worktree, for example).
+Two rules keep it safe. The folder must be trusted on its own: trusting a folder above
+it is not enough, so the first time the command says to open Claude once in that folder
+and accept the question. Claude itself would not ask, and a repository's own settings
+and hooks must not run unasked. A git worktree is the exception: Claude keeps the answer
+under its main repository, so trusting either one is enough. And one task per folder:
+two tasks in one folder would step on each other's changes, so a folder another task's
+session uses is refused; give it another with `--folder` (a git worktree, for example).
 
-The session closes when you end it, with `session stop`, or when the computer restarts.
-Launched sessions are not brought back after a reboot: ask for them again.
+The session closes with `session stop`, or when the computer restarts. Launched
+sessions are not brought back after a reboot: ask for them again.
 
 ## augmented-brain session stop
 
-Closes a task's session.
+Closes a task's session and takes it out of Claude Desktop and claude.ai. It works
+from any folder.
 
 ```bash
 augmented-brain session stop task-new-website
@@ -382,10 +387,16 @@ augmented-brain session stop task-new-website
 
 When `session start` made a worktree for the task, `stop` also removes it with its
 branch, as long as nothing would be lost: with changes not committed, or commits not
-pushed, it keeps it and says so. Sessions that end without `stop` (a reboot, a session
-closed from Claude Desktop) leave theirs: the next `session start` and `doctor` remove
-those with nothing of their own, closing the task removes its own, and `doctor` warns
+pushed, it keeps it and says so. Closing the task closes its session too, once it has
+finished its answer, worktree and all. Sessions that end without `stop` (a reboot, a
+session closed from Claude Desktop) leave theirs: the next `session start` and `doctor`
+remove those with nothing of their own, closing the task removes its own, and `doctor` warns
 about any that stays with work in it.
+
+- `--when-idle`: wait until the session has finished its answer, then close it. Closing
+  the task runs it by itself in the background: the session closing its own task is
+  often still answering, and stopping it there would cut that answer off. It waits up
+  to 30 minutes.
 
 ## augmented-brain session list
 

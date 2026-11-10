@@ -7,8 +7,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -25,6 +25,13 @@ func sessionFlags(errOut io.Writer) (*flag.FlagSet, *string) {
 	return fs, folder
 }
 
+func sessionStopFlags(errOut io.Writer) (*flag.FlagSet, *bool) {
+	fs := flag.NewFlagSet("session stop", flag.ContinueOnError)
+	fs.SetOutput(errOut)
+	whenIdle := fs.Bool("when-idle", false, "wait until the session has finished its answer (what closing the task uses)")
+	return fs, whenIdle
+}
+
 // cmdSession is `session start TASK | stop TASK | list`: a remote session of its own
 // for one task, so a session reached from another computer can open one per task. The
 // logic is in internal/remote (launch.go).
@@ -34,7 +41,15 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, i18n.T(l, "usage.session"))
 		return 2
 	}
-	c, s, ok := currentSpace(errOut)
+	// Only start needs the space: stop and list work from any folder.
+	var c *config.Config
+	var s *config.Space
+	ok := false
+	if args[0] == "start" {
+		c, s, ok = currentSpace(errOut)
+	} else {
+		c, ok = loadConfig(errOut)
+	}
 	if !ok {
 		return 1
 	}
@@ -53,11 +68,30 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		}
 		return sessionList(c, sys, out, errOut)
 	case "stop":
-		if len(args) != 2 {
+		fs, whenIdle := sessionStopFlags(errOut)
+		var task string
+		rest := args[1:]
+		if len(rest) > 0 && !strings.HasPrefix(rest[0], "-") {
+			task, rest = rest[0], rest[1:]
+		}
+		if err := fs.Parse(rest); err != nil {
+			return 2
+		}
+		if task == "" && fs.NArg() == 1 {
+			task = fs.Arg(0)
+		} else if task == "" || fs.NArg() > 0 {
 			fmt.Fprintln(errOut, i18n.T(l, "usage.session"))
 			return 2
 		}
-		if err := sys.Stop(args[1]); err != nil {
+		args = []string{"stop", task}
+		if *whenIdle {
+			// What closing a task starts, detached: nobody reads its output.
+			if err := sys.StopWhenIdle(c.Dir, task, 30*time.Minute); err != nil {
+				return sessionErr(l, err, errOut)
+			}
+			return 0
+		}
+		if err := sys.Stop(c.Dir, args[1]); err != nil {
 			return sessionErr(l, err, errOut)
 		}
 		fmt.Fprintln(out, i18n.T(l, "session.stopped", args[1]))
@@ -102,56 +136,13 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
-	dir := *folder
-	if dir != "" {
-		if dir, err = paths.Resolve(dir); err != nil {
-			fmt.Fprintln(errOut, err)
-			return 1
-		}
-		// A bare repository named by hand: one of its worktrees.
-		if isGitRepo(dir) && isBareRepo(dir) {
-			if wt := bareWorktree(s, dir, sys.FolderTrusted); wt != "" {
-				dir = wt
-			}
-		}
-	} else if repo := taskRepo(s, task.Header.Repos); repo != "" && isBareRepo(repo) {
-		// Leftovers of sessions that ended without session stop (a reboot, a session
-		// closed from Claude Desktop) go first.
-		removed, _ := sys.SweepWorktrees(c.Dir)
-		for _, wt := range removed {
-			fmt.Fprintln(out, i18n.T(l, "session.worktree.swept", tilde(wt)))
-		}
-		wt, base, made, fetched, err := remote.TaskWorktree(c.Dir, repo, id)
-		switch {
-		case errors.Is(err, remote.ErrNotOurWorktree):
-			fmt.Fprintln(errOut, i18n.T(l, "session.worktree.taken", tilde(wt), tilde(repo)))
-			return 1
-		case err != nil:
-			fmt.Fprintln(errOut, err)
-			return 1
-		}
-		if made {
-			if !fetched {
-				fmt.Fprintln(out, i18n.T(l, "session.worktree.offline", base))
-			}
-			_, branch := remote.TaskWorktreePath(repo, id)
-			fmt.Fprintln(out, i18n.T(l, "session.worktree.made", tilde(wt), branch, base))
-		}
-		dir = wt
-	} else if dir = repo; dir == "" {
-		if len(task.Header.Repos) == 0 {
-			first := ""
-			if len(s.WorkFolders) > 0 {
-				first = tilde(s.WorkFolders[0])
-			}
-			fmt.Fprintln(errOut, i18n.T(l, "session.nofolder.none", id, first))
-		} else {
-			fmt.Fprintln(errOut, i18n.T(l, "session.nofolder", id, strings.Join(task.Header.Repos, ", "), s.Name))
-		}
-		return 1
+	dir, code := sessionFolder(c, s, sys, id, task.Header.Repos, *folder, out, errOut)
+	if code != 0 {
+		return code
 	}
 	name := set.NamePrefix + " · " + task.Header.Title
-	if err := sys.Start(c, set, remote.Launch{Task: id, Name: name, Folder: dir}); err != nil {
+	shared := len(s.WorkFolders) > 0 && *folder == "" && len(task.Header.Repos) == 0
+	if err := sys.Start(c, set, remote.Launch{Task: id, Name: name, Folder: dir, Shared: shared}, firstMessage(l, id, os.Getenv(messagingSocket))); err != nil {
 		switch {
 		case errors.Is(err, remote.ErrUntrusted):
 			fmt.Fprintln(out, i18n.T(l, "session.untrusted", tilde(dir), host, host))
@@ -171,6 +162,79 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 	return 0
 }
 
+// sessionFolder is the folder a task's session opens in: the one --folder gives, or
+// the first of the task's repositories in the space's work folders. A bare repository,
+// named either way, has no files to work on: the task gets a worktree of its own, made
+// now if it is not there (on 10-nov, --folder on a bare repository reused one of its
+// worktrees, and the session opened on another branch's code). code is the exit code
+// when there is no folder.
+func sessionFolder(c *config.Config, s *config.Space, sys remote.System, id string, repos []string, folder string, out, errOut io.Writer) (string, int) {
+	l := c.Language
+	repo := ""
+	if folder != "" {
+		dir, err := paths.Resolve(folder)
+		if err != nil {
+			fmt.Fprintln(errOut, err)
+			return "", 1
+		}
+		if !isGitRepo(dir) || !isBareRepo(dir) {
+			return dir, 0
+		}
+		repo = dir
+	} else if len(repos) == 0 {
+		// A task with no repository works in the space's own folder: Claude lets a
+		// background session share it with the space's remote service (measured on
+		// 10-nov). Before, the user had to find a trusted folder of its own.
+		if len(s.WorkFolders) == 0 {
+			fmt.Fprintln(errOut, i18n.T(l, "session.nofolder.none", id))
+			return "", 1
+		}
+		return s.WorkFolders[0], 0
+	} else if repo = taskRepo(s, repos); repo == "" {
+		fmt.Fprintln(errOut, i18n.T(l, "session.nofolder", id, strings.Join(repos, ", "), s.Name))
+		return "", 1
+	} else if !isBareRepo(repo) {
+		return repo, 0
+	}
+	// Leftovers of sessions that ended without session stop (a reboot, a session
+	// closed from Claude Desktop) go first.
+	removed, _ := sys.SweepWorktrees(c.Dir)
+	for _, wt := range removed {
+		fmt.Fprintln(out, i18n.T(l, "session.worktree.swept", tilde(wt)))
+	}
+	wt, base, made, fetched, err := remote.TaskWorktree(c.Dir, repo, id)
+	switch {
+	case errors.Is(err, remote.ErrNotOurWorktree):
+		fmt.Fprintln(errOut, i18n.T(l, "session.worktree.taken", tilde(wt), tilde(repo)))
+		return "", 1
+	case err != nil:
+		fmt.Fprintln(errOut, err)
+		return "", 1
+	}
+	if made {
+		if !fetched {
+			fmt.Fprintln(out, i18n.T(l, "session.worktree.offline", base))
+		}
+		_, branch := remote.TaskWorktreePath(repo, id)
+		fmt.Fprintln(out, i18n.T(l, "session.worktree.made", tilde(wt), branch, base))
+	}
+	return wt, 0
+}
+
+// messagingSocket is where Claude Code tells a session's commands the address other
+// sessions reach it at: the session asking for a task's session, when there is one.
+const messagingSocket = "CLAUDE_CODE_MESSAGING_SOCKET"
+
+// firstMessage is what a launched session starts with: its task, and, when another
+// session asked for it, to tell that one when it is done.
+func firstMessage(l, task, socket string) string {
+	msg := i18n.T(l, "session.first", task)
+	if socket = strings.TrimSpace(socket); socket != "" {
+		msg += " " + i18n.T(l, "session.first.report", "uds:"+socket)
+	}
+	return msg
+}
+
 func sessionErr(l string, err error, errOut io.Writer) int {
 	if errors.Is(err, remote.ErrUnsupported) {
 		fmt.Fprintln(errOut, i18n.T(l, "remote.unsupported"))
@@ -181,7 +245,7 @@ func sessionErr(l string, err error, errOut io.Writer) int {
 }
 
 func sessionList(c *config.Config, sys remote.System, out, errOut io.Writer) int {
-	launched, err := sys.Launches()
+	launched, err := sys.Launches(c.Dir)
 	if err != nil {
 		return sessionErr(c.Language, err, errOut)
 	}
@@ -228,76 +292,6 @@ func taskRepo(s *config.Space, repos []string) string {
 		}
 	}
 	return bare
-}
-
-// bareWorktree, for --folder naming a bare repository, is a worktree of a bare
-// repository kept in <repo>/.git, read from git's
-// own records (.git/worktrees/<name>/gitdir, the path of the worktree's .git file),
-// without running git. Only worktrees that still exist and lie inside a work folder of
-// the space count, so the session loads this space. The one on the default branch
-// comes first, then one named after it (<repo>-main, often left on a detached commit),
-// then the rest; within each, one Claude trusts first, then by path. On 9-nov, with
-// trust read through the main repository, every worktree was trusted and the session
-// went to a leftover feature branch. "" when there is none.
-func bareWorktree(s *config.Space, repo string, trusted func(string) bool) string {
-	gitDir := filepath.Join(repo, ".git")
-	entries, err := os.ReadDir(filepath.Join(gitDir, "worktrees"))
-	if err != nil {
-		return ""
-	}
-	def := remote.DefaultBranches(gitDir)
-	type cand struct {
-		path  string
-		rank  int
-		trust bool
-	}
-	var all []cand
-	for _, e := range entries {
-		rec := filepath.Join(gitDir, "worktrees", e.Name())
-		data, err := os.ReadFile(filepath.Join(rec, "gitdir"))
-		if err != nil {
-			continue
-		}
-		wt := filepath.Dir(filepath.Clean(strings.TrimSpace(string(data))))
-		if !isGitRepo(wt) {
-			continue // removed by hand, not pruned yet
-		}
-		within := false
-		for _, wf := range s.WorkFolders {
-			if paths.Within(wt, wf) {
-				within = true
-				break
-			}
-		}
-		if !within {
-			continue
-		}
-		c := cand{path: wt, rank: 2, trust: trusted != nil && trusted(wt)}
-		head, _ := os.ReadFile(filepath.Join(rec, "HEAD"))
-		for _, d := range def {
-			if strings.TrimSpace(string(head)) == "ref: refs/heads/"+d {
-				c.rank = 0
-				break
-			}
-			if strings.HasSuffix(filepath.Base(wt), "-"+d) {
-				c.rank = 1
-			}
-		}
-		all = append(all, c)
-	}
-	sort.Slice(all, func(i, j int) bool {
-		if all[i].rank != all[j].rank {
-			return all[i].rank < all[j].rank
-		}
-		if all[i].trust != all[j].trust {
-			return all[i].trust
-		}
-		return all[i].path < all[j].path
-	})
-	if len(all) == 0 {
-		return ""
-	}
-	return all[0].path
 }
 
 func isGitRepo(p string) bool {

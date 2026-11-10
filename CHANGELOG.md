@@ -19,6 +19,29 @@
   space with none sets one up in two clicks, on your GitHub (with `gh`) or in a private
   repository you already have. Restoring stays a command, for a new computer, and the
   page shows it. From another device the page only shows.
+- **Every session knows it can open a session for a task.** On Linux, the start of
+  each session now tells Claude about `augmented-brain session start` and how to use
+  it. Before, only the command's help said so, and a session once told its user there
+  was no way to do it.
+- **A task's session starts on its own and closes completely.** `session start` now
+  opens a background Claude session (`claude --bg`) whose first message has it read
+  its task and get going: before, it waited until someone wrote to it. `session stop`
+  also takes it out of Claude Desktop and claude.ai, and works from any folder. Two
+  tasks still never share a folder. Sessions opened by an earlier version are still
+  listed and closed.
+- **A task's session tells the session that asked for it when it stops.** Its first
+  message carries that session's address (from Claude Code), so it reports in one line
+  when the task is closed or parked, or waits on you.
+- **Closing a task closes its session.** When the task has a session of its own,
+  `task_close` has it closed once it has finished its answer (`session stop
+  --when-idle`, in the background), and taken out of Claude Desktop and claude.ai,
+  with its worktree when nothing would be lost.
+- **A task with no repository opens in the space's folder.** Before, `session start`
+  asked for a folder of its own, trusted by Claude, which a newcomer has no way to
+  find. Several such tasks may share it.
+- **A bare repository given with `--folder` gets the task's own worktree.** Before, it
+  reused one of the repository's worktrees, and the session could open on another
+  branch's code.
 
 ## 0.17.0-beta
 

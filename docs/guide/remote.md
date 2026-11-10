@@ -106,23 +106,23 @@ tell you to run `augmented-brain remote install` again, which brings it up to da
 
 ## A session per task
 
-This part is for Linux only for now: macOS and Windows have no clean way yet to start a
-session of its own for a moment, the way systemd does. On them `session start` says it is
-not available.
+This part is for Linux only for now: it has been tried only there. On macOS and Windows
+`session start` says it is not available.
 
 The door's own sessions all start in the space's folder. To work on a task in its own
 session, in its own folder, ask the session you are in: "open me a session for the website
-task". It runs
+task". Every session on Linux knows how, here or from another computer, because the start
+of each one tells it. It runs
 
 ```bash
 augmented-brain session start task-new-website
 ```
 
 and within a minute a new session, named after the task, shows up in claude.ai and Claude
-Desktop. It waits for you: when you write to it, it reads its task first and tells you
-where it stands. The folder is the
+Desktop. It starts on its own: it reads its task, tells you where it stands and gets on
+with the next step. When it stops, it tells the session that asked for it, in one line. The folder is the
 first of the task's repositories found in the space's work folders, or the one `--folder`
-gives. For a bare repository, the task gets a git worktree of its own, on a new branch
+gives; with no repository, the space's folder. For a bare repository, the task gets a git worktree of its own, on a new branch
 from origin's default branch. It goes away by itself when nothing would be lost: with
 `session stop`, when the task is closed, or, for a session that ended some other way (a
 reboot, closing it from Claude Desktop), at the next `session start` or `doctor`. One
@@ -133,12 +133,14 @@ with work not committed or not pushed stays, and `doctor` names it.
   folder, run `claude`, accept the question and close it with `/exit`. Then ask again.
   For a git worktree, Claude keeps the answer under its main repository: trusting either
   one is enough.
-- **One session per folder.** Claude serves each folder once, so a task cannot use the
-  door's own folder, or a folder another task's session is using. Give it another one with
+- **One task per folder.** Two tasks in one folder would step on each other's changes,
+  so a folder another task's session uses is refused. Give it another one with
   `--folder` (a git worktree of the repository, for example).
-- **It ends with its session**, with `augmented-brain session stop <task>`, or when the
-  machine restarts. After a reboot only the doors come back: ask for the task sessions
-  again. `augmented-brain session list` shows the open ones.
+- **It ends with `augmented-brain session stop <task>`**, which also takes it out of
+  Claude Desktop and claude.ai, when its task is closed (once it has finished its
+  answer), or when the machine restarts. After a reboot only the
+  doors come back: ask for the task sessions again. `augmented-brain session list`
+  shows the open ones.
 
 ## Keep it safe
 

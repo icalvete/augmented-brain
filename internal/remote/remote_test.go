@@ -23,9 +23,14 @@ type fake struct {
 	t      *testing.T
 	root   string
 	calls  []string
-	active map[string]string // unit -> is-active answer
-	linger string            // "yes", "no", or "missing" (no loginctl)
-	failOn string            // a systemctl call that fails
+	active map[string]string    // unit -> is-active answer
+	linger string               // "yes", "no", or "missing" (no loginctl)
+	failOn string               // a systemctl call that fails
+	live   map[string]bool      // claude's background sessions that run
+	named  map[string][2]string // id -> name and folder, for claude agents
+	busy   map[string]int       // id -> how many more looks it is still answering
+	bgOut  string               // what claude --bg prints
+	ranIn  []string             // the folder and command of each RunIn
 	sys    System
 	cfgDir string
 }
@@ -41,8 +46,18 @@ func newFake(t *testing.T) *fake {
 	t.Setenv("HOME", root)
 	t.Setenv("AB_CONFIG_DIR", "")
 	f := &fake{t: t, root: root, active: map[string]string{}, linger: "no", cfgDir: filepath.Join(root, ".config", "augmented-brain")}
+	f.live = map[string]bool{}
+	f.busy = map[string]int{}
+	f.bgOut = "Starting background service…\nbackgrounded · ab12cd34 · x\n"
 	f.sys = System{
 		Run: f.run,
+		RunIn: func(dir string, name string, args ...string) (string, error) {
+			f.ranIn = append(f.ranIn, dir+" | "+filepath.Base(name)+" "+strings.Join(args, " "))
+			if m := backgrounded.FindStringSubmatch(f.bgOut); m != nil {
+				f.live[m[1]] = true
+			}
+			return f.bgOut, nil
+		},
 		LookPath: func(name string) (string, error) {
 			if name == "claude" {
 				return filepath.Join(root, ".local", "bin", "claude"), nil
@@ -68,6 +83,21 @@ func (f *fake) run(name string, args ...string) (string, error) {
 	call := name + " " + strings.Join(args, " ")
 	f.calls = append(f.calls, call)
 	switch {
+	case filepath.Base(name) == "claude" && len(args) > 0 && args[0] == "agents":
+		var list []map[string]string
+		for id := range f.live {
+			status := "idle"
+			if f.busy[id] > 0 {
+				f.busy[id]--
+				status = "busy"
+			}
+			list = append(list, map[string]string{"id": id, "name": f.named[id][0], "cwd": f.named[id][1], "status": status})
+		}
+		data, _ := json.Marshal(list)
+		return string(data), nil
+	case filepath.Base(name) == "claude" && len(args) > 1 && (args[0] == "stop" || args[0] == "rm"):
+		delete(f.live, args[1])
+		return "", nil
 	case name == "loginctl":
 		switch f.linger {
 		case "missing":

@@ -12,8 +12,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
@@ -22,7 +22,6 @@ import (
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
-	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/update"
@@ -155,7 +154,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string
 	note += rootNote(c)
 	note += oldServersNote(c)
 	note += guardSealNote(c, cfgDir)
-	note += launchedNote(c)
+	note += launcherNote(c)
 	// A change made by hand since the last version becomes one: it can be undone too.
 	_, _ = confighistory.Record(cfgDir, confighistory.ByOutside, "")
 	return note
@@ -359,12 +358,15 @@ func guardSealNote(c *config.Config, cfgDir string) string {
 	return "\nThe guard's lists (repositories it allows, asks about or never allows, root exceptions, production profiles, untouchable hosts) are not the ones saved when a session last started, and the panel did not change them. If the user did not do it, say so. " + session.TellUserLine(c.Language) + ".\n"
 }
 
-// launchedNote has a session opened by `augmented-brain session start` begin with its
-// task: the server that runs it carries the task's id in its environment.
-func launchedNote(c *config.Config) string {
-	task := strings.TrimSpace(Getenv(remote.TaskEnv))
-	if task == "" {
+// GOOS is the system the hook runs on; tests change it.
+var GOOS = runtime.GOOS
+
+// launcherNote tells every session that `augmented-brain session start` exists and how
+// to use it, so it never tells the user there is no way to open a session for a task.
+// Only on Linux: the launcher is Linux only.
+func launcherNote(c *config.Config) string {
+	if GOOS != "linux" {
 		return ""
 	}
-	return "\n" + i18n.T(c.Language, "hook.launched", task) + "\n"
+	return "\n" + i18n.T(c.Language, "hook.launcher") + "\n"
 }

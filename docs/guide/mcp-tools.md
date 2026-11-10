@@ -134,7 +134,10 @@ written over. If the task has watch dates not marked done, it says so: they
 still come up at the start of the session on their day, since closing is often when you
 write down what to check later. When `session start` made a git worktree for the task and
 its session no longer runs, closing removes it with its branch if it holds nothing that
-is not on the remote, and says so; otherwise it says why it stays.
+is not on the remote, and says so; otherwise it says why it stays. When the task's own
+session still runs (often the one closing it), a process of its own closes that session
+once it has finished its answer, takes it out of Claude Desktop and claude.ai, and
+removes its worktree the same way.
 
 - `id`: the task's id.
 - `result`: what was achieved, in one or two lines.
