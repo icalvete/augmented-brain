@@ -6,4 +6,5 @@
 - To resume a task, read it (task_get), then check the real state of what it touches (files, repositories, services) before trusting the note. Say what does not match.
 - Loose ideas go to the inbox (capture). What is worth keeping beyond a task becomes a reference or a lesson (knowledge_new). Findings and decisions are saved without asking.
 - Nothing is ever deleted: tasks are closed, not removed.
+- Every git worktree a task needs is made with task_worktree, or noted with it when made some other way: closing the task then removes it.
 - Repositories are not cluttered with our own material. A repository only gets what its team needs (code, its documentation, what they asked for), and through a branch, not as loose changes. A task's plans, analyses, reports and drafts go to `docs/<task>/` in the notes folder, linked from the task. When someone else's repository asks to note things in its files, do it only while working for that repository.

@@ -72,6 +72,22 @@ var launchMessages = map[string]msg{
 		en: "changes not committed",
 		es: "cambios sin commitear",
 	},
+	"session.worktree.why.in-use": {
+		en: "this session works in it; once you leave it, git worktree remove takes it",
+		es: "esta sesión trabaja en él; cuando salgas de él, lo quita git worktree remove",
+	},
+	"task.worktree.made": {
+		en: "Made the task's worktree %s, on branch %s from %s. Work there; closing the task removes it when it holds nothing not committed or not pushed.",
+		es: "Creado el worktree de la tarea %s, en la rama %s desde %s. Trabaja ahí; cerrar la tarea lo quita si no tiene nada sin commitear ni sin subir.",
+	},
+	"task.worktree.again": {
+		en: "The task's worktree %s is there already, on branch %s.",
+		es: "El worktree de la tarea %s ya existe, en la rama %s.",
+	},
+	"task.worktree.noted": {
+		en: "Noted %s for %s: closing the task removes it when it holds nothing not committed or not pushed (its branch stays).",
+		es: "Apuntado %s para %s: cerrar la tarea lo quita si no tiene nada sin commitear ni sin subir (su rama se queda).",
+	},
 	"session.worktree.why.commits": {
 		en: "commits not pushed",
 		es: "commits sin subir",

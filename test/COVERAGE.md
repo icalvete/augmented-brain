@@ -71,6 +71,8 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Two sessions writing at once | `TestConcurrentCalls`, `TestFreshBothWritingAtOnce` |
 | Phases: skipped, closing twice, reopening | `internal/brain` `TestPhases` |
 | A parent with open subtasks | `internal/brain` `TestSubtasks` |
+| `task_worktree`, and closing removes the task's worktrees (made, noted, with work, in use) | `TestTaskWorktreeTool`; `internal/remote` `TestNotedWorktrees` |
+| Closing a task whose own session runs | `TestCloseStopsTheTaskSession`; `internal/remote` `TestStopWhenIdle`; tried by hand on 10-nov |
 | Every tool and parameter documented | `TestToolsDocumented` |
 
 ## The panel

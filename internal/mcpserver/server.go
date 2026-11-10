@@ -337,6 +337,16 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			return out + openWatches(n) + closedWorktree(b, in.ID), nil
 		})
 
+	type worktreeIn struct {
+		ID     string `json:"id"`
+		Repo   string `json:"repo,omitempty" jsonschema:"path of a git repository in the space's work folders: makes the task's own worktree of it, <repo>-<task>, on a new branch from origin's default branch"`
+		Folder string `json:"folder,omitempty" jsonschema:"a git worktree already made for the task: noted, so closing the task removes it. Give repo or folder, not both"`
+	}
+	tool(s, locked, "task_worktree", "Make a git worktree for a task, or note one already made, so closing the task removes it (when it holds nothing not committed or not pushed). Use it for every worktree a task needs.",
+		func(b *brain.Brain, in worktreeIn) (string, error) {
+			return taskWorktree(b, in.ID, in.Repo, in.Folder)
+		})
+
 	type captureIn struct {
 		Text     string `json:"text" jsonschema:"the idea, link or loose end, in one line"`
 		RemindOn string `json:"remind_on,omitempty" jsonschema:"YYYY-MM-DD: bring it up again at the start of the session on that day"`
@@ -701,21 +711,77 @@ func closedWorktree(b *brain.Brain, task string) string {
 		return ""
 	}
 	// The task has a session of its own: often the one closing it, in the middle of its
-	// answer. A process of its own closes it once it is idle, worktree and all.
+	// answer. A process of its own closes it once it is idle, worktrees and all.
 	if sys.LaunchRunning(b.ConfigDir, task) {
 		if err := StopSessionWhenIdle(b.ConfigDir, task); err == nil {
 			return "\n" + i18n.T("en", "session.closing")
 		}
 		return ""
 	}
+	var out string
 	folder, removed, why := sys.CloseTaskWorktree(b.ConfigDir, task)
 	switch {
 	case removed:
-		return "\n" + i18n.T("en", "session.worktree.closed", paths.Tilde(folder))
+		out += "\n" + i18n.T("en", "session.worktree.closed", paths.Tilde(folder))
 	case why != "":
-		return "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(folder), i18n.T("en", "session.worktree.why."+why))
+		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(folder), i18n.T("en", "session.worktree.why."+why))
 	}
-	return ""
+	// The worktrees the task's sessions made, but the one this session works in.
+	here, _ := os.Getwd()
+	gone, kept := remote.RemoveNotedWorktrees(b.ConfigDir, task, here)
+	for _, f := range gone {
+		out += "\n" + i18n.T("en", "session.worktree.closed", paths.Tilde(f))
+	}
+	for _, k := range kept {
+		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(k.Folder), i18n.T("en", "session.worktree.why."+k.Why))
+	}
+	return out
+}
+
+// taskWorktree makes the task's worktree of repo, or notes folder, for task_worktree.
+// Both must lie inside the space's work folders.
+func taskWorktree(b *brain.Brain, task, repo, folder string) (string, error) {
+	if (repo == "") == (folder == "") {
+		return "", errors.New("give repo (to make the task's worktree of it) or folder (a worktree already made), one of the two")
+	}
+	n, err := b.Task(task)
+	if err != nil {
+		return "", err
+	}
+	if n.Header.Status == "closed" {
+		return "", fmt.Errorf("%s is closed", task)
+	}
+	p, err := paths.Resolve(repo + folder)
+	if err != nil {
+		return "", err
+	}
+	within := false
+	for _, wf := range b.Space.WorkFolders {
+		if paths.Within(p, wf) {
+			within = true
+		}
+	}
+	if !within {
+		return "", fmt.Errorf("%s is not inside the work folders of space %s", paths.Tilde(p), b.Space.Name)
+	}
+	if folder != "" {
+		if err := remote.NoteTaskWorktree(b.ConfigDir, task, p); err != nil {
+			return "", err
+		}
+		return i18n.T("en", "task.worktree.noted", paths.Tilde(p), task), nil
+	}
+	wt, branch, base, made, fetched, err := remote.MakeTaskWorktree(b.ConfigDir, p, task)
+	if err != nil {
+		return "", err
+	}
+	if !made {
+		return i18n.T("en", "task.worktree.again", paths.Tilde(wt), branch), nil
+	}
+	out := i18n.T("en", "task.worktree.made", paths.Tilde(wt), branch, base)
+	if !fetched {
+		out += " " + i18n.T("en", "session.worktree.offline", base)
+	}
+	return out, nil
 }
 
 func openWatches(n *memory.Note) string {

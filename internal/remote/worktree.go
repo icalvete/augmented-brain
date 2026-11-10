@@ -64,6 +64,21 @@ func TaskWorktree(cfgDir, repo, task string) (folder, base string, made, fetched
 		}
 		return folder, "", false, true, ErrNotOurWorktree
 	}
+	base, fetched, err = addWorktree(repo, folder, branch)
+	if err != nil {
+		return folder, base, false, fetched, err
+	}
+	rec := filepath.Join(worktreeRecords(cfgDir), task)
+	if err := os.MkdirAll(filepath.Dir(rec), 0o700); err != nil {
+		return folder, base, true, fetched, err
+	}
+	return folder, base, true, fetched, paths.WriteAtomic(rec, []byte(folder+"\n"), 0o600)
+}
+
+// addWorktree makes folder, a worktree of repo on branch: the branch an earlier session
+// of the task left, or a new one from origin's default branch as it is now (fetched
+// first; fetched is false when origin could not be reached).
+func addWorktree(repo, folder, branch string) (base string, fetched bool, err error) {
 	_, fetchErr := GitRun(repo, "fetch", "--quiet", "origin")
 	fetched = fetchErr == nil
 	for _, d := range DefaultBranches(filepath.Join(repo, ".git")) {
@@ -73,7 +88,7 @@ func TaskWorktree(cfgDir, repo, task string) (folder, base string, made, fetched
 		}
 	}
 	if base == "" {
-		return folder, "", false, fetched, fmt.Errorf("%s has no default branch from origin (main or master) to start the worktree from", paths.Tilde(repo))
+		return "", fetched, fmt.Errorf("%s has no default branch from origin (main or master) to start the worktree from", paths.Tilde(repo))
 	}
 	args := []string{"worktree", "add", "--quiet"}
 	if _, err := GitRun(repo, "rev-parse", "--verify", "--quiet", "refs/heads/"+branch); err == nil {
@@ -82,14 +97,8 @@ func TaskWorktree(cfgDir, repo, task string) (folder, base string, made, fetched
 		// --no-track: the task's branch must not push to the default branch by default.
 		args = append(args, "--no-track", "-b", branch, folder, base)
 	}
-	if _, err := GitRun(repo, args...); err != nil {
-		return folder, base, false, fetched, err
-	}
-	rec := filepath.Join(worktreeRecords(cfgDir), task)
-	if err := os.MkdirAll(filepath.Dir(rec), 0o700); err != nil {
-		return folder, base, true, fetched, err
-	}
-	return folder, base, true, fetched, paths.WriteAtomic(rec, []byte(folder+"\n"), 0o600)
+	_, err = GitRun(repo, args...)
+	return base, fetched, err
 }
 
 // Why a task's worktree stays.
@@ -114,17 +123,11 @@ func RemoveTaskWorktree(cfgDir, task string) (folder string, removed bool, why s
 		_ = os.Remove(rec) // removed by hand already
 		return "", false, ""
 	}
-	if out, err := GitRun(folder, "status", "--porcelain"); err != nil || strings.TrimSpace(out) != "" {
-		return folder, false, KeptChanges
-	}
-	if out, err := GitRun(folder, "rev-list", "HEAD", "--not", "--remotes"); err != nil || strings.TrimSpace(out) != "" {
-		return folder, false, KeptCommits
-	}
-	if _, err := GitRun(repo, "worktree", "remove", folder); err != nil {
-		return folder, false, KeptChanges
-	}
 	_, branch := TaskWorktreePath(repo, task)
-	_, _ = GitRun(repo, "branch", "-D", branch) // nothing of its own: checked above
+	done, why := removeWorktree(folder, branch)
+	if !done {
+		return folder, false, why
+	}
 	_ = os.Remove(rec)
 	return folder, true, ""
 }

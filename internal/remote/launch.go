@@ -459,6 +459,7 @@ func (s System) StopWhenIdle(cfgDir, task string, max time.Duration) error {
 		return err
 	}
 	_, _, _ = RemoveTaskWorktree(cfgDir, task)
+	_, _ = RemoveNotedWorktrees(cfgDir, task)
 	return nil
 }
 
