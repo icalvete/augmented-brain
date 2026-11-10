@@ -36,6 +36,9 @@
   `task_close` hace que se cierre cuando termine su respuesta (`session stop
   --when-idle`, en segundo plano) y que salga de Claude Desktop y claude.ai, con su
   worktree si no se pierde nada.
+- **Una tarea sin repositorio se abre en la carpeta del espacio.** Antes `session
+  start` pedía una carpeta propia, de confianza para Claude, que un recién llegado no
+  tiene forma de encontrar. Varias tareas así pueden compartirla.
 - **Un repositorio bare dado con `--folder` recibe el worktree propio de la tarea.**
   Antes reusaba uno de los worktrees del repositorio, y la sesión podía abrirse sobre el
   código de otra rama.

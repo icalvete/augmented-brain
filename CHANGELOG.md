@@ -36,6 +36,9 @@
   `task_close` has it closed once it has finished its answer (`session stop
   --when-idle`, in the background), and taken out of Claude Desktop and claude.ai,
   with its worktree when nothing would be lost.
+- **A task with no repository opens in the space's folder.** Before, `session start`
+  asked for a folder of its own, trusted by Claude, which a newcomer has no way to
+  find. Several such tasks may share it.
 - **A bare repository given with `--folder` gets the task's own worktree.** Before, it
   reused one of the repository's worktrees, and the session could open on another
   branch's code.

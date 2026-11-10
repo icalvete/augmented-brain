@@ -141,7 +141,8 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		return code
 	}
 	name := set.NamePrefix + " · " + task.Header.Title
-	if err := sys.Start(c, set, remote.Launch{Task: id, Name: name, Folder: dir}, firstMessage(l, id, os.Getenv(messagingSocket))); err != nil {
+	shared := len(s.WorkFolders) > 0 && *folder == "" && len(task.Header.Repos) == 0
+	if err := sys.Start(c, set, remote.Launch{Task: id, Name: name, Folder: dir, Shared: shared}, firstMessage(l, id, os.Getenv(messagingSocket))); err != nil {
 		switch {
 		case errors.Is(err, remote.ErrUntrusted):
 			fmt.Fprintln(out, i18n.T(l, "session.untrusted", tilde(dir), host, host))
@@ -180,16 +181,17 @@ func sessionFolder(c *config.Config, s *config.Space, sys remote.System, id stri
 			return dir, 0
 		}
 		repo = dir
-	} else if repo = taskRepo(s, repos); repo == "" {
-		if len(repos) == 0 {
-			first := ""
-			if len(s.WorkFolders) > 0 {
-				first = tilde(s.WorkFolders[0])
-			}
-			fmt.Fprintln(errOut, i18n.T(l, "session.nofolder.none", id, first))
-		} else {
-			fmt.Fprintln(errOut, i18n.T(l, "session.nofolder", id, strings.Join(repos, ", "), s.Name))
+	} else if len(repos) == 0 {
+		// A task with no repository works in the space's own folder: Claude lets a
+		// background session share it with the space's remote service (measured on
+		// 10-nov). Before, the user had to find a trusted folder of its own.
+		if len(s.WorkFolders) == 0 {
+			fmt.Fprintln(errOut, i18n.T(l, "session.nofolder.none", id))
+			return "", 1
 		}
+		return s.WorkFolders[0], 0
+	} else if repo = taskRepo(s, repos); repo == "" {
+		fmt.Fprintln(errOut, i18n.T(l, "session.nofolder", id, strings.Join(repos, ", "), s.Name))
 		return "", 1
 	} else if !isBareRepo(repo) {
 		return repo, 0

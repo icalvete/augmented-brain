@@ -114,6 +114,12 @@ func TestStartRefuses(t *testing.T) {
 	if len(f.ranIn) != 1 {
 		t.Fatalf("started although refused: %v", f.ranIn)
 	}
+	// Tasks with no repository share the space's folder.
+	f.bgOut = "backgrounded · ef56ab78 · y\n"
+	if err := f.sys.Start(c, set, Launch{Task: "task-notes", Name: "y", Folder: repo, Shared: true}, "go"); err != nil {
+		t.Fatalf("a task with no repository in the space's folder: %v", err)
+	}
+	f.bgOut = "backgrounded · ab12cd34 · x\n"
 	f.sys.GOOS = "darwin"
 	if err := f.sys.Start(c, set, l, "go"); !errors.Is(err, ErrUnsupported) {
 		t.Fatalf("macOS: %v", err)

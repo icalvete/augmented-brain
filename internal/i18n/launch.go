@@ -16,8 +16,8 @@ var launchMessages = map[string]msg{
 		es: "no sé en qué carpeta abrir %s: sus repositorios (%s) no están en las carpetas de trabajo del espacio %s. Dímela con --folder DIR.",
 	},
 	"session.nofolder.none": {
-		en: "%s names no repository, so I cannot tell in which folder to open it. Say it with --folder DIR (a folder of its own: the space's remote service already serves %s).",
-		es: "%s no nombra ningún repositorio, así que no sé en qué carpeta abrirla. Dímela con --folder DIR (una carpeta propia: el servicio remoto del espacio ya sirve %s).",
+		en: "%s names no repository and its space has no work folder, so I cannot tell in which folder to open it. Say it with --folder DIR.",
+		es: "%s no nombra ningún repositorio y su espacio no tiene carpeta de trabajo, así que no sé en qué carpeta abrirla. Dímela con --folder DIR.",
 	},
 	"session.started": {
 		en: "Opened the session \"%s\" for %s, in %s. It shows up in Claude Desktop and claude.ai within a minute, and it starts on its own: it reads its task and gets going.\nTo close it (and take it out of Claude Desktop and claude.ai): augmented-brain session stop %s",

@@ -351,7 +351,8 @@ tell you where it stands, and get on with the next step. When another Claude ses
 asked for it, the first message also has it tell that session, in one line, when it
 stops: the task closed or parked, or waiting on you.
 The folder is the first of the task's repositories found in the space's work folders,
-or the one `--folder` gives.
+or the one `--folder` gives. A task that names no repository opens in the space's first
+work folder, which several such tasks may share.
 
 A bare repository has no files to work on, so the task gets a git worktree of its own
 next to it: `site-new-website` for the task `task-new-website` of `site`, on a new branch

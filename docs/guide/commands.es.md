@@ -360,7 +360,9 @@ en Claude Desktop y claude.ai. Empieza sola: su primer mensaje le pide leer su t
 decirte cómo está y ponerse con el siguiente paso. Si la pidió otra sesión de Claude,
 el primer mensaje también le pide avisarla en una línea cuando pare: la tarea cerrada o
 aparcada, o esperándote. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
-de trabajo del espacio, o la que diga `--folder`.
+de trabajo del espacio, o la que diga `--folder`. Una tarea que no nombra ningún
+repositorio se abre en la primera carpeta de trabajo del espacio, que pueden compartir
+varias así.
 
 Un repositorio bare no tiene ficheros con los que trabajar, así que la tarea recibe un
 worktree de git propio a su lado: `site-new-website` para la tarea `task-new-website` de

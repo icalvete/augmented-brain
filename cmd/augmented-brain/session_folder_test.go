@@ -105,3 +105,19 @@ func TestFirstMessageReportsBack(t *testing.T) {
 		t.Errorf("asked for from a terminal: %s", msg)
 	}
 }
+
+// A task with no repository opens in the space's work folder: before, the user had to
+// find a trusted folder of its own (10-nov), which a newcomer cannot.
+func TestSessionFolderNoRepository(t *testing.T) {
+	wf := t.TempDir()
+	c := &config.Config{Dir: t.TempDir(), Language: "en"}
+	s := &config.Space{Name: "personal", WorkFolders: []string{wf}}
+	var out, errOut bytes.Buffer
+	if dir, code := sessionFolder(c, s, remote.System{GOOS: "linux"}, "task-x", nil, "", &out, &errOut); code != 0 || dir != wf {
+		t.Errorf("got %q %d %s, want the work folder %s", dir, code, errOut.String(), wf)
+	}
+	s.WorkFolders = nil
+	if _, code := sessionFolder(c, s, remote.System{GOOS: "linux"}, "task-x", nil, "", &out, &errOut); code == 0 {
+		t.Error("no work folder, yet a folder")
+	}
+}

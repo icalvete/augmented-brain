@@ -122,7 +122,7 @@ and within a minute a new session, named after the task, shows up in claude.ai a
 Desktop. It starts on its own: it reads its task, tells you where it stands and gets on
 with the next step. When it stops, it tells the session that asked for it, in one line. The folder is the
 first of the task's repositories found in the space's work folders, or the one `--folder`
-gives. For a bare repository, the task gets a git worktree of its own, on a new branch
+gives; with no repository, the space's folder. For a bare repository, the task gets a git worktree of its own, on a new branch
 from origin's default branch. It goes away by itself when nothing would be lost: with
 `session stop`, when the task is closed, or, for a session that ended some other way (a
 reboot, closing it from Claude Desktop), at the next `session start` or `doctor`. One

@@ -58,6 +58,9 @@ type Launch struct {
 	Task   string // the task's id
 	Name   string // the session's name in Claude Desktop and claude.ai
 	Folder string
+	// Shared: the folder is the space's own, for tasks with no repository, which may
+	// share it (no code of theirs to step on).
+	Shared bool
 }
 
 // Unit is the transient unit's name for a task.
@@ -306,7 +309,7 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 		if x.Task == l.Task {
 			return ErrRunning
 		}
-		if paths.Same(x.Folder, l.Folder) {
+		if !l.Shared && paths.Same(x.Folder, l.Folder) {
 			return ErrServed
 		}
 	}
