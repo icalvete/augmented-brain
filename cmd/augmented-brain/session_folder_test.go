@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -90,5 +91,17 @@ func TestSessionFolderBareGetsTaskWorktree(t *testing.T) {
 	// A plain folder given with --folder is used as it is.
 	if dir, code := sessionFolder(c, s, sys, "task-new-website", nil, other, &out, &errOut); code != 0 || dir != other {
 		t.Errorf("a working copy: %q %d", dir, code)
+	}
+}
+
+// A session asked for by another one tells that one when it stops; asked for from a
+// terminal, there is no one to tell.
+func TestFirstMessageReportsBack(t *testing.T) {
+	msg := firstMessage("en", "task-site", "/run/user/1000/cc-socks/42.sock")
+	if !strings.Contains(msg, "task-site") || !strings.Contains(msg, "SendMessage to uds:/run/user/1000/cc-socks/42.sock") {
+		t.Errorf("asked for by a session: %s", msg)
+	}
+	if msg := firstMessage("es", "task-site", ""); strings.Contains(msg, "SendMessage") {
+		t.Errorf("asked for from a terminal: %s", msg)
 	}
 }

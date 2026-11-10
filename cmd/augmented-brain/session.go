@@ -141,7 +141,7 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		return code
 	}
 	name := set.NamePrefix + " · " + task.Header.Title
-	if err := sys.Start(c, set, remote.Launch{Task: id, Name: name, Folder: dir}, i18n.T(l, "session.first", id)); err != nil {
+	if err := sys.Start(c, set, remote.Launch{Task: id, Name: name, Folder: dir}, firstMessage(l, id, os.Getenv(messagingSocket))); err != nil {
 		switch {
 		case errors.Is(err, remote.ErrUntrusted):
 			fmt.Fprintln(out, i18n.T(l, "session.untrusted", tilde(dir), host, host))
@@ -217,6 +217,20 @@ func sessionFolder(c *config.Config, s *config.Space, sys remote.System, id stri
 		fmt.Fprintln(out, i18n.T(l, "session.worktree.made", tilde(wt), branch, base))
 	}
 	return wt, 0
+}
+
+// messagingSocket is where Claude Code tells a session's commands the address other
+// sessions reach it at: the session asking for a task's session, when there is one.
+const messagingSocket = "CLAUDE_CODE_MESSAGING_SOCKET"
+
+// firstMessage is what a launched session starts with: its task, and, when another
+// session asked for it, to tell that one when it is done.
+func firstMessage(l, task, socket string) string {
+	msg := i18n.T(l, "session.first", task)
+	if socket = strings.TrimSpace(socket); socket != "" {
+		msg += " " + i18n.T(l, "session.first.report", "uds:"+socket)
+	}
+	return msg
 }
 
 func sessionErr(l string, err error, errOut io.Writer) int {

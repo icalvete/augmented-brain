@@ -29,6 +29,9 @@
   also takes it out of Claude Desktop and claude.ai, and works from any folder. Two
   tasks still never share a folder. Sessions opened by an earlier version are still
   listed and closed.
+- **A task's session tells the session that asked for it when it stops.** Its first
+  message carries that session's address (from Claude Code), so it reports in one line
+  when the task is closed or parked, or waits on you.
 - **Closing a task closes its session.** When the task has a session of its own,
   `task_close` has it closed once it has finished its answer (`session stop
   --when-idle`, in the background), and taken out of Claude Desktop and claude.ai,

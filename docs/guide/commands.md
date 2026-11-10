@@ -347,7 +347,9 @@ augmented-brain session start task-new-website --folder ~/projects/website
 It starts a background Claude session of its own for the task (`claude --bg
 --remote-control`), named after the task's title. Within a minute it shows up in Claude
 Desktop and claude.ai. It starts on its own: its first message has it read its task,
-tell you where it stands, and get on with the next step.
+tell you where it stands, and get on with the next step. When another Claude session
+asked for it, the first message also has it tell that session, in one line, when it
+stops: the task closed or parked, or waiting on you.
 The folder is the first of the task's repositories found in the space's work folders,
 or the one `--folder` gives.
 

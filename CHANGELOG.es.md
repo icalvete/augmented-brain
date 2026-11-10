@@ -29,6 +29,9 @@
   `session stop` también la quita de Claude Desktop y claude.ai, y funciona desde
   cualquier carpeta. Dos tareas siguen sin compartir carpeta. Las sesiones abiertas por
   una versión anterior se siguen listando y cerrando.
+- **La sesión de una tarea avisa a la sesión que la pidió cuando para.** Su primer
+  mensaje lleva la dirección de esa sesión (la da Claude Code), así que avisa en una
+  línea cuando la tarea se cierra o se aparca, o cuando te espera.
 - **Cerrar una tarea cierra su sesión.** Si la tarea tiene una sesión propia,
   `task_close` hace que se cierre cuando termine su respuesta (`session stop
   --when-idle`, en segundo plano) y que salga de Claude Desktop y claude.ai, con su

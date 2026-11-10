@@ -100,6 +100,10 @@ var launchMessages = map[string]msg{
 		en: "accept the question, close that Claude with /exit, and ask for the session again.",
 		es: "acepta la pregunta, cierra ese Claude con /exit y vuelve a pedir la sesión.",
 	},
+	"session.first.report": {
+		en: "Another Claude session asked for you. When you stop (the task closed or parked, or waiting on the user), tell it in one line where the task stands, with SendMessage to %s. If it no longer answers, carry on.",
+		es: "Te ha pedido otra sesión de Claude. Cuando pares (la tarea cerrada o aparcada, o esperando al usuario), dile en una línea cómo queda la tarea, con SendMessage a %s. Si ya no contesta, sigue.",
+	},
 	"session.served": {
 		en: "Another task's session already works in %s. Two tasks in one folder would step on each other's changes: give this one another folder with --folder DIR, for example a git worktree of the repository.",
 		es: "En %s ya trabaja la sesión de otra tarea. Dos tareas en una carpeta se pisarían los cambios: dale a esta otra carpeta con --folder DIR, por ejemplo un worktree de git del repositorio.",
