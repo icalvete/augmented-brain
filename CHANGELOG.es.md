@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.17.1-beta
+
+Publicada el 2026-11-10.
 
 - **Cada página del panel dice qué es.** Unas palabras arriba de cada página, con un
   enlace a su parte de la guía, en tu idioma. Las que no tenían (Tareas, una tarea, una
