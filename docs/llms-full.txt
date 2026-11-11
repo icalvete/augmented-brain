@@ -629,8 +629,9 @@ Things may have changed since.
 Each decision or finished step goes to the journal at the moment, not only when you park
 it. A session can end at any time, and what is not in the note is lost.
 
-If a task is open and nothing has been written in it for 20 minutes, Claude gets a
-reminder at the end of its answer, once. When a long conversation is compacted (Claude
+If the session has a task open and nothing has been written in it for 20 minutes, Claude
+gets a reminder at the end of its answer, once. Each session has its own task: with two
+windows on different tasks, each is reminded of its own. When a long conversation is compacted (Claude
 Code replaces the details with a summary), the summary is kept in `archive/sessions/`,
 and the journal points at it. The summary can be wrong, so Claude is asked not to take it
 as fact, to check before stating anything from before, and to tell you the session was
@@ -1082,8 +1083,9 @@ resuming and closing work the same way. See [Tasks](https://icalvete.github.io/a
 **3. Claude is about to run a command.** The guard hook reads it first, and lets it
 through, asks you, or stops it. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
 
-**4. Claude finishes an answer.** If a task is open and nothing was written in it for 20
-minutes, a hook reminds Claude to write in its journal, once. The same hook looks at the
+**4. Claude finishes an answer.** If the session has a task open and nothing was written
+in it for 20 minutes, a hook reminds Claude to write in its journal, once. Each session
+has its own task, so two windows never get each other's reminder. The same hook looks at the
 memory of the window: if it has grown far past normal, Claude tells you, so you can park
 the task before the system closes the window. See
 [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html#the-window-uses-a-lot-of-memory).
@@ -1307,8 +1309,8 @@ say (`notas` in Spanish). Tasks, areas, knowledge, people, the inbox, the index
 
 Also in the configuration folder, never backed up:
 
-- `state/`: what each space's sessions did (the active task, a session that did not end
-  well), the guard's seal, the Claude sessions running.
+- `state/`: what each space's sessions did (each one's active task, a session that did
+  not end well), the guard's seal, the Claude sessions running.
 - `history/`: the configuration's versions.
 - `panel.json`: where the panel listens while it runs, and its key. Claude is never let
   read it.
@@ -3082,8 +3084,8 @@ The events:
   changed outside its session since it last looked (another session closed one, the
   panel changed its next step), so it reads them again instead of trusting what it read
   earlier. It never holds up the message.
-- `stop`: after each answer. It reminds Claude to write in the task's journal, once,
-  after 20 minutes without writing. It also looks at how much memory the window uses
+- `stop`: after each answer. It reminds Claude to write in the journal of its session's
+  task, once, after 20 minutes without writing. It also looks at how much memory the window uses
   (VS Code's extension host, or Claude itself in a terminal), and has Claude warn you
   when it passes 2 GB, then 4 and 8 GB, once each. On Linux and macOS; it takes a
   fraction of a millisecond. See
@@ -3762,7 +3764,7 @@ A session that runs outside every work folder (for example, the scratch folder t
 
 `docs/` keeps the long documents a task produces, so they stay with the notes and out of the repositories the work touches (a repository only gets what its team needs). Each one sits under the id of its task, is plain Markdown or any other file, has no header, and is linked from the task. The program does not read it.
 
-A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the active task pointing at it.
+A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the session's active task pointing at it.
 
 `MEMORY.md` is the index the session start hands the assistant, a little shorter: each live task goes without its summary, and with its next step (its first 120 characters) only when it waits on you (the assistant reads a task before working on it). It comes in up to three parts of the start (see "Rules"). An index too long for them is cut, and the assistant is told where to read it whole.
 
@@ -4144,9 +4146,11 @@ most 10 minutes for another one to finish; both say why.
 ## State of this machine
 
 `state/<space>.json` in the configuration folder keeps, for this machine only (never
-backed up, no text of the conversation): the active task and when it was last written,
-when the assistant was last reminded to write, and the sessions that started and ended,
-with the path of Claude Code's transcript of each. The Stop reminder, the request after a
+backed up, no text of the conversation): the sessions that started and ended, with the
+path of Claude Code's transcript of each, the Claude process each runs in, and each
+one's active task, when it was last written and when the assistant was last reminded to
+write. Earlier versions kept a single active task for the whole space; it is no longer
+read. The Stop reminder, the request after a
 compaction and the offer to recover a session that did not end come from it.
 
 `state/guard.seal` keeps a fingerprint of the guard's lists as the user last accepted

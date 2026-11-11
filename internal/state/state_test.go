@@ -12,9 +12,6 @@ import (
 func TestSessionsAndActiveTask(t *testing.T) {
 	dir := t.TempDir()
 	now := time.Date(2026, 10, 20, 9, 0, 0, 0, time.UTC)
-	if err := Touched(dir, "work", "task-a", now, true); err != nil {
-		t.Fatal(err)
-	}
 	t1, t2 := filepath.Join(dir, "s1.jsonl"), filepath.Join(dir, "s2.jsonl")
 	for _, f := range []string{t1, t2} {
 		if err := os.WriteFile(f, nil, 0o600); err != nil {
@@ -24,18 +21,25 @@ func TestSessionsAndActiveTask(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	if err := Started(dir, "work", "s1", t1, now); err != nil {
+	if err := Started(dir, "work", "s1", t1, "pid-10", now); err != nil {
 		t.Fatal(err)
 	}
-	if err := Started(dir, "work", "s2", t2, now.Add(time.Hour)); err != nil {
+	s1 := Who{ID: "s1"}
+	if err := Touched(dir, "work", s1, "task-a", now, true); err != nil {
 		t.Fatal(err)
+	}
+	if err := Started(dir, "work", "s2", t2, "pid-20", now.Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	if se, ok := Active(dir, "work", Who{ID: "s2"}); !ok || se.Task != "" {
+		t.Errorf("a new session took another one's task: %+v", se)
 	}
 	if err := Ended(dir, "work", "s2", now.Add(2*time.Hour)); err != nil {
 		t.Fatal(err)
 	}
 	s := Read(dir, "work")
-	if s.Task != "task-a" || !s.Since.Equal(now) {
-		t.Errorf("active task: %+v", s)
+	if se := s.Session(s1); se == nil || se.Task != "task-a" || !se.Since.Equal(now) {
+		t.Errorf("active task: %+v", se)
 	}
 	un := s.Unclosed("s3", now.Add(3*time.Hour))
 	if len(un) != 1 || un[0].ID != "s1" || un[0].Task != "task-a" || un[0].Transcript != t1 {
@@ -47,29 +51,104 @@ func TestSessionsAndActiveTask(t *testing.T) {
 	if len(s.Unclosed("s3", now.Add(5*time.Minute))) != 0 {
 		t.Error("a session still writing its transcript was offered")
 	}
+	since := func(w Who) time.Time { se, _ := Active(dir, "work", w); return se.Since }
 	// A read makes a task active without putting off the reminder; a write does.
 	later := now.Add(time.Minute)
-	if err := Touched(dir, "work", "task-a", later, false); err != nil || !Read(dir, "work").Since.Equal(now) {
-		t.Errorf("a read moved Since: %v", Read(dir, "work").Since)
+	if err := Touched(dir, "work", s1, "task-a", later, false); err != nil || !since(s1).Equal(now) {
+		t.Errorf("a read moved Since: %v", since(s1))
 	}
-	if err := Touched(dir, "work", "task-a", later, true); err != nil || !Read(dir, "work").Since.Equal(later) {
-		t.Errorf("a write did not move Since: %v", Read(dir, "work").Since)
+	// By the key of its process (the MCP server), the same session.
+	if err := Touched(dir, "work", Who{Key: "pid-10"}, "task-a", later, true); err != nil || !since(s1).Equal(later) {
+		t.Errorf("a write did not move Since: %v", since(s1))
 	}
-	if err := Released(dir, "work", "task-b", now); err != nil || Read(dir, "work").Task != "task-a" {
+	// Nobody (the panel) and a key no session runs in change nothing.
+	for _, w := range []Who{{}, {Key: "pid-99"}, {ID: "nope"}} {
+		if err := Touched(dir, "work", w, "task-z", later, true); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, se := range Read(dir, "work").Sessions {
+		if se.Task == "task-z" {
+			t.Errorf("%s got a task it never touched", se.ID)
+		}
+	}
+	if err := Reminded(dir, "work", s1, later); err != nil {
+		t.Fatal(err)
+	}
+	if se, _ := Active(dir, "work", s1); !se.Reminded.Equal(later) {
+		t.Errorf("reminded: %+v", se)
+	}
+	if err := Released(dir, "work", "task-b", now); err != nil {
+		t.Fatal(err)
+	}
+	if se, _ := Active(dir, "work", s1); se.Task != "task-a" {
 		t.Error("releasing another task changed the active one")
 	}
-	if err := Released(dir, "work", "task-a", now); err != nil || Read(dir, "work").Task != "" {
+	if err := Released(dir, "work", "task-a", now); err != nil {
+		t.Fatal(err)
+	}
+	if se, _ := Active(dir, "work", s1); se.Task != "" {
 		t.Error("the parked task is still active")
 	}
 	// Old sessions are forgotten (their transcripts are gone too).
-	if err := Started(dir, "work", "s4", "", now.Add(40*24*time.Hour)); err != nil {
+	if err := Started(dir, "work", "s4", "", "", now.Add(40*24*time.Hour)); err != nil {
 		t.Fatal(err)
 	}
 	if got := Read(dir, "work").Sessions; len(got) != 1 || got[0].ID != "s4" {
 		t.Errorf("after 40 days: %+v", got)
 	}
-	if Read(dir, "personal").Task != "" {
+	if len(Read(dir, "personal").Sessions) != 0 {
 		t.Error("spaces share state")
+	}
+}
+
+// After /clear the process goes on under a new session id: its key names the new one,
+// and a resumed session takes the key of the process it now runs in.
+func TestSessionByKey(t *testing.T) {
+	dir := t.TempDir()
+	now := time.Date(2026, 10, 20, 9, 0, 0, 0, time.UTC)
+	must := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	must(Started(dir, "work", "a", "", "pid-10", now))
+	must(Touched(dir, "work", Who{Key: "pid-10"}, "task-a", now, true))
+	must(Ended(dir, "work", "a", now.Add(time.Minute))) // /clear
+	must(Started(dir, "work", "b", "", "pid-10", now.Add(time.Minute)))
+	must(Touched(dir, "work", Who{Key: "pid-10"}, "task-b", now.Add(2*time.Minute), true))
+	if se, _ := Active(dir, "work", Who{ID: "a"}); se.Task != "task-a" {
+		t.Errorf("the ended session's task changed: %+v", se)
+	}
+	if se, _ := Active(dir, "work", Who{Key: "pid-10"}); se.ID != "b" || se.Task != "task-b" {
+		t.Errorf("by key: %+v", se)
+	}
+	must(Started(dir, "work", "a", "", "pid-30", now.Add(time.Hour))) // claude --resume a
+	if se, _ := Active(dir, "work", Who{Key: "pid-30"}); se.ID != "a" || se.Task != "task-a" {
+		t.Errorf("resumed: %+v", se)
+	}
+}
+
+// What earlier versions kept for the whole space is not read, and goes at the next write.
+func TestOldSpaceTaskIgnored(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(dir, Dir), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	old := `{"task":"task-old","since":"2026-10-20T09:00:00Z","sessions":[{"id":"s","started":"2026-10-20T09:00:00Z","task":"task-old"}]}`
+	if err := os.WriteFile(file(dir, "work"), []byte(old), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if se, ok := Active(dir, "work", Who{ID: "s"}); !ok || se.Task != "task-old" || !se.Since.IsZero() {
+		t.Errorf("old session: %+v %v", se, ok)
+	}
+	if err := Started(dir, "work", "t", "", "", time.Date(2026, 10, 20, 10, 0, 0, 0, time.UTC)); err != nil {
+		t.Fatal(err)
+	}
+	data, _ := os.ReadFile(file(dir, "work"))
+	if strings.Contains(string(data), `"since": "2026-10-20T09`) {
+		t.Errorf("the space's old active task is still written:\n%s", data)
 	}
 }
 

@@ -56,8 +56,10 @@ retomar y cerrar funcionan igual. Mira [Tareas](tasks.es.md).
 **3. Claude va a ejecutar un comando.** El hook del guardia lo lee antes, y lo deja pasar,
 te pregunta o lo para. Mira [El guardia](guard.es.md).
 
-**4. Claude termina una respuesta.** Si hay una tarea abierta y en 20 minutos no se ha
-escrito nada en ella, un hook le recuerda a Claude que escriba en su diario, una vez. El
+**4. Claude termina una respuesta.** Si la sesión tiene una tarea abierta y en 20 minutos
+no se ha escrito nada en ella, un hook le recuerda a Claude que escriba en su diario, una
+vez. Cada sesión tiene su propia tarea, así que dos ventanas nunca reciben el aviso de la
+otra. El
 mismo hook mira la memoria de la ventana: si ha crecido mucho más de lo normal, Claude te
 lo dice, para que aparques la tarea antes de que el sistema cierre la ventana. Mira
 [Si algo falla](troubleshooting.es.md#la-ventana-usa-mucha-memoria).

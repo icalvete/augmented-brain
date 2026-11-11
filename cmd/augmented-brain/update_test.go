@@ -136,7 +136,10 @@ func TestAfterUpdate(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, strconv.Itoa(p.Process.Pid)), []byte("0.9.0-alpha\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if err := state.Touched(cfg, "trabajo", "task-mudanza", time.Now(), true); err != nil {
+	if err := state.Started(cfg, "trabajo", "s1", "", "", time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if err := state.Touched(cfg, "trabajo", state.Who{ID: "s1"}, "task-mudanza", time.Now(), true); err != nil {
 		t.Fatal(err)
 	}
 	out.Reset()

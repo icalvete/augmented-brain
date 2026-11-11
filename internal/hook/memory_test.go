@@ -49,7 +49,7 @@ func useProcs(t *testing.T, f *fakeProcs, parent int) *int {
 func stopText(t *testing.T, cfgDir, work string) string {
 	t.Helper()
 	o := run(t, func(in *bytes.Reader, out *bytes.Buffer) error { return Stop(in, out, cfgDir) },
-		map[string]any{"cwd": work, "hook_event_name": "Stop"})
+		map[string]any{"cwd": work, "hook_event_name": "Stop", "session_id": "s1"})
 	if o == nil {
 		return ""
 	}
@@ -148,9 +148,7 @@ func TestStopMemoryWithJournal(t *testing.T) {
 	start := time.Date(2026, 10, 20, 9, 0, 0, 0, time.Local)
 	now := clock(t, start)
 	id := openTask(t, cfgDir)
-	if err := state.Touched(cfgDir, "work", id, start, true); err != nil {
-		t.Fatal(err)
-	}
+	touch(t, cfgDir, "s1", id, start)
 	*now = start.Add(30 * time.Minute)
 	f := vscodeTree()
 	f.mb[100] = 2100

@@ -1,5 +1,14 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Cada sesión tiene su propia tarea activa.** El recordatorio de escribir en el diario,
+  al final de una respuesta, nombraba la última tarea que había tocado cualquier sesión
+  del espacio. Con dos ventanas en tareas distintas, a una se le pedía escribir en el
+  diario de la otra. Ahora cada sesión guarda su propia tarea, y también la línea que
+  una compactación añade al diario. Las sesiones abiertas antes de actualizar no reciben
+  el recordatorio hasta que se reinician.
+
 ## 0.17.2-beta
 
 Publicada el 2026-11-11.

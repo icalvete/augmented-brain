@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Each session has its own active task.** The reminder to write in the journal, at
+  the end of an answer, named the last task any session of the space had touched. With
+  two windows on different tasks, one was asked to write in the other's journal. Now
+  each session keeps its own task, and so does the line a compaction adds to the
+  journal. Sessions opened before the update get no reminder until they are restarted.
+
 ## 0.17.2-beta
 
 Released 2026-11-11.

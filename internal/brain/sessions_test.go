@@ -35,9 +35,8 @@ func TestRecover(t *testing.T) {
 	dead := write("dead", msg(now.Add(-50*time.Minute), "already journaled")+msg(now.Add(-30*time.Minute), "not yet "+long), now.Add(-20*time.Minute))
 	live := write("live", msg(now.Add(-time.Minute), "running"), now)
 	if err := state.Update(b.ConfigDir, b.Space.Name, now, func(s *state.Space) {
-		s.Task, s.Since = "task-x", now.Add(-40*time.Minute)
 		s.Sessions = []state.Session{
-			{ID: "dead", Transcript: dead, Started: now.Add(-time.Hour), Task: "task-x", Reported: true},
+			{ID: "dead", Transcript: dead, Started: now.Add(-time.Hour), Task: "task-x", Since: now.Add(-40 * time.Minute), Reported: true},
 			{ID: "live", Transcript: live, Started: now.Add(-time.Hour)},
 		}
 	}); err != nil {

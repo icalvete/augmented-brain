@@ -544,7 +544,7 @@ Los eventos:
   panel cambió su siguiente paso), para que las vuelva a leer en vez de fiarse de lo que
   leyó antes. Nunca retiene el mensaje.
 - `stop`: después de cada respuesta. Le recuerda a Claude que escriba en el diario de la
-  tarea, una vez, después de 20 minutos sin escribir. También mira cuánta memoria usa la
+  tarea de su sesión, una vez, después de 20 minutos sin escribir. También mira cuánta memoria usa la
   ventana (el host de extensiones de VS Code, o el propio Claude en un terminal), y hace
   que Claude te avise cuando pasa de 2 GB, luego de 4 y de 8 GB, una vez cada uno. En
   Linux y macOS; tarda una fracción de milisegundo. Mira

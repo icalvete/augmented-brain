@@ -529,8 +529,8 @@ The events:
   changed outside its session since it last looked (another session closed one, the
   panel changed its next step), so it reads them again instead of trusting what it read
   earlier. It never holds up the message.
-- `stop`: after each answer. It reminds Claude to write in the task's journal, once,
-  after 20 minutes without writing. It also looks at how much memory the window uses
+- `stop`: after each answer. It reminds Claude to write in the journal of its session's
+  task, once, after 20 minutes without writing. It also looks at how much memory the window uses
   (VS Code's extension host, or Claude itself in a terminal), and has Claude warn you
   when it passes 2 GB, then 4 and 8 GB, once each. On Linux and macOS; it takes a
   fraction of a millisecond. See

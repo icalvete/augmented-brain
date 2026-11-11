@@ -95,8 +95,9 @@ Things may have changed since.
 Each decision or finished step goes to the journal at the moment, not only when you park
 it. A session can end at any time, and what is not in the note is lost.
 
-If a task is open and nothing has been written in it for 20 minutes, Claude gets a
-reminder at the end of its answer, once. When a long conversation is compacted (Claude
+If the session has a task open and nothing has been written in it for 20 minutes, Claude
+gets a reminder at the end of its answer, once. Each session has its own task: with two
+windows on different tasks, each is reminded of its own. When a long conversation is compacted (Claude
 Code replaces the details with a summary), the summary is kept in `archive/sessions/`,
 and the journal points at it. The summary can be wrong, so Claude is asked not to take it
 as fact, to check before stating anything from before, and to tell you the session was

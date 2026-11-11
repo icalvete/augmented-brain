@@ -50,8 +50,8 @@ say (`notas` in Spanish). Tasks, areas, knowledge, people, the inbox, the index
 
 Also in the configuration folder, never backed up:
 
-- `state/`: what each space's sessions did (the active task, a session that did not end
-  well), the guard's seal, the Claude sessions running.
+- `state/`: what each space's sessions did (each one's active task, a session that did
+  not end well), the guard's seal, the Claude sessions running.
 - `history/`: the configuration's versions.
 - `panel.json`: where the panel listens while it runs, and its key. Claude is never let
   read it.
