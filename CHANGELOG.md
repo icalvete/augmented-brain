@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- **Closing a task's session works every time, and says what it did.** Claude retires
+  a background session left unused for hours: it stops running but stays in Claude
+  Desktop and claude.ai. `session list` called it active, `session stop` failed once
+  Claude's background service had stopped too, and closing the task waited 30 minutes
+  for an answer that never came. Now `session list` says **retired**, `session stop`
+  starts Claude's service for a moment to take the session out (or says how to do it
+  later), and closing the task closes a retired session at once. `session stop
+  --when-idle` also stops sessions of earlier versions, and with no session it says
+  "nothing to close" instead of saying nothing; when closing a task starts it, what it
+  did goes to `state/session-stop.log`.
+
 ## 0.17.1-beta
 
 Released 2026-11-10.

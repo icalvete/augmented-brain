@@ -141,6 +141,9 @@ with work not committed or not pushed stays, and `doctor` names it.
   answer), or when the machine restarts. After a reboot only the
   doors come back: ask for the task sessions again. `augmented-brain session list`
   shows the open ones.
+- **Claude retires a session left unused for hours.** It stops running but stays in
+  Claude Desktop and claude.ai, and comes back when you open it there. `session list`
+  calls it retired; `session stop` and closing the task close it all the same.
 
 ## Keep it safe
 

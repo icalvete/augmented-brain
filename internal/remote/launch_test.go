@@ -260,10 +260,131 @@ func TestStopWhenIdle(t *testing.T) {
 func TestStopEarlierUnit(t *testing.T) {
 	f, _ := launchFake(t)
 	c, _ := f.load()
+	// No session at all: said, never a silent success.
+	if err := f.sys.Stop(c.Dir, "task-site"); !errors.Is(err, ErrNoSession) {
+		t.Fatalf("no session: %v", err)
+	}
+	if err := f.sys.StopWhenIdle(c.Dir, "task-site", time.Minute); !errors.Is(err, ErrNoSession) {
+		t.Fatalf("no session, when idle: %v", err)
+	}
+	// A unit of an earlier version: stopped, by stop and by --when-idle alike (it tells
+	// nothing of its answers; on 10-nov --when-idle left it running and said nothing).
+	f.units = []string{LaunchUnit("task-site")}
+	for _, when := range []bool{false, true} {
+		f.calls = nil
+		var err error
+		if when {
+			err = f.sys.StopWhenIdle(c.Dir, "task-site", time.Minute)
+		} else {
+			err = f.sys.Stop(c.Dir, "task-site")
+		}
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !slices.Contains(f.calls, "systemctl --user stop "+LaunchUnit("task-site")) {
+			t.Errorf("when idle %v: calls: %v", when, f.calls)
+		}
+	}
+}
+
+// retire makes the task's session one Claude retired after hours idle: its process
+// ends, it stays listed with no pid (measured on 11-nov, 2.1.322).
+func (f *fake) retire(id string) {
+	delete(f.live, id)
+	f.retired[id] = true
+}
+
+// A session Claude retired is listed as retired, not active; --when-idle closes it
+// at once (it answers nothing), and a new session of the task replaces it.
+func TestRetiredSession(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	l := Launch{Task: "task-site", Name: "x", Folder: repo}
+	if err := f.sys.Start(c, set, l, "go"); err != nil {
+		t.Fatal(err)
+	}
+	f.retire("ab12cd34")
+	got, err := f.sys.Launches(c.Dir)
+	if err != nil || len(got) != 1 || got[0].Active != Retired {
+		t.Fatalf("launches: %+v %v", got, err)
+	}
+	if f.sys.LaunchRunning(c.Dir, "task-site") {
+		t.Error("a retired session counted as running")
+	}
+	if !HasLaunch(c.Dir, "task-site") {
+		t.Error("a retired session has no record")
+	}
+	// Another task may not take its folder: it comes back there when opened.
+	if err := f.sys.Start(c, set, Launch{Task: "task-other", Name: "y", Folder: repo}, "go"); !errors.Is(err, ErrServed) {
+		t.Errorf("another task in a retired session's folder: %v", err)
+	}
+	// The task itself starts again; the retired one leaves Claude's lists.
+	f.bgOut = "backgrounded · ef56ab78 · x\n"
+	if err := f.sys.Start(c, set, l, "go"); err != nil {
+		t.Fatalf("starting over a retired session: %v", err)
+	}
+	if f.retired["ab12cd34"] {
+		t.Error("the retired session is still in Claude's lists")
+	}
+	// --when-idle does not wait for a retired session.
+	f.retire("ef56ab78")
+	f.calls = nil
+	if err := f.sys.StopWhenIdle(c.Dir, "task-site", 10*time.Second); err != nil {
+		t.Fatal(err)
+	}
+	if f.retired["ef56ab78"] || HasLaunch(c.Dir, "task-site") {
+		t.Errorf("not closed: retired %v, calls %v", f.retired, f.calls)
+	}
+}
+
+// A session that waits for a permission is busy (measured on 11-nov): --when-idle
+// waits for it, and a stop that cannot remove a running session says so.
+func TestWaitingForPermissionIsBusy(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	f.busy["ab12cd34"] = 1000
+	if err := f.sys.StopWhenIdle(c.Dir, "task-site", 10*time.Second); !errors.Is(err, ErrStillBusy) {
+		t.Errorf("a session waiting for a permission: %v", err)
+	}
+	f.noDaemon = true // rm fails, and the session runs
+	if err := f.sys.Stop(c.Dir, "task-site"); err == nil || !HasLaunch(c.Dir, "task-site") {
+		t.Errorf("a running session that claude could not remove: %v", err)
+	}
+}
+
+// Claude's daemon exits once unused, and then claude stop and rm fail however often
+// they are tried (11-nov): stop starts it, then removes the session.
+func TestStopWakesDaemon(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	f.retire("ab12cd34")
+	f.noDaemon = true
+	f.calls = nil
 	if err := f.sys.Stop(c.Dir, "task-site"); err != nil {
 		t.Fatal(err)
 	}
-	if len(f.calls) == 0 || f.calls[0] != "systemctl --user stop "+LaunchUnit("task-site") {
-		t.Errorf("calls: %v", f.calls)
+	if !slices.Contains(f.calls, "start daemon") || f.retired["ab12cd34"] || HasLaunch(c.Dir, "task-site") {
+		t.Errorf("calls %v, retired %v", f.calls, f.retired)
+	}
+	// A daemon that does not come up: the record goes, and the error names the session
+	// Claude still shows.
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	f.retire("ab12cd34")
+	f.noDaemon, f.daemonStays = true, false
+	err := f.sys.Stop(c.Dir, "task-site")
+	var left *LeftInClaude
+	if !errors.As(err, &left) || left.ID != "ab12cd34" || HasLaunch(c.Dir, "task-site") {
+		t.Errorf("a daemon that does not start: %v, record %v", err, HasLaunch(c.Dir, "task-site"))
 	}
 }

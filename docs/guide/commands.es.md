@@ -404,15 +404,24 @@ Claude Desktop) dejan el suyo: el próximo `session start` y `doctor` quitan los
 tienen nada propio, cerrar la tarea quita el suyo, y `doctor` avisa de cualquiera que se
 quede con trabajo dentro.
 
+También cierra una sesión que Claude retiró (lo hace con una que lleva horas sin uso).
+Para entonces el servicio de fondo de Claude puede estar parado; `stop` lo arranca un
+momento, y se va solo. Si aun así Claude no puede quitar la sesión de sus listas, `stop`
+lo dice y da el comando para hacerlo más tarde. Una tarea sin sesión recibe «no hay nada
+que cerrar», nunca un éxito callado.
+
 - `--when-idle`: espera a que la sesión termine su respuesta y después la cierra. Cerrar
   la tarea lo lanza solo, en segundo plano: la sesión que cierra su propia tarea suele
-  estar aún respondiendo, y pararla ahí cortaría esa respuesta. Espera hasta 30
-  minutos.
+  estar aún respondiendo, y pararla ahí cortaría esa respuesta. Una sesión que espera un
+  permiso cuenta como respondiendo. Espera hasta 30 minutos; una que siga respondiendo
+  entonces se queda abierta. Lo que hizo queda en `state/session-stop.log`, en la
+  carpeta de la configuración.
 
 ## augmented-brain session list
 
 Lista las sesiones de tareas abiertas en este ordenador: la tarea, si está en marcha y
-su carpeta.
+su carpeta. **retirada** quiere decir que Claude la paró tras horas sin uso: sigue en
+Claude Desktop y claude.ai, y vuelve al abrirla allí.
 
 ```bash
 augmented-brain session list

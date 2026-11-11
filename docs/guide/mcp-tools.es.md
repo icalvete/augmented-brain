@@ -145,7 +145,8 @@ worktree de git para la tarea y su sesión ya no corre, al cerrarla lo quita con
 cuando no tiene nada que no esté en el remoto, y lo dice; si no, dice por qué se queda.
 Si la sesión propia de la tarea sigue en marcha (a menudo la que la cierra), un proceso
 aparte cierra esa sesión cuando termina su respuesta, la quita de Claude Desktop y
-claude.ai y quita su worktree de la misma forma.
+claude.ai y quita su worktree de la misma forma. Una sesión que Claude retiró tras horas
+sin uso no responde nada: se cierra en el acto.
 
 - `id`: el id de la tarea.
 - `result`: lo que se ha conseguido, en una o dos líneas.

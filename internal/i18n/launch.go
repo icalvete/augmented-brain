@@ -64,6 +64,10 @@ var launchMessages = map[string]msg{
 		en: "The task's own session closes when it finishes this answer, and leaves Claude Desktop and claude.ai; its worktree goes with it when nothing would be lost.",
 		es: "La sesión propia de la tarea se cierra cuando termine esta respuesta, y sale de Claude Desktop y claude.ai; su worktree se va con ella si no se pierde nada.",
 	},
+	"session.closed.retired": {
+		en: "Closed the task's own session, which Claude had retired after hours unused: it leaves Claude Desktop and claude.ai.",
+		es: "Cerrada la sesión propia de la tarea, que Claude había retirado tras horas sin uso: sale de Claude Desktop y claude.ai.",
+	},
 	"session.worktree.closed.kept": {
 		en: "The task's worktree %s stays: it has %s. Push or drop that work, then remove it.",
 		es: "El worktree de la tarea %s se queda: tiene %s. Sube o descarta ese trabajo, y después quítalo.",
@@ -131,6 +135,22 @@ var launchMessages = map[string]msg{
 	"session.stopped": {
 		en: "Closed the session of %s.",
 		es: "Cerrada la sesión de %s.",
+	},
+	"session.left": {
+		en: "Claude could not take the session of %s out of Claude Desktop and claude.ai: it no longer runs and is no longer the task's. To take it out later: claude rm %s",
+		es: "Claude no pudo quitar la sesión de %s de Claude Desktop y claude.ai: ya no corre y ya no es de la tarea. Para quitarla más tarde: claude rm %s",
+	},
+	"session.none": {
+		en: "%s has no session open: nothing to close.",
+		es: "%s no tiene ninguna sesión abierta: no hay nada que cerrar.",
+	},
+	"session.busy": {
+		en: "The session of %s kept answering, or waiting for a permission, for 30 minutes: it stays open. Close it with augmented-brain session stop once it is done.",
+		es: "La sesión de %s siguió respondiendo, o esperando un permiso, durante 30 minutos: se queda abierta. Ciérrala con augmented-brain session stop cuando acabe.",
+	},
+	"session.list.retired": {
+		en: "retired (Claude stopped it after hours unused; it comes back when opened in Claude Desktop or claude.ai)",
+		es: "retirada (Claude la paró tras horas sin uso; vuelve al abrirla en Claude Desktop o claude.ai)",
 	},
 	"session.list.none": {
 		en: "No task sessions open.",
