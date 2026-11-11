@@ -29,12 +29,18 @@ func Context(c *config.Config, s *config.Space) string { return ContextWith(c, s
 // ContextWith is Context with a note for the assistant right after the heading, kept
 // whole when the rest is cut to fit.
 func ContextWith(c *config.Config, s *config.Space, note string) string {
+	return ContextFor(c, s, note, "")
+}
+
+// ContextFor is ContextWith for a session opened for task (session start; "" for any
+// other session): what comes up today is only that task's.
+func ContextFor(c *config.Config, s *config.Space, note, task string) string {
 	m, shared, problems, failed := loadSpace(c, s)
 	if failed != "" {
 		return failed
 	}
 	return fit(parts{
-		head:    heading(c, s, m, problems, note) + assistantText(c),
+		head:    heading(c, s, m, problems, note, task) + assistantText(c),
 		profile: section("Who the user is", profileText(c, s)),
 		common:  section("Rules", rules.Common(c.Language)),
 		index:   "\n" + m.SessionIndex(c.Language) + sharedKnowledge(shared),
@@ -57,6 +63,12 @@ const indexParts, rulesParts = 3, 5
 // 6" when three slots are empty, so the assistant never waits for a part that is not
 // coming.
 func Part(c *config.Config, s *config.Space, note string, n int) string {
+	return PartFor(c, s, note, "", n)
+}
+
+// PartFor is Part for a session opened for task (session start; "" for any other
+// session): what comes up today is only that task's.
+func PartFor(c *config.Config, s *config.Space, note, task string, n int) string {
 	m, shared, problems, failed := loadSpace(c, s)
 	if failed != "" {
 		if n == 1 {
@@ -82,7 +94,7 @@ func Part(c *config.Config, s *config.Space, note string, n int) string {
 	total := 1 + len(chunks) + len(pieces)
 	switch {
 	case n == 1:
-		head := heading(c, s, m, problems, note) + assistantText(c)
+		head := heading(c, s, m, problems, note, task) + assistantText(c)
 		if total > 1 {
 			head += fmt.Sprintf("\n(This is part 1 of %d: the index of the space and the user's rules come in the other parts.)\n", total)
 		}
@@ -334,8 +346,10 @@ func sharedKnowledge(shared *memory.Memory) string {
 }
 
 // heading is what always goes whole: where the memory is, the caller's note, broken
-// files, and either the first-session interview or what comes up today.
-func heading(c *config.Config, s *config.Space, m *memory.Memory, problems []memory.Problem, note string) string {
+// files, and either the first-session interview or what comes up today. A session
+// opened for a task hears only what is due on that task: the rest of the space (other
+// dates, the weekly review, captures from other spaces) is for the user's other sessions.
+func heading(c *config.Config, s *config.Space, m *memory.Memory, problems []memory.Problem, note, task string) string {
 	head := fmt.Sprintf("# augmented brain · space %s\n\nThis session works in space %q. Its memory is in %s; use the augmented-brain tools to work with it.\n",
 		s.Name, s.Name, s.Memory)
 	head += note
@@ -347,7 +361,11 @@ func heading(c *config.Config, s *config.Space, m *memory.Memory, problems []mem
 	}
 	b := &brain.Brain{Space: s, Language: c.Language, Mem: m, ConfigDir: c.Dir, Now: Now}
 	b.KnowSpaces(c.SpaceNames())
-	return head + arrivedNote(b) + dueNote(b) + reviewNote(b)
+	if task != "" {
+		return head + fmt.Sprintf("\nThis session was opened for task %s. What else comes up in the space (other dates, the weekly review, captures from other spaces) is left to the user's other sessions: do not bring it up here.\n", task) +
+			dueNote(b, task)
+	}
+	return head + arrivedNote(b) + dueNote(b, "") + reviewNote(b)
 }
 
 // maxArrived is the most captures from other spaces the session start lists.
@@ -463,9 +481,12 @@ func pickDue(due []brain.Reminder, max int) ([]brain.Reminder, int) {
 const soonDays = 7
 
 // dueNote lists what comes up: watch dates and inbox reminders due in the next
-// soonDays days, and those already past.
-func dueNote(b *brain.Brain) string {
+// soonDays days, and those already past; only task's when task is not "".
+func dueNote(b *brain.Brain, task string) string {
 	due := b.Reminders(soonDays)
+	if task != "" {
+		due = slices.DeleteFunc(due, func(d brain.Reminder) bool { return d.TaskID != task })
+	}
 	if len(due) == 0 {
 		return ""
 	}

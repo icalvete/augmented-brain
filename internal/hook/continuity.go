@@ -201,8 +201,8 @@ func recoverNote(lang string, se state.Session) string {
 
 // sessionStarted records the session in the space's state and returns what the session
 // text should add: after a compaction, the request to journal; on a new start, the offer
-// to recover a session that never ended.
-func sessionStarted(c *config.Config, s *config.Space, i input, cfgDir string) string {
+// to recover a session that never ended (when offerRecover).
+func sessionStarted(c *config.Config, s *config.Space, i input, cfgDir string, offerRecover bool) string {
 	if c.SpaceFor(i.Cwd) != s {
 		return "" // the default space: not tracked (see ownSpace)
 	}
@@ -212,7 +212,7 @@ func sessionStarted(c *config.Config, s *config.Space, i input, cfgDir string) s
 	if i.Source == "compact" {
 		note += compactNote(c.Language)
 	}
-	if i.Source == "startup" || i.Source == "" {
+	if offerRecover && (i.Source == "startup" || i.Source == "") {
 		for _, se := range st.Unclosed(i.SessionID, now) {
 			if se.Reported {
 				continue
@@ -267,27 +267,31 @@ func rootNote(c *config.Config) string {
 // augmented brain (they started before an update): their tools may fail on what this
 // one writes until they are restarted. This session may be one of them: /clear starts
 // a new conversation but keeps the MCP server, so it is told apart and named first.
-func oldServersNote(c *config.Config) string {
+// The others are named only when others is true.
+func oldServersNote(c *config.Config, others bool) string {
 	old := state.OldServers(c.Dir, version.Version)
 	if len(old) == 0 {
 		return ""
 	}
-	own, others := false, 0
+	own, rest := false, 0
 	for _, s := range old {
 		if ownServer(s.PID) {
 			own = true
 		} else {
-			others++
+			rest++
 		}
+	}
+	if !others {
+		rest = 0
 	}
 	var note string
 	if own {
 		note += fmt.Sprintf("\nThis session itself still runs an earlier augmented brain: its augmented-brain tools started before the update to %s (/clear does not restart them), so they may fail, and closing a task may not stop a session. %stell the user in one line to close this session and open it again.\n",
 			version.Version, session.FirstAnswerLine(c.Language))
 	}
-	if others > 0 {
+	if rest > 0 {
 		note += fmt.Sprintf("\n%d other Claude sessions on this machine still run an earlier augmented brain: they started before it was updated to %s, and their augmented-brain tools may fail until they are restarted. %smention it in one line: close and open those sessions again when it suits them.\n",
-			others, version.Version, session.FirstAnswerLine(c.Language))
+			rest, version.Version, session.FirstAnswerLine(c.Language))
 	}
 	return note
 }
