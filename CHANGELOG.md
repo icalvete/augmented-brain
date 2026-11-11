@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **Restarting remote access no longer stops your task sessions.** A task session
+  started from a remote session could start Claude's background service inside the
+  remote access service, and restarting that service (by hand, by `remote install` or by
+  the watch) stopped every task session with it. Now `session start` starts it in a
+  group of its own, and the watch, `remote install` and `remote uninstall` move out of
+  the service whatever its server did not start before they restart or stop it. When
+  they cannot, they say so and leave it running. Linux only.
+
 ## 0.17.3-beta
 
 Released 2026-11-11.

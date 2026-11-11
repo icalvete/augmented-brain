@@ -406,8 +406,11 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 	// new one runs: by then Claude's daemon is up, and `claude rm` needs it.
 	old, hadOld := readLaunch(c.Dir, l.Task)
 	before, _ := s.listedAgents(claude)
-	out, err := s.RunIn(l.Folder, claude,
+	// In a scope of its own: a daemon it starts must not live in the group of a remote
+	// service this may run from (scope.go).
+	bg, bgArgs := s.scoped(claude,
 		"--bg", "--remote-control", l.Name, "-n", l.Name, "--permission-mode", set.PermissionMode, first)
+	out, err := s.RunIn(l.Folder, bg, bgArgs...)
 	id := ""
 	if m := backgrounded.FindStringSubmatch(out); m != nil {
 		id = m[1]

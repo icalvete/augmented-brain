@@ -55,7 +55,9 @@ reglas de ese espacio.
   ```
 
   La sesión nueva puede tardar unos minutos en aparecer: el lado de Claude deja antes que
-  caduque la vieja.
+  caduque la vieja. El vigilante lo hace solo en unos minutos; si reinicias a mano,
+  lanza antes `augmented-brain remote watch`, para que las sesiones de tus tareas
+  abiertas desde allí sigan en marcha.
 - **Ha caducado tu sesión de Claude.** `augmented-brain remote status` lo dice. Lanza
   `claude` una vez en el ordenador y vuelve a entrar.
 

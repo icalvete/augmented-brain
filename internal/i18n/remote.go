@@ -130,6 +130,18 @@ var remoteMessages = map[string]msg{
 		en: "%s: the server has no Claude session behind it (the server archived it, or it stopped); restarting the service to bring it back.",
 		es: "%s: el servidor no tiene ninguna sesión de Claude detrás (el servidor la archivó, o se paró); reinicio el servicio para recuperarla.",
 	},
+	"remote.keep.moved": {
+		en: "%s: moved %d processes a session left running (Claude's background sessions, for one) out of the service, so stopping it does not stop them.",
+		es: "%s: he sacado del servicio %d procesos que dejó en marcha una sesión (las sesiones en segundo plano de Claude, por ejemplo), para que pararlo no los pare.",
+	},
+	"remote.keep.failed": {
+		en: "%s: processes a session left running are still inside the service (%v); it is not restarted, so they do not stop with it.",
+		es: "%s: siguen dentro del servicio procesos que dejó en marcha una sesión (%v); no lo reinicio, para que no se paren con él.",
+	},
+	"remote.keep.refused": {
+		en: "%s was not stopped: processes a session left running in it, such as Claude's background sessions, would stop with it, and they could not be moved out (%v). Close those sessions first, or run this again in a moment.",
+		es: "No he parado %s: con él se pararían procesos que dejó en marcha una sesión, como las sesiones en segundo plano de Claude, y no se han podido sacar (%v). Cierra antes esas sesiones, o vuelve a intentarlo en un momento.",
+	},
 	"remote.watch.pointer": {
 		en: "%s: still no session after restarting: the server archived it. Setting %s aside as %s, so a new session starts, and restarting; it may take about three minutes.",
 		es: "%s: sigue sin sesión tras reiniciar: el servidor la archivó. Aparto %s como %s para que empiece una sesión nueva, y reinicio; puede tardar unos tres minutos.",
