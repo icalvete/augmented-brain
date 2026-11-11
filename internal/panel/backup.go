@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -24,16 +23,22 @@ import (
 // lastCopies is how many of the last copies each space shows.
 const lastCopies = 5
 
-type backupCopy struct{ When, What string }
+type backupCopy struct {
+	When, What string
+	Rev        string // the commit, to go back to it
+	Back       string // it went back to the copy of this date
+	Changes    backup.Changes
+}
 
 type backupSpace struct {
 	Name, URL            string
 	Known, OK            bool
 	Time, Error, Warning string
 	Copies               []backupCopy
-	Started              bool // a copy was just started from here
-	Profile              bool // this space's backup carries the profile
-	NoGit                bool // set up, but the notes folder is not a repository (yet)
+	Started              bool   // a copy was just started from here
+	WentBack             string // the notes just went back to the copy of this date
+	Profile              bool   // this space's backup carries the profile
+	NoGit                bool   // set up, but the notes folder is not a repository (yet)
 }
 
 type backupData struct {
@@ -42,42 +47,18 @@ type backupData struct {
 	None   int // spaces with no backup at all
 }
 
-// copiesOf are the last copies of the notes in memory: the backup's own commits, newest
-// first. Nothing when the folder is not a repository or git cannot read it.
+// copiesOf are the last copies of the notes in memory, newest first, each with what it
+// changed. Nothing when the folder is not a repository or git cannot read it.
 func copiesOf(memory string) []backupCopy {
-	if _, err := os.Stat(filepath.Join(memory, ".git")); err != nil {
-		return nil
-	}
-	out, err := backup.Git(memory, "log", "-n", "20", "--format=%ct%x09%s", "HEAD")
+	got, err := backup.Copies(memory, lastCopies)
 	if err != nil {
 		return nil
 	}
 	var cs []backupCopy
-	for _, line := range strings.Split(strings.TrimSpace(out), "\n") {
-		ts, subject, ok := strings.Cut(line, "\t")
-		// Only the backup's commits ("backup <host> <date>"), not those a person made.
-		host, isBackup := strings.CutPrefix(subject, "backup ")
-		if !ok || !isBackup {
-			continue
-		}
-		var sec int64
-		for _, c := range ts {
-			if c < '0' || c > '9' {
-				sec = -1
-				break
-			}
-			sec = sec*10 + int64(c-'0')
-		}
-		if sec <= 0 {
-			continue
-		}
-		if f := strings.Fields(host); len(f) > 0 {
-			host = f[0]
-		}
-		cs = append(cs, backupCopy{When: time.Unix(sec, 0).Local().Format(stamp), What: host})
-		if len(cs) == lastCopies {
-			break
-		}
+	for _, c := range got {
+		bc := backupCopy{When: c.Time.Local().Format(stamp), What: c.Host, Rev: c.Rev, Back: c.Back}
+		bc.Changes, _ = backup.ChangesOf(memory, c.Rev)
+		cs = append(cs, bc)
 	}
 	return cs
 }
@@ -91,6 +72,9 @@ func (s *Server) backupPage(v *view, r *http.Request) (string, page, error) {
 	for _, name := range v.c.SpaceNames() {
 		sp := v.c.Spaces[name]
 		bs := backupSpace{Name: name, URL: sp.Backup, Started: started == name, Profile: name == profile && sp.Backup != ""}
+		if started == name {
+			bs.WentBack = r.URL.Query().Get("back")
+		}
 		if st, ok := backup.LastStatus(v.c.Dir, name); ok && sp.Backup != "" {
 			bs.Known, bs.OK, bs.Error, bs.Warning = true, st.OK, st.Error, st.Warning
 			bs.Time = st.Time.Local().Format(stamp)
@@ -215,4 +199,121 @@ func (s *Server) backupSetup(w http.ResponseWriter, r *http.Request) {
 		}
 		return backupStarted(sp.Name), nil
 	})(w, r)
+}
+
+// The page before going back to a copy: what would change in the notes as they are now,
+// and the confirmation (a box, and the space's name typed). Through the network it only
+// shows.
+
+type backData struct {
+	Space, Rev, When string
+	Changes          backup.Changes
+	Remote           bool
+}
+
+func (s *Server) backupBackPage(v *view, r *http.Request) (string, page, error) {
+	sp := v.b.Space
+	if sp.Backup == "" {
+		return "", page{}, errors.New(v.t("backup.err.none"))
+	}
+	d := backData{Space: sp.Name, Rev: r.URL.Query().Get("c"), Remote: s.viaRemote(r)}
+	v.unlock() // git reads the history: not with the notes locked
+	cs, err := backup.Copies(sp.Memory, 200)
+	if err != nil {
+		return "", page{}, err
+	}
+	for _, c := range cs {
+		if c.Rev == d.Rev {
+			d.When = c.Time.Local().Format(stamp)
+		}
+	}
+	if d.When == "" {
+		return "", page{}, errors.New(v.t("backup.back.gone"))
+	}
+	if d.Changes, err = backup.ChangesBack(sp.Memory, d.Rev); err != nil {
+		return "", page{}, err
+	}
+	p := v.frame("backup", v.t("backup.back"))
+	p.D = d
+	return "backupback", p, nil
+}
+
+// goBack is what the panel does to go back to a copy. Tests replace it.
+func (s *Server) goBack(c *config.Config, sp *config.Space, rev string) error {
+	host, _ := os.Hostname()
+	_, err := backup.GoBack(c, sp, rev, host)
+	return err
+}
+
+// backupBack puts the notes of a space back as they were in one of its copies. It takes
+// the locks itself (backup.GoBack), so it runs outside s.write, as backupSetup does;
+// then it starts a copy, which sends the result to the backup.
+func (s *Server) backupBack(w http.ResponseWriter, r *http.Request) {
+	lang := s.lang()
+	fail := func(err error) { s.fail(w, r, nil, http.StatusBadRequest, err) }
+	if s.viaRemote(r) {
+		fail(errors.New(i18n.T(lang, "panel.backup.back.localonly")))
+		return
+	}
+	c, err := config.Load(s.cfgDir)
+	if err != nil {
+		fail(err)
+		return
+	}
+	lang = c.Language
+	name := r.PostForm.Get("s")
+	sp, ok := c.Spaces[name]
+	if !ok {
+		fail(errNoSpace)
+		return
+	}
+	if r.PostForm.Get("confirm") != "yes" {
+		fail(errors.New(i18n.T(lang, "panel.err.confirm")))
+		return
+	}
+	if strings.TrimSpace(r.PostForm.Get("name")) != name {
+		fail(errors.New(i18n.T(lang, "panel.backup.back.name", name)))
+		return
+	}
+	if sp.Backup == "" {
+		fail(errors.New(i18n.T(lang, "panel.backup.err.none")))
+		return
+	}
+	rev := r.PostForm.Get("c")
+	var when string
+	if cs, err := backup.Copies(sp.Memory, 200); err == nil {
+		for _, x := range cs {
+			if x.Rev == rev {
+				when = x.Time.Local().Format(stamp)
+			}
+		}
+	}
+	err = s.goBack(c, sp, rev)
+	var notValid *backup.NotValidError
+	var secrets *backup.SecretsError
+	switch {
+	case err == nil:
+	case errors.Is(err, backup.ErrNotACopy):
+		err = errors.New(i18n.T(lang, "panel.backup.back.gone"))
+	case errors.Is(err, backup.ErrChangedMeanwhile):
+		err = errors.New(i18n.T(lang, "panel.backup.back.meanwhile"))
+	case errors.As(err, &notValid):
+		err = errors.New(i18n.T(lang, "panel.backup.back.notvalid", strings.Join(notValid.Problems, "; ")))
+	case errors.As(err, &secrets):
+		var l []string
+		for _, f := range secrets.Found {
+			l = append(l, f.Path+" ("+i18n.T(lang, "secret."+f.Kind)+")")
+		}
+		err = errors.New(i18n.T(lang, "panel.backup.back.secrets", strings.Join(l, ", ")))
+	}
+	if err != nil {
+		fail(err)
+		return
+	}
+	if err := s.startBackup(name); err != nil {
+		fail(err)
+		return
+	}
+	q := url.Values{"started": {name}, "back": {when}, "s": {name}}
+	http.Redirect(w, r, s.base()+"/backup?"+q.Encode(), http.StatusSeeOther)
 }

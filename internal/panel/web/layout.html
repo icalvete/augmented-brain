@@ -78,3 +78,13 @@
     <button type="submit" name="do" value="hideall" class="link">{{t "intro.hideall"}}</button>
   </form>
 </div>{{end}}{{end}}
+
+{{/* changes writes what changed in a space's notes (backup.Changes), note by note. */}}
+{{define "changes"}}{{range .Files}}<div class="diff">
+  <div class="diff-file"><code>{{.Name}}</code>{{if .Gone}} {{t "versions.filegone"}}{{end}}{{if .New}} {{t "versions.filenew"}}{{end}}{{if .Binary}} {{t "backup.binary"}}{{end}}</div>
+  {{if .Lines}}<pre class="body">{{range .Lines}}{{if eq .Kind "skip"}}<span class="d-skip">…</span>
+{{else if eq .Kind "add"}}<span class="d-add">+ {{.Text}}</span>
+{{else if eq .Kind "del"}}<span class="d-del">- {{.Text}}</span>
+{{else}}  {{.Text}}
+{{end}}{{end}}</pre>{{end}}
+</div>{{end}}{{if .More}}<p class="hint">{{tf "backup.more" .More}}</p>{{end}}{{end}}
