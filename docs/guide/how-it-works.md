@@ -48,7 +48,7 @@ The list of hooks is in [Commands](commands.md#augmented-brain-hook). The tools 
 [space](spaces.md). Before you type anything, it hands Claude your profile, your rules
 and the list of live tasks. It also says what is due soon, whether the weekly review is
 due, and whether an earlier session was cut off. That is how Claude knows where you left
-off.
+off. A session opened for a task (`session start`) hears only that task's dates.
 
 **2. You say "park it".** Claude uses the `task_park` tool. The program writes in the
 task file where it stopped and what comes next, and rebuilds the index. Opening,

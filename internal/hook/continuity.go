@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -200,8 +201,8 @@ func recoverNote(lang string, se state.Session) string {
 
 // sessionStarted records the session in the space's state and returns what the session
 // text should add: after a compaction, the request to journal; on a new start, the offer
-// to recover a session that never ended.
-func sessionStarted(c *config.Config, s *config.Space, i input, cfgDir string) string {
+// to recover a session that never ended (when offerRecover).
+func sessionStarted(c *config.Config, s *config.Space, i input, cfgDir string, offerRecover bool) string {
 	if c.SpaceFor(i.Cwd) != s {
 		return "" // the default space: not tracked (see ownSpace)
 	}
@@ -211,7 +212,7 @@ func sessionStarted(c *config.Config, s *config.Space, i input, cfgDir string) s
 	if i.Source == "compact" {
 		note += compactNote(c.Language)
 	}
-	if i.Source == "startup" || i.Source == "" {
+	if offerRecover && (i.Source == "startup" || i.Source == "") {
 		for _, se := range st.Unclosed(i.SessionID, now) {
 			if se.Reported {
 				continue
@@ -262,16 +263,50 @@ func rootNote(c *config.Config) string {
 	return bad + "\nTemporary root exceptions (root_ask): " + strings.Join(in, "; ") + ". On those machines, and only while they last, a command as root (sudo, also through ssh) is not refused: the guard asks the user to confirm each one. Use it only for what the user asked, and say first what the command does.\n"
 }
 
-// oldServersNote says when other Claude sessions on this machine still run an earlier
+// oldServersNote says when Claude sessions on this machine still run an earlier
 // augmented brain (they started before an update): their tools may fail on what this
-// one writes until they are restarted.
-func oldServersNote(c *config.Config) string {
+// one writes until they are restarted. This session may be one of them: /clear starts
+// a new conversation but keeps the MCP server, so it is told apart and named first.
+// The others are named only when others is true.
+func oldServersNote(c *config.Config, others bool) string {
 	old := state.OldServers(c.Dir, version.Version)
 	if len(old) == 0 {
 		return ""
 	}
-	return fmt.Sprintf("\n%d other Claude sessions on this machine still run an earlier augmented brain: they started before it was updated to %s, and their augmented-brain tools may fail until they are restarted. %smention it in one line: close and open those sessions again when it suits them.\n",
-		len(old), version.Version, session.FirstAnswerLine(c.Language))
+	own, rest := false, 0
+	for _, s := range old {
+		if ownServer(s.PID) {
+			own = true
+		} else {
+			rest++
+		}
+	}
+	if !others {
+		rest = 0
+	}
+	var note string
+	if own {
+		note += fmt.Sprintf("\nThis session itself still runs an earlier augmented brain: its augmented-brain tools started before the update to %s (/clear does not restart them), so they may fail, and closing a task may not stop a session. %stell the user in one line to close this session and open it again.\n",
+			version.Version, session.FirstAnswerLine(c.Language))
+	}
+	if rest > 0 {
+		note += fmt.Sprintf("\n%d other Claude sessions on this machine still run an earlier augmented brain: they started before it was updated to %s, and their augmented-brain tools may fail until they are restarted. %smention it in one line: close and open those sessions again when it suits them.\n",
+			rest, version.Version, session.FirstAnswerLine(c.Language))
+	}
+	return note
+}
+
+// ownServer says whether the MCP server pid belongs to this session: its parent is
+// the Claude process that runs this hook (CLAUDE_PID). The server's own environment
+// cannot tell: a session started with claude --bg gets the daemon's. False where
+// processes cannot be read (Windows) or the hook does not know its Claude.
+func ownServer(pid int) bool {
+	claude, err := strconv.Atoi(Getenv("CLAUDE_PID"))
+	if err != nil || claude <= 0 || Processes == nil {
+		return false
+	}
+	p, ok := Processes.Proc(pid)
+	return ok && p.PPID == claude
 }
 
 // preferredModel is the model the user wants (session.toml), or "" when there is none

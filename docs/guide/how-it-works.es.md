@@ -48,6 +48,7 @@ herramientas, en [Herramientas MCP](mcp-tools.es.md).
 [espacio](spaces.es.md). Antes de que escribas nada, le pasa a Claude tu perfil, tus
 reglas y la lista de tareas vivas. También le dice lo que vence pronto, si toca la
 revisión semanal y si una sesión anterior se cortó. Por eso Claude sabe dónde lo dejaste.
+Una sesión abierta para una tarea (`session start`) solo oye las fechas de esa tarea.
 
 **2. Dices "apárcala".** Claude usa la herramienta `task_park`. El programa apunta en el
 fichero de la tarea dónde se quedó y cuál es el siguiente paso, y rehace el índice. Abrir,

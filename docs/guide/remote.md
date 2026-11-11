@@ -120,7 +120,9 @@ augmented-brain session start task-new-website
 
 and within a minute a new session, named after the task, shows up in claude.ai and Claude
 Desktop. It starts on its own: it reads its task, tells you where it stands and gets on
-with the next step. When it stops, it tells the session that asked for it, in one line. The folder is the
+with the next step. It hears only what is its task's: that task's dates, not the rest of
+the space's reminders, the weekly review or sessions to recover, which come up in your
+other sessions. When it stops, it tells the session that asked for it, in one line. The folder is the
 first of the task's repositories found in the space's work folders, or the one `--folder`
 gives; with no repository, the space's folder. For a bare repository, the task gets a git worktree of its own, on a new branch
 from origin's default branch. It goes away by itself when nothing would be lost: with
