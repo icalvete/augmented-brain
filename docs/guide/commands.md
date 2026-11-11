@@ -393,15 +393,24 @@ session closed from Claude Desktop) leave theirs: the next `session start` and `
 remove those with nothing of their own, closing the task removes its own, and `doctor` warns
 about any that stays with work in it.
 
+A session Claude retired (it does that to one left unused for hours) is closed too.
+Claude's background service may have stopped by then; `stop` starts it for a moment,
+and it goes away by itself. If Claude still cannot take the session out of its lists,
+`stop` says so and gives the command to do it later. A task with no session gets
+"nothing to close", never a silent success.
+
 - `--when-idle`: wait until the session has finished its answer, then close it. Closing
   the task runs it by itself in the background: the session closing its own task is
-  often still answering, and stopping it there would cut that answer off. It waits up
-  to 30 minutes.
+  often still answering, and stopping it there would cut that answer off. A session
+  waiting for a permission counts as answering. It waits up to 30 minutes; one still
+  answering by then stays open. What it did goes to `state/session-stop.log` in the
+  configuration folder.
 
 ## augmented-brain session list
 
 Lists the task sessions open on this computer: the task, whether it runs, and its
-folder.
+folder. **retired** means Claude stopped it after hours unused: it still shows in Claude
+Desktop and claude.ai, and comes back when you open it there.
 
 ```bash
 augmented-brain session list

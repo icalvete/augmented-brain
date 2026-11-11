@@ -70,7 +70,13 @@ func LaunchUnit(task string) string {
 
 var unitSafe = regexp.MustCompile(`[^A-Za-z0-9_.-]+`)
 
-// LaunchStatus is a launched session: Active is "active" while it runs.
+// Retired is the state of a launched session Claude retired: no process, still listed
+// in Claude Desktop and claude.ai, and back when opened there.
+const Retired = "retired"
+
+// LaunchStatus is a launched session: Active is "active" while it runs, Retired when
+// Claude retired it, "ended" when Claude no longer lists it (or systemd's word, for a
+// unit of an earlier version).
 type LaunchStatus struct {
 	Unit   string // Claude's id of the session, or the systemd unit of an earlier version
 	Task   string
@@ -170,10 +176,16 @@ type claudeAgent struct {
 	ID     string `json:"id"`
 	Name   string `json:"name"`
 	Cwd    string `json:"cwd"`
-	Status string `json:"status"` // "busy" while it answers, "idle" when it waits
+	Status string `json:"status"` // "busy" while it answers (or waits for a permission), "idle" when it waits
+	// Pid is the session's process. Claude retires a background session left idle for
+	// hours (8 on 2.1.322: "bg retire <id>: idle-prompt, idle 8h" in its daemon.log):
+	// its process ends, yet it stays in the list, with no pid and no status, until it is
+	// opened again from Claude Desktop or claude.ai or removed (measured on 11-nov).
+	Pid int `json:"pid"`
 }
 
-// agents are Claude's background sessions that run now.
+// agents are Claude's background sessions: those that run and those it retired
+// (`claude agents --json` lists both; --all would add the ended ones).
 func (s System) agents(claude string) ([]claudeAgent, error) {
 	out, err := s.Run(claude, "agents", "--json")
 	if err != nil {
@@ -186,20 +198,29 @@ func (s System) agents(claude string) ([]claudeAgent, error) {
 	return list, nil
 }
 
-// liveAgents are the ids of Claude's background sessions that run now (`claude agents
-// --json` lists only those; --all would add the stopped ones).
-func (s System) liveAgents(claude string) (map[string]bool, error) {
+// listedAgents are the ids of Claude's background sessions, running or retired: what
+// Claude Desktop and claude.ai still show.
+func (s System) listedAgents(claude string) (map[string]bool, error) {
+	return s.agentIDs(claude, false)
+}
+
+// runningAgents are the ids of the background sessions whose process runs now.
+func (s System) runningAgents(claude string) (map[string]bool, error) {
+	return s.agentIDs(claude, true)
+}
+
+func (s System) agentIDs(claude string, running bool) (map[string]bool, error) {
 	list, err := s.agents(claude)
 	if err != nil {
 		return nil, err
 	}
-	live := map[string]bool{}
+	ids := map[string]bool{}
 	for _, a := range list {
-		if a.ID != "" {
-			live[a.ID] = true
+		if a.ID != "" && (!running || a.Pid > 0) {
+			ids[a.ID] = true
 		}
 	}
-	return live, nil
+	return ids, nil
 }
 
 // Launches are the launched sessions known on this machine, running or not, sorted by
@@ -215,9 +236,19 @@ func (s System) Launches(cfgDir string) ([]LaunchStatus, error) {
 		if err != nil {
 			return nil, errors.New("claude is not installed or not in the PATH")
 		}
-		live, err := s.liveAgents(claude)
+		list, err := s.agents(claude)
 		if err != nil {
 			return nil, err
+		}
+		state := map[string]string{}
+		for _, a := range list {
+			if a.ID == "" {
+				continue
+			}
+			state[a.ID] = Retired
+			if a.Pid > 0 {
+				state[a.ID] = "active"
+			}
 		}
 		for _, e := range entries {
 			task, ok := strings.CutSuffix(e.Name(), ".json")
@@ -229,8 +260,8 @@ func (s System) Launches(cfgDir string) ([]LaunchStatus, error) {
 				continue
 			}
 			st := LaunchStatus{Unit: r.ID, Task: r.Task, Folder: r.Folder, Active: "ended"}
-			if live[r.ID] {
-				st.Active = "active"
+			if a := state[r.ID]; a != "" {
+				st.Active = a
 			}
 			res = append(res, st)
 		}
@@ -303,24 +334,23 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 		return err
 	}
 	for _, x := range launched {
-		if x.Active != "active" {
-			continue
-		}
-		if x.Task == l.Task {
+		// A retired session of the task gives way to the new one (and leaves Claude's
+		// lists below); another task's still holds its folder: it comes back there
+		// when opened again.
+		if x.Task == l.Task && x.Active == "active" {
 			return ErrRunning
 		}
-		if !l.Shared && paths.Same(x.Folder, l.Folder) {
+		if x.Task != l.Task && (x.Active == "active" || x.Active == Retired) && !l.Shared && paths.Same(x.Folder, l.Folder) {
 			return ErrServed
 		}
 	}
 	if err := os.MkdirAll(launchRecords(c.Dir), 0o700); err != nil {
 		return err
 	}
-	if old, ok := readLaunch(c.Dir, l.Task); ok {
-		// An earlier session of the task that ended: out of Claude's lists too.
-		_, _ = s.Run(claude, "rm", old.ID)
-	}
-	before, _ := s.liveAgents(claude)
+	// An earlier session of the task, ended or retired, leaves Claude's lists once the
+	// new one runs: by then Claude's daemon is up, and `claude rm` needs it.
+	old, hadOld := readLaunch(c.Dir, l.Task)
+	before, _ := s.listedAgents(claude)
 	out, err := s.RunIn(l.Folder, claude,
 		"--bg", "--remote-control", l.Name, "-n", l.Name, "--permission-mode", set.PermissionMode, first)
 	id := ""
@@ -348,7 +378,7 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 	// A session that cannot start (no login, a broken setting) ends within seconds.
 	for i := 0; i < 5; i++ {
 		s.sleep(time.Second)
-		live, err := s.liveAgents(claude)
+		live, err := s.listedAgents(claude)
 		if err != nil || live[id] {
 			continue
 		}
@@ -356,6 +386,9 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 		_, _ = s.Run(claude, "rm", id)
 		_ = os.Remove(launchRecordPath(c.Dir, l.Task))
 		return fmt.Errorf("the session did not start: %s", tail(cleanTerminal(log), 300))
+	}
+	if hadOld && old.ID != id {
+		_, _ = s.Run(claude, "rm", old.ID)
 	}
 	return nil
 }
@@ -375,8 +408,28 @@ func (s System) newAgent(claude string, before map[string]bool, l Launch) string
 	return ""
 }
 
+// ErrNoSession: the task has no session to close.
+var ErrNoSession = errors.New("this task has no session")
+
+// LeftInClaude: the task's session no longer runs and is no longer the task's, but
+// Claude could not remove it from its lists (Claude Desktop, claude.ai): `claude rm ID`
+// does it later.
+type LeftInClaude struct{ ID string }
+
+func (e *LeftInClaude) Error() string {
+	return "claude could not remove session " + e.ID + "; run `claude rm " + e.ID + "` later"
+}
+
 // Stop ends a task's session and takes it out of Claude Desktop and claude.ai. For a
 // session of an earlier version, it stops its systemd unit.
+//
+// `claude stop` and `claude rm` need Claude's daemon, which runs only while something
+// uses it (it exits on its own about a minute after the last client goes): without it
+// both fail with "the background service may be restarting" however often they are
+// tried, as they do after Claude retired the last session (measured on 11-nov,
+// 2.1.322). So when rm fails for a session that does not run, Stop starts the daemon
+// and tries once more; if Claude still cannot, the record goes anyway and the error is
+// a *LeftInClaude.
 func (s System) Stop(cfgDir, task string) error {
 	if s.GOOS != "linux" {
 		return ErrUnsupported
@@ -388,11 +441,25 @@ func (s System) Stop(cfgDir, task string) error {
 		}
 		_, _ = s.Run(claude, "stop", r.ID) // fails when it had ended already
 		if _, err := s.Run(claude, "rm", r.ID); err != nil {
-			if live, lerr := s.liveAgents(claude); lerr != nil || live[r.ID] {
+			list, lerr := s.agents(claude)
+			a, listed := findAgent(list, r.ID)
+			if lerr == nil && listed && a.Pid > 0 {
 				return fmt.Errorf("claude rm %s: %w", r.ID, err)
+			}
+			if lerr != nil || listed {
+				s.wakeDaemon(claude)
+				if _, err := s.Run(claude, "rm", r.ID); err != nil {
+					if err := os.Remove(launchRecordPath(cfgDir, task)); err != nil {
+						return err
+					}
+					return &LeftInClaude{ID: r.ID}
+				}
 			}
 		}
 		return os.Remove(launchRecordPath(cfgDir, task))
+	}
+	if !s.hasUnit(task) {
+		return ErrNoSession
 	}
 	if _, err := s.Run("systemctl", "--user", "stop", LaunchUnit(task)); err != nil {
 		return err
@@ -401,7 +468,38 @@ func (s System) Stop(cfgDir, task string) error {
 	return nil
 }
 
-// LaunchRunning says whether the task has a session of its own that runs now.
+// hasUnit says whether an earlier version launched the task's session as a systemd unit
+// that systemd still knows of.
+func (s System) hasUnit(task string) bool {
+	for _, u := range s.unitLaunches() {
+		if u.Unit == LaunchUnit(task) {
+			return true
+		}
+	}
+	return false
+}
+
+// wakeDaemon starts Claude's daemon when it does not run, the way `claude --bg` does
+// (transient: it exits on its own once unused), and waits up to ten seconds for it.
+func (s System) wakeDaemon(claude string) {
+	if _, err := s.Run(claude, "daemon", "status"); err == nil {
+		return
+	}
+	if s.StartDaemon == nil {
+		return
+	}
+	if err := s.StartDaemon(claude); err != nil {
+		return
+	}
+	for i := 0; i < 10; i++ {
+		s.sleep(time.Second)
+		if _, err := s.Run(claude, "daemon", "status"); err == nil {
+			return
+		}
+	}
+}
+
+// LaunchRunning says whether the task has a session of its own whose process runs now.
 func (s System) LaunchRunning(cfgDir, task string) bool {
 	r, ok := readLaunch(cfgDir, task)
 	if !ok || s.GOOS != "linux" {
@@ -411,22 +509,42 @@ func (s System) LaunchRunning(cfgDir, task string) bool {
 	if err != nil {
 		return false
 	}
-	live, err := s.liveAgents(claude)
-	return err == nil && live[r.ID]
+	running, err := s.runningAgents(claude)
+	return err == nil && running[r.ID]
+}
+
+// HasLaunch says whether the task has a session of its own on record, running or not.
+func HasLaunch(cfgDir, task string) bool {
+	_, ok := readLaunch(cfgDir, task)
+	return ok
 }
 
 // ErrStillBusy: the session kept answering for as long as StopWhenIdle waits.
 var ErrStillBusy = errors.New("the session is still answering")
 
+// findAgent is the session with this id in Claude's list, if it is there.
+func findAgent(list []claudeAgent, id string) (claudeAgent, bool) {
+	for _, a := range list {
+		if a.ID == id {
+			return a, true
+		}
+	}
+	return claudeAgent{}, false
+}
+
 // StopWhenIdle closes a task's session once it has finished its answer (seen idle
 // twice in a row, a couple of seconds apart), then removes the task's worktree when
 // nothing would be lost. Closing a task is often done by its own session, in the middle
-// of an answer: stopping it there would cut that answer off. It waits at most max, and
-// leaves a session that is still answering by then.
+// of an answer: stopping it there would cut that answer off. A session Claude retired
+// or no longer lists answers nothing, so it counts as idle; one waiting for a
+// permission is "busy" (measured on 11-nov) and is waited for. It waits at most max,
+// and leaves a session that is still answering by then. A session of an earlier
+// version (a systemd unit) tells nothing of its answers: it is stopped at once, as
+// `session stop` does. With no session at all it says so (ErrNoSession).
 func (s System) StopWhenIdle(cfgDir, task string, max time.Duration) error {
 	r, ok := readLaunch(cfgDir, task)
 	if !ok {
-		return nil
+		return s.Stop(cfgDir, task)
 	}
 	claude, err := s.FindClaude()
 	if err != nil {
@@ -442,25 +560,21 @@ func (s System) StopWhenIdle(cfgDir, task string, max time.Duration) error {
 		if err != nil {
 			continue
 		}
-		state := "gone"
-		for _, a := range list {
-			if a.ID == r.ID {
-				state = a.Status
-			}
-		}
-		switch state {
-		case "idle", "gone":
+		a, listed := findAgent(list, r.ID)
+		if !listed || a.Pid == 0 || a.Status == "idle" {
 			idle++
-		default:
+		} else {
 			idle = 0
 		}
 	}
-	if err := s.Stop(cfgDir, task); err != nil {
-		return err
+	stopErr := s.Stop(cfgDir, task)
+	var left *LeftInClaude
+	if stopErr != nil && !errors.As(stopErr, &left) {
+		return stopErr
 	}
 	_, _, _ = RemoveTaskWorktree(cfgDir, task)
 	_, _ = RemoveNotedWorktrees(cfgDir, task)
-	return nil
+	return stopErr
 }
 
 // cleanTerminal takes the terminal's control sequences out of what a session drew,

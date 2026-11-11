@@ -138,7 +138,8 @@ its session no longer runs, closing removes it with its branch if it holds nothi
 is not on the remote, and says so; otherwise it says why it stays. When the task's own
 session still runs (often the one closing it), a process of its own closes that session
 once it has finished its answer, takes it out of Claude Desktop and claude.ai, and
-removes its worktree the same way.
+removes its worktree the same way. A session Claude retired after hours unused answers
+nothing: it is closed at once.
 
 - `id`: the task's id.
 - `result`: what was achieved, in one or two lines.

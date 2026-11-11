@@ -83,18 +83,18 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			fmt.Fprintln(errOut, i18n.T(l, "usage.session"))
 			return 2
 		}
-		args = []string{"stop", task}
 		if *whenIdle {
-			// What closing a task starts, detached: nobody reads its output.
-			if err := sys.StopWhenIdle(c.Dir, task, 30*time.Minute); err != nil {
-				return sessionErr(l, err, errOut)
-			}
-			return 0
+			// What closing a task starts, detached: its output goes to a log in the
+			// configuration's state folder (task_close sets that up), each line dated.
+			err := sys.StopWhenIdle(c.Dir, task, 30*time.Minute)
+			stamp := time.Now().Format("2006-01-02 15:04:05") + " "
+			code, _ := sessionStopped(l, task, err, stamp, out, errOut)
+			return code
 		}
-		if err := sys.Stop(c.Dir, args[1]); err != nil {
-			return sessionErr(l, err, errOut)
+		if code, ok := sessionStopped(l, task, sys.Stop(c.Dir, task), "", out, errOut); !ok {
+			return code
 		}
-		fmt.Fprintln(out, i18n.T(l, "session.stopped", args[1]))
+		args = []string{"stop", task}
 		switch wt, removed, why := remote.RemoveTaskWorktree(c.Dir, args[1]); {
 		case removed:
 			fmt.Fprintln(out, i18n.T(l, "session.worktree.removed", tilde(wt)))
@@ -235,6 +235,29 @@ func firstMessage(l, task, socket string) string {
 	return msg
 }
 
+// sessionStopped says how a stop went, every line after prefix; ok is true when the
+// session was closed (err nil, or Claude only kept showing it in its lists).
+func sessionStopped(l, task string, err error, prefix string, out, errOut io.Writer) (code int, ok bool) {
+	var left *remote.LeftInClaude
+	switch {
+	case err == nil:
+		fmt.Fprintln(out, prefix+i18n.T(l, "session.stopped", task))
+		return 0, true
+	case errors.As(err, &left):
+		fmt.Fprintln(out, prefix+i18n.T(l, "session.stopped", task))
+		fmt.Fprintln(out, prefix+i18n.T(l, "session.left", task, left.ID))
+		return 0, true
+	case errors.Is(err, remote.ErrNoSession):
+		fmt.Fprintln(errOut, prefix+i18n.T(l, "session.none", task))
+	case errors.Is(err, remote.ErrStillBusy):
+		fmt.Fprintln(errOut, prefix+i18n.T(l, "session.busy", task))
+	default:
+		fmt.Fprint(errOut, prefix)
+		return sessionErr(l, err, errOut), false
+	}
+	return 1, false
+}
+
 func sessionErr(l string, err error, errOut io.Writer) int {
 	if errors.Is(err, remote.ErrUnsupported) {
 		fmt.Fprintln(errOut, i18n.T(l, "remote.unsupported"))
@@ -258,7 +281,11 @@ func sessionList(c *config.Config, sys remote.System, out, errOut io.Writer) int
 		if task == "" {
 			task = x.Unit
 		}
-		fmt.Fprintln(out, i18n.T(c.Language, "session.list.line", task, x.Active, tilde(x.Folder)))
+		state := x.Active
+		if state == remote.Retired {
+			state = i18n.T(c.Language, "session.list.retired")
+		}
+		fmt.Fprintln(out, i18n.T(c.Language, "session.list.line", task, state, tilde(x.Folder)))
 	}
 	return 0
 }
