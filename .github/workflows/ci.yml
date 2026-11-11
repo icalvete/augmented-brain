@@ -27,8 +27,8 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: Format
@@ -49,8 +49,8 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: Earlier releases read what this one writes
@@ -72,11 +72,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - run: git config --global core.autocrlf false
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Something missing, one at a time
@@ -98,12 +98,12 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright/python:v1.64.1-noble
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # The container runs as root and the checkout belongs to the runner's user: without
       # this, git refuses the folder and go build fails to stamp the version.
       - name: Let git read the checkout
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: Playwright for Python (the browsers are in the image)
@@ -118,8 +118,8 @@ jobs:
     timeout-minutes: 10
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: Let a script drive Safari
@@ -135,8 +135,8 @@ jobs:
     timeout-minutes: 10
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: remote install, status, doctor and uninstall with launchd
@@ -148,7 +148,7 @@ jobs:
     steps:
       # In a pull request, the branch's own last commit, not the merge commit GitHub makes
       # up to test it: that one carries the GitHub profile's name, and is never pushed.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: No secrets in the repository
