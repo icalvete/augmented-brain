@@ -88,6 +88,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Going back to a version asks, and warns about the guard | `TestVersionsPage` | Go |
 | Cut-off sessions from Today; Sessions out of the menu | `TestSessions` | Go |
 | The Backup page: set up (own repository, GitHub), back up now, last copies | `TestBackupPage`, `TestBackupSetupWithoutGitHub`, the browser check | Go, CI |
+| What each copy changed; going back to a copy (box and name, undone by going back again, local only) | `internal/backup` `TestCopiesChangesAndGoingBack`, `TestGoBackOnlyToACopy`, `TestGoBackRefusesNotesNotValid`, panel `TestBackupGoBack` | Go |
 | From another device (access, the switch) | `TestRemoteAccess`, `TestRemoteSwitchInPlace` and the others | Go |
 | Firefox | `panel-browser-check.py firefox` | by hand, before a release |
 | Safari for real (every page, its stylesheet, a capture) | `scripts/mac-check.py`, through safaridriver | CI: macOS |

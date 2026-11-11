@@ -191,6 +191,10 @@ survive if this computer breaks. A space with no backup says so in red.
   with the date and the computer that made them, and **Back up now**. The copy runs in
   the background and takes a few seconds; reload the page to see how it went. It also
   runs by itself every time a session ends.
+- Each copy shows **What it changed**, note by note, with the lines. **Go back to this
+  copy** shows first what would change in your notes now, and asks for a box and the
+  space's name. What you had is kept as a copy first, so it can be undone. See [Go back
+  to a copy](backup.md#go-back-to-a-copy).
 - For a space with none: **Set it up on my GitHub** makes a private repository called
   `augmented-brain-<space>` in your GitHub account and the first copy. It needs the
   GitHub command line, `gh`, installed and logged in; the page says how if it is not.
