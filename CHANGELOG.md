@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.17.2-beta
+
+Released 2026-11-11.
 
 - **See what each backup copy changed, and go back to one.** On the panel's Backup page,
   each copy shows the notes it added, changed and removed, with their lines. **Go back

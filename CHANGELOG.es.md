@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.17.2-beta
+
+Publicada el 2026-11-11.
 
 - **Ver qué cambió cada copia de seguridad, y volver a una.** En la página Copia de
   seguridad del panel, cada copia enseña las notas que añadió, cambió y quitó, con sus
