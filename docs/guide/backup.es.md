@@ -68,6 +68,25 @@ Para apagar la copia automática, pon `AB_NO_AUTO_BACKUP=1` en tu entorno.
 Recupera también el espacio por defecto (`personal`): con él vienen tu perfil, tus notas
 compartidas y la lista de los nombres de tus secretos.
 
+## Volver a una copia
+
+¿Se ha estropeado una nota, o la has borrado sin querer? Abre la página **Copia de
+seguridad** del panel. Cada copia enseña **Qué cambió**: las notas que añadió, cambió y
+quitó, con sus líneas.
+
+Para tener tus notas como estaban en una copia, usa **Volver a esta copia**:
+
+1. Una página enseña qué cambiaría en tus notas tal como están ahora, nota a nota.
+   También salen las notas que aún no están en ninguna copia, como quitadas.
+2. Marca la casilla y escribe el nombre del espacio.
+3. Primero, lo que tienes ahora se guarda como una copia nueva. Después tus notas pasan a
+   ser las de la copia que elegiste, y eso también se guarda como copia. La siguiente
+   copia de seguridad lo sube.
+
+Para deshacerlo, vuelve a la copia que se hizo justo antes. Volver solo toca las notas de
+ese espacio, nunca tu configuración (eso es [Versiones](config-history.es.md)). Se hace
+solo desde el panel de este ordenador: desde otro dispositivo la página solo enseña.
+
 ## Lo que no trae una restauración
 
 Algunas cosas se quedan fuera a propósito:
@@ -88,8 +107,8 @@ Algunas cosas se quedan fuera a propósito:
 
 - **Varias máquinas, un solo cerebro.** Antes de subir, la copia trae lo que hizo tu otra
   máquina y lo mezcla.
-- **Todo el historial.** Cada copia es un commit de git, con la máquina y la hora. Con
-  `git log` ves qué cambió, y puedes volver a cualquier día.
+- **Todo el historial.** Cada copia es un commit de git, con la máquina y la hora. El
+  panel enseña qué cambió cada una y vuelve a ella; con `git log` las ves todas.
 - **En tu sitio.** GitHub, GitLab o tu servidor: el repositorio lo eliges tú. No hay nube
   de augmented brain.
 - **Un repositorio por espacio.** El del trabajo puede ir al git de la empresa, y el

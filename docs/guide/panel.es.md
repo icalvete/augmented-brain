@@ -196,6 +196,10 @@ para que sobrevivan si este ordenador se rompe. Un espacio sin copia lo dice en 
   fecha y el ordenador que las hizo, y **Hacer una copia ahora**. La copia se hace por
   detrás y tarda unos segundos; recarga la página para ver cómo fue. También se hace
   sola cada vez que termina una sesión.
+- Cada copia enseña **Qué cambió**, nota a nota, con las líneas. **Volver a esta copia**
+  enseña antes qué cambiaría en tus notas de ahora, y pide una casilla y el nombre del
+  espacio. Lo que tenías se guarda antes como copia, así que se puede deshacer. Mira
+  [Volver a una copia](backup.es.md#volver-a-una-copia).
 - En un espacio sin copia: **Configurarla en mi GitHub** crea un repositorio privado
   llamado `augmented-brain-<espacio>` en tu cuenta de GitHub y hace la primera copia.
   Necesita la línea de comandos de GitHub, `gh`, instalada y conectada; si no lo está, la

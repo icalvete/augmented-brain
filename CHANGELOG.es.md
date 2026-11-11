@@ -2,6 +2,12 @@
 
 ## Sin publicar
 
+- **Ver qué cambió cada copia de seguridad, y volver a una.** En la página Copia de
+  seguridad del panel, cada copia enseña las notas que añadió, cambió y quitó, con sus
+  líneas. **Volver a esta copia** enseña antes qué cambiaría, pide una casilla y el
+  nombre del espacio, y guarda antes lo que tenías como copia, así que se puede
+  deshacer. Solo desde el panel de este ordenador; desde otro dispositivo la página solo
+  enseña. Arreglar una nota estropeada o borrada ya no necesita git.
 - **Cerrar la sesión de una tarea funciona siempre y dice qué hizo.** Claude retira una
   sesión de fondo que lleva horas sin uso: deja de correr, pero sigue en Claude Desktop y
   claude.ai. `session list` la daba por activa, `session stop` fallaba cuando el servicio

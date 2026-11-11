@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **See what each backup copy changed, and go back to one.** On the panel's Backup page,
+  each copy shows the notes it added, changed and removed, with their lines. **Go back
+  to this copy** shows first what would change, asks for a box and the space's name,
+  and keeps what you had as a copy before, so it can be undone. Only from this
+  computer's panel; from another device the page only shows. Fixing a broken or deleted
+  note no longer needs git.
 - **Closing a task's session works every time, and says what it did.** Claude retires
   a background session left unused for hours: it stops running but stays in Claude
   Desktop and claude.ai. `session list` called it active, `session stop` failed once
