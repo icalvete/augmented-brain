@@ -1,6 +1,7 @@
 package remote
 
 import (
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -533,5 +534,40 @@ func TestLaunchesFailed(t *testing.T) {
 	}
 	if got, _ := f.sys.Launches(c.Dir); len(got) != 1 || got[0].Unit != "ef56ab78" || got[0].Active != "active" {
 		t.Errorf("after starting again: %+v", got)
+	}
+}
+
+// A session knows the task it was launched for: by its session id, which begins with
+// the record's short id, or, after /clear, by its job folder, only when it runs in the
+// record's folder (a variable may be the daemon's). Any other session has none.
+func TestLaunchedTask(t *testing.T) {
+	cfgDir := t.TempDir()
+	folder := filepath.Join(t.TempDir(), "site")
+	if err := os.MkdirAll(filepath.Join(folder, "sub"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(launchRecords(cfgDir), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	data, _ := json.Marshal(launchRecord{ID: "f770712a", Task: "task-new-website", Folder: folder})
+	if err := os.WriteFile(launchRecordPath(cfgDir, "task-new-website"), data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	job := filepath.Join(t.TempDir(), "jobs", "f770712a")
+	for _, c := range []struct {
+		name, session, job, cwd, want string
+	}{
+		{"its session id", "f770712a-11c6-4dea-9446-5cc5820b347b", "", "", "task-new-website"},
+		{"after /clear, in its folder", "0c0c0c0c-0000-4000-8000-000000000000", job, filepath.Join(folder, "sub"), "task-new-website"},
+		{"its job folder elsewhere", "0c0c0c0c-0000-4000-8000-000000000000", job, t.TempDir(), ""},
+		{"another session", "0c0c0c0c-0000-4000-8000-000000000000", "", folder, ""},
+		{"no session id", "", "", "", ""},
+	} {
+		if got := LaunchedTask(cfgDir, c.session, c.job, c.cwd); got != c.want {
+			t.Errorf("%s: %q, want %q", c.name, got, c.want)
+		}
+	}
+	if got := LaunchedTask(t.TempDir(), "f770712a-11c6", "", ""); got != "" {
+		t.Errorf("no records: %q", got)
 	}
 }
