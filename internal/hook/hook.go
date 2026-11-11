@@ -22,6 +22,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/update"
@@ -123,13 +124,15 @@ func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 		}
 		text = session.Part(c, s, "", n)
 	case n == 1:
-		note := startNote(c, s, i, cfgDir)
+		task := launchedTask(cfgDir, i)
+		note := startNote(c, s, i, cfgDir, task)
 		freshBaseline(c, s, i, cfgDir)
-		text = session.Part(c, s, note, 1)
+		text = session.PartFor(c, s, note, task, 1)
 	default:
-		note := startNote(c, s, i, cfgDir)
+		task := launchedTask(cfgDir, i)
+		note := startNote(c, s, i, cfgDir, task)
 		freshBaseline(c, s, i, cfgDir)
-		text = session.ContextWith(c, s, note)
+		text = session.ContextFor(c, s, note, task)
 	}
 	return write(out, output{specific{HookEventName: "SessionStart", AdditionalContext: text}})
 }
@@ -137,8 +140,10 @@ func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 // startNote is what this session must hear first, on top of the space's text: the
 // default space was loaded, the backup failed, a new version is out, the notes moved
 // to a new format, a session to recover, the guard's lists to ask for again. It also
-// does the work behind some of them (the migration, recording the session).
-func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string {
+// does the work behind some of them (the migration, recording the session). A session
+// opened for a task (task not "") is not offered other sessions to recover, nor told
+// of other sessions to restart: those are for the user's other sessions.
+func startNote(c *config.Config, s *config.Space, i input, cfgDir, task string) string {
 	var note string
 	if _, isDefault := c.SpaceAt(i.Cwd); isDefault {
 		note = session.DefaultNote(c, s, i.Cwd)
@@ -148,16 +153,21 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir string) string
 		note += session.UpdateNote(c.Language, version.Version, latest)
 	}
 	note += migrate(c, s, cfgDir)
-	note += sessionStarted(c, s, i, cfgDir)
+	note += sessionStarted(c, s, i, cfgDir, task == "")
 	note += modelStartNote(c.Language, cfgDir, i)
 	note += askSafety(c, cfgDir)
 	note += rootNote(c)
-	note += oldServersNote(c)
+	note += oldServersNote(c, task == "")
 	note += guardSealNote(c, cfgDir)
 	note += launcherNote(c)
 	// A change made by hand since the last version becomes one: it can be undone too.
 	_, _ = confighistory.Record(cfgDir, confighistory.ByOutside, "")
 	return note
+}
+
+// launchedTask is the task this session was opened for with session start, or "".
+func launchedTask(cfgDir string, i input) string {
+	return remote.LaunchedTask(cfgDir, i.SessionID, Getenv("CLAUDE_JOB_DIR"), i.Cwd)
 }
 
 // backupNote says when the space's last backup failed or left files out.

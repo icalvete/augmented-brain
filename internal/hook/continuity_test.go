@@ -2,6 +2,7 @@ package hook
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -215,6 +216,30 @@ func TestRecoveryOffer(t *testing.T) {
 	end("s3")
 	if text := start("s4"); strings.Contains(text, "session_recover") {
 		t.Error("offered twice")
+	}
+
+	// A session opened for a task (session start) is not offered another's: s5 died,
+	// and the launched session s6 says nothing of it; the next session does.
+	start("s5")
+	launched(t, cfgDir, "abcdef12", "task-website", work)
+	if text := start("abcdef12-0000-4000-8000-000000000000"); strings.Contains(text, "session_recover") {
+		t.Errorf("a task's session was offered another session to recover:\n%s", text)
+	}
+	if text := start("s7"); !strings.Contains(text, "session_recover") {
+		t.Errorf("the offer was lost after the task's session:\n%s", text)
+	}
+}
+
+// launched writes the launcher's record of a session opened for task.
+func launched(t *testing.T, cfgDir, id, task, folder string) {
+	t.Helper()
+	dir := filepath.Join(cfgDir, state.Dir, "sessions")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	data, _ := json.Marshal(map[string]string{"id": id, "task": task, "folder": folder})
+	if err := os.WriteFile(filepath.Join(dir, task+".json"), data, 0o600); err != nil {
+		t.Fatal(err)
 	}
 }
 

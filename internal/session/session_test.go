@@ -229,6 +229,21 @@ func TestContextDueAndReview(t *testing.T) {
 		t.Errorf("a reminder 10 days ahead is mentioned:\n%s", text)
 	}
 
+	// A session opened for the task hears only that task's dates: not the inbox's, not
+	// the weekly review. One opened for another task hears no dates at all.
+	text = ContextFor(c, s, "", task.Header.ID)
+	if !strings.Contains(text, "renewed? ["+task.Header.ID+"]") || !strings.Contains(text, "opened for task "+task.Header.ID) {
+		t.Errorf("the task's session lacks its own date:\n%s", text)
+	}
+	for _, not := range []string{"call the insurance", "weekly review is due"} {
+		if strings.Contains(text, not) {
+			t.Errorf("the task's session hears %q:\n%s", not, text)
+		}
+	}
+	if text := PartFor(c, s, "", "task-other", 1); strings.Contains(text, "## Due") || strings.Contains(text, "weekly review is due") {
+		t.Errorf("another task's session hears this one's dates:\n%s", text)
+	}
+
 	// A blank profile means the first session: the interview, nothing else.
 	c2, s2 := space(t, "en")
 	if text := Context(c2, s2); strings.Contains(text, "## Due") || strings.Contains(text, "weekly review is due") {

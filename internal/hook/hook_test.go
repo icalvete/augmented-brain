@@ -363,6 +363,20 @@ func TestSessionStartOwnOldServer(t *testing.T) {
 	if strings.Contains(text, "This session itself") || !strings.Contains(text, "1 other Claude sessions") {
 		t.Errorf("no CLAUDE_PID: %s", text)
 	}
+
+	// A session opened for a task hears of its own old server, never of the others.
+	launched(t, cfgDir, "abcdef12", "task-website", work)
+	ss := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStartPart(in, out, cfgDir, 1) }
+	task := func(claudePID string) string {
+		Getenv = func(k string) string { return map[string]string{"CLAUDE_PID": claudePID}[k] }
+		return run(t, ss, map[string]any{"cwd": work, "session_id": "abcdef12-0000-4000-8000-000000000000"})["additionalContext"].(string)
+	}
+	if text := task("999"); strings.Contains(text, "earlier augmented brain") {
+		t.Errorf("a task's session hears of other sessions to restart:\n%s", text)
+	}
+	if text := task("200"); !strings.Contains(text, "This session itself still runs an earlier augmented brain") {
+		t.Errorf("a task's session does not hear of its own old server:\n%s", text)
+	}
 }
 
 // The guard's reasons come in the user's language: the configuration's, and the
