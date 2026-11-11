@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.17.3-beta
+
+Released 2026-11-11.
 
 - **A task's session hears only its task.** A session opened with `session start` got
   every notice of the space at its start: other tasks' dates, the weekly review,

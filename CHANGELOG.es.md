@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.17.3-beta
+
+Publicada el 2026-11-11.
 
 - **La sesión de una tarea solo oye su tarea.** Una sesión abierta con `session start`
   recibía al empezar todos los avisos del espacio: fechas de otras tareas, la revisión
