@@ -39,7 +39,10 @@ const MetaDir = ".augmented-brain"
 // GitTimeout, and over https git gives up on a transfer slower than 1 KB a second for a
 // minute. A backup left hanging held the backup lock, so every later backup (the one at
 // the end of each session, the one before an update) waited behind it for good.
-func runGit(args ...string) (string, error) {
+func runGit(args ...string) (string, error) { return runGitEnv(nil, args...) }
+
+// runGitEnv is runGit with more variables in git's environment.
+func runGitEnv(env []string, args ...string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GitTimeout)
 	defer cancel()
 	args = append([]string{"-c", "http.lowSpeedLimit=1000", "-c", "http.lowSpeedTime=60"}, args...)
@@ -51,6 +54,7 @@ func runGit(args ...string) (string, error) {
 	// never take a folder above the temporary one for a repository.
 	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0", "GIT_ALLOW_PROTOCOL=file:git:https:ssh",
 		"GIT_CEILING_DIRECTORIES="+os.TempDir())
+	cmd.Env = append(cmd.Env, env...)
 	out, err := cmd.CombinedOutput()
 	if ctx.Err() == context.DeadlineExceeded {
 		err = fmt.Errorf("stopped after %s without an answer: is the network or the repository down? (%v)", GitTimeout, err)

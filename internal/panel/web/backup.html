@@ -9,7 +9,7 @@
   <h2>{{tf "today.space" .Name}}</h2>
   {{if .URL}}
   <ul class="health">
-    {{if .Started}}<li class="good" role="status">{{t "backup.started"}}</li>{{end}}
+    {{if .WentBack}}<li class="good" role="status">{{tf "backup.back.done" .WentBack}}</li>{{else if .Started}}<li class="good" role="status">{{t "backup.started"}}</li>{{end}}
     {{if .Known}}<li class="{{if .OK}}good{{else}}bad{{end}}">{{if .OK}}{{tf "space.backup.ok" .Time}}{{else}}{{tf "space.backup.failed" .Time .Error}}{{end}}</li>
     {{else}}<li class="warn">{{t "space.backup.never"}}</li>{{end}}
     {{if .Warning}}<li class="warn sub">{{.Warning}}</li>{{end}}
@@ -17,7 +17,14 @@
     {{if .Profile}}<li class="sub">{{t "backup.profile"}}</li>{{end}}
   </ul>
   {{if .Copies}}<h3>{{t "backup.copies"}}</h3>
-  <ul class="plain">{{range .Copies}}<li>{{.When}} · {{tf "backup.from" .What}}</li>{{end}}</ul>
+  <ul class="cards">{{range .Copies}}<li class="card">
+    <div class="title">{{.When}}</div>
+    <div class="meta">{{tf "backup.from" .What}}{{if .Back}} · {{tf "backup.wentback" .Back}}{{end}}</div>
+    <details class="said"><summary>{{t "backup.what"}}</summary>
+      {{if .Changes.Files}}{{template "changes" .Changes}}{{else}}<p class="hint">{{t "backup.nochange"}}</p>{{end}}
+    </details>
+    <p><a href="{{$.Base}}/backup/back?s={{$sp}}&amp;c={{.Rev}}">{{t "backup.back"}}</a></p>
+  </li>{{end}}</ul>
   {{else if not .NoGit}}<p class="hint">{{t "backup.copies.none"}}</p>{{end}}
   {{if not $.D.Remote}}<form method="post" action="{{$.Base}}/backup/run" class="inline">
     <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}">
