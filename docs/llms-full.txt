@@ -2444,7 +2444,9 @@ folder, so Claude loads that space's notes and rules.
   ```
 
   The new session can take up to a few minutes to appear: Claude's side first lets the
-  old one expire.
+  old one expire. The watch does this by itself within a few minutes; if you restart
+  by hand, run `augmented-brain remote watch` first, so the sessions of your tasks
+  started from there keep running.
 - **Your Claude login expired.** `augmented-brain remote status` says so. Run `claude`
   once on the computer and sign in again.
 
@@ -2917,6 +2919,16 @@ watch renames Claude's record of it (`bridge-pointer.json` becomes
 restarts it again, so a new session starts, in about three minutes. The conversation of
 the archived session does not come back. What it does goes to the system journal
 (`journalctl --user -u augmented-brain-watch-remote`). It takes no options.
+
+On every look it also keeps your task sessions safe. Stopping a service stops everything
+started inside it, and a session of a task started from a remote session (with
+`augmented-brain session start`, or `claude --bg`) can start Claude's background service
+there, which runs every task session. So the watch moves out of each service whatever
+its server did not start itself (Claude's background service, its sessions, anything
+else a session left running) into a group of its own, `augmented-brain-kept-<number>`.
+`remote install` and `remote uninstall` do the same before they restart or stop a
+service; when it cannot be done, they stop and say so, and the watch does not restart
+that service.
 
 ## augmented-brain session
 

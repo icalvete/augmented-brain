@@ -351,6 +351,16 @@ restarts it again, so a new session starts, in about three minutes. The conversa
 the archived session does not come back. What it does goes to the system journal
 (`journalctl --user -u augmented-brain-watch-remote`). It takes no options.
 
+On every look it also keeps your task sessions safe. Stopping a service stops everything
+started inside it, and a session of a task started from a remote session (with
+`augmented-brain session start`, or `claude --bg`) can start Claude's background service
+there, which runs every task session. So the watch moves out of each service whatever
+its server did not start itself (Claude's background service, its sessions, anything
+else a session left running) into a group of its own, `augmented-brain-kept-<number>`.
+`remote install` and `remote uninstall` do the same before they restart or stop a
+service; when it cannot be done, they stop and say so, and the watch does not restart
+that service.
+
 ## augmented-brain session
 
 Opens a remote session of its own for one task, so that from another computer you can

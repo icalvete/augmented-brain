@@ -145,6 +145,15 @@ func (s System) Watch(c *config.Config, out io.Writer) error {
 	next := map[string]watchEntry{}
 	var errs []error
 	for _, unit := range units {
+		// On every look, not only before a restart: what a session left running (Claude's
+		// daemon above all) must not die with the service, whoever stops it (scope.go).
+		kept := true
+		if n, err := s.KeepOutside(unit); err != nil {
+			fmt.Fprintln(out, i18n.T(l, "remote.keep.failed", unit, err))
+			kept = false
+		} else if n > 0 {
+			fmt.Fprintln(out, i18n.T(l, "remote.keep.moved", unit, n))
+		}
 		pid, active := s.mainPID(unit)
 		e := seen[unit]
 		switch {
@@ -155,6 +164,9 @@ func (s System) Watch(c *config.Config, out io.Writer) error {
 			continue // healthy: forget what was done before
 		case e.PID != pid:
 			next[unit] = watchEntry{PID: pid, Last: e.Last}
+			continue
+		case !kept:
+			next[unit] = e // looked at again next time, still without a session
 			continue
 		}
 		if e.Last == "restart" {

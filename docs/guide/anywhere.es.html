@@ -107,7 +107,7 @@
   <h2 id="cuando-deja-de-responder">Cuando deja de responder</h2>
   <ul><li><strong>El ordenador está dormido.</strong> Un portátil que se duerme corta la conexión. Vuelve cuando se despierta.</li><li><strong>La sesión se archivó.</strong> Archivar una sesión en claude.ai, o dejarla mucho tiempo sin usar, puede terminarla en el lado de Claude mientras el servicio de tu ordenador sigue en marcha sin nada detrás. Vuelve a arrancar el servicio, en el ordenador:</li></ul>
   <p><code></code><code>bash systemctl --user restart augmented-brain-remote-personal </code><code></code></p>
-  <p>La sesión nueva puede tardar unos minutos en aparecer: el lado de Claude deja antes que caduque la vieja.</p>
+  <p>La sesión nueva puede tardar unos minutos en aparecer: el lado de Claude deja antes que caduque la vieja. El vigilante lo hace solo en unos minutos; si reinicias a mano, lanza antes <code>augmented-brain remote watch</code>, para que las sesiones de tus tareas abiertas desde allí sigan en marcha.</p>
   <ul><li><strong>Ha caducado tu sesión de Claude.</strong> <code>augmented-brain remote status</code> lo dice. Lanza <code>claude</code> una vez en el ordenador y vuelve a entrar.</li></ul>
   <p><code>augmented-brain remote status</code> dice cómo está cada puerta, y qué hacer.</p>
   <h2 id="una-sesión-vieja-con-el-mismo-nombre">Una sesión vieja con el mismo nombre</h2>

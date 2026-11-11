@@ -362,6 +362,16 @@ reinicia otra vez, así que empieza una sesión nueva, en unos tres minutos. La
 conversación de la sesión archivada no vuelve. Lo que hace queda en el registro del
 sistema (`journalctl --user -u augmented-brain-watch-remote`). No tiene opciones.
 
+En cada mirada también protege las sesiones de tus tareas. Parar un servicio para todo
+lo que se arrancó dentro de él, y la sesión de una tarea abierta desde una sesión remota
+(con `augmented-brain session start`, o `claude --bg`) puede arrancar allí el servicio en
+segundo plano de Claude, del que dependen todas las sesiones de tareas. Así que el
+vigilante saca de cada servicio lo que no arrancó su propio servidor (el servicio en
+segundo plano de Claude, sus sesiones, cualquier otra cosa que dejó en marcha una
+sesión) a un grupo propio, `augmented-brain-kept-<número>`. `remote install` y `remote
+uninstall` hacen lo mismo antes de reiniciar o parar un servicio; si no se puede, se
+detienen y lo dicen, y el vigilante no reinicia ese servicio.
+
 ## augmented-brain session
 
 Abre una sesión remota propia para una tarea, para que desde otro ordenador puedas

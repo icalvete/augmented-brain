@@ -1,5 +1,15 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Reiniciar el acceso remoto ya no para las sesiones de tus tareas.** La sesión de una
+  tarea abierta desde una sesión remota podía arrancar el servicio en segundo plano de
+  Claude dentro del servicio del acceso remoto, y reiniciar ese servicio (a mano, con
+  `remote install` o el vigilante) paraba con él todas las sesiones de tareas. Ahora
+  `session start` lo arranca en un grupo propio, y el vigilante, `remote install` y
+  `remote uninstall` sacan del servicio lo que no arrancó su servidor antes de
+  reiniciarlo o pararlo. Si no pueden, lo dicen y lo dejan en marcha. Solo en Linux.
+
 ## 0.17.3-beta
 
 Publicada el 2026-11-11.

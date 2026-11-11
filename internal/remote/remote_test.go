@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -43,6 +44,10 @@ type fake struct {
 	cfgDir      string
 	auth        string         // what claude auth status prints; "" says nothing
 	pids        map[string]int // unit -> main pid, for systemctl show (the watch)
+	// groups are the processes in each unit's control group (scope.go); busctl moves
+	// them out, unless stuck is set.
+	groups map[string][]int
+	stuck  bool
 }
 
 func newFake(t *testing.T) *fake {
@@ -160,6 +165,20 @@ func (f *fake) run(name string, args ...string) (string, error) {
 			return a + "\n", errors.New("exit status 3")
 		}
 		return a + "\n", nil
+	case name == "systemctl" && len(args) >= 4 && args[1] == "show" && args[2] == "--property=ControlGroup":
+		return "ControlGroup=/app.slice/" + args[3] + "\n", nil
+	case name == "busctl":
+		if f.stuck {
+			return "Access denied", errors.New("exit status 1")
+		}
+		moved := map[string]bool{}
+		for _, a := range args[slices.Index(args, "au")+2 : len(args)-1] {
+			moved[a] = true
+		}
+		for u, procs := range f.groups {
+			f.groups[u] = slices.DeleteFunc(procs, func(p int) bool { return moved[strconv.Itoa(p)] })
+		}
+		return "o \"/org/freedesktop/systemd1/job/1\"\n", nil
 	case name == "systemctl" && len(args) >= 4 && args[1] == "show":
 		state := f.active[args[3]]
 		if state == "" {

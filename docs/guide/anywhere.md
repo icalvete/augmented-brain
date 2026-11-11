@@ -52,7 +52,9 @@ folder, so Claude loads that space's notes and rules.
   ```
 
   The new session can take up to a few minutes to appear: Claude's side first lets the
-  old one expire.
+  old one expire. The watch does this by itself within a few minutes; if you restart
+  by hand, run `augmented-brain remote watch` first, so the sessions of your tasks
+  started from there keep running.
 - **Your Claude login expired.** `augmented-brain remote status` says so. Run `claude`
   once on the computer and sign in again.
 

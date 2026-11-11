@@ -93,6 +93,11 @@ type System struct {
 	Self string
 	// Children are the processes whose parent is pid (the watch); nil is none.
 	Children func(pid int) []int
+	// GroupProcs are the processes of a control group (scope.go); nil never looks.
+	GroupProcs func(group string) []int
+	// OwnScope runs session start and Claude's daemon in a scope of their own
+	// (systemd-run), so the daemon never lives inside a remote service (scope.go).
+	OwnScope bool
 }
 
 // NewSystem is the real system.
@@ -116,9 +121,15 @@ func NewSystem() (System, error) {
 		name = u.Username
 	}
 	self, _ := os.Executable()
-	s := System{Run: realRun, RunIn: realRunIn, StartDaemon: realStartDaemon, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
+	s := System{Run: realRun, RunIn: realRunIn, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
 		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude, ClaudeDir: claudeDir,
 		Home: home, Self: self, Children: procChildren}
+	if runtime.GOOS == "linux" {
+		s.GroupProcs = procGroup
+		s.OwnScope = hasOwnScope(exec.LookPath)
+	}
+	scope := s.OwnScope
+	s.StartDaemon = func(claude string) error { return realStartDaemon(claude, scope) }
 	switch runtime.GOOS {
 	case "darwin":
 		s.UnitDir = filepath.Join(home, "Library", "LaunchAgents")
@@ -153,8 +164,9 @@ func realRunIn(dir string, name string, args ...string) (string, error) {
 // so it exits on its own about a minute after its last client. Every session Claude
 // starts later comes from it and gets its environment, so it gets neither TaskEnv nor
 // AB_CONFIG_DIR (the folder of whoever closed a task, maybe a test's).
-func realStartDaemon(claude string) error {
-	cmd := exec.Command(claude, "daemon", "run", "--origin", "transient")
+func realStartDaemon(claude string, ownScope bool) error {
+	name, args := System{OwnScope: ownScope}.scoped(claude, "daemon", "run", "--origin", "transient")
+	cmd := exec.Command(name, args...)
 	for _, e := range os.Environ() {
 		if !strings.HasPrefix(e, TaskEnv+"=") && !strings.HasPrefix(e, "AB_CONFIG_DIR=") {
 			cmd.Env = append(cmd.Env, e)
@@ -352,6 +364,15 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 		return nil, errors.New(i18n.T(c.Language, "remote.nosystemd", err))
 	}
 	res := &InstallResult{Services: Services(c, set), Claude: claude}
+	// Before any unit is written: a unit written and not restarted would look current to
+	// the next install, which then would not restart it either.
+	units := make([]string, 0, len(res.Services))
+	for _, svc := range res.Services {
+		units = append(units, svc.Unit)
+	}
+	if err := s.keepAll(c, units); err != nil {
+		return nil, err
+	}
 	if err := os.MkdirAll(s.UnitDir, 0o755); err != nil {
 		return nil, err
 	}
@@ -404,6 +425,9 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 		}
 	}
 	for _, unit := range restart {
+		if _, err := s.KeepOutside(unit); err != nil {
+			return nil, errors.New(i18n.T(c.Language, "remote.keep.refused", unit, err))
+		}
 		if _, err := s.Run("systemctl", "--user", "restart", unit); err != nil {
 			return nil, errors.New(i18n.T(c.Language, "remote.systemctl", "restart "+unit, err))
 		}
@@ -466,6 +490,10 @@ func (s System) Uninstall(c *config.Config) ([]string, error) {
 	}
 	units, _ := s.installedUnits()
 	var removed []string
+	// Before anything changes: a refusal leaves everything as it was.
+	if err := s.keepAll(c, units); err != nil {
+		return removed, err
+	}
 	// The watch first: it would restart what is being stopped.
 	watched, err := s.removeWatch()
 	if err != nil {
@@ -475,6 +503,9 @@ func (s System) Uninstall(c *config.Config) ([]string, error) {
 		removed = append(removed, WatchName+".timer")
 	}
 	for _, unit := range units {
+		if _, err := s.KeepOutside(unit); err != nil {
+			return removed, errors.New(i18n.T(c.Language, "remote.keep.refused", unit, err))
+		}
 		if _, err := s.Run("systemctl", "--user", "disable", "--now", unit); err != nil {
 			// Not loaded is fine; still running is not: then the file stays.
 			if state, _ := s.Run("systemctl", "--user", "is-active", unit); strings.TrimSpace(state) == "active" {

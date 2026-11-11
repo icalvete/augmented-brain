@@ -107,7 +107,7 @@
   <h2 id="when-it-stops-answering">When it stops answering</h2>
   <ul><li><strong>The computer is asleep.</strong> A laptop that sleeps drops the connection. It comes back when it wakes up.</li><li><strong>The session was archived.</strong> Archiving a session in claude.ai, or leaving it unused for long, can end it on Claude's side while the service on your computer keeps running with nothing behind it. Start the service again, on the computer:</li></ul>
   <p><code></code><code>bash systemctl --user restart augmented-brain-remote-personal </code><code></code></p>
-  <p>The new session can take up to a few minutes to appear: Claude's side first lets the old one expire.</p>
+  <p>The new session can take up to a few minutes to appear: Claude's side first lets the old one expire. The watch does this by itself within a few minutes; if you restart by hand, run <code>augmented-brain remote watch</code> first, so the sessions of your tasks started from there keep running.</p>
   <ul><li><strong>Your Claude login expired.</strong> <code>augmented-brain remote status</code> says so. Run <code>claude</code> once on the computer and sign in again.</li></ul>
   <p><code>augmented-brain remote status</code> says how each door stands, and what to do.</p>
   <h2 id="an-old-session-with-the-same-name">An old session with the same name</h2>
