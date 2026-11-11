@@ -2,6 +2,13 @@
 
 ## Sin publicar
 
+- **La sesión de una tarea que no puede trabajar lo dice.** Con el login de Claude Code
+  caducado, `session start` abría la sesión igualmente: su primera respuesta era «Login
+  reached its time limit», y `session list` seguía llamándola activa. Ahora `session
+  start` comprueba el login antes de abrir nada, espera la primera respuesta (hasta un
+  minuto) y, si esa respuesta es un error, cierra la sesión y dice qué hacer, como
+  `claude auth login`. `session list` enseña como **fallida**, con el error, la sesión
+  cuya última respuesta falló.
 - **Cada sesión tiene su propia tarea activa.** El recordatorio de escribir en el diario,
   al final de una respuesta, nombraba la última tarea que había tocado cualquier sesión
   del espacio. Con dos ventanas en tareas distintas, a una se le pedía escribir en el

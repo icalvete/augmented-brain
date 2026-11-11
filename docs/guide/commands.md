@@ -373,6 +373,13 @@ under its main repository, so trusting either one is enough. And one task per fo
 two tasks in one folder would step on each other's changes, so a folder another task's
 session uses is refused; give it another with `--folder` (a git worktree, for example).
 
+It waits for the session's first answer, up to a minute, and returns as soon as it
+comes. A session that cannot work is not left behind: when Claude Code is not logged
+in, or its login has expired, nothing is opened, and when the first answer is an error
+(the login ran out, the service is overloaded), the session is closed. Either way the
+command says what happened and what to do, such as logging in again with `claude auth
+login`.
+
 The session closes with `session stop`, or when the computer restarts. Launched
 sessions are not brought back after a reboot: ask for them again.
 
@@ -410,7 +417,9 @@ and it goes away by itself. If Claude still cannot take the session out of its l
 
 Lists the task sessions open on this computer: the task, whether it runs, and its
 folder. **retired** means Claude stopped it after hours unused: it still shows in Claude
-Desktop and claude.ai, and comes back when you open it there.
+Desktop and claude.ai, and comes back when you open it there. **failed** means its last
+answer was an error, such as an expired login: it does nothing until someone writes to
+it. The line gives the error and what to do.
 
 ```bash
 augmented-brain session list

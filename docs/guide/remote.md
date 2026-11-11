@@ -144,6 +144,10 @@ with work not committed or not pushed stays, and `doctor` names it.
 - **Claude retires a session left unused for hours.** It stops running but stays in
   Claude Desktop and claude.ai, and comes back when you open it there. `session list`
   calls it retired; `session stop` and closing the task close it all the same.
+- **A session that cannot work is not left open.** `session start` checks first that
+  Claude Code is logged in, then waits for the first answer (up to a minute). If that
+  answer is an error, such as an expired login, it closes the session and says what to
+  do. A session whose answer fails later shows as failed in `session list`.
 
 ## Keep it safe
 
