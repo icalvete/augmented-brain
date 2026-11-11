@@ -14,6 +14,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/hostmem"
 	"github.com/icalvete/augmented-brain/internal/setup"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
@@ -326,6 +327,41 @@ func TestSessionStartOldServers(t *testing.T) {
 	}
 	if !strings.Contains(out.String(), "1 other Claude sessions on this machine still run an earlier augmented brain") {
 		t.Errorf("no word of the old session:\n%s", out.String())
+	}
+}
+
+// After /clear a session keeps its MCP server: when that server is an old one, the
+// start says so of this session (its parent is this session's Claude), apart from the
+// others. Where the hook does not know its Claude, it counts as another, as before.
+func TestSessionStartOwnOldServer(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	sd := filepath.Join(cfgDir, state.ServersDir)
+	if err := os.MkdirAll(sd, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	server := os.Getppid() // a live process, as the server must be
+	if err := os.WriteFile(filepath.Join(sd, strconv.Itoa(server)), []byte("0.5.10-alpha\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	useProcs(t, &fakeProcs{procs: map[int]hostmem.Proc{server: {PID: server, PPID: 200, Name: "augmented-brain"}}}, 300)
+	old := Getenv
+	t.Cleanup(func() { Getenv = old })
+	start := func(claudePID string) string {
+		Getenv = func(k string) string { return map[string]string{"CLAUDE_PID": claudePID}[k] }
+		ss := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStartPart(in, out, cfgDir, 1) }
+		return run(t, ss, map[string]any{"cwd": work})["additionalContext"].(string)
+	}
+	text := start("200")
+	if !strings.Contains(text, "This session itself still runs an earlier augmented brain") || strings.Contains(text, "other Claude sessions") {
+		t.Errorf("its own old server, not told as its own:\n%s", text)
+	}
+	text = start("999")
+	if strings.Contains(text, "This session itself") || !strings.Contains(text, "1 other Claude sessions") {
+		t.Errorf("another session's old server, told as its own:\n%s", text)
+	}
+	text = start("")
+	if strings.Contains(text, "This session itself") || !strings.Contains(text, "1 other Claude sessions") {
+		t.Errorf("no CLAUDE_PID: %s", text)
 	}
 }
 
