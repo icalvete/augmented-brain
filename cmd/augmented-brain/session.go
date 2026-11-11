@@ -155,6 +155,18 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		case errors.Is(err, remote.ErrRunning):
 			fmt.Fprintln(errOut, i18n.T(l, "session.running", id, id))
 			return 1
+		case errors.Is(err, remote.ErrLoggedOut):
+			fmt.Fprintln(errOut, i18n.T(l, "session.loggedout", id))
+			return 1
+		}
+		var failed *remote.FirstTurnFailed
+		if errors.As(err, &failed) {
+			key := "session.firstturn"
+			if failed.Login {
+				key = "session.firstturn.login"
+			}
+			fmt.Fprintln(errOut, i18n.T(l, key, id, failed.Cause, id))
+			return 1
 		}
 		return sessionErr(l, err, errOut)
 	}
@@ -282,8 +294,15 @@ func sessionList(c *config.Config, sys remote.System, out, errOut io.Writer) int
 			task = x.Unit
 		}
 		state := x.Active
-		if state == remote.Retired {
+		switch state {
+		case remote.Retired:
 			state = i18n.T(c.Language, "session.list.retired")
+		case remote.Failed:
+			key := "session.list.failed"
+			if remote.LoginProblem(x.Problem) {
+				key = "session.list.failed.login"
+			}
+			state = i18n.T(c.Language, key, x.Problem, task)
 		}
 		fmt.Fprintln(out, i18n.T(c.Language, "session.list.line", task, state, tilde(x.Folder)))
 	}

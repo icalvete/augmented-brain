@@ -388,3 +388,150 @@ func TestStopWakesDaemon(t *testing.T) {
 		t.Errorf("a daemon that does not start: %v, record %v", err, HasLaunch(c.Dir, "task-site"))
 	}
 }
+
+// Lines of a transcript as Claude Code 2.1.322 writes them (11-nov).
+const (
+	tPrompt  = `{"type":"user","message":{"role":"user","content":"Start with your task."}}` + "\n"
+	tLogin   = `{"type":"assistant","message":{"model":"<synthetic>","role":"assistant","content":[{"type":"text","text":"Login reached its time limit · Please run /login"}]},"error":"authentication_failed","isApiErrorMessage":true}` + "\n"
+	tAnswer  = `{"type":"assistant","message":{"model":"claude-opus-5-5","role":"assistant","content":[{"type":"text","text":"Reading the task."}]}}` + "\n"
+	tOverrun = `{"type":"assistant","message":{"model":"<synthetic>","role":"assistant","content":[{"type":"text","text":"API Error: 529 Overloaded"}]},"error":"unknown","isApiErrorMessage":true}` + "\n"
+)
+
+// With no login, or an expired one, nothing is launched: the session would only fail.
+// When claude auth status says nothing readable, the launch goes ahead.
+func TestStartNeedsLogin(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	l := Launch{Task: "task-site", Name: "x", Folder: repo}
+	for _, out := range []string{`{"loggedIn": false}`, `{"loggedIn": true, "loginExpiresAt": "2020-01-01T00:00:00.000Z"}`} {
+		f.auth = out
+		if err := f.sys.Start(c, set, l, "go"); !errors.Is(err, ErrLoggedOut) {
+			t.Fatalf("%s: %v", out, err)
+		}
+	}
+	if len(f.ranIn) != 0 {
+		t.Fatalf("launched with no login: %v", f.ranIn)
+	}
+	f.auth = `{"loggedIn": true, "loginExpiresAt": "2999-01-01T00:00:00.000Z"}`
+	if err := f.sys.Start(c, set, l, "go"); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.sys.Stop(c.Dir, "task-site"); err != nil {
+		t.Fatal(err)
+	}
+	f.auth = "Not a JSON answer"
+	if err := f.sys.Start(c, set, l, "go"); err != nil {
+		t.Fatalf("an unreadable auth status: %v", err)
+	}
+}
+
+// A session whose first turn fails (its login expired, as on 11-nov) is reported with
+// Claude's words, stopped, taken out of Claude's lists, and leaves no record.
+func TestStartFirstTurnFails(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	f.sys.RunIn = func(string, string, ...string) (string, error) {
+		f.live["ab12cd34"] = true
+		f.transcript("ab12cd34", tPrompt+tLogin)
+		return f.bgOut, nil
+	}
+	err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go")
+	var failed *FirstTurnFailed
+	if !errors.As(err, &failed) || !failed.Login || failed.Cause != "Login reached its time limit · Please run /login" {
+		t.Fatalf("got %v", err)
+	}
+	for _, want := range []string{"claude stop ab12cd34", "claude rm ab12cd34"} {
+		if !slices.ContainsFunc(f.calls, func(c string) bool { return strings.HasSuffix(c, want) }) {
+			t.Errorf("no %q: %v", want, f.calls)
+		}
+	}
+	if got, _ := f.sys.Launches(c.Dir); len(got) != 0 {
+		t.Errorf("a failed first turn left %+v", got)
+	}
+	// Another API error is not about the login.
+	f.sys.RunIn = func(string, string, ...string) (string, error) {
+		f.live["ab12cd34"] = true
+		f.transcript("ab12cd34", tPrompt+tOverrun)
+		return f.bgOut, nil
+	}
+	err = f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go")
+	if !errors.As(err, &failed) || failed.Login || failed.Cause != "API Error: 529 Overloaded" {
+		t.Fatalf("overloaded: %v", err)
+	}
+}
+
+// Start waits for the first answer, and returns as soon as it comes; a session that
+// does not answer within FirstTurnWait is left running.
+func TestStartWaitsForFirstAnswer(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	sleeps := 0
+	f.sys.Sleep = func(time.Duration) {
+		sleeps++
+		if sleeps == 12 {
+			f.transcript("ab12cd34", tPrompt+tAnswer)
+		}
+	}
+	f.sys.RunIn = func(string, string, ...string) (string, error) {
+		f.live["ab12cd34"] = true
+		f.transcript("ab12cd34", tPrompt)
+		return f.bgOut, nil
+	}
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	if sleeps != 12 {
+		t.Errorf("waited %d seconds, want 12", sleeps)
+	}
+	if err := f.sys.Stop(c.Dir, "task-site"); err != nil {
+		t.Fatal(err)
+	}
+	sleeps = -1000 // it never answers
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	if got := sleeps + 1000; got != int(FirstTurnWait/time.Second) {
+		t.Errorf("waited %d seconds, want %d", got, int(FirstTurnWait/time.Second))
+	}
+	if got, _ := f.sys.Launches(c.Dir); len(got) != 1 || got[0].Active != "active" {
+		t.Errorf("a slow session: %+v", got)
+	}
+}
+
+// A session whose last turn ended in an API error is listed as failed, with Claude's
+// words; it still holds its folder against another task, and its own task can start
+// again, which stops it first.
+func TestLaunchesFailed(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	f.transcript("ab12cd34", tPrompt+tAnswer)
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	f.transcript("ab12cd34", tPrompt+tAnswer+tPrompt+tLogin)
+	got, err := f.sys.Launches(c.Dir)
+	if err != nil || len(got) != 1 || got[0].Active != Failed || got[0].Problem != "Login reached its time limit · Please run /login" {
+		t.Fatalf("launches: %+v %v", got, err)
+	}
+	if err := f.sys.Start(c, set, Launch{Task: "task-other", Name: "y", Folder: repo}, "go"); !errors.Is(err, ErrServed) {
+		t.Fatalf("another task in its folder: %v", err)
+	}
+	f.bgOut = "backgrounded · ef56ab78 · x\n"
+	f.transcript("ef56ab78", tPrompt+tAnswer)
+	f.calls = nil
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatalf("starting its task again: %v", err)
+	}
+	for _, want := range []string{"claude stop ab12cd34", "claude rm ab12cd34"} {
+		if !slices.ContainsFunc(f.calls, func(c string) bool { return strings.HasSuffix(c, want) }) {
+			t.Errorf("no %q: %v", want, f.calls)
+		}
+	}
+	if got, _ := f.sys.Launches(c.Dir); len(got) != 1 || got[0].Unit != "ef56ab78" || got[0].Active != "active" {
+		t.Errorf("after starting again: %+v", got)
+	}
+}

@@ -75,6 +75,10 @@ type System struct {
 	// ClaudeJSON is Claude Code's own file, read (never written) to see which folders
 	// the user trusts.
 	ClaudeJSON string
+	// ClaudeDir is Claude Code's folder ($CLAUDE_CONFIG_DIR, or ~/.claude): its
+	// sessions' transcripts are under projects/, read (never written) to see how a
+	// launched session's turn ended.
+	ClaudeDir string
 	// Sleep waits between looks at a launched session; nil is time.Sleep.
 	Sleep func(time.Duration)
 	// StartDaemon starts Claude's daemon in the background and returns at once; nil
@@ -99,8 +103,10 @@ func NewSystem() (System, error) {
 		conf = filepath.Join(home, ".config")
 	}
 	claude := filepath.Join(home, ".claude.json")
+	claudeDir := filepath.Join(home, ".claude")
 	if d := os.Getenv("CLAUDE_CONFIG_DIR"); d != "" {
 		claude = filepath.Join(d, ".claude.json")
+		claudeDir = d
 	}
 	name := os.Getenv("USER")
 	if u, err := user.Current(); err == nil {
@@ -108,7 +114,7 @@ func NewSystem() (System, error) {
 	}
 	self, _ := os.Executable()
 	s := System{Run: realRun, RunIn: realRunIn, StartDaemon: realStartDaemon, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
-		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude,
+		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude, ClaudeDir: claudeDir,
 		Home: home, Self: self}
 	switch runtime.GOOS {
 	case "darwin":

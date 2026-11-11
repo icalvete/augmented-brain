@@ -74,6 +74,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | `task_worktree`, and closing removes the task's worktrees (made, noted, with work, in use) | `TestTaskWorktreeTool`; `internal/remote` `TestNotedWorktrees` |
 | Closing a task whose own session runs | `TestCloseStopsTheTaskSession`; `internal/remote` `TestStopWhenIdle`; tried by hand on 10-nov |
 | A session Claude retired (no pid), Claude's daemon stopped, a session waiting for a permission, `stop` with nothing to close | `TestCloseStopsTheTaskSession`; `internal/remote` `TestRetiredSession`, `TestStopWakesDaemon`, `TestWaitingForPermissionIsBusy`, `TestStopEarlierUnit`; `cmd` `TestSessionStopSaysWhatHappened`; `claude agents` outputs and the daemon measured by hand on 11-nov (2.1.322) |
+| A session that cannot work: no login or an expired one, a first answer that is an API error (as Claude Code writes it when the login ran out, measured on 11-nov, 2.1.322), a slow first answer, a session whose last answer failed (`list` says failed) | `internal/state` `TestLastAnswer`; `internal/remote` `TestStartNeedsLogin`, `TestStartFirstTurnFails`, `TestStartWaitsForFirstAnswer`, `TestLaunchesFailed`; `cmd` `TestSessionListFailed` |
 | Every tool and parameter documented | `TestToolsDocumented` |
 
 ## The panel

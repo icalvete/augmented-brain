@@ -177,8 +177,9 @@ func (s System) CloseTaskWorktree(cfgDir, task string) (folder string, removed b
 	return RemoveTaskWorktree(cfgDir, task)
 }
 
-// runningTasks are the tasks whose launched session is up, or retired by Claude (it
-// comes back in its folder when opened again); ok is false when that cannot be known.
+// runningTasks are the tasks whose launched session is up (failed included: it works
+// again once someone writes to it), or retired by Claude (it comes back in its folder
+// when opened again); ok is false when that cannot be known.
 func (s System) runningTasks(cfgDir string) (map[string]bool, bool) {
 	launched, err := s.Launches(cfgDir)
 	if err != nil {
@@ -186,7 +187,7 @@ func (s System) runningTasks(cfgDir string) (map[string]bool, bool) {
 	}
 	running := map[string]bool{}
 	for _, x := range launched {
-		if x.Active == "active" || x.Active == Retired {
+		if x.Active == "active" || x.Active == Failed || x.Active == Retired {
 			running[x.Task] = true
 		}
 	}
