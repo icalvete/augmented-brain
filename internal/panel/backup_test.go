@@ -4,6 +4,7 @@ import (
 	"html"
 	"net/http"
 	"net/url"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -120,5 +121,98 @@ func TestBackupSetupWithoutGitHub(t *testing.T) {
 	}
 	if w := s.post(t, "/backup/run", url.Values{"s": {"work"}}); w.Code != http.StatusBadRequest {
 		t.Errorf("a copy of a space with no backup: %d", w.Code)
+	}
+}
+
+// Each copy says what it changed; going back to one shows first what would change, asks
+// for the box and the space's name, puts the notes back and starts a copy. Through the
+// network the page only shows.
+func TestBackupGoBack(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	var started []string
+	s.backupNow = func(space string) error { started = append(started, space); return nil }
+	own := filepath.Join(t.TempDir(), "own.git")
+	if out, err := exec.Command("git", "init", "-q", "--bare", "-b", "main", own).CombinedOutput(); err != nil {
+		t.Fatalf("git init: %v %s", err, out)
+	}
+	c, _ := config.Load(cfg)
+	sp := c.Spaces["work"]
+	if err := backup.Setup(c, sp, own); err != nil {
+		t.Fatal(err)
+	}
+	note := filepath.Join(sp.Memory, "knowledge", "lesson-x.md")
+	write := func(body string) {
+		t.Helper()
+		if err := os.WriteFile(note, []byte("---\nid: lesson-x\ntype: lesson\ntitle: X\n---\n"+body+"\n"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := backup.Run(c, sp, "laptop"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("Old words.")
+	write("New words.")
+	cs, _ := backup.Copies(sp.Memory, 5)
+	if len(cs) < 2 {
+		t.Fatalf("copies: %+v", cs)
+	}
+	old := cs[1].Rev
+
+	page := html.UnescapeString(s.get(t, "/backup?s=work").Body.String())
+	for _, want := range []string{"What it changed", "+ New words.", "- Old words.", "knowledge/lesson-x.md", "/backup/back?s=work&c=" + old} {
+		if !strings.Contains(page, want) {
+			t.Errorf("the page lacks %q", want)
+		}
+	}
+	page = html.UnescapeString(s.get(t, "/backup/back?s=work&c="+old).Body.String())
+	for _, want := range []string{"What would change in your notes", "- New words.", "+ Old words.", "Type the name of the space"} {
+		if !strings.Contains(page, want) {
+			t.Errorf("the page before going back lacks %q", want)
+		}
+	}
+	if w := s.get(t, "/backup/back?s=work&c=0123456789abcdef"); w.Code != http.StatusNotFound {
+		t.Errorf("a copy that is not one: %d", w.Code)
+	}
+
+	for _, f := range []url.Values{
+		{"s": {"work"}, "c": {old}, "name": {"work"}},                              // no box
+		{"s": {"work"}, "c": {old}, "confirm": {"yes"}, "name": {"home"}},          // wrong name
+		{"s": {"work"}, "c": {"deadbeef00"}, "confirm": {"yes"}, "name": {"work"}}, // not a copy
+	} {
+		if w := s.post(t, "/backup/back", f); w.Code != http.StatusBadRequest {
+			t.Errorf("going back with %v: %d", f, w.Code)
+		}
+	}
+	if b, _ := os.ReadFile(note); !strings.Contains(string(b), "New words.") || len(started) != 0 {
+		t.Fatalf("a refused going back changed something: %q %v", b, started)
+	}
+
+	// Through the network: shown, no form, refused.
+	const rhost, owner = "box.example.ts.net:8443", "lucia@example.com"
+	s.remote.Store(&Remote{Host: rhost, Owner: owner})
+	w := s.do(t, req{path: s.base() + "/backup/back?s=work&c=" + old, host: rhost, owner: owner})
+	if w.Code != http.StatusOK || strings.Contains(w.Body.String(), `name="confirm"`) || !strings.Contains(w.Body.String(), "from another device") {
+		t.Errorf("remote page: %d", w.Code)
+	}
+	form := url.Values{"s": {"work"}, "c": {old}, "confirm": {"yes"}, "name": {"work"}, "csrf": {s.csrf}}
+	if w := s.do(t, req{method: http.MethodPost, path: s.base() + "/backup/back", host: rhost, owner: owner, origin: "https://" + rhost, form: form}); w.Code != http.StatusBadRequest {
+		t.Errorf("remote going back: %d", w.Code)
+	}
+	s.remote.Store(nil)
+
+	w = s.post(t, "/backup/back", url.Values{"s": {"work"}, "c": {old}, "confirm": {"yes"}, "name": {"work"}})
+	if w.Code != http.StatusSeeOther || !strings.Contains(w.Header().Get("Location"), "back=") {
+		t.Fatalf("going back: %d %s", w.Code, w.Body)
+	}
+	if b, _ := os.ReadFile(note); !strings.Contains(string(b), "Old words.") {
+		t.Errorf("the note did not go back: %q", b)
+	}
+	if len(started) != 1 || started[0] != "work" {
+		t.Errorf("no copy started after going back: %v", started)
+	}
+	loc := w.Header().Get("Location")
+	page = html.UnescapeString(s.get(t, strings.TrimPrefix(loc, s.base())).Body.String())
+	if !strings.Contains(page, "Your notes are back as in the copy of") || !strings.Contains(page, "went back to the copy of") {
+		t.Error("the page does not say the notes went back")
 	}
 }

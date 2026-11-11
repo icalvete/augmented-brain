@@ -94,6 +94,82 @@ var panelMessages = map[string]msg{
 		en: "This space already backs up to %s. To move it somewhere else, run `augmented-brain backup setup <address>` in a terminal, in a folder of the space.",
 		es: "Este espacio ya tiene su copia en %s. Para llevarla a otro sitio, ejecuta `augmented-brain backup setup <dirección>` en una terminal, en una carpeta del espacio.",
 	},
+	"panel.backup.what": {
+		en: "What it changed",
+		es: "Qué cambió",
+	},
+	"panel.backup.nochange": {
+		en: "No note changed in this copy.",
+		es: "En esta copia no cambió ninguna nota.",
+	},
+	"panel.backup.more": {
+		en: "And %d more notes.",
+		es: "Y %d notas más.",
+	},
+	"panel.backup.binary": {
+		en: "(not text: no lines to show)",
+		es: "(no es texto: no hay líneas que enseñar)",
+	},
+	"panel.backup.wentback": {
+		en: "went back to the copy of %s",
+		es: "volvió a la copia del %s",
+	},
+	"panel.backup.back": {
+		en: "Go back to this copy",
+		es: "Volver a esta copia",
+	},
+	"panel.backup.back.hint": {
+		en: "Your notes in space %s become again what they were in the copy of %s. Before that, what you have now is kept as a new copy: to undo, come back here and go back to that one. Your configuration does not change.",
+		es: "Tus notas del espacio %s vuelven a ser las de la copia del %s. Antes, lo que tienes ahora se guarda como una copia nueva: para deshacerlo, vuelve aquí y vuelve a esa. Tu configuración no cambia.",
+	},
+	"panel.backup.back.changes": {
+		en: "What would change in your notes",
+		es: "Qué cambiaría en tus notas",
+	},
+	"panel.backup.back.same": {
+		en: "Your notes are already as in this copy: nothing would change.",
+		es: "Tus notas ya están como en esta copia: no cambiaría nada.",
+	},
+	"panel.backup.back.confirm": {
+		en: "I have looked at what changes, go back to this copy",
+		es: "He mirado qué cambia, volver a esta copia",
+	},
+	"panel.backup.back.type": {
+		en: "Type the name of the space to confirm",
+		es: "Escribe el nombre del espacio para confirmar",
+	},
+	"panel.backup.back.name": {
+		en: "To confirm, type the name of the space: %s.",
+		es: "Para confirmar, escribe el nombre del espacio: %s.",
+	},
+	"panel.backup.back.remote": {
+		en: "You are on the panel from another device: here you can see what would change; going back is only from this computer's panel.",
+		es: "Estás en el panel desde otro dispositivo: aquí puedes ver qué cambiaría; volver solo se puede desde el panel de este ordenador.",
+	},
+	"panel.backup.back.localonly": {
+		en: "Going back to a copy is only from the panel on this computer.",
+		es: "Volver a una copia solo se puede desde el panel de este ordenador.",
+	},
+	"panel.backup.back.gone": {
+		en: "That copy is not among the copies of this space any more. Open the Backup page again.",
+		es: "Esa copia ya no está entre las copias de este espacio. Abre otra vez la página Copia de seguridad.",
+	},
+	"panel.backup.back.meanwhile": {
+		en: "Your notes changed while going back was getting ready (your assistant may be writing). Nothing changed: try again in a moment.",
+		es: "Tus notas cambiaron mientras se preparaba la vuelta (puede que tu asistente esté escribiendo). No ha cambiado nada: vuelve a probar dentro de un momento.",
+	},
+	"panel.backup.back.notvalid": {
+		en: "That copy holds notes this program cannot read (%s). Nothing changed.",
+		es: "Esa copia tiene notas que este programa no puede leer (%s). No ha cambiado nada.",
+	},
+	"panel.backup.back.secrets": {
+		en: "What you have now could not be kept as a copy first, because these files hold secrets: %s. Remove them and try again. Nothing changed.",
+		es: "Lo que tienes ahora no se pudo guardar antes como copia, porque estos ficheros tienen secretos: %s. Quítalos y vuelve a probar. No ha cambiado nada.",
+	},
+	"panel.backup.back.done": {
+		en: "Your notes are back as in the copy of %s. What you had is kept as the copy before; the result is being sent to the backup.",
+		es: "Tus notas vuelven a estar como en la copia del %s. Lo que tenías queda guardado en la copia anterior; el resultado se está enviando a la copia de seguridad.",
+	},
 	"panel.backup.err.gh": {
 		en: "The GitHub command line (gh) is not installed, or not logged in. Install it from https://cli.github.com, run `gh auth login` in a terminal, and try again. Or ask your assistant: it guides you step by step.",
 		es: "La línea de comandos de GitHub (gh) no está instalada, o no está conectada. Instálala desde https://cli.github.com, ejecuta `gh auth login` en una terminal y vuelve a probar. O pídeselo a tu asistente: te guía paso a paso.",
