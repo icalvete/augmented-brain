@@ -11,13 +11,13 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: The tag, VERSION and CHANGELOG.md agree
         run: |
           v="${GITHUB_REF_NAME#v}"
           test "$(cat VERSION)" = "$v" || { echo "VERSION says $(cat VERSION), the tag $v"; exit 1; }
           grep -qx "## $v" CHANGELOG.md || { echo "CHANGELOG.md has no section ## $v"; exit 1; }
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: Test
