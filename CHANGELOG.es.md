@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.17.4-beta
+
+Publicada el 2026-11-11.
 
 - **Reiniciar el acceso remoto ya no para las sesiones de tus tareas.** La sesión de una
   tarea abierta desde una sesión remota podía arrancar el servicio en segundo plano de
