@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **See what each backup copy changed, and go back to one.** On the panel's Backup page,
+  each copy shows the notes it added, changed and removed, with their lines. **Go back
+  to this copy** shows first what would change, asks for a box and the space's name,
+  and keeps what you had as a copy before, so it can be undone. Only from this
+  computer's panel; from another device the page only shows. Fixing a broken or deleted
+  note no longer needs git.
+
 ## 0.17.1-beta
 
 Released 2026-11-10.

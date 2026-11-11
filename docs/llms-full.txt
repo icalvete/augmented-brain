@@ -1627,6 +1627,10 @@ survive if this computer breaks. A space with no backup says so in red.
   with the date and the computer that made them, and **Back up now**. The copy runs in
   the background and takes a few seconds; reload the page to see how it went. It also
   runs by itself every time a session ends.
+- Each copy shows **What it changed**, note by note, with the lines. **Go back to this
+  copy** shows first what would change in your notes now, and asks for a box and the
+  space's name. What you had is kept as a copy first, so it can be undone. See [Go back
+  to a copy](https://icalvete.github.io/augmented-brain/guide/backup.html#go-back-to-a-copy).
 - For a space with none: **Set it up on my GitHub** makes a private repository called
   `augmented-brain-<space>` in your GitHub account and the first copy. It needs the
   GitHub command line, `gh`, installed and logged in; the page says how if it is not.
@@ -1973,6 +1977,23 @@ To turn the automatic backup off, set `AB_NO_AUTO_BACKUP=1` in your environment.
 Restore the default space (`personal`) too: your profile, your shared notes and the list
 of your secrets' names come with it.
 
+## Go back to a copy
+
+A note got broken, or deleted by mistake? Open the panel's **Backup** page. Each copy
+shows **What it changed**: the notes it added, changed and removed, with their lines.
+
+To have your notes as they were in one copy, use **Go back to this copy**:
+
+1. A page shows what would change in your notes as they are now, note by note. Notes
+   that no copy holds yet show up too, as removed.
+2. Tick the box and type the space's name.
+3. What you have now is kept first, as a new copy. Then your notes become those of the
+   copy you picked, and that is kept as a copy too. The next backup sends it.
+
+To undo it, go back to the copy made just before. Going back touches the notes of that
+space only, never your configuration (that is [Versions](https://icalvete.github.io/augmented-brain/guide/config-history.html)). It is done
+from this computer's panel only: from another device the page only shows.
+
 ## What a restore does not bring
 
 Some things are left out on purpose:
@@ -1993,8 +2014,9 @@ Some things are left out on purpose:
 
 - **Several machines, one brain.** Before pushing, the backup fetches what your other
   machine did and merges it.
-- **Full history.** Every backup is a git commit, with the machine and the time. With
-  `git log` you see what changed, and you can go back to any day.
+- **Full history.** Every backup is a git commit, with the machine and the time. The
+  panel shows what each one changed and goes back to it; with `git log` you see all of
+  them.
 - **Your place.** GitHub, GitLab or your own server: you pick the repository. augmented
   brain has no cloud.
 - **One repository per space.** Work can go to your company's git, and personal to
