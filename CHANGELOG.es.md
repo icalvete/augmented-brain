@@ -19,7 +19,7 @@
   se archivaba la sesión de un servicio de acceso remoto (en claude.ai, por ejemplo), el
   servicio seguía en marcha sin nadie detrás, y nada lo recuperaba. En Linux, un
   vigilante mira ahora cada dos minutos y lo reinicia, con una sesión nueva del mismo
-  nombre en unos cinco minutos. Vuelve a lanzar `augmented-brain remote install` para
+  nombre en unos diez minutos. Vuelve a lanzar `augmented-brain remote install` para
   tenerlo: `remote status` y `doctor` lo dicen.
 
 ## 0.17.2-beta

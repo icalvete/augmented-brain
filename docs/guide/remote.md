@@ -170,7 +170,7 @@ can work on the machine through it.
 - If your Claude login expires, the service keeps running but nobody can connect. `status`
   and `doctor` say so; run `claude` once and sign in again.
 - **If the server archives the session** (you archived it in claude.ai, say), on Linux the
-  service comes back by itself with a new, empty session of the same name, in about five
+  service comes back by itself with a new, empty session of the same name, in about ten
   minutes: a watch looks every two minutes (see
   [`remote watch`](commands.md#augmented-brain-remote-watch)). On macOS and Windows,
   run `augmented-brain remote install` again.

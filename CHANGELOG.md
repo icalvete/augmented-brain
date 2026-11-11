@@ -18,7 +18,7 @@
   the session of a remote access service was archived (in claude.ai, say), the service
   went on running with nobody behind it, and nothing brought it back. On Linux a watch
   now looks every two minutes and restarts it, with a new session of the same name in
-  about five minutes. Run `augmented-brain remote install` again to get it: `remote
+  about ten minutes. Run `augmented-brain remote install` again to get it: `remote
   status` and `doctor` say so.
 
 ## 0.17.2-beta

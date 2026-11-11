@@ -178,7 +178,7 @@ trabajar en la máquina por ella.
   `status` y `doctor` lo dicen; lanza `claude` una vez e inicia sesión otra vez.
 - **Si el servidor archiva la sesión** (porque la archivaste en claude.ai, por ejemplo), en
   Linux el servicio vuelve solo con una sesión nueva y vacía del mismo nombre, en unos
-  cinco minutos: un vigilante mira cada dos minutos (mira
+  diez minutos: un vigilante mira cada dos minutos (mira
   [`remote watch`](commands.es.md#augmented-brain-remote-watch)). En macOS y Windows,
   vuelve a lanzar `augmented-brain remote install`.
 - Las sesiones que empieces desde el móvil son del espacio de su carpeta: la puerta de
