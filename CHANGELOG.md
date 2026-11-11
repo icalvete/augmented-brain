@@ -24,6 +24,12 @@
   two windows on different tasks, one was asked to write in the other's journal. Now
   each session keeps its own task, and so does the line a compaction adds to the
   journal. Sessions opened before the update get no reminder until they are restarted.
+- **Remote access comes back when the server archives its session.** Until now, when
+  the session of a remote access service was archived (in claude.ai, say), the service
+  went on running with nobody behind it, and nothing brought it back. On Linux a watch
+  now looks every two minutes and restarts it, with a new session of the same name in
+  about ten minutes. Run `augmented-brain remote install` again to get it: `remote
+  status` and `doctor` say so.
 
 ## 0.17.2-beta
 

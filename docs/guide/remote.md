@@ -171,6 +171,11 @@ can work on the machine through it.
   restarts by itself (an update, a power cut), nobody can connect until someone logs in.
 - If your Claude login expires, the service keeps running but nobody can connect. `status`
   and `doctor` say so; run `claude` once and sign in again.
+- **If the server archives the session** (you archived it in claude.ai, say), on Linux the
+  service comes back by itself with a new, empty session of the same name, in about ten
+  minutes: a watch looks every two minutes (see
+  [`remote watch`](commands.md#augmented-brain-remote-watch)). On macOS and Windows,
+  run `augmented-brain remote install` again.
 - Sessions you start from the phone belong to the space of their folder: the work door
   opens work notes. To reach another space, use that space's door.
 
@@ -180,7 +185,7 @@ can work on the machine through it.
 augmented-brain remote uninstall
 ```
 
-It stops and removes the services (on Windows, also the program they were running). The
+It stops and removes the services and, on Linux, the watch (on Windows, also the program they were running). The
 folders, and their place in the space's work
 folders, stay, and nothing else is deleted. Remove them by hand if you want.
 

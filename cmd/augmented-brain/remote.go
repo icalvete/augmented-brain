@@ -17,7 +17,7 @@ var remoteSystem = remote.NewSystem
 // cmdRemote is `remote install | uninstall | status`: Claude kept reachable from
 // another computer, one service per space. The logic is in internal/remote.
 func cmdRemote(args []string, out, errOut io.Writer) int {
-	if len(args) != 1 || (args[0] != "install" && args[0] != "uninstall" && args[0] != "status") {
+	if len(args) != 1 || (args[0] != "install" && args[0] != "uninstall" && args[0] != "status" && args[0] != "watch") {
 		fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.remote"))
 		return 2
 	}
@@ -45,6 +45,8 @@ func cmdRemote(args []string, out, errOut io.Writer) int {
 		runErr = remoteUninstall(c, sys, out)
 	case "status":
 		runErr = remoteStatus(c, set, sys, out)
+	case "watch": // run by the watch's timer, every two minutes
+		runErr = sys.Watch(c, out)
 	}
 	if errors.Is(runErr, remote.ErrUnsupported) {
 		fmt.Fprintln(errOut, i18n.T(l, "remote.unsupported.os"))

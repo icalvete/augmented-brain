@@ -3,6 +3,7 @@ package remote
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -40,7 +41,8 @@ type fake struct {
 	ranIn       []string // the folder and command of each RunIn
 	sys         System
 	cfgDir      string
-	auth        string // what claude auth status prints; "" says nothing
+	auth        string         // what claude auth status prints; "" says nothing
+	pids        map[string]int // unit -> main pid, for systemctl show (the watch)
 }
 
 func newFake(t *testing.T) *fake {
@@ -158,6 +160,12 @@ func (f *fake) run(name string, args ...string) (string, error) {
 			return a + "\n", errors.New("exit status 3")
 		}
 		return a + "\n", nil
+	case name == "systemctl" && len(args) >= 4 && args[1] == "show":
+		state := f.active[args[3]]
+		if state == "" {
+			state = "inactive"
+		}
+		return fmt.Sprintf("MainPID=%d\nActiveState=%s\n", f.pids[args[3]], state), nil
 	case name == "systemctl" && len(args) >= 3 && args[1] == "is-enabled":
 		return "enabled\n", nil
 	}

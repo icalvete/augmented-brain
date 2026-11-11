@@ -77,7 +77,8 @@ type System struct {
 	ClaudeJSON string
 	// ClaudeDir is Claude Code's folder ($CLAUDE_CONFIG_DIR, or ~/.claude): its
 	// sessions' transcripts are under projects/, read (never written) to see how a
-	// launched session's turn ended.
+	// launched session's turn ended, and so is a remote server's bridge-pointer.json,
+	// which the watch may rename (watch.go).
 	ClaudeDir string
 	// Sleep waits between looks at a launched session; nil is time.Sleep.
 	Sleep func(time.Duration)
@@ -88,8 +89,10 @@ type System struct {
 	// PATH does not lead to it.
 	Home string
 	// Self is this program, augmented-brain: its folder goes into the PATH of every unit,
-	// so a remote session finds it.
+	// so a remote session finds it, and the watch's service runs it.
 	Self string
+	// Children are the processes whose parent is pid (the watch); nil is none.
+	Children func(pid int) []int
 }
 
 // NewSystem is the real system.
@@ -115,7 +118,7 @@ func NewSystem() (System, error) {
 	self, _ := os.Executable()
 	s := System{Run: realRun, RunIn: realRunIn, StartDaemon: realStartDaemon, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
 		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude, ClaudeDir: claudeDir,
-		Home: home, Self: self}
+		Home: home, Self: self, Children: procChildren}
 	switch runtime.GOOS {
 	case "darwin":
 		s.UnitDir = filepath.Join(home, "Library", "LaunchAgents")
@@ -380,12 +383,24 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 			}
 		}
 	}
+	// The watch brings a service back when the server archives its session (watch.go).
+	watch := s.Self != ""
+	if watch {
+		if err := s.writeWatch(c.Dir); err != nil {
+			return nil, err
+		}
+	}
 	if _, err := s.Run("systemctl", "--user", "daemon-reload"); err != nil {
 		return nil, errors.New(i18n.T(c.Language, "remote.systemctl", "daemon-reload", err))
 	}
 	for _, svc := range res.Services {
 		if _, err := s.Run("systemctl", "--user", "enable", "--now", svc.Unit); err != nil {
 			return nil, errors.New(i18n.T(c.Language, "remote.systemctl", "enable --now "+svc.Unit, err))
+		}
+	}
+	if watch {
+		if _, err := s.Run("systemctl", "--user", "enable", "--now", WatchName+".timer"); err != nil {
+			return nil, errors.New(i18n.T(c.Language, "remote.systemctl", "enable --now "+WatchName+".timer", err))
 		}
 	}
 	for _, unit := range restart {
@@ -451,6 +466,14 @@ func (s System) Uninstall(c *config.Config) ([]string, error) {
 	}
 	units, _ := s.installedUnits()
 	var removed []string
+	// The watch first: it would restart what is being stopped.
+	watched, err := s.removeWatch()
+	if err != nil {
+		return removed, err
+	}
+	if watched {
+		removed = append(removed, WatchName+".timer")
+	}
 	for _, unit := range units {
 		if _, err := s.Run("systemctl", "--user", "disable", "--now", unit); err != nil {
 			// Not loaded is fine; still running is not: then the file stays.
@@ -556,7 +579,10 @@ func (s System) Status(c *config.Config, set Settings) (*Status, error) {
 			x.Installed = true
 			// An earlier unit had no PATH (its session found neither claude nor
 			// augmented-brain), and before 0.13 its errors went nowhere.
-			x.Outdated = !strings.Contains(string(data), "\nStandardError=journal\n") || !strings.Contains(string(data), "\nEnvironment=")
+			// Before the watch (0.17.3), nothing brought a service back when the server
+			// archived its session.
+			x.Outdated = !strings.Contains(string(data), "\nStandardError=journal\n") || !strings.Contains(string(data), "\nEnvironment=") ||
+				(s.Self != "" && !s.watchInstalled())
 			// is-active and is-enabled exit non-zero for "inactive" and "disabled":
 			// what they print is the answer.
 			a, _ := s.Run("systemctl", "--user", "is-active", svc.Unit)
