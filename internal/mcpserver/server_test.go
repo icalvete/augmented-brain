@@ -24,11 +24,11 @@ import (
 )
 
 // connect starts the server with the given resolver and returns a connected client.
-func connect(t *testing.T, open Resolver) *mcp.ClientSession {
+func connect(t *testing.T, open Resolver, opts ...Option) *mcp.ClientSession {
 	t.Helper()
 	ctx := context.Background()
 	st, ct := mcp.NewInMemoryTransports()
-	if _, err := New(open, filepath.Join(t.TempDir(), "lock")).Connect(ctx, st, nil); err != nil {
+	if _, err := New(open, filepath.Join(t.TempDir(), "lock"), opts...).Connect(ctx, st, nil); err != nil {
 		t.Fatal(err)
 	}
 	cs, err := mcp.NewClient(&mcp.Implementation{Name: "test"}, nil).Connect(ctx, ct, nil)
@@ -388,24 +388,38 @@ func TestToolsWithInvalidNote(t *testing.T) {
 	}
 }
 
-// The tools keep which task is active for the Stop hook, and session_recover returns
-// what was said in a session that never ended, once.
+// The tools keep which task is active in their own session (named by the key of its
+// Claude process) for the Stop hook, and session_recover returns what was said in a
+// session that never ended, once.
 func TestActiveTaskAndRecover(t *testing.T) {
 	open := space(t)
 	cfgDir := filepath.Join(os.Getenv("HOME"), "cfg")
-	cs := connect(t, open)
+	for id, key := range map[string]string{"mine": "pid-77", "other": "pid-88"} {
+		if err := state.Started(cfgDir, "work", id, "", key, time.Now()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	active := func(id string) string {
+		se, _ := state.Active(cfgDir, "work", state.Who{ID: id})
+		return se.Task
+	}
+	cs := connect(t, open, WithFresh(cfgDir, "pid-77"))
 	if out, isErr := call(t, cs, "task_new", map[string]any{"title": "Move the shop"}); isErr {
 		t.Fatal(out)
 	}
-	if st := state.Read(cfgDir, "work"); st.Task != "task-move-the-shop" {
-		t.Errorf("active task after task_new: %+v", st)
+	if got := active("mine"); got != "task-move-the-shop" {
+		t.Errorf("active task after task_new: %q", got)
+	}
+	if got := active("other"); got != "" {
+		t.Errorf("another session got the task: %q", got)
 	}
 	if out, isErr := call(t, cs, "task_park", map[string]any{"id": "task-move-the-shop", "next": "call the landlord"}); isErr {
 		t.Fatal(out)
 	}
-	if st := state.Read(cfgDir, "work"); st.Task != "" {
-		t.Errorf("a parked task is still active: %+v", st)
+	if got := active("mine"); got != "" {
+		t.Errorf("a parked task is still active: %q", got)
 	}
+	cs = connect(t, open) // a server that knows no session: the rest needs none
 
 	if out, _ := call(t, cs, "session_recover", map[string]any{}); !strings.Contains(out, "No earlier session") {
 		t.Errorf("nothing to recover: %s", out)
@@ -450,8 +464,8 @@ func TestRecoverAfterTheLastWrite(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := state.Update(cfgDir, "work", now, func(s *state.Space) {
-		s.Task, s.Since = "task-x", now.Add(-40*time.Minute)
-		s.Sessions = []state.Session{{ID: "s1", Transcript: transcript, Started: now.Add(-time.Hour), Task: "task-x", Reported: true}}
+		s.Sessions = []state.Session{{ID: "s1", Transcript: transcript, Started: now.Add(-time.Hour), Task: "task-x",
+			Since: now.Add(-40 * time.Minute), Reported: true}}
 	}); err != nil {
 		t.Fatal(err)
 	}

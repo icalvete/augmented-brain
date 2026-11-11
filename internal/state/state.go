@@ -1,6 +1,6 @@
 // Package state keeps what this machine knows about the sessions of each space: which
-// task is active, when the last note was written to it, when the assistant was last
-// reminded to write, and which sessions started and ended. It lives in the
+// sessions started and ended and, for each, which task is active, when the last note
+// was written to it and when the assistant was last reminded to write. It lives in the
 // configuration folder, never in the notes: it is about this machine, it is not backed
 // up, and it holds no text of the conversation.
 //
@@ -31,21 +31,58 @@ type Session struct {
 	ID         string    `json:"id"`
 	Transcript string    `json:"transcript,omitempty"` // Claude Code's local transcript (JSONL)
 	Started    time.Time `json:"started"`
-	Task       string    `json:"task,omitempty"` // the active task when it started
-	Closed     bool      `json:"closed,omitempty"`
-	Reported   bool      `json:"reported,omitempty"` // a later session already offered to recover it
-}
-
-// Space is the state of one space on this machine.
-type Space struct {
-	// Task is the active task: the last one opened, read or written, until it is parked
-	// or closed. Empty when none is.
+	// Key names the Claude process the session runs in (package fresh: pid-<n>), the one
+	// thing its MCP server knows of it. Empty when Claude Code did not say.
+	Key string `json:"key,omitempty"`
+	// Task is the session's active task: the last one it opened, read or written, until
+	// it is parked or closed. Empty when none is. Each session has its own, so two
+	// sessions of a space working on different tasks never get each other's reminders.
 	Task string `json:"task,omitempty"`
 	// Since is when the active task was last written (or became active).
 	Since time.Time `json:"since,omitzero"`
 	// Reminded is when the assistant was last reminded to write in the journal.
 	Reminded time.Time `json:"reminded,omitzero"`
+	Closed   bool      `json:"closed,omitempty"`
+	Reported bool      `json:"reported,omitempty"` // a later session already offered to recover it
+}
+
+// Space is the state of one space on this machine. (Earlier versions kept a single
+// active task for the whole space, in fields of their own: they are no longer read, and
+// go at the next write.)
+type Space struct {
 	Sessions []Session `json:"sessions,omitempty"`
+}
+
+// Who names one session: by its id, which the hooks get, or else by the key of its
+// Claude process, which is all its MCP server knows. Both empty name none.
+type Who struct{ ID, Key string }
+
+// Session finds the session w names: by id; by key, the newest one not ended (after
+// /clear the process goes on under a new session id, and the old one is ended). Nil
+// when there is none.
+func (s *Space) Session(w Who) *Session {
+	if w.ID != "" {
+		return s.find(w.ID)
+	}
+	if w.Key == "" {
+		return nil
+	}
+	for i := len(s.Sessions) - 1; i >= 0; i-- {
+		if se := &s.Sessions[i]; se.Key == w.Key && !se.Closed {
+			return se
+		}
+	}
+	return nil
+}
+
+// Active returns the session w names, with its active task; ok is false when there is
+// no such session.
+func Active(cfgDir, space string, w Who) (Session, bool) {
+	s := Read(cfgDir, space)
+	if se := s.Session(w); se != nil {
+		return *se, true
+	}
+	return Session{}, false
 }
 
 func file(cfgDir, space string) string { return filepath.Join(cfgDir, Dir, space+".json") }
@@ -83,30 +120,52 @@ func Update(cfgDir, space string, now time.Time, change func(*Space)) error {
 	return paths.WriteAtomic(file(cfgDir, space), data, 0o600)
 }
 
-// Touched records that a task was opened, read or written: it becomes the active one.
-// A write moves Since; a read only does when the task was not the active one already,
-// so reading a task never puts off the reminder to write in it.
-func Touched(cfgDir, space, task string, now time.Time, write bool) error {
+// Touched records that the session w opened, read or wrote a task: it becomes that
+// session's active one. A write moves Since; a read only does when the task was not
+// the active one already, so reading a task never puts off the reminder to write in it.
+// Nothing happens when w names no session this machine knows (the panel, a session
+// outside the space's work folders).
+func Touched(cfgDir, space string, w Who, task string, now time.Time, write bool) error {
+	if w == (Who{}) {
+		return nil
+	}
 	return Update(cfgDir, space, now, func(s *Space) {
-		if write || s.Task != task || s.Since.IsZero() {
-			s.Since = now
+		se := s.Session(w)
+		if se == nil {
+			return
 		}
-		s.Task = task
+		if write || se.Task != task || se.Since.IsZero() {
+			se.Since = now
+		}
+		se.Task = task
 	})
 }
 
-// Released records that a task was parked or closed: if it was the active one, no task
-// is active any more.
+// Released records that a task was parked or closed: no session has it active any more,
+// whichever parked or closed it.
 func Released(cfgDir, space, task string, now time.Time) error {
 	return Update(cfgDir, space, now, func(s *Space) {
-		if s.Task == task {
-			s.Task, s.Since = "", now
+		for i := range s.Sessions {
+			if se := &s.Sessions[i]; se.Task == task {
+				se.Task, se.Since = "", now
+			}
 		}
 	})
 }
 
-// Started records a session starting (or going on, after a resume or a compaction).
-func Started(cfgDir, space, id, transcript string, now time.Time) error {
+// Reminded records that the session w was just reminded to write in its task's journal.
+func Reminded(cfgDir, space string, w Who, now time.Time) error {
+	return Update(cfgDir, space, now, func(s *Space) {
+		if se := s.Session(w); se != nil {
+			se.Reminded = now
+		}
+	})
+}
+
+// Started records a session starting (or going on, after a resume or a compaction),
+// with the key of the Claude process it runs in: a resumed session may run in another.
+// A new session starts with no active task.
+func Started(cfgDir, space, id, transcript, key string, now time.Time) error {
 	if id == "" {
 		return nil
 	}
@@ -116,9 +175,12 @@ func Started(cfgDir, space, id, transcript string, now time.Time) error {
 			if transcript != "" {
 				se.Transcript = transcript
 			}
+			if key != "" {
+				se.Key = key
+			}
 			return
 		}
-		s.Sessions = append(s.Sessions, Session{ID: id, Transcript: transcript, Started: now, Task: s.Task})
+		s.Sessions = append(s.Sessions, Session{ID: id, Transcript: transcript, Started: now, Key: key})
 	})
 }
 

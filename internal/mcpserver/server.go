@@ -84,7 +84,8 @@ type options struct {
 
 // WithFresh has every tool that holds the notes lock tell the session which tasks
 // changed outside it (package fresh), and record what the tool itself read or wrote.
-// key names the Claude process the server belongs to; "" turns it off.
+// key names the Claude process the server belongs to; "" turns it off. The key also
+// names the session whose active task the tools change (brain.Touched).
 func WithFresh(cfgDir, key string) Option {
 	return func(o *options) { o.freshDir, o.freshKey = cfgDir, key }
 }
@@ -109,6 +110,9 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			release()
 			return nil, nil, err
 		}
+		// The same key names the session whose active task the tool's reads and
+		// writes change (package state).
+		b.Session = state.Who{Key: o.freshKey}
 		if o.freshKey == "" {
 			return b, release, nil
 		}

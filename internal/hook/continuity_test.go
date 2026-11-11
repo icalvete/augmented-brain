@@ -39,6 +39,61 @@ func openTask(t *testing.T, cfgDir string) string {
 	return n.Header.ID
 }
 
+// touch starts session sid (when new) and makes task id its active one, written at.
+func touch(t *testing.T, cfgDir, sid, id string, at time.Time) {
+	t.Helper()
+	if err := state.Started(cfgDir, "work", sid, "", "", at); err != nil {
+		t.Fatal(err)
+	}
+	if err := state.Touched(cfgDir, "work", state.Who{ID: sid}, id, at, true); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// Two sessions of a space on different tasks: each is reminded of its own task only,
+// and a session with none is not reminded at all.
+func TestStopReminderPerSession(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	start := time.Date(2026, 10, 20, 9, 0, 0, 0, time.Local)
+	now := clock(t, start)
+	a := openTask(t, cfgDir)
+	touch(t, cfgDir, "s1", a, start)
+	touch(t, cfgDir, "s2", "task-other", start.Add(5*time.Minute))
+	if err := state.Started(cfgDir, "work", "s3", "", "", start); err != nil {
+		t.Fatal(err)
+	}
+	stop := func(sid string) string {
+		o := run(t, func(in *bytes.Reader, out *bytes.Buffer) error { return Stop(in, out, cfgDir) },
+			map[string]any{"cwd": work, "hook_event_name": "Stop", "session_id": sid})
+		if o == nil {
+			return ""
+		}
+		return o["additionalContext"].(string)
+	}
+	*now = start.Add(time.Hour)
+	if got := stop("s1"); !strings.Contains(got, a) || strings.Contains(got, "task-other") {
+		t.Errorf("s1: %s", got)
+	}
+	if got := stop("s2"); !strings.Contains(got, "task-other") || strings.Contains(got, a) || !strings.Contains(got, "since 09:05") {
+		t.Errorf("s2: %s", got)
+	}
+	for _, sid := range []string{"s3", "unknown", ""} {
+		if got := stop(sid); got != "" {
+			t.Errorf("%q, with no task of its own, was reminded: %s", sid, got)
+		}
+	}
+	// Parking a task takes it from the session that had it, and no other.
+	if err := state.Released(cfgDir, "work", a, *now); err != nil {
+		t.Fatal(err)
+	}
+	if se, _ := state.Active(cfgDir, "work", state.Who{ID: "s1"}); se.Task != "" {
+		t.Errorf("s1 still has %s", se.Task)
+	}
+	if se, _ := state.Active(cfgDir, "work", state.Who{ID: "s2"}); se.Task != "task-other" {
+		t.Errorf("s2 lost its task: %+v", se)
+	}
+}
+
 // The Stop hook reminds to journal after a while without writing, once, and only when a
 // task is active.
 func TestStopReminder(t *testing.T) {
@@ -47,7 +102,7 @@ func TestStopReminder(t *testing.T) {
 	now := clock(t, start)
 	stop := func(active bool) string {
 		o := run(t, func(in *bytes.Reader, out *bytes.Buffer) error { return Stop(in, out, cfgDir) },
-			map[string]any{"cwd": work, "hook_event_name": "Stop", "stop_hook_active": active})
+			map[string]any{"cwd": work, "hook_event_name": "Stop", "session_id": "s1", "stop_hook_active": active})
 		if o == nil {
 			return ""
 		}
@@ -61,9 +116,7 @@ func TestStopReminder(t *testing.T) {
 		t.Errorf("no active task, yet a reminder: %s", got)
 	}
 	id := openTask(t, cfgDir)
-	if err := state.Touched(cfgDir, "work", id, start, true); err != nil {
-		t.Fatal(err)
-	}
+	touch(t, cfgDir, "s1", id, start)
 	*now = start.Add(10 * time.Minute)
 	if got := stop(false); got != "" {
 		t.Errorf("too soon: %s", got)
@@ -80,9 +133,7 @@ func TestStopReminder(t *testing.T) {
 	if got := stop(false); got != "" {
 		t.Errorf("reminded twice without a write in between: %s", got)
 	}
-	if err := state.Touched(cfgDir, "work", id, *now, true); err != nil {
-		t.Fatal(err)
-	}
+	touch(t, cfgDir, "s1", id, *now)
 	*now = now.Add(30 * time.Minute)
 	if got := stop(false); got == "" {
 		t.Error("no reminder after a new write and another while")
@@ -96,9 +147,7 @@ func TestCompaction(t *testing.T) {
 	cfgDir, work := setupSpace(t)
 	clock(t, time.Date(2026, 10, 20, 11, 30, 0, 0, time.Local))
 	id := openTask(t, cfgDir)
-	if err := state.Touched(cfgDir, "work", id, Now(), true); err != nil {
-		t.Fatal(err)
-	}
+	touch(t, cfgDir, "abcdef123456", id, Now())
 	token := "gh" + "p_" + strings.Repeat("a", 36)
 	pc := func(in *bytes.Reader, _ *bytes.Buffer) error { return PostCompact(in, cfgDir) }
 	run(t, pc, map[string]any{"cwd": work, "hook_event_name": "PostCompact", "session_id": "abcdef123456",
@@ -211,5 +260,18 @@ func TestAskSafetyAfterRestore(t *testing.T) {
 	}
 	if text := run(t, ss, map[string]any{"cwd": work})["additionalContext"].(string); strings.Contains(text, "backups do not carry") {
 		t.Error("offered twice")
+	}
+}
+
+// SessionStart records the key of the Claude process, so the session's MCP server, which
+// knows only that, finds the session whose active task its tools change.
+func TestSessionStartKeepsKey(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	clock(t, time.Date(2026, 10, 20, 9, 0, 0, 0, time.Local))
+	withClaudePID(t, "4242")
+	ss := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, cfgDir) }
+	run(t, ss, map[string]any{"cwd": work, "source": "startup", "session_id": "s1"})
+	if se, ok := state.Active(cfgDir, "work", state.Who{Key: "pid-4242"}); !ok || se.ID != "s1" {
+		t.Errorf("by key: %+v %v", se, ok)
 	}
 }

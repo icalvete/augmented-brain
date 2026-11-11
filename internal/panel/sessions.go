@@ -70,7 +70,7 @@ func (s *Server) sessions(v *view, _ *http.Request) (string, page, error) {
 		case state.Live:
 			d.Live = append(d.Live, r)
 		case state.Dead:
-			from := st.From(l.Session, v.b.LastEntry(l.Task))
+			from := l.From(v.b.LastEntry(l.Task))
 			r.From = from.Local().Format(stamp)
 			r.Said, _ = state.Conversation(l.Transcript, from, previewMax)
 			d.Dead = append(d.Dead, r)

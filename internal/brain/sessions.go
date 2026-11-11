@@ -35,12 +35,14 @@ func (b *Brain) LastEntry(id string) time.Time {
 }
 
 // Touched and Released keep this machine's state of the space (package state): which
-// task is active and when it was last written, for the Stop hook's reminder. The MCP
-// tools and the panel call them after a change; a failure there never fails the change.
+// task each session has active and when it was last written, for the Stop hook's
+// reminder. The MCP tools and the panel call them after a change; a failure there never
+// fails the change. Touched changes the active task of b.Session only, so it does
+// nothing for the panel; Released takes the task from every session.
 func (b *Brain) Touched(id string, write bool) {
 	b.read = append(b.read, id)
 	if b.ConfigDir != "" {
-		_ = state.Touched(b.ConfigDir, b.Space.Name, id, time.Now(), write)
+		_ = state.Touched(b.ConfigDir, b.Space.Name, b.Session, id, time.Now(), write)
 	}
 }
 
@@ -81,7 +83,7 @@ func (b *Brain) Recover(id string, max int, now time.Time) (Recovery, error) {
 	// The session asking is running, so its transcript is fresh and Unclosed leaves it out.
 	for _, se := range st.Unclosed("", now) {
 		if id != "" && se.ID == id {
-			from := st.From(se, b.LastEntry(se.Task))
+			from := se.From(b.LastEntry(se.Task))
 			text, err := state.Conversation(se.Transcript, from, max)
 			return Recovery{Session: se, From: from, Text: text}, err
 		}

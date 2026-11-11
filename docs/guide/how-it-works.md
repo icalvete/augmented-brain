@@ -57,8 +57,9 @@ resuming and closing work the same way. See [Tasks](tasks.md).
 **3. Claude is about to run a command.** The guard hook reads it first, and lets it
 through, asks you, or stops it. See [The guard](guard.md).
 
-**4. Claude finishes an answer.** If a task is open and nothing was written in it for 20
-minutes, a hook reminds Claude to write in its journal, once. The same hook looks at the
+**4. Claude finishes an answer.** If the session has a task open and nothing was written
+in it for 20 minutes, a hook reminds Claude to write in its journal, once. Each session
+has its own task, so two windows never get each other's reminder. The same hook looks at the
 memory of the window: if it has grown far past normal, Claude tells you, so you can park
 the task before the system closes the window. See
 [Troubleshooting](troubleshooting.md#the-window-uses-a-lot-of-memory).

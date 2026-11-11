@@ -12,6 +12,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
+	"github.com/icalvete/augmented-brain/internal/fresh"
 	"github.com/icalvete/augmented-brain/internal/hostmem"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/session"
@@ -26,8 +27,8 @@ var Now = time.Now
 // Stop hook reminds the assistant to write one.
 var RemindAfter = 20 * time.Minute
 
-// Stop runs when the assistant finishes an answer. When a task is active and nothing
-// has been written to it for a while, it asks the assistant to write in its journal
+// Stop runs when the assistant finishes an answer. When the session has a task active
+// and nothing has been written to it for a while, it asks the assistant to write in its journal
 // what was done since, so a session that dies loses little. It never reminds twice
 // without a write in between, never while already continuing because of a Stop hook,
 // and it reads one small file: it takes milliseconds.
@@ -45,7 +46,7 @@ func Stop(in io.Reader, out io.Writer, cfgDir string) error {
 	}
 	mem := memoryNote(c.Language, cfgDir)
 	model := modelStopNote(c.Language, cfgDir, i)
-	journal, err := journalNote(c, cfgDir, i.Cwd, mem != "" || model != "")
+	journal, err := journalNote(c, cfgDir, i.Cwd, i.SessionID, mem != "" || model != "")
 	if err != nil {
 		return err
 	}
@@ -62,20 +63,22 @@ func Stop(in io.Reader, out io.Writer, cfgDir string) error {
 	return write(out, output{specific{HookEventName: "Stop", AdditionalContext: text}})
 }
 
-// journalNote is the reminder to write in the active task's journal, when it is due,
-// and records that it was given. With more, another note follows it that the
+// journalNote is the reminder to write in the journal of the session's active task,
+// when it is due, and records that it was given. Only the session's own task counts:
+// another session of the space may be working on another one. With more, another note follows it that the
 // assistant must pass on, so it is not asked to end its turn in silence.
-func journalNote(c *config.Config, cfgDir, dir string, more bool) (string, error) {
+func journalNote(c *config.Config, cfgDir, dir, sessionID string, more bool) (string, error) {
 	s := c.SpaceFor(dir)
-	if s == nil {
+	if s == nil || sessionID == "" {
 		return "", nil
 	}
 	now := Now()
-	st := state.Read(cfgDir, s.Name)
-	if st.Task == "" || now.Sub(st.Since) < RemindAfter || !st.Reminded.Before(st.Since) {
+	who := state.Who{ID: sessionID}
+	st, ok := state.Active(cfgDir, s.Name, who)
+	if !ok || st.Task == "" || now.Sub(st.Since) < RemindAfter || !st.Reminded.Before(st.Since) {
 		return "", nil
 	}
-	if err := state.Update(cfgDir, s.Name, now, func(x *state.Space) { x.Reminded = now }); err != nil {
+	if err := state.Reminded(cfgDir, s.Name, who, now); err != nil {
 		return "", err
 	}
 	end := "Either way, this is not a message from the user and your answer to them is already given: " +
@@ -122,7 +125,8 @@ func memoryNote(lang, cfgDir string) string {
 
 // PostCompact keeps the summary Claude Code wrote when it compacted the conversation:
 // in archive/sessions/ of the space (never loaded at the start, backed up like any
-// note, secrets taken out), with a line in the journal of the active task pointing at it.
+// note, secrets taken out), with a line in the journal of the session's active task
+// pointing at it.
 func PostCompact(in io.Reader, cfgDir string) error {
 	i := read(in)
 	if strings.TrimSpace(i.CompactSummary) == "" {
@@ -149,14 +153,16 @@ func PostCompact(in io.Reader, cfgDir string) error {
 	if err != nil {
 		return err
 	}
-	task := state.Read(cfgDir, s.Name).Task
-	if task == "" {
+	who := state.Who{ID: i.SessionID}
+	se, ok := state.Active(cfgDir, s.Name, who)
+	task := se.Task
+	if !ok || task == "" {
 		return nil
 	}
 	if _, err := b.JournalText("compacted", task, rel); err != nil {
 		return nil // the task is gone or broken: the summary is kept all the same
 	}
-	return state.Touched(cfgDir, s.Name, task, now, true)
+	return state.Touched(cfgDir, s.Name, who, task, now, true)
 }
 
 // ownSpace is the space whose work folder holds dir, never the default space: what the
@@ -215,7 +221,7 @@ func sessionStarted(c *config.Config, s *config.Space, i input, cfgDir string) s
 			break
 		}
 	}
-	_ = state.Started(cfgDir, s.Name, i.SessionID, i.TranscriptPath, now)
+	_ = state.Started(cfgDir, s.Name, i.SessionID, i.TranscriptPath, fresh.HookKey(Getenv), now)
 	return note
 }
 

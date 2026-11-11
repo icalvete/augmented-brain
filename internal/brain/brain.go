@@ -22,6 +22,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/templates"
 )
 
@@ -39,6 +40,10 @@ type Brain struct {
 	// Fresh is what changed outside this session since it last looked (package fresh),
 	// set by the MCP server before a tool runs; the tool's answer ends with it.
 	Fresh string
+	// Session is the assistant session the brain works for, set by the MCP server: a
+	// task it opens, reads or writes becomes that session's active one (Touched). Empty
+	// for the panel and the commands, which have no session of their own.
+	Session state.Who
 	// read are the tasks read or written during this call (Touched), which the session
 	// has now seen as they are.
 	read []string

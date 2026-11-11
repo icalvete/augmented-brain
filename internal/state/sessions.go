@@ -70,14 +70,13 @@ func (s Space) Unclosed(current string, now time.Time) []Session {
 }
 
 // From is where what may be missing from the notes starts, in a session that did not
-// end: the last write to its task while that session was still alive, or lastEntry
-// (the date of the task's last journal entry), whichever is later; its start when
-// there is neither.
-func (s Space) From(se Session, lastEntry time.Time) time.Time {
+// end: its last write to its task while it was still alive, or lastEntry (the date of
+// the task's last journal entry), whichever is later; its start when there is neither.
+func (se Session) From(lastEntry time.Time) time.Time {
 	since := se.Started
-	if s.Task == se.Task && s.Since.After(since) {
-		if info, err := os.Stat(se.Transcript); err == nil && s.Since.Before(info.ModTime()) {
-			since = s.Since
+	if se.Task != "" && se.Since.After(since) {
+		if info, err := os.Stat(se.Transcript); err == nil && se.Since.Before(info.ModTime()) {
+			since = se.Since
 		}
 	}
 	if lastEntry.After(since) {

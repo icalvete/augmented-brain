@@ -195,8 +195,13 @@ func afterUpdate(lang, now string, out io.Writer) {
 	}
 	fmt.Fprintln(out, i18n.T(lang, "update.after.old", len(old)))
 	for _, n := range c.SpaceNames() {
-		if t := state.Read(dir, n).Task; t != "" {
-			fmt.Fprintln(out, i18n.T(lang, "update.after.task", n, t))
+		// Each open session has its own active task; two may share one.
+		said := map[string]bool{}
+		for _, se := range state.Read(dir, n).Sessions {
+			if se.Task != "" && !se.Closed && !said[se.Task] {
+				said[se.Task] = true
+				fmt.Fprintln(out, i18n.T(lang, "update.after.task", n, se.Task))
+			}
 		}
 	}
 	fmt.Fprintln(out, i18n.T(lang, "update.after.restart"))

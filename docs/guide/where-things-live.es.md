@@ -51,8 +51,8 @@ abrir y leer.
 
 También en la carpeta de configuración, nunca en la copia:
 
-- `state/`: lo que hicieron las sesiones de cada espacio (la tarea activa, una sesión que
-  no acabó bien), el sello del guardia, las sesiones de Claude en marcha.
+- `state/`: lo que hicieron las sesiones de cada espacio (la tarea activa de cada una, una
+  sesión que no acabó bien), el sello del guardia, las sesiones de Claude en marcha.
 - `history/`: las versiones de la configuración.
 - `panel.json`: dónde escucha el panel mientras está en marcha, y su clave. Claude nunca
   puede leerlo.

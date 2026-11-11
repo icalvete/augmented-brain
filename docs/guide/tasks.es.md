@@ -95,8 +95,9 @@ nota. Las cosas pueden haber cambiado desde entonces.
 Cada decisión o paso terminado va al diario en el momento, no solo al aparcar. Una sesión
 puede acabar en cualquier momento, y lo que no está en la nota se pierde.
 
-Si hay una tarea abierta y en 20 minutos no se ha escrito nada en ella, Claude recibe un
-recordatorio al final de su respuesta, una vez. Cuando una conversación larga se compacta
+Si la sesión tiene una tarea abierta y en 20 minutos no se ha escrito nada en ella, Claude
+recibe un recordatorio al final de su respuesta, una vez. Cada sesión tiene su propia
+tarea: con dos ventanas en tareas distintas, a cada una se le recuerda la suya. Cuando una conversación larga se compacta
 (Claude Code cambia los detalles por un resumen), el resumen se guarda en
 `archive/sessions/`, y el diario apunta a él. El resumen puede estar mal, así que a
 Claude se le pide que no lo tome como un hecho, que compruebe antes de afirmar algo de

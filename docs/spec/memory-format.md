@@ -47,7 +47,7 @@ A session that runs outside every work folder (for example, the scratch folder t
 
 `docs/` keeps the long documents a task produces, so they stay with the notes and out of the repositories the work touches (a repository only gets what its team needs). Each one sits under the id of its task, is plain Markdown or any other file, has no header, and is linked from the task. The program does not read it.
 
-A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the active task pointing at it.
+A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the session's active task pointing at it.
 
 `MEMORY.md` is the index the session start hands the assistant, a little shorter: each live task goes without its summary, and with its next step (its first 120 characters) only when it waits on you (the assistant reads a task before working on it). It comes in up to three parts of the start (see "Rules"). An index too long for them is cut, and the assistant is told where to read it whole.
 
@@ -429,9 +429,11 @@ most 10 minutes for another one to finish; both say why.
 ## State of this machine
 
 `state/<space>.json` in the configuration folder keeps, for this machine only (never
-backed up, no text of the conversation): the active task and when it was last written,
-when the assistant was last reminded to write, and the sessions that started and ended,
-with the path of Claude Code's transcript of each. The Stop reminder, the request after a
+backed up, no text of the conversation): the sessions that started and ended, with the
+path of Claude Code's transcript of each, the Claude process each runs in, and each
+one's active task, when it was last written and when the assistant was last reminded to
+write. Earlier versions kept a single active task for the whole space; it is no longer
+read. The Stop reminder, the request after a
 compaction and the offer to recover a session that did not end come from it.
 
 `state/guard.seal` keeps a fingerprint of the guard's lists as the user last accepted

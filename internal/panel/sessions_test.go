@@ -49,7 +49,7 @@ func TestSessions(t *testing.T) {
 		"done1": write("done1", conv, old),
 	}
 	for id, p := range sessions {
-		if err := state.Started(cfg, "work", id, p, old); err != nil {
+		if err := state.Started(cfg, "work", id, p, "", old); err != nil {
 			t.Fatal(err)
 		}
 	}

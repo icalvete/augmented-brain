@@ -26,11 +26,11 @@ func TestListKinds(t *testing.T) {
 	now := time.Now()
 	old := now.Add(-2 * time.Hour)
 	for id, mod := range map[string]time.Time{"live": now.Add(-time.Minute), "dead": old, "closed": old} {
-		if err := Started(cfg, "work", id, transcript(t, proj, id, mod), old); err != nil {
+		if err := Started(cfg, "work", id, transcript(t, proj, id, mod), "", old); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if err := Started(cfg, "work", "gone", filepath.Join(proj, "gone.jsonl"), old); err != nil {
+	if err := Started(cfg, "work", "gone", filepath.Join(proj, "gone.jsonl"), "", old); err != nil {
 		t.Fatal(err)
 	}
 	if err := Ended(cfg, "work", "closed", now); err != nil {
@@ -58,22 +58,22 @@ func TestFrom(t *testing.T) {
 	proj := t.TempDir()
 	start := time.Date(2026, 10, 20, 9, 0, 0, 0, time.Local)
 	se := Session{ID: "s", Task: "task-a", Started: start, Transcript: transcript(t, proj, "s", start.Add(5*time.Hour))}
-	if f := (Space{}).From(se, time.Time{}); !f.Equal(start) {
+	if f := se.From(time.Time{}); !f.Equal(start) {
 		t.Errorf("nothing written: %v", f)
 	}
 	write := start.Add(2 * time.Hour)
-	s := Space{Task: "task-a", Since: write}
-	if f := s.From(se, time.Time{}); !f.Equal(write) {
+	at := func(task string, since time.Time) Session { x := se; x.Task, x.Since = task, since; return x }
+	if f := at("task-a", write).From(time.Time{}); !f.Equal(write) {
 		t.Errorf("written while alive: %v", f)
 	}
-	if f := (Space{Task: "task-a", Since: start.Add(6 * time.Hour)}).From(se, time.Time{}); !f.Equal(start) {
-		t.Errorf("written after it died (by another session): %v", f)
+	if f := at("task-a", start.Add(6*time.Hour)).From(time.Time{}); !f.Equal(start) {
+		t.Errorf("written after it died: %v", f)
 	}
-	if f := (Space{Task: "task-b", Since: write}).From(se, time.Time{}); !f.Equal(start) {
-		t.Errorf("another task written: %v", f)
+	if f := at("", write).From(time.Time{}); !f.Equal(start) {
+		t.Errorf("no task active: %v", f)
 	}
 	entry := start.Add(3 * time.Hour)
-	if f := s.From(se, entry); !f.Equal(entry) {
+	if f := at("task-a", write).From(entry); !f.Equal(entry) {
 		t.Errorf("a later journal date: %v", f)
 	}
 }
@@ -84,7 +84,7 @@ func TestDeleteTranscript(t *testing.T) {
 	old := now.Add(-2 * time.Hour)
 	add := func(id, path string, closed bool) {
 		t.Helper()
-		if err := Started(cfg, "work", id, path, old); err != nil {
+		if err := Started(cfg, "work", id, path, "", old); err != nil {
 			t.Fatal(err)
 		}
 		if closed {
@@ -144,11 +144,11 @@ func TestUnclosedIsDead(t *testing.T) {
 		if id == "live" {
 			mod = now
 		}
-		if err := Started(cfg, "work", id, transcript(t, proj, id, mod), old); err != nil {
+		if err := Started(cfg, "work", id, transcript(t, proj, id, mod), "", old); err != nil {
 			t.Fatal(err)
 		}
 	}
-	if err := Started(cfg, "work", "gone", filepath.Join(proj, "gone.jsonl"), old); err != nil {
+	if err := Started(cfg, "work", "gone", filepath.Join(proj, "gone.jsonl"), "", old); err != nil {
 		t.Fatal(err)
 	}
 	if err := Ended(cfg, "work", "closed", now); err != nil {
@@ -174,7 +174,7 @@ func TestReportedAndDismissed(t *testing.T) {
 	cfg, proj := t.TempDir(), t.TempDir()
 	now := time.Now()
 	old := now.Add(-2 * time.Hour)
-	if err := Started(cfg, "work", "s", transcript(t, proj, "s", old), old); err != nil {
+	if err := Started(cfg, "work", "s", transcript(t, proj, "s", old), "", old); err != nil {
 		t.Fatal(err)
 	}
 	if err := Reported(cfg, "work", "s", now); err != nil {
