@@ -27,7 +27,8 @@ What it does, in order:
    the old one, and which task each space has active.
 
 Then ask those sessions to park their task, and close and open Claude. A session that was
-open keeps the old program until you do.
+open keeps the old program until you do; `/clear` is not enough. When the session you
+are in is one of them, its start tells you so.
 
 ### Before you update
 

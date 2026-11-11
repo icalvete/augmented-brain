@@ -28,7 +28,8 @@ Qué hace, por orden:
    siguen con la vieja, y qué tarea está activa en cada espacio.
 
 Después pide a esas sesiones que aparquen su tarea, y cierra y abre Claude. Una sesión que
-estaba abierta sigue con el programa viejo hasta que lo hagas.
+estaba abierta sigue con el programa viejo hasta que lo hagas; `/clear` no basta. Si la
+sesión en la que estás es una de ellas, su inicio te lo dice.
 
 ### Antes de actualizar
 
