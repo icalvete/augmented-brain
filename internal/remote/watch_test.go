@@ -71,7 +71,9 @@ func TestWatchInstalled(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(svc), "ExecStart="+f.sys.Self+" remote watch\n") || !strings.Contains(string(svc), "Environment=AB_CONFIG_DIR="+f.cfgDir+"\n") {
+	// Written as systemd reads them: on Windows (where the tests also run) the paths have
+	// backslashes, so they go in quotes.
+	if !strings.Contains(string(svc), "ExecStart="+unitArg(f.sys.Self, true)+" remote watch\n") || !strings.Contains(string(svc), "Environment="+unitEnv("AB_CONFIG_DIR="+f.cfgDir)+"\n") {
 		t.Errorf("watch service:\n%s", svc)
 	}
 	if !strings.Contains(WatchTimerText(), "OnUnitActiveSec="+WatchEvery+"\n") {
