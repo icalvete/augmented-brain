@@ -152,6 +152,26 @@ var launchMessages = map[string]msg{
 		en: "retired (Claude stopped it after hours unused; it comes back when opened in Claude Desktop or claude.ai)",
 		es: "retirada (Claude la paró tras horas sin uso; vuelve al abrirla en Claude Desktop o claude.ai)",
 	},
+	"session.list.failed": {
+		en: "failed: its last answer was an error (%s). Write to it in Claude Desktop or claude.ai to try again, or open it again: augmented-brain session start %s",
+		es: "fallida: su última respuesta fue un error (%s). Escríbele en Claude Desktop o claude.ai para que lo intente otra vez, o ábrela de nuevo: augmented-brain session start %s",
+	},
+	"session.list.failed.login": {
+		en: "failed: Claude Code's login expired (%s). Log in again with claude auth login, then open it again: augmented-brain session start %s",
+		es: "fallida: caducó el login de Claude Code (%s). Vuelve a entrar con claude auth login y ábrela de nuevo: augmented-brain session start %s",
+	},
+	"session.loggedout": {
+		en: "Claude Code is not logged in, or its login has expired: the session could not work, so I did not open it. Log in again with:\n  claude auth login\nThen open it again:\n  augmented-brain session start %s",
+		es: "Claude Code no tiene la sesión iniciada, o le ha caducado: la sesión no podría trabajar, así que no la abro. Vuelve a entrar con:\n  claude auth login\nY ábrela de nuevo:\n  augmented-brain session start %s",
+	},
+	"session.firstturn.login": {
+		en: "The session for %s started, but its first answer was an error: %s\nClaude Code's login has expired. I closed the session. Log in again with:\n  claude auth login\nThen open it again:\n  augmented-brain session start %s",
+		es: "La sesión de %s arrancó, pero su primera respuesta fue un error: %s\nEl login de Claude Code ha caducado. He cerrado la sesión. Vuelve a entrar con:\n  claude auth login\nY ábrela de nuevo:\n  augmented-brain session start %s",
+	},
+	"session.firstturn": {
+		en: "The session for %s started, but its first answer was an error: %s\nI closed it. Try again in a while:\n  augmented-brain session start %s",
+		es: "La sesión de %s arrancó, pero su primera respuesta fue un error: %s\nLa he cerrado. Prueba otra vez dentro de un rato:\n  augmented-brain session start %s",
+	},
 	"session.list.none": {
 		en: "No task sessions open.",
 		es: "No hay sesiones de tareas abiertas.",

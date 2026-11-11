@@ -75,6 +75,11 @@ type System struct {
 	// ClaudeJSON is Claude Code's own file, read (never written) to see which folders
 	// the user trusts.
 	ClaudeJSON string
+	// ClaudeDir is Claude Code's folder ($CLAUDE_CONFIG_DIR, or ~/.claude): its
+	// sessions' transcripts are under projects/, read (never written) to see how a
+	// launched session's turn ended, and so is a remote server's bridge-pointer.json,
+	// which the watch may rename (watch.go).
+	ClaudeDir string
 	// Sleep waits between looks at a launched session; nil is time.Sleep.
 	Sleep func(time.Duration)
 	// StartDaemon starts Claude's daemon in the background and returns at once; nil
@@ -86,9 +91,6 @@ type System struct {
 	// Self is this program, augmented-brain: its folder goes into the PATH of every unit,
 	// so a remote session finds it, and the watch's service runs it.
 	Self string
-	// ClaudeDir is Claude Code's own folder (~/.claude, or CLAUDE_CONFIG_DIR), where the
-	// watch looks for a server's bridge-pointer.json.
-	ClaudeDir string
 	// Children are the processes whose parent is pid (the watch); nil is none.
 	Children func(pid int) []int
 }
@@ -103,9 +105,11 @@ func NewSystem() (System, error) {
 	if conf == "" {
 		conf = filepath.Join(home, ".config")
 	}
-	claude, claudeDir := filepath.Join(home, ".claude.json"), filepath.Join(home, ".claude")
+	claude := filepath.Join(home, ".claude.json")
+	claudeDir := filepath.Join(home, ".claude")
 	if d := os.Getenv("CLAUDE_CONFIG_DIR"); d != "" {
-		claude, claudeDir = filepath.Join(d, ".claude.json"), d
+		claude = filepath.Join(d, ".claude.json")
+		claudeDir = d
 	}
 	name := os.Getenv("USER")
 	if u, err := user.Current(); err == nil {
@@ -113,8 +117,8 @@ func NewSystem() (System, error) {
 	}
 	self, _ := os.Executable()
 	s := System{Run: realRun, RunIn: realRunIn, StartDaemon: realStartDaemon, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
-		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude,
-		Home: home, Self: self, ClaudeDir: claudeDir, Children: procChildren}
+		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude, ClaudeDir: claudeDir,
+		Home: home, Self: self, Children: procChildren}
 	switch runtime.GOOS {
 	case "darwin":
 		s.UnitDir = filepath.Join(home, "Library", "LaunchAgents")

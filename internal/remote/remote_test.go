@@ -41,6 +41,7 @@ type fake struct {
 	ranIn       []string // the folder and command of each RunIn
 	sys         System
 	cfgDir      string
+	auth        string         // what claude auth status prints; "" says nothing
 	pids        map[string]int // unit -> main pid, for systemctl show (the watch)
 }
 
@@ -87,6 +88,7 @@ func newFake(t *testing.T) *fake {
 		User:       "lucia",
 		UnitDir:    filepath.Join(root, ".config", "systemd", "user"),
 		ClaudeJSON: filepath.Join(root, ".claude.json"),
+		ClaudeDir:  filepath.Join(root, ".claude"),
 	}
 	if _, err := setup.Init(f.cfgDir, setup.Options{Space: "personal", WorkFolder: filepath.Join(root, "p"), Memory: filepath.Join(root, "p", "notes")}); err != nil {
 		t.Fatal(err)
@@ -114,13 +116,15 @@ func (f *fake) run(name string, args ...string) (string, error) {
 				status, state = "busy", "working"
 			}
 			pid++
-			list = append(list, map[string]any{"pid": pid, "id": id, "name": f.named[id][0], "cwd": f.named[id][1], "kind": "background", "status": status, "state": state})
+			list = append(list, map[string]any{"pid": pid, "id": id, "name": f.named[id][0], "cwd": f.named[id][1], "kind": "background", "status": status, "state": state, "sessionId": "s-" + id})
 		}
 		for id := range f.retired {
-			list = append(list, map[string]any{"id": id, "name": f.named[id][0], "cwd": f.named[id][1], "kind": "background", "state": "blocked"})
+			list = append(list, map[string]any{"id": id, "name": f.named[id][0], "cwd": f.named[id][1], "kind": "background", "state": "blocked", "sessionId": "s-" + id})
 		}
 		data, _ := json.Marshal(list)
 		return string(data), nil
+	case filepath.Base(name) == "claude" && len(args) > 1 && args[0] == "auth" && args[1] == "status":
+		return f.auth, nil
 	case filepath.Base(name) == "claude" && len(args) > 1 && args[0] == "daemon" && args[1] == "status":
 		if f.noDaemon {
 			return "not running\n", errors.New("exit status 1")
@@ -166,6 +170,19 @@ func (f *fake) run(name string, args ...string) (string, error) {
 		return "enabled\n", nil
 	}
 	return "", nil
+}
+
+// transcript writes the transcript of Claude's session id (its sessionId is "s-"+id),
+// as Claude Code keeps it under projects/.
+func (f *fake) transcript(id, body string) {
+	f.t.Helper()
+	dir := filepath.Join(f.sys.ClaudeDir, "projects", "-p-site")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		f.t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "s-"+id+".jsonl"), []byte(body), 0o600); err != nil {
+		f.t.Fatal(err)
+	}
 }
 
 func (f *fake) load() (*config.Config, Settings) {

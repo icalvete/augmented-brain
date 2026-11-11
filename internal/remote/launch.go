@@ -51,6 +51,9 @@ var (
 	ErrServed = errors.New("another task's session works in this folder")
 	// ErrRunning: the task has a launched session already.
 	ErrRunning = errors.New("this task has a session already")
+	// ErrLoggedOut: Claude Code has no login, or it has expired; a session would fail
+	// its first turn (`claude auth login` gives it one).
+	ErrLoggedOut = errors.New("claude is not logged in")
 )
 
 // Launch is one task's session.
@@ -74,14 +77,21 @@ var unitSafe = regexp.MustCompile(`[^A-Za-z0-9_.-]+`)
 // in Claude Desktop and claude.ai, and back when opened there.
 const Retired = "retired"
 
+// Failed is the state of a launched session whose last turn ended in an error the API
+// gave (an expired login, measured on 11-nov): its process may still run, yet it does
+// no work until someone writes to it.
+const Failed = "failed"
+
 // LaunchStatus is a launched session: Active is "active" while it runs, Retired when
-// Claude retired it, "ended" when Claude no longer lists it (or systemd's word, for a
-// unit of an earlier version).
+// Claude retired it, Failed when its last turn ended in an API error (Problem says
+// which), "ended" when Claude no longer lists it (or systemd's word, for a unit of an
+// earlier version).
 type LaunchStatus struct {
-	Unit   string // Claude's id of the session, or the systemd unit of an earlier version
-	Task   string
-	Folder string
-	Active string
+	Unit    string // Claude's id of the session, or the systemd unit of an earlier version
+	Task    string
+	Folder  string
+	Active  string
+	Problem string // with Failed, what the session said: Claude Code's own error text
 }
 
 // FolderTrusted says whether Claude's server would start in folder: the folder itself
@@ -182,6 +192,9 @@ type claudeAgent struct {
 	// its process ends, yet it stays in the list, with no pid and no status, until it is
 	// opened again from Claude Desktop or claude.ai or removed (measured on 11-nov).
 	Pid int `json:"pid"`
+	// SessionID names the session's transcript: projects/<folder>/<SessionID>.jsonl in
+	// Claude's folder.
+	SessionID string `json:"sessionId"`
 }
 
 // agents are Claude's background sessions: those that run and those it retired
@@ -240,15 +253,17 @@ func (s System) Launches(cfgDir string) ([]LaunchStatus, error) {
 		if err != nil {
 			return nil, err
 		}
-		state := map[string]string{}
+		states := map[string]string{}
+		sessionOf := map[string]string{}
 		for _, a := range list {
 			if a.ID == "" {
 				continue
 			}
-			state[a.ID] = Retired
+			states[a.ID] = Retired
 			if a.Pid > 0 {
-				state[a.ID] = "active"
+				states[a.ID] = "active"
 			}
+			sessionOf[a.ID] = a.SessionID
 		}
 		for _, e := range entries {
 			task, ok := strings.CutSuffix(e.Name(), ".json")
@@ -260,8 +275,13 @@ func (s System) Launches(cfgDir string) ([]LaunchStatus, error) {
 				continue
 			}
 			st := LaunchStatus{Unit: r.ID, Task: r.Task, Folder: r.Folder, Active: "ended"}
-			if a := state[r.ID]; a != "" {
+			if a := states[r.ID]; a != "" {
 				st.Active = a
+			}
+			if st.Active == "active" {
+				if _, problem := state.LastAnswer(s.transcript(sessionOf[r.ID])); problem != "" {
+					st.Active, st.Problem = Failed, problem
+				}
 			}
 			res = append(res, st)
 		}
@@ -329,18 +349,21 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 	if !s.FolderTrusted(l.Folder) {
 		return ErrUntrusted
 	}
+	if !s.loggedIn(claude) {
+		return ErrLoggedOut
+	}
 	launched, err := s.Launches(c.Dir)
 	if err != nil {
 		return err
 	}
 	for _, x := range launched {
-		// A retired session of the task gives way to the new one (and leaves Claude's
-		// lists below); another task's still holds its folder: it comes back there
-		// when opened again.
+		// A retired or failed session of the task gives way to the new one (and leaves
+		// Claude's lists below); another task's still holds its folder: it comes back
+		// there when opened again.
 		if x.Task == l.Task && x.Active == "active" {
 			return ErrRunning
 		}
-		if x.Task != l.Task && (x.Active == "active" || x.Active == Retired) && !l.Shared && paths.Same(x.Folder, l.Folder) {
+		if x.Task != l.Task && (x.Active == "active" || x.Active == Failed || x.Active == Retired) && !l.Shared && paths.Same(x.Folder, l.Folder) {
 			return ErrServed
 		}
 	}
@@ -375,22 +398,123 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 		_, _ = s.Run(claude, "rm", id)
 		return err
 	}
-	// A session that cannot start (no login, a broken setting) ends within seconds.
-	for i := 0; i < 5; i++ {
-		s.sleep(time.Second)
-		live, err := s.listedAgents(claude)
-		if err != nil || live[id] {
-			continue
-		}
-		log, _ := s.Run(claude, "logs", id)
-		_, _ = s.Run(claude, "rm", id)
-		_ = os.Remove(launchRecordPath(c.Dir, l.Task))
-		return fmt.Errorf("the session did not start: %s", tail(cleanTerminal(log), 300))
+	if err := s.firstTurn(claude, id, c.Dir, l.Task); err != nil {
+		return err
 	}
 	if hadOld && old.ID != id {
+		// A failed one still runs: it is stopped first.
+		_, _ = s.Run(claude, "stop", old.ID)
 		_, _ = s.Run(claude, "rm", old.ID)
 	}
 	return nil
+}
+
+// FirstTurnWait is how long Start waits for a launched session's first answer. A
+// session whose login has expired writes its error within seconds (5 on 11-nov); a
+// healthy one answers within a few more, and Start returns as soon as it does.
+const FirstTurnWait = 60 * time.Second
+
+// startupWait is how long Start watches for a session that ends at once (no login, a
+// broken setting) when it cannot read its transcript.
+const startupWait = 5 * time.Second
+
+// FirstTurnFailed: the launched session's first turn ended in an error the API gave;
+// Cause is Claude Code's own text, such as "Login reached its time limit · Please run
+// /login". The session was stopped and taken out of Claude's lists.
+type FirstTurnFailed struct {
+	Cause string
+	// Login is true when the cause is the login: `claude auth login` mends it.
+	Login bool
+}
+
+func (e *FirstTurnFailed) Error() string {
+	return "the session's first turn failed: " + e.Cause
+}
+
+// firstTurn watches a session just launched until its first answer: an error when it
+// ends at once or its first turn fails (it is then removed, with its record), nil when
+// it answers, or when FirstTurnWait passes, or when its transcript cannot be found
+// (an earlier claude gives no session id: then only the first startupWait counts).
+func (s System) firstTurn(claude, id, cfgDir, task string) error {
+	fail := func(err error) error {
+		_, _ = s.Run(claude, "stop", id)
+		_, _ = s.Run(claude, "rm", id)
+		_ = os.Remove(launchRecordPath(cfgDir, task))
+		return err
+	}
+	for waited := time.Duration(0); waited < FirstTurnWait; waited += time.Second {
+		s.sleep(time.Second)
+		list, err := s.agents(claude)
+		if err != nil {
+			continue
+		}
+		a, listed := findAgent(list, id)
+		if !listed {
+			log, _ := s.Run(claude, "logs", id)
+			_, _ = s.Run(claude, "rm", id)
+			_ = os.Remove(launchRecordPath(cfgDir, task))
+			return fmt.Errorf("the session did not start: %s", tail(cleanTerminal(log), 300))
+		}
+		path := s.transcript(a.SessionID)
+		if path == "" {
+			if waited+time.Second >= startupWait {
+				return nil
+			}
+			continue
+		}
+		answered, problem := state.LastAnswer(path)
+		if problem != "" {
+			return fail(&FirstTurnFailed{Cause: problem, Login: LoginProblem(problem)})
+		}
+		if answered {
+			return nil
+		}
+	}
+	return nil
+}
+
+// LoginProblem says whether Claude Code's error is about the login (its text on
+// 2.1.322: "Login reached its time limit · Please run /login"; also "Invalid API key ·
+// Please run /login" and "OAuth token has expired").
+func LoginProblem(text string) bool {
+	t := strings.ToLower(text)
+	return strings.Contains(t, "/login") || strings.Contains(t, "oauth") || strings.Contains(t, "api key") || strings.Contains(t, "log in")
+}
+
+// transcript is the transcript of Claude's session with this id: the one file
+// projects/*/<id>.jsonl in Claude's folder (the folder's name follows where the session
+// works, which may change when it enters a worktree), or "" when there is none or the
+// id is not a plain one.
+func (s System) transcript(sessionID string) string {
+	if s.ClaudeDir == "" || sessionID == "" || strings.ContainsAny(sessionID, `/\*?[`) || strings.Contains(sessionID, "..") {
+		return ""
+	}
+	found, _ := filepath.Glob(filepath.Join(s.ClaudeDir, "projects", "*", sessionID+".jsonl"))
+	if len(found) != 1 {
+		return ""
+	}
+	return found[0]
+}
+
+// loggedIn says whether Claude Code has a login that has not expired, from `claude
+// auth status` (JSON on 2.1.322: loggedIn, loginExpiresAt). When that cannot be read
+// (an earlier claude, another output), it says yes: the first turn tells anyway.
+func (s System) loggedIn(claude string) bool {
+	out, _ := s.Run(claude, "auth", "status")
+	var st struct {
+		LoggedIn  *bool  `json:"loggedIn"`
+		ExpiresAt string `json:"loginExpiresAt"`
+	}
+	if json.Unmarshal([]byte(strings.TrimSpace(out)), &st) != nil || st.LoggedIn == nil {
+		return true
+	}
+	if !*st.LoggedIn {
+		return false
+	}
+	if t, err := time.Parse(time.RFC3339, st.ExpiresAt); err == nil && t.Before(time.Now()) {
+		return false
+	}
+	return true
 }
 
 // newAgent looks for a few seconds for the session just launched for l among Claude's

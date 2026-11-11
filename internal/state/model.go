@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/filelock"
@@ -109,23 +110,7 @@ const tailBytes = 512 << 10
 // when it has none yet or cannot be read. Answers Claude Code makes up itself (an error
 // shown as an answer) carry a model in angle brackets and are skipped.
 func LastModel(path string) string {
-	if path == "" {
-		return ""
-	}
-	f, err := os.Open(path)
-	if err != nil {
-		return ""
-	}
-	defer f.Close()
-	if info, err := f.Stat(); err == nil && info.Size() > tailBytes {
-		if _, err := f.Seek(-tailBytes, io.SeekEnd); err != nil {
-			return ""
-		}
-	}
-	data, err := io.ReadAll(f)
-	if err != nil {
-		return ""
-	}
+	data := transcriptTail(path)
 	model := ""
 	sc := bufio.NewScanner(bytes.NewReader(data))
 	sc.Buffer(make([]byte, 0, 64<<10), tailBytes+1)
@@ -148,4 +133,94 @@ func LastModel(path string) string {
 		}
 	}
 	return model
+}
+
+// transcriptTail is the end of a transcript (tailBytes at most), or nil when it cannot
+// be read.
+func transcriptTail(path string) []byte {
+	if path == "" {
+		return nil
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+	if info, err := f.Stat(); err == nil && info.Size() > tailBytes {
+		if _, err := f.Seek(-tailBytes, io.SeekEnd); err != nil {
+			return nil
+		}
+	}
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return nil
+	}
+	return data
+}
+
+// LastAnswer reads the end of a Claude Code transcript: whether it holds an answer at
+// all (answered), and, when the last one is an error Claude Code wrote itself because
+// the API refused the turn, its text (apiErr), such as "Login reached its time limit ·
+// Please run /login" (measured on 2.1.322: model "<synthetic>", isApiErrorMessage true,
+// error "authentication_failed"). A message the user typed after the error clears it:
+// the session is trying again.
+func LastAnswer(path string) (answered bool, apiErr string) {
+	data := transcriptTail(path)
+	sc := bufio.NewScanner(bytes.NewReader(data))
+	sc.Buffer(make([]byte, 0, 64<<10), tailBytes+1)
+	for sc.Scan() {
+		var e struct {
+			Type     string `json:"type"`
+			APIError bool   `json:"isApiErrorMessage"`
+			Error    string `json:"error"`
+			Message  struct {
+				Content json.RawMessage `json:"content"`
+			} `json:"message"`
+		}
+		if json.Unmarshal(sc.Bytes(), &e) != nil {
+			continue // the first line of the tail may be cut: it does not parse
+		}
+		switch e.Type {
+		case "assistant":
+			answered = true
+			apiErr = ""
+			if e.APIError {
+				apiErr = answerText(e.Message.Content)
+				if apiErr == "" {
+					apiErr = e.Error
+				}
+				if apiErr == "" {
+					apiErr = "API error"
+				}
+			}
+		case "user":
+			var typed string
+			if json.Unmarshal(e.Message.Content, &typed) == nil {
+				apiErr = "" // a prompt, not a tool's result
+			}
+		}
+	}
+	return answered, apiErr
+}
+
+// answerText is the text of an answer's content: a string, or its text blocks.
+func answerText(raw json.RawMessage) string {
+	var s string
+	if json.Unmarshal(raw, &s) == nil {
+		return strings.TrimSpace(s)
+	}
+	var blocks []struct {
+		Type string `json:"type"`
+		Text string `json:"text"`
+	}
+	if json.Unmarshal(raw, &blocks) != nil {
+		return ""
+	}
+	var parts []string
+	for _, b := range blocks {
+		if b.Type == "text" && strings.TrimSpace(b.Text) != "" {
+			parts = append(parts, strings.TrimSpace(b.Text))
+		}
+	}
+	return strings.Join(parts, " ")
 }

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **A task's session that cannot work says so.** When Claude Code's login had expired,
+  `session start` opened the session anyway: its first answer was "Login reached its
+  time limit", and `session list` still called it active. Now `session start` checks
+  the login before opening anything, waits for the first answer (up to a minute), and
+  when that answer is an error it closes the session and says what to do, such as
+  `claude auth login`. `session list` shows a session whose last answer failed as
+  **failed**, with the error.
 - **Each session has its own active task.** The reminder to write in the journal, at
   the end of an answer, named the last task any session of the space had touched. With
   two windows on different tasks, one was asked to write in the other's journal. Now

@@ -409,6 +409,12 @@ con confiar en uno de los dos. Y una tarea por carpeta: dos tareas en una carpet
 pisarían los cambios, así que una carpeta que ya usa la sesión de otra tarea se rechaza;
 dale otra con `--folder` (un worktree de git, por ejemplo).
 
+Espera la primera respuesta de la sesión, hasta un minuto, y vuelve en cuanto llega.
+Una sesión que no puede trabajar no se queda abierta: si Claude Code no tiene la sesión
+iniciada, o le ha caducado, no se abre nada, y si la primera respuesta es un error (se
+acabó el login, el servicio está saturado), la sesión se cierra. En los dos casos el
+comando dice qué ha pasado y qué hacer, como volver a entrar con `claude auth login`.
+
 La sesión se cierra con `session stop` o al reiniciar el ordenador. Las sesiones
 lanzadas no vuelven solas tras un reinicio: pídelas otra vez.
 
@@ -446,7 +452,9 @@ que cerrar», nunca un éxito callado.
 
 Lista las sesiones de tareas abiertas en este ordenador: la tarea, si está en marcha y
 su carpeta. **retirada** quiere decir que Claude la paró tras horas sin uso: sigue en
-Claude Desktop y claude.ai, y vuelve al abrirla allí.
+Claude Desktop y claude.ai, y vuelve al abrirla allí. **fallida** quiere decir que su
+última respuesta fue un error, como un login caducado: no hace nada hasta que alguien
+le escribe. La línea dice el error y qué hacer.
 
 ```bash
 augmented-brain session list
