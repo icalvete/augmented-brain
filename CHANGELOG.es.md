@@ -2,6 +2,16 @@
 
 ## Sin publicar
 
+- **La sesión de una tarea solo oye su tarea.** Una sesión abierta con `session start`
+  recibía al empezar todos los avisos del espacio: fechas de otras tareas, la revisión
+  semanal, capturas de otros espacios, sesiones por recuperar y otras sesiones que
+  reiniciar. Ahora solo oye las fechas de su tarea. Lo que afecta a todo (una copia que
+  falló, una versión nueva, el guardia) sigue llegando.
+- **Una sesión con un programa viejo lo dice de sí misma.** Tras una actualización, el
+  inicio de una sesión contaba las sesiones abiertas que seguían con el programa viejo,
+  y se contaba a sí misma entre las «otras» cuando `/clear` le había dejado el viejo.
+  Ahora te dice que es esta sesión la que hay que cerrar y abrir.
+
 - **La sesión de una tarea que no puede trabajar lo dice.** Con el login de Claude Code
   caducado, `session start` abría la sesión igualmente: su primera respuesta era «Login
   reached its time limit», y `session list` seguía llamándola activa. Ahora `session

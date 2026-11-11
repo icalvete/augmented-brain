@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **A task's session hears only its task.** A session opened with `session start` got
+  every notice of the space at its start: other tasks' dates, the weekly review,
+  captures from other spaces, sessions to recover and other sessions to restart. Now it
+  hears only its own task's dates. What concerns everything (a failed backup, a new
+  version, the guard) still comes.
+- **A session that runs an old program says so of itself.** After an update, the start
+  of a session counted the open sessions still running the old program, and counted
+  itself among the "others" when `/clear` had kept its old program. Now it tells you
+  that this very session needs closing and opening again.
+
 - **A task's session that cannot work says so.** When Claude Code's login had expired,
   `session start` opened the session anyway: its first answer was "Login reached its
   time limit", and `session list` still called it active. Now `session start` checks
