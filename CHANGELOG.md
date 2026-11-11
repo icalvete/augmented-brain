@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.17.4-beta
+
+Released 2026-11-11.
 
 - **Restarting remote access no longer stops your task sessions.** A task session
   started from a remote session could start Claude's background service inside the
