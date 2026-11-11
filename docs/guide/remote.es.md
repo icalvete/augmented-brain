@@ -145,6 +145,9 @@ próximo `session start` o `doctor`. Uno con cambios sin commitear o sin subir s
   máquina. Tras un reinicio solo vuelven las
   puertas: pide otra vez las sesiones de las tareas. `augmented-brain session list`
   enseña las abiertas.
+- **Claude retira una sesión que lleva horas sin uso.** Deja de correr, pero sigue en
+  Claude Desktop y claude.ai, y vuelve al abrirla allí. `session list` la llama
+  retirada; `session stop` y cerrar la tarea la cierran igual.
 
 ## Mantenlo seguro
 

@@ -29,10 +29,17 @@ type fake struct {
 	live   map[string]bool      // claude's background sessions that run
 	named  map[string][2]string // id -> name and folder, for claude agents
 	busy   map[string]int       // id -> how many more looks it is still answering
-	bgOut  string               // what claude --bg prints
-	ranIn  []string             // the folder and command of each RunIn
-	sys    System
-	cfgDir string
+	// retired are the sessions Claude retired: listed, with no pid and no status.
+	retired map[string]bool
+	units   []string // systemd units of sessions of earlier versions
+	// noDaemon: Claude's daemon does not run; claude stop and rm fail until
+	// `daemon run` (StartDaemon) starts it, unless daemonStays is false.
+	noDaemon    bool
+	daemonStays bool
+	bgOut       string   // what claude --bg prints
+	ranIn       []string // the folder and command of each RunIn
+	sys         System
+	cfgDir      string
 }
 
 func newFake(t *testing.T) *fake {
@@ -48,6 +55,8 @@ func newFake(t *testing.T) *fake {
 	f := &fake{t: t, root: root, active: map[string]string{}, linger: "no", cfgDir: filepath.Join(root, ".config", "augmented-brain")}
 	f.live = map[string]bool{}
 	f.busy = map[string]int{}
+	f.retired = map[string]bool{}
+	f.daemonStays = true
 	f.bgOut = "Starting background service…\nbackgrounded · ab12cd34 · x\n"
 	f.sys = System{
 		Run: f.run,
@@ -63,6 +72,13 @@ func newFake(t *testing.T) *fake {
 				return filepath.Join(root, ".local", "bin", "claude"), nil
 			}
 			return "", exec.ErrNotFound
+		},
+		StartDaemon: func(string) error {
+			f.calls = append(f.calls, "start daemon")
+			if f.daemonStays {
+				f.noDaemon = false
+			}
+			return nil
 		},
 		Hostname:   func() (string, error) { return "box.local", nil },
 		GOOS:       "linux",
@@ -84,20 +100,41 @@ func (f *fake) run(name string, args ...string) (string, error) {
 	f.calls = append(f.calls, call)
 	switch {
 	case filepath.Base(name) == "claude" && len(args) > 0 && args[0] == "agents":
-		var list []map[string]string
+		// As claude 2.1.322 prints them (11-nov): a running session has its pid, its
+		// status (busy also while it waits for a permission) and its state; a retired one
+		// keeps only the last state it gave.
+		var list []map[string]any
+		pid := 1000
 		for id := range f.live {
-			status := "idle"
+			status, state := "idle", "done"
 			if f.busy[id] > 0 {
 				f.busy[id]--
-				status = "busy"
+				status, state = "busy", "working"
 			}
-			list = append(list, map[string]string{"id": id, "name": f.named[id][0], "cwd": f.named[id][1], "status": status})
+			pid++
+			list = append(list, map[string]any{"pid": pid, "id": id, "name": f.named[id][0], "cwd": f.named[id][1], "kind": "background", "status": status, "state": state})
+		}
+		for id := range f.retired {
+			list = append(list, map[string]any{"id": id, "name": f.named[id][0], "cwd": f.named[id][1], "kind": "background", "state": "blocked"})
 		}
 		data, _ := json.Marshal(list)
 		return string(data), nil
+	case filepath.Base(name) == "claude" && len(args) > 1 && args[0] == "daemon" && args[1] == "status":
+		if f.noDaemon {
+			return "not running\n", errors.New("exit status 1")
+		}
+		return "pid: 1\n", nil
 	case filepath.Base(name) == "claude" && len(args) > 1 && (args[0] == "stop" || args[0] == "rm"):
+		if f.noDaemon {
+			return "", errors.New("exit status 1: couldn't remove " + args[1] + " — the background service may be restarting. Try again in a moment.")
+		}
 		delete(f.live, args[1])
+		if args[0] == "rm" {
+			delete(f.retired, args[1])
+		}
 		return "", nil
+	case name == "systemctl" && len(args) > 1 && args[1] == "list-units":
+		return strings.Join(f.units, " loaded active running x\n") + "\n", nil
 	case name == "loginctl":
 		switch f.linger {
 		case "missing":

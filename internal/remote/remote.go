@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 )
@@ -76,6 +77,9 @@ type System struct {
 	ClaudeJSON string
 	// Sleep waits between looks at a launched session; nil is time.Sleep.
 	Sleep func(time.Duration)
+	// StartDaemon starts Claude's daemon in the background and returns at once; nil
+	// never starts it.
+	StartDaemon func(claude string) error
 	// Home is the user's home folder, where Claude Code's installer puts claude when the
 	// PATH does not lead to it.
 	Home string
@@ -103,7 +107,7 @@ func NewSystem() (System, error) {
 		name = u.Username
 	}
 	self, _ := os.Executable()
-	s := System{Run: realRun, RunIn: realRunIn, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
+	s := System{Run: realRun, RunIn: realRunIn, StartDaemon: realStartDaemon, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
 		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude,
 		Home: home, Self: self}
 	switch runtime.GOOS {
@@ -134,6 +138,26 @@ func realRunIn(dir string, name string, args ...string) (string, error) {
 	}
 	out, err := cmd.CombinedOutput()
 	return string(out), err
+}
+
+// realStartDaemon starts Claude's daemon as `claude --bg` does when none runs: transient,
+// so it exits on its own about a minute after its last client. Every session Claude
+// starts later comes from it and gets its environment, so it gets neither TaskEnv nor
+// AB_CONFIG_DIR (the folder of whoever closed a task, maybe a test's).
+func realStartDaemon(claude string) error {
+	cmd := exec.Command(claude, "daemon", "run", "--origin", "transient")
+	for _, e := range os.Environ() {
+		if !strings.HasPrefix(e, TaskEnv+"=") && !strings.HasPrefix(e, "AB_CONFIG_DIR=") {
+			cmd.Env = append(cmd.Env, e)
+		}
+	}
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
+	detach.Cmd(cmd)
+	started, err := detach.Start(cmd)
+	if err != nil {
+		return err
+	}
+	return started.Process.Release()
 }
 
 func realRun(name string, args ...string) (string, error) {

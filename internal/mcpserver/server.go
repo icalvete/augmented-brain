@@ -12,6 +12,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -687,8 +688,13 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 // replace it.
 var NewRemoteSystem = remote.NewSystem
 
+// StopLog is where the detached `session stop --when-idle` writes how it went, in the
+// configuration's state folder: nobody reads its output otherwise.
+const StopLog = "session-stop.log"
+
 // StopSessionWhenIdle starts, detached, the process that closes a task's session once
-// it has finished its answer (`session stop <task> --when-idle`). Tests replace it.
+// it has finished its answer (`session stop <task> --when-idle`), its output appended
+// to StopLog (started afresh past 64 KB). Tests replace it.
 var StopSessionWhenIdle = func(cfgDir, task string) error {
 	self, err := os.Executable()
 	if err != nil {
@@ -697,6 +703,16 @@ var StopSessionWhenIdle = func(cfgDir, task string) error {
 	cmd := exec.Command(self, "session", "stop", task, "--when-idle")
 	cmd.Env = append(os.Environ(), "AB_CONFIG_DIR="+cfgDir)
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
+	logPath := filepath.Join(cfgDir, state.Dir, StopLog)
+	if fi, err := os.Stat(logPath); err == nil && fi.Size() > 64<<10 {
+		_ = os.Remove(logPath)
+	}
+	if err := os.MkdirAll(filepath.Dir(logPath), 0o700); err == nil {
+		if f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600); err == nil {
+			defer f.Close() // the child keeps its own copy
+			cmd.Stdout, cmd.Stderr = f, f
+		}
+	}
 	detach.Cmd(cmd)
 	_, err = detach.Start(cmd)
 	return err
@@ -719,6 +735,17 @@ func closedWorktree(b *brain.Brain, task string) string {
 		return ""
 	}
 	var out string
+	// One Claude retired after hours unused answers nothing: closed now, so it leaves
+	// Claude Desktop and claude.ai and its worktree can go below.
+	if remote.HasLaunch(b.ConfigDir, task) {
+		var left *remote.LeftInClaude
+		switch err := sys.Stop(b.ConfigDir, task); {
+		case err == nil:
+			out += "\n" + i18n.T("en", "session.closed.retired")
+		case errors.As(err, &left):
+			out += "\n" + i18n.T("en", "session.left", task, left.ID)
+		}
+	}
 	folder, removed, why := sys.CloseTaskWorktree(b.ConfigDir, task)
 	switch {
 	case removed:

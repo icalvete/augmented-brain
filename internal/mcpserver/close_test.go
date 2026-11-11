@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -51,7 +52,7 @@ func TestCloseStopsTheTaskSession(t *testing.T) {
 			LookPath: func(string) (string, error) { return "/usr/bin/claude", nil },
 			Run: func(name string, args ...string) (string, error) {
 				if len(args) > 0 && args[0] == "agents" {
-					return `[{"id":"abc12345","status":"busy"}]`, nil
+					return `[{"pid":4242,"id":"abc12345","status":"busy","state":"working"}]`, nil
 				}
 				return "", nil
 			}}, nil
@@ -61,6 +62,31 @@ func TestCloseStopsTheTaskSession(t *testing.T) {
 	out := mustCall(t, cs, "task_close", map[string]any{"id": "task-site", "result": "done"})
 	if len(stopped) != 1 || stopped[0] != cfgDir+" task-site" || !strings.Contains(out, "closes when it finishes this answer") {
 		t.Fatalf("stopped %v:\n%s", stopped, out)
+	}
+	// A task whose session Claude retired (listed with no pid, 11-nov): closed at once,
+	// no process waits for it.
+	mustCall(t, cs, "task_new", map[string]any{"title": "Docs"})
+	if err := os.WriteFile(filepath.Join(cfgDir, "state", "sessions", "task-docs.json"), []byte(`{"id":"def67890","task":"task-docs"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var calls []string
+	NewRemoteSystem = func() (remote.System, error) {
+		return remote.System{GOOS: "linux",
+			LookPath: func(string) (string, error) { return "/usr/bin/claude", nil },
+			Run: func(name string, args ...string) (string, error) {
+				calls = append(calls, strings.Join(args, " "))
+				if len(args) > 0 && args[0] == "agents" {
+					return `[{"id":"def67890","state":"blocked"}]`, nil
+				}
+				return "", nil
+			}}, nil
+	}
+	out = mustCall(t, cs, "task_close", map[string]any{"id": "task-docs", "result": "done"})
+	if len(stopped) != 1 || !strings.Contains(out, "Claude had retired") || !slices.Contains(calls, "rm def67890") {
+		t.Fatalf("stopped %v, calls %v:\n%s", stopped, calls, out)
+	}
+	if _, err := os.Stat(filepath.Join(cfgDir, "state", "sessions", "task-docs.json")); !os.IsNotExist(err) {
+		t.Errorf("the record of the retired session stays: %v", err)
 	}
 	// A task with no session of its own starts nothing.
 	mustCall(t, cs, "task_new", map[string]any{"title": "Plain"})

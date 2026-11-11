@@ -8,6 +8,16 @@
   nombre del espacio, y guarda antes lo que tenías como copia, así que se puede
   deshacer. Solo desde el panel de este ordenador; desde otro dispositivo la página solo
   enseña. Arreglar una nota estropeada o borrada ya no necesita git.
+- **Cerrar la sesión de una tarea funciona siempre y dice qué hizo.** Claude retira una
+  sesión de fondo que lleva horas sin uso: deja de correr, pero sigue en Claude Desktop y
+  claude.ai. `session list` la daba por activa, `session stop` fallaba cuando el servicio
+  de fondo de Claude también se había parado, y cerrar la tarea esperaba 30 minutos una
+  respuesta que no llegaba. Ahora `session list` dice **retirada**, `session stop`
+  arranca un momento el servicio de Claude para quitarla (o dice cómo hacerlo más
+  tarde), y cerrar la tarea cierra en el acto una sesión retirada. `session stop
+  --when-idle` también para las sesiones de versiones anteriores, y sin sesión dice «no
+  hay nada que cerrar» en vez de callar; cuando lo lanza el cierre de una tarea, lo que
+  hizo queda en `state/session-stop.log`.
 
 ## 0.17.1-beta
 
