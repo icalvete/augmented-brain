@@ -275,7 +275,8 @@ lanzas a mano. Se para solo después de 30 minutos sin usarlo.
 Mantiene Claude accesible desde otro ordenador o desde el móvil, también después de
 reiniciar. Son tres comandos, `install`, `uninstall` y `status`, cada uno con su sección
 más abajo. Usa un servicio de usuario de `systemd` en Linux, un LaunchAgent en macOS y una
-tarea del Programador de tareas en Windows. Sin subcomando, o con otro, `remote` escribe su
+tarea del Programador de tareas en Windows. En Linux hay un cuarto, `watch`, que lanza un
+temporizador, no tú. Sin subcomando, o con otro, `remote` escribe su
 uso. Lo tienes en [Acceso remoto](remote.es.md).
 
 ## augmented-brain remote install
@@ -298,6 +299,10 @@ servicio lleva un PATH con las carpetas de `claude` y de `augmented-brain`, así
 sesiones encuentran los dos tras reiniciar. Puedes lanzarlo otra vez cuando quieras: solo
 cambia lo que es distinto.
 
+En Linux pone también el vigilante: un temporizador de `systemd`,
+`augmented-brain-watch-remote`, que lanza `augmented-brain remote watch` cada dos minutos
+(mira más abajo).
+
 Luego dice lo que aún falta, y no hace nada de ello por ti:
 
 - Claude tiene que **confiar en cada carpeta**. Escribe `cd <carpeta> && claude` para cada
@@ -319,7 +324,7 @@ Para el acceso remoto y lo quita.
 augmented-brain remote uninstall
 ```
 
-Para y quita los servicios que escribió `remote install`, y pone `enabled = false` en
+Para y quita los servicios que escribió `remote install` (en Linux, primero el vigilante), y pone `enabled = false` en
 `remote.toml`. Las carpetas y sus entradas en `work_folders` se quedan: nunca borra nada
 más. No tiene opciones.
 
@@ -336,6 +341,26 @@ claude.ai), si el servicio está en marcha y arranca solo, y si Claude confía e
 carpeta. Luego, en Linux, si el linger está activado; en macOS y Windows, que arranca
 cuando entras en tu sesión. Debajo de cada problema, `→` dice qué hacer.
 No tiene opciones.
+
+## augmented-brain remote watch
+
+Recupera un servicio cuando el servidor archivó su sesión. Solo en Linux. Lo lanza su
+temporizador cada dos minutos; no hace falta que lo lances tú.
+
+```bash
+augmented-brain remote watch
+```
+
+Un `claude remote-control` sano tiene un proceso de Claude para su sesión. Cuando el
+servidor archiva la sesión (por ejemplo, porque la archivaste en claude.ai), ese proceso
+termina y el servicio sigue en marcha sin sesión: nadie puede conectarse, y systemd no ve
+nada raro. El vigilante ve un servicio sin sesión en dos miradas seguidas y lo reinicia.
+Si después sigue sin sesión, Claude intentaba reabrir la sesión archivada: el vigilante
+cambia el nombre de su registro (`bridge-pointer.json` pasa a
+`bridge-pointer.json.archived`, en el proyecto de la carpeta en `~/.claude/projects`) y lo
+reinicia otra vez, así que empieza una sesión nueva, en unos tres minutos. La
+conversación de la sesión archivada no vuelve. Lo que hace queda en el registro del
+sistema (`journalctl --user -u augmented-brain-watch-remote`). No tiene opciones.
 
 ## augmented-brain session
 

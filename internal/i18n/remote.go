@@ -125,6 +125,19 @@ var remoteMessages = map[string]msg{
 		en: "Stopped and removed: %s.\nThe folders and their work_folders entries stay; delete them by hand if you want.",
 		es: "Parado y quitado: %s.\nLas carpetas y sus entradas de work_folders se quedan; bórralas a mano si quieres.",
 	},
+	// remote watch, run by its timer: each line goes to the system journal.
+	"remote.watch.restart": {
+		en: "%s: the server has no Claude session behind it (the server archived it, or it stopped); restarting the service to bring it back.",
+		es: "%s: el servidor no tiene ninguna sesión de Claude detrás (el servidor la archivó, o se paró); reinicio el servicio para recuperarla.",
+	},
+	"remote.watch.pointer": {
+		en: "%s: still no session after restarting: the server archived it. Setting %s aside as %s, so a new session starts, and restarting; it may take about three minutes.",
+		es: "%s: sigue sin sesión tras reiniciar: el servidor la archivó. Aparto %s como %s para que empiece una sesión nueva, y reinicio; puede tardar unos tres minutos.",
+	},
+	"remote.watch.nopointer": {
+		en: "%s: still no session after restarting, and Claude keeps no record of it to set aside; restarting again.",
+		es: "%s: sigue sin sesión tras reiniciar, y Claude no guarda ningún registro suyo que apartar; reinicio otra vez.",
+	},
 	"remote.uninstall.none": {
 		en: "No remote access service was installed.",
 		es: "No había ningún servicio de acceso remoto instalado.",
@@ -193,8 +206,8 @@ var remoteMessages = map[string]msg{
 		es: "mira por qué en %s; si caducó el acceso de Claude, lanza `claude` e inicia sesión. `augmented-brain remote install` lo vuelve a arrancar",
 	},
 	"remote.fix.update": {
-		en: "run `augmented-brain remote install` again to bring the service up to date: its sessions then find claude and augmented-brain, and when it fails it says why in the system journal (it restarts remote access)",
-		es: "vuelve a lanzar `augmented-brain remote install` para poner el servicio al día: así sus sesiones encuentran claude y augmented-brain, y cuando falla dice por qué en el registro del sistema (reinicia el acceso remoto)",
+		en: "run `augmented-brain remote install` again to bring the service up to date: its sessions then find claude and augmented-brain, when it fails it says why in the system journal, and it comes back by itself when the server archives its session (it restarts remote access)",
+		es: "vuelve a lanzar `augmented-brain remote install` para poner el servicio al día: así sus sesiones encuentran claude y augmented-brain, cuando falla dice por qué en el registro del sistema, y vuelve solo cuando el servidor archiva su sesión (reinicia el acceso remoto)",
 	},
 	"remote.fix.linger": {
 		en: "an administrator runs `%s`",

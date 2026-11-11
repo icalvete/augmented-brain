@@ -269,7 +269,8 @@ run it by hand. It stops on its own after 30 minutes without use.
 Keeps Claude reachable from another computer or your phone, also after a reboot. It is
 three commands, `install`, `uninstall` and `status`, each with its own section below.
 It uses a `systemd` user service on Linux, a LaunchAgent on macOS and a task of the Task
-Scheduler on Windows. Without a subcommand, or with another, `remote` prints its usage.
+Scheduler on Windows. On Linux a fourth one, `watch`, is run by a timer, not by you.
+Without a subcommand, or with another, `remote` prints its usage.
 See [Remote access](remote.md).
 
 ## augmented-brain remote install
@@ -291,6 +292,9 @@ and a folder that exists. The service gets a PATH with the folders of `claude` a
 `augmented-brain`, so its sessions find both after a reboot. You can run it again at any
 time: it changes only what is different.
 
+On Linux it also installs the watch: a `systemd` timer, `augmented-brain-watch-remote`,
+that runs `augmented-brain remote watch` every two minutes (see below).
+
 It then says what is still missing, and does none of it for you:
 
 - Claude must **trust each folder**. It prints `cd <folder> && claude` for each one that
@@ -311,7 +315,7 @@ Stops remote access and removes it.
 augmented-brain remote uninstall
 ```
 
-It stops and removes the services `remote install` wrote, and sets `enabled = false` in
+It stops and removes the services `remote install` wrote (on Linux, the watch first), and sets `enabled = false` in
 `remote.toml`. The folders and their entries in `work_folders` stay: it never deletes
 anything else. It takes no options.
 
@@ -326,6 +330,26 @@ augmented-brain remote status
 For each space: the session's name (what you pick in Claude Desktop or claude.ai), whether
 the service is running and starts by itself, and whether Claude trusts its folder. Then,
 on Linux, whether linger is on; on macOS and Windows, that it starts when you log in. Under each problem, `→` says what to do. It takes no options.
+
+## augmented-brain remote watch
+
+Brings a service back when the server archived its session. Linux only. Its timer runs
+it every two minutes; you do not need to.
+
+```bash
+augmented-brain remote watch
+```
+
+A healthy `claude remote-control` keeps a Claude process for its session. When the server
+archives the session (for example, you archived it in claude.ai), that process ends and
+the service goes on running with no session: nobody can connect, and systemd sees nothing
+wrong. The watch notices a service with no session at two looks in a row and restarts it.
+If it still has none after that, Claude was trying to reopen the archived session: the
+watch renames Claude's record of it (`bridge-pointer.json` becomes
+`bridge-pointer.json.archived`, in the folder's project in `~/.claude/projects`) and
+restarts it again, so a new session starts, in about three minutes. The conversation of
+the archived session does not come back. What it does goes to the system journal
+(`journalctl --user -u augmented-brain-watch-remote`). It takes no options.
 
 ## augmented-brain session
 

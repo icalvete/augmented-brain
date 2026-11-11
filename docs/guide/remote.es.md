@@ -171,6 +171,11 @@ trabajar en la máquina por ella.
   alguien entra en la sesión.
 - Si caduca tu acceso a Claude, el servicio sigue en marcha pero nadie puede conectarse.
   `status` y `doctor` lo dicen; lanza `claude` una vez e inicia sesión otra vez.
+- **Si el servidor archiva la sesión** (porque la archivaste en claude.ai, por ejemplo), en
+  Linux el servicio vuelve solo con una sesión nueva y vacía del mismo nombre, en unos
+  cinco minutos: un vigilante mira cada dos minutos (mira
+  [`remote watch`](commands.es.md#augmented-brain-remote-watch)). En macOS y Windows,
+  vuelve a lanzar `augmented-brain remote install`.
 - Las sesiones que empieces desde el móvil son del espacio de su carpeta: la puerta de
   trabajo abre las notas de trabajo. Para llegar a otro espacio, usa la puerta de ese
   espacio.
@@ -181,7 +186,7 @@ trabajar en la máquina por ella.
 augmented-brain remote uninstall
 ```
 
-Para y quita los servicios (en Windows, también el programa que tenían en marcha). Las
+Para y quita los servicios y, en Linux, el vigilante (en Windows, también el programa que tenían en marcha). Las
 carpetas, y su sitio entre las carpetas de trabajo del
 espacio, se quedan, y no se borra nada más. Bórralas a mano si quieres.
 

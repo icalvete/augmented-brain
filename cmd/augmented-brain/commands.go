@@ -51,6 +51,8 @@ var commands = []command{
 	{name: "remote install"},
 	{name: "remote uninstall"},
 	{name: "remote status"},
+	// remote watch is run by its systemd timer, not by people.
+	{name: "remote watch", hidden: true},
 	// session is hidden: its three subcommands are the ones the usage text lists.
 	{name: "session", hidden: true, run: withoutIn(cmdSession)},
 	{name: "session start", flags: func() []string { fs, _ := sessionFlags(io.Discard); return flagNames(fs) }},
