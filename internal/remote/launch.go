@@ -181,6 +181,38 @@ func readLaunch(cfgDir, task string) (launchRecord, bool) {
 	return r, true
 }
 
+// LaunchedTask is the task this session was launched for (session start), or "" for
+// any other session. Its record names the session by Claude's short id, which begins
+// the session's id (the hooks' session_id). After /clear the session id changes but
+// the job folder Claude gives the session's processes (CLAUDE_JOB_DIR, ending in the
+// short id) stays: it counts only when the session runs in the record's folder, since
+// a variable may also come from whoever started Claude's daemon.
+func LaunchedTask(cfgDir, sessionID, jobDir, cwd string) string {
+	entries, _ := os.ReadDir(launchRecords(cfgDir))
+	for _, e := range entries {
+		task, ok := strings.CutSuffix(e.Name(), ".json")
+		if !ok {
+			continue
+		}
+		r, ok := readLaunch(cfgDir, task)
+		if !ok || len(r.ID) < 8 {
+			continue
+		}
+		if strings.HasPrefix(sessionID, r.ID) {
+			return r.Task
+		}
+		if jobDir == "" || filepath.Base(jobDir) != r.ID {
+			continue
+		}
+		here, err1 := paths.Resolve(cwd)
+		folder, err2 := paths.Resolve(r.Folder)
+		if err1 == nil && err2 == nil && cwd != "" && r.Folder != "" && paths.Within(here, folder) {
+			return r.Task
+		}
+	}
+	return ""
+}
+
 // claudeAgent is one entry of `claude agents --json`.
 type claudeAgent struct {
 	ID     string `json:"id"`
