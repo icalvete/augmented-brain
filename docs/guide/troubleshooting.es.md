@@ -215,6 +215,16 @@ Qué hacer, en cuanto lo veas:
 Claude avisa a los 2 GB, luego a los 4 y a los 8 GB, una vez cada uno. En Windows no
 lo mira.
 
+### Se acumulan worktrees viejos y carpetas temporales
+
+`doctor` dice que ha quedado algo del trabajo con Claude Code. Cuando Claude Code trabaja
+en un worktree (una segunda copia de trabajo de un repositorio, en `.claude/worktrees`), el
+worktree se queda al terminar la sesión. Sus sesiones dejan además carpetas en la carpeta
+temporal del sistema, que un ordenador que casi no se reinicia nunca vacía.
+
+Ejecuta `augmented-brain clean`. Enseña lo que quitaría y pregunta antes. Un worktree con
+cambios o commits propios nunca se quita: solo lo nombra, para que lo mires tú.
+
 ### Después de recuperar una copia, nada pregunta antes de tocar producción
 
 Las copias de seguridad no llevan las listas del guardia. Abre una sesión de Claude: se

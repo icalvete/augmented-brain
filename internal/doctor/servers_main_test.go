@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/icalvete/augmented-brain/internal/hostmem"
+	"github.com/icalvete/augmented-brain/internal/leftovers"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
 
@@ -14,5 +15,6 @@ func TestMain(m *testing.M) {
 	testenv.CleanGit()
 	state.ScanProc = false
 	hostmem.Local = nil
+	localLeftovers = func() (leftovers.Env, bool) { return leftovers.Env{}, false }
 	os.Exit(m.Run())
 }

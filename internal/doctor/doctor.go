@@ -20,6 +20,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/hostmem"
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/leftovers"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/remote"
@@ -64,6 +65,9 @@ type Env struct {
 	Remote *remote.System
 	// Tailnet is the Tailscale the remote panel uses; nil means the real one.
 	Tailnet *tailnet.Tailnet
+	// Leftovers is where to look for what Claude Code leaves behind; nil means this
+	// computer's.
+	Leftovers *leftovers.Env
 }
 
 // Run returns every check, in the order they are shown. Later checks are skipped when
@@ -142,6 +146,7 @@ func Run(e Env) []Check {
 	}
 	out = append(out, remoteChecks(e, c)...)
 	out = append(out, worktreeChecks(e, c)...)
+	out = append(out, leftoverChecks(e, l)...)
 	out = append(out, panelRemote(e, c)...)
 	out = append(out, configHistory(c)...)
 	out = append(out, autoMemory(e, c)...)
@@ -415,6 +420,40 @@ func worktreeChecks(e Env, c *config.Config) []Check {
 		out = append(out, Check{Warning,
 			i18n.T(l, "doctor.worktree.kept", paths.Tilde(k.Folder), k.Task, i18n.T(l, "session.worktree.why."+k.Why)),
 			i18n.T(l, "doctor.worktree.kept.fix")})
+	}
+	return out
+}
+
+// localLeftovers is this computer's Env for leftovers; tests turn it off.
+var localLeftovers = leftovers.LocalEnv
+
+// leftoverChecks says what working with Claude Code left behind (package leftovers):
+// one line for what `augmented-brain clean` would remove, one for the worktrees it
+// leaves alone because they hold work of their own.
+func leftoverChecks(e Env, l string) []Check {
+	var env leftovers.Env
+	if e.Leftovers != nil {
+		env = *e.Leftovers
+	} else if local, ok := localLeftovers(); ok {
+		env = local
+	} else {
+		return nil
+	}
+	r := leftovers.Find(env)
+	var out []Check
+	if !r.Empty() {
+		out = append(out, Check{Info, i18n.T(l, "doctor.leftovers", len(r.Removable()), len(r.Prunable),
+			leftovers.HumanSize(r.ScratchSize())), i18n.T(l, "doctor.leftovers.fix")})
+	}
+	var kept []string
+	for _, w := range r.Worktrees {
+		if w.Work != "" {
+			kept = append(kept, paths.Tilde(w.Folder))
+		}
+	}
+	if len(kept) > 0 {
+		out = append(out, Check{Info, i18n.T(l, "doctor.leftovers.kept", len(kept), strings.Join(kept, ", ")),
+			i18n.T(l, "doctor.leftovers.kept.fix")})
 	}
 	return out
 }

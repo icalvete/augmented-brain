@@ -26,6 +26,11 @@ Publicada el 2026-11-12.
   ya no la cuenta. Lo mismo vale para cualquier sesión de fondo que `session start` no
   abrió para una tarea: si se archiva en Claude Desktop, a Claude no se le dice, así que
   no hay forma de saberlo.
+- **`augmented-brain clean` quita lo que deja el trabajo con Claude Code.** Los worktrees
+  que hizo Claude Code con su sesión terminada, los registros de git de worktrees cuya
+  carpeta ya no existe y las carpetas temporales de sesiones que acabaron hace un día o
+  más. Antes enseña la lista y pregunta; un worktree con cambios o commits propios solo se
+  nombra. `doctor` avisa cuando hay algo que limpiar.
 
 ## 0.19.1-beta
 

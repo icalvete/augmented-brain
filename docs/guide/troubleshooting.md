@@ -203,6 +203,16 @@ What to do, as soon as you see it:
 
 Claude warns at 2 GB, then at 4 and 8 GB, once each. On Windows it does not look.
 
+### Old worktrees and scratch folders pile up
+
+`doctor` says that something was left over from working with Claude Code. When Claude
+Code works in a worktree (a second working copy of a repository, in `.claude/worktrees`),
+the worktree stays after the session ends. Its sessions also leave scratch folders in
+the system's temporary folder, which a computer that is rarely restarted never empties.
+
+Run `augmented-brain clean`. It shows what it would remove and asks first. A worktree with
+changes or commits of its own is never removed: it only names it, so you look at it.
+
 ### After a restore, nothing asks before production
 
 Backups do not carry the guard's lists. Open a Claude session: it offers to ask you for

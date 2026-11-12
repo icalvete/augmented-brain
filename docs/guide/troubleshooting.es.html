@@ -152,6 +152,9 @@
   <p>Qué hacer, en cuanto lo veas:</p>
   <ol><li>Pídele a Claude que aparque la tarea (“apárcala”). Se guarda dónde estabas y lo que viene después.</li><li>Abre una ventana nueva de VS Code (o una sesión nueva en el terminal) y retoma la tarea allí.</li><li>Cierra la ventana vieja cuando acabes con ella: así se libera la memoria.</li></ol>
   <p>Claude avisa a los 2 GB, luego a los 4 y a los 8 GB, una vez cada uno. En Windows no lo mira.</p>
+  <h3 id="se-acumulan-worktrees-viejos-y-carpetas-temporales">Se acumulan worktrees viejos y carpetas temporales</h3>
+  <p><code>doctor</code> dice que ha quedado algo del trabajo con Claude Code. Cuando Claude Code trabaja en un worktree (una segunda copia de trabajo de un repositorio, en <code>.claude/worktrees</code>), el worktree se queda al terminar la sesión. Sus sesiones dejan además carpetas en la carpeta temporal del sistema, que un ordenador que casi no se reinicia nunca vacía.</p>
+  <p>Ejecuta <code>augmented-brain clean</code>. Enseña lo que quitaría y pregunta antes. Un worktree con cambios o commits propios nunca se quita: solo lo nombra, para que lo mires tú.</p>
   <h3 id="después-de-recuperar-una-copia-nada-pregunta-antes-de-tocar-producción">Después de recuperar una copia, nada pregunta antes de tocar producción</h3>
   <p>Las copias de seguridad no llevan las listas del guardia. Abre una sesión de Claude: se ofrece a preguntártelas. O añade tú <code>production_aws_profiles</code> y <code>untouchable_hosts</code> a la configuración.</p>
   <h3 id="después-de-recuperar-hay-secretos-que-no-se-ha-podido-comprobar">Después de recuperar, hay secretos que “no se ha podido comprobar”</h3>

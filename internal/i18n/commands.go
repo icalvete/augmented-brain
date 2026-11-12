@@ -392,6 +392,7 @@ Usage:
   augmented-brain watch pr N   follow pull request N until it is merged, fails or passes, and say so (--task TASK: also in the task)
   augmented-brain config history    the last versions of your configuration, and what changed in one (config history N)
   augmented-brain config restore N  go back to version N (the current one is kept as a version first)
+  augmented-brain clean        remove what working with Claude Code leaves behind: worktrees of sessions that ended, old scratch folders (shows it first; --yes: do not ask)
   augmented-brain update       update augmented brain and its Claude Code plugin
   augmented-brain uninstall    remove the program and the plugin (your notes stay; --all: start from scratch)
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
@@ -420,6 +421,7 @@ Uso:
   augmented-brain watch pr N   vigila la pull request N hasta que se mezcla, falla o pasa, y lo dice (--task TAREA: también en la tarea)
   augmented-brain config history    las últimas versiones de tu configuración, y qué cambió en una (config history N)
   augmented-brain config restore N  vuelve a la versión N (antes guarda la actual como una versión más)
+  augmented-brain clean        quita lo que deja el trabajo con Claude Code: worktrees de sesiones terminadas, carpetas temporales viejas (antes lo enseña; --yes: sin preguntar)
   augmented-brain update       actualiza augmented brain y su plugin de Claude Code
   augmented-brain uninstall    quita el programa y el plugin (tus notas se quedan; --all: empezar de cero)
   augmented-brain mcp          arranca el servidor MCP (lo arranca tu asistente, no tú)

@@ -37,6 +37,7 @@ row here with the test that covers it.
 | `space`, `space add` | `cmd` `TestSpaceCommand`, `TestSpaceAdd`; `internal/setup` `TestAddSpaceErrors` |
 | `check` | `cmd` `TestCheckUsesTheDefaultSpace`, `TestCheckWarnsOfMissingRepos`, `TestCheckFindsSecretsInDocs`, `TestCheckMakesNotesPrivate` |
 | `doctor` | `internal/doctor` (12 tests), `cmd` `TestSaysThereIsNoBackup`, `TestConfigRestoreFixesABrokenConfig` |
+| `clean` and its `doctor` line (worktrees of Claude Code: clean, with changes, with commits, locked by a dead or a live session, locked for another reason, used by a running session, on a branch of the user's; records of missing worktrees; scratch folders of running, recent and old sessions) | `internal/leftovers` (3 tests, real git repositories); tried by hand on 12-nov on a real computer (the list only) |
 | `import` | `internal/importer`, `cmd` `TestImportMissingSource` |
 | `backup`, `backup setup`, `restore` | `internal/backup` (25 tests), `cmd` `TestBackupSpaceFlag`, `TestRestoreNamesTheSecrets` |
 | `panel`, `panel remote`, `panel stop` | `internal/panel`, `cmd` `TestPanelRemoteExplains`, `TestExplainTailnet`; `scripts/panel-browser-check.py` |

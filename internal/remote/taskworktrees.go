@@ -121,7 +121,7 @@ func RemoveNotedWorktrees(cfgDir, task string, skip ...string) (removed []string
 			kept = append(kept, Leftover{task, n.folder, KeptInUse})
 			continue
 		}
-		done, why := removeWorktree(n.folder, n.branch)
+		done, why := RemoveWorktree(n.folder, n.branch)
 		switch {
 		case done:
 			removed = append(removed, n.folder)
@@ -147,20 +147,29 @@ func slicesSame(list []string, folder string) bool {
 	return false
 }
 
-// removeWorktree removes a worktree with branch (when not ""), if it holds no change and
-// no commit that is not on the remote. done is false and why "" when it was gone
-// already. --force only after those checks: git refuses a worktree with submodules
-// without it.
-func removeWorktree(folder, branch string) (done bool, why string) {
+// WorktreeWork says what a worktree holds of its own: KeptChanges, KeptCommits, or ""
+// when nothing would be lost by removing it. What git cannot answer counts as work.
+func WorktreeWork(folder string) string {
+	if out, err := GitRun(folder, "status", "--porcelain"); err != nil || strings.TrimSpace(out) != "" {
+		return KeptChanges
+	}
+	if out, err := GitRun(folder, "rev-list", "HEAD", "--not", "--remotes"); err != nil || strings.TrimSpace(out) != "" {
+		return KeptCommits
+	}
+	return ""
+}
+
+// RemoveWorktree removes a worktree (a task's, or one Claude Code made) with branch
+// (when not ""), if it holds no change and no commit that is not on the remote. done is
+// false and why "" when it was gone already. --force only after those checks: git
+// refuses a worktree with submodules without it.
+func RemoveWorktree(folder, branch string) (done bool, why string) {
 	repo := WorktreeRoot(folder)
 	if repo == "" {
 		return false, "" // removed by hand already
 	}
-	if out, err := GitRun(folder, "status", "--porcelain"); err != nil || strings.TrimSpace(out) != "" {
-		return false, KeptChanges
-	}
-	if out, err := GitRun(folder, "rev-list", "HEAD", "--not", "--remotes"); err != nil || strings.TrimSpace(out) != "" {
-		return false, KeptCommits
+	if why := WorktreeWork(folder); why != "" {
+		return false, why
 	}
 	if _, err := GitRun(repo, "worktree", "remove", "--force", folder); err != nil {
 		return false, KeptChanges

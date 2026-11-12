@@ -124,7 +124,7 @@ func RemoveTaskWorktree(cfgDir, task string) (folder string, removed bool, why s
 		return "", false, ""
 	}
 	_, branch := TaskWorktreePath(repo, task)
-	done, why := removeWorktree(folder, branch)
+	done, why := RemoveWorktree(folder, branch)
 	if !done {
 		return folder, false, why
 	}

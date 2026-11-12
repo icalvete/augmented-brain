@@ -144,7 +144,9 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
   untouchable and allowed;
 - a Claude window using a lot of memory (2 GB or more);
 - the panel from another device, once you have used it: Tailscale, HTTPS, and an address
-  left published.
+  left published;
+- what working with Claude Code left behind: its worktrees whose session is over, and the
+  scratch folders of sessions that ended (see `clean`).
 
 It ends with an error when something fails. When the configuration cannot be read, it
 points to `config history` and `config restore`. It takes no options. See
@@ -591,6 +593,33 @@ or start a new session. A command can be run by the assistant, so it never accep
 for you. Going back from
 the panel's Versions page does accept them. It works even when `config.toml` is broken,
 like `config history`. It takes no options.
+
+## augmented-brain clean
+
+Removes what working with Claude Code leaves behind and nobody cleans up. It shows the
+list first, and removes it only if you say yes.
+
+```bash
+augmented-brain clean
+```
+
+It looks in every folder Claude Code was opened in, and in its scratch folder:
+
+- **Worktrees Claude Code made** (a worktree is a second working copy of a repository; Claude
+  Code puts them in `.claude/worktrees`) whose session is over. One goes only when it has no
+  change not committed and no commit that is not on the remote: it is removed with
+  `git worktree remove`, never by deleting the folder. Its branch goes with it when Claude
+  Code named it (`worktree-<name>`); a branch of yours stays. A worktree with work of its
+  own is only named, so you look at it.
+- **Worktrees git remembers whose folder is gone**: `git worktree prune` forgets them. Their
+  branches stay.
+- **Scratch folders of sessions that ended** (`/tmp/claude-<number>` on Linux), untouched for
+  over a day. Those of running sessions stay, and so does anything else there.
+
+Before removing each thing it looks again, so a session that started meanwhile keeps its
+folders. `doctor` says when there is something to clean.
+
+- `--yes`: do not ask.
 
 ## augmented-brain update
 

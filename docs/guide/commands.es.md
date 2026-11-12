@@ -150,7 +150,9 @@ algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Re
   intocable y permitido;
 - una ventana de Claude que usa mucha memoria (2 GB o más);
 - el panel desde otro dispositivo, si lo has usado: Tailscale, HTTPS y una dirección que
-  se quedó publicada.
+  se quedó publicada;
+- lo que ha dejado el trabajo con Claude Code: sus worktrees con la sesión terminada y las
+  carpetas temporales de sesiones que acabaron (mira `clean`).
 
 Acaba con error si algo falla. Si la configuración no se puede leer, te lleva a
 `config history` y `config restore`. No tiene opciones. Lo tienes en
@@ -603,6 +605,34 @@ merge que antes dejaba pasar. Sigue preguntando hasta que aceptes las listas en 
 Guardia del panel, o empieces una sesión nueva. Un comando lo puede lanzar el asistente,
 así que nunca las acepta por ti. Volver desde la página Versiones del panel sí las acepta. Funciona aunque
 `config.toml` esté roto, igual que `config history`. No tiene opciones.
+
+## augmented-brain clean
+
+Quita lo que deja el trabajo con Claude Code y no limpia nadie. Antes enseña la lista, y
+solo lo quita si dices que sí.
+
+```bash
+augmented-brain clean
+```
+
+Mira en cada carpeta en la que se abrió Claude Code, y en su carpeta temporal:
+
+- **Worktrees que hizo Claude Code** (un worktree es una segunda copia de trabajo de un
+  repositorio; Claude Code los pone en `.claude/worktrees`) cuya sesión ya terminó. Solo se
+  quita uno sin cambios sin commit y sin commits que no estén en el remoto, y con
+  `git worktree remove`, nunca borrando la carpeta. Su rama se va con él cuando la nombró
+  Claude Code (`worktree-<nombre>`); una rama tuya se queda. Un worktree con trabajo propio
+  solo se nombra, para que lo mires tú.
+- **Worktrees que git recuerda y cuya carpeta ya no existe**: `git worktree prune` los
+  olvida. Sus ramas se quedan.
+- **Carpetas temporales de sesiones que terminaron** (`/tmp/claude-<número>` en Linux), sin
+  tocar desde hace más de un día. Las de las sesiones abiertas se quedan, y todo lo demás
+  que haya allí también.
+
+Antes de quitar cada cosa vuelve a mirarla, así que una sesión que empezó entretanto
+conserva sus carpetas. `doctor` avisa cuando hay algo que limpiar.
+
+- `--yes`: sin preguntar.
 
 ## augmented-brain update
 

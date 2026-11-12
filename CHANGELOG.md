@@ -24,6 +24,11 @@ Released 2026-11-12.
   left where you put it: only its earlier augmented brain stops, so `doctor` no longer
   counts it. The same goes for any background session `session start` did not open
   for a task: archived in Claude Desktop, Claude is not told, so it cannot be sure.
+- **`augmented-brain clean` removes what working with Claude Code leaves behind.**
+  Worktrees Claude Code made whose session is over, git's records of worktrees whose
+  folder is gone, and the scratch folders of sessions that ended a day ago or more. It
+  shows the list first and asks; a worktree with changes or commits of its own is only
+  named. `doctor` says when there is something to clean.
 
 ## 0.19.1-beta
 
