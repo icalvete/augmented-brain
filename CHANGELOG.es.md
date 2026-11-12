@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.18.0-beta
+
+Publicada el 2026-11-12.
 
 - **Actualizar reinicia las sesiones que siguen con el programa viejo.** Después de
   actualizar, `augmented-brain update` reinicia, una a una, las sesiones de Claude
