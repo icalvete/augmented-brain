@@ -36,7 +36,7 @@ type fake struct {
 	// noRespawn makes claude respawn fail; oldAgents makes claude agents refuse --all,
 	// as a claude that does not know it would.
 	noRespawn, oldAgents bool
-	units   []string // systemd units of sessions of earlier versions
+	units                []string // systemd units of sessions of earlier versions
 	// noDaemon: Claude's daemon does not run; claude stop and rm fail until
 	// `daemon run` (StartDaemon) starts it, unless daemonStays is false.
 	noDaemon    bool
