@@ -286,11 +286,11 @@ func oldServersNote(c *config.Config, others bool) string {
 	}
 	var note string
 	if own {
-		note += fmt.Sprintf("\nThis session itself still runs an earlier augmented brain: its augmented-brain tools started before the update to %s (/clear does not restart them), so they may fail, and closing a task may not stop a session. %stell the user in one line to close this session and open it again; or, if it is a task's session or one of the remote access, offer to restart it once this answer ends (`augmented-brain session restart <its id or name> --when-idle`; `claude agents` lists them).\n",
+		note += fmt.Sprintf("\nThis session itself still runs an earlier augmented brain: its augmented-brain tools started before the update to %s (/clear does not restart them), so they may fail, and closing a task may not stop a session. %soffer the user in one line to restart it once this answer ends, with the same conversation (`augmented-brain session restart <its id or name> --when-idle`; `claude agents` lists them): in Claude Desktop or a terminal the window stays open and only its augmented brain restarts. On Windows, or if that command says it cannot, ask them to close this session and open it again.\n",
 			version.Version, session.FirstAnswerLine(c.Language))
 	}
 	if rest > 0 {
-		note += fmt.Sprintf("\n%d other Claude sessions on this machine still run an earlier augmented brain: they started before it was updated to %s, and their augmented-brain tools may fail until they are restarted. %smention it in one line: `augmented-brain session restart --old` restarts the idle ones that are not of Claude Desktop, with the same conversation; the others, close and open them when it suits them.\n",
+		note += fmt.Sprintf("\n%d other Claude sessions on this machine still run an earlier augmented brain: they started before it was updated to %s, and their augmented-brain tools may fail until they are restarted. %smention it in one line: `augmented-brain session restart --old` restarts the idle ones, with the same conversation (those of Claude Desktop stay open: only their augmented brain restarts).\n",
 			rest, version.Version, session.FirstAnswerLine(c.Language))
 	}
 	return note

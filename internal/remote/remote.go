@@ -104,6 +104,11 @@ type System struct {
 	PID int
 	// Now is the time, for how long ago the watch last looked; nil is time.Now.
 	Now func() time.Time
+	// MCPServers are the augmented-brain mcp processes running, and StopServer ends one
+	// (restart.go): how a Claude Desktop session gets the program of now. nil, either
+	// of them, leaves such a session alone.
+	MCPServers func() []int
+	StopServer func(pid int) error
 }
 
 // NewSystem is the real system.
@@ -129,7 +134,8 @@ func NewSystem() (System, error) {
 	self, _ := os.Executable()
 	s := System{Run: realRun, RunIn: realRunIn, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
 		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude, ClaudeDir: claudeDir,
-		Home: home, Self: self, Children: procChildren, Parent: procParent, PID: os.Getpid()}
+		Home: home, Self: self, Children: procChildren, Parent: procParent, PID: os.Getpid(),
+		MCPServers: procMCPServers, StopServer: stopMCPServer}
 	if runtime.GOOS == "linux" {
 		s.GroupProcs = procGroup
 		s.OwnScope = hasOwnScope(exec.LookPath)

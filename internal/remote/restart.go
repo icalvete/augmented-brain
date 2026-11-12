@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/state"
@@ -28,7 +31,12 @@ import (
 //     it holds, so it restarts only when all of them are idle, and after KeepOutside,
 //     so nothing else in its group dies with it (scope.go);
 //   - any other (Claude Desktop, a terminal): its app or its person started it, and
-//     killing it from outside leaves a broken window. It is left alone, and said why.
+//     killing it from outside leaves a broken window. Only its augmented brain server
+//     (an `augmented-brain mcp` below it) is stopped: Claude Code starts it again, from
+//     the program of now, at the session's next call to it (measured on 12-nov with a
+//     Claude Desktop session: the window stayed, and doctor stopped counting it). Where
+//     this program cannot see which server is whose (Windows), it is left alone, and
+//     said why.
 //
 // Each session is looked at again just before its restart, and only an idle one is
 // restarted (busy also means waiting for a permission): never one in the middle of an
@@ -39,7 +47,8 @@ import (
 type SessionKind int
 
 const (
-	// KindOther is a session of Claude Desktop or a terminal: not restarted.
+	// KindOther is a session of Claude Desktop or a terminal: only its augmented brain
+	// server is restarted.
 	KindOther SessionKind = iota
 	// KindBackground is a `claude --bg` session: claude respawn.
 	KindBackground
@@ -60,6 +69,9 @@ type Session struct {
 	// it did not say).
 	Old     bool
 	Version string
+	// Servers are its augmented brain servers to stop, for KindOther: the old ones
+	// (OldSessions); none means every one below it.
+	Servers []int
 }
 
 // Key is how `session restart` names it: a background session's id, or the first
@@ -86,12 +98,13 @@ func (se Session) Label() string {
 type Outcome int
 
 const (
-	Restarted   Outcome = iota
-	Busy                // answering (or waiting for a permission): left as it is
-	Self                // the session, or the service, this process runs in
-	SharedBusy          // its remote service holds another session that is answering
-	Unsupported         // Claude Desktop or a terminal
-	Gone                // it no longer runs: it starts with the new program when opened
+	Restarted       Outcome = iota
+	ServerRestarted         // Claude Desktop or a terminal: its augmented brain server only
+	Busy                    // answering (or waiting for a permission): left as it is
+	Self                    // the session, or the service, this process runs in
+	SharedBusy              // its remote service holds another session that is answering
+	Unsupported             // Claude Desktop or a terminal whose server cannot be found
+	Gone                    // it no longer runs: it starts with the new program when opened
 	RestartFailed
 )
 
@@ -157,14 +170,16 @@ func (s System) OldSessions(claude string, old []state.Server) (out []Session, u
 	for i, se := range list {
 		at[se.PID] = i
 	}
+	var order []int
 	for _, srv := range old {
 		found := false
 		for _, p := range s.ancestors(srv.PID) {
 			if i, ok := at[p]; ok {
 				if !list[i].Old {
 					list[i].Old, list[i].Version = true, srv.Version
-					out = append(out, list[i])
+					order = append(order, i)
 				}
+				list[i].Servers = append(list[i].Servers, srv.PID)
 				found = true
 				break
 			}
@@ -172,6 +187,9 @@ func (s System) OldSessions(claude string, old []state.Server) (out []Session, u
 		if !found {
 			unknown++
 		}
+	}
+	for _, i := range order {
+		out = append(out, list[i])
 	}
 	return out, unknown, nil
 }
@@ -258,9 +276,12 @@ func (s System) Restart(claude string, targets []Session) []RestartResult {
 
 func (s System) restartOne(claude string, t Session) RestartResult {
 	r := RestartResult{Session: t}
+	var servers []int
 	if t.Kind == KindOther {
-		r.Outcome = Unsupported
-		return r
+		if servers = s.serversOf(t); len(servers) == 0 {
+			r.Outcome = Unsupported
+			return r
+		}
 	}
 	mains := s.serviceMains()
 	if s.isSelf(t, mains) {
@@ -289,6 +310,16 @@ func (s System) restartOne(claude string, t Session) RestartResult {
 		return r
 	}
 	switch t.Kind {
+	case KindOther:
+		// Its window stays; Claude Code starts the server again at its next call.
+		for _, pid := range servers {
+			if err := s.StopServer(pid); err != nil {
+				r.Outcome, r.Err = RestartFailed, err
+				return r
+			}
+		}
+		r.Outcome = ServerRestarted
+		return r
 	case KindBackground:
 		if out, err := s.Run(claude, "respawn", t.ID); err != nil {
 			r.Outcome, r.Err = RestartFailed, errors.New(strings.TrimSpace(cleanTerminal(out)+" "+err.Error()))
@@ -313,6 +344,28 @@ func (s System) restartOne(claude string, t Session) RestartResult {
 	}
 	r.Outcome = Restarted
 	return r
+}
+
+// serversOf are the augmented brain servers to stop for a session of Claude Desktop
+// or a terminal: those OldSessions found, or else every one running below it. None when
+// this program cannot see them.
+func (s System) serversOf(t Session) []int {
+	if s.StopServer == nil {
+		return nil
+	}
+	if len(t.Servers) > 0 {
+		return t.Servers
+	}
+	if s.MCPServers == nil || s.Parent == nil {
+		return nil
+	}
+	var out []int
+	for _, pid := range s.MCPServers() {
+		if pid != s.PID && slices.Contains(s.ancestors(pid)[1:], t.PID) {
+			out = append(out, pid)
+		}
+	}
+	return out
 }
 
 // RestartWhenIdle restarts t once it, and for a remote service every session it
@@ -387,4 +440,70 @@ func procParent(pid int) int {
 // die with it.
 func (s System) Scoped(name string, args ...string) (string, []string) {
 	return s.scoped(name, args...)
+}
+
+// procMCPServers are the augmented-brain mcp processes running: /proc on Linux, one ps
+// on macOS, none elsewhere.
+func procMCPServers() []int {
+	var out []int
+	switch runtime.GOOS {
+	case "linux":
+		procs, _ := os.ReadDir("/proc")
+		for _, p := range procs {
+			pid, err := strconv.Atoi(p.Name())
+			if err == nil && isMCPServer(pid) {
+				out = append(out, pid)
+			}
+		}
+	case "darwin":
+		data, err := exec.Command("ps", "-axo", "pid=,command=").Output()
+		if err != nil {
+			return nil
+		}
+		for _, line := range strings.Split(string(data), "\n") {
+			f := strings.Fields(line)
+			if len(f) >= 3 && filepath.Base(f[1]) == "augmented-brain" && f[2] == "mcp" {
+				if pid, err := strconv.Atoi(f[0]); err == nil {
+					out = append(out, pid)
+				}
+			}
+		}
+	}
+	return out
+}
+
+// isMCPServer says whether pid runs augmented-brain mcp now.
+func isMCPServer(pid int) bool {
+	var args []string
+	switch runtime.GOOS {
+	case "linux":
+		data, err := os.ReadFile("/proc/" + strconv.Itoa(pid) + "/cmdline")
+		if err != nil {
+			return false
+		}
+		args = strings.Split(strings.TrimRight(string(data), "\x00"), "\x00")
+	case "darwin":
+		data, err := exec.Command("ps", "-o", "command=", "-p", strconv.Itoa(pid)).Output()
+		if err != nil {
+			return false
+		}
+		args = strings.Fields(string(data))
+	}
+	return len(args) >= 2 && filepath.Base(args[0]) == "augmented-brain" && args[1] == "mcp"
+}
+
+// stopMCPServer asks an augmented brain server to end (SIGTERM), after checking the
+// process is still one: its number may have gone to another since it was listed.
+func stopMCPServer(pid int) error {
+	if !isMCPServer(pid) {
+		return nil // ended already
+	}
+	p, err := os.FindProcess(pid)
+	if err != nil {
+		return err
+	}
+	if err := p.Signal(syscall.SIGTERM); err != nil && !errors.Is(err, os.ErrProcessDone) {
+		return fmt.Errorf("stopping augmented-brain mcp (process %d): %w", pid, err)
+	}
+	return nil
 }
