@@ -396,7 +396,9 @@ Arranca una sesión de Claude propia para la tarea, en segundo plano (`claude --
 en Claude Desktop y claude.ai. Empieza sola: su primer mensaje le pide leer su tarea,
 decirte cómo está y ponerse con el siguiente paso. Si la pidió otra sesión de Claude,
 el primer mensaje también le pide avisarla en una línea cuando pare: la tarea cerrada o
-aparcada, o esperándote. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
+aparcada, o esperándote. Como lo que escribe una sesión de fondo solo lo ves al abrirla,
+entonces también te manda una notificación (en el escritorio y, con Remote Control, en
+el móvil), igual que cuando termina algo que vigilaba. La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas
 de trabajo del espacio, o la que diga `--folder`. Una tarea que no nombra ningún
 repositorio se abre en la primera carpeta de trabajo del espacio, que pueden compartir
 varias así.

@@ -6,6 +6,9 @@
   task's own session waited for that session to finish its answer, and the session
   could not finish while the command ran: they waited for each other. Now the command
   returns at once and a process in the background waits and closes it.
+- **A task's session tells you when it finishes.** What a background session writes
+  stays there until you open it, so an ended CI or a parked task could go unnoticed.
+  Its first message now has it also send you a notification then.
 
 ## 0.19.0-beta
 

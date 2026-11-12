@@ -6,6 +6,10 @@
   desde la sesión propia de la tarea esperaba a que esa sesión acabara su respuesta, y
   la sesión no podía acabar mientras la orden corría: se esperaban la una a la otra.
   Ahora la orden vuelve en el acto y un proceso en segundo plano espera y la cierra.
+- **La sesión de una tarea te avisa al terminar.** Lo que escribe una sesión de fondo se
+  queda ahí hasta que la abres, así que una CI terminada o una tarea aparcada podían
+  pasar sin que te enteraras. Su primer mensaje ahora le pide mandarte también una
+  notificación.
 
 ## 0.19.0-beta
 
