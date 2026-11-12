@@ -204,11 +204,12 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 	type idIn struct {
 		ID string `json:"id" jsonschema:"task id, e.g. task-backup"`
 	}
-	tool(s, locked, "task_get", "Read a task: its header and its whole body, journal included, and its subtasks.",
+	tool(s, locked, "task_get", "Read a task: its header and its whole body, journal included, and its subtasks. Old journal entries moved to archive/journals/ are named by a line of the journal; read that file when you need them.",
 		func(b *brain.Brain, in idIn) (string, error) {
 			n, err := b.Task(in.ID)
 			if err == nil {
 				b.Touched(in.ID, false)
+				n = shortened(b, n)
 			}
 			out, err := render(n, err)
 			if err != nil {
@@ -844,6 +845,28 @@ func taskRef(id string) string {
 		return " [inbox]"
 	}
 	return " [" + id + "]"
+}
+
+// TaskGetMax is about how long, in bytes, a task read in one go may be: what Claude Code
+// takes from a tool is about 25,000 tokens. Notes are kept under it by moving old journal
+// entries out when they are written (brain.archiveJournal); a note written by hand or by
+// an earlier program may still be longer, and is then shortened for reading only.
+var TaskGetMax = 60000
+
+// shortened is n with the oldest entries of its journal left out when it is longer than
+// TaskGetMax, and a line saying where to read them; the note itself is not changed.
+func shortened(b *brain.Brain, n *memory.Note) *memory.Note {
+	data, err := n.Render()
+	if err != nil || len(data) <= TaskGetMax {
+		return n
+	}
+	body, left := memory.ShortenJournal(n.Body, TaskGetMax-(len(data)-len(n.Body)), filepath.Join(b.Mem.Dir, filepath.FromSlash(n.Path)))
+	if left == 0 {
+		return n
+	}
+	cp := *n
+	cp.Body = body
+	return &cp
 }
 
 func render(n *memory.Note, err error) (string, error) {
