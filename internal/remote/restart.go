@@ -64,8 +64,13 @@ type Session struct {
 	Name      string
 	Status    string // idle, busy, waiting…
 	State     string // a background session's: working, blocked, done, stopped
-	Kind      SessionKind
-	Unit      string // the remote service, for KindRemote
+	// Unlaunched marks a background session no task's `session start` opened, for
+	// --old (MarkUnlaunched): it may have been archived in Claude Desktop, which tells
+	// Claude nothing (its state stays blocked, measured on 12-nov), so it is never
+	// respawned either.
+	Unlaunched bool
+	Kind       SessionKind
+	Unit       string // the remote service, for KindRemote
 	// Old says its augmented brain is an earlier one; Version is that one's ("" when
 	// it did not say).
 	Old     bool
@@ -80,6 +85,25 @@ type Session struct {
 // away (0.19.1's update did, on 12-nov). It is never respawned.
 func (se Session) Ended() bool {
 	return se.Kind == KindBackground && (se.State == "done" || se.State == "stopped")
+}
+
+// MarkUnlaunched marks the background sessions of list that no task's `session start`
+// opened (Unlaunched).
+func MarkUnlaunched(cfgDir string, list []Session) {
+	launched := map[string]bool{}
+	entries, _ := os.ReadDir(launchRecords(cfgDir))
+	for _, e := range entries {
+		if task, ok := strings.CutSuffix(e.Name(), ".json"); ok {
+			if r, ok := readLaunch(cfgDir, task); ok {
+				launched[r.ID] = true
+			}
+		}
+	}
+	for i := range list {
+		if list[i].Kind == KindBackground && !launched[list[i].ID] {
+			list[i].Unlaunched = true
+		}
+	}
 }
 
 // Key is how `session restart` names it: a background session's id, or the first
@@ -114,7 +138,7 @@ const (
 	Unsupported             // Claude Desktop or a terminal whose server cannot be found
 	Gone                    // it no longer runs: it starts with the new program when opened
 	RestartFailed
-	Ended // archived or ended: not brought back, only its old servers stopped
+	Ended // archived, ended or not a task's (--old): not brought back, only its old servers stopped
 )
 
 // RestartResult is what happened to one session.
@@ -314,9 +338,9 @@ func (s System) restartOne(claude string, t Session) RestartResult {
 		r.Outcome = Gone
 		return r
 	}
-	if cur.Ended() {
-		// Put away by the user: only the servers of an earlier program go, which
-		// Claude Code starts again, of now, if it is ever opened.
+	if cur.Ended() || t.Unlaunched {
+		// Put away by the user, or may have been: only the servers of an earlier
+		// program go, which Claude Code starts again, of now, if it is ever used.
 		for _, pid := range s.serversOf(t) {
 			if err := s.StopServer(pid); err != nil {
 				r.Outcome, r.Err = RestartFailed, err

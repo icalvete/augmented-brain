@@ -6,7 +6,8 @@
   `session restart --old`) brought back background sessions you had archived in Claude
   Desktop or claude.ai, which keep their process. Now an archived or ended session is
   left where you put it: only its earlier augmented brain stops, so `doctor` no longer
-  counts it.
+  counts it. The same goes for any background session `session start` did not open
+  for a task: archived in Claude Desktop, Claude is not told, so it cannot be sure.
 
 ## 0.19.1-beta
 

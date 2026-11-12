@@ -6,7 +6,9 @@
   `session restart --old`) relanzaba sesiones de fondo que habías archivado en Claude
   Desktop o claude.ai, que conservan su proceso. Ahora una sesión archivada o terminada
   se queda donde la dejaste: solo se para su augmented brain anterior, así que `doctor`
-  ya no la cuenta.
+  ya no la cuenta. Lo mismo vale para cualquier sesión de fondo que `session start` no
+  abrió para una tarea: si se archiva en Claude Desktop, a Claude no se le dice, así que
+  no hay forma de saberlo.
 
 ## 0.19.1-beta
 

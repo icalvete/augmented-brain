@@ -3080,7 +3080,10 @@ the command runs in: that one needs `--when-idle`. One that fails leaves the oth
 going.
 
 - `--old`: restart every idle session still running an earlier augmented brain, one at
-  a time, and say what happened to each. `update` runs it by itself.
+  a time, and say what happened to each. `update` runs it by itself. Here only a
+  task's own session (opened by `session start`) is brought back: any other background
+  session may have been archived in Claude Desktop, which Claude is not told, so only
+  its augmented brain server stops.
 - `--when-idle`: wait until the session has finished its answer, then restart it. This
   is how a session restarts itself after parking its task: the command returns at
   once, and a process in the background waits, up to 30 minutes. What it did goes to

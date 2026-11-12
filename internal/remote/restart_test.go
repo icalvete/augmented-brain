@@ -417,3 +417,41 @@ func TestRestartLeavesArchived(t *testing.T) {
 		t.Errorf("stopped servers: %v", *stopped)
 	}
 }
+
+// With --old, a background session no task's `session start` opened is never
+// respawned either: archived in Claude Desktop, it stays blocked (12-nov,
+// check_multiregion_summary). A task's own session still is.
+func TestRestartOldLeavesUnlaunched(t *testing.T) {
+	r := newRestartFake(t)
+	stopped := r.withServers()
+	list := r.agentList
+	r.agentList = func() []map[string]any {
+		return append(list(),
+			map[string]any{"pid": 920, "id": "hand0001", "kind": "background", "name": "a mano", "sessionId": "hand0001-hhhh", "status": "idle", "state": "blocked"})
+	}
+	r.parents[921] = 920
+	dir := launchRecords(r.cfgDir)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "task-una.json"), []byte(`{"id":"bg123456","task":"task-una","folder":"/x"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	old := []state.Server{{PID: 501, Version: "0.19.0-beta"}, {PID: 921, Version: "0.19.0-beta"}}
+	targets, _, err := r.sys.OldSessions(r.claude(), old)
+	if err != nil || len(targets) != 2 {
+		t.Fatalf("old: %+v %v", targets, err)
+	}
+	MarkUnlaunched(r.cfgDir, targets)
+	r.calls = nil
+	got := outcomes(r.sys.Restart(r.claude(), targets))
+	if got["a mano"] != Ended || got["box · Una tarea"] != Restarted {
+		t.Errorf("outcomes: %v", got)
+	}
+	if acts := r.acts(); !slices.Equal(acts, []string{"respawn bg123456"}) {
+		t.Errorf("acts: %v, want only the task's session respawned", acts)
+	}
+	if !slices.Equal(*stopped, []int{921}) {
+		t.Errorf("stopped servers: %v", *stopped)
+	}
+}
