@@ -1,5 +1,12 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **El instalador ya no espera sin límite a la app de escritorio.** Si su descarga se
+  atasca, en Linux la deja a los 8 minutos (`AB_DESKTOP_TIMEOUT` lo cambia), lo dice y
+  termina la instalación sin la app; en macOS deja una descarga que se queda por debajo
+  de 1 KB por segundo durante un minuto.
+
 ## 0.18.0-beta
 
 Publicada el 2026-11-12.

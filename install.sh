@@ -14,7 +14,9 @@
 #    open Claude right away: the desktop app if it is there, otherwise in this terminal.
 #
 # Settings: AB_YES=1 answers yes to every question, AB_LANGUAGE=en|es sets the language,
-# AB_NO_DESKTOP=1 does not offer the desktop app (servers, tests). For testing:
+# AB_NO_DESKTOP=1 does not offer the desktop app (servers, tests), AB_DESKTOP_TIMEOUT sets
+# how long its download may take on Linux, in seconds (default 480). For testing:
+# AB_DESKTOP_URL (where Anthropic's apt repository of the desktop app is),
 # AB_VERSION (a version, default: latest), AB_RELEASE_URL (where the release files are,
 # default: the GitHub release), AB_MARKETPLACE (where the plugin comes from, default:
 # this repository on GitHub), AB_NO_INIT=1 (only install the program: no checks, no
@@ -237,9 +239,11 @@ has_desktop() {
   command -v claude-desktop >/dev/null 2>&1 || [ -d /Applications/Claude.app ] || [ -d "$HOME/Applications/Claude.app" ] ||
     [ "$(dpkg-query -W -f='${Status}' claude-desktop 2>/dev/null)" = "install ok installed" ]
 }
-DESKTOP_KEY_URL="https://downloads.claude.ai/claude-desktop/key.asc"
+DESKTOP_URL="${AB_DESKTOP_URL:-https://downloads.claude.ai/claude-desktop}"
+DESKTOP_KEY_URL="$DESKTOP_URL/key.asc"
 DESKTOP_KEY="/usr/share/keyrings/claude-desktop-archive-keyring.asc"
-DESKTOP_REPO="deb [arch=amd64,arm64 signed-by=$DESKTOP_KEY] https://downloads.claude.ai/claude-desktop/apt/stable stable main"
+DESKTOP_REPO="deb [arch=amd64,arm64 signed-by=$DESKTOP_KEY] $DESKTOP_URL/apt/stable stable main"
+DESKTOP_TIMEOUT="${AB_DESKTOP_TIMEOUT:-480}"
 # desktop_install: true when the app got installed. On Linux, from Anthropic's apt
 # repository (Debian and Ubuntu only); on macOS, with Homebrew when it is there, or
 # else straight from Anthropic's update feed (the one Homebrew reads too).
@@ -250,7 +254,21 @@ desktop_install() {
       # No questions while it installs: it runs with no terminal (see busy), so a question
       # from debconf or from needrestart (Ubuntu 24.04 asks which services to restart)
       # would wait for an answer that never comes. Both take their default instead.
-      sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a sh -c "curl -fsSLo '$DESKTOP_KEY' '$DESKTOP_KEY_URL' && echo '$DESKTOP_REPO' > /etc/apt/sources.list.d/claude-desktop.list && apt-get update -q && apt-get install -y claude-desktop"
+      # Nothing waits for ever on the network (on 11-nov-2026 the repository stalled and
+      # the installer with it): the key has a minute; apt gives up on a server silent for
+      # 30 seconds, and the whole download (the lists and the packages) has
+      # DESKTOP_TIMEOUT seconds, enough for the app on a slow line. Only the download is
+      # cut: stopping it leaves nothing half done; installing what came runs to the end.
+      cap=""
+      command -v timeout >/dev/null 2>&1 && cap="timeout -k 10 $DESKTOP_TIMEOUT"
+      net="-o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
+      rc=0
+      sudo env DEBIAN_FRONTEND=noninteractive NEEDRESTART_MODE=a sh -c "curl -fsSL --connect-timeout 20 --max-time 60 -o '$DESKTOP_KEY' '$DESKTOP_KEY_URL' && echo '$DESKTOP_REPO' > /etc/apt/sources.list.d/claude-desktop.list && $cap sh -c 'apt-get update -q $net && apt-get install -y --download-only $net claude-desktop' && apt-get install -y claude-desktop" || rc=$?
+      if [ "$rc" = 124 ] || [ "$rc" = 137 ]; then
+        say "The desktop app's download took more than $DESKTOP_TIMEOUT seconds; I gave up." \
+            "La descarga de la app de escritorio ha tardado más de $DESKTOP_TIMEOUT segundos; la he dejado."
+      fi
+      return $rc
       ;;
     darwin)
       if command -v brew >/dev/null 2>&1; then
@@ -267,13 +285,14 @@ desktop_install() {
 # signature intact, and codesign checks it before the app is put in place.
 DESKTOP_FEED="https://downloads.claude.ai/releases/darwin/universal/RELEASES.json"
 mac_desktop_install() {
-  feed="$(curl -fsSL "$DESKTOP_FEED")" || return 1
+  feed="$(curl -fsSL --connect-timeout 20 --max-time 60 "$DESKTOP_FEED")" || return 1
   # the version the feed calls current, and the zip of that version
   cur="$(printf '%s' "$feed" | sed -n 's/.*"currentRelease":"\([^"]*\)".*/\1/p')"
   url="$(printf '%s' "$feed" | tr ',' '\n' | sed -n 's/.*"url":"\(https:[^"]*\.zip\)".*/\1/p' | grep -F "/$cur/" | head -n 1)"
   [ -n "$cur" ] && [ -n "$url" ] || return 1
   dl="$(mktemp -d)"
-  curl -fsSL "$url" -o "$dl/Claude.zip" &&
+  # like get: it gives up on a download that brings less than 1 KB a second for a minute
+  curl -fsSL --connect-timeout 20 --speed-limit 1000 --speed-time 60 "$url" -o "$dl/Claude.zip" &&
     ditto -x -k "$dl/Claude.zip" "$dl/x" &&
     codesign --verify --deep --strict "$dl/x/Claude.app" || { rm -rf "$dl"; return 1; }
   dest=/Applications

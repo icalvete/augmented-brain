@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **The installer no longer waits for ever on the desktop app.** If its download stalls,
+  it gives up after 8 minutes on Linux (`AB_DESKTOP_TIMEOUT` changes that), says so, and
+  finishes the install without the app; on macOS it gives up on a download that stays
+  under 1 KB a second for a minute.
+
 ## 0.18.0-beta
 
 Released 2026-11-12.
