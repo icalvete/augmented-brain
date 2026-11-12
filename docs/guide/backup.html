@@ -105,7 +105,7 @@
   <p>The panel's <a href="panel.html#backup">Backup</a> page does the same with two buttons, and shows each space's last copies and a <strong>Back up now</strong>.</p>
   <p>Until a space has a backup, augmented brain says so: <code>augmented-brain doctor</code> names each space with none, <code>update</code> warns when it goes ahead with no copy to go back to, and <code>uninstall --all</code> warns that those notes will be gone for good.</p>
   <h2 id="it-runs-by-itself">It runs by itself</h2>
-  <p>From then on, <strong>the backup runs every time a Claude session ends</strong>, in the background. You wait for nothing. If it fails (no network, no access to the repository), Claude tells you at the start of the next session.</p>
+  <p>From then on, <strong>the backup runs every time a Claude session ends</strong>, in the background. You wait for nothing. A space that this session wrote in from another space (a task of another space) is backed up then too. If it fails (no network, no access to the repository), Claude tells you at the start of the next session.</p>
   <p>You can also run it by hand:</p>
   <pre><code>augmented-brain backup          # this folder's space
 augmented-brain backup --all    # every space</code></pre>

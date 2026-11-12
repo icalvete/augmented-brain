@@ -51,6 +51,8 @@ llegado. Claude la usa para "¿en qué estábamos?".
 
 - `within_days` (opcional): lista también las fechas para revisar que llegan en estos
   días. Por defecto, 7.
+- `space` (opcional): otro de tus espacios, para listar sus tareas vivas en su lugar,
+  solo para leer: para encontrar allí la tarea de la que hablas.
 
 ## `task_new`
 
@@ -78,6 +80,9 @@ respuesta, escrita a mano o por una versión anterior, se lee sin sus entradas m
 y una línea dice dónde están.
 
 - `id`: el id de la tarea, como `task-mudar-el-blog`.
+- `space` (opcional): otro de tus espacios, del que es la tarea. Claude solo lo usa
+  cuando le pides trabajar desde aquí en una tarea de ese espacio. Mira
+  [Una tarea de otro espacio](spaces.es.md#una-tarea-de-otro-espacio).
 
 ## `task_update`
 
@@ -99,8 +104,12 @@ línea dice cuáles: saltarlas se puede, y se ve. Una tarea cerrada solo se reab
 - `watch_done` (opcional): marca como hecha la fecha para revisar de este día.
 - `reopen` (opcional): solo para volver a abrir una tarea cerrada, con un `status` nuevo:
   por qué, en pocas palabras. Va al diario. Claude te lo pregunta antes.
+- `space` (opcional): otro de tus espacios, del que es la tarea. Claude solo lo usa
+  cuando le pides trabajar desde aquí en una tarea de ese espacio. Cerrarla se deja a una
+  sesión de ese espacio. Mira
+  [Una tarea de otro espacio](spaces.es.md#una-tarea-de-otro-espacio).
 
-Hace falta al menos un campo además de `id`.
+Hace falta al menos un campo además de `id` y `space`.
 
 ## `task_step`
 
@@ -116,6 +125,9 @@ el diario, y la respuesta lista los pasos.
   tenga él), cuando no se da `number`.
 - `done` (opcional): `true` para marcar el paso, `false` para desmarcarlo. Si no se da,
   lo desmarca.
+- `space` (opcional): otro de tus espacios, del que es la tarea. Claude solo lo usa
+  cuando le pides trabajar desde aquí en una tarea de ese espacio. Mira
+  [Una tarea de otro espacio](spaces.es.md#una-tarea-de-otro-espacio).
 
 ## `task_journal`
 
@@ -124,6 +136,10 @@ que se hace o se decide algo.
 
 - `id`: el id de la tarea.
 - `entry`: lo que se ha hecho, lo que ha salido, lo que se ha decidido.
+- `space` (opcional): otro de tus espacios, del que es la tarea. Claude solo lo usa
+  cuando le pides trabajar desde aquí en una tarea de ese espacio. La entrada acaba en
+  `(from <este espacio>)`. Mira
+  [Una tarea de otro espacio](spaces.es.md#una-tarea-de-otro-espacio).
 
 ## `task_park`
 

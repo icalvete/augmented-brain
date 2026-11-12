@@ -51,6 +51,10 @@ type Session struct {
 // go at the next write.)
 type Space struct {
 	Sessions []Session `json:"sessions,omitempty"`
+	// Outside is when a session of another space last wrote in this one (a task's
+	// journal, its next step) and no backup of it has started since: the next session
+	// end, of any space, starts one (TakeOutside). Zero when there is nothing waiting.
+	Outside time.Time `json:"outside,omitzero"`
 }
 
 // Who names one session: by its id, which the hooks get, or else by the key of its
@@ -210,4 +214,24 @@ func changeSession(cfgDir, space, id string, now time.Time, change func(*Session
 			change(se)
 		}
 	})
+}
+
+// MarkOutside records that a session of another space wrote in this space's notes, so
+// the next session end backs it up instead of waiting for a session of its own.
+func MarkOutside(cfgDir, space string, now time.Time) error {
+	return Update(cfgDir, space, now, func(s *Space) { s.Outside = now })
+}
+
+// TakeOutside says whether the space was written from another space since its last
+// backup, and clears the mark: whoever gets true starts the backup.
+func TakeOutside(cfgDir, space string, now time.Time) bool {
+	if Read(cfgDir, space).Outside.IsZero() {
+		return false // nothing to do: no lock, no write (SessionEnd has 1.5 seconds)
+	}
+	var was bool
+	_ = Update(cfgDir, space, now, func(s *Space) {
+		was = !s.Outside.IsZero()
+		s.Outside = time.Time{}
+	})
+	return was
 }

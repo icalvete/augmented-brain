@@ -76,6 +76,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Two sessions writing at once | `TestConcurrentCalls`, `TestFreshBothWritingAtOnce` |
 | Phases: skipped, closing twice, reopening | `internal/brain` `TestPhases` |
 | A parent with open subtasks | `internal/brain` `TestSubtasks` |
+| A task of another space (`space` in `task_get`, `task_journal`, `task_update`, `task_step`, `pending`): origin mark, nothing in this space, closing refused, its backup at session end | `TestTasksOfAnotherSpaceThroughTools`; `internal/hook` `TestSessionEndBacksUpWrittenFromOutside` |
 | `task_worktree`, and closing removes the task's worktrees (made, noted, with work, in use) | `TestTaskWorktreeTool`; `internal/remote` `TestNotedWorktrees` |
 | Closing a task whose own session runs | `TestCloseStopsTheTaskSession`; `internal/remote` `TestStopWhenIdle`; tried by hand on 10-nov |
 | A session Claude retired (no pid), Claude's daemon stopped, a session waiting for a permission, `stop` with nothing to close | `TestCloseStopsTheTaskSession`; `internal/remote` `TestRetiredSession`, `TestWakeRetiredSession` (`session start` brings it back with `claude respawn`), `TestAgentsWithoutAll`, `TestStopWakesDaemon`, `TestWaitingForPermissionIsBusy`, `TestStopEarlierUnit`; `cmd` `TestSessionStopSaysWhatHappened`; `claude agents` outputs and the daemon measured by hand on 11-nov (2.1.322) |

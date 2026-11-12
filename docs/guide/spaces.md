@@ -92,7 +92,25 @@ Every space shares:
   exceptions. They hold on the whole machine. A production
   profile saved from the work space is guarded in the personal one too.
 
-Spaces never read each other's notes.
+Spaces never read each other's notes on their own.
+
+## A task of another space
+
+Sometimes you decide, in one space, something about a task of another: in a personal
+session you settle how a work task goes on. Say so, and Claude reads or writes that task
+where it lives, in the other space. It can read it, list that space's live tasks to find
+it, add to its journal, tick a step, and change its next step, status or who it waits
+on.
+
+- What Claude writes there ends in `(from personal)`, so whoever reads it in the other
+  space knows where it was decided.
+- Nothing is copied into this space's notes: what Claude reads stays in the
+  conversation.
+- Claude does it only when you ask, as with sending a capture to another space.
+- Closing that task is done from a session of its own space, because closing also ends
+  the task's session and its worktree.
+- That space is backed up when this session ends, if it has a backup: it does not wait
+  for a session of its own.
 
 ## Shared notes
 
