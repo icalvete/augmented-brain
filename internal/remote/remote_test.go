@@ -33,6 +33,9 @@ type fake struct {
 	busy   map[string]int       // id -> how many more looks it is still answering
 	// retired are the sessions Claude retired: listed, with no pid and no status.
 	retired map[string]bool
+	// noRespawn makes claude respawn fail; oldAgents makes claude agents refuse --all,
+	// as a claude that does not know it would.
+	noRespawn, oldAgents bool
 	units   []string // systemd units of sessions of earlier versions
 	// noDaemon: Claude's daemon does not run; claude stop and rm fail until
 	// `daemon run` (StartDaemon) starts it, unless daemonStays is false.
@@ -112,6 +115,17 @@ func (f *fake) run(name string, args ...string) (string, error) {
 	call := name + " " + strings.Join(args, " ")
 	f.calls = append(f.calls, call)
 	switch {
+	case filepath.Base(name) == "claude" && len(args) > 2 && args[0] == "agents" && args[2] == "--all" && f.oldAgents:
+		return "error: unknown option '--all'\n", errors.New("exit status 1")
+	case filepath.Base(name) == "claude" && len(args) > 1 && args[0] == "respawn":
+		if f.noRespawn {
+			return "", errors.New("exit status 1")
+		}
+		if f.retired[args[1]] {
+			delete(f.retired, args[1])
+			f.live[args[1]] = true
+		}
+		return "", nil
 	case filepath.Base(name) == "claude" && len(args) > 0 && args[0] == "agents" && f.agentList != nil:
 		data, _ := json.Marshal(f.agentList())
 		return string(data), nil
