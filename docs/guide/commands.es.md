@@ -152,7 +152,10 @@ algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Re
 - el panel desde otro dispositivo, si lo has usado: Tailscale, HTTPS y una dirección que
   se quedó publicada;
 - lo que ha dejado el trabajo con Claude Code: sus worktrees con la sesión terminada y las
-  carpetas temporales de sesiones que acabaron (mira `clean`).
+  carpetas temporales de sesiones que acabaron (mira `clean`);
+- las sesiones de fondo que conservan su proceso sin que nadie las use: terminadas o
+  archivadas, o sin tarea y paradas más de 12 horas (archivarla en Claude Desktop no la
+  para), cada una con el `claude stop` que la termina.
 
 Acaba con error si algo falla. Si la configuración no se puede leer, te lleva a
 `config history` y `config restore`. No tiene opciones. Lo tienes en

@@ -2744,7 +2744,10 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
 - the panel from another device, once you have used it: Tailscale, HTTPS, and an address
   left published;
 - what working with Claude Code left behind: its worktrees whose session is over, and the
-  scratch folders of sessions that ended (see `clean`).
+  scratch folders of sessions that ended (see `clean`);
+- background sessions that keep their process while nobody uses them: ended or archived,
+  or opened by no task and idle for over 12 hours (archiving one in Claude Desktop does
+  not stop it), each with the `claude stop` that ends it.
 
 It ends with an error when something fails. When the configuration cannot be read, it
 points to `config history` and `config restore`. It takes no options. See

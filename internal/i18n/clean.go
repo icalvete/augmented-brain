@@ -78,4 +78,16 @@ var cleanMessages = map[string]msg{
 		en: "commit and push it, or remove it yourself if it is not needed (augmented-brain clean leaves it alone)",
 		es: "haz commit y push, o quítalo tú si no hace falta (augmented-brain clean no lo toca)",
 	},
+	"doctor.lingering.ended": {
+		en: "The background session %q (%s) ended or was archived, but its process still runs",
+		es: "La sesión de fondo %q (%s) terminó o se archivó, pero su proceso sigue en marcha",
+	},
+	"doctor.lingering.idle": {
+		en: "The background session %q (%s) has been idle for over %d hours and no task opened it: if you archived it in Claude Desktop, its process still runs",
+		es: "La sesión de fondo %q (%s) lleva más de %d horas parada y no la abrió ninguna tarea: si la archivaste en Claude Desktop, su proceso sigue en marcha",
+	},
+	"doctor.lingering.fix": {
+		en: "if you no longer need it: claude stop %s",
+		es: "si ya no la necesitas: claude stop %s",
+	},
 }

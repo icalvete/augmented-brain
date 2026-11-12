@@ -29,6 +29,10 @@ Released 2026-11-12.
   folder is gone, and the scratch folders of sessions that ended a day ago or more. It
   shows the list first and asks; a worktree with changes or commits of its own is only
   named. `doctor` says when there is something to clean.
+- **`doctor` names background sessions nobody uses that keep running.** Archiving a
+  session in Claude Desktop does not stop its process. `doctor` now names those that
+  ended or were archived, and those no task opened that have been idle for over 12
+  hours, each with the `claude stop` that ends it.
 
 ## 0.19.1-beta
 

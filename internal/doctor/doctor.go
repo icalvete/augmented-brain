@@ -147,6 +147,7 @@ func Run(e Env) []Check {
 	out = append(out, remoteChecks(e, c)...)
 	out = append(out, worktreeChecks(e, c)...)
 	out = append(out, leftoverChecks(e, l)...)
+	out = append(out, lingeringChecks(e, c)...)
 	out = append(out, panelRemote(e, c)...)
 	out = append(out, configHistory(c)...)
 	out = append(out, autoMemory(e, c)...)
@@ -420,6 +421,43 @@ func worktreeChecks(e Env, c *config.Config) []Check {
 		out = append(out, Check{Warning,
 			i18n.T(l, "doctor.worktree.kept", paths.Tilde(k.Folder), k.Task, i18n.T(l, "session.worktree.why."+k.Why)),
 			i18n.T(l, "doctor.worktree.kept.fix")})
+	}
+	return out
+}
+
+// askClaude says whether doctor may ask this computer's claude about its sessions when
+// Env gives no Remote; tests turn it off.
+var askClaude = true
+
+// lingeringChecks names the background sessions that keep their process while nobody
+// uses them (remote.Lingering), each with the command that stops it.
+func lingeringChecks(e Env, c *config.Config) []Check {
+	sys := e.Remote
+	if sys == nil {
+		if !askClaude {
+			return nil
+		}
+		s, err := remote.NewSystem()
+		if err != nil {
+			return nil
+		}
+		sys = &s
+	}
+	if sys.Run == nil || sys.LookPath == nil {
+		return nil // a system that cannot run claude
+	}
+	list, err := sys.Lingering(c.Dir, time.Now())
+	if err != nil {
+		return nil
+	}
+	l := c.Language
+	var out []Check
+	for _, se := range list {
+		what := i18n.T(l, "doctor.lingering.idle", se.Label(), se.ID, int(remote.LingerAge.Hours()))
+		if se.Ended() {
+			what = i18n.T(l, "doctor.lingering.ended", se.Label(), se.ID)
+		}
+		out = append(out, Check{Info, what, i18n.T(l, "doctor.lingering.fix", se.ID)})
 	}
 	return out
 }

@@ -31,6 +31,10 @@ Publicada el 2026-11-12.
   carpeta ya no existe y las carpetas temporales de sesiones que acabaron hace un día o
   más. Antes enseña la lista y pregunta; un worktree con cambios o commits propios solo se
   nombra. `doctor` avisa cuando hay algo que limpiar.
+- **`doctor` nombra las sesiones de fondo que nadie usa y siguen en marcha.** Archivar
+  una sesión en Claude Desktop no para su proceso. `doctor` nombra ahora las que
+  terminaron o se archivaron, y las que no abrió ninguna tarea y llevan más de 12 horas
+  paradas, cada una con el `claude stop` que la termina.
 
 ## 0.19.1-beta
 
