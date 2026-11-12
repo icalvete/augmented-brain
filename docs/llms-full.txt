@@ -3113,8 +3113,11 @@ augmented-brain watch pr 104 --task task-my-change
 
 - `--task TASK` writes that line in the task: in its journal (with the next step the
   task had) and as its next step. Every other session hears of it before its next
-  answer, and the panel's Today shows it, even if the session that started the watch
-  is gone. The task must be in this folder's space.
+  answer, and the panel's Today shows it. The watching is then done by a process of
+  its own, which goes on if the session that started it is closed, restarted or
+  retired by Claude: the session only waits for its result. Asked again for the same
+  pull request and task, it waits for the one already running instead of starting
+  another. The task must be in this folder's space.
 - `--repo OWNER/NAME` is the repository; by default, the one of this folder.
 - `--max` is the longest it watches (3h by default); `--every` how often it looks
   (30s by default).

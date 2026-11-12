@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **`watch pr --task` keeps watching when its session is gone.** The watching runs in
+  a process of its own, so a session closed, restarted or retired by Claude no longer
+  takes it along: the result still reaches the task, and your other sessions hear of it.
 - **`remote status` names the watch.** On Linux it adds a line on the watch that brings
   remote access back when the server archives its session: whether it is running, how
   long ago it last looked, and what to do when it is stopped or its last look failed.

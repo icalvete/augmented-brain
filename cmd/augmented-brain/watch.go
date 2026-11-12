@@ -16,8 +16,12 @@ import (
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/remote"
+	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/watch"
 )
 
@@ -99,25 +103,159 @@ func cmdWatch(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, i18n.T(l, "watch.nogh"))
 		return 1
 	}
+	if result := os.Getenv(watchKeeperEnv); result != "" && o.task != "" {
+		return watchKeep(c, s, l, o, n, result, out)
+	}
 	fmt.Fprintln(out, i18n.T(l, "watch.start", n, minutes(l, o.max)))
-	r := watch.PR(watch.Options{
+	if o.task != "" {
+		return watchThroughKeeper(c, l, o, n, append([]string{"watch"}, args...), out, errOut)
+	}
+	r := watchRun(o, n)
+	fmt.Fprintln(out, watchLine(l, r))
+	fmt.Fprintln(out, i18n.T(l, "watch.tell"))
+	return watchCode(r)
+}
+
+func watchRun(o *watchOpts, n int) watch.Result {
+	return watch.PR(watch.Options{
 		PR: n, Repo: o.repo, Every: o.every, Max: o.max, Grace: 5 * time.Minute,
 		Run: watchGh, Sleep: watchSleep, Now: watchNow,
 	})
-	line := watchLine(l, r)
-	fmt.Fprintln(out, line)
-	if o.task != "" {
-		if err := watchNote(c, s, o.task, r.PR, line); err != nil {
-			fmt.Fprintln(errOut, i18n.T(l, "watch.unsaved", o.task, err))
-		} else {
-			fmt.Fprintln(out, i18n.T(l, "watch.saved", o.task))
-		}
-	}
-	fmt.Fprintln(out, i18n.T(l, "watch.tell"))
+}
+
+func watchCode(r watch.Result) int {
 	if r.Kind == watch.Green || r.Kind == watch.Merged {
 		return 0
 	}
 	return 1
+}
+
+// With --task the watching is done by a keeper: the same command, started detached
+// and, on Linux, in a scope of its own, so it outlives the session that asked for it
+// (a session closed, restarted or retired by Claude took its background commands with
+// it: half the watches lost from 8 to 12-nov). The keeper writes the result in the task
+// and in a result file; the command the session runs only waits for that file and
+// prints it, so a session still alive is woken as before.
+const watchKeeperEnv = "AB_WATCH_RESULT"
+
+// watchesDir holds, per task and pull request, the keeper's pid, result and log.
+const watchesDir = "watches"
+
+// watchStart starts the keeper and returns a channel closed when it ends. Tests replace it.
+var watchStart = func(args []string, env []string, log string) (int, <-chan struct{}, error) {
+	self, err := os.Executable()
+	if err != nil {
+		return 0, nil, err
+	}
+	name, rest := remote.Scoped(self, args...)
+	cmd := exec.Command(name, rest...)
+	cmd.Env = append(os.Environ(), env...)
+	cmd.Stdin = nil
+	if f, err := os.OpenFile(log, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600); err == nil {
+		defer f.Close() // the child keeps its own copy
+		cmd.Stdout, cmd.Stderr = f, f
+	}
+	detach.Cmd(cmd)
+	started, err := detach.Start(cmd)
+	if err != nil {
+		return 0, nil, err
+	}
+	done := make(chan struct{})
+	go func() { _ = started.Wait(); close(done) }()
+	return started.Process.Pid, done, nil
+}
+
+// watchKeep is the keeper: it watches, writes the task, then the result file (first
+// line the exit code, then what to print).
+func watchKeep(c *config.Config, s *config.Space, l string, o *watchOpts, n int, result string, out io.Writer) int {
+	r := watchRun(o, n)
+	line := watchLine(l, r)
+	lines := []string{strconv.Itoa(watchCode(r)), line}
+	if err := watchNote(c, s, o.task, r.PR, line); err != nil {
+		lines = append(lines, i18n.T(l, "watch.unsaved", o.task, err))
+	} else {
+		lines = append(lines, i18n.T(l, "watch.saved", o.task))
+	}
+	fmt.Fprintln(out, strings.Join(lines[1:], "\n"))
+	// The pid goes first: once the result is there, nobody should wait on this process.
+	_ = os.Remove(strings.TrimSuffix(result, ".result") + ".pid")
+	if err := paths.WriteAtomic(result, []byte(strings.Join(lines, "\n")+"\n"), 0o600); err != nil {
+		fmt.Fprintln(out, err)
+		return 1
+	}
+	return watchCode(r)
+}
+
+// watchThroughKeeper starts the keeper, or joins the one already watching this pull
+// request for this task, and waits for its result.
+func watchThroughKeeper(c *config.Config, l string, o *watchOpts, n int, args []string, out, errOut io.Writer) int {
+	dir := filepath.Join(c.Dir, state.Dir, watchesDir)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	}
+	base := filepath.Join(dir, fmt.Sprintf("%s-pr%d", o.task, n))
+	result, pidFile, log := base+".result", base+".pid", base+".log"
+	var done <-chan struct{}
+	if pid, err := readPid(pidFile); err == nil && processAlive(pid) {
+		fmt.Fprintln(out, i18n.T(l, "watch.joined", pid))
+	} else {
+		_ = os.Remove(result)
+		pid, d, err := watchStart(args, []string{watchKeeperEnv + "=" + result}, log)
+		if err != nil {
+			fmt.Fprintln(errOut, err)
+			return 1
+		}
+		done = d
+		_ = paths.WriteAtomic(pidFile, []byte(strconv.Itoa(pid)+"\n"), 0o600)
+	}
+	// The keeper ends by --max; a little more covers its last look and the note.
+	deadline := watchNow().Add(o.max + 10*time.Minute)
+	for {
+		if data, err := os.ReadFile(result); err == nil {
+			// Done: a later watch must not take this pid, maybe reused, for a keeper.
+			_ = os.Remove(pidFile)
+			code, text, _ := strings.Cut(strings.TrimRight(string(data), "\n"), "\n")
+			fmt.Fprintln(out, text)
+			fmt.Fprintln(out, i18n.T(l, "watch.tell"))
+			if v, err := strconv.Atoi(code); err == nil {
+				return v
+			}
+			return 1
+		}
+		ended := false
+		if done != nil {
+			select {
+			case <-done:
+				ended = true
+			default:
+			}
+		} else if pid, err := readPid(pidFile); err != nil || !processAlive(pid) {
+			ended = true
+		}
+		if ended {
+			if _, err := os.Stat(result); err == nil {
+				continue // it wrote the result right before ending
+			}
+			fmt.Fprintln(out, i18n.T(l, "watch.lost", tilde(log)))
+			fmt.Fprintln(out, i18n.T(l, "watch.tell"))
+			return 1
+		}
+		if watchNow().After(deadline) {
+			fmt.Fprintln(out, i18n.T(l, "watch.lost", tilde(log)))
+			fmt.Fprintln(out, i18n.T(l, "watch.tell"))
+			return 1
+		}
+		watchSleep(2 * time.Second)
+	}
+}
+
+func readPid(path string) (int, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return 0, err
+	}
+	return strconv.Atoi(strings.TrimSpace(string(data)))
 }
 
 // watchLine is what happened, in one line.
