@@ -73,8 +73,9 @@ func LaunchUnit(task string) string {
 
 var unitSafe = regexp.MustCompile(`[^A-Za-z0-9_.-]+`)
 
-// Retired is the state of a launched session Claude retired: no process, still listed
-// in Claude Desktop and claude.ai, and back when opened there.
+// Retired is the state of a launched session with no process that Claude still keeps
+// (retired after hours unused, or ended with Claude's daemon): `session start` brings
+// it back with `claude respawn` (Wake).
 const Retired = "retired"
 
 // Failed is the state of a launched session whose last turn ended in an error the API
@@ -223,9 +224,11 @@ type claudeAgent struct {
 	// (Claude Desktop, a terminal, a remote service's).
 	Kind string `json:"kind"`
 	// Pid is the session's process. Claude retires a background session left idle for
-	// hours (8 on 2.1.322: "bg retire <id>: idle-prompt, idle 8h" in its daemon.log):
-	// its process ends, yet it stays in the list, with no pid and no status, until it is
-	// opened again from Claude Desktop or claude.ai or removed (measured on 11-nov).
+	// hours (8 on 2.1.322: "bg retire <id>: idle-prompt, idle 8h" in its daemon.log),
+	// and one dies when Claude's daemon restarts: its process ends, yet `agents --all`
+	// still lists it, with no pid and no status, until `claude respawn <id>` brings it
+	// back with its conversation or it is removed. claude.ai shows it as "Remote
+	// Control disconnected" and cannot bring it back (measured on 12-nov).
 	Pid int `json:"pid"`
 	// SessionID names the session's transcript: projects/<folder>/<SessionID>.jsonl in
 	// Claude's folder.
@@ -233,11 +236,15 @@ type claudeAgent struct {
 }
 
 // agents are Claude's background sessions: those that run and those it retired
-// (`claude agents --json` lists both; --all would add the ended ones).
+// (measured on 12-nov, 2.1.322: `claude agents --json` lists only the running ones,
+// and --all adds those with no process, retired or ended, which `claude respawn` brings
+// back). A claude that does not know --all is asked without it.
 func (s System) agents(claude string) ([]claudeAgent, error) {
-	out, err := s.Run(claude, "agents", "--json")
+	out, err := s.Run(claude, "agents", "--json", "--all")
 	if err != nil {
-		return nil, err
+		if out, err = s.Run(claude, "agents", "--json"); err != nil {
+			return nil, err
+		}
 	}
 	var list []claudeAgent
 	if err := json.Unmarshal([]byte(strings.TrimSpace(out)), &list); err != nil {
@@ -445,6 +452,52 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 		_, _ = s.Run(claude, "rm", old.ID)
 	}
 	return nil
+}
+
+// wakeWait is how long Wake waits for a respawned session's process (a couple of
+// seconds on 12-nov).
+const wakeWait = 20 * time.Second
+
+// Wake brings back the task's own session when Claude keeps it with no process
+// (Retired), in l's folder: `claude respawn <id>` gives it a process again, with the
+// same id and conversation, connected again in Claude Desktop and claude.ai. It gets
+// no first message: it already knows its task. woke is false, with no error, when
+// there is nothing to bring back or Claude refused; Start then opens a new one, which
+// replaces it.
+func (s System) Wake(cfgDir string, l Launch) (woke bool, err error) {
+	if s.GOOS != "linux" {
+		return false, ErrUnsupported
+	}
+	r, ok := readLaunch(cfgDir, l.Task)
+	if !ok || !paths.Same(r.Folder, l.Folder) {
+		return false, nil
+	}
+	claude, err := s.FindClaude()
+	if err != nil {
+		return false, errors.New("claude is not installed or not in the PATH")
+	}
+	list, err := s.agents(claude)
+	if err != nil {
+		return false, err
+	}
+	if a, listed := findAgent(list, r.ID); !listed || a.Pid > 0 {
+		return false, nil // gone from Claude, or running (Start says so)
+	}
+	if !s.loggedIn(claude) {
+		return false, ErrLoggedOut
+	}
+	s.wakeDaemon(claude)
+	if _, err := s.Run(claude, "respawn", r.ID); err != nil {
+		return false, nil
+	}
+	for waited := time.Duration(0); waited <= wakeWait; waited += time.Second {
+		if running, err := s.runningAgents(claude); err == nil && running[r.ID] {
+			return true, nil
+		}
+		s.sleep(time.Second)
+	}
+	// Claude took it back but it shows no process yet: a new session would step on it.
+	return false, fmt.Errorf("claude respawn %s: the session has no process after %d seconds; try again in a moment", r.ID, int(wakeWait.Seconds()))
 }
 
 // FirstTurnWait is how long Start waits for a launched session's first answer. A

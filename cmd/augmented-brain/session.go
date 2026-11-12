@@ -144,7 +144,18 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 	}
 	name := set.NamePrefix + " · " + task.Header.Title
 	shared := len(s.WorkFolders) > 0 && *folder == "" && len(task.Header.Repos) == 0
-	if err := sys.Start(c, set, remote.Launch{Task: id, Name: name, Folder: dir, Shared: shared}, firstMessage(l, id, os.Getenv(messagingSocket))); err != nil {
+	launch := remote.Launch{Task: id, Name: name, Folder: dir, Shared: shared}
+	// A session Claude stopped comes back with its conversation; only when it cannot,
+	// a new one opens and replaces it.
+	woke, err := sys.Wake(c.Dir, launch)
+	if err == nil && woke {
+		fmt.Fprintln(out, i18n.T(l, "session.woken", name, id, tilde(dir), id))
+		return 0
+	}
+	if err == nil {
+		err = sys.Start(c, set, launch, firstMessage(l, id, os.Getenv(messagingSocket)))
+	}
+	if err != nil {
 		switch {
 		case errors.Is(err, remote.ErrUntrusted):
 			fmt.Fprintln(out, i18n.T(l, "session.untrusted", tilde(dir), host, host))
@@ -298,7 +309,7 @@ func sessionList(c *config.Config, sys remote.System, out, errOut io.Writer) int
 		state := x.Active
 		switch state {
 		case remote.Retired:
-			state = i18n.T(c.Language, "session.list.retired")
+			state = i18n.T(c.Language, "session.list.retired", task)
 		case remote.Failed:
 			key := "session.list.failed"
 			if remote.LoginProblem(x.Problem) {

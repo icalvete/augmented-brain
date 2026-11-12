@@ -234,7 +234,7 @@ func TestStopWhenIdle(t *testing.T) {
 	}
 	looks := 0
 	for _, call := range f.calls {
-		if strings.HasSuffix(call, "agents --json") {
+		if strings.Contains(call, "agents --json") {
 			looks++
 		}
 		if strings.HasSuffix(call, "rm ab12cd34") && looks < 5 {
@@ -337,6 +337,75 @@ func TestRetiredSession(t *testing.T) {
 	if f.retired["ef56ab78"] || HasLaunch(c.Dir, "task-site") {
 		t.Errorf("not closed: retired %v, calls %v", f.retired, f.calls)
 	}
+}
+
+// session start brings back a session Claude stopped, with its id and conversation
+// and no first message (12-nov, 2.1.322: claude respawn); only in its own folder, and
+// when Claude cannot, a new one replaces it as before.
+func TestWakeRetiredSession(t *testing.T) {
+	f, repo := launchFake(t)
+	c, _ := f.load()
+	f.trust(repo)
+	l := Launch{Task: "task-site", Name: "x", Folder: repo}
+	if woke, err := f.sys.Wake(c.Dir, l); woke || err != nil {
+		t.Fatalf("no session to bring back: %v %v", woke, err)
+	}
+	_, set := f.load()
+	if err := f.sys.Start(c, set, l, "go"); err != nil {
+		t.Fatal(err)
+	}
+	if woke, err := f.sys.Wake(c.Dir, l); woke || err != nil {
+		t.Errorf("a running session: %v %v", woke, err)
+	}
+	f.retire("ab12cd34")
+	other := t.TempDir()
+	if woke, err := f.sys.Wake(c.Dir, Launch{Task: "task-site", Name: "x", Folder: other}); woke || err != nil || !f.retired["ab12cd34"] {
+		t.Errorf("another folder: %v %v", woke, err)
+	}
+	f.ranIn = nil
+	woke, err := f.sys.Wake(c.Dir, l)
+	if !woke || err != nil || !f.live["ab12cd34"] || f.retired["ab12cd34"] || len(f.ranIn) > 0 {
+		t.Fatalf("woke %v %v, live %v, launched %v", woke, err, f.live, f.ranIn)
+	}
+	if !containsSuffix(f.calls, " respawn ab12cd34") {
+		t.Errorf("calls: %v", f.calls)
+	}
+	// Claude refuses: nothing woke, Start replaces it.
+	f.retire("ab12cd34")
+	f.noRespawn = true
+	if woke, err := f.sys.Wake(c.Dir, l); woke || err != nil {
+		t.Errorf("a refused respawn: %v %v", woke, err)
+	}
+	// Logged out: said, not tried.
+	f.noRespawn = false
+	f.auth = `{"loggedIn": false}`
+	if _, err := f.sys.Wake(c.Dir, l); !errors.Is(err, ErrLoggedOut) {
+		t.Errorf("logged out: %v", err)
+	}
+}
+
+// A claude that does not know agents --all is asked without it.
+func TestAgentsWithoutAll(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	f.oldAgents = true
+	got, err := f.sys.Launches(c.Dir)
+	if err != nil || len(got) != 1 || got[0].Active != "active" {
+		t.Fatalf("launches: %+v %v", got, err)
+	}
+}
+
+func containsSuffix(list []string, suffix string) bool {
+	for _, x := range list {
+		if strings.HasSuffix(x, suffix) {
+			return true
+		}
+	}
+	return false
 }
 
 // A session that waits for a permission is busy (measured on 11-nov): --when-idle

@@ -19,6 +19,10 @@ var launchMessages = map[string]msg{
 		en: "%s names no repository and its space has no work folder, so I cannot tell in which folder to open it. Say it with --folder DIR.",
 		es: "%s no nombra ningún repositorio y su espacio no tiene carpeta de trabajo, así que no sé en qué carpeta abrirla. Dímela con --folder DIR.",
 	},
+	"session.woken": {
+		en: "Brought back the session \"%s\" of %s, in %s, with its whole conversation: Claude had stopped it. It is connected again in Claude Desktop and claude.ai.\nTo close it (and take it out of Claude Desktop and claude.ai): augmented-brain session stop %s",
+		es: "Recuperada la sesión «%s» de %s, en %s, con toda su conversación: Claude la había parado. Vuelve a estar conectada en Claude Desktop y claude.ai.\nPara cerrarla (y quitarla de Claude Desktop y claude.ai): augmented-brain session stop %s",
+	},
 	"session.started": {
 		en: "Opened the session \"%s\" for %s, in %s. It shows up in Claude Desktop and claude.ai within a minute, and it starts on its own: it reads its task and gets going.\nTo close it (and take it out of Claude Desktop and claude.ai): augmented-brain session stop %s",
 		es: "Abierta la sesión «%s» para %s, en %s. Sale en Claude Desktop y claude.ai en menos de un minuto, y empieza sola: lee su tarea y se pone a ello.\nPara cerrarla (y quitarla de Claude Desktop y claude.ai): augmented-brain session stop %s",
@@ -65,8 +69,8 @@ var launchMessages = map[string]msg{
 		es: "La sesión propia de la tarea se cierra cuando termine esta respuesta, y sale de Claude Desktop y claude.ai; su worktree se va con ella si no se pierde nada.",
 	},
 	"session.closed.retired": {
-		en: "Closed the task's own session, which Claude had retired after hours unused: it leaves Claude Desktop and claude.ai.",
-		es: "Cerrada la sesión propia de la tarea, que Claude había retirado tras horas sin uso: sale de Claude Desktop y claude.ai.",
+		en: "Closed the task's own session, which Claude had stopped: it leaves Claude Desktop and claude.ai.",
+		es: "Cerrada la sesión propia de la tarea, que Claude había parado: sale de Claude Desktop y claude.ai.",
 	},
 	"session.worktree.closed.kept": {
 		en: "The task's worktree %s stays: it has %s. Push or drop that work, then remove it.",
@@ -149,8 +153,8 @@ var launchMessages = map[string]msg{
 		es: "La sesión de %s siguió respondiendo, o esperando un permiso, durante 30 minutos: se queda abierta. Ciérrala con augmented-brain session stop cuando acabe.",
 	},
 	"session.list.retired": {
-		en: "retired (Claude stopped it after hours unused; it comes back when opened in Claude Desktop or claude.ai)",
-		es: "retirada (Claude la paró tras horas sin uso; vuelve al abrirla en Claude Desktop o claude.ai)",
+		en: "retired (Claude stopped it, after hours unused or with its background service; claude.ai shows it disconnected). To bring it back with its conversation: augmented-brain session start %s",
+		es: "retirada (Claude la paró, tras horas sin uso o con su servicio de fondo; claude.ai la enseña desconectada). Para traerla de vuelta con su conversación: augmented-brain session start %s",
 	},
 	"session.list.failed": {
 		en: "failed: its last answer was an error (%s). Write to it in Claude Desktop or claude.ai to try again, or open it again: augmented-brain session start %s",
