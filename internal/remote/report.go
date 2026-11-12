@@ -2,6 +2,7 @@ package remote
 
 import (
 	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/i18n"
 )
@@ -86,6 +87,12 @@ func (s System) StatusLines(l string, st *Status) []string {
 			out = append(out, i18n.T(l, "remote.status.fix", a))
 		}
 	}
+	if w := st.Watch; w != nil {
+		out = append(out, i18n.T(l, "remote.status.watch", strings.TrimSuffix(WatchEvery, "min"), s.WatchWord(l, *w)))
+		if fix := WatchAdvice(l, *w); fix != "" {
+			out = append(out, i18n.T(l, "remote.status.fix", fix))
+		}
+	}
 	if st.Linger == LingerNone {
 		return append(out, i18n.T(l, "remote.status.atlogin"))
 	}
@@ -105,4 +112,67 @@ func (s System) DoctorLine(l string, x SpaceStatus, g Linger) (what, fix string,
 	}
 	adv := s.Advice(l, x, g)
 	return what, strings.Join(adv, "; "), len(adv) == 0
+}
+
+// WatchWord says how the watch stands, in words: whether it runs and, when it ran, how
+// long ago it last looked.
+func (s System) WatchWord(l string, w WatchStatus) string {
+	var word string
+	switch {
+	case !w.Installed:
+		return i18n.T(l, "remote.state.missing")
+	case w.Active != "active":
+		word = i18n.T(l, "remote.state.inactive")
+	case w.Enabled != "enabled":
+		word = i18n.T(l, "remote.state.active") + ", " + i18n.T(l, "remote.enabled.other")
+	default:
+		word = i18n.T(l, "remote.state.active")
+	}
+	if !w.Last.IsZero() {
+		now := time.Now
+		if s.Now != nil {
+			now = s.Now
+		}
+		word += ", " + i18n.T(l, "remote.watch.last", ago(l, now().Sub(w.Last)))
+	}
+	if w.Failed {
+		word += ", " + i18n.T(l, "remote.watch.failed")
+	}
+	return word
+}
+
+// WatchAdvice is what to do about the watch, in one sentence; "" when all is well.
+func WatchAdvice(l string, w WatchStatus) string {
+	switch {
+	case !w.Installed:
+		return i18n.T(l, "remote.fix.install")
+	case w.Active != "active" || w.Enabled != "enabled":
+		return i18n.T(l, "remote.fix.watch.start")
+	case w.Failed:
+		return i18n.T(l, "remote.fix.watch.failed", WatchName+".service")
+	}
+	return ""
+}
+
+// WatchDoctorLine is the line `doctor` gives the watch when something is wrong with it;
+// ok when there is nothing to say. A missing watch is already said by each space's line
+// (its service is out of date).
+func (s System) WatchDoctorLine(l string, w WatchStatus) (what, fix string, ok bool) {
+	if !w.Installed || w.Healthy() {
+		return "", "", true
+	}
+	return i18n.T(l, "remote.doctor.watch", s.WatchWord(l, w)), WatchAdvice(l, w), false
+}
+
+// ago says a span of time in the largest whole unit: seconds, minutes, hours or days.
+func ago(l string, d time.Duration) string {
+	switch {
+	case d < time.Minute:
+		return i18n.T(l, "remote.ago.s", max(int(d/time.Second), 0))
+	case d < time.Hour:
+		return i18n.T(l, "remote.ago.min", int(d/time.Minute))
+	case d < 48*time.Hour:
+		return i18n.T(l, "remote.ago.h", int(d/time.Hour))
+	}
+	return i18n.T(l, "remote.ago.d", int(d/(24*time.Hour)))
 }

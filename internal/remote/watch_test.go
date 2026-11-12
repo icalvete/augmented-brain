@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 )
 
 // watchFake is a fake with both services installed and running, a pid each, and the
@@ -80,8 +81,12 @@ func TestWatchInstalled(t *testing.T) {
 		t.Errorf("timer:\n%s", WatchTimerText())
 	}
 	c, set := f.load()
-	if _, err := f.sys.Install(c, set); err != nil {
+	res, err := f.sys.Install(c, set)
+	if err != nil {
 		t.Fatal(err)
+	}
+	if !res.Watch {
+		t.Error("install does not say it started the watch")
 	}
 	if !slices.Contains(f.calls, "systemctl --user enable --now "+WatchName+".timer") {
 		t.Errorf("timer not started: %v", f.calls)
@@ -203,5 +208,79 @@ func TestWatchOnlyOnLinux(t *testing.T) {
 	c, _ := f.load()
 	if err := f.sys.Watch(c, &bytes.Buffer{}); err != ErrUnsupported {
 		t.Fatalf("got %v", err)
+	}
+}
+
+// remote status says how the watch stands: running and when it last looked, stopped, or
+// failed, each with what to do; doctor says only what is wrong.
+func TestWatchStatus(t *testing.T) {
+	f, _ := watchFake(t)
+	now := time.Date(2026, 11, 12, 11, 0, 0, 0, time.UTC)
+	f.sys.Now = func() time.Time { return now }
+	const timer = WatchName + ".timer"
+	c, set := f.load()
+	status := func(l string) (*WatchStatus, string) {
+		t.Helper()
+		st, err := f.sys.Status(c, set)
+		if err != nil || st.Watch == nil {
+			t.Fatalf("status: %v %+v", err, st)
+		}
+		return st.Watch, strings.Join(f.sys.StatusLines(l, st), "\n")
+	}
+
+	f.active[timer] = "active"
+	f.lastLook = now.Add(-40 * time.Second).Unix()
+	w, text := status("en")
+	if !w.Healthy() || !strings.Contains(text, "watch (") || !strings.Contains(text, "running, last look 40 s ago") || strings.Contains(text, "journalctl") {
+		t.Errorf("healthy watch:\n%s", text)
+	}
+	if _, _, ok := f.sys.WatchDoctorLine("en", *w); !ok {
+		t.Error("doctor complains about a healthy watch")
+	}
+	f.lastLook = now.Add(-3 * time.Hour).Unix()
+	if _, text = status("es"); !strings.Contains(text, "vigilante (") || !strings.Contains(text, "en marcha, miró hace 3 h") {
+		t.Errorf("Spanish, hours:\n%s", text)
+	}
+
+	// Never looked yet, or a systemd that cannot say: no time at all.
+	f.lastLook = 0
+	if w, _ = status("en"); !w.Last.IsZero() {
+		t.Errorf("never looked: %v", w.Last)
+	}
+
+	// Its last look failed: say so, and where to see why.
+	f.active[WatchName+".service"] = "failed"
+	w, text = status("en")
+	if w.Healthy() || !strings.Contains(text, "its last look failed") || !strings.Contains(text, "journalctl --user -u "+WatchName+".service") {
+		t.Errorf("failed watch:\n%s", text)
+	}
+	if what, fix, ok := f.sys.WatchDoctorLine("en", *w); ok || !strings.Contains(what, "failed") || !strings.Contains(fix, "journalctl") {
+		t.Errorf("doctor, failed: %q %q %v", what, fix, ok)
+	}
+	delete(f.active, WatchName+".service")
+
+	// Timer stopped: install again starts it.
+	f.active[timer] = "inactive"
+	w, text = status("en")
+	if w.Healthy() || !strings.Contains(text, "stopped") || !strings.Contains(text, "remote install") {
+		t.Errorf("stopped watch:\n%s", text)
+	}
+
+	// Not there: status says so; doctor leaves it to the spaces' lines (out of date).
+	if err := os.Remove(filepath.Join(f.sys.UnitDir, timer)); err != nil {
+		t.Fatal(err)
+	}
+	w, text = status("en")
+	if w.Installed || !strings.Contains(text, "not installed") {
+		t.Errorf("missing watch:\n%s", text)
+	}
+	if _, _, ok := f.sys.WatchDoctorLine("en", *w); !ok {
+		t.Error("doctor repeats what the spaces' lines say")
+	}
+
+	// Without this program's path no watch is written, so none is reported missing.
+	f.sys.Self = ""
+	if st, _ := f.sys.Status(c, set); st.Watch != nil {
+		t.Errorf("no watch to speak of: %+v", st.Watch)
 	}
 }

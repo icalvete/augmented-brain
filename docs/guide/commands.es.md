@@ -338,7 +338,8 @@ augmented-brain remote status
 
 Para cada espacio: el nombre de la sesión (el que eliges en Claude Desktop o en
 claude.ai), si el servicio está en marcha y arranca solo, y si Claude confía en su
-carpeta. Luego, en Linux, si el linger está activado; en macOS y Windows, que arranca
+carpeta. Luego, en Linux, si el vigilante (mira `remote watch` abajo) está en marcha y
+cuánto hace que miró por última vez, y si el linger está activado; en macOS y Windows, que arranca
 cuando entras en tu sesión. Debajo de cada problema, `→` dice qué hacer.
 No tiene opciones.
 

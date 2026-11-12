@@ -114,7 +114,7 @@
   <p>macOS and Windows have no linger: there the service starts when you log in.</p>
   <h2 id="check-it">Check it</h2>
   <pre><code>augmented-brain remote status</code></pre>
-  <p>For each space it says whether the service is running, whether Claude trusts its folder, and on Linux whether linger is on, with what to do about each problem. <code>augmented-brain doctor</code> shows the same, one line per space.</p>
+  <p>For each space it says whether the service is running, whether Claude trusts its folder, and on Linux whether linger is on, with what to do about each problem. On Linux it also says how the watch stands (the one that brings back a service whose server archived the session, see below): whether it is running and how long ago it last looked. <code>augmented-brain doctor</code> shows the same, one line per space, and one more for the watch only when it fails.</p>
   <p>When a service fails, it says why. On Linux, in the system journal:</p>
   <pre><code>journalctl --user -u augmented-brain-remote-personal -n 20</code></pre>
   <p>On macOS, in <code>~/Library/Logs/augmented-brain/augmented-brain-remote-&lt;space&gt;.log</code>; on Windows, in <code>augmented-brain-remote-&lt;space&gt;.log</code> inside <code>%LOCALAPPDATA%\augmented-brain\remote</code>. <code>status</code> names the file.</p>

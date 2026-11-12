@@ -69,6 +69,9 @@ func remoteInstall(c *config.Config, set remote.Settings, sys remote.System, out
 	for _, s := range res.Services {
 		fmt.Fprintln(out, i18n.T(l, "remote.install.space", s.Space, s.Name, tilde(s.Folder)))
 	}
+	if res.Watch {
+		fmt.Fprintln(out, i18n.T(l, "remote.install.watch", strings.TrimSuffix(remote.WatchEvery, "min")))
+	}
 	for _, s := range res.Added {
 		fmt.Fprintln(out, i18n.T(l, "remote.install.added", tilde(s.Folder), s.Space))
 	}

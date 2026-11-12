@@ -114,7 +114,7 @@
   <p>macOS y Windows no tienen linger: ahí el servicio arranca cuando entras en tu sesión.</p>
   <h2 id="compruébalo">Compruébalo</h2>
   <pre><code>augmented-brain remote status</code></pre>
-  <p>Para cada espacio dice si el servicio está en marcha, si Claude confía en su carpeta y, en Linux, si el linger está activado, con lo que hacer con cada problema. <code>augmented-brain doctor</code> enseña lo mismo, una línea por espacio.</p>
+  <p>Para cada espacio dice si el servicio está en marcha, si Claude confía en su carpeta y, en Linux, si el linger está activado, con lo que hacer con cada problema. En Linux también dice cómo está el vigilante (el que trae de vuelta un servicio cuyo servidor archivó la sesión, mira abajo): si está en marcha y cuánto hace que miró por última vez. <code>augmented-brain doctor</code> enseña lo mismo, una línea por espacio, y una más para el vigilante solo cuando falla.</p>
   <p>Cuando un servicio falla, dice por qué. En Linux, en el registro del sistema (el journal):</p>
   <pre><code>journalctl --user -u augmented-brain-remote-personal -n 20</code></pre>
   <p>En macOS, en <code>~/Library/Logs/augmented-brain/augmented-brain-remote-&lt;espacio&gt;.log</code>; en Windows, en <code>augmented-brain-remote-&lt;espacio&gt;.log</code> dentro de <code>%LOCALAPPDATA%\augmented-brain\remote</code>. <code>status</code> dice el fichero.</p>

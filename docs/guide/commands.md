@@ -329,7 +329,8 @@ augmented-brain remote status
 
 For each space: the session's name (what you pick in Claude Desktop or claude.ai), whether
 the service is running and starts by itself, and whether Claude trusts its folder. Then,
-on Linux, whether linger is on; on macOS and Windows, that it starts when you log in. Under each problem, `→` says what to do. It takes no options.
+on Linux, whether the watch (see `remote watch` below) is running and how long ago it last
+looked, and whether linger is on; on macOS and Windows, that it starts when you log in. Under each problem, `→` says what to do. It takes no options.
 
 ## augmented-brain remote watch
 
