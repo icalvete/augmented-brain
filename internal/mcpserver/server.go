@@ -153,15 +153,24 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		})
 
 	type pendingIn struct {
-		WithinDays int `json:"within_days,omitempty" jsonschema:"also list watch dates due within this many days (default 7)"`
+		WithinDays int    `json:"within_days,omitempty" jsonschema:"also list watch dates due within this many days (default 7)"`
+		Space      string `json:"space,omitempty" jsonschema:"another space whose tasks to list (its name, as in where_am_i), to find the id of one of its tasks; only when the user asks for it. Leave it out for this space"`
 	}
-	tool(s, locked, "pending", "The live tasks, those waiting on the user first, with status, who each waits on and its next step; and the watch dates that are due.",
+	tool(s, locked, "pending", "The live tasks, those waiting on the user first, with status, who each waits on and its next step; and the watch dates that are due. "+
+		"With space, those of another space instead, read only, to find the task the user means there.",
 		func(b *brain.Brain, in pendingIn) (string, error) {
 			if in.WithinDays == 0 {
 				in.WithinDays = 7
 			}
-			items, due := b.Pending(in.WithinDays)
+			t, err := b.Other(in.Space)
+			if err != nil {
+				return "", err
+			}
+			items, due := t.Pending(in.WithinDays)
 			var out strings.Builder
+			if t != b {
+				fmt.Fprintf(&out, "Space %s:\n", t.Space.Name)
+			}
 			if len(items) == 0 {
 				out.WriteString("No live tasks.\n")
 			}
@@ -202,10 +211,15 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		})
 
 	type idIn struct {
-		ID string `json:"id" jsonschema:"task id, e.g. task-backup"`
+		ID    string `json:"id" jsonschema:"task id, e.g. task-backup"`
+		Space string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	tool(s, locked, "task_get", "Read a task: its header and its whole body, journal included, and its subtasks. Old journal entries moved to archive/journals/ are named by a line of the journal; read that file when you need them.",
-		func(b *brain.Brain, in idIn) (string, error) {
+	tool(s, locked, "task_get", "Read a task: its header and its whole body, journal included, and its subtasks. Old journal entries moved to archive/journals/ are named by a line of the journal; read that file when you need them. "+otherSpace,
+		func(b0 *brain.Brain, in idIn) (string, error) {
+			b, err := b0.Other(in.Space)
+			if err != nil {
+				return "", err
+			}
 			n, err := b.Task(in.ID)
 			if err == nil {
 				b.Touched(in.ID, false)
@@ -229,7 +243,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 					out += fmt.Sprintf("- %s (%s) · %s · waits on %s · next: %s\n", c.Header.ID, c.Header.Title, c.Header.Status, c.Header.WaitingOn, c.Header.Next)
 				}
 			}
-			return out, nil
+			return out + fromOther(b), nil
 		})
 
 	type stepIn struct {
@@ -238,11 +252,15 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Text   string `json:"text,omitempty" jsonschema:"the step to tick or untick, by its text (or a part only it contains), when number is not given"`
 		Done   bool   `json:"done,omitempty" jsonschema:"true to tick the step, false to untick it"`
 		Add    string `json:"add,omitempty" jsonschema:"add this step, unticked, at the end of the Plan, instead of ticking one"`
+		Space  string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	tool(s, locked, "task_step", "Steps are the small parts of a task: checkboxes (- [ ] text) in its Plan section. Add one (add), or tick or untick one by number or text (done). Each change writes a short journal line.",
-		func(b *brain.Brain, in stepIn) (string, error) {
+	tool(s, locked, "task_step", "Steps are the small parts of a task: checkboxes (- [ ] text) in its Plan section. Add one (add), or tick or untick one by number or text (done). Each change writes a short journal line. "+otherSpace,
+		func(b0 *brain.Brain, in stepIn) (string, error) {
+			b, err := b0.Other(in.Space)
+			if err != nil {
+				return "", err
+			}
 			var n *memory.Note
-			var err error
 			if in.Add != "" {
 				n, err = b.AddStep(in.ID, in.Add)
 			} else {
@@ -261,7 +279,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				}
 				fmt.Fprintf(&out, "%d. [%s] %s\n", st.N, mark, st.Text)
 			}
-			return out.String(), nil
+			return out.String() + fromOther(b), nil
 		})
 
 	type updateIn struct {
@@ -275,14 +293,23 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		WatchWhat string `json:"watch_what,omitempty" jsonschema:"what to look at on watch_date, one line"`
 		WatchDone string `json:"watch_done,omitempty" jsonschema:"mark the watch date on this day (YYYY-MM-DD) as done"`
 		Reopen    string `json:"reopen,omitempty" jsonschema:"only to open a closed task again, with a new status: why, in a few words; it goes to the journal. Ask the user first"`
+		Space     string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. A closed task opens again only with reopen.",
-		func(b *brain.Brain, in updateIn) (string, error) {
+	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
+		func(b0 *brain.Brain, in updateIn) (string, error) {
 			u := brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn, Next: in.Next,
 				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone,
 				Reopen: in.Reopen}
 			if in.Status+in.WaitingOn+in.Next+in.Summary+in.Area+in.WatchDate+in.WatchDone == "" {
 				return "", errors.New("nothing to change: give at least one field")
+			}
+			b, err := b0.Other(in.Space)
+			if err != nil {
+				return "", err
+			}
+			if b != b0 && in.Status == "closed" {
+				// Closing also ends the task's session and worktree, which belong to that space.
+				return "", fmt.Errorf("a task of space %s is closed from a session of that space, not from %s; write here what was decided (task_journal with space) and close it there", b.Space.Name, b0.Space.Name)
 			}
 			n, err := b.Update(u)
 			if err != nil {
@@ -293,20 +320,30 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			} else {
 				b.Touched(in.ID, true)
 			}
-			return header(n, nil)
+			out, _ := header(n, nil)
+			return out + fromOther(b), nil
 		})
 
 	type journalIn struct {
 		ID    string `json:"id"`
 		Entry string `json:"entry" jsonschema:"what was done, what came out, what was decided"`
+		Space string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	tool(s, locked, "task_journal", "Add a dated entry to a task's journal.",
-		func(b *brain.Brain, in journalIn) (string, error) {
+	tool(s, locked, "task_journal", "Add a dated entry to a task's journal. "+otherSpace,
+		func(b0 *brain.Brain, in journalIn) (string, error) {
+			b, err := b0.Other(in.Space)
+			if err != nil {
+				return "", err
+			}
 			n, err := b.Journal(in.ID, in.Entry)
 			if err == nil {
 				b.Touched(in.ID, true)
 			}
-			return header(n, err)
+			out, err := header(n, err)
+			if err != nil {
+				return out, err
+			}
+			return out + fromOther(b), nil
 		})
 
 	type parkIn struct {
@@ -895,4 +932,17 @@ func header(n *memory.Note, err error) (string, error) {
 		out += fmt.Sprintf("\nstatus: %s · waits on: %s · next: %s", h.Status, h.WaitingOn, h.Next)
 	}
 	return out, nil
+}
+
+// otherSpace is what the task tools that take space say of it.
+const otherSpace = "With space, a task of another space: for what is decided here about work that lives there, " +
+	"only when the user asks for it. What is read stays in this conversation, never in this space's notes; " +
+	"what is written there ends in \"(from <this space>)\" and is backed up with that space."
+
+// fromOther ends the answer of a task tool that worked on another space's task.
+func fromOther(b *brain.Brain) string {
+	if b.Origin() == "" {
+		return ""
+	}
+	return "\n(This task is in space " + b.Space.Name + ", not in " + b.Origin() + ": do not copy it into " + b.Origin() + "'s notes.)\n"
 }

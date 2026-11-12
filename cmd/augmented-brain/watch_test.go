@@ -13,6 +13,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // fakeWatch makes watch run against a pretend gh that answers each look with the next
@@ -211,7 +212,9 @@ func TestWatchJoinsTheKeeper(t *testing.T) {
 	}
 	go func() {
 		time.Sleep(50 * time.Millisecond)
-		os.WriteFile(base+".result", []byte("0\nLa PR #9 se ha mezclado (3 min).\nApuntado.\n"), 0o600)
+		// Atomic, as the keeper writes it: a plain write can be read half done (an
+		// empty file, code 1), which failed on macOS in CI.
+		_ = paths.WriteAtomic(base+".result", []byte("0\nLa PR #9 se ha mezclado (3 min).\nApuntado.\n"), 0o600)
 	}()
 	var out, errOut bytes.Buffer
 	if code := run([]string{"watch", "pr", "9", "--task", id}, nil, &out, &errOut); code != 0 {

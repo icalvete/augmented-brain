@@ -507,7 +507,25 @@ Every space shares:
   exceptions. They hold on the whole machine. A production
   profile saved from the work space is guarded in the personal one too.
 
-Spaces never read each other's notes.
+Spaces never read each other's notes on their own.
+
+## A task of another space
+
+Sometimes you decide, in one space, something about a task of another: in a personal
+session you settle how a work task goes on. Say so, and Claude reads or writes that task
+where it lives, in the other space. It can read it, list that space's live tasks to find
+it, add to its journal, tick a step, and change its next step, status or who it waits
+on.
+
+- What Claude writes there ends in `(from personal)`, so whoever reads it in the other
+  space knows where it was decided.
+- Nothing is copied into this space's notes: what Claude reads stays in the
+  conversation.
+- Claude does it only when you ask, as with sending a capture to another space.
+- Closing that task is done from a session of its own space, because closing also ends
+  the task's session and its worktree.
+- That space is backed up when this session ends, if it has a backup: it does not wait
+  for a session of its own.
 
 ## Shared notes
 
@@ -1961,7 +1979,8 @@ space with none, `update` warns when it goes ahead with no copy to go back to, a
 ## It runs by itself
 
 From then on, **the backup runs every time a Claude session ends**, in the background.
-You wait for nothing. If it fails (no network, no access to the repository), Claude tells
+You wait for nothing. A space that this session wrote in from another space (a task of
+another space) is backed up then too. If it fails (no network, no access to the repository), Claude tells
 you at the start of the next session.
 
 You can also run it by hand:
@@ -3353,6 +3372,8 @@ waits on and its next step. Then the watch dates that are due. Claude uses it fo
 were we?".
 
 - `within_days` (optional): also list watch dates due within this many days. Default 7.
+- `space` (optional): another of your spaces, to list its live tasks instead, read
+  only: to find the task you mean there.
 
 ## `task_new`
 
@@ -3379,6 +3400,9 @@ by hand or by an earlier version, is read without its oldest entries, and a line
 where they are.
 
 - `id`: the task's id, such as `task-move-the-blog`.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. See
+  [A task of another space](https://icalvete.github.io/augmented-brain/guide/spaces.html#a-task-of-another-space).
 
 ## `task_update`
 
@@ -3399,8 +3423,12 @@ again only with `reopen`.
 - `watch_done` (optional): mark the watch date of this day as done.
 - `reopen` (optional): only to open a closed task again, with a new `status`: why, in a
   few words. It goes to the journal. Claude asks you first.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. Closing it is left to a
+  session of that space. See
+  [A task of another space](https://icalvete.github.io/augmented-brain/guide/spaces.html#a-task-of-another-space).
 
-At least one field besides `id` is needed.
+At least one field besides `id` and `space` is needed.
 
 ## `task_step`
 
@@ -3415,6 +3443,9 @@ lists the steps.
 - `text` (optional): the step to tick or untick, by its text (or a part only it holds),
   when `number` is not given.
 - `done` (optional): `true` to tick the step, `false` to untick it. Left out, it unticks.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. See
+  [A task of another space](https://icalvete.github.io/augmented-brain/guide/spaces.html#a-task-of-another-space).
 
 ## `task_journal`
 
@@ -3423,6 +3454,10 @@ done or decided.
 
 - `id`: the task's id.
 - `entry`: what was done, what came out, what was decided.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. The entry ends in
+  `(from <this space>)`. See
+  [A task of another space](https://icalvete.github.io/augmented-brain/guide/spaces.html#a-task-of-another-space).
 
 ## `task_park`
 
