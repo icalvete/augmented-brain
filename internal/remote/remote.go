@@ -102,6 +102,8 @@ type System struct {
 	Parent func(pid int) int
 	// PID is this process: a restart never touches the session or service it runs in.
 	PID int
+	// Now is the time, for how long ago the watch last looked; nil is time.Now.
+	Now func() time.Time
 }
 
 // NewSystem is the real system.
@@ -337,6 +339,8 @@ type InstallResult struct {
 	Linger    Linger
 	// Added are the folders put into a space's work_folders just now.
 	Added []Service
+	// Watch is whether the watch (watch.go) was installed and started.
+	Watch bool
 }
 
 // Install sets remote access up, and is safe to repeat: it checks each service's folder
@@ -448,6 +452,7 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 		}
 	}
 	res.Linger = s.linger()
+	res.Watch = watch
 	return res, nil
 }
 
@@ -592,6 +597,8 @@ func (st SpaceStatus) Running() bool { return st.Active == "active" }
 type Status struct {
 	Spaces []SpaceStatus
 	Linger Linger
+	// Watch is how the watch stands (Linux, watch.go); nil where there is none.
+	Watch *WatchStatus
 }
 
 // Status reads (and changes nothing): the unit files, systemctl, loginctl and Claude's
@@ -625,6 +632,10 @@ func (s System) Status(c *config.Config, set Settings) (*Status, error) {
 			x.Active, x.Enabled = strings.TrimSpace(a), strings.TrimSpace(e)
 		}
 		st.Spaces = append(st.Spaces, x)
+	}
+	// Self is how Install knows what the watch runs: without it, it writes no watch.
+	if s.Self != "" || s.watchInstalled() {
+		st.Watch = s.watchStatus()
 	}
 	return st, nil
 }

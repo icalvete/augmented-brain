@@ -179,6 +179,19 @@ var remoteMessages = map[string]msg{
 		en: "it starts when you log in to this computer (after a reboot, log in once)",
 		es: "arranca cuando entras en este ordenador (tras reiniciar, entra una vez)",
 	},
+	"remote.status.watch": {
+		en: "watch (brings remote access back when its session is archived, looks every %s min): %s",
+		es: "vigilante (devuelve el acceso remoto cuando se archiva su sesión, mira cada %s min): %s",
+	},
+	"remote.watch.last": {en: "last look %s ago", es: "miró hace %s"},
+	"remote.watch.failed": {
+		en: "its last look failed",
+		es: "su última vuelta falló",
+	},
+	"remote.ago.s":   {en: "%d s", es: "%d s"},
+	"remote.ago.min": {en: "%d min", es: "%d min"},
+	"remote.ago.h":   {en: "%d h", es: "%d h"},
+	"remote.ago.d":   {en: "%d days", es: "%d días"},
 	"remote.status.fix": {
 		en: "  → %s",
 		es: "  → %s",
@@ -221,6 +234,14 @@ var remoteMessages = map[string]msg{
 		en: "run `augmented-brain remote install` again to bring the service up to date: its sessions then find claude and augmented-brain, when it fails it says why in the system journal, and it comes back by itself when the server archives its session (it restarts remote access)",
 		es: "vuelve a lanzar `augmented-brain remote install` para poner el servicio al día: así sus sesiones encuentran claude y augmented-brain, cuando falla dice por qué en el registro del sistema, y vuelve solo cuando el servidor archiva su sesión (reinicia el acceso remoto)",
 	},
+	"remote.fix.watch.start": {
+		en: "run `augmented-brain remote install` again: it starts the watch and has it start by itself",
+		es: "vuelve a lanzar `augmented-brain remote install`: arranca el vigilante y hace que arranque solo",
+	},
+	"remote.fix.watch.failed": {
+		en: "see why with `journalctl --user -u %s -n 20`",
+		es: "mira por qué con `journalctl --user -u %s -n 20`",
+	},
 	"remote.fix.linger": {
 		en: "an administrator runs `%s`",
 		es: "un administrador lanza `%s`",
@@ -229,6 +250,14 @@ var remoteMessages = map[string]msg{
 	"remote.doctor": {
 		en: "remote access, space %s (session %q): service %s, folder %s, linger %s",
 		es: "acceso remoto, espacio %s (sesión %q): servicio %s, carpeta %s, linger %s",
+	},
+	"remote.doctor.watch": {
+		en: "remote access watch: %s",
+		es: "vigilante del acceso remoto: %s",
+	},
+	"remote.install.watch": {
+		en: "  watch: running; every %s min it looks whether a service lost its session and brings it back",
+		es: "  vigilante: en marcha; cada %s min mira si algún servicio se ha quedado sin sesión y lo devuelve",
 	},
 	"remote.doctor.atlogin": {
 		en: "remote access, space %s (session %q): service %s, folder %s, starts at login",

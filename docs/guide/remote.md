@@ -81,8 +81,11 @@ augmented-brain remote status
 ```
 
 For each space it says whether the service is running, whether Claude trusts its folder,
-and on Linux whether linger is on, with what to do about each problem. `augmented-brain
-doctor` shows the same, one line per space.
+and on Linux whether linger is on, with what to do about each problem. On Linux it also
+says how the watch stands (the one that brings back a service whose server archived the
+session, see below): whether it is running and how long ago it last looked.
+`augmented-brain doctor` shows the same, one line per space, and one more for the watch
+only when it fails.
 
 When a service fails, it says why. On Linux, in the system journal:
 

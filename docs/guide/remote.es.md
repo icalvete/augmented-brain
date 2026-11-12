@@ -81,8 +81,11 @@ augmented-brain remote status
 ```
 
 Para cada espacio dice si el servicio está en marcha, si Claude confía en su carpeta y,
-en Linux, si el linger está activado, con lo que hacer con cada problema.
-`augmented-brain doctor` enseña lo mismo, una línea por espacio.
+en Linux, si el linger está activado, con lo que hacer con cada problema. En Linux
+también dice cómo está el vigilante (el que trae de vuelta un servicio cuyo servidor
+archivó la sesión, mira abajo): si está en marcha y cuánto hace que miró por última vez.
+`augmented-brain doctor` enseña lo mismo, una línea por espacio, y una más para el
+vigilante solo cuando falla.
 
 Cuando un servicio falla, dice por qué. En Linux, en el registro del sistema (el journal):
 

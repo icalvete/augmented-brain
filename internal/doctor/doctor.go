@@ -449,6 +449,11 @@ func remoteChecks(e Env, c *config.Config) []Check {
 		}
 		out = append(out, Check{status, what, fix})
 	}
+	if st.Watch != nil {
+		if what, fix, ok := sys.WatchDoctorLine(l, *st.Watch); !ok {
+			out = append(out, Check{Warning, what, fix})
+		}
+	}
 	return out
 }
 

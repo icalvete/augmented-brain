@@ -1,5 +1,12 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **`remote status` nombra al vigilante.** En Linux añade una línea sobre el vigilante
+  que devuelve el acceso remoto cuando el servidor archiva su sesión: si está en marcha,
+  cuánto hace que miró por última vez y qué hacer si está parado o su última vuelta
+  falló. `remote install` dice que lo deja en marcha, y `doctor` avisa cuando falla.
+
 ## 0.18.0-beta
 
 Publicada el 2026-11-12.

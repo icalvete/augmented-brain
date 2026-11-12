@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -102,6 +103,53 @@ func (s System) writeWatch(cfgDir string) error {
 func (s System) watchInstalled() bool {
 	data, err := os.ReadFile(filepath.Join(s.UnitDir, WatchName+".timer"))
 	return err == nil && strings.HasPrefix(string(data), Marker)
+}
+
+// WatchStatus is how the watch stands, for `remote status` and `doctor` (Linux).
+type WatchStatus struct {
+	Installed bool   // its timer is there, written by Install
+	Active    string // systemctl is-active of the timer: active while it waits
+	Enabled   string // systemctl is-enabled of the timer
+	Failed    bool   // its last look ended in an error
+	// Last is when the timer last ran it; zero when it never did, or this systemd
+	// cannot say (--timestamp=unix came with systemd 251).
+	Last time.Time
+}
+
+// Healthy is whether the watch is there, waiting for its next look, starts by itself and
+// did not fail last time.
+func (w WatchStatus) Healthy() bool {
+	return w.Installed && w.Active == "active" && w.Enabled == "enabled" && !w.Failed
+}
+
+// watchStatus reads how the watch stands; it changes nothing.
+func (s System) watchStatus() *WatchStatus {
+	w := &WatchStatus{Installed: s.watchInstalled()}
+	if !w.Installed {
+		return w
+	}
+	timer, service := WatchName+".timer", WatchName+".service"
+	// is-active and is-enabled exit non-zero for "inactive" and "disabled": what they
+	// print is the answer.
+	a, _ := s.Run("systemctl", "--user", "is-active", timer)
+	e, _ := s.Run("systemctl", "--user", "is-enabled", timer)
+	w.Active, w.Enabled = strings.TrimSpace(a), strings.TrimSpace(e)
+	if out, err := s.Run("systemctl", "--user", "show", "--timestamp=unix", "--property=LastTriggerUSec", timer); err == nil {
+		_, v, _ := strings.Cut(strings.TrimSpace(out), "=")
+		if n, err := strconv.ParseInt(strings.TrimPrefix(v, "@"), 10, 64); err == nil && n > 0 {
+			w.Last = time.Unix(n, 0)
+		}
+	}
+	if out, err := s.Run("systemctl", "--user", "show", "--property=ActiveState,Result", service); err == nil {
+		for _, line := range strings.Split(out, "\n") {
+			k, v, _ := strings.Cut(strings.TrimSpace(line), "=")
+			switch {
+			case k == "ActiveState" && v == "failed", k == "Result" && v != "" && v != "success":
+				w.Failed = true
+			}
+		}
+	}
+	return w
 }
 
 // removeWatch stops the timer and removes the watch's files; it says whether there was

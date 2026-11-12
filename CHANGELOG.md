@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **`remote status` names the watch.** On Linux it adds a line on the watch that brings
+  remote access back when the server archives its session: whether it is running, how
+  long ago it last looked, and what to do when it is stopped or its last look failed.
+  `remote install` says it left it running, and `doctor` warns when it fails.
+
 ## 0.18.0-beta
 
 Released 2026-11-12.

@@ -50,6 +50,8 @@ type fake struct {
 	stuck  bool
 	// agentList, when set, is what claude agents --json prints (restart_test.go).
 	agentList func() []map[string]any
+	// lastLook is when the watch's timer last ran, in Unix seconds; 0 is never.
+	lastLook int64
 }
 
 func newFake(t *testing.T) *fake {
@@ -184,6 +186,11 @@ func (f *fake) run(name string, args ...string) (string, error) {
 			f.groups[u] = slices.DeleteFunc(procs, func(p int) bool { return moved[strconv.Itoa(p)] })
 		}
 		return "o \"/org/freedesktop/systemd1/job/1\"\n", nil
+	case name == "systemctl" && len(args) >= 5 && args[1] == "show" && args[2] == "--timestamp=unix":
+		if f.lastLook == 0 {
+			return "LastTriggerUSec=\n", nil
+		}
+		return fmt.Sprintf("LastTriggerUSec=@%d\n", f.lastLook), nil
 	case name == "systemctl" && len(args) >= 4 && args[1] == "show":
 		state := f.active[args[3]]
 		if state == "" {
