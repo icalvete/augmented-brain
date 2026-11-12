@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.19.1-beta
+
+Publicada el 2026-11-12.
 
 - **Una sesión puede cerrarse a sí misma.** `session stop <tarea> --when-idle` lanzada
   desde la sesión propia de la tarea esperaba a que esa sesión acabara su respuesta, y

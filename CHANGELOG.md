@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.19.1-beta
+
+Released 2026-11-12.
 
 - **A session can close itself.** `session stop <task> --when-idle` run from the
   task's own session waited for that session to finish its answer, and the session
