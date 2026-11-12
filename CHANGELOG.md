@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.19.0-beta
+
+Released 2026-11-12.
 
 - **`watch pr --task` keeps watching when its session is gone.** The watching runs in
   a process of its own, so a session closed, restarted or retired by Claude no longer

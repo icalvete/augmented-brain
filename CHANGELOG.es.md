@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.19.0-beta
+
+Publicada el 2026-11-12.
 
 - **`watch pr --task` sigue vigilando aunque su sesión ya no esté.** La vigilancia corre
   en un proceso propio, así que una sesión que se cierra, se reinicia o Claude retira ya
