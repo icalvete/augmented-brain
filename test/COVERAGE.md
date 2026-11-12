@@ -22,6 +22,7 @@ row here with the test that covers it.
 | Uninstall, and install again | `install-check.sh` step 4, `install-check.ps1` step 4 | CI |
 | `uninstall --config`, and install again | `install-check.sh` step 5, `cmd` `TestUninstallConfig` | CI, Go |
 | `uninstall --all` | `install-check.sh` step 7, `cmd` `TestSaysThereIsNoBackup` | CI, Go |
+| The desktop app's download stalls (Linux: gives up with its message, the install goes on) | `install-check.sh` step 1b, a local server that trickles | CI: Ubuntu |
 | A home with spaces and accents | `install-check.sh` step 6 | CI |
 | macOS: shells, version, Apple's developer tools | `scripts/install-check-mac.sh` | CI |
 | macOS: downloaded with a browser (Gatekeeper) | `scripts/mac-check.py` (what macOS says of it, and that it still runs from Terminal); the Finder's dialog by hand | CI: macOS; Mac pass |

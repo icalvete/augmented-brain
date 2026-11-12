@@ -246,11 +246,14 @@ El instalador lee alguna más:
 
 - `AB_YES=1`: contesta que sí a todas las preguntas.
 - `AB_NO_DESKTOP=1`: no ofrece la app de escritorio de Claude.
+- `AB_DESKTOP_TIMEOUT`: en Linux, cuántos segundos puede tardar la descarga de la app de
+  escritorio antes de que el instalador la deje y siga sin ella. Por defecto, 480 (8 minutos).
 - `AB_INSTALL_DIR`: dónde poner el programa. Por defecto, `~/.local/bin`.
 - `AB_NO_INIT=1`: solo instala el programa, sin preparar nada.
-- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY` y `AB_MARKETPLACE`: para
-  pruebas: qué versión, dónde están los ficheros de la versión publicada, la API de GitHub
-  a la que recurrir, la espera entre intentos y de dónde sale el plugin.
+- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY`, `AB_MARKETPLACE` y
+  `AB_DESKTOP_URL`: para pruebas: qué versión, dónde están los ficheros de la versión
+  publicada, la API de GitHub a la que recurrir, la espera entre intentos, de dónde sale
+  el plugin y dónde está el repositorio apt de la app de escritorio.
 
 ## Los ajustes de Claude Code
 

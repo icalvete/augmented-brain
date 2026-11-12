@@ -6,6 +6,10 @@
   que devuelve el acceso remoto cuando el servidor archiva su sesión: si está en marcha,
   cuánto hace que miró por última vez y qué hacer si está parado o su última vuelta
   falló. `remote install` dice que lo deja en marcha, y `doctor` avisa cuando falla.
+- **El instalador ya no espera sin límite a la app de escritorio.** Si su descarga se
+  atasca, en Linux la deja a los 8 minutos (`AB_DESKTOP_TIMEOUT` lo cambia), lo dice y
+  termina la instalación sin la app; en macOS deja una descarga que se queda por debajo
+  de 1 KB por segundo durante un minuto.
 
 ## 0.18.0-beta
 
