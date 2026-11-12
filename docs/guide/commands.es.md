@@ -537,8 +537,11 @@ augmented-brain watch pr 104 --task task-my-change
 
 - `--task TAREA` apunta esa línea en la tarea: en su diario (con el siguiente paso que
   tenía) y como su siguiente paso. Las demás sesiones se enteran antes de su próxima
-  respuesta, y Hoy, en el panel, lo enseña, aunque la sesión que la lanzó ya no exista.
-  La tarea tiene que ser del espacio de esta carpeta.
+  respuesta, y Hoy, en el panel, lo enseña. La vigilancia la hace entonces un proceso
+  propio, que sigue aunque la sesión que la lanzó se cierre, se reinicie o Claude la
+  retire: la sesión solo espera su resultado. Si se pide otra vez para la misma pull
+  request y tarea, espera a la que ya está en marcha en vez de lanzar otra. La tarea
+  tiene que ser del espacio de esta carpeta.
 - `--repo DUEÑO/NOMBRE` es el repositorio; por defecto, el de esta carpeta.
 - `--max` es lo más que vigila (3h por defecto); `--every`, cada cuánto mira (30s por
   defecto).

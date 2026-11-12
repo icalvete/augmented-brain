@@ -2,6 +2,9 @@
 
 ## Sin publicar
 
+- **`watch pr --task` sigue vigilando aunque su sesión ya no esté.** La vigilancia corre
+  en un proceso propio, así que una sesión que se cierra, se reinicia o Claude retira ya
+  no se la lleva: el resultado llega igual a la tarea, y tus otras sesiones se enteran.
 - **`remote status` nombra al vigilante.** En Linux añade una línea sobre el vigilante
   que devuelve el acceso remoto cuando el servidor archiva su sesión: si está en marcha,
   cuánto hace que miró por última vez y qué hacer si está parado o su última vuelta

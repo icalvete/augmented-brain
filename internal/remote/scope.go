@@ -3,6 +3,7 @@ package remote
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -185,4 +186,11 @@ func procGroup(group string) []int {
 		}
 	}
 	return out
+}
+
+// Scoped is name with args run in a scope of its own when this system can give one
+// (Linux with systemd's user manager), so it outlives the group of whoever starts it:
+// what `watch pr` uses to keep watching after its session is gone.
+func Scoped(name string, args ...string) (string, []string) {
+	return System{OwnScope: hasOwnScope(exec.LookPath)}.scoped(name, args...)
 }

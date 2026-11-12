@@ -2,9 +2,12 @@ package main
 
 import (
 	"bytes"
+	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -17,14 +20,39 @@ import (
 func fakeWatch(t *testing.T, state string, checks ...string) *[][]string {
 	t.Helper()
 	var calls [][]string
+	var mu sync.Mutex
 	now := time.Date(2026, 11, 12, 10, 0, 0, 0, time.UTC)
 	look := 0
-	gh, sleep, clock, lookPath := watchGh, watchSleep, watchNow, watchLookPath
-	t.Cleanup(func() { watchGh, watchSleep, watchNow, watchLookPath = gh, sleep, clock, lookPath })
+	gh, sleep, clock, lookPath, start := watchGh, watchSleep, watchNow, watchLookPath, watchStart
+	t.Cleanup(func() { watchGh, watchSleep, watchNow, watchLookPath, watchStart = gh, sleep, clock, lookPath, start })
 	watchLookPath = func(string) (string, error) { return "/usr/bin/gh", nil }
-	watchSleep = func(d time.Duration) { now = now.Add(d) }
-	watchNow = func() time.Time { return now }
+	watchSleep = func(d time.Duration) {
+		mu.Lock()
+		now = now.Add(d)
+		mu.Unlock()
+		time.Sleep(time.Millisecond)
+	}
+	watchNow = func() time.Time { mu.Lock(); defer mu.Unlock(); return now }
+	// The keeper runs in this process: the same command, with its result file.
+	watchStart = func(args, env []string, log string) (int, <-chan struct{}, error) {
+		result := strings.TrimPrefix(env[0], watchKeeperEnv+"=")
+		done := make(chan struct{})
+		c, s, ok := currentSpace(io.Discard)
+		if !ok {
+			t.Error("keeper: no space")
+		}
+		fs, o := watchFlags(io.Discard)
+		rest, _ := parseArgs(fs, args[1:], 2, io.Discard)
+		n, _ := strconv.Atoi(strings.TrimPrefix(rest[1], "#"))
+		go func() {
+			defer close(done)
+			watchKeep(c, s, c.Language, o, n, result, io.Discard)
+		}()
+		return os.Getpid(), done, nil
+	}
 	watchGh = func(args ...string) (string, string, error) {
+		mu.Lock()
+		defer mu.Unlock()
 		calls = append(calls, args)
 		if args[1] == "view" {
 			return state + "\n", "", nil
@@ -122,5 +150,74 @@ func TestWatchUsage(t *testing.T) {
 		if code := run(args, nil, &out, &errOut); code != 2 || !strings.Contains(errOut.String(), "watch pr") {
 			t.Errorf("%v: %d %s", args, code, errOut.String())
 		}
+	}
+}
+
+// taskHere makes a task in the trabajo space and goes to its folder.
+func taskHere(t *testing.T) (cfg, id string) {
+	t.Helper()
+	h, cfg := home(t)
+	c, err := config.Load(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	work := filepath.Join(h, "augmented-brain", "trabajo")
+	b, err := brain.Open(c, c.SpaceFor(work))
+	if err != nil {
+		t.Fatal(err)
+	}
+	task, err := b.NewTask(brain.NewTaskInput{Title: "Otro cambio"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	wd, _ := os.Getwd()
+	t.Cleanup(func() { os.Chdir(wd) })
+	if err := os.Chdir(work); err != nil {
+		t.Fatal(err)
+	}
+	return cfg, task.Header.ID
+}
+
+// A keeper that dies without a result is said, never waited on for ever.
+func TestWatchKeeperLost(t *testing.T) {
+	_, id := taskHere(t)
+	fakeWatch(t, "OPEN", "test\tpending\t0\tu\n")
+	watchStart = func(args, env []string, log string) (int, <-chan struct{}, error) {
+		done := make(chan struct{})
+		close(done)
+		return 999999, done, nil
+	}
+	var out, errOut bytes.Buffer
+	if code := run([]string{"watch", "pr", "9", "--task", id}, nil, &out, &errOut); code != 1 || !strings.Contains(out.String(), "terminó sin resultado") {
+		t.Fatalf("watch: %d\n%s%s", code, out.String(), errOut.String())
+	}
+}
+
+// A second watch of the same pull request for the same task joins the keeper running
+// (a session restarted and asked again) instead of starting another.
+func TestWatchJoinsTheKeeper(t *testing.T) {
+	cfg, id := taskHere(t)
+	fakeWatch(t, "OPEN", "test\tpending\t0\tu\n")
+	watchStart = func(args, env []string, log string) (int, <-chan struct{}, error) {
+		t.Error("started a second keeper")
+		return 0, nil, nil
+	}
+	base := filepath.Join(cfg, "state", watchesDir, id+"-pr9")
+	if err := os.MkdirAll(filepath.Dir(base), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(base+".pid", []byte(strconv.Itoa(os.Getpid())+"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		os.WriteFile(base+".result", []byte("0\nLa PR #9 se ha mezclado (3 min).\nApuntado.\n"), 0o600)
+	}()
+	var out, errOut bytes.Buffer
+	if code := run([]string{"watch", "pr", "9", "--task", id}, nil, &out, &errOut); code != 0 {
+		t.Fatalf("watch: %d\n%s%s", code, out.String(), errOut.String())
+	}
+	if !strings.Contains(out.String(), "Ya la sigue otra vigilancia") || !strings.Contains(out.String(), "La PR #9 se ha mezclado (3 min).\nApuntado.") {
+		t.Errorf("output:\n%s", out.String())
 	}
 }

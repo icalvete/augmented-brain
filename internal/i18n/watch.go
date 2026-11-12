@@ -63,6 +63,14 @@ var watchMessages = map[string]msg{
 		en: "Could not write it in task %s: %s",
 		es: "No he podido apuntarlo en la tarea %s: %s",
 	},
+	"watch.joined": {
+		en: "Another watch (process %d) already follows it for this task: I wait for its result.",
+		es: "Ya la sigue otra vigilancia (proceso %d) para esta tarea: espero a su resultado.",
+	},
+	"watch.lost": {
+		en: "The watch ended without a result. What it wrote is in %s",
+		es: "La vigilancia terminó sin resultado. Lo que escribió está en %s",
+	},
 	"watch.tell": {
 		en: "For the assistant: tell the user this now, in their language, even if they are not looking at this session. If another Claude session asked for this task, send it the same line with SendMessage.",
 		es: "Para el asistente: díselo ahora al usuario, en su idioma, aunque no esté mirando esta sesión. Si otra sesión de Claude pidió esta tarea, mándale la misma línea con SendMessage.",
