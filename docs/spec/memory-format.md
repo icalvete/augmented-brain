@@ -41,7 +41,7 @@ A session that runs outside every work folder (for example, the scratch folder t
 ├── reviews/           # one file per weekly review
 ├── docs/              # optional: long documents of a task (plans, analyses, reports); never loaded
 │   └── <task>/
-└── archive/           # old journals and merged files; never loaded, never deleted
+└── archive/           # old journals (journals/), merged files; never loaded, never deleted
     └── sessions/      # summaries Claude Code wrote when it compacted a conversation
 ```
 
@@ -185,7 +185,7 @@ The body uses these sections, in your language (the templates write the headings
 2. **Definition**, **Analysis**, **Plan**, **Validation**, **Closing**: one per phase.
 3. **Journal**: dated lines, `- YYYY-MM-DD — what happened`. Always the last section.
 
-The program never searches the prose. It relies on two positions only: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. The one exception is the checkboxes of the Plan section (see "Steps"). The program never moves journal entries: a task whose journal grows long can have its oldest entries moved to `archive/` by hand, with a link from the task.
+The program never searches the prose. It relies on two positions only: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. The one exception is the checkboxes of the Plan section (see "Steps"). The other is a long journal: when a task note passes 24 KB, the program moves its oldest entries (a dated line and the lines under it, up to the next dated line), as they were, to `archive/journals/<task id>-<first date>-<last date>.md`, keeping about the last 8 KB of entries in the note, and never fewer than 4 KB moved at once. In their place it writes one dated line, dated as the last entry moved so the journal stays in date order, that names that file; the line is recognized by the path `archive/journals/….md` in it, whatever the language. The file is plain Markdown with no header: a title, a line on where the entries came from, then the entries. It is written before the note, so a failure leaves a copy too many, never one too few. Anything above the first dated line of the journal stays.
 
 ## Areas
 
@@ -419,7 +419,10 @@ the user adds to them stay. The generated index is rebuilt after a restore.
 When another machine changed the same notes, the backup merges before pushing. A note
 that each machine changed only by adding journal entries (dated lines) and moving its
 `updated` date is joined by itself: every entry either added, in date order, and the
-later date. Any other conflict stops the backup without pushing, naming the notes to
+later date. So is a task where one machine moved old entries to `archive/journals/`:
+each line that names such a file is replaced by the file's entries to compare, and put
+back once joined. An earlier program, which does not do this, stops there as with any
+other conflict. Any other conflict stops the backup without pushing, naming the notes to
 merge by hand.
 
 Each git call of a backup or restore stops after 3 minutes without an answer (over

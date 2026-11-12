@@ -102,7 +102,9 @@ Some things are left out on purpose:
 ## What you get
 
 - **Several machines, one brain.** Before pushing, the backup fetches what your other
-  machine did and merges it.
+  machine did and merges it. A task where each machine only wrote in the journal, or
+  where one moved old entries to `archive/journals/` while the other wrote, joins by
+  itself.
 - **Full history.** Every backup is a git commit, with the machine and the time. The
   panel shows what each one changed and goes back to it; with `git log` you see all of
   them.

@@ -66,7 +66,11 @@ subtask.
 
 Reads a task: its header, its whole body with the journal, and its subtasks. It also says
 which task it is part of, and whether a repository it names is missing from this
-computer. Claude reads a task before resuming it.
+computer. Claude reads a task before resuming it. Old journal entries moved to
+`archive/journals/` are named by a line of the journal (see
+[A long journal](tasks.md#a-long-journal)); a task still too long for one answer, written
+by hand or by an earlier version, is read without its oldest entries, and a line says
+where they are.
 
 - `id`: the task's id, such as `task-move-the-blog`.
 
