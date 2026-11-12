@@ -375,8 +375,9 @@ detienen y lo dicen, y el vigilante no reinicia ese servicio.
 ## augmented-brain session
 
 Abre una sesión remota propia para una tarea, para que desde otro ordenador puedas
-trabajar en varias tareas a la vez, cada una en su sesión. Son tres comandos, `start`,
-`stop` y `list`, cada uno con su apartado abajo. Por ahora solo en Linux: solo
+trabajar en varias tareas a la vez, cada una en su sesión. Son cuatro comandos, `start`,
+`stop`, `restart` y `list`, cada uno con su apartado abajo; `restart` también reinicia
+las demás sesiones de Claude de este ordenador. Por ahora solo en Linux: solo
 se ha probado ahí. Sin subcomando, o con otro, `session` muestra su uso. Mira
 [Acceso remoto](remote.es.md#una-sesión-por-tarea).
 
@@ -458,6 +459,42 @@ que cerrar», nunca un éxito callado.
   entonces se queda abierta. Lo que hizo queda en `state/session-stop.log`, en la
   carpeta de la configuración.
 
+## augmented-brain session restart
+
+Reinicia una sesión de Claude para que use el programa de ahora, con la misma
+conversación. Funciona desde cualquier carpeta. Úsalo después de actualizar, o justo
+después de aparcar una tarea, para que su sesión empiece de nuevo.
+
+```bash
+augmented-brain session restart task-new-website
+augmented-brain session restart --old
+```
+
+La sesión se nombra por su tarea (si la abrió `session start`), su id, los ocho
+primeros caracteres de su id de sesión o su nombre; `claude agents` las lista. Cada
+tipo se reinicia a su manera:
+
+- **La sesión de una tarea** (`claude --bg`): Claude le da un proceso nuevo con la
+  misma conversación.
+- **Una sesión del acceso remoto** (`remote install`): se reinicia su servicio, y la
+  misma sesión vuelve a claude.ai y Claude Desktop en unos diez segundos. El servicio
+  lleva todas las sesiones que sirve, así que solo se reinicia si todas están quietas.
+  Antes se saca de él todo lo demás (sobre todo el servicio en segundo plano de Claude),
+  para que no se pare con él. Solo en Linux.
+- **Una sesión de Claude Desktop o de un terminal:** se queda como está. La abrió su
+  app, y pararla desde fuera rompería su ventana. Ciérrala y ábrela otra vez tú.
+
+Nunca se reinicia una sesión que está respondiendo o esperando un permiso: se vuelve a
+mirar justo antes y, si no está quieta, se deja. Tampoco la sesión desde la que se
+lanza la orden: esa necesita `--when-idle`. Si una falla, las demás siguen.
+
+- `--old`: reinicia, una a una, todas las sesiones quietas que siguen con un augmented
+  brain anterior, y dice qué ha pasado con cada una. `update` lo lanza solo.
+- `--when-idle`: espera a que la sesión acabe su respuesta y entonces la reinicia. Así
+  se reinicia una sesión a sí misma después de aparcar su tarea: la orden vuelve en el
+  acto y un proceso en segundo plano espera, hasta 30 minutos. Lo que hizo va a
+  `state/session-restart.log` en la carpeta de configuración.
+
 ## augmented-brain session list
 
 Lista las sesiones de tareas abiertas en este ordenador: la tarea, si está en marcha y
@@ -528,13 +565,16 @@ otro modo harías a mano:
   problema de la versión nueva) y una copia de seguridad de cada espacio que la tenga. Si
   falla una copia, para y no actualiza nada: esa copia es la vuelta atrás. Si no hay
   ninguna copia, dice que sigue sin una copia a la que volver.
-- **Después:** cuántas sesiones de Claude abiertas siguen con la versión vieja y qué
-  tarea está activa en cada espacio, para que pidas a su sesión que la aparque antes de
-  reiniciar. Después cierra Claude y vuelve a abrirlo, para que las sesiones usen la
-  versión nueva.
+- **Después:** reinicia, una a una, las sesiones de Claude quietas que siguen con la
+  versión vieja, como hace `session restart --old`. Para las que no puede reiniciar
+  (una que está respondiendo, o una de Claude Desktop), dice qué tarea está activa en
+  cada espacio, para que pidas a su sesión que la aparque, y después las cierras y las
+  abres.
 
 - `--plugin`: actualiza solo el plugin de Claude Code. Lo usa el instalador.
 - `--force`: actualiza aunque falle la copia de antes.
+- `--no-restart`: no reinicia ninguna sesión después de actualizar; solo dice cuáles
+  siguen con la versión vieja.
 
 ## augmented-brain uninstall
 

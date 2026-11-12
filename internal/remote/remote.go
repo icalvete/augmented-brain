@@ -98,6 +98,10 @@ type System struct {
 	// OwnScope runs session start and Claude's daemon in a scope of their own
 	// (systemd-run), so the daemon never lives inside a remote service (scope.go).
 	OwnScope bool
+	// Parent is the parent of a process (restart.go); nil, or 0, when it cannot tell.
+	Parent func(pid int) int
+	// PID is this process: a restart never touches the session or service it runs in.
+	PID int
 }
 
 // NewSystem is the real system.
@@ -123,7 +127,7 @@ func NewSystem() (System, error) {
 	self, _ := os.Executable()
 	s := System{Run: realRun, RunIn: realRunIn, LookPath: exec.LookPath, Hostname: os.Hostname, GOOS: runtime.GOOS,
 		User: name, UID: os.Getuid(), UnitDir: filepath.Join(conf, "systemd", "user"), ClaudeJSON: claude, ClaudeDir: claudeDir,
-		Home: home, Self: self, Children: procChildren}
+		Home: home, Self: self, Children: procChildren, Parent: procParent, PID: os.Getpid()}
 	if runtime.GOOS == "linux" {
 		s.GroupProcs = procGroup
 		s.OwnScope = hasOwnScope(exec.LookPath)

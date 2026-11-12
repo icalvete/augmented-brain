@@ -24,12 +24,18 @@ Qué hace, por orden:
 3. **Descarga e instala** la versión nueva y el plugin de Claude Code. Si GitHub no entrega
    los ficheros, lo intenta tres veces, también por la API de GitHub; si falla todo, lo
    dice y no cambia nada.
-4. **Comprueba que la versión nueva está puesta**, y dice qué sesiones de Claude abiertas
-   siguen con la vieja, y qué tarea está activa en cada espacio.
+4. **Comprueba que la versión nueva está puesta**, y reinicia una a una las sesiones de
+   Claude quietas que siguen con la vieja, con la misma conversación: la sesión de una
+   tarea y las del acceso remoto. Una sesión que está respondiendo se queda como está.
+5. **Dice lo que queda:** las sesiones que no ha podido reiniciar (una que respondía, la
+   desde la que lo lanzaste, cualquiera de Claude Desktop) y qué tarea está activa en
+   cada espacio.
 
-Después pide a esas sesiones que aparquen su tarea, y cierra y abre Claude. Una sesión que
-estaba abierta sigue con el programa viejo hasta que lo hagas; `/clear` no basta. Si la
-sesión en la que estás es una de ellas, su inicio te lo dice.
+Para las que quedan, pide a la sesión que aparque su tarea, y ciérrala y ábrela. Una
+sesión que estaba abierta sigue con el programa viejo hasta que se reinicia; `/clear` no
+basta. Si la sesión en la que estás es una de ellas, su inicio te lo dice. Más tarde,
+`augmented-brain session restart --old` reinicia las que ya estén quietas, y
+`augmented-brain update --no-restart` actualiza sin reiniciar ninguna.
 
 ### Antes de actualizar
 

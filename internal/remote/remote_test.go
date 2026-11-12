@@ -48,6 +48,8 @@ type fake struct {
 	// them out, unless stuck is set.
 	groups map[string][]int
 	stuck  bool
+	// agentList, when set, is what claude agents --json prints (restart_test.go).
+	agentList func() []map[string]any
 }
 
 func newFake(t *testing.T) *fake {
@@ -108,6 +110,9 @@ func (f *fake) run(name string, args ...string) (string, error) {
 	call := name + " " + strings.Join(args, " ")
 	f.calls = append(f.calls, call)
 	switch {
+	case filepath.Base(name) == "claude" && len(args) > 0 && args[0] == "agents" && f.agentList != nil:
+		data, _ := json.Marshal(f.agentList())
+		return string(data), nil
 	case filepath.Base(name) == "claude" && len(args) > 0 && args[0] == "agents":
 		// As claude 2.1.322 prints them (11-nov): a running session has its pid, its
 		// status (busy also while it waits for a permission) and its state; a retired one

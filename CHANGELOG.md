@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- **Updating restarts the sessions still on the old program.** After an update,
+  `augmented-brain update` restarts, one at a time, the idle Claude sessions that still
+  run the old augmented brain, with the same conversation: a task's session (`claude
+  respawn`) and those of the remote access (their service, only when all its sessions
+  are idle, and after moving out whatever else is inside). A session that is answering
+  is looked at again right before and left as it is. Claude Desktop's are left too, and
+  it says why: close and open them yourself. `--no-restart` updates without restarting
+  any. This works from the update after this version: the update to it still gives the
+  old notice, and `augmented-brain session restart --old` does it by hand.
+- **`augmented-brain session restart`** restarts one session (by its task, id or name),
+  or every one still on an earlier program (`--old`). With `--when-idle` it waits until
+  the session has finished its answer, so a session can restart itself right after
+  parking its task.
+
 ## 0.17.4-beta
 
 Released 2026-11-11.

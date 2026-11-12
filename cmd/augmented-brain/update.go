@@ -21,13 +21,14 @@ import (
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
-// updateFlags are update's flags: --plugin and --force.
-func updateFlags(errOut io.Writer) (*flag.FlagSet, *bool, *bool) {
+// updateFlags are update's flags: --plugin, --force and --no-restart.
+func updateFlags(errOut io.Writer) (*flag.FlagSet, *bool, *bool, *bool) {
 	fs := flag.NewFlagSet("update", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	plugin := fs.Bool("plugin", false, "update only the Claude Code plugin")
 	force := fs.Bool("force", false, "update even when the backup before it fails")
-	return fs, plugin, force
+	noRestart := fs.Bool("no-restart", false, "do not restart the idle Claude sessions still running the old program")
+	return fs, plugin, force, noRestart
 }
 
 // cmdUpdate brings augmented brain up to date: the program through the published
@@ -36,10 +37,12 @@ func updateFlags(errOut io.Writer) (*flag.FlagSet, *bool, *bool) {
 //
 // Around a new version it does what people used to do by hand: before, the health
 // check (its problems are shown, so they are not taken for the new version's) and a
-// backup of every space that has one (a failed backup stops it, unless --force); after, which open Claude sessions still run the old program and which task
-// each space has active, to park before restarting Claude.
+// backup of every space that has one (a failed backup stops it, unless --force); after,
+// the idle Claude sessions still running the old program are restarted (unless
+// --no-restart), and for those left, which task each space has active, to park before
+// restarting Claude.
 func cmdUpdate(args []string, out, errOut io.Writer) int {
-	fs, pluginOnly, force := updateFlags(errOut)
+	fs, pluginOnly, force, noRestart := updateFlags(errOut)
 	if _, ok := parseArgs(fs, args, 0, errOut); !ok {
 		return 2
 	}
@@ -80,7 +83,7 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, i18n.T(lang, "update.notdone", now, latest))
 		return 1
 	}
-	afterUpdate(lang, now, out)
+	afterUpdate(lang, now, !*noRestart, out)
 	return 0
 }
 
@@ -174,9 +177,11 @@ func beforeUpdate(lang string, force bool, out, errOut io.Writer) int {
 	return 0
 }
 
-// afterUpdate says which open Claude sessions still run the old program, and which
-// task each space has active: park it, then close and open Claude.
-func afterUpdate(lang, now string, out io.Writer) {
+// afterUpdate restarts the idle Claude sessions still running the old program, through
+// the new one (`session restart --old`: this one may still be the old one, running
+// from memory, which knows nothing of how). For any left, or with restart false, it
+// says which task each space has active: park it, then close and open Claude.
+func afterUpdate(lang, now string, restart bool, out io.Writer) {
 	dir, err := config.Dir()
 	if err != nil {
 		return
@@ -193,7 +198,12 @@ func afterUpdate(lang, now string, out io.Writer) {
 		fmt.Fprintln(out, i18n.T(lang, "update.after.none"))
 		return
 	}
-	fmt.Fprintln(out, i18n.T(lang, "update.after.old", len(old)))
+	if restart && restartOldWith(out) == nil {
+		return
+	}
+	if !restart {
+		fmt.Fprintln(out, i18n.T(lang, "update.after.old", len(old)))
+	}
 	for _, n := range c.SpaceNames() {
 		// Each open session has its own active task; two may share one.
 		said := map[string]bool{}
@@ -205,6 +215,18 @@ func afterUpdate(lang, now string, out io.Writer) {
 		}
 	}
 	fmt.Fprintln(out, i18n.T(lang, "update.after.restart"))
+}
+
+// restartOldWith runs the program now installed with `session restart --old`, its
+// output going to out; an error when it left some session. Tests replace it.
+var restartOldWith = func(out io.Writer) error {
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command(exe, "session", "restart", "--old")
+	cmd.Stdout, cmd.Stderr = out, out
+	return cmd.Run()
 }
 
 // installedVersion is the version of the program the installer just put in place (this

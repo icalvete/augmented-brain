@@ -1,5 +1,22 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Actualizar reinicia las sesiones que siguen con el programa viejo.** Después de
+  actualizar, `augmented-brain update` reinicia, una a una, las sesiones de Claude
+  quietas que siguen con el augmented brain viejo, con la misma conversación: la sesión
+  de una tarea (`claude respawn`) y las del acceso remoto (su servicio, solo si todas sus
+  sesiones están quietas, y después de sacar lo demás que haya dentro). Una sesión que
+  está respondiendo se vuelve a mirar justo antes y se deja como está. Las de Claude
+  Desktop también se dejan, y dice por qué: ciérralas y ábrelas tú. `--no-restart`
+  actualiza sin reiniciar ninguna. Funciona desde la actualización siguiente a esta
+  versión: la que lleva a ella aún da el aviso de antes, y `augmented-brain session
+  restart --old` lo hace a mano.
+- **`augmented-brain session restart`** reinicia una sesión (por su tarea, su id o su
+  nombre), o todas las que siguen con un programa anterior (`--old`). Con `--when-idle`
+  espera a que la sesión acabe su respuesta, así que una sesión puede reiniciarse a sí
+  misma justo después de aparcar su tarea.
+
 ## 0.17.4-beta
 
 Publicada el 2026-11-11.

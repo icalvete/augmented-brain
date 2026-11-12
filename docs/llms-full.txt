@@ -327,8 +327,9 @@ augmented-brain update
 It updates the program and the Claude Code plugin. Before, it checks the installation
 (and shows what fails) and backs up every space that has a backup; if a backup fails,
 it updates nothing (`--force` updates anyway). If no space has a backup, it says that it
-goes ahead with no copy to go back to. After, it says which open sessions still run the old version and which task each space has
-active: ask those sessions to park their task. Running the install command again also
+goes ahead with no copy to go back to. After, it restarts the idle sessions that still run the old version, with the same
+conversation, and says which are left and which task each space has active: ask those
+sessions to park their task. Running the install command again also
 updates, without those steps. `augmented-brain update --plugin` updates only the plugin.
 
 It first asks GitHub for the latest version, once: if GitHub does not answer, it says so
@@ -336,7 +337,8 @@ and stops. The download is then tried three times, also through GitHub's API. If
 fails, or the program is not the new version afterwards, it says so and ends with an
 error: nothing changed, run it again later.
 
-Then close and open Claude. A session that was open keeps the old program until you do,
+Then close and open the sessions it could not restart (those of Claude Desktop, or one
+that was answering). A session that was open keeps the old program until it restarts,
 and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new
 session tell you how many sessions still run the old version.
 
@@ -2506,12 +2508,17 @@ What it does, in order:
 3. **Downloads and installs** the new version and the Claude Code plugin. If GitHub fails
    to hand out the files, it tries three times, also through GitHub's API; if all fails,
    it says so and nothing changes.
-4. **Checks the new version is in place**, and says which open Claude sessions still run
-   the old one, and which task each space has active.
+4. **Checks the new version is in place**, and restarts the idle Claude sessions that
+   still run the old one, one at a time, with the same conversation: a task's session,
+   and those of the remote access. A session that is answering is left as it is.
+5. **Says what is left:** the sessions it could not restart (one answering, the one you
+   ran it from, any of Claude Desktop), and which task each space has active.
 
-Then ask those sessions to park their task, and close and open Claude. A session that was
-open keeps the old program until you do; `/clear` is not enough. When the session you
-are in is one of them, its start tells you so.
+For those left, ask the session to park its task, and close and open it. A session that
+was open keeps the old program until it restarts; `/clear` is not enough. When the
+session you are in is one of them, its start tells you so. Later on,
+`augmented-brain session restart --old` restarts the ones that have gone idle, and
+`augmented-brain update --no-restart` updates without restarting any.
 
 ### Before you update
 
@@ -2933,8 +2940,9 @@ that service.
 ## augmented-brain session
 
 Opens a remote session of its own for one task, so that from another computer you can
-work on several tasks at once, each in its own session. It is three commands, `start`,
-`stop` and `list`, each with its own section below. Linux only for now: it has
+work on several tasks at once, each in its own session. It is four commands, `start`,
+`stop`, `restart` and `list`, each with its own section below; `restart` also restarts
+the other Claude sessions on this computer. Linux only for now: it has
 been tried only there. Without a subcommand, or with another, `session` prints its usage. See
 [Remote access](https://icalvete.github.io/augmented-brain/guide/remote.html#a-session-per-task).
 
@@ -3016,6 +3024,44 @@ and it goes away by itself. If Claude still cannot take the session out of its l
   answering by then stays open. What it did goes to `state/session-stop.log` in the
   configuration folder.
 
+## augmented-brain session restart
+
+Restarts a Claude session so it uses the program of now, with the same conversation.
+It works from any folder. Use it after an update, or right after parking a task, so
+that its session starts afresh.
+
+```bash
+augmented-brain session restart task-new-website
+augmented-brain session restart --old
+```
+
+The session is named by its task (when `session start` opened it), its id, the first
+eight characters of its session id, or its name; `claude agents` lists them. Each kind
+restarts its own way:
+
+- **A task's session** (`claude --bg`): Claude gives it a new process with the same
+  conversation.
+- **A session of the remote access** (`remote install`): its service restarts, and the
+  same session comes back in claude.ai and Claude Desktop in about ten seconds. The
+  service holds every session it serves, so it restarts only when all of them are
+  idle. Anything else inside the service (Claude's background service, above all) is
+  moved out first, so it does not stop with it. Linux only.
+- **A session of Claude Desktop or a terminal:** it is left as it is. Its app opened
+  it, and stopping it from outside would break its window. Close it and open it again
+  yourself.
+
+A session that is answering, or waiting for a permission, is never restarted: it is
+looked at again right before, and left as it is if it is not idle. Nor is the session
+the command runs in: that one needs `--when-idle`. One that fails leaves the others
+going.
+
+- `--old`: restart every idle session still running an earlier augmented brain, one at
+  a time, and say what happened to each. `update` runs it by itself.
+- `--when-idle`: wait until the session has finished its answer, then restart it. This
+  is how a session restarts itself after parking its task: the command returns at
+  once, and a process in the background waits, up to 30 minutes. What it did goes to
+  `state/session-restart.log` in the configuration folder.
+
 ## augmented-brain session list
 
 Lists the task sessions open on this computer: the task, whether it runs, and its
@@ -3086,12 +3132,15 @@ does what you would otherwise do by hand:
   for a problem of the new version), and a backup of every space that has one. If a
   backup fails, it stops and updates nothing: that copy is the way back. With no backup
   at all, it says it goes ahead without a copy to go back to.
-- **After:** how many open Claude sessions still run the old version, and which task is
-  active in each space, so you ask its session to park it before restarting. Then close
-  and open Claude, so the sessions use the new version.
+- **After:** the idle Claude sessions still running the old version are restarted,
+  one at a time, as `session restart --old` does. For those it cannot restart (one
+  answering, or one of Claude Desktop), it says which task is active in each space, so
+  you ask its session to park it, and then you close and open them.
 
 - `--plugin`: update only the Claude Code plugin. The installer uses it.
 - `--force`: update even when the backup before it fails.
+- `--no-restart`: restart no session after updating; it only says which still run the
+  old version.
 
 ## augmented-brain uninstall
 
@@ -4312,8 +4361,9 @@ that machine asks you each time, until the date.
 
 ### augmented brain's tools fail after an update
 
-A session that was open keeps the old program. Close and open it. `augmented-brain
-doctor` says how many sessions still run the old version.
+A session that was open keeps the old program. `augmented-brain session restart --old`
+restarts the idle ones, with the same conversation; one of Claude Desktop, close and open
+it. `augmented-brain doctor` says how many sessions still run the old version.
 
 ### The installer or the update cannot download
 
