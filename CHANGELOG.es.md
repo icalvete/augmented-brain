@@ -1,5 +1,12 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **El guardia no deja a un asistente lanzar un flujo de publicación.** `gh workflow run
+  release` (o la misma llamada con `gh api`) saca una versión, como `gh release create`,
+  así que es cosa tuya. Los demás flujos, como un despliegue, siguen pasando. Un flujo
+  nombrado solo por su número pregunta antes.
+
 ## 0.19.2-beta
 
 Publicada el 2026-11-12.

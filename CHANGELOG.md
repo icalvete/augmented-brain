@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **The guard stops an assistant from starting a release workflow.** `gh workflow run
+  release` (or the same call through `gh api`) publishes a version, like `gh release
+  create`, so it is for you. Other workflows, such as a deployment, still run. A
+  workflow named only by its number asks first.
+
 ## 0.19.2-beta
 
 Released 2026-11-12.

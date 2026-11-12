@@ -908,12 +908,20 @@ func (p Policy) publish(name string, env map[string]string, args []string) Decis
 		method := strings.ToUpper(optValue(args, "-X", "--method"))
 		path := strings.ToLower(words[1])
 		writes := method != "" && method != "GET" || slices.ContainsFunc(args, func(a string) bool {
-			return a == "-f" || a == "-F" || a == "--field" || a == "--raw-field"
+			return a == "-f" || a == "-F" || a == "--field" || a == "--raw-field" || a == "--input"
 		})
 		if writes && (strings.Contains(path, "/merge") || strings.Contains(path, "/releases") || strings.Contains(path, "/git/refs")) {
 			return Decision{Deny, i18n.T(p.Lang, "guard.api", name)}
 		}
+		if _, rest, ok := strings.Cut(path, "/actions/workflows/"); writes && name == "gh" && ok {
+			if wf, ok := strings.CutSuffix(strings.TrimRight(rest, "/"), "/dispatches"); ok {
+				return p.dispatch(wf)
+			}
+		}
 		return allow
+	}
+	if name == "gh" && len(words) >= 2 && words[0] == "workflow" && words[1] == "run" {
+		return p.dispatch(workflowArg(args))
 	}
 	if len(words) < 2 {
 		return allow
@@ -935,6 +943,43 @@ func (p Policy) publish(name string, env map[string]string, args []string) Decis
 		return p.merge(name, what, env, args)
 	}
 	return p.publishDeny(name, what)
+}
+
+// dispatch is the answer to starting a GitHub Actions workflow by hand. A release
+// workflow publishes a version, which is for the user, as gh release create is; any
+// other workflow (a deployment of content, say) goes on. A workflow named only by its
+// number cannot be told apart, so the user is asked.
+func (p Policy) dispatch(workflow string) Decision {
+	w := strings.ToLower(workflow)
+	if w == "" {
+		return allow // gh asks which one, and a session cannot answer
+	}
+	if strings.Contains(w, "release") {
+		return Decision{Deny, i18n.T(p.Lang, "guard.dispatch", workflow)}
+	}
+	if strings.Trim(w, "0123456789") == "" {
+		return Decision{Ask, i18n.T(p.Lang, "guard.dispatch.id", workflow)}
+	}
+	return allow
+}
+
+// workflowArg is the workflow gh workflow run names: the first word after run that is
+// not an option or an option's value.
+func workflowArg(args []string) string {
+	run := false
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case slices.Contains([]string{"-R", "--repo", "-r", "--ref", "-f", "--raw-field", "-F", "--field", "--hostname"}, a):
+			i++
+		case strings.HasPrefix(a, "-"):
+		case !run:
+			run = a == "run"
+		default:
+			return a
+		}
+	}
+	return ""
 }
 
 // publishDeny is the answer to a gh or glab command that publishes or merges where the

@@ -845,7 +845,8 @@ A program determined to get around it could. Read the
 ## What it stops
 
 - **Commits and pushes.** `git commit`, `git push`, and what publishes like a push:
-  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
+  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`, and
+  starting a release workflow by hand (`gh workflow run release`); other workflows go on.
   Unless you let Claude in a repository (below).
 - **Becoming root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
   without `--user`, `ssh root@…`, a container given the whole machine (`docker run
