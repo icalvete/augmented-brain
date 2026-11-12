@@ -63,6 +63,7 @@ type Session struct {
 	SessionID string
 	Name      string
 	Status    string // idle, busy, waiting…
+	State     string // a background session's: working, blocked, done, stopped
 	Kind      SessionKind
 	Unit      string // the remote service, for KindRemote
 	// Old says its augmented brain is an earlier one; Version is that one's ("" when
@@ -72,6 +73,13 @@ type Session struct {
 	// Servers are its augmented brain servers to stop, for KindOther: the old ones
 	// (OldSessions); none means every one below it.
 	Servers []int
+}
+
+// Ended says it is a background session the user archived, or that ended: it keeps its
+// process, idle, and `claude respawn` would bring it back where the user had put it
+// away (0.19.1's update did, on 12-nov). It is never respawned.
+func (se Session) Ended() bool {
+	return se.Kind == KindBackground && (se.State == "done" || se.State == "stopped")
 }
 
 // Key is how `session restart` names it: a background session's id, or the first
@@ -106,6 +114,7 @@ const (
 	Unsupported             // Claude Desktop or a terminal whose server cannot be found
 	Gone                    // it no longer runs: it starts with the new program when opened
 	RestartFailed
+	Ended // archived or ended: not brought back, only its old servers stopped
 )
 
 // RestartResult is what happened to one session.
@@ -130,7 +139,7 @@ func (s System) Sessions(claude string) ([]Session, error) {
 		if a.Pid <= 0 {
 			continue // retired: no process, so nothing runs an old program
 		}
-		se := Session{PID: a.Pid, ID: a.ID, SessionID: a.SessionID, Name: a.Name, Status: a.Status}
+		se := Session{PID: a.Pid, ID: a.ID, SessionID: a.SessionID, Name: a.Name, Status: a.Status, State: a.State}
 		switch {
 		case a.Kind == "background" || a.ID != "":
 			se.Kind = KindBackground
@@ -303,6 +312,18 @@ func (s System) restartOne(claude string, t Session) RestartResult {
 	}
 	if !ok {
 		r.Outcome = Gone
+		return r
+	}
+	if cur.Ended() {
+		// Put away by the user: only the servers of an earlier program go, which
+		// Claude Code starts again, of now, if it is ever opened.
+		for _, pid := range s.serversOf(t) {
+			if err := s.StopServer(pid); err != nil {
+				r.Outcome, r.Err = RestartFailed, err
+				return r
+			}
+		}
+		r.Outcome = Ended
 		return r
 	}
 	if cur.Status != "idle" {

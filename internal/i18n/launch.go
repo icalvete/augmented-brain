@@ -211,6 +211,10 @@ var launchMessages = map[string]msg{
 		en: "\"%s\" shares its remote service (%s) with a session that is answering: left as it is. Try again when it finishes.",
 		es: "«%s» comparte su servicio remoto (%s) con una sesión que está respondiendo: se queda como está. Prueba otra vez cuando acabe.",
 	},
+	"restart.ended": {
+		en: "\"%s\" is archived or ended: it is not brought back; only its earlier augmented brain is stopped.",
+		es: "«%s» está archivada o terminada: no se relanza; solo se para su augmented brain anterior.",
+	},
 	"restart.server": {
 		en: "✓ Updated \"%s\" (Claude Desktop or a terminal) without closing it: its augmented brain starts again, with the program of now, the next time it uses it.",
 		es: "✓ Puesta al día «%s» (Claude Desktop o un terminal) sin cerrarla: su augmented brain arranca otra vez, con el programa de ahora, la próxima vez que lo use.",

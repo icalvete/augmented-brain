@@ -486,7 +486,9 @@ primeros caracteres de su id de sesión o su nombre; `claude agents` las lista. 
 tipo se reinicia a su manera:
 
 - **La sesión de una tarea** (`claude --bg`): Claude le da un proceso nuevo con la
-  misma conversación.
+  misma conversación. Una que archivaste, o que terminó, nunca se relanza: solo se para
+  su servidor de augmented brain, que vuelve a arrancar, con el de ahora, si algún día
+  la abres.
 - **Una sesión del acceso remoto** (`remote install`): se reinicia su servicio, y la
   misma sesión vuelve a claude.ai y Claude Desktop en unos diez segundos. El servicio
   lleva todas las sesiones que sirve, así que solo se reinicia si todas están quietas.

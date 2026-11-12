@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Actualizar ya no revive las sesiones que archivaste.** En la 0.19.1, `update` (y
+  `session restart --old`) relanzaba sesiones de fondo que habías archivado en Claude
+  Desktop o claude.ai, que conservan su proceso. Ahora una sesión archivada o terminada
+  se queda donde la dejaste: solo se para su augmented brain anterior, así que `doctor`
+  ya no la cuenta.
+
 ## 0.19.1-beta
 
 Publicada el 2026-11-12.

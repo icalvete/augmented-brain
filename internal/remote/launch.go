@@ -220,6 +220,11 @@ type claudeAgent struct {
 	Name   string `json:"name"`
 	Cwd    string `json:"cwd"`
 	Status string `json:"status"` // "busy" while it answers (or waits for a permission), "idle" when it waits
+	// State is what `agents --all` says of a background session: "working",
+	// "blocked" (waiting for the user), "done" or "stopped". One the user archived, or
+	// that ended, is done or stopped and may keep its process, idle (measured on
+	// 12-nov, 2.1.322).
+	State string `json:"state"`
 	// Kind is "background" for a `claude --bg` session, "interactive" for any other
 	// (Claude Desktop, a terminal, a remote service's).
 	Kind string `json:"kind"`

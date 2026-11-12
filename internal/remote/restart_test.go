@@ -384,3 +384,36 @@ func TestRestartOldDesktopServer(t *testing.T) {
 		t.Errorf("no way to see servers: %+v", res[0])
 	}
 }
+
+// A background session the user archived (or that ended) keeps its process, idle, with
+// state done or stopped: restart --old never brings it back with respawn (0.19.1's
+// update did, on 12-nov), it only stops its old server. One waiting for the user
+// (blocked) is still restarted.
+func TestRestartLeavesArchived(t *testing.T) {
+	r := newRestartFake(t)
+	stopped := r.withServers()
+	list := r.agentList
+	r.agentList = func() []map[string]any {
+		return append(list(),
+			map[string]any{"pid": 900, "id": "arch0001", "kind": "background", "name": "archivada", "sessionId": "arch0001-ffff", "status": "idle", "state": "done"},
+			map[string]any{"pid": 910, "id": "stop0001", "kind": "background", "name": "parada", "sessionId": "stop0001-gggg", "status": "idle", "state": "stopped"},
+			map[string]any{"pid": 920, "id": "wait0001", "kind": "background", "name": "esperando", "sessionId": "wait0001-hhhh", "status": "idle", "state": "blocked"})
+	}
+	r.parents[901], r.parents[911], r.parents[921] = 900, 910, 920
+	old := []state.Server{{PID: 901, Version: "0.19.0-beta"}, {PID: 911, Version: "0.19.0-beta"}, {PID: 921, Version: "0.19.0-beta"}}
+	targets, _, err := r.sys.OldSessions(r.claude(), old)
+	if err != nil || len(targets) != 3 {
+		t.Fatalf("old: %+v %v", targets, err)
+	}
+	r.calls = nil
+	got := outcomes(r.sys.Restart(r.claude(), targets))
+	if got["archivada"] != Ended || got["parada"] != Ended || got["esperando"] != Restarted {
+		t.Errorf("outcomes: %v", got)
+	}
+	if acts := r.acts(); !slices.Equal(acts, []string{"respawn wait0001"}) {
+		t.Errorf("acts: %v, want only the blocked one respawned", acts)
+	}
+	if !slices.Equal(*stopped, []int{901, 911}) {
+		t.Errorf("stopped servers: %v", *stopped)
+	}
+}

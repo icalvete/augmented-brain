@@ -3061,7 +3061,8 @@ eight characters of its session id, or its name; `claude agents` lists them. Eac
 restarts its own way:
 
 - **A task's session** (`claude --bg`): Claude gives it a new process with the same
-  conversation.
+  conversation. One you archived, or that ended, is never brought back: only its
+  augmented brain server stops, and it starts again, of now, if you ever open it.
 - **A session of the remote access** (`remote install`): its service restarts, and the
   same session comes back in claude.ai and Claude Desktop in about ten seconds. The
   service holds every session it serves, so it restarts only when all of them are
