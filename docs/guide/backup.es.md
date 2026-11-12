@@ -38,7 +38,8 @@ y `uninstall --all` avisa de que esas notas se perderán para siempre.
 ## Se hace sola
 
 Desde entonces, **la copia se hace sola cada vez que termina una sesión de Claude**, en
-segundo plano. No esperas a nada. Si falla (sin conexión, sin permiso en el repositorio),
+segundo plano. No esperas a nada. Un espacio en el que esta sesión escribió desde otro
+(una tarea de otro espacio) también se copia entonces. Si falla (sin conexión, sin permiso en el repositorio),
 Claude te lo dice al empezar la siguiente sesión.
 
 También puedes lanzarla a mano:

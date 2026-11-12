@@ -42,8 +42,24 @@ func SessionEnd(in io.Reader, cfgDir string) error {
 		return nil
 	}
 	_ = state.Ended(cfgDir, s.Name, i.SessionID, Now())
-	if os.Getenv("AB_NO_AUTO_BACKUP") == "1" || s.Backup == "" {
+	if os.Getenv("AB_NO_AUTO_BACKUP") == "1" {
 		return nil
 	}
-	return StartBackup(s.Name)
+	var err1 error
+	if s.Backup != "" {
+		_ = state.TakeOutside(cfgDir, s.Name, Now()) // its own backup covers it
+		err1 = StartBackup(s.Name)
+	}
+	// Spaces a session of another space wrote in (a task's journal, its next step):
+	// backed up now, not at the end of a session of their own, which may be days away.
+	for _, name := range c.SpaceNames() {
+		o := c.Spaces[name]
+		if name == s.Name || o.Backup == "" || !state.TakeOutside(cfgDir, name, Now()) {
+			continue
+		}
+		if err := StartBackup(name); err != nil && err1 == nil {
+			err1 = err
+		}
+	}
+	return err1
 }

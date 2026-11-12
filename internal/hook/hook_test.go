@@ -561,3 +561,41 @@ func TestPreToolUseGuardChangeAsks(t *testing.T) {
 		t.Errorf("after accepting: %q", got)
 	}
 }
+
+// A space a session of another space wrote in is backed up when any session ends, once.
+func TestSessionEndBacksUpWrittenFromOutside(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	t.Setenv("AB_NO_AUTO_BACKUP", "")
+	other := filepath.Join(filepath.Dir(work), "me")
+	if err := os.MkdirAll(other, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := setup.AddSpace(cfgDir, setup.Options{Space: "personal", WorkFolder: other, Memory: filepath.Join(filepath.Dir(work), "brain-personal")}); err != nil {
+		t.Fatal(err)
+	}
+	if err := config.SetSpaceKey(cfgDir, "personal", "backup", "git@example.com:me/personal.git"); err != nil {
+		t.Fatal(err)
+	}
+	var started []string
+	old := StartBackup
+	StartBackup = func(space string) error { started = append(started, space); return nil }
+	t.Cleanup(func() { StartBackup = old })
+	end := func(cwd string) {
+		data, _ := json.Marshal(map[string]any{"cwd": cwd})
+		if err := SessionEnd(bytes.NewReader(data), cfgDir); err != nil {
+			t.Fatal(err)
+		}
+	}
+	end(work) // work has no backup, personal was not written: nothing
+	if len(started) != 0 {
+		t.Fatalf("started: %v", started)
+	}
+	if err := state.MarkOutside(cfgDir, "personal", time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	end(work)
+	end(work)
+	if strings.Join(started, ",") != "personal" {
+		t.Errorf("started: %v", started)
+	}
+}

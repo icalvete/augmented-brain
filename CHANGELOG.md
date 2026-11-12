@@ -13,6 +13,12 @@
   tasks already past it, `doctor` tells you when there are some, and the backup joins a
   task one machine shortened while the other wrote in it. A task still too long, written
   by hand, is read without its oldest entries, with a line saying where they are.
+- **Work on a task of another space.** From a session of one space, Claude can now read
+  and write a task of another when you ask: list that space's tasks to find it, add to
+  its journal, tick a step, change its next step or status. Before, what you decided
+  about a work task in a personal session had to be passed on by hand. What it writes
+  there ends in `(from personal)`, nothing is copied into this space, and closing is left
+  to a session of that space. That space is backed up when the session ends.
 - **`augmented-brain clean` removes what working with Claude Code leaves behind.**
   Worktrees Claude Code made whose session is over, git's records of worktrees whose
   folder is gone, and the scratch folders of sessions that ended a day ago or more. It

@@ -14,6 +14,13 @@
   pasan, `doctor` te avisa cuando hay alguna, y la copia de seguridad une una tarea que
   una máquina acortó mientras la otra escribía en ella. Una tarea aún demasiado larga,
   escrita a mano, se lee sin sus entradas más antiguas, con una línea que dice dónde están.
+- **Trabajar en una tarea de otro espacio.** Desde una sesión de un espacio, Claude ya
+  puede leer y escribir una tarea de otro cuando se lo pides: listar las tareas de ese
+  espacio para encontrarla, añadir a su diario, marcar un paso, cambiar su siguiente paso
+  o su estado. Antes, lo que decidías de una tarea del trabajo en una sesión personal
+  había que pasarlo a mano. Lo que escribe allí acaba en `(from personal)`, nada se copia
+  en este espacio, y cerrarla se deja a una sesión de ese espacio. Ese espacio se copia
+  cuando termina la sesión.
 - **`augmented-brain clean` quita lo que deja el trabajo con Claude Code.** Los worktrees
   que hizo Claude Code con su sesión terminada, los registros de git de worktrees cuya
   carpeta ya no existe y las carpetas temporales de sesiones que acabaron hace un día o

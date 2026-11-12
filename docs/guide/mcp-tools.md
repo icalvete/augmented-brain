@@ -47,6 +47,8 @@ waits on and its next step. Then the watch dates that are due. Claude uses it fo
 were we?".
 
 - `within_days` (optional): also list watch dates due within this many days. Default 7.
+- `space` (optional): another of your spaces, to list its live tasks instead, read
+  only: to find the task you mean there.
 
 ## `task_new`
 
@@ -73,6 +75,9 @@ by hand or by an earlier version, is read without its oldest entries, and a line
 where they are.
 
 - `id`: the task's id, such as `task-move-the-blog`.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. See
+  [A task of another space](spaces.md#a-task-of-another-space).
 
 ## `task_update`
 
@@ -93,8 +98,12 @@ again only with `reopen`.
 - `watch_done` (optional): mark the watch date of this day as done.
 - `reopen` (optional): only to open a closed task again, with a new `status`: why, in a
   few words. It goes to the journal. Claude asks you first.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. Closing it is left to a
+  session of that space. See
+  [A task of another space](spaces.md#a-task-of-another-space).
 
-At least one field besides `id` is needed.
+At least one field besides `id` and `space` is needed.
 
 ## `task_step`
 
@@ -109,6 +118,9 @@ lists the steps.
 - `text` (optional): the step to tick or untick, by its text (or a part only it holds),
   when `number` is not given.
 - `done` (optional): `true` to tick the step, `false` to untick it. Left out, it unticks.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. See
+  [A task of another space](spaces.md#a-task-of-another-space).
 
 ## `task_journal`
 
@@ -117,6 +129,10 @@ done or decided.
 
 - `id`: the task's id.
 - `entry`: what was done, what came out, what was decided.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. The entry ends in
+  `(from <this space>)`. See
+  [A task of another space](spaces.md#a-task-of-another-space).
 
 ## `task_park`
 

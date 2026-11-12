@@ -53,6 +53,9 @@ type Brain struct {
 	// archived are the files of old journal entries written since it was last emptied
 	// (archiveJournal).
 	archived []string
+	// origin is the space of the session that opened this brain through Other: its
+	// journal lines say so. Empty for the session's own space.
+	origin string
 }
 
 // KnowSpaces tells a brain built by hand (not by Open) the spaces of the
@@ -154,6 +157,9 @@ func (b *Brain) save(n *memory.Note) error {
 		return err
 	}
 	b.Mem.Notes[n.Header.ID] = n
+	if b.origin != "" && b.ConfigDir != "" {
+		_ = state.MarkOutside(b.ConfigDir, b.Space.Name, time.Now())
+	}
 	_, err := b.Mem.WriteIndex(b.Language)
 	return err
 }
@@ -427,7 +433,11 @@ func (b *Brain) journalLine(body, entry string) string {
 	if body != "" && !strings.HasSuffix(body, "\n") {
 		body += "\n"
 	}
-	return body + memory.DatedLine(b.today(), strings.TrimSpace(entry))
+	entry = strings.TrimSpace(entry)
+	if b.origin != "" {
+		entry += fromMark(b.origin)
+	}
+	return body + memory.DatedLine(b.today(), entry)
 }
 
 // ParkInput pauses a task without losing anything.
@@ -646,12 +656,55 @@ func (b *Brain) CaptureTo(space, text, remind string) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("there is no space %q; the spaces are: %s", space, strings.Join(c.SpaceNames(), ", "))
 	}
-	other, err := Open(c, target)
+	other, err := b.open(c, target)
 	if err != nil {
 		return "", err
 	}
-	other.Now = b.Now
 	return space, other.capture(text, remind, b.Space.Name)
+}
+
+// Other opens the brain of another space of the configuration, by name, for a task
+// the user wants to read or write from this session (the tools' space parameter).
+// Empty or this space's name gives b itself. Every journal line written through the
+// other brain ends in this space's mark, "(from <space>)", so whoever reads it there
+// knows where it was decided; the other space is marked as written from outside
+// (package state), so the next session end backs it up.
+func (b *Brain) Other(space string) (*Brain, error) {
+	space = strings.TrimSpace(space)
+	if space == "" || space == b.Space.Name {
+		return b, nil
+	}
+	if b.ConfigDir == "" {
+		return nil, errors.New("no configuration to find other spaces in")
+	}
+	c, err := config.Load(b.ConfigDir)
+	if err != nil {
+		return nil, err
+	}
+	target, ok := c.Spaces[space]
+	if !ok {
+		return nil, fmt.Errorf("there is no space %q; the spaces are: %s", space, strings.Join(c.SpaceNames(), ", "))
+	}
+	other, err := b.open(c, target)
+	if err != nil {
+		return nil, err
+	}
+	other.origin = b.Space.Name
+	return other, nil
+}
+
+// Origin is the space whose session opened this brain through Other; empty for the
+// session's own.
+func (b *Brain) Origin() string { return b.origin }
+
+// open opens another space with this brain's clock.
+func (b *Brain) open(c *config.Config, s *config.Space) (*Brain, error) {
+	other, err := Open(c, s)
+	if err != nil {
+		return nil, err
+	}
+	other.Now = b.Now
+	return other, nil
 }
 
 func (b *Brain) capture(text, remind, from string) error {

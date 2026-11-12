@@ -97,7 +97,25 @@ Todos los espacios comparten:
   perfil de producción guardado desde el espacio de trabajo también se vigila en el
   personal.
 
-Un espacio nunca lee las notas de otro.
+Un espacio nunca lee las notas de otro por su cuenta.
+
+## Una tarea de otro espacio
+
+A veces decides, en un espacio, algo de una tarea de otro: en una sesión personal dejas
+claro cómo sigue una tarea del trabajo. Díselo a Claude y leerá o escribirá esa tarea
+donde vive, en el otro espacio. Puede leerla, listar las tareas vivas de ese espacio para
+encontrarla, añadir a su diario, marcar un paso y cambiar su siguiente paso, su estado o
+a quién espera.
+
+- Lo que Claude escribe allí acaba en `(from personal)`, para que quien lo lea en el otro
+  espacio sepa dónde se decidió.
+- Nada se copia en las notas de este espacio: lo que Claude lee se queda en la
+  conversación.
+- Claude solo lo hace cuando se lo pides, igual que al mandar una captura a otro espacio.
+- Esa tarea se cierra desde una sesión de su propio espacio, porque cerrarla también
+  cierra la sesión de la tarea y su worktree.
+- Ese espacio se copia cuando termina esta sesión, si tiene copia de seguridad: no espera
+  a una sesión suya.
 
 ## Notas compartidas
 

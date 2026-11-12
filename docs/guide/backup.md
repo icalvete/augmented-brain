@@ -36,7 +36,8 @@ space with none, `update` warns when it goes ahead with no copy to go back to, a
 ## It runs by itself
 
 From then on, **the backup runs every time a Claude session ends**, in the background.
-You wait for nothing. If it fails (no network, no access to the repository), Claude tells
+You wait for nothing. A space that this session wrote in from another space (a task of
+another space) is backed up then too. If it fails (no network, no access to the repository), Claude tells
 you at the start of the next session.
 
 You can also run it by hand:

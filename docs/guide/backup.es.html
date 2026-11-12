@@ -105,7 +105,7 @@
   <p>La página <a href="panel.es.html#copia-de-seguridad">Copia de seguridad</a> del panel hace lo mismo con dos botones, y enseña las últimas copias de cada espacio y un <strong>Hacer una copia ahora</strong>.</p>
   <p>Mientras un espacio no tenga copia, augmented brain lo dice: <code>augmented-brain doctor</code> nombra cada espacio sin copia, <code>update</code> avisa cuando sigue sin una copia a la que volver, y <code>uninstall --all</code> avisa de que esas notas se perderán para siempre.</p>
   <h2 id="se-hace-sola">Se hace sola</h2>
-  <p>Desde entonces, <strong>la copia se hace sola cada vez que termina una sesión de Claude</strong>, en segundo plano. No esperas a nada. Si falla (sin conexión, sin permiso en el repositorio), Claude te lo dice al empezar la siguiente sesión.</p>
+  <p>Desde entonces, <strong>la copia se hace sola cada vez que termina una sesión de Claude</strong>, en segundo plano. No esperas a nada. Un espacio en el que esta sesión escribió desde otro (una tarea de otro espacio) también se copia entonces. Si falla (sin conexión, sin permiso en el repositorio), Claude te lo dice al empezar la siguiente sesión.</p>
   <p>También puedes lanzarla a mano:</p>
   <pre><code>augmented-brain backup          # el espacio de esta carpeta
 augmented-brain backup --all    # todos los espacios</code></pre>
