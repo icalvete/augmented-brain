@@ -385,7 +385,9 @@ It starts a background Claude session of its own for the task (`claude --bg
 Desktop and claude.ai. It starts on its own: its first message has it read its task,
 tell you where it stands, and get on with the next step. When another Claude session
 asked for it, the first message also has it tell that session, in one line, when it
-stops: the task closed or parked, or waiting on you.
+stops: the task closed or parked, or waiting on you. Since you see what a background
+session writes only when you open it, it also sends you a notification then (on the
+desktop and, with Remote Control, on your phone), and when something it watched ends.
 The folder is the first of the task's repositories found in the space's work folders,
 or the one `--folder` gives. A task that names no repository opens in the space's first
 work folder, which several such tasks may share.
