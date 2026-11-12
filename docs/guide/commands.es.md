@@ -462,10 +462,11 @@ que cerrar», nunca un éxito callado.
 
 - `--when-idle`: espera a que la sesión termine su respuesta y después la cierra. Cerrar
   la tarea lo lanza solo, en segundo plano: la sesión que cierra su propia tarea suele
-  estar aún respondiendo, y pararla ahí cortaría esa respuesta. Una sesión que espera un
-  permiso cuenta como respondiendo. Espera hasta 30 minutos; una que siga respondiendo
-  entonces se queda abierta. Lo que hizo queda en `state/session-stop.log`, en la
-  carpeta de la configuración.
+  estar aún respondiendo, y pararla ahí cortaría esa respuesta. Así también puede
+  cerrarse una sesión a sí misma: la orden vuelve en el acto, y un proceso en segundo
+  plano hace la espera. Una sesión que espera un permiso cuenta como respondiendo.
+  Espera hasta 30 minutos; una que siga respondiendo entonces se queda abierta. Lo que
+  hizo queda en `state/session-stop.log`, en la carpeta de la configuración.
 
 ## augmented-brain session restart
 

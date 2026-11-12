@@ -696,6 +696,12 @@ var NewRemoteSystem = remote.NewSystem
 // configuration's state folder: nobody reads its output otherwise.
 const StopLog = "session-stop.log"
 
+// StopDetached is set in the environment of the detached `session stop --when-idle`,
+// which does the waiting: without it the command starts that copy and returns, so a
+// session can close itself from its own Bash (issue #99: waiting there, it kept itself
+// busy, and the two waited for each other).
+const StopDetached = "AB_STOP_DETACHED"
+
 // StopSessionWhenIdle starts, detached, the process that closes a task's session once
 // it has finished its answer (`session stop <task> --when-idle`), its output appended
 // to StopLog (started afresh past 64 KB). Tests replace it.
@@ -705,7 +711,7 @@ var StopSessionWhenIdle = func(cfgDir, task string) error {
 		return err
 	}
 	cmd := exec.Command(self, "session", "stop", task, "--when-idle")
-	cmd.Env = append(os.Environ(), "AB_CONFIG_DIR="+cfgDir)
+	cmd.Env = append(os.Environ(), "AB_CONFIG_DIR="+cfgDir, StopDetached+"=1")
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
 	logPath := filepath.Join(cfgDir, state.Dir, StopLog)
 	if fi, err := os.Stat(logPath); err == nil && fi.Size() > 64<<10 {

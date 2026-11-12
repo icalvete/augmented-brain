@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **A session can close itself.** `session stop <task> --when-idle` run from the
+  task's own session waited for that session to finish its answer, and the session
+  could not finish while the command ran: they waited for each other. Now the command
+  returns at once and a process in the background waits and closes it.
+
 ## 0.19.0-beta
 
 Released 2026-11-12.
