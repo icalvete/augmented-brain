@@ -44,7 +44,9 @@ func joinAdditions(dir, rel string) bool {
 	// compare, and move them out again once joined.
 	read := func(rel string) (string, bool) {
 		b, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
-		return string(b), err == nil
+		// git on Windows may have written the folder's copy with CRLF; the note
+		// compared comes from git itself, with LF.
+		return strings.ReplaceAll(string(b), "\r\n", "\n"), err == nil
 	}
 	ours, linksOurs := memory.ExpandJournal(ours, read)
 	theirs, linksTheirs := memory.ExpandJournal(theirs, read)
