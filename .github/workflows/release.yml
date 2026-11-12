@@ -1,20 +1,59 @@
 name: release
 
+# A version is published in one of two ways, both by the maintainer:
+# - Run workflow on GitHub (or `gh workflow run release`), on main: the version is the
+#   one in VERSION, and this workflow makes its tag. The guard keeps assistants from
+#   starting it (internal/guard, dispatch).
+# - Pushing a tag v<version> by hand, as before.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
+  checks: read
+  statuses: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 10   # a stuck runner fails here instead of waiting six hours
     steps:
       - uses: actions/checkout@v7
+      - name: Which version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ]; then
+            echo "TAG=$GITHUB_REF_NAME" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          main="$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)"
+          [ "$GITHUB_REF" = "refs/heads/$main" ] || { echo "Run it on $main, not $GITHUB_REF_NAME."; exit 1; }
+          tag="v$(cat VERSION)"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "$tag is already published. Raise VERSION in a pull request first."; exit 1
+          fi
+          # main takes only pull requests with green CI; still, a required check that
+          # failed on this commit stops the release. Checks still running do not.
+          gh api "repos/$GITHUB_REPOSITORY/rules/branches/$main" \
+            --jq '.[] | select(.type=="required_status_checks") | .parameters.required_status_checks[].context' > "$RUNNER_TEMP/required"
+          gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs" --paginate \
+            --jq '.check_runs[] | select(.conclusion=="failure" or .conclusion=="cancelled" or .conclusion=="timed_out") | .name' > "$RUNNER_TEMP/failed"
+          failed="$(grep -Fx -f "$RUNNER_TEMP/required" "$RUNNER_TEMP/failed" || true)"
+          if [ -n "$failed" ]; then
+            echo "Required checks failed on $GITHUB_SHA:"; echo "$failed"; exit 1
+          fi
+          echo "Publishing $tag from $GITHUB_SHA."
+          echo "TAG=$tag" >> "$GITHUB_ENV"
       - name: The tag, VERSION and CHANGELOG.md agree
         run: |
-          v="${GITHUB_REF_NAME#v}"
+          v="${TAG#v}"
           test "$(cat VERSION)" = "$v" || { echo "VERSION says $(cat VERSION), the tag $v"; exit 1; }
           grep -qx "## $v" CHANGELOG.md || { echo "CHANGELOG.md has no section ## $v"; exit 1; }
       - uses: actions/setup-go@v7
@@ -23,11 +62,12 @@ jobs:
       - name: Test
         run: go test -race ./...
       - name: Build
-        run: scripts/release-build.sh "$GITHUB_REF_NAME" dist
+        run: scripts/release-build.sh "$TAG" dist
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp install.sh install.ps1 dist/
-          notes="$(awk -v v="## ${GITHUB_REF_NAME#v}" '$0==v{on=1;next} /^## /{on=0} on' CHANGELOG.md)"
-          gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --notes "${notes:-See CHANGELOG.md}"
+          notes="$(awk -v v="## ${TAG#v}" '$0==v{on=1;next} /^## /{on=0} on' CHANGELOG.md)"
+          # With Run workflow the tag does not exist yet: the release makes it on this commit.
+          gh release create "$TAG" dist/* --target "$GITHUB_SHA" --title "$TAG" --notes "${notes:-See CHANGELOG.md}"

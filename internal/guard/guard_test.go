@@ -379,6 +379,7 @@ func TestReasonsInTheUsersLanguage(t *testing.T) {
 		"ssh db01":                       "ssh llega a db01, marcado como intocable",
 		"rm -rf /":                       "`rm -r` de todo el disco nunca se ejecuta",
 		"gh release create v1":           "`gh release create` publica o fusiona",
+		"gh workflow run release":        "Lanzar a mano el flujo `release` saca una versión",
 		"echo AKIA" + "ABCDEFGHIJKLMNOP": "el comando contiene una clave de acceso de AWS",
 	} {
 		if r := es.Command(cmd).Reason; !strings.Contains(r, want) {

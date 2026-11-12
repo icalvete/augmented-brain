@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+- **El guardia no deja a un asistente lanzar un flujo de publicación.** `gh workflow run
+  release` (o la misma llamada con `gh api`) saca una versión, como `gh release create`,
+  así que es cosa tuya. Los demás flujos, como un despliegue, siguen pasando. Un flujo
+  nombrado solo por su número pregunta antes.
 - **Las tareas largas vuelven a leerse de una vez.** El diario crecía hasta que Claude no
   podía leer la tarea de una vez y tenía que leerla a trozos. Ahora, cuando una tarea pasa
   de 24 KB, sus entradas más antiguas del diario se mueven a un fichero en

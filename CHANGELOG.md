@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **The guard stops an assistant from starting a release workflow.** `gh workflow run
+  release` (or the same call through `gh api`) publishes a version, like `gh release
+  create`, so it is for you. Other workflows, such as a deployment, still run. A
+  workflow named only by its number asks first.
 - **Long tasks read in one go again.** A journal kept growing until Claude could not read
   the task at once, and had to read it in pieces. Now, when a task passes 24 KB, its
   oldest journal entries move to a file in `archive/journals/`, and a line in the journal
