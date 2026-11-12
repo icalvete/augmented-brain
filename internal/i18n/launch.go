@@ -207,9 +207,13 @@ var launchMessages = map[string]msg{
 		en: "\"%s\" shares its remote service (%s) with a session that is answering: left as it is. Try again when it finishes.",
 		es: "«%s» comparte su servicio remoto (%s) con una sesión que está respondiendo: se queda como está. Prueba otra vez cuando acabe.",
 	},
+	"restart.server": {
+		en: "✓ Updated \"%s\" (Claude Desktop or a terminal) without closing it: its augmented brain starts again, with the program of now, the next time it uses it.",
+		es: "✓ Puesta al día «%s» (Claude Desktop o un terminal) sin cerrarla: su augmented brain arranca otra vez, con el programa de ahora, la próxima vez que lo use.",
+	},
 	"restart.unsupported": {
-		en: "\"%s\" is a session of Claude Desktop or a terminal: augmented brain cannot restart it from outside without breaking its window. Close it and open it again when it suits you.",
-		es: "«%s» es una sesión de Claude Desktop o de un terminal: augmented brain no puede reiniciarla desde fuera sin romper su ventana. Ciérrala y ábrela otra vez cuando te venga bien.",
+		en: "\"%s\" is a session of Claude Desktop or a terminal, and on this system augmented brain cannot tell which of its servers is that session's. Close it and open it again when it suits you.",
+		es: "«%s» es una sesión de Claude Desktop o de un terminal, y en este sistema augmented brain no sabe cuál de sus servidores es el de esa sesión. Ciérrala y ábrela otra vez cuando te venga bien.",
 	},
 	"restart.gone": {
 		en: "\"%s\" no longer runs: when it is opened again, it starts with the program of now.",

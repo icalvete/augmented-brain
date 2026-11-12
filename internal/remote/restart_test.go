@@ -321,3 +321,66 @@ func TestRestartWhenIdle(t *testing.T) {
 		t.Errorf("still busy: %+v %v", res, r.acts())
 	}
 }
+
+// withServers lets the fake see each session's augmented brain server (pid+1) and
+// records which ones it stops.
+func (r *restartFake) withServers() *[]int {
+	var stopped []int
+	r.sys.MCPServers = func() []int { return []int{501, 601, 701, 801} }
+	r.sys.StopServer = func(pid int) error {
+		stopped = append(stopped, pid)
+		return nil
+	}
+	return &stopped
+}
+
+// A Claude Desktop session keeps its window: only its own augmented brain server is
+// stopped, and only while it is idle (measured on 12-nov: Claude Code starts it again).
+func TestRestartDesktopServer(t *testing.T) {
+	r := newRestartFake(t)
+	stopped := r.withServers()
+	se, err := r.sys.FindSession(r.claude(), r.cfgDir, "Augmented Brain")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res := r.sys.Restart(r.claude(), []Session{se}); res[0].Outcome != ServerRestarted || !slices.Equal(*stopped, []int{801}) {
+		t.Errorf("result %+v, stopped %v", res[0], *stopped)
+	}
+	*stopped = nil
+	r.status[800] = "busy"
+	if res := r.sys.Restart(r.claude(), []Session{se}); res[0].Outcome != Busy || len(*stopped) > 0 {
+		t.Errorf("busy: %+v, stopped %v", res[0], *stopped)
+	}
+	// Run from a command of that session itself: never in the middle of its answer.
+	r.status[800] = "idle"
+	r.parents[4] = 800
+	if res := r.sys.Restart(r.claude(), []Session{se}); res[0].Outcome != Self || len(*stopped) > 0 {
+		t.Errorf("self: %+v, stopped %v", res[0], *stopped)
+	}
+	// A server that cannot be stopped says why.
+	r.parents[4] = 3
+	r.sys.StopServer = func(int) error { return errors.New("denied") }
+	if res := r.sys.Restart(r.claude(), []Session{se}); res[0].Outcome != RestartFailed || res[0].Err == nil {
+		t.Errorf("failed stop: %+v", res[0])
+	}
+}
+
+// With --old, only the old servers of a Desktop session are stopped; where this
+// program cannot see the servers (Windows), it is left as before.
+func TestRestartOldDesktopServer(t *testing.T) {
+	r := newRestartFake(t)
+	stopped := r.withServers()
+	r.parents[802] = 800 // a second server of the session, already of now
+	list, _, err := r.sys.OldSessions(r.claude(), []state.Server{{PID: 801, Version: "0.18.0-beta"}})
+	if err != nil || len(list) != 1 || !slices.Equal(list[0].Servers, []int{801}) {
+		t.Fatalf("old: %+v %v", list, err)
+	}
+	if res := r.sys.Restart(r.claude(), list); res[0].Outcome != ServerRestarted || !slices.Equal(*stopped, []int{801}) {
+		t.Errorf("result %+v, stopped %v", res[0], *stopped)
+	}
+	r.sys.MCPServers, r.sys.StopServer = nil, nil
+	se, _ := r.sys.FindSession(r.claude(), r.cfgDir, "Augmented Brain")
+	if res := r.sys.Restart(r.claude(), []Session{se}); res[0].Outcome != Unsupported {
+		t.Errorf("no way to see servers: %+v", res[0])
+	}
+}

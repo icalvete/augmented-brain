@@ -134,6 +134,8 @@ func restartSaid(l string, rs []remote.RestartResult, prefix string, out, errOut
 		switch r.Outcome {
 		case remote.Restarted:
 			fmt.Fprintln(out, prefix+i18n.T(l, "restart.done", se.Label()))
+		case remote.ServerRestarted:
+			fmt.Fprintln(out, prefix+i18n.T(l, "restart.server", se.Label()))
 		case remote.Gone:
 			fmt.Fprintln(out, prefix+i18n.T(l, "restart.gone", se.Label()))
 		case remote.Busy:
