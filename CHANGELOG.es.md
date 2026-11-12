@@ -21,6 +21,15 @@
   había que pasarlo a mano. Lo que escribe allí acaba en `(from personal)`, nada se copia
   en este espacio, y cerrarla se deja a una sesión de ese espacio. Ese espacio se copia
   cuando termina la sesión.
+- **`augmented-brain clean` quita lo que deja el trabajo con Claude Code.** Los worktrees
+  que hizo Claude Code con su sesión terminada, los registros de git de worktrees cuya
+  carpeta ya no existe y las carpetas temporales de sesiones que acabaron hace un día o
+  más. Antes enseña la lista y pregunta; un worktree con cambios o commits propios solo se
+  nombra. `doctor` avisa cuando hay algo que limpiar.
+- **`doctor` nombra las sesiones de fondo que nadie usa y siguen en marcha.** Archivar
+  una sesión en Claude Desktop no para su proceso. `doctor` nombra ahora las que
+  terminaron o se archivaron, y las que no abrió ninguna tarea y llevan más de 12 horas
+  paradas, cada una con el `claude stop` que la termina.
 
 ## 0.19.2-beta
 

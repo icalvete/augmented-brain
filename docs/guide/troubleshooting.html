@@ -152,6 +152,9 @@
   <p>What to do, as soon as you see it:</p>
   <ol><li>Ask Claude to park the task (“park it”). Where you were and what comes next are kept.</li><li>Open a new VS Code window (or a new terminal session) and resume the task there.</li><li>Close the old window when you are done with it: that frees the memory.</li></ol>
   <p>Claude warns at 2 GB, then at 4 and 8 GB, once each. On Windows it does not look.</p>
+  <h3 id="old-worktrees-and-scratch-folders-pile-up">Old worktrees and scratch folders pile up</h3>
+  <p><code>doctor</code> says that something was left over from working with Claude Code. When Claude Code works in a worktree (a second working copy of a repository, in <code>.claude/worktrees</code>), the worktree stays after the session ends. Its sessions also leave scratch folders in the system's temporary folder, which a computer that is rarely restarted never empties.</p>
+  <p>Run <code>augmented-brain clean</code>. It shows what it would remove and asks first. A worktree with changes or commits of its own is never removed: it only names it, so you look at it.</p>
   <h3 id="after-a-restore-nothing-asks-before-production">After a restore, nothing asks before production</h3>
   <p>Backups do not carry the guard's lists. Open a Claude session: it offers to ask you for them. Or add <code>production_aws_profiles</code> and <code>untouchable_hosts</code> to the configuration yourself.</p>
   <h3 id="after-a-restore-secrets-could-not-be-checked">After a restore, secrets “could not be checked”</h3>

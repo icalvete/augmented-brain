@@ -19,6 +19,15 @@
   about a work task in a personal session had to be passed on by hand. What it writes
   there ends in `(from personal)`, nothing is copied into this space, and closing is left
   to a session of that space. That space is backed up when the session ends.
+- **`augmented-brain clean` removes what working with Claude Code leaves behind.**
+  Worktrees Claude Code made whose session is over, git's records of worktrees whose
+  folder is gone, and the scratch folders of sessions that ended a day ago or more. It
+  shows the list first and asks; a worktree with changes or commits of its own is only
+  named. `doctor` says when there is something to clean.
+- **`doctor` names background sessions nobody uses that keep running.** Archiving a
+  session in Claude Desktop does not stop its process. `doctor` now names those that
+  ended or were archived, and those no task opened that have been idle for over 12
+  hours, each with the `claude stop` that ends it.
 
 ## 0.19.2-beta
 
