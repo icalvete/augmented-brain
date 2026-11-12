@@ -70,6 +70,14 @@ var doctorMessages = map[string]msg{
 		en: "space %s: %s is out of date",
 		es: "espacio %s: %s está desfasado",
 	},
+	"doctor.journals": {
+		en: "%s: %d tasks are over %d KB, too long to read in one go: %s",
+		es: "%s: %d tareas pasan de %d KB, demasiado largas para leerlas de una vez: %s",
+	},
+	"doctor.journals.fix": {
+		en: "run `augmented-brain check` inside the space: it moves their oldest journal entries to archive/journals/, with a line in the journal saying where",
+		es: "lanza `augmented-brain check` dentro del espacio: mueve las entradas más antiguas de su diario a archive/journals/, con una línea en el diario que dice dónde",
+	},
 	"doctor.stale.fix": {
 		en: "run `augmented-brain check` inside the space to rebuild it",
 		es: "lanza `augmented-brain check` dentro del espacio para rehacerlo",

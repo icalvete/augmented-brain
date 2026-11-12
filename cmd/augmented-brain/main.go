@@ -206,6 +206,15 @@ func cmdCheck(out, errOut io.Writer) int {
 		}
 	}
 	if b, err := brain.Open(c, s); err == nil {
+		// Tasks grown past the limit (by hand, or by an earlier program): their old
+		// journal entries move to archive/journals/, as the tools do when they write.
+		files, err := b.ArchiveJournals()
+		for _, f := range files {
+			fmt.Fprintln(out, i18n.T(c.Language, "check.journal", f))
+		}
+		if err != nil {
+			fmt.Fprintln(errOut, err)
+		}
 		for _, x := range b.Mismatches() {
 			fmt.Fprintln(out, "  !", i18n.T(c.Language, "check.repo", x.Note, x.Repo, strings.Join(tildes(s.WorkFolders), ", ")))
 		}

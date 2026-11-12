@@ -24,8 +24,9 @@ func (e *ConflictError) Error() string {
 }
 
 // joinAdditions resolves a note both machines changed, when each only added dated lines
-// to it (journal entries) and moved its `updated:` date: the result keeps every entry
-// either added, in date order, and the later date. It reports whether it could; when not,
+// to it (journal entries), moved its `updated:` date, or moved old entries to
+// archive/journals/: the result keeps every entry either added, in date order, the
+// later date, and the entries moved out stay out. It reports whether it could; when not,
 // the note is left as the merge left it.
 func joinAdditions(dir, rel string) bool {
 	show := func(stage string) (string, bool) {
@@ -37,6 +38,27 @@ func joinAdditions(dir, rel string) bool {
 	theirs, ok3 := show(":3")
 	if !ok2 || !ok3 {
 		return false // removed on one side: for the person
+	}
+	// A machine may have moved old journal entries to archive/journals/ (a new file the
+	// merge has already brought into the folder): put them back on both sides to
+	// compare, and move them out again once joined.
+	read := func(rel string) (string, bool) {
+		b, err := os.ReadFile(filepath.Join(dir, filepath.FromSlash(rel)))
+		return string(b), err == nil
+	}
+	ours, linksOurs := memory.ExpandJournal(ours, read)
+	theirs, linksTheirs := memory.ExpandJournal(theirs, read)
+	if ok1 {
+		base, _ = memory.ExpandJournal(base, read)
+	}
+	links := map[string]string{}
+	for _, m := range []map[string]string{linksOurs, linksTheirs} {
+		for line, entries := range m {
+			if e, seen := links[line]; seen && e != entries {
+				return false
+			}
+			links[line] = entries
+		}
 	}
 	date := max(updatedOf(ours), updatedOf(theirs))
 	ours, theirs = withUpdated(ours, date), withUpdated(theirs, date)
@@ -64,6 +86,9 @@ func joinAdditions(dir, rel string) bool {
 		return false
 	}
 	joined = byDate(joined)
+	if joined, ok1 = memory.CollapseJournal(joined, links); !ok1 {
+		return false
+	}
 	if _, err := memory.Parse(rel, []byte(joined)); err != nil {
 		return false
 	}

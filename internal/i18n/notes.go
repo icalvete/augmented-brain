@@ -3,6 +3,18 @@ package i18n
 // What the program writes into the notes themselves: journal lines, the profile's
 // headings, the index MEMORY.md. They follow the user's language when written.
 var noteMessages = map[string]msg{
+	"note.journal.archived": {
+		en: "%d older journal entries, from %s to %s, moved on %s to %s.",
+		es: "%d entradas antiguas del diario, del %s al %s, movidas el %s a %s.",
+	},
+	"note.journal.archive.title": {
+		en: "journal from %s to %s",
+		es: "diario del %s al %s",
+	},
+	"note.journal.archive.from": {
+		en: "Moved here from %s on %s, when the task passed %d KB. The entries are as they were written; nothing was left out.",
+		es: "Movido aquí desde %s el %s, cuando la tarea pasó de %d KB. Las entradas están tal como se escribieron; no falta ninguna.",
+	},
 	"note.journal": {
 		en: "Journal",
 		es: "Diario",
