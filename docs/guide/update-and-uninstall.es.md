@@ -26,10 +26,11 @@ Qué hace, por orden:
    dice y no cambia nada.
 4. **Comprueba que la versión nueva está puesta**, y reinicia una a una las sesiones de
    Claude quietas que siguen con la vieja, con la misma conversación: la sesión de una
-   tarea y las del acceso remoto. Una sesión que está respondiendo se queda como está.
+   tarea, las del acceso remoto y las de Claude Desktop, que siguen abiertas y solo
+   reinician su augmented brain. Una sesión que está respondiendo se queda como está.
 5. **Dice lo que queda:** las sesiones que no ha podido reiniciar (una que respondía, la
-   desde la que lo lanzaste, cualquiera de Claude Desktop) y qué tarea está activa en
-   cada espacio.
+   desde la que lo lanzaste, en Windows cualquiera de Claude Desktop) y qué tarea está
+   activa en cada espacio.
 
 Para las que quedan, pide a la sesión que aparque su tarea, y ciérrala y ábrela. Una
 sesión que estaba abierta sigue con el programa viejo hasta que se reinicia; `/clear` no

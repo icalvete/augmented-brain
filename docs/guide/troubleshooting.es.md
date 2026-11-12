@@ -84,7 +84,8 @@ Así root en esa máquina te pregunta cada vez, hasta esa fecha.
 
 Una sesión que estaba abierta sigue con el programa antiguo. `augmented-brain session
 restart --old` reinicia las que están quietas, con la misma conversación; una de Claude
-Desktop, ciérrala y vuelve a abrirla. `augmented-brain doctor` dice cuántas sesiones
+Desktop sigue abierta y solo se reinicia su augmented brain (en Windows, ciérrala y vuelve
+a abrirla). `augmented-brain doctor` dice cuántas sesiones
 siguen con la versión antigua.
 
 ### El instalador o la actualización no pueden descargar

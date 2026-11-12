@@ -25,9 +25,10 @@ What it does, in order:
    it says so and nothing changes.
 4. **Checks the new version is in place**, and restarts the idle Claude sessions that
    still run the old one, one at a time, with the same conversation: a task's session,
-   and those of the remote access. A session that is answering is left as it is.
+   those of the remote access, and those of Claude Desktop, which stay open while only
+   their augmented brain restarts. A session that is answering is left as it is.
 5. **Says what is left:** the sessions it could not restart (one answering, the one you
-   ran it from, any of Claude Desktop), and which task each space has active.
+   ran it from, on Windows any of Claude Desktop), and which task each space has active.
 
 For those left, ask the session to park its task, and close and open it. A session that
 was open keeps the old program until it restarts; `/clear` is not enough. When the

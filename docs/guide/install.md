@@ -163,8 +163,8 @@ and stops. The download is then tried three times, also through GitHub's API. If
 fails, or the program is not the new version afterwards, it says so and ends with an
 error: nothing changed, run it again later.
 
-Then close and open the sessions it could not restart (those of Claude Desktop, or one
-that was answering). A session that was open keeps the old program until it restarts,
+Then close and open the sessions it could not restart (one that was answering, or on
+Windows those of Claude Desktop). A session that was open keeps the old program until it restarts,
 and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new
 session tell you how many sessions still run the old version.
 
