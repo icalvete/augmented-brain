@@ -93,7 +93,9 @@ PY
   chmod +x "$TMP/slowclaude/claude"
   echo 9.9.9 >"$TMP/slow.stable"
   start=$(date +%s)
-  HOME="$TMP/slowhome" PATH="$TMP/slowclaude:$PATH" AB_YES=1 AB_LANGUAGE=es \
+  # XDG_CONFIG_HOME too: GitHub's runners set it, and the configuration would land in
+  # the real home, so step 2 would find it "already set up"
+  HOME="$TMP/slowhome" XDG_CONFIG_HOME="$TMP/slowhome/.config" PATH="$TMP/slowclaude:$PATH" AB_YES=1 AB_LANGUAGE=es \
     AB_DESKTOP_URL="http://127.0.0.1:$(cat "$TMP/slow.port")" AB_DESKTOP_TIMEOUT=30 \
     AB_CLAUDE_STABLE_URL="file://$TMP/slow.stable" AB_RELEASE_URL="file://$TMP/release" AB_MARKETPLACE="$ROOT" \
     sh "$ROOT/install.sh" </dev/null >"$TMP/slow.log" 2>&1 || true
