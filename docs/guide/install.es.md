@@ -166,8 +166,8 @@ lo dice y se para. Después, la descarga se intenta tres veces, también por la 
 GitHub. Si sigue fallando, o el programa no es la versión nueva al acabar, te lo dice y
 termina con error: no ha cambiado nada, vuelve a lanzarlo más tarde.
 
-Después, cierra y abre las sesiones que no ha podido reiniciar (las de Claude Desktop, o
-una que estaba respondiendo). Una sesión que estaba abierta sigue con el programa viejo
+Después, cierra y abre las sesiones que no ha podido reiniciar (una que estaba
+respondiendo, o en Windows las de Claude Desktop). Una sesión que estaba abierta sigue con el programa viejo
 hasta que se reinicia, y sus herramientas de augmented brain pueden fallar.
 `augmented-brain doctor` y el arranque de una sesión nueva te dicen cuántas sesiones
 siguen con la versión vieja.

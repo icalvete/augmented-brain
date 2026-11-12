@@ -10,6 +10,18 @@
   atasca, en Linux la deja a los 8 minutos (`AB_DESKTOP_TIMEOUT` lo cambia), lo dice y
   termina la instalación sin la app; en macOS deja una descarga que se queda por debajo
   de 1 KB por segundo durante un minuto.
+- **La sesión de una tarea que Claude paró vuelve con su conversación.** Claude para una
+  sesión en segundo plano que lleva horas sin usarse (y todas cuando se reinicia su
+  servicio en segundo plano), y claude.ai la enseña entonces desconectada, sin forma de
+  seguir. `augmented-brain session start` con su tarea ahora la trae de vuelta (`claude
+  respawn`): la misma sesión, con toda su conversación, otra vez conectada. `session
+  list` vuelve a llamarla retirada (con Claude Code 2.1.322 decía «ended») y dice cómo
+  traerla de vuelta.
+- **Actualizar ya no pide cerrar Claude Desktop.** `session restart`, `--old` y `update`
+  ponen ahora al día una sesión de Claude Desktop o de un terminal sin cerrarla: solo se
+  para su servidor de augmented brain, y Claude Code lo arranca otra vez con el programa
+  nuevo la próxima vez que la sesión lo usa. Solo con la sesión quieta; Linux y macOS
+  (en Windows, ciérrala y ábrela como antes). `doctor` lo dice también.
 
 ## 0.18.0-beta
 

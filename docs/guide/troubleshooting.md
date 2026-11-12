@@ -79,8 +79,8 @@ that machine asks you each time, until the date.
 ### augmented brain's tools fail after an update
 
 A session that was open keeps the old program. `augmented-brain session restart --old`
-restarts the idle ones, with the same conversation; one of Claude Desktop, close and open
-it. `augmented-brain doctor` says how many sessions still run the old version.
+restarts the idle ones, with the same conversation; one of Claude Desktop stays open and
+only its augmented brain restarts (on Windows, close and open it). `augmented-brain doctor` says how many sessions still run the old version.
 
 ### The installer or the update cannot download
 

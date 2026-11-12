@@ -337,8 +337,8 @@ and stops. The download is then tried three times, also through GitHub's API. If
 fails, or the program is not the new version afterwards, it says so and ends with an
 error: nothing changed, run it again later.
 
-Then close and open the sessions it could not restart (those of Claude Desktop, or one
-that was answering). A session that was open keeps the old program until it restarts,
+Then close and open the sessions it could not restart (one that was answering, or on
+Windows those of Claude Desktop). A session that was open keeps the old program until it restarts,
 and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new
 session tell you how many sessions still run the old version.
 
@@ -2249,9 +2249,10 @@ with work not committed or not pushed stays, and `doctor` names it.
   answer), or when the machine restarts. After a reboot only the
   doors come back: ask for the task sessions again. `augmented-brain session list`
   shows the open ones.
-- **Claude retires a session left unused for hours.** It stops running but stays in
-  Claude Desktop and claude.ai, and comes back when you open it there. `session list`
-  calls it retired; `session stop` and closing the task close it all the same.
+- **Claude retires a session left unused for hours.** It stops running, and claude.ai
+  shows it as disconnected. `session list` calls it retired; `session start` with its
+  task brings it back with its whole conversation, and `session stop` and closing the
+  task close it all the same.
 - **A session that cannot work is not left open.** `session start` checks first that
   Claude Code is logged in, then waits for the first answer (up to a minute). If that
   answer is an error, such as an expired login, it closes the session and says what to
@@ -2513,9 +2514,10 @@ What it does, in order:
    it says so and nothing changes.
 4. **Checks the new version is in place**, and restarts the idle Claude sessions that
    still run the old one, one at a time, with the same conversation: a task's session,
-   and those of the remote access. A session that is answering is left as it is.
+   those of the remote access, and those of Claude Desktop, which stay open while only
+   their augmented brain restarts. A session that is answering is left as it is.
 5. **Says what is left:** the sessions it could not restart (one answering, the one you
-   ran it from, any of Claude Desktop), and which task each space has active.
+   ran it from, on Windows any of Claude Desktop), and which task each space has active.
 
 For those left, ask the session to park its task, and close and open it. A session that
 was open keeps the old program until it restarts; `/clear` is not enough. When the
@@ -2995,6 +2997,13 @@ in, or its login has expired, nothing is opened, and when the first answer is an
 command says what happened and what to do, such as logging in again with `claude auth
 login`.
 
+If Claude stopped the task's session (it does that to one left unused for hours, and
+to every one when its background service restarts), `session start` brings it back
+instead: the same session, with its whole conversation, connected again in Claude
+Desktop and claude.ai, and no new first message. claude.ai shows such a session as
+disconnected and cannot bring it back by itself. Only if Claude refuses does a new
+session open and replace it.
+
 The session closes with `session stop`, or when the computer restarts. Launched
 sessions are not brought back after a reboot: ask for them again.
 
@@ -3050,9 +3059,11 @@ restarts its own way:
   service holds every session it serves, so it restarts only when all of them are
   idle. Anything else inside the service (Claude's background service, above all) is
   moved out first, so it does not stop with it. Linux only.
-- **A session of Claude Desktop or a terminal:** it is left as it is. Its app opened
-  it, and stopping it from outside would break its window. Close it and open it again
-  yourself.
+- **A session of Claude Desktop or a terminal:** its window stays open. Its app opened
+  it, and stopping it from outside would break that window, so only its augmented
+  brain server stops; Claude Code starts it again, from the program of now, the next
+  time the session uses it. Linux and macOS. On Windows it is left as it is: close it
+  and open it again yourself.
 
 A session that is answering, or waiting for a permission, is never restarted: it is
 looked at again right before, and left as it is if it is not idle. Nor is the session
@@ -3069,8 +3080,9 @@ going.
 ## augmented-brain session list
 
 Lists the task sessions open on this computer: the task, whether it runs, and its
-folder. **retired** means Claude stopped it after hours unused: it still shows in Claude
-Desktop and claude.ai, and comes back when you open it there. **failed** means its last
+folder. **retired** means Claude stopped it, after hours unused or when its background
+service restarted: claude.ai shows it as disconnected, and `session start` with its task
+brings it back with its whole conversation. **failed** means its last
 answer was an error, such as an expired login: it does nothing until someone writes to
 it. The line gives the error and what to do.
 
@@ -3137,9 +3149,10 @@ does what you would otherwise do by hand:
   backup fails, it stops and updates nothing: that copy is the way back. With no backup
   at all, it says it goes ahead without a copy to go back to.
 - **After:** the idle Claude sessions still running the old version are restarted,
-  one at a time, as `session restart --old` does. For those it cannot restart (one
-  answering, or one of Claude Desktop), it says which task is active in each space, so
-  you ask its session to park it, and then you close and open them.
+  one at a time, as `session restart --old` does: those of Claude Desktop stay open and
+  only their augmented brain restarts. For those it cannot restart (one answering, or
+  on Windows one of Claude Desktop), it says which task is active in each space, so you
+  ask its session to park it, and then you close and open them.
 
 - `--plugin`: update only the Claude Code plugin. The installer uses it.
 - `--force`: update even when the backup before it fails.
@@ -4369,8 +4382,8 @@ that machine asks you each time, until the date.
 ### augmented brain's tools fail after an update
 
 A session that was open keeps the old program. `augmented-brain session restart --old`
-restarts the idle ones, with the same conversation; one of Claude Desktop, close and open
-it. `augmented-brain doctor` says how many sessions still run the old version.
+restarts the idle ones, with the same conversation; one of Claude Desktop stays open and
+only its augmented brain restarts (on Windows, close and open it). `augmented-brain doctor` says how many sessions still run the old version.
 
 ### The installer or the update cannot download
 
