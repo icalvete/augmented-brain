@@ -183,8 +183,8 @@ var doctorMessages = map[string]msg{
 		es: "%d sesiones de Claude abiertas en este ordenador siguen con un augmented brain anterior (de antes de actualizar a la %s): sus herramientas de augmented brain pueden fallar",
 	},
 	"doctor.oldservers.fix": {
-		en: "augmented-brain session restart --old restarts the idle ones, with the same conversation; those of Claude Desktop, close and open them when it suits you",
-		es: "augmented-brain session restart --old reinicia las que están quietas, con la misma conversación; las de Claude Desktop, ciérralas y ábrelas cuando te venga bien",
+		en: "augmented-brain session restart --old restarts the idle ones, with the same conversation; those of Claude Desktop stay open, only their augmented brain restarts",
+		es: "augmented-brain session restart --old reinicia las que están quietas, con la misma conversación; las de Claude Desktop siguen abiertas, solo se reinicia su augmented brain",
 	},
 	"doctor.memory": {
 		en: "a Claude window on this computer is using %s GB of memory (%s, process %d); normal is about 0.5 GB, and if it keeps growing the system may close it, with every Claude session in it",
