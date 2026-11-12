@@ -133,6 +133,8 @@ func watchLine(l string, r watch.Result) string {
 		line = i18n.T(l, "watch.merged", r.PR, took)
 	case watch.Closed:
 		line = i18n.T(l, "watch.closed", r.PR, took)
+	case watch.Conflict:
+		line = i18n.T(l, "watch.conflict", r.PR, took)
 	case watch.TimedOut:
 		pending := strings.Join(r.Pending, ", ")
 		if pending == "" {

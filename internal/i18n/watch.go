@@ -31,6 +31,10 @@ var watchMessages = map[string]msg{
 		en: "PR #%d was closed without being merged (%s).",
 		es: "La PR #%d se ha cerrado sin mezclarse (%s).",
 	},
+	"watch.conflict": {
+		en: "PR #%d conflicts with its base branch, so no CI runs: rebase it and watch it again (%s).",
+		es: "La PR #%d tiene conflictos con su rama base y así no corre ninguna CI: rebásala y vuelve a vigilarla (%s).",
+	},
 	"watch.timeout": {
 		en: "PR #%d: after %s, still pending: %s. I stopped watching it.",
 		es: "PR #%d: tras %s, siguen pendientes: %s. He dejado de vigilarla.",

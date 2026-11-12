@@ -53,7 +53,7 @@ func (f *fake) options() Options {
 
 func TestGreenAfterPending(t *testing.T) {
 	f := &fake{
-		states: []string{"OPEN\n"},
+		states: []string{"OPEN MERGEABLE\n"},
 		checks: []string{"test\tpending\t0\thttps://x\n", "test\tpass\t3m\thttps://x\nprivacy\tskipping\t0\thttps://x\n"},
 		all:    "test\tpass\t3m\thttps://x\ninstall-linux\tpending\t0\thttps://x\n",
 	}
@@ -78,7 +78,7 @@ func TestFailedNamesTheCheck(t *testing.T) {
 }
 
 func TestMergedAndClosed(t *testing.T) {
-	for state, kind := range map[string]Kind{"MERGED": Merged, "CLOSED": Closed} {
+	for state, kind := range map[string]Kind{"MERGED": Merged, "CLOSED": Closed, "OPEN CONFLICTING": Conflict} {
 		f := &fake{states: []string{"OPEN", state}, checks: []string{"test\tpending\t0\tu"}}
 		if r := PR(f.options()); r.Kind != kind {
 			t.Errorf("%s: got %+v", state, r)
