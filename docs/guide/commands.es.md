@@ -505,7 +505,10 @@ mirar justo antes y, si no está quieta, se deja. Tampoco la sesión desde la qu
 lanza la orden: esa necesita `--when-idle`. Si una falla, las demás siguen.
 
 - `--old`: reinicia, una a una, todas las sesiones quietas que siguen con un augmented
-  brain anterior, y dice qué ha pasado con cada una. `update` lo lanza solo.
+  brain anterior, y dice qué ha pasado con cada una. `update` lo lanza solo. Aquí solo
+  se relanza la sesión propia de una tarea (la que abrió `session start`): cualquier
+  otra sesión de fondo pudo archivarse en Claude Desktop, que no se lo dice a Claude,
+  así que solo se para su servidor de augmented brain.
 - `--when-idle`: espera a que la sesión acabe su respuesta y entonces la reinicia. Así
   se reinicia una sesión a sí misma después de aparcar su tarea: la orden vuelve en el
   acto y un proceso en segundo plano espera, hasta 30 minutos. Lo que hizo va a

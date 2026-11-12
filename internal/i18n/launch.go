@@ -212,8 +212,8 @@ var launchMessages = map[string]msg{
 		es: "«%s» comparte su servicio remoto (%s) con una sesión que está respondiendo: se queda como está. Prueba otra vez cuando acabe.",
 	},
 	"restart.ended": {
-		en: "\"%s\" is archived or ended: it is not brought back; only its earlier augmented brain is stopped.",
-		es: "«%s» está archivada o terminada: no se relanza; solo se para su augmented brain anterior.",
+		en: "✓ Updated \"%s\" without bringing it back (it is archived or ended, or not a task's session, so it may have been archived in Claude Desktop): only its earlier augmented brain stops, and the one of now starts if it is used again.",
+		es: "✓ Puesta al día «%s» sin relanzarla (está archivada o terminada, o no es la sesión de una tarea, así que pudo archivarse en Claude Desktop): solo se para su augmented brain anterior, y arranca el de ahora si vuelve a usarse.",
 	},
 	"restart.server": {
 		en: "✓ Updated \"%s\" (Claude Desktop or a terminal) without closing it: its augmented brain starts again, with the program of now, the next time it uses it.",

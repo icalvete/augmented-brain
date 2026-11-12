@@ -111,6 +111,9 @@ func restartOld(c *config.Config, sys remote.System, claude string, out, errOut 
 	if err != nil {
 		return sessionErr(l, err, errOut)
 	}
+	// Only a task's own session is brought back with respawn: any other background
+	// session may have been archived in Claude Desktop, which Claude is not told.
+	remote.MarkUnlaunched(c.Dir, list)
 	code := 0
 	if len(list) > 0 {
 		fmt.Fprintln(out, i18n.T(l, "restart.old", len(list)))
