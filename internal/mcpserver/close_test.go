@@ -82,7 +82,7 @@ func TestCloseStopsTheTaskSession(t *testing.T) {
 			}}, nil
 	}
 	out = mustCall(t, cs, "task_close", map[string]any{"id": "task-docs", "result": "done"})
-	if len(stopped) != 1 || !strings.Contains(out, "Claude had retired") || !slices.Contains(calls, "rm def67890") {
+	if len(stopped) != 1 || !strings.Contains(out, "Claude had stopped") || !slices.Contains(calls, "rm def67890") {
 		t.Fatalf("stopped %v, calls %v:\n%s", stopped, calls, out)
 	}
 	if _, err := os.Stat(filepath.Join(cfgDir, "state", "sessions", "task-docs.json")); !os.IsNotExist(err) {

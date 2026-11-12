@@ -427,6 +427,13 @@ iniciada, o le ha caducado, no se abre nada, y si la primera respuesta es un err
 acabó el login, el servicio está saturado), la sesión se cierra. En los dos casos el
 comando dice qué ha pasado y qué hacer, como volver a entrar con `claude auth login`.
 
+Si Claude paró la sesión de la tarea (lo hace con una que lleva horas sin usarse, y con
+todas cuando se reinicia su servicio en segundo plano), `session start` la trae de
+vuelta: la misma sesión, con toda su conversación, otra vez conectada en Claude Desktop
+y claude.ai, y sin un primer mensaje nuevo. claude.ai enseña esa sesión como
+desconectada y no puede traerla de vuelta por sí solo. Solo si Claude se niega se abre
+una sesión nueva que la sustituye.
+
 La sesión se cierra con `session stop` o al reiniciar el ordenador. Las sesiones
 lanzadas no vuelven solas tras un reinicio: pídelas otra vez.
 
@@ -482,8 +489,11 @@ tipo se reinicia a su manera:
   lleva todas las sesiones que sirve, así que solo se reinicia si todas están quietas.
   Antes se saca de él todo lo demás (sobre todo el servicio en segundo plano de Claude),
   para que no se pare con él. Solo en Linux.
-- **Una sesión de Claude Desktop o de un terminal:** se queda como está. La abrió su
-  app, y pararla desde fuera rompería su ventana. Ciérrala y ábrela otra vez tú.
+- **Una sesión de Claude Desktop o de un terminal:** su ventana sigue abierta. La abrió
+  su app, y pararla desde fuera rompería esa ventana, así que solo se para su servidor
+  de augmented brain; Claude Code lo arranca otra vez, con el programa de ahora, la
+  próxima vez que la sesión lo usa. En Linux y macOS. En Windows se queda como está:
+  ciérrala y ábrela otra vez tú.
 
 Nunca se reinicia una sesión que está respondiendo o esperando un permiso: se vuelve a
 mirar justo antes y, si no está quieta, se deja. Tampoco la sesión desde la que se
@@ -499,8 +509,9 @@ lanza la orden: esa necesita `--when-idle`. Si una falla, las demás siguen.
 ## augmented-brain session list
 
 Lista las sesiones de tareas abiertas en este ordenador: la tarea, si está en marcha y
-su carpeta. **retirada** quiere decir que Claude la paró tras horas sin uso: sigue en
-Claude Desktop y claude.ai, y vuelve al abrirla allí. **fallida** quiere decir que su
+su carpeta. **retirada** quiere decir que Claude la paró, tras horas sin uso o al
+reiniciarse su servicio en segundo plano: claude.ai la enseña desconectada, y `session
+start` con su tarea la trae de vuelta con toda su conversación. **fallida** quiere decir que su
 última respuesta fue un error, como un login caducado: no hace nada hasta que alguien
 le escribe. La línea dice el error y qué hacer.
 
@@ -567,10 +578,11 @@ otro modo harías a mano:
   falla una copia, para y no actualiza nada: esa copia es la vuelta atrás. Si no hay
   ninguna copia, dice que sigue sin una copia a la que volver.
 - **Después:** reinicia, una a una, las sesiones de Claude quietas que siguen con la
-  versión vieja, como hace `session restart --old`. Para las que no puede reiniciar
-  (una que está respondiendo, o una de Claude Desktop), dice qué tarea está activa en
-  cada espacio, para que pidas a su sesión que la aparque, y después las cierras y las
-  abres.
+  versión vieja, como hace `session restart --old`: las de Claude Desktop siguen
+  abiertas y solo se reinicia su augmented brain. Para las que no puede reiniciar (una
+  que está respondiendo, o en Windows una de Claude Desktop), dice qué tarea está activa
+  en cada espacio, para que pidas a su sesión que la aparque, y después las cierras y
+  las abres.
 
 - `--plugin`: actualiza solo el plugin de Claude Code. Lo usa el instalador.
 - `--force`: actualiza aunque falle la copia de antes.

@@ -6,6 +6,17 @@
   remote access back when the server archives its session: whether it is running, how
   long ago it last looked, and what to do when it is stopped or its last look failed.
   `remote install` says it left it running, and `doctor` warns when it fails.
+- **A task's session Claude stopped comes back with its conversation.** Claude stops a
+  background session left unused for hours (and every one when its background service
+  restarts), and claude.ai then shows it as disconnected, with no way to go on.
+  `augmented-brain session start` with its task now brings it back (`claude respawn`):
+  the same session, its whole conversation, connected again. `session list` calls it
+  retired again (with Claude Code 2.1.322 it said "ended") and says how to bring it back.
+- **Updating no longer asks you to close Claude Desktop.** `session restart`, `--old` and
+  `update` now update a session of Claude Desktop or a terminal without closing it: only
+  its augmented brain server stops, and Claude Code starts it again with the new program
+  the next time the session uses it. Only while the session is idle; Linux and macOS
+  (on Windows, close and open it as before). `doctor` says so too.
 
 ## 0.18.0-beta
 

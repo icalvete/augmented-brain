@@ -416,6 +416,13 @@ in, or its login has expired, nothing is opened, and when the first answer is an
 command says what happened and what to do, such as logging in again with `claude auth
 login`.
 
+If Claude stopped the task's session (it does that to one left unused for hours, and
+to every one when its background service restarts), `session start` brings it back
+instead: the same session, with its whole conversation, connected again in Claude
+Desktop and claude.ai, and no new first message. claude.ai shows such a session as
+disconnected and cannot bring it back by itself. Only if Claude refuses does a new
+session open and replace it.
+
 The session closes with `session stop`, or when the computer restarts. Launched
 sessions are not brought back after a reboot: ask for them again.
 
@@ -471,9 +478,11 @@ restarts its own way:
   service holds every session it serves, so it restarts only when all of them are
   idle. Anything else inside the service (Claude's background service, above all) is
   moved out first, so it does not stop with it. Linux only.
-- **A session of Claude Desktop or a terminal:** it is left as it is. Its app opened
-  it, and stopping it from outside would break its window. Close it and open it again
-  yourself.
+- **A session of Claude Desktop or a terminal:** its window stays open. Its app opened
+  it, and stopping it from outside would break that window, so only its augmented
+  brain server stops; Claude Code starts it again, from the program of now, the next
+  time the session uses it. Linux and macOS. On Windows it is left as it is: close it
+  and open it again yourself.
 
 A session that is answering, or waiting for a permission, is never restarted: it is
 looked at again right before, and left as it is if it is not idle. Nor is the session
@@ -490,8 +499,9 @@ going.
 ## augmented-brain session list
 
 Lists the task sessions open on this computer: the task, whether it runs, and its
-folder. **retired** means Claude stopped it after hours unused: it still shows in Claude
-Desktop and claude.ai, and comes back when you open it there. **failed** means its last
+folder. **retired** means Claude stopped it, after hours unused or when its background
+service restarted: claude.ai shows it as disconnected, and `session start` with its task
+brings it back with its whole conversation. **failed** means its last
 answer was an error, such as an expired login: it does nothing until someone writes to
 it. The line gives the error and what to do.
 
@@ -558,9 +568,10 @@ does what you would otherwise do by hand:
   backup fails, it stops and updates nothing: that copy is the way back. With no backup
   at all, it says it goes ahead without a copy to go back to.
 - **After:** the idle Claude sessions still running the old version are restarted,
-  one at a time, as `session restart --old` does. For those it cannot restart (one
-  answering, or one of Claude Desktop), it says which task is active in each space, so
-  you ask its session to park it, and then you close and open them.
+  one at a time, as `session restart --old` does: those of Claude Desktop stay open and
+  only their augmented brain restarts. For those it cannot restart (one answering, or
+  on Windows one of Claude Desktop), it says which task is active in each space, so you
+  ask its session to park it, and then you close and open them.
 
 - `--plugin`: update only the Claude Code plugin. The installer uses it.
 - `--force`: update even when the backup before it fails.
