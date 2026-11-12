@@ -104,6 +104,15 @@ as fact, to check before stating anything from before, and to tell you the sessi
 compacted and suggest parking the task and going on in a new session, which starts from
 the notes.
 
+### A long journal
+
+A task that lasts weeks can gather a long journal, too long for Claude to read in one go.
+When a task passes 24 KB, its oldest entries move to a file of their own in
+`archive/journals/` (named after the task and the dates of the first and the last entry),
+and one line in the journal says how many moved and where. About the last 8 KB of entries
+stay in the task. Nothing is lost: the entries are moved as they were written, and Claude
+reads that file when it needs something from back then.
+
 ## Steps and subtasks
 
 A big task can be split in two ways.

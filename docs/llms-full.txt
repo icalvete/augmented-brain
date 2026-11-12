@@ -640,6 +640,15 @@ as fact, to check before stating anything from before, and to tell you the sessi
 compacted and suggest parking the task and going on in a new session, which starts from
 the notes.
 
+### A long journal
+
+A task that lasts weeks can gather a long journal, too long for Claude to read in one go.
+When a task passes 24 KB, its oldest entries move to a file of their own in
+`archive/journals/` (named after the task and the dates of the first and the last entry),
+and one line in the journal says how many moved and where. About the last 8 KB of entries
+stay in the task. Nothing is lost: the entries are moved as they were written, and Claude
+reads that file when it needs something from back then.
+
 ## Steps and subtasks
 
 A big task can be split in two ways.
@@ -2018,7 +2027,9 @@ Some things are left out on purpose:
 ## What you get
 
 - **Several machines, one brain.** Before pushing, the backup fetches what your other
-  machine did and merges it.
+  machine did and merges it. A task where each machine only wrote in the journal, or
+  where one moved old entries to `archive/journals/` while the other wrote, joins by
+  itself.
 - **Full history.** Every backup is a git commit, with the machine and the time. The
   panel shows what each one changed and goes back to it; with `git log` you see all of
   them.
@@ -2694,7 +2705,9 @@ It also:
 - names every file that holds a secret (the backup refuses it until the secret is out);
 - names the repositories notes point at that are not on this computer;
 - makes the notes readable by you only, if other users could read them;
-- moves the list of secret names into `secrets.toml`, from `config.toml` where 0.6.0 kept it.
+- moves the list of secret names into `secrets.toml`, from `config.toml` where 0.6.0 kept it;
+- moves the oldest journal entries of a task past 24 KB to `archive/journals/`, as the
+  tools do when they write it (see [A long journal](https://icalvete.github.io/augmented-brain/guide/tasks.html#a-long-journal)).
 
 Run it after editing notes by hand. It ends with an error when a note is not valid. It
 takes no options.
@@ -2712,6 +2725,7 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
 
 - the configuration, the profile and which space this folder is in;
 - each space's notes folder, its notes and its index, and whether it has a backup;
+- tasks too long to read in one go, which `check` shortens;
 - Claude Code, git and the plugin;
 - the guard, for real, with a command that must be stopped;
 - the guard's lists, the root exceptions in `root_ask`, and those that have ended;
@@ -3358,7 +3372,11 @@ subtask.
 
 Reads a task: its header, its whole body with the journal, and its subtasks. It also says
 which task it is part of, and whether a repository it names is missing from this
-computer. Claude reads a task before resuming it.
+computer. Claude reads a task before resuming it. Old journal entries moved to
+`archive/journals/` are named by a line of the journal (see
+[A long journal](https://icalvete.github.io/augmented-brain/guide/tasks.html#a-long-journal)); a task still too long for one answer, written
+by hand or by an earlier version, is read without its oldest entries, and a line says
+where they are.
 
 - `id`: the task's id, such as `task-move-the-blog`.
 
@@ -3931,7 +3949,7 @@ A session that runs outside every work folder (for example, the scratch folder t
 ├── reviews/           # one file per weekly review
 ├── docs/              # optional: long documents of a task (plans, analyses, reports); never loaded
 │   └── <task>/
-└── archive/           # old journals and merged files; never loaded, never deleted
+└── archive/           # old journals (journals/), merged files; never loaded, never deleted
     └── sessions/      # summaries Claude Code wrote when it compacted a conversation
 ```
 
@@ -4075,7 +4093,7 @@ The body uses these sections, in your language (the templates write the headings
 2. **Definition**, **Analysis**, **Plan**, **Validation**, **Closing**: one per phase.
 3. **Journal**: dated lines, `- YYYY-MM-DD — what happened`. Always the last section.
 
-The program never searches the prose. It relies on two positions only: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. The one exception is the checkboxes of the Plan section (see "Steps"). The program never moves journal entries: a task whose journal grows long can have its oldest entries moved to `archive/` by hand, with a link from the task.
+The program never searches the prose. It relies on two positions only: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. The one exception is the checkboxes of the Plan section (see "Steps"). The other is a long journal: when a task note passes 24 KB, the program moves its oldest entries (a dated line and the lines under it, up to the next dated line), as they were, to `archive/journals/<task id>-<first date>-<last date>.md`, keeping about the last 8 KB of entries in the note, and never fewer than 4 KB moved at once. In their place it writes one dated line, dated as the last entry moved so the journal stays in date order, that names that file; the line is recognized by the path `archive/journals/….md` in it, whatever the language. The file is plain Markdown with no header: a title, a line on where the entries came from, then the entries. It is written before the note, so a failure leaves a copy too many, never one too few. Anything above the first dated line of the journal stays.
 
 ## Areas
 
@@ -4309,7 +4327,10 @@ the user adds to them stay. The generated index is rebuilt after a restore.
 When another machine changed the same notes, the backup merges before pushing. A note
 that each machine changed only by adding journal entries (dated lines) and moving its
 `updated` date is joined by itself: every entry either added, in date order, and the
-later date. Any other conflict stops the backup without pushing, naming the notes to
+later date. So is a task where one machine moved old entries to `archive/journals/`:
+each line that names such a file is replaced by the file's entries to compare, and put
+back once joined. An earlier program, which does not do this, stops there as with any
+other conflict. Any other conflict stops the backup without pushing, naming the notes to
 merge by hand.
 
 Each git call of a backup or restore stops after 3 minutes without an answer (over

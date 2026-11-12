@@ -6,6 +6,14 @@
   release` (o la misma llamada con `gh api`) saca una versión, como `gh release create`,
   así que es cosa tuya. Los demás flujos, como un despliegue, siguen pasando. Un flujo
   nombrado solo por su número pregunta antes.
+- **Las tareas largas vuelven a leerse de una vez.** El diario crecía hasta que Claude no
+  podía leer la tarea de una vez y tenía que leerla a trozos. Ahora, cuando una tarea pasa
+  de 24 KB, sus entradas más antiguas del diario se mueven a un fichero en
+  `archive/journals/`, y una línea del diario dice dónde; se quedan los últimos 8 KB de
+  entradas, más o menos. No se pierde nada. `check` lo hace con las tareas que ya se
+  pasan, `doctor` te avisa cuando hay alguna, y la copia de seguridad une una tarea que
+  una máquina acortó mientras la otra escribía en ella. Una tarea aún demasiado larga,
+  escrita a mano, se lee sin sus entradas más antiguas, con una línea que dice dónde están.
 
 ## 0.19.2-beta
 

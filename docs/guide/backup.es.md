@@ -106,7 +106,9 @@ Algunas cosas se quedan fuera a propósito:
 ## Lo que te da
 
 - **Varias máquinas, un solo cerebro.** Antes de subir, la copia trae lo que hizo tu otra
-  máquina y lo mezcla.
+  máquina y lo mezcla. Una tarea en la que cada máquina solo escribió en el diario, o en la
+  que una movió entradas antiguas a `archive/journals/` mientras la otra escribía, se une
+  sola.
 - **Todo el historial.** Cada copia es un commit de git, con la máquina y la hora. El
   panel enseña qué cambió cada una y vuelve a ella; con `git log` las ves todas.
 - **En tu sitio.** GitHub, GitLab o tu servidor: el repositorio lo eliges tú. No hay nube

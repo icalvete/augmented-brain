@@ -185,6 +185,10 @@ var commandMessages = map[string]msg{
 		en: "shared notes (%s): %s, %s",
 		es: "notas compartidas (%s): %s, %s",
 	},
+	"check.journal": {
+		en: "Moved the oldest journal entries of a long task to %s (a line in its journal says so).",
+		es: "Movidas las entradas más antiguas del diario de una tarea larga a %s (una línea de su diario lo dice).",
+	},
 	"check.rebuilt": {
 		en: "%s rebuilt",
 		es: "%s rehecho",

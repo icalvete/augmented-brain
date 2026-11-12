@@ -6,6 +6,13 @@
   release` (or the same call through `gh api`) publishes a version, like `gh release
   create`, so it is for you. Other workflows, such as a deployment, still run. A
   workflow named only by its number asks first.
+- **Long tasks read in one go again.** A journal kept growing until Claude could not read
+  the task at once, and had to read it in pieces. Now, when a task passes 24 KB, its
+  oldest journal entries move to a file in `archive/journals/`, and a line in the journal
+  says where; the last 8 KB or so of entries stay. Nothing is lost. `check` does it for
+  tasks already past it, `doctor` tells you when there are some, and the backup joins a
+  task one machine shortened while the other wrote in it. A task still too long, written
+  by hand, is read without its oldest entries, with a line saying where they are.
 
 ## 0.19.2-beta
 

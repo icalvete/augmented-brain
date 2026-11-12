@@ -111,7 +111,10 @@ Además:
 - nombra los repositorios a los que apuntan las notas y que no están en este ordenador;
 - deja las notas solo para ti, si otros usuarios podían leerlas;
 - pasa la lista de nombres de secretos a `secrets.toml`, desde `config.toml`, donde la
-  guardaba la 0.6.0.
+  guardaba la 0.6.0;
+- mueve a `archive/journals/` las entradas más antiguas del diario de una tarea que pasa de
+  24 KB, como hacen las herramientas al escribirla (mira
+  [Un diario largo](tasks.es.md#un-diario-largo)).
 
 Lánzalo después de editar notas a mano. Acaba con error si una nota no es válida. No
 tiene opciones.
@@ -129,6 +132,7 @@ algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Re
 
 - la configuración, el perfil y en qué espacio está esta carpeta;
 - la carpeta de notas de cada espacio, sus notas, su índice y si tiene copia de seguridad;
+- las tareas demasiado largas para leerlas de una vez, que `check` acorta;
 - Claude Code, git y el plugin;
 - el guardia, de verdad, con un comando que tiene que parar;
 - las listas del guardia, las excepciones de root en `root_ask` y las que ya han
