@@ -135,6 +135,14 @@ var guardMessages = map[string]msg{
 		en: "`%s api` with this call merges, releases or moves a branch, like a git push, so it is for the user. Give the user the exact command to run themselves.",
 		es: "`%s api` con esta llamada fusiona, publica una versión o mueve una rama, como un git push, así que es cosa del usuario. Dale al usuario el comando exacto para que lo lance él.",
 	},
+	"guard.dispatch": {
+		en: "Starting the workflow `%s` by hand publishes a version (it is a release workflow), so it is for the user. Leave the release ready and checked, and give the user the exact command to run themselves, or tell them to press Run workflow on GitHub.",
+		es: "Lanzar a mano el flujo `%s` saca una versión (es un flujo de publicación), así que es cosa del usuario. Deja la versión lista y comprobada, y dale al usuario el comando exacto para que lo lance él, o dile que pulse Run workflow en GitHub.",
+	},
+	"guard.dispatch.id": {
+		en: "This starts the workflow `%s` by hand, named by its number, so the guard cannot tell whether it publishes a version. Name it by its file instead, or ask the user.",
+		es: "Esto lanza a mano el flujo `%s`, nombrado por su número, así que el guardia no sabe si publica una versión. Nómbralo por su fichero, o pregunta al usuario.",
+	},
 	"guard.publish": {
 		en: "`%s` publishes or merges, like a git push, so it is for the user. Leave the change ready and checked, and give the user the exact command to run themselves.",
 		es: "`%s` publica o fusiona, como un git push, así que es cosa del usuario. Deja el cambio listo y comprobado, y dale al usuario el comando exacto para que lo lance él.",

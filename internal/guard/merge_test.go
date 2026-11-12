@@ -136,6 +136,20 @@ func TestMergeLikePush(t *testing.T) {
 		{app, nil, "gh api repos/acme/app/releases -f tag_name=v1", Deny},
 		{app, nil, "gh api -X PATCH repos/acme/app/git/refs/heads/main", Deny},
 		{app, nil, "gh pr view 12", Allow},
+		// starting a release workflow by hand publishes a version; other workflows go on
+		{app, nil, "gh workflow run release", Deny},
+		{app, nil, "gh workflow run release.yml -R acme/app", Deny},
+		{app, nil, "gh workflow run --ref main .github/workflows/Release.yaml", Deny},
+		{app, nil, "gh workflow run -R acme/app -f x=1 release", Deny},
+		{app, nil, "gh api -X POST repos/acme/app/actions/workflows/release.yml/dispatches -f ref=main", Deny},
+		{app, nil, "gh api repos/acme/app/actions/workflows/release.yml/dispatches --input body.json", Deny},
+		{app, nil, "gh workflow run 123456", Ask},
+		{app, nil, "gh api -X POST repos/acme/app/actions/workflows/123456/dispatches -f ref=main", Ask},
+		{app, nil, "gh workflow run deploy-site -R acme/app", Allow},
+		{app, nil, "gh api -X POST repos/acme/app/actions/workflows/deploy.yml/dispatches -f ref=main", Allow},
+		{app, nil, "gh api repos/acme/app/actions/workflows/release.yml", Allow},
+		{app, nil, "gh workflow view release", Allow},
+		{app, nil, "gh run list --workflow release", Allow},
 	}
 	// The folder of each case is written in the command, with a cd, from the home folder;
 	// cases in the home folder or in none run as written.

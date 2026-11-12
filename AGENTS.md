@@ -214,6 +214,10 @@ Heavier checks, before a release or when you touch what they cover:
 - A release: on a branch, set `VERSION`, rename the `## Unreleased` section of
   `CHANGELOG.md` and `CHANGELOG.es.md` to `## <version>` with its date (`Released <date>.`,
   `Publicada el <date>.`), commit, open a pull request and merge it
-  when CI is green; then tag `v<version>` on that commit of `main` and push the tag. `release.yml` builds
-  the archives, checksums and `install.sh` and publishes them; the installer always takes
-  the latest release.
+  when CI is green. Publishing is then the maintainer's one gesture: Run workflow on
+  `release` in GitHub's Actions tab (or `gh workflow run release -R icalvete/augmented-brain`).
+  `release.yml` takes the version from `VERSION` on `main`, refuses one already tagged or a
+  commit whose required checks failed, tags it, builds the archives, checksums and
+  `install.sh` and publishes them; the installer always takes the latest release. An
+  assistant prepares the branch but never starts that workflow: the guard denies it
+  (pushing a tag `v<version>` by hand still works too).

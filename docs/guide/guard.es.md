@@ -24,7 +24,8 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
 ## Lo que para
 
 - **Commits y pushes.** `git commit`, `git push`, y lo que publica como un push:
-  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
+  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`, y
+  lanzar a mano un flujo de publicación (`gh workflow run release`); los demás flujos pasan.
   Salvo que dejes a Claude en un repositorio (más abajo).
 - **Hacerse root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
   sin `--user`, `ssh root@…`, un contenedor al que se le da la máquina entera (`docker
