@@ -64,6 +64,10 @@ var launchMessages = map[string]msg{
 		en: "Removed the task's worktree %s and its branch: it held nothing that was not on the remote.",
 		es: "Quitado el worktree de la tarea %s y su rama: no tenía nada que no estuviera en el remoto.",
 	},
+	"session.stop.waiting": {
+		en: "The session of %s will close once it finishes its answer (it waits at most %d minutes). How it went: %s",
+		es: "La sesión de %s se cerrará cuando acabe su respuesta (espera como mucho %d minutos). Cómo fue: %s",
+	},
 	"session.closing": {
 		en: "The task's own session closes when it finishes this answer, and leaves Claude Desktop and claude.ai; its worktree goes with it when nothing would be lost.",
 		es: "La sesión propia de la tarea se cierra cuando termine esta respuesta, y sale de Claude Desktop y claude.ai; su worktree se va con ella si no se pierde nada.",

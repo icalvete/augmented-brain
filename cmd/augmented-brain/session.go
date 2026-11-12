@@ -13,9 +13,11 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/mcpserver"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/repostat"
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 func sessionFlags(errOut io.Writer) (*flag.FlagSet, *string) {
@@ -85,9 +87,20 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			fmt.Fprintln(errOut, i18n.T(l, "usage.session"))
 			return 2
 		}
+		if *whenIdle && os.Getenv(mcpserver.StopDetached) == "" && remote.HasLaunch(c.Dir, task) {
+			// Run from the session itself, waiting here would keep it answering until
+			// the command returns, and it would never be idle (#99): the wait goes on in
+			// a detached copy, the same one closing the task starts.
+			if err := stopDetached(c.Dir, task); err != nil {
+				return sessionErr(l, err, errOut)
+			}
+			fmt.Fprintln(out, i18n.T(l, "session.stop.waiting", task, 30, tilde(filepath.Join(c.Dir, state.Dir, mcpserver.StopLog))))
+			return 0
+		}
 		if *whenIdle {
-			// What closing a task starts, detached: its output goes to a log in the
-			// configuration's state folder (task_close sets that up), each line dated.
+			// The detached copy (or a task with no session on record, said at once):
+			// its output goes to a log in the configuration's state folder, each line
+			// dated.
 			err := sys.StopWhenIdle(c.Dir, task, 30*time.Minute)
 			stamp := time.Now().Format("2006-01-02 15:04:05") + " "
 			code, _ := sessionStopped(l, task, err, stamp, out, errOut)
@@ -282,6 +295,10 @@ func sessionStopped(l, task string, err error, prefix string, out, errOut io.Wri
 	}
 	return 1, false
 }
+
+// stopDetached starts the copy of `session stop --when-idle` that waits; tests replace
+// it.
+var stopDetached = mcpserver.StopSessionWhenIdle
 
 func sessionErr(l string, err error, errOut io.Writer) int {
 	if errors.Is(err, remote.ErrUnsupported) {

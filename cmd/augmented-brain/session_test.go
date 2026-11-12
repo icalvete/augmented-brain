@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/remote"
 )
@@ -99,5 +100,55 @@ func TestSessionListFailed(t *testing.T) {
 	if code != 0 || !strings.Contains(out.String(), "task-site · fallida: caducó el login de Claude Code (Login reached its time limit · Please run /login)") ||
 		!strings.Contains(out.String(), "claude auth login") || strings.Contains(out.String(), "active") {
 		t.Errorf("list: %d\n%s%s", code, out.String(), errOut.String())
+	}
+}
+
+// `session stop --when-idle` run from the session it closes cannot wait there: that
+// session answers until the command returns, so it would never be idle (#99). With a
+// session on record it starts the detached copy and returns at once; the copy
+// (StopDetached set) does the waiting.
+func TestSessionStopWhenIdleDetaches(t *testing.T) {
+	h, cfg := home(t)
+	useFakeSystem(t, h, "linux")
+	dir := filepath.Join(cfg, "state", "sessions")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "task-site.json"), []byte(`{"id":"abc12345","task":"task-site","folder":"/x"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var started []string
+	old := stopDetached
+	t.Cleanup(func() { stopDetached = old })
+	stopDetached = func(cfgDir, task string) error { started = append(started, task); return nil }
+	var out, errOut bytes.Buffer
+	if code := run([]string{"session", "stop", "task-site", "--when-idle"}, nil, &out, &errOut); code != 0 || !strings.Contains(out.String(), "se cerrará cuando acabe su respuesta") || !strings.Contains(out.String(), "session-stop.log") {
+		t.Errorf("stop --when-idle: %d\n%s%s", code, out.String(), errOut.String())
+	}
+	if len(started) != 1 || started[0] != "task-site" {
+		t.Errorf("detached: %v", started)
+	}
+	// The detached copy waits in place, never starting another: here Claude no longer
+	// lists the session, so it counts as idle and is closed.
+	fake := remoteSystem
+	remoteSystem = func() (remote.System, error) {
+		s, err := fake()
+		run := s.Run
+		s.Run = func(name string, args ...string) (string, error) {
+			if len(args) > 0 && args[0] == "agents" {
+				return `[]`, nil
+			}
+			return run(name, args...)
+		}
+		s.Sleep = func(time.Duration) {}
+		return s, err
+	}
+	t.Setenv("AB_STOP_DETACHED", "1")
+	started = nil
+	out.Reset()
+	errOut.Reset()
+	run([]string{"session", "stop", "task-site", "--when-idle"}, nil, &out, &errOut)
+	if len(started) != 0 || !strings.Contains(out.String(), "Cerrada la sesión de task-site") {
+		t.Errorf("copy detached again: %v\n%s%s", started, out.String(), errOut.String())
 	}
 }
