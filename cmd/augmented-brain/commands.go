@@ -59,6 +59,8 @@ var commands = []command{
 	{name: "session stop", flags: func() []string { fs, _ := sessionStopFlags(io.Discard); return flagNames(fs) }},
 	{name: "session restart", flags: func() []string { fs, _, _ := sessionRestartFlags(io.Discard); return flagNames(fs) }},
 	{name: "session list"},
+	{name: "watch", hidden: true, run: withoutIn(cmdWatch)},
+	{name: "watch pr", flags: func() []string { fs, _ := watchFlags(io.Discard); return flagNames(fs) }},
 	{name: "config", hidden: true, run: func(args []string, _ io.Reader, _, errOut io.Writer) int { return cmdConfig(args, errOut) }},
 	{name: "config history", run: withoutIn(cmdConfigHistory)},
 	{name: "config restore", run: withoutIn(cmdConfigRestore)},

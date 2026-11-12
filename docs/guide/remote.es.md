@@ -154,6 +154,11 @@ próximo `session start` o `doctor`. Uno con cambios sin commitear o sin subir s
   enseña desconectada. `session list` la llama retirada; `session start` con su tarea
   la trae de vuelta con toda su conversación, y `session stop` y cerrar la tarea la
   cierran igual.
+- **Espera a una pull request con `augmented-brain watch pr`.** La sesión deja
+  [`watch pr`](commands.es.md#augmented-brain-watch-pr) en marcha en segundo plano con su
+  tarea. Cuando los checks pasan o fallan, o la pull request se mezcla, apunta el
+  resultado en la tarea, para que tus otras sesiones se enteren aunque esta ya no esté, y
+  le pide a la sesión que te avise en el acto. Nunca espera para siempre: 3 horas como mucho.
 - **Una sesión que no puede trabajar no se queda abierta.** `session start` comprueba
   antes que Claude Code tiene la sesión iniciada, y luego espera la primera respuesta
   (hasta un minuto). Si esa respuesta es un error, como un login caducado, cierra la

@@ -22,6 +22,13 @@
   para su servidor de augmented brain, y Claude Code lo arranca otra vez con el programa
   nuevo la próxima vez que la sesión lo usa. Solo con la sesión quieta; Linux y macOS
   (en Windows, ciérrala y ábrela como antes). `doctor` lo dice también.
+- **`augmented-brain watch pr N` espera a una pull request y dice cómo ha terminado.**
+  Termina cuando la pull request se mezcla o se cierra, falla un check obligatorio,
+  pasan todos los obligatorios o pasan 3 horas, y nunca se queda esperando ante una
+  respuesta que no entiende. Con `--task` apunta el resultado en la tarea, para que tus
+  otras sesiones se enteren aunque la sesión que la lanzó ya no esté. Las sesiones de
+  tareas y las reglas comunes la usan ahora en vez de bucles propios, que a veces nunca
+  avisaban.
 
 ## 0.18.0-beta
 

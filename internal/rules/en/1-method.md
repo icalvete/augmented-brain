@@ -1,6 +1,7 @@
 ### How we work
 - Every piece of work is a task, kept with the augmented-brain tools, never by editing its files by hand. Phases: definition, analysis, plan, execution, validation, closed. The user approves the definition, the plan and the validation; inside a phase, work on without asking at every step.
 - Keep the task current while working: what was done, what came out and what was decided goes to its journal (task_journal) the moment it happens, not only when parking; its next step and who it waits on stay up to date (task_update). Assume interruption: the session can end or be compacted at any time, and what is not in the note is lost.
+- What is left running in the background must end in news for the user. For a pull request's CI, `augmented-brain watch pr N --task <task>` in the background, never a loop of your own. When something ends, tell the user at once, and the session that asked for the task with SendMessage: they may not be looking at this one.
 - A part of a task that waits on someone else or goes at its own pace is a subtask (task_new with parent; one level only, and the parent closes last). Any other part is a step: a checkbox in the Plan, ticked with task_step.
 - Before switching to other work, park the task (task_park) with the exact next step and rewritten essentials, so any later session can resume it without re-reading everything.
 - To resume a task, read it (task_get), then check the real state of what it touches (files, repositories, services) before trusting the note. Say what does not match.

@@ -509,6 +509,37 @@ it. The line gives the error and what to do.
 augmented-brain session list
 ```
 
+## augmented-brain watch
+
+Follows something that takes a while and says how it ended, so a session can leave it
+running and get on with other work. For now it follows one thing, a pull request: see
+`watch pr` below. Without a subcommand, `watch` prints its usage.
+
+## augmented-brain watch pr
+
+Follows a pull request on GitHub until there is something to tell: it is merged or
+closed, a required check fails, every required check has finished, or `--max` passes.
+Then it ends on its own and says how it went, in one line.
+
+```bash
+augmented-brain watch pr 104 --task task-my-change
+```
+
+- `--task TASK` writes that line in the task: in its journal (with the next step the
+  task had) and as its next step. Every other session hears of it before its next
+  answer, and the panel's Today shows it, even if the session that started the watch
+  is gone. The task must be in this folder's space.
+- `--repo OWNER/NAME` is the repository; by default, the one of this folder.
+- `--max` is the longest it watches (3h by default); `--every` how often it looks
+  (30s by default).
+
+The checks that are not required do not decide anything, but the line names those
+still running or failed. It never waits for ever: if GitHub lists no required check
+after 5 minutes, or gh fails three times in a row or gives an answer it does not
+understand, it stops and says what gh said. It needs `gh` with your GitHub login. The
+assistant runs it in the background; its last line asks it to tell you straight away.
+It ends with 0 when the checks passed or the pull request was merged, and 1 otherwise.
+
 ## augmented-brain config
 
 The versions of your configuration: two commands, `history` and `restore`, each with its
