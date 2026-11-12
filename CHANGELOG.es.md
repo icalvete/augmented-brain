@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.20.0-beta
+
+Publicada el 2026-11-12.
 
 - **El guardia no deja a un asistente lanzar un flujo de publicación.** `gh workflow run
   release` (o la misma llamada con `gh api`) saca una versión, como `gh release create`,
