@@ -71,7 +71,11 @@ es una subtarea.
 
 Lee una tarea: su cabecera, todo su cuerpo con el diario, y sus subtareas. También dice
 de qué tarea es parte, y si falta en este ordenador un repositorio que nombra. Claude lee
-una tarea antes de retomarla.
+una tarea antes de retomarla. Las entradas antiguas del diario que se movieron a
+`archive/journals/` las nombra una línea del diario (mira
+[Un diario largo](tasks.es.md#un-diario-largo)); una tarea aún demasiado larga para una
+respuesta, escrita a mano o por una versión anterior, se lee sin sus entradas más antiguas,
+y una línea dice dónde están.
 
 - `id`: el id de la tarea, como `task-mudar-el-blog`.
 

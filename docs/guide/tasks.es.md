@@ -104,6 +104,15 @@ Claude se le pide que no lo tome como un hecho, que compruebe antes de afirmar a
 antes, y que te diga que la sesión se ha compactado y te proponga aparcar la tarea y
 seguir en una sesión nueva, que empieza desde las notas.
 
+### Un diario largo
+
+Una tarea que dura semanas puede juntar un diario largo, demasiado para que Claude lo lea de
+una vez. Cuando una tarea pasa de 24 KB, sus entradas más antiguas se mueven a un fichero
+propio en `archive/journals/` (con el nombre de la tarea y las fechas de la primera y la
+última entrada), y una línea del diario dice cuántas se movieron y adónde. En la tarea se
+quedan los últimos 8 KB de entradas, más o menos. No se pierde nada: las entradas se mueven
+tal como se escribieron, y Claude lee ese fichero cuando necesita algo de entonces.
+
 ## Pasos y subtareas
 
 Una tarea grande se puede partir de dos maneras.

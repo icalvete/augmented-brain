@@ -107,7 +107,9 @@ It also:
 - names every file that holds a secret (the backup refuses it until the secret is out);
 - names the repositories notes point at that are not on this computer;
 - makes the notes readable by you only, if other users could read them;
-- moves the list of secret names into `secrets.toml`, from `config.toml` where 0.6.0 kept it.
+- moves the list of secret names into `secrets.toml`, from `config.toml` where 0.6.0 kept it;
+- moves the oldest journal entries of a task past 24 KB to `archive/journals/`, as the
+  tools do when they write it (see [A long journal](tasks.md#a-long-journal)).
 
 Run it after editing notes by hand. It ends with an error when a note is not valid. It
 takes no options.
@@ -125,6 +127,7 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
 
 - the configuration, the profile and which space this folder is in;
 - each space's notes folder, its notes and its index, and whether it has a backup;
+- tasks too long to read in one go, which `check` shortens;
 - Claude Code, git and the plugin;
 - the guard, for real, with a command that must be stopped;
 - the guard's lists, the root exceptions in `root_ask`, and those that have ended;
