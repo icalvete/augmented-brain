@@ -3805,11 +3805,14 @@ The installer reads a few more:
 
 - `AB_YES=1`: answer yes to every question.
 - `AB_NO_DESKTOP=1`: do not offer the Claude desktop app.
+- `AB_DESKTOP_TIMEOUT`: on Linux, how many seconds the desktop app's download may take
+  before the installer gives up and goes on without it. Default 480 (8 minutes).
 - `AB_INSTALL_DIR`: where to put the program. Default `~/.local/bin`.
 - `AB_NO_INIT=1`: only install the program, without setting anything up.
-- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY` and `AB_MARKETPLACE`: for
-  testing: which version, where the release files are, the GitHub API to fall back on,
-  the wait between tries, and where the plugin comes from.
+- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY`, `AB_MARKETPLACE` and
+  `AB_DESKTOP_URL`: for testing: which version, where the release files are, the GitHub
+  API to fall back on, the wait between tries, where the plugin comes from, and where
+  the desktop app's apt repository is.
 
 ## Claude Code's own settings
 

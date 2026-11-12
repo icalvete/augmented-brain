@@ -54,6 +54,59 @@ fi
 PATH="$(printf '%s' "$PATH" | awk -v RS=: -v ORS=: -v d="$HOME/.local/bin" '$0 != d && $0 != d "/"' | sed 's/:$//')"
 export PATH
 
+# A desktop download that stalls must give up with its message and let the install go
+# on (on 11-nov-2026 Anthropic's apt repository stalled and the installer waited until CI
+# stopped it). A local server gives the key at once and the repository a byte every two
+# seconds. Linux with apt and sudo with no password only (CI), before the real app is
+# installed; in a home of its own, with a pretend claude, so step 2 still starts from
+# nothing.
+if [ "${AB_CHECK_DESKTOP:-}" = 1 ] && [ "$(uname -s)" = Linux ] && command -v apt-get >/dev/null 2>&1 &&
+  sudo -n true 2>/dev/null && command -v python3 >/dev/null 2>&1; then
+  echo "1b. a desktop download that stalls gives up"
+  cat >"$TMP/slow.py" <<'PY'
+import http.server, sys, time
+class H(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Length", "100000")
+        self.end_headers()
+        if self.path.endswith("/key.asc"):
+            self.wfile.write(b"k" * 100000)
+            return
+        try:
+            for _ in range(100000):
+                self.wfile.write(b"x"); self.wfile.flush(); time.sleep(2)
+        except OSError:
+            pass
+    def log_message(self, *a):
+        pass
+s = http.server.ThreadingHTTPServer(("127.0.0.1", 0), H)
+s.daemon_threads = True
+print(s.server_address[1], flush=True)
+s.serve_forever()
+PY
+  python3 -I "$TMP/slow.py" >"$TMP/slow.port" &
+  slow=$!
+  for _ in 1 2 3 4 5 6 7 8 9 10; do [ -s "$TMP/slow.port" ] && break; sleep 1; done
+  mkdir -p "$TMP/slowhome" "$TMP/slowclaude"
+  printf '#!/bin/sh\n[ "$1" = --version ] && echo "9.9.9 (Claude Code)"\nexit 0\n' >"$TMP/slowclaude/claude"
+  chmod +x "$TMP/slowclaude/claude"
+  echo 9.9.9 >"$TMP/slow.stable"
+  start=$(date +%s)
+  HOME="$TMP/slowhome" PATH="$TMP/slowclaude:$PATH" AB_YES=1 AB_LANGUAGE=es \
+    AB_DESKTOP_URL="http://127.0.0.1:$(cat "$TMP/slow.port")" AB_DESKTOP_TIMEOUT=30 \
+    AB_CLAUDE_STABLE_URL="file://$TMP/slow.stable" AB_RELEASE_URL="file://$TMP/release" AB_MARKETPLACE="$ROOT" \
+    sh "$ROOT/install.sh" </dev/null >"$TMP/slow.log" 2>&1 || true
+  took=$(($(date +%s) - start))
+  kill "$slow" 2>/dev/null || true
+  sed 's/^/    | /' "$TMP/slow.log"
+  check "it gives up in time ($took s)" test "$took" -lt 120
+  check "and says so" grep -q 'la he dejado' "$TMP/slow.log"
+  check "and the install goes on" test -x "$TMP/slowhome/.local/bin/augmented-brain"
+  # what the real install below writes again: the repository's line points here now
+  sudo rm -f /etc/apt/sources.list.d/claude-desktop.list
+fi
+
 echo "2. run the installer, hands-off"
 [ "${AB_CHECK_DESKTOP:-}" = 1 ] || AB_NO_DESKTOP=1
 AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP="${AB_NO_DESKTOP:-}" \
