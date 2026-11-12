@@ -50,6 +50,9 @@ type Brain struct {
 	// spaces are the names of the configuration's spaces, to tell a capture sent from
 	// another space (its origin must be one of them).
 	spaces []string
+	// archived are the files of old journal entries written since it was last emptied
+	// (archiveJournal).
+	archived []string
 }
 
 // KnowSpaces tells a brain built by hand (not by Open) the spaces of the
@@ -141,6 +144,9 @@ func (b *Brain) save(n *memory.Note) error {
 		return fmt.Errorf("%s is not a valid note, so it is not written over; fix it first (`augmented-brain check` says what is wrong)", n.Path)
 	}
 	if err := noNewSecret(n, b.Mem.Notes[n.Header.ID]); err != nil {
+		return err
+	}
+	if _, err := b.archiveJournal(n); err != nil {
 		return err
 	}
 	n.Header.Updated = b.today()

@@ -2,6 +2,7 @@ package backup
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -556,5 +557,71 @@ func TestRestoreUndoesAHalfEditedConfig(t *testing.T) {
 	}
 	if after, _ := os.ReadFile(filepath.Join(cfg, config.FileName)); string(after) != string(before) {
 		t.Errorf("configuration left half edited:\n%s", after)
+	}
+}
+
+// One machine moved a task's old journal entries to archive/journals/ while the other
+// wrote a new entry: the backup joins them by itself, the old entries stay out of the
+// note and the new one is in.
+func TestMergeKeepsArchivedJournal(t *testing.T) {
+	needGit(t)
+	root, _ := filepath.EvalSymlinks(t.TempDir())
+	remote := bare(t, root)
+	t.Setenv("HOME", filepath.Join(root, "h1"))
+	cfg1 := filepath.Join(root, "h1", "cfg")
+	if _, err := setup.Init(cfg1, setup.Options{Space: "work", WorkFolder: "~/work", Memory: "~/brain"}); err != nil {
+		t.Fatal(err)
+	}
+	c1, _ := config.Load(cfg1)
+	if err := Setup(c1, c1.Spaces["work"], remote); err != nil {
+		t.Fatal(err)
+	}
+	c1, _ = config.Load(cfg1)
+	s1 := c1.Spaces["work"]
+	head := "---\nid: task-x\ntype: task\ntitle: X\nstatus: execution\nwaiting_on: me\nnext: go on\ncreated: 2026-10-01\nupdated: %s\n---\n## Journal\n"
+	old := "- 2026-10-01 — Task opened.\n- 2026-10-02 — An old entry.\n  with a detail line\n- 2026-10-03 — Another old one.\n"
+	recent := "- 2026-10-04 — Recent.\n"
+	write := func(dir, rel, text string) {
+		t.Helper()
+		p := filepath.Join(dir, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(s1.Memory, "tasks/task-x.md", fmt.Sprintf(head, "2026-10-04")+old+recent)
+	if _, err := Run(c1, s1, "one"); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HOME", filepath.Join(root, "h2"))
+	cfg2 := filepath.Join(root, "h2", "cfg")
+	s2, err := Restore(cfg2, RestoreOptions{URL: remote})
+	if err != nil {
+		t.Fatal(err)
+	}
+	c2, _ := config.Load(cfg2)
+
+	// Machine one archives the old entries.
+	arch := "archive/journals/task-x-2026-10-01-2026-10-03.md"
+	write(s1.Memory, arch, "# X · journal from 2026-10-01 to 2026-10-03\n\nMoved here.\n\n"+old)
+	link := "- 2026-10-03 — 3 older journal entries, from 2026-10-01 to 2026-10-03, moved on 2026-10-05 to " + arch + ".\n"
+	write(s1.Memory, "tasks/task-x.md", fmt.Sprintf(head, "2026-10-05")+link+recent)
+	if _, err := Run(c1, s1, "one"); err != nil {
+		t.Fatal(err)
+	}
+	// Machine two, not up to date, writes a new entry.
+	write(s2.Memory, "tasks/task-x.md", fmt.Sprintf(head, "2026-10-06")+old+recent+"- 2026-10-06 — On machine two.\n")
+	if _, err := Run(c2, s2, "two"); err != nil {
+		t.Fatalf("an archived journal and a new entry did not join: %v", err)
+	}
+	got, _ := os.ReadFile(filepath.Join(s2.Memory, "tasks", "task-x.md"))
+	want := fmt.Sprintf(head, "2026-10-06") + link + recent + "- 2026-10-06 — On machine two.\n"
+	if string(got) != want {
+		t.Errorf("joined task:\n%s\nwant:\n%s", got, want)
+	}
+	if _, err := os.Stat(filepath.Join(s2.Memory, filepath.FromSlash(arch))); err != nil {
+		t.Errorf("the archive did not arrive: %v", err)
 	}
 }
