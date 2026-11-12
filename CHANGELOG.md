@@ -21,6 +21,12 @@
   its augmented brain server stops, and Claude Code starts it again with the new program
   the next time the session uses it. Only while the session is idle; Linux and macOS
   (on Windows, close and open it as before). `doctor` says so too.
+- **`augmented-brain watch pr N` waits on a pull request and says how it ended.** It
+  ends when the pull request is merged or closed, a required check fails, every required
+  check has passed, or 3 hours go by, and never waits for ever on an answer it does not
+  understand. With `--task` it writes the result in the task, so your other sessions
+  hear of it even if the session that started it is gone. Task sessions and the common
+  rules now use it instead of loops of their own, which sometimes never told you.
 
 ## 0.18.0-beta
 

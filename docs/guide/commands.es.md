@@ -519,6 +519,37 @@ le escribe. La línea dice el error y qué hacer.
 augmented-brain session list
 ```
 
+## augmented-brain watch
+
+Vigila algo que tarda y dice cómo ha terminado, para que una sesión lo deje en marcha
+y siga con otra cosa. Por ahora vigila una cosa, una pull request: mira `watch pr`
+abajo. Sin subcomando, `watch` muestra su uso.
+
+## augmented-brain watch pr
+
+Vigila una pull request de GitHub hasta que hay algo que contar: se mezcla o se cierra,
+falla un check obligatorio, terminan todos los obligatorios o pasa el tiempo de `--max`.
+Entonces termina sola y dice cómo ha ido, en una línea.
+
+```bash
+augmented-brain watch pr 104 --task task-my-change
+```
+
+- `--task TAREA` apunta esa línea en la tarea: en su diario (con el siguiente paso que
+  tenía) y como su siguiente paso. Las demás sesiones se enteran antes de su próxima
+  respuesta, y Hoy, en el panel, lo enseña, aunque la sesión que la lanzó ya no exista.
+  La tarea tiene que ser del espacio de esta carpeta.
+- `--repo DUEÑO/NOMBRE` es el repositorio; por defecto, el de esta carpeta.
+- `--max` es lo más que vigila (3h por defecto); `--every`, cada cuánto mira (30s por
+  defecto).
+
+Los checks que no son obligatorios no deciden nada, pero la línea nombra los que siguen
+en marcha o han fallado. Nunca espera para siempre: si GitHub no da ningún check
+obligatorio en 5 minutos, o gh falla tres veces seguidas o da una respuesta que no
+entiende, para y dice qué ha dicho gh. Necesita `gh` con tu login de GitHub. El
+asistente la lanza en segundo plano; su última línea le pide que te lo diga en el acto.
+Termina con 0 si los checks han pasado o la pull request se ha mezclado, y con 1 si no.
+
 ## augmented-brain config
 
 Las versiones de tu configuración: dos comandos, `history` y `restore`, cada uno con su

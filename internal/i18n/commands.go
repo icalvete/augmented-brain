@@ -385,6 +385,7 @@ Usage:
   augmented-brain session start TASK   open a remote session of its own for a task, in its folder (--folder DIR) (Linux)
   augmented-brain session stop TASK    close it (session list: the open ones)
   augmented-brain session restart SESSION  restart a Claude session with the program of now (--old: every one still on an earlier one)
+  augmented-brain watch pr N   follow pull request N until it is merged, fails or passes, and say so (--task TASK: also in the task)
   augmented-brain config history    the last versions of your configuration, and what changed in one (config history N)
   augmented-brain config restore N  go back to version N (the current one is kept as a version first)
   augmented-brain update       update augmented brain and its Claude Code plugin
@@ -412,6 +413,7 @@ Uso:
   augmented-brain session start TAREA  abre una sesión remota propia para una tarea, en su carpeta (--folder DIR) (Linux)
   augmented-brain session stop TAREA   la cierra (session list: las abiertas)
   augmented-brain session restart SESIÓN  reinicia una sesión de Claude con el programa de ahora (--old: todas las que siguen con uno anterior)
+  augmented-brain watch pr N   vigila la pull request N hasta que se mezcla, falla o pasa, y lo dice (--task TAREA: también en la tarea)
   augmented-brain config history    las últimas versiones de tu configuración, y qué cambió en una (config history N)
   augmented-brain config restore N  vuelve a la versión N (antes guarda la actual como una versión más)
   augmented-brain update       actualiza augmented brain y su plugin de Claude Code

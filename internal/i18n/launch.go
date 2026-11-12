@@ -29,8 +29,8 @@ var launchMessages = map[string]msg{
 	},
 	// The first message of a launched session: what has it start on its own.
 	"session.first": {
-		en: "This session was opened for task %s (`augmented-brain session start`). Before anything else, read it with task_get, check the real state of what it touches, and tell the user in two or three lines where it stands and what its next step is. Then get on with that step, within the phase the task is in, unless it waits on the user.",
-		es: "Esta sesión se abrió para la tarea %s (`augmented-brain session start`). Antes de nada, léela con task_get, comprueba el estado real de lo que toca y dile al usuario en dos o tres líneas cómo está y cuál es su siguiente paso. Después ponte con ese paso, dentro de la fase en la que está la tarea, salvo que espere al usuario.",
+		en: "This session was opened for task %[1]s (`augmented-brain session start`). Before anything else, read it with task_get, check the real state of what it touches, and tell the user in two or three lines where it stands and what its next step is. Then get on with that step, within the phase the task is in, unless it waits on the user. To wait for a pull request's CI, run `augmented-brain watch pr N --task %[1]s` in the background, not a loop of your own.",
+		es: "Esta sesión se abrió para la tarea %[1]s (`augmented-brain session start`). Antes de nada, léela con task_get, comprueba el estado real de lo que toca y dile al usuario en dos o tres líneas cómo está y cuál es su siguiente paso. Después ponte con ese paso, dentro de la fase en la que está la tarea, salvo que espere al usuario. Para esperar la CI de una pull request, lanza en segundo plano `augmented-brain watch pr N --task %[1]s`, no un bucle propio.",
 	},
 	"session.worktree.made": {
 		en: "New worktree %s for the task, on branch %s, from %s.",

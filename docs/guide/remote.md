@@ -150,6 +150,11 @@ with work not committed or not pushed stays, and `doctor` names it.
   shows it as disconnected. `session list` calls it retired; `session start` with its
   task brings it back with its whole conversation, and `session stop` and closing the
   task close it all the same.
+- **It waits on a pull request with `augmented-brain watch pr`.** The session leaves
+  [`watch pr`](commands.md#augmented-brain-watch-pr) running in the background with its
+  task. When the checks pass or fail, or the pull request is merged, it writes the result
+  in the task, so your other sessions hear of it even if this one is gone, and tells
+  the session to let you know at once. It never waits for ever: 3 hours at most.
 - **A session that cannot work is not left open.** `session start` checks first that
   Claude Code is logged in, then waits for the first answer (up to a minute). If that
   answer is an error, such as an expired login, it closes the session and says what to
