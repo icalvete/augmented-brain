@@ -38,7 +38,9 @@ case "$1" in
     echo "backgrounded · 5m0ke001 · smoke"
     exit 0 ;;
   agents)
-    if [ -e "$SMOKE/live" ]; then echo '[{"id":"5m0ke001","name":"smoke"}]'; else echo '[]'; fi
+    # As claude 2.1.322 lists a running session: with its pid and status (one with no
+    # pid is one Claude retired).
+    if [ -e "$SMOKE/live" ]; then echo '[{"id":"5m0ke001","name":"smoke","kind":"background","pid":4242,"status":"idle","sessionId":"5m0ke001-0000"}]'; else echo '[]'; fi
     exit 0 ;;
   stop|rm)
     echo "$1 $2" >> "$SMOKE/stops.log"
