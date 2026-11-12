@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.18.0-beta
+
+Released 2026-11-12.
 
 - **Updating restarts the sessions still on the old program.** After an update,
   `augmented-brain update` restarts, one at a time, the idle Claude sessions that still
