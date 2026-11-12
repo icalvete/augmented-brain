@@ -4,8 +4,8 @@ package i18n
 // session start tells the assistant in it.
 var launchMessages = map[string]msg{
 	"usage.session": {
-		en: "usage: augmented-brain session start TASK [--folder DIR] | stop TASK [--when-idle] | list",
-		es: "uso: augmented-brain session start TAREA [--folder DIR] | stop TAREA [--when-idle] | list",
+		en: "usage: augmented-brain session start TASK [--folder DIR] | stop TASK [--when-idle] | restart SESSION [--when-idle] | restart --old | list",
+		es: "uso: augmented-brain session start TAREA [--folder DIR] | stop TAREA [--when-idle] | restart SESIÓN [--when-idle] | restart --old | list",
 	},
 	"session.notask": {
 		en: "there is no task %q in space %s.",
@@ -184,5 +184,63 @@ var launchMessages = map[string]msg{
 	"hook.launcher": {
 		en: "To give a task a session of its own, use the launcher, here or from a remote session: `augmented-brain session start <task>` (Bash). It opens the session in the task's own folder (a worktree of its own for a bare repository), and it shows up in Claude Desktop and claude.ai within a minute. `--folder <dir>` says the folder when the task names none; `augmented-brain session list` shows the ones open; `augmented-brain session stop <task>` closes one, and closing the task (task_close) closes its session too, once it finishes its answer: do not ask the user to run stop. Use it rather than Claude Desktop's start_session, which does not work from a remote session.",
 		es: "Para dar a una tarea una sesión propia, usa el lanzador, aquí o desde una sesión remota: `augmented-brain session start <tarea>` (Bash). Abre la sesión en la carpeta de la tarea (en un worktree propio si es un repositorio bare) y sale en Claude Desktop y claude.ai en menos de un minuto. `--folder <dir>` dice la carpeta cuando la tarea no nombra ninguna; `augmented-brain session list` enseña las abiertas; `augmented-brain session stop <tarea>` cierra una, y cerrar la tarea (task_close) también cierra su sesión, cuando termina su respuesta: no le pidas al usuario que lance stop. Úsalo en vez de start_session de Claude Desktop, que no funciona desde una sesión remota.",
+	},
+	// session restart: a session goes on with the same conversation and the program of
+	// now (internal/remote/restart.go).
+	"restart.done": {
+		en: "✓ Restarted \"%s\": it goes on with the same conversation and the program of now.",
+		es: "✓ Reiniciada «%s»: sigue con la misma conversación y el programa de ahora.",
+	},
+	"restart.busy": {
+		en: "\"%s\" is answering (or waiting for a permission): left as it is. To restart it once it finishes: augmented-brain session restart %s --when-idle",
+		es: "«%s» está respondiendo (o esperando un permiso): se queda como está. Para reiniciarla cuando acabe: augmented-brain session restart %s --when-idle",
+	},
+	"restart.self": {
+		en: "\"%s\" is the session this command runs in: it cannot restart in the middle of its own answer. To restart it once the answer ends: augmented-brain session restart %s --when-idle",
+		es: "«%s» es la sesión desde la que se lanza esta orden: no puede reiniciarse a mitad de su propia respuesta. Para reiniciarla cuando acabe la respuesta: augmented-brain session restart %s --when-idle",
+	},
+	"restart.shared": {
+		en: "\"%s\" shares its remote service (%s) with a session that is answering: left as it is. Try again when it finishes.",
+		es: "«%s» comparte su servicio remoto (%s) con una sesión que está respondiendo: se queda como está. Prueba otra vez cuando acabe.",
+	},
+	"restart.unsupported": {
+		en: "\"%s\" is a session of Claude Desktop or a terminal: augmented brain cannot restart it from outside without breaking its window. Close it and open it again when it suits you.",
+		es: "«%s» es una sesión de Claude Desktop o de un terminal: augmented brain no puede reiniciarla desde fuera sin romper su ventana. Ciérrala y ábrela otra vez cuando te venga bien.",
+	},
+	"restart.gone": {
+		en: "\"%s\" no longer runs: when it is opened again, it starts with the program of now.",
+		es: "«%s» ya no está en marcha: cuando se vuelva a abrir, arranca con el programa de ahora.",
+	},
+	"restart.failed": {
+		en: "Could not restart \"%s\": %v",
+		es: "No he podido reiniciar «%s»: %v",
+	},
+	"restart.stillbusy": {
+		en: "\"%s\" was still answering after %d minutes: left as it is.",
+		es: "«%s» seguía respondiendo al cabo de %d minutos: se queda como está.",
+	},
+	"restart.none": {
+		en: "✓ No Claude session is still running an earlier augmented brain.",
+		es: "✓ Ninguna sesión de Claude sigue con un augmented brain anterior.",
+	},
+	"restart.old": {
+		en: "%d Claude sessions still run an earlier augmented brain. Restarting the idle ones, one at a time:",
+		es: "%d sesiones de Claude siguen con un augmented brain anterior. Reinicio las que están quietas, una a una:",
+	},
+	"restart.unknown": {
+		en: "%d more servers of an earlier augmented brain are running, and I cannot tell which session they belong to: close and open your Claude sessions when it suits you.",
+		es: "Hay %d servidores más de un augmented brain anterior y no sé de qué sesión son: cierra y abre tus sesiones de Claude cuando te venga bien.",
+	},
+	"restart.notfound": {
+		en: "no running Claude session answers to %q: give a task with a session, a session's id or its name (`claude agents` lists them).",
+		es: "ninguna sesión de Claude en marcha responde a %q: da una tarea con sesión, el id de una sesión o su nombre (`claude agents` las lista).",
+	},
+	"restart.ambiguous": {
+		en: "more than one session answers to %q: give its id (`claude agents` lists them).",
+		es: "más de una sesión responde a %q: da su id (`claude agents` las lista).",
+	},
+	"restart.waiting": {
+		en: "\"%s\" will restart once it finishes its answer (it waits at most %d minutes). How it went: %s",
+		es: "«%s» se reiniciará cuando acabe su respuesta (espera como mucho %d minutos). Cómo fue: %s",
 	},
 }

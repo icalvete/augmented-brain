@@ -116,7 +116,7 @@
   <h3 id="claude-necesita-root-en-una-máquina">Claude necesita root en una máquina</h3>
   <p>Claude te da el comando exacto para que lo lances tú. Para una migración que necesita muchos comandos, añade una excepción con fecha, <code>root_ask = ["db01 until 2026-12-31"]</code>. Así root en esa máquina te pregunta cada vez, hasta esa fecha.</p>
   <h3 id="las-herramientas-de-augmented-brain-fallan-después-de-actualizar">Las herramientas de augmented brain fallan después de actualizar</h3>
-  <p>Una sesión que estaba abierta sigue con el programa antiguo. Ciérrala y vuelve a abrirla. <code>augmented-brain doctor</code> dice cuántas sesiones siguen con la versión antigua.</p>
+  <p>Una sesión que estaba abierta sigue con el programa antiguo. <code>augmented-brain session restart --old</code> reinicia las que están quietas, con la misma conversación; una de Claude Desktop, ciérrala y vuelve a abrirla. <code>augmented-brain doctor</code> dice cuántas sesiones siguen con la versión antigua.</p>
   <h3 id="el-instalador-o-la-actualización-no-pueden-descargar">El instalador o la actualización no pueden descargar</h3>
   <p>A veces GitHub deja de entregar los ficheros de una versión durante un rato. El instalador y <code>augmented-brain update</code> lo intentan tres veces, y también por la API de GitHub, que suele seguir funcionando cuando la dirección de siempre no. Si falla todo, lo dicen y no cambia nada: se queda el programa que tenías. Vuelve a probar dentro de un rato.</p>
   <p>Cómo puede acabar <code>augmented-brain update</code>:</p>

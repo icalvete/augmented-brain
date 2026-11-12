@@ -155,8 +155,9 @@ augmented-brain update
 Actualiza el programa y el plugin de Claude Code. Antes, revisa la instalación (y enseña lo
 que falla) y hace la copia de seguridad de cada espacio que la tenga; si falla una copia,
 no actualiza nada (`--force` actualiza igualmente). Si ningún espacio tiene copia, te dice
-que sigue sin una copia a la que volver. Después, dice qué sesiones abiertas siguen con la versión vieja y qué tarea está activa
-en cada espacio: pide a esas sesiones que aparquen su tarea. Volver a lanzar el comando
+que sigue sin una copia a la que volver. Después, reinicia las sesiones quietas que siguen con la versión vieja, con la misma
+conversación, y dice cuáles quedan y qué tarea está activa en cada espacio: pide a esas
+sesiones que aparquen su tarea. Volver a lanzar el comando
 de instalación también actualiza, sin esos pasos. `augmented-brain update --plugin`
 actualiza solo el plugin.
 
@@ -165,8 +166,9 @@ lo dice y se para. Después, la descarga se intenta tres veces, también por la 
 GitHub. Si sigue fallando, o el programa no es la versión nueva al acabar, te lo dice y
 termina con error: no ha cambiado nada, vuelve a lanzarlo más tarde.
 
-Después, cierra y abre Claude. Una sesión que estaba abierta sigue con el programa viejo
-hasta que lo hagas, y sus herramientas de augmented brain pueden fallar.
+Después, cierra y abre las sesiones que no ha podido reiniciar (las de Claude Desktop, o
+una que estaba respondiendo). Una sesión que estaba abierta sigue con el programa viejo
+hasta que se reinicia, y sus herramientas de augmented brain pueden fallar.
 `augmented-brain doctor` y el arranque de una sesión nueva te dicen cuántas sesiones
 siguen con la versión vieja.
 

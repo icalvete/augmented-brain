@@ -219,6 +219,9 @@ type claudeAgent struct {
 	Name   string `json:"name"`
 	Cwd    string `json:"cwd"`
 	Status string `json:"status"` // "busy" while it answers (or waits for a permission), "idle" when it waits
+	// Kind is "background" for a `claude --bg` session, "interactive" for any other
+	// (Claude Desktop, a terminal, a remote service's).
+	Kind string `json:"kind"`
 	// Pid is the session's process. Claude retires a background session left idle for
 	// hours (8 on 2.1.322: "bg retire <id>: idle-prompt, idle 8h" in its daemon.log):
 	// its process ends, yet it stays in the list, with no pid and no status, until it is

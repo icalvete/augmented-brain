@@ -32,16 +32,16 @@ func sessionStopFlags(errOut io.Writer) (*flag.FlagSet, *bool) {
 	return fs, whenIdle
 }
 
-// cmdSession is `session start TASK | stop TASK | list`: a remote session of its own
+// cmdSession is `session start TASK | stop TASK | restart SESSION | list`: a remote session of its own
 // for one task, so a session reached from another computer can open one per task. The
 // logic is in internal/remote (launch.go).
 func cmdSession(args []string, out, errOut io.Writer) int {
 	l := userLanguage()
-	if len(args) == 0 || (args[0] != "start" && args[0] != "stop" && args[0] != "list") {
+	if len(args) == 0 || (args[0] != "start" && args[0] != "stop" && args[0] != "restart" && args[0] != "list") {
 		fmt.Fprintln(errOut, i18n.T(l, "usage.session"))
 		return 2
 	}
-	// Only start needs the space: stop and list work from any folder.
+	// Only start needs the space: stop, restart and list work from any folder.
 	var c *config.Config
 	var s *config.Space
 	ok := false
@@ -61,6 +61,8 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 	}
 	host, _ := sys.Hostname()
 	switch args[0] {
+	case "restart":
+		return sessionRestart(c, sys, args[1:], out, errOut)
 	case "list":
 		if len(args) != 1 {
 			fmt.Fprintln(errOut, i18n.T(l, "usage.session"))

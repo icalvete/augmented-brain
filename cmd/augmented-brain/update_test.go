@@ -2,6 +2,9 @@ package main
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -118,7 +121,7 @@ func TestAfterUpdate(t *testing.T) {
 	state.ScanProc = false // the sessions open on this machine are not the test's
 	t.Cleanup(func() { state.ScanProc = old })
 	var out bytes.Buffer
-	afterUpdate("es", "0.10.0-alpha", &out)
+	afterUpdate("es", "0.10.0-alpha", true, &out)
 	if !strings.Contains(out.String(), "Ninguna sesión") {
 		t.Errorf("no old sessions:\n%s", out.String())
 	}
@@ -143,10 +146,33 @@ func TestAfterUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 	out.Reset()
-	afterUpdate("es", "0.10.0-alpha", &out)
+	afterUpdate("es", "0.10.0-alpha", false, &out) // --no-restart
 	for _, want := range []string{"1 sesiones", "trabajo", "task-mudanza", "augmented-brain doctor"} {
 		if !strings.Contains(out.String(), want) {
 			t.Errorf("missing %q:\n%s", want, out.String())
 		}
+	}
+
+	// With the restart, the new program does it: when it leaves none, nothing more is
+	// said; when it leaves some, the tasks to park and how to restart Claude follow.
+	ran := 0
+	left := error(nil)
+	orig := restartOldWith
+	t.Cleanup(func() { restartOldWith = orig })
+	restartOldWith = func(w io.Writer) error {
+		ran++
+		fmt.Fprintln(w, "(restart --old)")
+		return left
+	}
+	out.Reset()
+	afterUpdate("es", "0.10.0-alpha", true, &out)
+	if ran != 1 || strings.Contains(out.String(), "task-mudanza") {
+		t.Errorf("all restarted (%d runs):\n%s", ran, out.String())
+	}
+	left = errors.New("exit status 1")
+	out.Reset()
+	afterUpdate("es", "0.10.0-alpha", true, &out)
+	if !strings.Contains(out.String(), "task-mudanza") || strings.Contains(out.String(), "1 sesiones") {
+		t.Errorf("some left:\n%s", out.String())
 	}
 }

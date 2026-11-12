@@ -23,12 +23,17 @@ What it does, in order:
 3. **Downloads and installs** the new version and the Claude Code plugin. If GitHub fails
    to hand out the files, it tries three times, also through GitHub's API; if all fails,
    it says so and nothing changes.
-4. **Checks the new version is in place**, and says which open Claude sessions still run
-   the old one, and which task each space has active.
+4. **Checks the new version is in place**, and restarts the idle Claude sessions that
+   still run the old one, one at a time, with the same conversation: a task's session,
+   and those of the remote access. A session that is answering is left as it is.
+5. **Says what is left:** the sessions it could not restart (one answering, the one you
+   ran it from, any of Claude Desktop), and which task each space has active.
 
-Then ask those sessions to park their task, and close and open Claude. A session that was
-open keeps the old program until you do; `/clear` is not enough. When the session you
-are in is one of them, its start tells you so.
+For those left, ask the session to park its task, and close and open it. A session that
+was open keeps the old program until it restarts; `/clear` is not enough. When the
+session you are in is one of them, its start tells you so. Later on,
+`augmented-brain session restart --old` restarts the ones that have gone idle, and
+`augmented-brain update --no-restart` updates without restarting any.
 
 ### Before you update
 

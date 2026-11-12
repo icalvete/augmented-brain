@@ -364,8 +364,9 @@ that service.
 ## augmented-brain session
 
 Opens a remote session of its own for one task, so that from another computer you can
-work on several tasks at once, each in its own session. It is three commands, `start`,
-`stop` and `list`, each with its own section below. Linux only for now: it has
+work on several tasks at once, each in its own session. It is four commands, `start`,
+`stop`, `restart` and `list`, each with its own section below; `restart` also restarts
+the other Claude sessions on this computer. Linux only for now: it has
 been tried only there. Without a subcommand, or with another, `session` prints its usage. See
 [Remote access](remote.md#a-session-per-task).
 
@@ -447,6 +448,44 @@ and it goes away by itself. If Claude still cannot take the session out of its l
   answering by then stays open. What it did goes to `state/session-stop.log` in the
   configuration folder.
 
+## augmented-brain session restart
+
+Restarts a Claude session so it uses the program of now, with the same conversation.
+It works from any folder. Use it after an update, or right after parking a task, so
+that its session starts afresh.
+
+```bash
+augmented-brain session restart task-new-website
+augmented-brain session restart --old
+```
+
+The session is named by its task (when `session start` opened it), its id, the first
+eight characters of its session id, or its name; `claude agents` lists them. Each kind
+restarts its own way:
+
+- **A task's session** (`claude --bg`): Claude gives it a new process with the same
+  conversation.
+- **A session of the remote access** (`remote install`): its service restarts, and the
+  same session comes back in claude.ai and Claude Desktop in about ten seconds. The
+  service holds every session it serves, so it restarts only when all of them are
+  idle. Anything else inside the service (Claude's background service, above all) is
+  moved out first, so it does not stop with it. Linux only.
+- **A session of Claude Desktop or a terminal:** it is left as it is. Its app opened
+  it, and stopping it from outside would break its window. Close it and open it again
+  yourself.
+
+A session that is answering, or waiting for a permission, is never restarted: it is
+looked at again right before, and left as it is if it is not idle. Nor is the session
+the command runs in: that one needs `--when-idle`. One that fails leaves the others
+going.
+
+- `--old`: restart every idle session still running an earlier augmented brain, one at
+  a time, and say what happened to each. `update` runs it by itself.
+- `--when-idle`: wait until the session has finished its answer, then restart it. This
+  is how a session restarts itself after parking its task: the command returns at
+  once, and a process in the background waits, up to 30 minutes. What it did goes to
+  `state/session-restart.log` in the configuration folder.
+
 ## augmented-brain session list
 
 Lists the task sessions open on this computer: the task, whether it runs, and its
@@ -517,12 +556,15 @@ does what you would otherwise do by hand:
   for a problem of the new version), and a backup of every space that has one. If a
   backup fails, it stops and updates nothing: that copy is the way back. With no backup
   at all, it says it goes ahead without a copy to go back to.
-- **After:** how many open Claude sessions still run the old version, and which task is
-  active in each space, so you ask its session to park it before restarting. Then close
-  and open Claude, so the sessions use the new version.
+- **After:** the idle Claude sessions still running the old version are restarted,
+  one at a time, as `session restart --old` does. For those it cannot restart (one
+  answering, or one of Claude Desktop), it says which task is active in each space, so
+  you ask its session to park it, and then you close and open them.
 
 - `--plugin`: update only the Claude Code plugin. The installer uses it.
 - `--force`: update even when the backup before it fails.
+- `--no-restart`: restart no session after updating; it only says which still run the
+  old version.
 
 ## augmented-brain uninstall
 
