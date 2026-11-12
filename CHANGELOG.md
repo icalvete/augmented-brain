@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Updating no longer brings back sessions you archived.** In 0.19.1, `update` (and
+  `session restart --old`) brought back background sessions you had archived in Claude
+  Desktop or claude.ai, which keep their process. Now an archived or ended session is
+  left where you put it: only its earlier augmented brain stops, so `doctor` no longer
+  counts it.
+
 ## 0.19.1-beta
 
 Released 2026-11-12.
