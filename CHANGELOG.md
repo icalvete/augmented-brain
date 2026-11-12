@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.19.2-beta
+
+Released 2026-11-12.
 
 - **Updating no longer brings back sessions you archived.** In 0.19.1, `update` (and
   `session restart --old`) brought back background sessions you had archived in Claude

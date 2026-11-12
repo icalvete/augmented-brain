@@ -1,6 +1,8 @@
 # Registro de cambios
 
-## Sin publicar
+## 0.19.2-beta
+
+Publicada el 2026-11-12.
 
 - **Actualizar ya no revive las sesiones que archivaste.** En la 0.19.1, `update` (y
   `session restart --old`) relanzaba sesiones de fondo que habías archivado en Claude
