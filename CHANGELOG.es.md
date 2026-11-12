@@ -14,6 +14,15 @@
   pasan, `doctor` te avisa cuando hay alguna, y la copia de seguridad une una tarea que
   una máquina acortó mientras la otra escribía en ella. Una tarea aún demasiado larga,
   escrita a mano, se lee sin sus entradas más antiguas, con una línea que dice dónde están.
+- **`augmented-brain clean` quita lo que deja el trabajo con Claude Code.** Los worktrees
+  que hizo Claude Code con su sesión terminada, los registros de git de worktrees cuya
+  carpeta ya no existe y las carpetas temporales de sesiones que acabaron hace un día o
+  más. Antes enseña la lista y pregunta; un worktree con cambios o commits propios solo se
+  nombra. `doctor` avisa cuando hay algo que limpiar.
+- **`doctor` nombra las sesiones de fondo que nadie usa y siguen en marcha.** Archivar
+  una sesión en Claude Desktop no para su proceso. `doctor` nombra ahora las que
+  terminaron o se archivaron, y las que no abrió ninguna tarea y llevan más de 12 horas
+  paradas, cada una con el `claude stop` que la termina.
 
 ## 0.19.2-beta
 
@@ -26,15 +35,6 @@ Publicada el 2026-11-12.
   ya no la cuenta. Lo mismo vale para cualquier sesión de fondo que `session start` no
   abrió para una tarea: si se archiva en Claude Desktop, a Claude no se le dice, así que
   no hay forma de saberlo.
-- **`augmented-brain clean` quita lo que deja el trabajo con Claude Code.** Los worktrees
-  que hizo Claude Code con su sesión terminada, los registros de git de worktrees cuya
-  carpeta ya no existe y las carpetas temporales de sesiones que acabaron hace un día o
-  más. Antes enseña la lista y pregunta; un worktree con cambios o commits propios solo se
-  nombra. `doctor` avisa cuando hay algo que limpiar.
-- **`doctor` nombra las sesiones de fondo que nadie usa y siguen en marcha.** Archivar
-  una sesión en Claude Desktop no para su proceso. `doctor` nombra ahora las que
-  terminaron o se archivaron, y las que no abrió ninguna tarea y llevan más de 12 horas
-  paradas, cada una con el `claude stop` que la termina.
 
 ## 0.19.1-beta
 

@@ -13,6 +13,15 @@
   tasks already past it, `doctor` tells you when there are some, and the backup joins a
   task one machine shortened while the other wrote in it. A task still too long, written
   by hand, is read without its oldest entries, with a line saying where they are.
+- **`augmented-brain clean` removes what working with Claude Code leaves behind.**
+  Worktrees Claude Code made whose session is over, git's records of worktrees whose
+  folder is gone, and the scratch folders of sessions that ended a day ago or more. It
+  shows the list first and asks; a worktree with changes or commits of its own is only
+  named. `doctor` says when there is something to clean.
+- **`doctor` names background sessions nobody uses that keep running.** Archiving a
+  session in Claude Desktop does not stop its process. `doctor` now names those that
+  ended or were archived, and those no task opened that have been idle for over 12
+  hours, each with the `claude stop` that ends it.
 
 ## 0.19.2-beta
 
@@ -24,15 +33,6 @@ Released 2026-11-12.
   left where you put it: only its earlier augmented brain stops, so `doctor` no longer
   counts it. The same goes for any background session `session start` did not open
   for a task: archived in Claude Desktop, Claude is not told, so it cannot be sure.
-- **`augmented-brain clean` removes what working with Claude Code leaves behind.**
-  Worktrees Claude Code made whose session is over, git's records of worktrees whose
-  folder is gone, and the scratch folders of sessions that ended a day ago or more. It
-  shows the list first and asks; a worktree with changes or commits of its own is only
-  named. `doctor` says when there is something to clean.
-- **`doctor` names background sessions nobody uses that keep running.** Archiving a
-  session in Claude Desktop does not stop its process. `doctor` now names those that
-  ended or were archived, and those no task opened that have been idle for over 12
-  hours, each with the `claude stop` that ends it.
 
 ## 0.19.1-beta
 
