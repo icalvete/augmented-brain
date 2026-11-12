@@ -27,6 +27,7 @@ const (
 	Merged               // the PR was merged
 	Closed               // the PR was closed without merging
 	TimedOut             // Max passed with checks still pending
+	Conflict             // the PR conflicts with its base: no CI runs until it is rebased
 	Broken               // gh could not tell: missing, logged out, or an answer not understood
 )
 
@@ -88,6 +89,8 @@ func PR(o Options) Result {
 				return res(Result{Kind: Merged})
 			case req.state == "CLOSED":
 				return res(Result{Kind: Closed})
+			case req.state == "CONFLICTING":
+				return res(Result{Kind: Conflict})
 			case len(req.checks) == 0:
 				if o.Now().Sub(start) >= o.Grace {
 					return res(Result{Kind: Broken, Problem: "no required checks reported"})
@@ -127,16 +130,20 @@ type look struct {
 
 // look is one look: the PR's state and, while it is open, its required checks.
 func (o Options) look() (look, error) {
-	args := []string{"pr", "view", strconv.Itoa(o.PR), "--json", "state", "-q", ".state"}
+	args := []string{"pr", "view", strconv.Itoa(o.PR), "--json", "state,mergeable", "-q", `.state + " " + .mergeable`}
 	out, errOut, err := o.Run(o.repo(args)...)
-	state := strings.TrimSpace(out)
+	state, mergeable, _ := strings.Cut(strings.TrimSpace(out), " ")
 	switch state {
 	case "OPEN", "MERGED", "CLOSED":
 	default:
-		return look{}, problem(errOut, err, "gh pr view gave "+strconv.Quote(state))
+		return look{}, problem(errOut, err, "gh pr view gave "+strconv.Quote(strings.TrimSpace(out)))
 	}
 	if state != "OPEN" {
 		return look{state: state}, nil
+	}
+	// A PR in conflict gets no CI at all: waiting for its checks would wait for nothing.
+	if mergeable == "CONFLICTING" {
+		return look{state: "CONFLICTING"}, nil
 	}
 	checks, err := o.checks(true)
 	return look{state: state, checks: checks}, err

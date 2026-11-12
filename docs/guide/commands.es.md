@@ -528,7 +528,7 @@ abajo. Sin subcomando, `watch` muestra su uso.
 ## augmented-brain watch pr
 
 Vigila una pull request de GitHub hasta que hay algo que contar: se mezcla o se cierra,
-falla un check obligatorio, terminan todos los obligatorios o pasa el tiempo de `--max`.
+tiene conflictos con su rama base (entonces no corre ninguna CI), falla un check obligatorio, terminan todos los obligatorios o pasa el tiempo de `--max`.
 Entonces termina sola y dice cómo ha ido, en una línea.
 
 ```bash

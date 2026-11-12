@@ -3104,7 +3104,7 @@ running and get on with other work. For now it follows one thing, a pull request
 ## augmented-brain watch pr
 
 Follows a pull request on GitHub until there is something to tell: it is merged or
-closed, a required check fails, every required check has finished, or `--max` passes.
+closed, it conflicts with its base branch (no CI runs then), a required check fails, every required check has finished, or `--max` passes.
 Then it ends on its own and says how it went, in one line.
 
 ```bash
