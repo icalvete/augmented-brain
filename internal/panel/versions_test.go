@@ -9,7 +9,6 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/confighistory"
-	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 // A change in the panel keeps a version (and the configuration before it); the
@@ -58,7 +57,7 @@ func TestVersionsPage(t *testing.T) {
 		t.Errorf("not gone back: %v", g.UntouchableRepos)
 	}
 	c, _ := config.Load(cfg)
-	if state.ReadSeal(cfg) != c.GuardFingerprint(g) {
+	if readSeal(t, cfg) != c.GuardFingerprint(g) {
 		t.Error("going back in the panel did not seal the lists")
 	}
 	if after, _ := confighistory.List(cfg); len(after) != 3 || after[0].By != confighistory.ByRestore {

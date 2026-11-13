@@ -166,6 +166,14 @@ var doctorMessages = map[string]msg{
 		en: "look at the Guard page of the panel and press accept, or start a new session",
 		es: "mira la página Guardia del panel y pulsa aceptar, o empieza una sesión nueva",
 	},
+	"doctor.sealunread": {
+		en: "guard: the record of the lists you last saw cannot be read (%v), so the guard cannot tell whether something changed them. Until it can, a push or merge that the lists allow asks first",
+		es: "guardia: no se puede leer el registro de las listas que viste por última vez (%v), así que el guardia no sabe si algo las cambió. Hasta que pueda, un push o merge que las listas permiten pregunta antes",
+	},
+	"doctor.sealunread.fix": {
+		en: "check the permissions of the state folder inside the configuration folder (it must belong to you), then look at the Guard page of the panel and press accept",
+		es: "revisa los permisos de la carpeta state dentro de la carpeta de configuración (tiene que ser tuya) y después mira la página Guardia del panel y pulsa aceptar",
+	},
 	"doctor.guard.ok": {
 		en: "guard: it blocks a risky command, as it should",
 		es: "guardia: bloquea un comando arriesgado, como debe",

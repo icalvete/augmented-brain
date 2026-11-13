@@ -55,7 +55,26 @@ func run(t *testing.T, f func(*bytes.Reader, *bytes.Buffer) error, in map[string
 	if err := json.Unmarshal(out.Bytes(), &o); err != nil {
 		t.Fatalf("output is not JSON: %s", out.String())
 	}
-	return o["hookSpecificOutput"].(map[string]any)
+	h, _ := o["hookSpecificOutput"].(map[string]any)
+	return h
+}
+
+// runAll is run, returning the whole output (systemMessage included), or nil.
+func runAll(t *testing.T, f func(*bytes.Reader, *bytes.Buffer) error, in map[string]any) map[string]any {
+	t.Helper()
+	data, _ := json.Marshal(in)
+	var out bytes.Buffer
+	if err := f(bytes.NewReader(data), &out); err != nil {
+		t.Fatal(err)
+	}
+	if out.Len() == 0 {
+		return nil
+	}
+	var o map[string]any
+	if err := json.Unmarshal(out.Bytes(), &o); err != nil {
+		t.Fatalf("output is not JSON: %s", out.String())
+	}
+	return o
 }
 
 func TestSessionStart(t *testing.T) {

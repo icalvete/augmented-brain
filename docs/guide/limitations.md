@@ -87,6 +87,9 @@ own review. What it cannot see:
   brain's or Claude Code's settings with its file tools or common commands. A small
   program written on the spot (in Python, say) could still change them; the guard
   notices afterwards and asks before a commit or a push, but it does not prevent it.
+  Such a program could also use the panel with a link it saw: the link works once, so
+  your browser would say it was already used, and Claude Code tells you what the panel
+  changed.
 - **Git aliases in included files.** Your git aliases count as what they stand for
   (`git ci` for `git commit`) when they are in your usual git settings. An alias in a
   file those settings `include` is not seen.

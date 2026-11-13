@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -89,9 +90,51 @@ func sessionOf(token string) string { return mac(token, "session")[:32] }
 // knows the token can give it. The "ping" prefix keeps it apart from sessionOf.
 func proof(token, c string) string { return mac(token, "ping\x00"+c) }
 
-// URL is the address to open: the panel's pages live under /s/<session>/.
+// URL is the address of the panel's pages, under /s/<session>/. It is the key to the
+// panel: the command never prints it, it prints a ticket (TicketURL).
 func (i Info) URL() string {
 	return fmt.Sprintf("http://127.0.0.1:%d/s/%s/", i.Port, sessionOf(i.Token))
+}
+
+// TicketURL is the address that spends ticket t and opens the panel.
+func (i Info) TicketURL(t string) string {
+	return fmt.Sprintf("http://127.0.0.1:%d/t/%s", i.Port, t)
+}
+
+// RemoteTicketURL is TicketURL through the user's Tailscale network, or "".
+func (i Info) RemoteTicketURL(t string) string {
+	if i.Remote == nil || i.Remote.Host == "" {
+		return ""
+	}
+	return fmt.Sprintf("https://%s/t/%s", i.Remote.Host, t)
+}
+
+// Ticket asks the running panel i for a ticket that opens page (a path under the
+// session, such as "today?s=work", or ""); remote makes it wait longer, for a phone.
+// An earlier panel, without tickets, answers 404: the caller starts a new one.
+func Ticket(i Info, page string, remote bool) (string, error) {
+	form := url.Values{"page": {page}}
+	if remote {
+		form.Set("remote", "1")
+	}
+	req, err := http.NewRequest(http.MethodPost, i.origin()+"/ticket", strings.NewReader(form.Encode()))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", "Bearer "+i.Token)
+	req.Header.Set("Origin", i.origin())
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(io.LimitReader(resp.Body, 256))
+	t := strings.TrimSpace(string(body))
+	if resp.StatusCode != http.StatusOK || len(t) != 32 {
+		return "", fmt.Errorf("the panel answered %s to /ticket", resp.Status)
+	}
+	return t, nil
 }
 
 func (i Info) origin() string { return fmt.Sprintf("http://127.0.0.1:%d", i.Port) }

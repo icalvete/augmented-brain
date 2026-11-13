@@ -17,7 +17,7 @@ Needs Playwright for Python and its browsers (pip install playwright; python -m
 playwright install chromium webkit). CI runs it on Linux with Chromium and WebKit
 (`panel` in ci.yml); Firefox, once before a release.
 """
-import json, os, re, shutil, subprocess, sys, tempfile, urllib.request
+import json, os, re, shutil, subprocess, sys, tempfile, urllib.error, urllib.request
 
 from playwright.sync_api import sync_playwright
 
@@ -33,6 +33,26 @@ WATCH = """document.addEventListener('securitypolicyviolation', e =>
       ' at ' + (e.sourceFile || '?') + ':' + e.lineNumber + ' sample=' + (e.sample || '')))"""
 good = bad = 0
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+
+def spend_ticket(text):
+    """The panel's pages, from what `panel` printed: it prints a ticket of one use
+    (/t/<ticket>), whose visit answers 303 to the pages under /s/<session>. None when
+    there is no ticket or it does not lead there."""
+    m = re.search(r"(https?://127\.0\.0\.1:\d+)/t/[0-9a-f]{32}", text)
+    if not m:
+        return None
+    try:
+        urllib.request.build_opener(_NoRedirect).open(m.group(0), timeout=10)
+        return None
+    except urllib.error.HTTPError as e:
+        s = re.match(r"/s/[0-9a-f]{32}", e.headers.get("Location", "")) if e.code == 303 else None
+        return m.group(1) + s.group(0) if s else None
 
 
 def report(name, ok, evidence=""):
@@ -81,11 +101,10 @@ try:
                  ("knowledge_new", {"type": "lesson", "title": "Let the dough rest", "summary": "an hour at least", "body": "It rises better."}),
                  ("person_save", {"name": "Lucía", "summary": "runs the bakery"})])
     r = ab("panel", "--no-browser", cwd=work)
-    m = re.search(r"https?://127\.0\.0\.1:\d+/s/[0-9a-f]+", r.stdout + r.stderr)
-    if not m:
+    base = spend_ticket(r.stdout + r.stderr)
+    if not base:
         report("the panel starts", False, (r.stdout + r.stderr).strip())
         raise SystemExit(1)
-    base = m.group(0)
     report("the panel starts", True, "")
     # The panel's own security policy, as it sends it, for the calibration below.
     with urllib.request.urlopen(f"{base}/today?s=work", timeout=10) as r:

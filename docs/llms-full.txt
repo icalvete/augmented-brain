@@ -1016,15 +1016,22 @@ three things so that the lists stay yours:
 - **It asks before a write to the guard's files** (`config.toml`, `guard.toml`,
   `secrets.toml`, `remote.toml`, `session.toml`, and Claude Code's settings).
 - **It denies reaching the panel.** Reading `panel.json` (the panel's key) with a tool
-  or a command, and calling a panel page from a command, are denied: the panel's Guard
-  page is how you change the lists, and it works with that key.
+  or a command, and calling a panel page from a command, are denied, however the
+  address is written: the panel's Guard page is how you change the lists, and it works
+  with that key. `augmented-brain panel` never prints the key either: it prints a link
+  that works once, and run by Claude it prints none.
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
-  when a session starts and when you save in the panel. If the lists differ from the
+  when you start a session and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
   let through asks first, and the Guard page and `doctor` say so, until you accept them
-  in the Guard page or a new session starts. A new session takes the lists as they are,
-  and Claude tells you in its first answer that they changed. The Guard page shows what
-  was added and removed since then.
+  in the Guard page or you start a new session. A new session takes the lists as they
+  are, and Claude Code tells you so itself. When Claude Code compacts a conversation, or
+  after `/clear`, the seal stays: that is not you looking. If the seal cannot be read,
+  the guard asks too, and `doctor` says why. The Guard page shows what was added and
+  removed since then.
+- **It tells you what the panel changed.** A change to the lists made in the panel, or
+  lists accepted there, reaches you as a line from Claude Code itself, not from Claude,
+  after the next answer or message in your open sessions.
 
 What this does not stop: a script that Claude writes in line (`python -c`, a heredoc) can
 still edit the files, as it can anything your account can. The guard then notices the
@@ -1521,7 +1528,10 @@ augmented-brain panel
 ```
 
 It opens your browser on **Today**, with the space of the folder you ran it in. If it
-cannot (on a computer with no screen, say), it prints an address to open yourself.
+cannot (on a computer with no screen, say), it prints an address to open yourself. That
+address opens the panel **once**, within 2 minutes; run the command again for another.
+When Claude runs it for you, it opens the browser and Claude never sees an address that
+opens the panel.
 
 The panel changes your notes the same way Claude does, with the same program, and they
 wait for each other: you can have both open at once.
@@ -1678,9 +1688,12 @@ saw (something changed them outside this page), a notice says so and shows what 
 what was added and what was removed, list by list, compared with the lists you last
 accepted (when those are no longer among the kept versions, it says so). Then an accept
 button;
-until then (or until a new session starts) a commit, push or merge that the lists allow
-asks first. Claude cannot open this page:
-the guard denies it the panel's key. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
+until then (or until you start a new session) a commit, push or merge that the lists allow
+asks first. Whatever you change or accept here, Claude Code itself tells you in your
+open sessions, after the next answer or message, in a line that starts with
+"augmented brain · the guard's lists". If you did not do it, look here. Claude cannot
+open this page: it never sees the panel's address, and the guard denies it the panel's
+key. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
 
 ## Versions
 
@@ -1759,10 +1772,12 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
 - It works **only on this computer**. Other machines on your network cannot reach it.
   To open it from your phone or another computer of yours, use
   `augmented-brain panel remote`: see [The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html).
-- The address carries a **key**, made new each time the panel starts. Without it the
-  panel answers nothing, so another program or web page on your computer cannot use it.
-  Treat the address like a password: do not share it. It stops working when the panel
-  stops.
+- The address you get opens it **once**. The panel then takes your browser to its
+  pages, whose address carries a **key**, made new each time the panel starts. Without
+  it the panel answers nothing, so another program or web page on your computer cannot
+  use it. Treat the address of the pages like a password: do not share it. It stops
+  working when the panel stops. If something else used your link first, your browser
+  says "This link was already used" instead of opening: you know.
 - It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
   note cannot put HTML or scripts of its own in the page. The links of the Help page go to
   the website only when you click them.
@@ -1788,8 +1803,9 @@ augmented-brain panel remote
 ```
 
 It starts the panel, publishes it in your Tailscale network, and prints its address,
-such as `https://my-laptop.example.ts.net:8443/s/…/today`, and a QR code. Point the
-phone's camera at the code, or open the address on the other computer.
+such as `https://my-laptop.example.ts.net:8443/t/…`, and a QR code. Point the
+phone's camera at the code, or open the address on the other computer. The address
+opens the panel once, within 10 minutes: run the command again for another.
 
 If the panel is already open on this computer, it is not stopped: the same panel starts
 answering through the network too, and the pages you have open go on working. If that
@@ -1830,7 +1846,8 @@ Three things keep it yours:
   account you signed in with, with its own password and second factor), and the panel
   lets in only the owner of the computer. Someone else in your network, or someone you
   share a device with, gets "forbidden" even with the address.
-- **The address holds a key** that changes every time the panel starts.
+- **The address works once**, and the pages it opens hold a key that changes every
+  time the panel starts.
 
 There is no extra password to type: your Tailscale account is the login.
 
@@ -2899,7 +2916,8 @@ augmented-brain panel
 
 It starts the panel in the background, or finds the one running, and opens the browser
 on Today, with the space of this folder. It returns at once. The panel stops by itself
-after 30 minutes without use.
+after 30 minutes without use. The address it prints opens the panel once, within 2
+minutes; run by Claude, with the browser open, it prints none.
 
 - `--no-browser`: only print the address, do not open the browser. `AB_NO_BROWSER=1` does
   the same.
@@ -2919,8 +2937,8 @@ augmented-brain panel remote
 It starts the panel and publishes it in your Tailscale network only. If the panel is
 already open, that same panel answers through the network too, so the pages you have
 open keep working. It prints the address and a QR code to open it from the phone. Only
-your own devices, signed in with the account this computer belongs to, can open it; the address stops working when the
-panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your
+your own devices, signed in with the account this computer belongs to, can open it; the address opens it once,
+within 10 minutes, and the pages stop working when the panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your
 user publish) it explains, with the step to take: it never installs or changes anything
 of Tailscale's for you. See [The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html).
 
@@ -4687,9 +4705,11 @@ the notes yours only.
 ### The panel does not open, or its address stopped working
 
 On a computer with no screen, `augmented-brain panel` prints the address to open
-yourself. The address carries a key that changes each time the panel starts, and the
-panel stops after 30 minutes without use. Run `augmented-brain panel` again for a new
-address.
+yourself. That address works once, within 2 minutes. The pages it opens carry a key
+that changes each time the panel starts, and the panel stops after 30 minutes without
+use. Run `augmented-brain panel` again for a new address. If your browser says "This
+link was already used" and you did not open it, something else did: look at the
+panel's Guard page.
 
 ### The panel from another device does not open
 
@@ -4891,6 +4911,9 @@ own review. What it cannot see:
   brain's or Claude Code's settings with its file tools or common commands. A small
   program written on the spot (in Python, say) could still change them; the guard
   notices afterwards and asks before a commit or a push, but it does not prevent it.
+  Such a program could also use the panel with a link it saw: the link works once, so
+  your browser would say it was already used, and Claude Code tells you what the panel
+  changed.
 - **Git aliases in included files.** Your git aliases count as what they stand for
   (`git ci` for `git commit`) when they are in your usual git settings. An alias in a
   file those settings `include` is not seen.

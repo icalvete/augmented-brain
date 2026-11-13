@@ -175,9 +175,11 @@ notas solo para ti.
 ### El panel no se abre, o su dirección ha dejado de funcionar
 
 En un ordenador sin pantalla, `augmented-brain panel` escribe la dirección para que la
-abras tú. La dirección lleva una llave que cambia cada vez que arranca el panel, y el
-panel se para después de 30 minutos sin usarlo. Vuelve a lanzar `augmented-brain panel`
-para tener una dirección nueva.
+abras tú. Esa dirección sirve una vez, en los próximos 2 minutos. Las páginas que abre
+llevan una llave que cambia cada vez que arranca el panel, y el panel se para después
+de 30 minutos sin usarlo. Vuelve a lanzar `augmented-brain panel` para tener una
+dirección nueva. Si tu navegador dice «Este enlace ya se usó» y no lo has abierto tú, lo
+ha abierto otra cosa: mira la página Guardia del panel.
 
 ### El panel no se abre desde otro dispositivo
 

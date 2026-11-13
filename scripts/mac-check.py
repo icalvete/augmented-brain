@@ -31,6 +31,28 @@ if sys.platform != "darwin":
     print("mac-check.py runs on macOS only")
     raise SystemExit(2)
 good = bad = 0
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs):
+        return None
+
+
+def spend_ticket(text):
+    """The panel's pages, from what `panel` printed: it prints a ticket of one use
+    (/t/<ticket>), whose visit answers 303 to the pages under /s/<session>. None when
+    there is no ticket or it does not lead there."""
+    m = re.search(r"(https?://127\.0\.0\.1:\d+)/t/[0-9a-f]{32}", text)
+    if not m:
+        return None
+    try:
+        urllib.request.build_opener(_NoRedirect).open(m.group(0), timeout=10)
+        return None
+    except urllib.error.HTTPError as e:
+        s = re.match(r"/s/[0-9a-f]{32}", e.headers.get("Location", "")) if e.code == 303 else None
+        return m.group(1) + s.group(0) if s else None
+
+
 PAGES = ["today", "tasks", "reminders", "inbox", "areas", "knowledge", "rules", "people", "search?q=bread",
          "review", "secrets", "backup", "profile", "space", "sessions", "repos", "guard", "versions", "help"]
 
@@ -238,10 +260,9 @@ try:
                  ("secret_name_save", {"service": "ab-check", "name": "probe", "what": "a made-up secret for the check"})])
     gatekeeper()
     code, out, _ = run([AB, "panel", "--no-browser"], env=ENV, cwd=work)
-    m = re.search(r"https?://127\.0\.0\.1:\d+/s/[0-9a-f]+", out)
-    report("the panel starts", bool(m), out if not m else "")
-    if m:
-        base = m.group(0)
+    base = spend_ticket(out)
+    report("the panel starts", bool(base), out if not base else "")
+    if base:
         keychain(base)
         safari(base)
 finally:
