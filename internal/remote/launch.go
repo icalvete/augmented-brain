@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
@@ -168,6 +169,11 @@ type launchRecord struct {
 }
 
 func launchRecords(cfgDir string) string { return filepath.Join(cfgDir, state.Dir, "sessions") }
+
+// startLockPath is the lock one start of a task holds until its session is on record.
+func startLockPath(cfgDir, task string) string {
+	return filepath.Join(cfgDir, state.Dir, "session-locks", unitSafe.ReplaceAllString(task, "-")+".lock")
+}
 
 func launchRecordPath(cfgDir, task string) string {
 	return filepath.Join(launchRecords(cfgDir), unitSafe.ReplaceAllString(task, "-")+".json")
@@ -399,6 +405,22 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 	if !s.loggedIn(claude) {
 		return ErrLoggedOut
 	}
+	// One start of a task at a time, from the look at its sessions to its record: two
+	// asked at once (asked again from a phone because it took long) would both launch,
+	// and only one would be on record (R-11). The second waits, then finds the first
+	// running.
+	unlock, err := filelock.Lock(startLockPath(c.Dir, l.Task))
+	if err != nil {
+		return err
+	}
+	locked := true
+	release := func() {
+		if locked {
+			locked = false
+			unlock()
+		}
+	}
+	defer release()
 	launched, err := s.Launches(c.Dir)
 	if err != nil {
 		return err
@@ -448,6 +470,8 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 		_, _ = s.Run(claude, "rm", id)
 		return err
 	}
+	release() // on record: a second start finds it from here on
+
 	if err := s.firstTurn(claude, id, c.Dir, l.Task); err != nil {
 		return err
 	}
@@ -628,6 +652,15 @@ func (s System) newAgent(claude string, before map[string]bool, l Launch) string
 	return ""
 }
 
+// ErrCannotTell: Claude could not say whether the task's session still runs (its list
+// unreadable, or the session still there with a process): Stop keeps its record and
+// touches no worktree, rather than call it closed while it may still work there (R-10).
+var ErrCannotTell = errors.New("claude could not tell whether the session still runs")
+
+// sessionID is what a session id looks like; a record naming anything else is not
+// passed to claude.
+var sessionID = regexp.MustCompile(`^[0-9A-Za-z]+$`)
+
 // ErrNoSession: the task has no session to close.
 var ErrNoSession = errors.New("this task has no session")
 
@@ -649,7 +682,8 @@ func (e *LeftInClaude) Error() string {
 // tried, as they do after Claude retired the last session (measured on 11-nov,
 // 2.1.322). So when rm fails for a session that does not run, Stop starts the daemon
 // and tries once more; if Claude still cannot, the record goes anyway and the error is
-// a *LeftInClaude.
+// a *LeftInClaude. When Claude cannot say whether the session still runs, the record
+// stays and the error is ErrCannotTell.
 func (s System) Stop(cfgDir, task string) error {
 	if s.GOOS != "linux" {
 		return ErrUnsupported
@@ -658,6 +692,9 @@ func (s System) Stop(cfgDir, task string) error {
 		claude, err := s.FindClaude()
 		if err != nil {
 			return errors.New("claude is not installed or not in the PATH")
+		}
+		if !sessionID.MatchString(r.ID) {
+			return fmt.Errorf("the record of %s names %q, which is not a session id: %w", task, r.ID, ErrCannotTell)
 		}
 		_, _ = s.Run(claude, "stop", r.ID) // fails when it had ended already
 		if _, err := s.Run(claude, "rm", r.ID); err != nil {
@@ -669,6 +706,15 @@ func (s System) Stop(cfgDir, task string) error {
 			if lerr != nil || listed {
 				s.wakeDaemon(claude)
 				if _, err := s.Run(claude, "rm", r.ID); err != nil {
+					if lerr != nil {
+						// Ask again, now that the daemon is up: gone or retired is
+						// closed, anything else is not known.
+						list, lerr = s.agents(claude)
+						a, listed = findAgent(list, r.ID)
+						if lerr != nil || (listed && a.Pid > 0) {
+							return ErrCannotTell
+						}
+					}
 					if err := os.Remove(launchRecordPath(cfgDir, task)); err != nil {
 						return err
 					}

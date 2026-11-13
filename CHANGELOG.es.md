@@ -2,6 +2,17 @@
 
 ## Sin publicar
 
+- **Limpiar el worktree de una tarea ya no pierde trabajo.** Un worktree que se quedó en
+  otro commit (para comparar, para revisar) se iba con su rama y los commits de ella que
+  no estaban en ningún remoto. Ahora cuenta la rama de la tarea además de dónde está el
+  worktree. Los ficheros que git no enseña por tus ajustes cuentan como cambios, y los que
+  ignora, como un `.env` o una clave, también conservan el worktree (lo que un build
+  vuelve a hacer, como `node_modules`, no). Un worktree recién creado no se barre mientras
+  arranca su sesión, y `doctor` ya no quita nada: dice lo que quitaría el próximo
+  `session start`. `session stop` ya no da una sesión por cerrada cuando Claude no sabe
+  decirlo, y deja su worktree en paz. Dos `session start` de una tarea a la vez abren una
+  sola sesión. En macOS y Windows, `session start` dice que no está disponible antes de
+  crear nada, y se rechaza un `--folder` fuera del espacio de la tarea.
 - **Un fichero que no se puede leer ya no apaga un espacio.** Al editar una nota en
   Emacs queda a su lado un fichero de bloqueo (`.#task-x.md`), y mientras estaba ahí
   fallaban todas las herramientas del espacio y una sesión nueva arrancaba sin reglas

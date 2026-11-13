@@ -30,6 +30,10 @@ var cleanMessages = map[string]msg{
 		en: "%s: commits not on the remote",
 		es: "%s: commits que no están en el remoto",
 	},
+	"clean.kept.ignored": {
+		en: "%s: files git ignores (a .env, a key) that may exist nowhere else",
+		es: "%s: ficheros que git ignora (un .env, una clave) que quizá no estén en otro sitio",
+	},
 	"clean.prunable": {
 		en: "Repositories that remember worktrees whose folder is gone (git worktree prune; their branches stay):",
 		es: "Repositorios que recuerdan worktrees cuya carpeta ya no existe (git worktree prune; sus ramas se quedan):",

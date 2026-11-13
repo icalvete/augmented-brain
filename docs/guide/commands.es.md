@@ -417,7 +417,10 @@ worktree de git propio a su lado: `site-new-website` para la tarea `task-new-web
 `site`, en una rama nueva con el nombre de la tarea, desde la rama por defecto de origin
 tal como está ahora (antes la trae). Dos tareas de un mismo repositorio nunca comparten
 carpeta, y una sesión nunca arranca sobre código viejo. Si se pide otra vez, usa el mismo
-worktree. Lo mismo vale para un repositorio bare dado con `--folder`.
+worktree. Lo mismo vale para un repositorio bare dado con `--folder`. Una carpeta dada
+con `--folder` tiene que estar dentro de las carpetas de trabajo del espacio de la tarea:
+una sesión fuera de ellas no encontraría su tarea. En un sistema donde las sesiones de
+tarea aún no funcionan, lo dice antes de crear nada.
 
 Lánzalo desde una carpeta del espacio
 de la tarea: la sesión remota a la que entras desde otro ordenador puede lanzarlo por ti
@@ -458,12 +461,19 @@ augmented-brain session stop task-new-website
 ```
 
 Si `session start` creó un worktree para la tarea, `stop` también lo quita con su rama,
-siempre que no se pierda nada: con cambios sin commitear o commits sin subir, lo deja y
-lo dice. Cerrar la tarea también cierra su sesión, cuando termina su respuesta, con su
+siempre que no se pierda nada: con cambios sin commitear (también los ficheros que git no
+enseña por tus ajustes), commits sin subir (en la rama de la tarea, aunque el worktree se
+quedara en otro commit) o ficheros que git ignora y que ningún build vuelve a hacer (un
+`.env`, una clave; `node_modules`, `build`, `dist` y parecidos no cuentan), lo deja y lo
+dice. Cerrar la tarea también cierra su sesión, cuando termina su respuesta, con su
 worktree. Las sesiones que terminan sin `stop` (un reinicio, una sesión cerrada desde
-Claude Desktop) dejan el suyo: el próximo `session start` y `doctor` quitan los que no
-tienen nada propio, cerrar la tarea quita el suyo, y `doctor` avisa de cualquiera que se
-quede con trabajo dentro.
+Claude Desktop) dejan el suyo: el próximo `session start` quita los que no tienen nada
+propio (no uno creado en los últimos diez minutos, cuya sesión puede estar arrancando),
+cerrar la tarea quita el suyo, y `doctor` solo mira: dice cuántos se irían y avisa de
+cualquiera que se quede con trabajo dentro.
+
+Si Claude no sabe decir si la sesión sigue en marcha (no se puede leer su lista), `stop`
+lo dice y no cambia nada: la sesión sigue apuntada y su worktree se queda.
 
 También cierra una sesión que Claude retiró (lo hace con una que lleva horas sin uso).
 Para entonces el servicio de fondo de Claude puede estar parado; `stop` lo arranca un
@@ -622,7 +632,8 @@ Mira en cada carpeta en la que se abrió Claude Code, y en su carpeta temporal:
 
 - **Worktrees que hizo Claude Code** (un worktree es una segunda copia de trabajo de un
   repositorio; Claude Code los pone en `.claude/worktrees`) cuya sesión ya terminó. Solo se
-  quita uno sin cambios sin commit y sin commits que no estén en el remoto, y con
+  quita uno sin cambios sin commit, sin commits que no estén en el remoto y sin ficheros que
+  git ignora y que ningún build vuelve a hacer (un `.env`, una clave), y con
   `git worktree remove`, nunca borrando la carpeta. Su rama se va con él cuando la nombró
   Claude Code (`worktree-<nombre>`); una rama tuya se queda. Un worktree con trabajo propio
   solo se nombra, para que lo mires tú.

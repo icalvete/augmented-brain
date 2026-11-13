@@ -155,7 +155,8 @@ written over. If the task has watch dates not marked done, it says so: they
 still come up at the start of the session on their day, since closing is often when you
 write down what to check later. When `session start` made a git worktree for the task and
 its session no longer runs, closing removes it with its branch if it holds nothing that
-is not on the remote, and says so; otherwise it says why it stays. When the task's own
+is not on the remote (nor a file git ignores that no build makes again, such as a
+`.env`), and says so; otherwise it says why it stays. When the task's own
 session still runs (often the one closing it), a process of its own closes that session
 once it has finished its answer, takes it out of Claude Desktop and claude.ai, and
 removes its worktree the same way. A session Claude retired after hours unused answers
@@ -171,7 +172,8 @@ it. A worktree is a second folder of a repository, on a branch of its own, so a 
 change code without touching the main folder. Made here, it is `<repo>-<task>`, next to
 the repository, on a new branch named after the task, from origin's default branch as it
 is now; asked again, it returns the same one. When the task is closed, each noted
-worktree with nothing not committed and nothing not pushed is removed, with the branch
+worktree with nothing not committed, nothing not pushed and no ignored file of its own
+(a `.env`) is removed, with the branch
 made for it (a noted one keeps its branch); one with work of its own stays, and so does
 the one the closing session works in, and the answer says why. Both paths must lie
 inside the space's work folders.

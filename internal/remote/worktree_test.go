@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/testenv"
@@ -167,6 +168,18 @@ func TestSweepWorktrees(t *testing.T) {
 	w.git(w.repo, "worktree", "add", "-q", byHand, "origin/main")
 	running["task-live"] = true
 
+	// A record made a moment ago is left alone: its session may still be starting.
+	if removed, kept := sys.SweepWorktrees(w.cfgDir); removed != nil || kept != nil {
+		t.Errorf("swept records made a moment ago: %v %v", removed, kept)
+	}
+	ageRecords(t, w.cfgDir)
+	// doctor only looks: what the sweep would remove is still there after it.
+	if removable, kept := sys.SweepableWorktrees(w.cfgDir); len(removable) != 1 || removable[0] != clean || len(kept) != 1 {
+		t.Errorf("SweepableWorktrees = %v %+v", removable, kept)
+	}
+	if _, err := os.Stat(clean); err != nil {
+		t.Fatalf("SweepableWorktrees removed %s: %v", clean, err)
+	}
 	removed, kept := sys.SweepWorktrees(w.cfgDir)
 	if len(removed) != 1 || removed[0] != clean {
 		t.Errorf("removed %v, want only %s", removed, clean)
@@ -191,5 +204,18 @@ func TestSweepWorktrees(t *testing.T) {
 	sys.GOOS = "darwin"
 	if removed, kept := sys.SweepWorktrees(w.cfgDir); removed != nil || kept != nil {
 		t.Errorf("swept without knowing what runs: %v %v", removed, kept)
+	}
+}
+
+// ageRecords makes every worktree record of session start older than sweepAfter, as if
+// its session had started a while ago.
+func ageRecords(t *testing.T, cfgDir string) {
+	t.Helper()
+	entries, _ := os.ReadDir(worktreeRecords(cfgDir))
+	old := time.Now().Add(-2 * sweepAfter)
+	for _, e := range entries {
+		if err := os.Chtimes(filepath.Join(worktreeRecords(cfgDir), e.Name()), old, old); err != nil {
+			t.Fatal(err)
+		}
 	}
 }

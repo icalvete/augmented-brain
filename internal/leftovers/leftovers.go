@@ -57,7 +57,8 @@ type Worktree struct {
 	// Branch is the branch to remove with it: Claude Code's own (worktree-<name>), or ""
 	// when the worktree is on a branch of the user's, which stays.
 	Branch string
-	// Work is what it holds of its own (remote.KeptChanges, remote.KeptCommits): such a
+	// Work is what it holds of its own (remote.KeptChanges, remote.KeptCommits,
+	// remote.KeptIgnored): such a
 	// worktree is only named, never removed. "" when nothing would be lost.
 	Work   string
 	locked bool
@@ -252,7 +253,7 @@ func (e Env) worktrees(sessions []session) (found []Worktree, prunable []string)
 				branch = b
 			}
 			found = append(found, Worktree{Repo: main, Folder: w.path, Branch: branch,
-				Work: remote.WorktreeWork(w.path), locked: w.locked})
+				Work: remote.WorktreeWork(w.path, branch), locked: w.locked})
 		}
 	}
 	return found, prunable

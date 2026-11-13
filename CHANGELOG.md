@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **Cleaning up a task's worktree no longer loses work.** A worktree left on another
+  commit (to compare, to review) went with its branch and the commits on it that were on
+  no remote. Now the task's branch counts as well as where the worktree is. Files git
+  does not show by your settings count as changes, and files it ignores, such as a `.env`
+  or a key, keep the worktree too (what a build makes again, such as `node_modules`, does
+  not). A worktree made a moment ago is not swept while its session starts, and
+  `doctor` no longer removes anything: it says what the next `session start` would take.
+  `session stop` no longer says a session is closed when Claude cannot tell, and leaves
+  its worktree alone. Two `session start` of one task at once open one session. On macOS
+  and Windows, `session start` says it is not available before it makes anything, and
+  `--folder` outside the task's space is refused.
 - **One file that cannot be read no longer takes a space down.** Editing a note in Emacs
   leaves a lock file (`.#task-x.md`) next to it, and while it was there every tool of the
   space failed and a new session started with no rules or index. The same happened with

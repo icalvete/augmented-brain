@@ -130,8 +130,9 @@ first of the task's repositories found in the space's work folders, or the one `
 gives; with no repository, the space's folder. For a bare repository, the task gets a git worktree of its own, on a new branch
 from origin's default branch. It goes away by itself when nothing would be lost: with
 `session stop`, when the task is closed, or, for a session that ended some other way (a
-reboot, closing it from Claude Desktop), at the next `session start` or `doctor`. One
-with work not committed or not pushed stays, and `doctor` names it.
+reboot, closing it from Claude Desktop), at the next `session start`. One with work not
+committed or not pushed, or files git ignores such as a `.env`, stays, and `doctor` names
+it.
 
 - **Claude must trust that folder itself.** Trusting the space's folder is not enough. The
   first time, the command says what to do: on the machine (or through `ssh`), go to the

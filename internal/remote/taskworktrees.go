@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -28,8 +29,12 @@ func taskWorktreeRecords(cfgDir string) string {
 
 type noted struct{ folder, branch string }
 
+// recordName is a task's id as the name of its record files: ids are file names of
+// notes already, and this keeps one that is not from reaching another folder (R-16).
+func recordName(task string) string { return unitSafe.ReplaceAllString(task, "-") }
+
 func readNoted(cfgDir, task string) []noted {
-	data, err := os.ReadFile(filepath.Join(taskWorktreeRecords(cfgDir), task))
+	data, err := os.ReadFile(filepath.Join(taskWorktreeRecords(cfgDir), recordName(task)))
 	if err != nil {
 		return nil
 	}
@@ -44,7 +49,7 @@ func readNoted(cfgDir, task string) []noted {
 }
 
 func writeNoted(cfgDir, task string, list []noted) error {
-	rec := filepath.Join(taskWorktreeRecords(cfgDir), task)
+	rec := filepath.Join(taskWorktreeRecords(cfgDir), recordName(task))
 	if len(list) == 0 {
 		err := os.Remove(rec)
 		if errors.Is(err, os.ErrNotExist) {
@@ -62,7 +67,14 @@ func writeNoted(cfgDir, task string, list []noted) error {
 	return paths.WriteAtomic(rec, []byte(b.String()), 0o600)
 }
 
+// ErrOddPath: a folder whose path holds a tab or a line break, which the record could
+// not tell apart from its next field (R-16).
+var ErrOddPath = errors.New("the folder's path has a tab or a line break")
+
 func addNoted(cfgDir, task string, n noted) error {
+	if strings.ContainsAny(n.folder, "\t\r\n") {
+		return fmt.Errorf("%s: %w", paths.Tilde(n.folder), ErrOddPath)
+	}
 	list := readNoted(cfgDir, task)
 	for _, x := range list {
 		if paths.Same(x.folder, n.folder) {
@@ -147,35 +159,120 @@ func slicesSame(list []string, folder string) bool {
 	return false
 }
 
-// WorktreeWork says what a worktree holds of its own: KeptChanges, KeptCommits, or ""
-// when nothing would be lost by removing it. What git cannot answer counts as work.
-func WorktreeWork(folder string) string {
-	if out, err := GitRun(folder, "status", "--porcelain"); err != nil || strings.TrimSpace(out) != "" {
+// WorktreeWork says what a worktree holds of its own: KeptChanges, KeptCommits,
+// KeptIgnored, or "" when nothing would be lost by removing it. Commits count on HEAD
+// and on branch (when not ""): a session may leave the worktree on another commit, and
+// the branch is what RemoveWorktree deletes (R-02). Files not committed count whatever
+// the user's git settings hide (status.showUntrackedFiles, an fsmonitor), and so do the
+// files git ignores, but those in folders a build or an install makes again (N-06, R-04).
+// What git cannot answer counts as work.
+func WorktreeWork(folder, branch string) string {
+	out, err := GitRun(folder, "-c", "core.fsmonitor=false", "status", "--porcelain",
+		"--untracked-files=all", "--ignored=matching")
+	if err != nil {
 		return KeptChanges
 	}
-	if out, err := GitRun(folder, "rev-list", "HEAD", "--not", "--remotes"); err != nil || strings.TrimSpace(out) != "" {
+	ignored := false
+	for _, line := range strings.Split(out, "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		path, isIgnored := strings.CutPrefix(strings.TrimSpace(line), "!! ")
+		if !isIgnored {
+			return KeptChanges
+		}
+		if !regenerable(path) {
+			ignored = true
+		}
+	}
+	if !branchPushed(folder, "HEAD") {
 		return KeptCommits
+	}
+	if branch != "" {
+		if _, err := GitRun(folder, "rev-parse", "--verify", "--quiet", "refs/heads/"+branch); err == nil && !branchPushed(folder, "refs/heads/"+branch) {
+			return KeptCommits
+		}
+	}
+	if ignored {
+		return KeptIgnored
 	}
 	return ""
 }
 
+// branchPushed says whether every commit of ref is on a remote; false when git cannot
+// tell.
+func branchPushed(dir, ref string) bool {
+	out, err := GitRun(dir, "rev-list", ref, "--not", "--remotes")
+	return err == nil && strings.TrimSpace(out) == ""
+}
+
+// regenerableFolders are folders git ignores whose contents a build or an install makes
+// again: what is ignored inside them is not work of the user's.
+var regenerableFolders = map[string]bool{
+	"node_modules": true, "vendor": true, "target": true, "dist": true, "build": true,
+	".venv": true, "venv": true, "__pycache__": true, ".pytest_cache": true, ".cache": true,
+	"tmp": true, "log": true, "coverage": true,
+}
+
+// regenerable says whether an ignored path, as git status prints it, lies in one of
+// regenerableFolders.
+func regenerable(path string) bool {
+	if p, err := strconv.Unquote(path); err == nil {
+		path = p
+	}
+	parts := strings.Split(strings.TrimSuffix(path, "/"), "/")
+	// The last part is a folder only when git printed it with its slash.
+	if !strings.HasSuffix(path, "/") {
+		parts = parts[:len(parts)-1]
+	}
+	for _, p := range parts {
+		if regenerableFolders[p] {
+			return true
+		}
+	}
+	return false
+}
+
+// registered says whether folder is a worktree git knows of in repo: a .git file that
+// points to a repository is not enough to remove a folder (N-06).
+func registered(repo, folder string) bool {
+	out, err := GitRun(repo, "worktree", "list", "--porcelain")
+	if err != nil {
+		return false
+	}
+	for _, line := range strings.Split(out, "\n") {
+		if p, ok := strings.CutPrefix(line, "worktree "); ok && paths.Same(strings.TrimSpace(p), folder) {
+			return true
+		}
+	}
+	return false
+}
+
 // RemoveWorktree removes a worktree (a task's, or one Claude Code made) with branch
-// (when not ""), if it holds no change and no commit that is not on the remote. done is
-// false and why "" when it was gone already. --force only after those checks: git
-// refuses a worktree with submodules without it.
+// (when not ""), if it holds nothing of its own (WorktreeWork). done is false and why ""
+// when it was gone already, or is not a worktree git knows of: nothing of ours to
+// remove. git removes it without --force first, which refuses a file written since the
+// check; --force only when it still holds nothing of its own (git refuses a worktree
+// with submodules without it). The branch goes only when every commit of it is on a
+// remote, checked again after the worktree went.
 func RemoveWorktree(folder, branch string) (done bool, why string) {
 	repo := WorktreeRoot(folder)
-	if repo == "" {
-		return false, "" // removed by hand already
+	if repo == "" || !registered(repo, folder) {
+		return false, "" // removed by hand already, or not a worktree of ours
 	}
-	if why := WorktreeWork(folder); why != "" {
+	if why := WorktreeWork(folder, branch); why != "" {
 		return false, why
 	}
-	if _, err := GitRun(repo, "worktree", "remove", "--force", folder); err != nil {
-		return false, KeptChanges
+	if _, err := GitRun(repo, "worktree", "remove", folder); err != nil {
+		if why := WorktreeWork(folder, branch); why != "" {
+			return false, why
+		}
+		if _, err := GitRun(repo, "worktree", "remove", "--force", folder); err != nil {
+			return false, KeptChanges
+		}
 	}
-	if branch != "" {
-		_, _ = GitRun(repo, "branch", "-D", branch) // nothing of its own: checked above
+	if branch != "" && branchPushed(repo, "refs/heads/"+branch) {
+		_, _ = GitRun(repo, "branch", "-D", branch)
 	}
 	return true, ""
 }

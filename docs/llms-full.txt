@@ -2278,8 +2278,9 @@ first of the task's repositories found in the space's work folders, or the one `
 gives; with no repository, the space's folder. For a bare repository, the task gets a git worktree of its own, on a new branch
 from origin's default branch. It goes away by itself when nothing would be lost: with
 `session stop`, when the task is closed, or, for a session that ended some other way (a
-reboot, closing it from Claude Desktop), at the next `session start` or `doctor`. One
-with work not committed or not pushed stays, and `doctor` names it.
+reboot, closing it from Claude Desktop), at the next `session start`. One with work not
+committed or not pushed, or files git ignores such as a `.env`, stays, and `doctor` names
+it.
 
 - **Claude must trust that folder itself.** Trusting the space's folder is not enough. The
   first time, the command says what to do: on the machine (or through `ssh`), go to the
@@ -3036,7 +3037,9 @@ next to it: `site-new-website` for the task `task-new-website` of `site`, on a n
 named after the task, from the default branch of origin as it is now (it fetches first).
 Two tasks of one repository never share a folder, and a session never starts on old
 code. Asked again, it uses the same worktree. The same goes for a bare repository given
-with `--folder`.
+with `--folder`. A folder given with `--folder` must lie inside the work folders of the
+task's space: a session elsewhere would not find its task. On a system where task
+sessions do not run yet, the command says so before it makes anything.
 
 Run it from a folder of the task's space: the remote
 session you reach from another computer can run it for you ("open me a session for
@@ -3077,12 +3080,19 @@ augmented-brain session stop task-new-website
 ```
 
 When `session start` made a worktree for the task, `stop` also removes it with its
-branch, as long as nothing would be lost: with changes not committed, or commits not
-pushed, it keeps it and says so. Closing the task closes its session too, once it has
-finished its answer, worktree and all. Sessions that end without `stop` (a reboot, a
-session closed from Claude Desktop) leave theirs: the next `session start` and `doctor`
-remove those with nothing of their own, closing the task removes its own, and `doctor` warns
-about any that stays with work in it.
+branch, as long as nothing would be lost: with changes not committed (files git does not
+show by your settings count too), commits not pushed (on the task's branch, even when the
+worktree was left on another commit), or files git ignores that no build makes again (a
+`.env`, a key; `node_modules`, `build`, `dist` and the like do not count), it keeps it and
+says so. Closing the task closes its session too, once it has finished its answer,
+worktree and all. Sessions that end without `stop` (a reboot, a session closed from Claude
+Desktop) leave theirs: the next `session start` removes those with nothing of their own
+(not one made in the last ten minutes, whose session may still be starting), closing the
+task removes its own, and `doctor` only looks: it says how many would go and warns about
+any that stays with work in it.
+
+If Claude cannot tell whether the session still runs (its list cannot be read), `stop`
+says so and changes nothing: the session stays on record and its worktree stays too.
 
 A session Claude retired (it does that to one left unused for hours) is closed too.
 Claude's background service may have stopped by then; `stop` starts it for a moment,
@@ -3241,7 +3251,8 @@ It looks in every folder Claude Code was opened in, and in its scratch folder:
 
 - **Worktrees Claude Code made** (a worktree is a second working copy of a repository; Claude
   Code puts them in `.claude/worktrees`) whose session is over. One goes only when it has no
-  change not committed and no commit that is not on the remote: it is removed with
+  change not committed, no commit that is not on the remote, and no file git ignores that
+  no build makes again (a `.env`, a key): it is removed with
   `git worktree remove`, never by deleting the folder. Its branch goes with it when Claude
   Code named it (`worktree-<name>`); a branch of yours stays. A worktree with work of its
   own is only named, so you look at it.
@@ -3529,7 +3540,8 @@ written over. If the task has watch dates not marked done, it says so: they
 still come up at the start of the session on their day, since closing is often when you
 write down what to check later. When `session start` made a git worktree for the task and
 its session no longer runs, closing removes it with its branch if it holds nothing that
-is not on the remote, and says so; otherwise it says why it stays. When the task's own
+is not on the remote (nor a file git ignores that no build makes again, such as a
+`.env`), and says so; otherwise it says why it stays. When the task's own
 session still runs (often the one closing it), a process of its own closes that session
 once it has finished its answer, takes it out of Claude Desktop and claude.ai, and
 removes its worktree the same way. A session Claude retired after hours unused answers
@@ -3545,7 +3557,8 @@ it. A worktree is a second folder of a repository, on a branch of its own, so a 
 change code without touching the main folder. Made here, it is `<repo>-<task>`, next to
 the repository, on a new branch named after the task, from origin's default branch as it
 is now; asked again, it returns the same one. When the task is closed, each noted
-worktree with nothing not committed and nothing not pushed is removed, with the branch
+worktree with nothing not committed, nothing not pushed and no ignored file of its own
+(a `.env`) is removed, with the branch
 made for it (a noted one keeps its branch); one with work of its own stays, and so does
 the one the closing session works in, and the answer says why. Both paths must lie
 inside the space's work folders.
@@ -4685,7 +4698,8 @@ the worktree stays after the session ends. Its sessions also leave scratch folde
 the system's temporary folder, which a computer that is rarely restarted never empties.
 
 Run `augmented-brain clean`. It shows what it would remove and asks first. A worktree with
-changes or commits of its own is never removed: it only names it, so you look at it.
+changes, commits or ignored files (a `.env`) of its own is never removed: it only names
+it, so you look at it.
 
 ### After a restore, nothing asks before production
 

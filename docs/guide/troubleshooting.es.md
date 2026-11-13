@@ -228,7 +228,8 @@ worktree se queda al terminar la sesión. Sus sesiones dejan además carpetas en
 temporal del sistema, que un ordenador que casi no se reinicia nunca vacía.
 
 Ejecuta `augmented-brain clean`. Enseña lo que quitaría y pregunta antes. Un worktree con
-cambios o commits propios nunca se quita: solo lo nombra, para que lo mires tú.
+cambios, commits o ficheros ignorados (un `.env`) propios nunca se quita: solo lo nombra,
+para que lo mires tú.
 
 ### Después de recuperar una copia, nada pregunta antes de tocar producción
 

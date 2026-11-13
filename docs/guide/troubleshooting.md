@@ -215,7 +215,8 @@ the worktree stays after the session ends. Its sessions also leave scratch folde
 the system's temporary folder, which a computer that is rarely restarted never empties.
 
 Run `augmented-brain clean`. It shows what it would remove and asks first. A worktree with
-changes or commits of its own is never removed: it only names it, so you look at it.
+changes, commits or ignored files (a `.env`) of its own is never removed: it only names
+it, so you look at it.
 
 ### After a restore, nothing asks before production
 
