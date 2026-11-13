@@ -562,7 +562,7 @@ func init() { // in init: the rules call simple, which reads this table
 	add(Policy.su, "su", "su-rs", "run0", "pkexec")
 	add(func(p Policy, c call) Decision { return p.awsTool(c.name, c.env, c.args) },
 		"cdk", "sam", "serverless", "sls", "terraform", "tofu", "pulumi", "eksctl", "copilot")
-	add(func(p Policy, c call) Decision { return p.publish(c.name, c.env, c.args) }, "gh", "glab")
+	add(func(p Policy, c call) Decision { return p.publish(c.name, c.env, c.args, c.depth) }, "gh", "glab")
 	add(Policy.remoteCopy, "scp", "rsync")
 	add(Policy.sshfs, "sshfs")
 	add(Policy.autossh, "autossh")
@@ -984,9 +984,11 @@ func (p Policy) git(env map[string]string, args []string, depth int) Decision {
 }
 
 // gitExpanded is git after n aliases were expanded; depth is how deep it runs.
-func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) Decision {
+func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) (d Decision) {
 	dir := ""
-	elsewhere := env["GIT_DIR"] != "" || env["GIT_WORK_TREE"] != ""
+	// Another repository, or another repository's refs, objects or index: never taken as listed.
+	elsewhere := slices.ContainsFunc([]string{"GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE",
+		"GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES"}, func(k string) bool { return env[k] != "" })
 	withValue := map[string]bool{"-C": true, "-c": true, "--git-dir": true, "--work-tree": true,
 		"--namespace": true, "--super-prefix": true, "--config-env": true}
 	i := 0
@@ -1002,19 +1004,23 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) 
 			i++
 		}
 	}
-	for j := 1; j < i; j++ {
-		if args[j-1] != "-c" {
-			continue
-		}
-		k, v, _ := strings.Cut(strings.ToLower(args[j]), "=")
-		if k == "core.pager" && slices.Contains([]string{"", "cat", "less", "more"}, strings.TrimSpace(v)) {
-			continue // a pager that only shows the text: git --no-pager, said another way
-		}
-		if strings.HasPrefix(k, "alias.") ||
-			slices.Contains([]string{"core.sshcommand", "core.pager", "core.editor", "core.hookspath", "core.fsmonitor", "sequence.editor", "credential.helper"}, k) {
-			return Decision{Ask, i18n.T(p.Lang, "guard.git.config", args[j])}
+	settings := gitEnvSettings(env)
+	for j := 0; j < i; j++ {
+		switch a := args[j]; {
+		case (a == "-c" || a == "--config-env") && j+1 < i:
+			settings = append(settings, args[j+1])
+		case strings.HasPrefix(a, "--config-env="):
+			settings = append(settings, strings.TrimPrefix(a, "--config-env="))
 		}
 	}
+	runs := p.gitEnv(env, depth)
+	for _, s := range settings {
+		runs = worse(runs, p.gitSetting(s, env, depth))
+	}
+	if runs.Verdict == Deny {
+		return runs
+	}
+	defer func() { d = worse(d, runs) }() // whatever git then does, the settings still ask
 	if i < len(args) && n < 5 && !gitBuiltin[args[i]] {
 		if v, ok := p.gitAlias(dir, elsewhere, args[i]); ok {
 			if shell, ok := strings.CutPrefix(v, "!"); ok { // a shell command, given the arguments
@@ -1044,6 +1050,20 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) 
 			return Decision{Deny, i18n.T(p.Lang, "guard.git.publish", sub)}
 		}
 	}
+	if i < len(args) {
+		if d := p.gitCommand(args[i], args[i+1:], env, depth); d.Verdict != Allow {
+			return d
+		}
+		target := dir
+		if target == "" && !p.lost {
+			target = p.Cwd
+		}
+		if target != "" && !elsewhere && commitsElsewhere(args[i], args[i+1:]) {
+			if d, err := p.resolve(target); err == nil && p.untouchableRepo(d) {
+				return Decision{Deny, i18n.T(p.Lang, "guard.untouchable", paths.Tilde(d), "git "+args[i])}
+			}
+		}
+	}
 	if i >= len(args) || (args[i] != "commit" && args[i] != "push") || onlyAsks(args[i+1:], "--help", "-h") {
 		return allow // git commit --help shows the manual
 	}
@@ -1063,7 +1083,13 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) 
 				if p.ConfigChanged {
 					return p.changedAsk("git "+args[i], d)
 				}
-				if args[i] == "push" && rewrites(args[i+1:]) {
+				if args[i] != "push" {
+					return allow
+				}
+				if to, named := p.pushTo(d, pushDestination(args[i+1:])); named && to.Verdict != Allow {
+					return to
+				}
+				if rewrites(args[i+1:]) {
 					return Decision{Ask, i18n.T(p.Lang, "guard.git.rewrite")}
 				}
 				return allow
@@ -1470,8 +1496,9 @@ func (p Policy) listsUnknown(what string) (Decision, bool) {
 // --body in pr merge), so each command has its own list. The free text of a merge is
 // in mergeText.
 var ghValue = map[string][]string{
-	"":             {"-R", "--repo", "--hostname"},
-	"api":          {"-X", "--method", "-H", "--header", "-f", "-F", "--field", "--raw-field"},
+	"": {"-R", "--repo", "--hostname"},
+	"api": {"-X", "--method", "-H", "--header", "-f", "-F", "--field", "--raw-field", "--input",
+		"-q", "--jq", "-t", "--template", "--cache", "-p", "--preview"},
 	"workflow run": {"-r", "--ref", "-f", "--raw-field", "-F", "--field"},
 	"repo sync":    {"-b", "--branch", "-s", "--source"},
 }
@@ -1498,8 +1525,14 @@ func syncDestination(args []string) bool {
 // publish blocks the gh and glab commands that publish, as it blocks a push. Merging a
 // pull request is a push to the branch it goes into, so it goes by the repository lists
 // as a push does (merge).
-func (p Policy) publish(name string, env map[string]string, args []string) Decision {
+func (p Policy) publish(name string, env map[string]string, args []string, depth int) Decision {
+	return p.publishExpanded(name, env, args, 0, depth)
+}
+
+// publishExpanded is gh or glab after n aliases were expanded; depth is how deep it runs.
+func (p Policy) publishExpanded(name string, env map[string]string, args []string, n, depth int) Decision {
 	var words []string
+	first := -1 // where the first word is in args
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		if slices.Contains(ghValue[""], a) || slices.Contains(ghValue["api"], a) {
@@ -1507,27 +1540,32 @@ func (p Policy) publish(name string, env map[string]string, args []string) Decis
 			continue
 		}
 		if !strings.HasPrefix(a, "-") {
+			if first < 0 {
+				first = i
+			}
 			words = append(words, a)
 		}
 	}
-	if len(words) >= 2 && words[0] == "api" {
-		method := strings.ToUpper(optValue(args, "-X", "--method"))
-		path := strings.ToLower(words[1])
-		writes := method != "" && method != "GET" || slices.ContainsFunc(args, func(a string) bool {
-			return a == "-f" || a == "-F" || a == "--field" || a == "--raw-field" || a == "--input"
-		})
-		if writes && (strings.Contains(path, "/merge") || strings.Contains(path, "/releases") || strings.Contains(path, "/git/refs")) {
-			return Decision{Deny, i18n.T(p.Lang, "guard.api", name)}
-		}
-		if _, rest, ok := strings.Cut(path, "/actions/workflows/"); writes && name == "gh" && ok {
-			if wf, ok := strings.CutSuffix(strings.TrimRight(rest, "/"), "/dispatches"); ok {
-				return p.dispatch(wf)
+	if len(words) > 0 && n < 5 && !ghCommands[words[0]] {
+		if v, ok := p.ghAlias(name, env, words[0]); ok {
+			if shell, ok := strings.CutPrefix(v, "!"); ok { // a shell command, given the arguments
+				return p.inner(strings.Join(append([]string{shell}, args[first+1:]...), " "), env, depth)
 			}
+			expanded := append(append(slices.Clone(args[:first]), strings.Fields(v)...), args[first+1:]...)
+			return p.publishExpanded(name, env, expanded, n+1, depth)
 		}
-		return allow
+	}
+	if len(words) >= 2 && words[0] == "api" {
+		return p.api(name, args, strings.ToLower(words[1]))
 	}
 	if name == "gh" && len(words) >= 2 && words[0] == "workflow" && words[1] == "run" {
 		return p.dispatch(workflowArg(args))
+	}
+	if len(words) >= 2 && words[0] == "alias" && (words[1] == "set" || words[1] == "import") {
+		return Decision{Ask, i18n.T(p.Lang, "guard.gh.alias", name+" alias "+words[1])}
+	}
+	if name == "gh" && len(words) >= 2 && words[0] == "run" && words[1] == "rerun" && !asksHelp(args) {
+		return Decision{Ask, i18n.T(p.Lang, "guard.gh.rerun", "gh run rerun")}
 	}
 	if len(words) < 2 {
 		return allow

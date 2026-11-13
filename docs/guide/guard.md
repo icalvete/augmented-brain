@@ -25,8 +25,9 @@ A program determined to get around it could. Read the
 ## What it stops
 
 - **Commits and pushes.** `git commit`, `git push`, and what publishes like a push:
-  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
-  Unless you let Claude in a repository (below). Asking for help passes: `git commit
+  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`, and
+  the same through the API (`gh api` writing a file with `contents`, a GraphQL mutation
+  that merges or moves a branch). Unless you let Claude in a repository (below). Asking for help passes: `git commit
   --help`, `gh pr merge --help`, `su --version`.
 - **Becoming root.** `sudo`, `su` (and `sudo-rs`, `su-rs`), `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
   without `--user`, `ssh root@…` (also `-o User=root`), a container given the whole
@@ -63,6 +64,14 @@ A program determined to get around it could. Read the
   asks too.
 - **Pushes that rewrite history**, even where Claude may push: `--force`, `--delete`,
   `--mirror`, `--prune`, a refspec starting with `+` or `:`.
+- **Pushes to somewhere else.** A push from a repository where Claude may push, to an
+  address that is not one of its remotes (a URL, another folder). When that folder is a
+  repository of your lists, its own answer counts.
+- **git and gh told something the command does not show.** git settings that run a
+  command, bring an alias or point to another remote or settings file, however they are
+  given (`-c`, `GIT_CONFIG_PARAMETERS`, `git config`, `GIT_CONFIG_GLOBAL`); a GraphQL
+  mutation through `gh api graphql`; running a workflow again (`gh run rerun`) or
+  starting one with `repository_dispatch`; saving a gh or glab alias.
 - **What it cannot read.** A program given as a variable (`$TOOL deploy`), commands
   nested too deep (more than four commands, one inside another: `sudo`, `ssh`, `bash -c`,
   `find -exec`, a git alias), a command longer than 256 KB, `rm -rf "$DIR/"*` with a
@@ -119,7 +128,9 @@ a merge, and neither is an address or `--admin` in the text given to `--body` or
 Some repositories are not yours alone, or are one wrong push away from production. List
 them as **untouchable** and the guard denies `git commit`, `git push` and merging a pull
 request there, whatever the other lists say: it wins over `git_allowed_repos` and
-`git_ask_repos`. They live in `guard.toml`, one list for the whole computer:
+`git_ask_repos`. Also the commands that make a commit without saying so: `merge`,
+`cherry-pick`, `revert`, `am`, `pull` and `commit-tree` (`pull --ff-only` and `merge
+--ff-only` make none, and pass). They live in `guard.toml`, one list for the whole computer:
 
 ```toml
 untouchable_repos = ["~/work/core", "~/work/cli-*"]
@@ -216,7 +227,9 @@ The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh 
 x.sh`), a file a shell reads (`bash < x.sh`, `cat x.sh | bash`), `env -S '…'`, braces
 and `$IFS` as the shell expands them, the programs that run the rest of their line
 (`strace`, `screen`, `tmux`, `setpriv`, `sg`, `at`, and the shells `fish`, `tcsh`, `csh`
-and `mksh`), and your git aliases (`git ci` when `ci` stands for `commit`). A shell that only checks a script's syntax
+and `mksh`), your git aliases (`git ci` when `ci` stands for `commit`) and those of gh
+and glab, and the commands git runs from its options and variables (`--upload-pack`,
+`difftool -x`, `GIT_SSH_COMMAND`, `GIT_EDITOR`). A shell that only checks a script's syntax
 (`sh -n install.sh`, `bash -o noexec`) runs nothing, so it is let through. It checks the commands Claude leaves running to watch something, and
 those of the helpers Claude starts (subagents and workflows).
 

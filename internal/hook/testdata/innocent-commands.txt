@@ -443,3 +443,30 @@ rm -rf ~/proyecto/build/*
 tar -czf /tmp/proyecto.tgz ~/proyecto
 ----
 grep -rn 'TODO' ~/proyecto/src
+## ---- git and gh shapes next to the doors closed in Rev 29c
+----
+GIT_EDITOR=true git rebase --continue
+----
+GIT_PAGER=cat git log --oneline -5
+----
+git -c color.ui=never -c core.pager=cat log --oneline -3
+----
+GIT_SSH_COMMAND="ssh -o BatchMode=yes" git fetch origin
+----
+git fetch -u origin
+----
+git config --get remote.origin.url
+----
+git config user.email lucia@ejemplo.com
+----
+git merge --ff-only origin/main
+----
+git cherry-pick -n abc123
+----
+gh api repos/someone/project/contents/README.md --jq .content | base64 -d
+----
+gh api graphql -f query='query { viewer { login } }'
+----
+gh run view 123 --log-failed
+----
+gh alias list

@@ -24,8 +24,9 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
 ## Lo que para
 
 - **Commits y pushes.** `git commit`, `git push`, y lo que publica como un push:
-  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
-  Salvo que dejes a Claude en un repositorio (más abajo). Pedir ayuda sí pasa: `git
+  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`, y
+  lo mismo por la API (`gh api` escribiendo un fichero con `contents`, una mutación de
+  GraphQL que fusiona o mueve una rama). Salvo que dejes a Claude en un repositorio (más abajo). Pedir ayuda sí pasa: `git
   commit --help`, `gh pr merge --help`, `su --version`.
 - **Hacerse root.** `sudo`, `su` (y `sudo-rs`, `su-rs`), `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
   sin `--user`, `ssh root@…` (también `-o User=root`), un contenedor al que se le da la
@@ -64,6 +65,14 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   para. Los demás flujos pasan; uno nombrado solo por su número también pregunta.
 - **Pushes que reescriben la historia**, incluso donde Claude puede hacer push:
   `--force`, `--delete`, `--mirror`, `--prune`, una refspec que empieza por `+` o por `:`.
+- **Pushes a otro sitio.** Un push desde un repositorio donde Claude puede hacer push, a
+  una dirección que no es uno de sus remotos (una URL, otra carpeta). Si esa carpeta es
+  un repositorio de tus listas, cuenta su propia respuesta.
+- **git y gh con algo que el comando no enseña.** Ajustes de git que ejecutan un
+  comando, traen un alias o apuntan a otro remoto u otro fichero de ajustes, se den como
+  se den (`-c`, `GIT_CONFIG_PARAMETERS`, `git config`, `GIT_CONFIG_GLOBAL`); una mutación
+  de GraphQL con `gh api graphql`; volver a lanzar un flujo (`gh run rerun`) o lanzarlo
+  con `repository_dispatch`; guardar un alias de gh o glab.
 - **Lo que no puede leer.** Un programa dado como variable (`$TOOL deploy`), comandos
   anidados demasiado hondo (más de cuatro comandos, uno dentro de otro: `sudo`, `ssh`,
   `bash -c`, `find -exec`, un alias de git), un comando de más de 256 KB,
@@ -123,7 +132,9 @@ request o en un mensaje de commit no es una fusión, y tampoco lo son una direcc
 Hay repositorios que no son solo tuyos, o que están a un push equivocado de producción.
 Ponlos como **intocables** y el guardia deniega `git commit`, `git push` y fusionar una
 pull request ahí, digan lo que digan las demás listas: gana a `git_allowed_repos` y a
-`git_ask_repos`. Viven en `guard.toml`, una lista para todo el ordenador:
+`git_ask_repos`. También los comandos que hacen un commit sin decirlo: `merge`,
+`cherry-pick`, `revert`, `am`, `pull` y `commit-tree` (`pull --ff-only` y `merge
+--ff-only` no hacen ninguno, y pasan). Viven en `guard.toml`, una lista para todo el ordenador:
 
 ```toml
 untouchable_repos = ["~/work/core", "~/work/cli-*"]
@@ -223,8 +234,10 @@ lanza Claude (`bash deploy.sh`, `./deploy.sh`), también cuando el mismo comando
 escribe antes (`echo '…' > x.sh && bash x.sh`), un fichero que lee una shell
 (`bash < x.sh`, `cat x.sh | bash`), `env -S '…'`, las llaves y `$IFS` como los expande la
 shell, los programas que ejecutan el resto de su línea (`strace`, `screen`, `tmux`,
-`setpriv`, `sg`, `at`, y las shells `fish`, `tcsh`, `csh` y `mksh`) y tus alias de git
-(`git ci` cuando `ci` quiere decir `commit`). Una shell que solo comprueba la sintaxis de un script
+`setpriv`, `sg`, `at`, y las shells `fish`, `tcsh`, `csh` y `mksh`), tus alias de git
+(`git ci` cuando `ci` quiere decir `commit`) y los de gh y glab, y los comandos que git
+lanza desde sus opciones y variables (`--upload-pack`, `difftool -x`, `GIT_SSH_COMMAND`,
+`GIT_EDITOR`). Una shell que solo comprueba la sintaxis de un script
 (`sh -n install.sh`, `bash -o noexec`) no ejecuta nada, así que pasa. Mira los comandos que Claude deja en
 marcha para vigilar algo, y los de los ayudantes que Claude lanza (subagentes y flujos de
 trabajo).
