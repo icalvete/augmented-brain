@@ -255,8 +255,8 @@ augmented-brain config history 3</code></pre>
   <h2 id="augmented-brain-uninstall">augmented-brain uninstall</h2>
   <p>Quita el programa y el plugin de Claude Code. Tus notas se quedan.</p>
   <pre><code>augmented-brain uninstall</code></pre>
-  <p>Antes enseña lo que va a quitar y te pregunta.</p>
-  <ul><li><code>--config</code>: quita también la configuración y el perfil.</li><li><code>--all</code>: empezar de cero: también la configuración, el perfil y las notas de todos los espacios. Enseña cada carpeta de notas con cuántas notas tiene, y avisa de las que no tienen copia de seguridad, que se perderán para siempre. Tus copias de seguridad no se tocan.</li><li><code>--yes</code>: no pregunta.</li></ul>
+  <p>Antes enseña lo que va a quitar y te pregunta. Lo primero que quita son los servicios del acceso remoto y las sesiones abiertas para tareas; si alguno no se puede parar, no quita nada más.</p>
+  <ul><li><code>--config</code>: quita también la configuración y el perfil.</li><li><code>--all</code>: empezar de cero: también la configuración, el perfil y las notas de todos los espacios. Enseña cada carpeta de notas con cuántas notas tiene, y avisa de las que no tienen copia de seguridad, que se perderán para siempre. Solo se va lo que augmented brain guarda en una carpeta de notas; una carpeta que contiene una carpeta de trabajo, o sin notas, se queda entera. Tus copias de seguridad no se tocan.</li><li><code>--yes</code>: no pregunta.</li></ul>
   <p>Lo tienes en <a href="install.es.html#desinstalar">Instalación</a>.</p>
   <h2 id="augmented-brain-mcp">augmented-brain mcp</h2>
   <p>Arranca el servidor MCP: las herramientas que usa Claude para llevar tus tareas y tus notas. <strong>Lo arranca Claude Code</strong>, a través del plugin; tú no.</p>

@@ -11,6 +11,14 @@
   that is a link is said too, instead of its notes vanishing, and so is a date in a
   header that is not `YYYY-MM-DD`. The panel's People page lists the people of the other
   spaces when one space cannot be opened, and names that space.
+- **`uninstall` removes only what is its own, and everything that is.** With `--all`, a
+  notes folder that was also the work folder used to go whole, repositories and all. Now
+  only the notes go, and the folder only if nothing else is left; a notes folder that
+  holds a work folder, your home folder or a folder with no notes stays whole, and the
+  plan says so. `--config` only removes a folder with a `config.toml`. And `uninstall`
+  now stops the remote access and the sessions opened for tasks first: before, they kept
+  running with no guard and no program to take them away. Setting up a space now
+  refuses a notes folder that holds its work folder.
 - **Claude gets the common rules whole in every session.** They went at the end of the
   first part of the session start, and in a busy space (long captures from other spaces,
   many dates due) the end was cut: in one real space only 8 % of them arrived. Now they

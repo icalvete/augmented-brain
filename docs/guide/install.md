@@ -183,12 +183,21 @@ augmented-brain uninstall
 It shows what it will remove and asks. It removes the program, the Claude Code plugin and
 what Claude Code keeps of it (its cache, its data and its server's logs).
 
+- **First, what would keep running without it:** the [remote access](remote.md) services
+  and the sessions opened for tasks (`session start`). Without the plugin they would go
+  on with no guard, and with no program left to take them away. If one cannot be
+  stopped, nothing else is removed: it tells you why, so you can fix it and run it again.
+
 - **Your notes stay** in `~/augmented-brain/`: they are yours. If you install it again,
   you find everything as it was.
 - **The configuration stays** too. `--config` removes it, with your profile.
 - **To start from scratch**, `--all` also removes every space's notes. First it shows each
-  folder with how many notes it has, and asks. Anything of yours inside a space's folder
-  stays. Your backup on GitHub is not deleted: it says which one it is and how to delete
+  folder with how many notes it has, and asks. It removes only what augmented brain keeps
+  there (the note folders, `MEMORY.md`, `inbox.md`, `docs/`, `archive/`), and the folder
+  only if nothing else is left. Anything of yours inside a space's folder stays. A notes
+  folder that holds a work folder, your home folder, or a folder with no notes is left
+  whole, and the plan says so. `--config` only removes a folder that holds a
+  `config.toml`. Your backup on GitHub is not deleted: it says which one it is and how to delete
   it. If a space has no backup, it warns you that its notes will be gone for good. To keep
   them, answer no and set up the backup first.
 - Claude Code, its desktop app, git and the PATH entry stay: Claude Code lives in that
