@@ -2,7 +2,7 @@
 
 [Leer en español](weekly-review.es.md)
 
-On Monday you open Claude. It says: "The weekly review is due: 3 captures in the inbox
+A week after your last review, you open Claude. It says: "The weekly review is due: 3 captures in the inbox
 and 1 task untouched for two weeks. Shall we do it? About ten minutes." You say yes, and
 it goes through each item with you, one at a time.
 
@@ -34,7 +34,8 @@ and takes the processed captures out of the inbox.
 
 The panel has a **Weekly review** page. Each capture has its buttons: a task, a
 reference, a lesson, or drop it. Each untouched task goes on, or goes to some day (or you
-open it to close it). What you decide is noted as you go, in a draft on this computer,
+open it to close it). Sending a capture to an area is not one of the buttons: ask Claude
+for that. What you decide is noted as you go, in a draft on this computer,
 so you can leave and come back. When you finish, it is all written in the review's
 record.
 
