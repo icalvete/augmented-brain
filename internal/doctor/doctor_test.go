@@ -131,7 +131,7 @@ func TestNoDefaultSpace(t *testing.T) {
 }
 
 func TestPluginCheck(t *testing.T) {
-	if c := plugin(Env{LookPath: allTools, Plugin: no}); len(c) != 1 || c[0].Status != Failed || !strings.Contains(c[0].Fix, "claude plugin install") {
+	if c := plugin(Env{LookPath: allTools, Plugin: no}); len(c) != 1 || c[0].Status != Failed || c[0].Fix != "augmented-brain update --plugin" {
 		t.Errorf("missing plugin: %+v", c)
 	}
 	if c := plugin(Env{LookPath: allTools, Plugin: yes, Hook: denies}); len(c) != 2 || c[0].Status != OK || c[1].Status != OK {

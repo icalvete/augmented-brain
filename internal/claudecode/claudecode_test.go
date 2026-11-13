@@ -2,9 +2,25 @@ package claudecode
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
+
+// TestMain points the configuration folder at a throwaway one: Install, Update and
+// Uninstall write and remove the plugin's folder inside it.
+func TestMain(m *testing.M) {
+	dir, err := os.MkdirTemp("", "claudecode-test")
+	if err != nil {
+		panic(err)
+	}
+	os.Setenv("AB_CONFIG_DIR", dir)
+	os.Unsetenv("AB_MARKETPLACE")
+	code := m.Run()
+	os.RemoveAll(dir)
+	os.Exit(code)
+}
 
 type fake struct {
 	calls []string
@@ -64,17 +80,40 @@ func TestInstalled(t *testing.T) {
 	if ok, _ := Installed(f.run); ok {
 		t.Error("reported installed when it is not")
 	}
-	if Marketplace() != "icalvete/augmented-brain" {
-		t.Errorf("default marketplace = %s", Marketplace())
+}
+
+// With no AB_MARKETPLACE, the marketplace is the folder the program writes, in the
+// configuration folder: never the repository's main.
+func TestMarketplaceIsLocal(t *testing.T) {
+	cfg := t.TempDir()
+	t.Setenv("AB_CONFIG_DIR", cfg)
+	f := &fake{}
+	if err := Install(f.run); err != nil {
+		t.Fatal(err)
+	}
+	dir := LocalDir(cfg)
+	if want := "claude plugin marketplace add " + dir; f.calls[0] != want {
+		t.Errorf("first call = %q, want %q", f.calls[0], want)
+	}
+	if strings.Contains(strings.Join(f.calls, "\n"), GitHubMarketplace) {
+		t.Errorf("the plugin still comes from GitHub: %v", f.calls)
+	}
+	for _, name := range []string{".claude-plugin/marketplace.json", "plugin/hooks/hooks.json", "plugin/.mcp.json", "plugin/.claude-plugin/plugin.json", "plugin/commands/panel.md"} {
+		if _, err := os.Stat(filepath.Join(dir, filepath.FromSlash(name))); err != nil {
+			t.Errorf("%s not written: %v", name, err)
+		}
 	}
 }
 
 func TestUpdate(t *testing.T) {
+	t.Setenv("AB_MARKETPLACE", "/src/augmented-brain")
 	f := &fake{}
 	if err := Update(f.run); err != nil {
 		t.Fatal(err)
 	}
-	want := "claude plugin marketplace update augmented-brain\nclaude plugin update brain@augmented-brain"
+	// The add comes first: it moves a marketplace that follows GitHub to the program's
+	// folder, keeping the plugin installed (a remove would uninstall it and lose its data).
+	want := "claude plugin marketplace add /src/augmented-brain\nclaude plugin marketplace update augmented-brain\nclaude plugin update brain@augmented-brain"
 	if got := strings.Join(f.calls, "\n"); got != want {
 		t.Errorf("calls:\n%s", got)
 	}
@@ -86,6 +125,11 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestUninstall(t *testing.T) {
+	cfg := t.TempDir()
+	t.Setenv("AB_CONFIG_DIR", cfg)
+	if err := WriteLocal(LocalDir(cfg), "1.2.3", "linux"); err != nil {
+		t.Fatal(err)
+	}
 	f := &fake{}
 	if err := Uninstall(f.run); err != nil {
 		t.Fatal(err)
@@ -93,6 +137,9 @@ func TestUninstall(t *testing.T) {
 	want := "claude plugin uninstall brain@augmented-brain\nclaude plugin marketplace remove augmented-brain"
 	if got := strings.Join(f.calls, "\n"); got != want {
 		t.Errorf("calls:\n%s", got)
+	}
+	if _, err := os.Stat(LocalDir(cfg)); !os.IsNotExist(err) {
+		t.Errorf("the plugin's folder is left: %v", err)
 	}
 	// Already gone: fine.
 	f = &fake{out: map[string]string{"claude plugin uninstall": "plugin not installed"},

@@ -111,8 +111,9 @@ fi
 
 echo "2. run the installer, hands-off"
 [ "${AB_CHECK_DESKTOP:-}" = 1 ] || AB_NO_DESKTOP=1
+# No AB_MARKETPLACE: the plugin must come from the program itself.
 AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP="${AB_NO_DESKTOP:-}" \
-  AB_RELEASE_URL="file://$TMP/release" AB_MARKETPLACE="$ROOT" \
+  AB_RELEASE_URL="file://$TMP/release" \
   sh "$ROOT/install.sh" </dev/null >"$TMP/install.log" 2>&1 &
 installer=$!
 # The installer's output as it comes, not only at the end: when CI stops a run that
@@ -139,6 +140,15 @@ check "default space is personal" grep -q '^default_space = "personal"' "$cfg"
 check "space trabajo, notes inside" test -f "$HOME/augmented-brain/trabajo/notas/MEMORY.md"
 check "space personal, notes inside" test -f "$HOME/augmented-brain/personal/notas/MEMORY.md"
 check "plugin installed" sh -c "PATH=\"$HOME/.local/bin:\$PATH\" claude plugin list | grep -q 'brain@augmented-brain'"
+# The plugin travels with the program: Claude Code reads it from the configuration
+# folder, and it is this checkout's, never what is on GitHub's main.
+market="$(dirname "$cfg")/marketplace"
+local_plugin() { # the marketplace is the program's folder, with this checkout's plugin
+  PATH="$HOME/.local/bin:$PATH" claude plugin marketplace list --json | grep -q "\"path\": \"$market\"" &&
+    cmp -s "$market/plugin/hooks/hooks.json" "$ROOT/plugin/hooks/hooks.json" &&
+    grep -q '"version": "0.0.0-check"' "$market/plugin/.claude-plugin/plugin.json"
+}
+check "the plugin comes from the program's folder" local_plugin
 mkdir -p "$TMP/scratch"
 printf '{"cwd":"%s"}' "$TMP/scratch" | (cd "$TMP/scratch" && "$AB" hook session-start) >"$TMP/start.json"
 check "outside the folders, the personal space loads" grep -q 'the default space, personal, is loaded' "$TMP/start.json"
@@ -175,7 +185,7 @@ fi
 
 notes() { find "$HOME/augmented-brain" -name '*.md' 2>/dev/null | wc -l | tr -d ' '; }
 reinstall() { # the installer again, from this checkout's release
-  AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP=1 AB_RELEASE_URL="file://$TMP/release" AB_MARKETPLACE="$ROOT" \
+  AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP=1 AB_RELEASE_URL="file://$TMP/release" \
     sh "$ROOT/install.sh" </dev/null >"$TMP/reinstall.log" 2>&1
 }
 
@@ -184,12 +194,14 @@ before="$(notes)"
 PATH="$HOME/.local/bin:$PATH" "$AB" uninstall --yes >"$TMP/uninstall.log" 2>&1 || bad "uninstall exited with an error"
 check "the program is gone" sh -c "! test -e '$AB'"
 check "the plugin is gone" sh -c "! PATH=\"$HOME/.local/bin:\$PATH\" claude plugin list 2>/dev/null | grep -q 'brain@augmented-brain'"
+check "and its folder" sh -c "! test -e '$market'"
 check "the configuration stays" test -f "$cfg"
 check "every note stays" test "$(notes)" = "$before"
 reinstall || bad "install.sh exited with an error"
 check "installing again finds them" grep -q 'Ya estaba configurado' "$TMP/reinstall.log"
 check "the program is back" test -x "$AB"
 check "the plugin is back" sh -c "PATH=\"$HOME/.local/bin:\$PATH\" claude plugin list | grep -q 'brain@augmented-brain'"
+check "from the program's folder" local_plugin
 check "doctor is happy again" sh -c "cd '$HOME/augmented-brain/trabajo' && PATH=\"$HOME/.local/bin:\$PATH\" '$AB' doctor"
 
 echo "5. uninstall --config, then install again: the notes stay and come back"
@@ -230,12 +242,15 @@ if [ "${AB_CHECK_NO_NETWORK:-}" != 1 ]; then
   echo "8. update from the release published last"
   last="$(curl -fsSIL -o /dev/null -w '%{url_effective}' "https://github.com/icalvete/augmented-brain/releases/latest" | sed 's#.*/tag/v##')"
   if [ -n "$last" ]; then
-    AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP=1 AB_VERSION="$last" AB_MARKETPLACE="$ROOT" \
+    # The release as people have it, plugin included: an earlier one may still take it
+    # from GitHub, and the update must move it to the program's folder.
+    AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP=1 AB_VERSION="$last" \
       sh "$ROOT/install.sh" </dev/null >"$TMP/old.log" 2>&1 || { sed 's/^/    | /' "$TMP/old.log"; bad "installing $last exited with an error"; }
     check "release $last installed" sh -c "'$AB' version | grep -qx '$last'"
     before="$(notes)"
     reinstall || bad "the update exited with an error"
     check "updated to this checkout" sh -c "'$AB' version | grep -qx '0.0.0-check'"
+    check "the plugin moved to the program's folder" local_plugin
     check "every note stays" test "$(notes)" = "$before"
     check "the notes still check" sh -c "cd '$HOME/augmented-brain/trabajo' && '$AB' check"
     check "doctor is happy after the update" sh -c "cd '$HOME/augmented-brain/trabajo' && PATH=\"$HOME/.local/bin:\$PATH\" '$AB' doctor"

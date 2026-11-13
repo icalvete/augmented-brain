@@ -51,12 +51,8 @@ var initMessages = map[string]msg{
 		es: "Claude Code terminó, pero el plugin no está en su lista.",
 	},
 	"init.noplugin": {
-		en: "Warning: the Claude Code plugin is not installed. Until it is, Claude does not load your notes and nothing guards its commands. Install it with the commands above; `augmented-brain doctor` checks it.",
-		es: "Atención: el plugin de Claude Code no está instalado. Hasta que lo esté, Claude no carga tus notas y nada vigila sus comandos. Instálalo con los comandos de arriba; `augmented-brain doctor` lo comprueba.",
-	},
-	"init.nogit": {
-		en: "It needs git, which is not installed on this computer: install git first.",
-		es: "Necesita git, que no está instalado en este ordenador: instala git primero.",
+		en: "Warning: the Claude Code plugin is not installed. Until it is, Claude does not load your notes and nothing guards its commands. Install it with the command above; `augmented-brain doctor` checks it.",
+		es: "Atención: el plugin de Claude Code no está instalado. Hasta que lo esté, Claude no carga tus notas y nada vigila sus comandos. Instálalo con el comando de arriba; `augmented-brain doctor` lo comprueba.",
 	},
 	"init.later": {
 		en: "To install the Claude Code plugin later:",

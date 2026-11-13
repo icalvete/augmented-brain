@@ -1358,6 +1358,7 @@ Also in the configuration folder, never backed up:
   read it.
 - `migrations/`: a full copy of the notes, kept before a new version moved them to its
   format.
+- `marketplace/`: the Claude Code plugin, as the program carries it (below).
 
 ## Your secrets
 
@@ -1382,7 +1383,9 @@ them again if you still want to.
 ## The program and the plugin
 
 - The program: `~/.local/bin/augmented-brain` (`augmented-brain.exe` on Windows).
-- The Claude Code plugin, in Claude Code's own folder.
+- The Claude Code plugin travels inside the program: it writes it to `marketplace/` in
+  the configuration folder, and Claude Code reads it from there. So its hooks are always
+  the ones of the version you installed, and the guard asks before Claude changes them.
 
 Uninstalling removes these two and leaves your notes. See [Updating and uninstalling
 without losing anything](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.html).
@@ -2563,9 +2566,9 @@ What it does, in order:
    there is not taken for one of the new version.
 2. **Backs up every space that has a backup.** If one fails, it stops and updates nothing:
    that copy is your way back. With no backup at all, it says it goes ahead without one.
-3. **Downloads and installs** the new version and the Claude Code plugin. If GitHub fails
-   to hand out the files, it tries three times, also through GitHub's API; if all fails,
-   it says so and nothing changes.
+3. **Downloads and installs** the new version, with the Claude Code plugin that comes
+   inside it. If GitHub fails to hand out the files, it tries three times, also through
+   GitHub's API; if all fails, it says so and nothing changes.
 4. **Checks the new version is in place**, and restarts the idle Claude sessions that
    still run the old one, one at a time, with the same conversation: a task's session,
    those of the remote access, and those of Claude Desktop, which stay open while only
@@ -3996,8 +3999,9 @@ The installer reads a few more:
 - `AB_NO_INIT=1`: only install the program, without setting anything up.
 - `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY`, `AB_MARKETPLACE` and
   `AB_DESKTOP_URL`: for testing: which version, where the release files are, the GitHub
-  API to fall back on, the wait between tries, where the plugin comes from, and where
-  the desktop app's apt repository is.
+  API to fall back on, the wait between tries, a folder or repository to take the plugin
+  from instead of the one inside the program, and where the desktop app's apt repository
+  is.
 
 ## Claude Code's own settings
 

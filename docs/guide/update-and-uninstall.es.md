@@ -21,9 +21,9 @@ Qué hace, por orden:
 2. **Hace la copia de seguridad de cada espacio que la tenga.** Si falla una, se para y no
    actualiza nada: esa copia es tu vuelta atrás. Si no hay ninguna, dice que sigue sin
    copia.
-3. **Descarga e instala** la versión nueva y el plugin de Claude Code. Si GitHub no entrega
-   los ficheros, lo intenta tres veces, también por la API de GitHub; si falla todo, lo
-   dice y no cambia nada.
+3. **Descarga e instala** la versión nueva, con el plugin de Claude Code que trae dentro.
+   Si GitHub no entrega los ficheros, lo intenta tres veces, también por la API de
+   GitHub; si falla todo, lo dice y no cambia nada.
 4. **Comprueba que la versión nueva está puesta**, y reinicia una a una las sesiones de
    Claude quietas que siguen con la vieja, con la misma conversación: la sesión de una
    tarea, las del acceso remoto y las de Claude Desktop, que siguen abiertas y solo
