@@ -2,6 +2,11 @@
 
 ## Sin publicar
 
+- **La copia de seguridad solo actúa en su propio repositorio.** Si la carpeta de notas
+  perdía su `.git` (copiada o restaurada a mano, o borrado) y estaba dentro de otro
+  repositorio de git, como tu carpeta de trabajo, la copia hacía commit y push en ese
+  otro. Ahora se para, no toca nada y te dice que vuelvas a lanzar `augmented-brain
+  backup setup`. Volver a una copia anterior hace lo mismo.
 - **Compilado con un Go que aún recibe arreglos de seguridad.** Las versiones se
   compilaban con Go 1.25.0, que lleva 46 vulnerabilidades conocidas en la biblioteca de
   Go a las que el programa puede llegar (entre ellas, en el panel web, la red y el manejo
