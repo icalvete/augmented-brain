@@ -267,6 +267,13 @@ func TestOpenWithInvalidNotes(t *testing.T) {
 	if note := ProblemsNote(b2.Problems, 3); !strings.Contains(note, "tasks/task-backup.md") || !strings.Contains(note, "augmented-brain check") {
 		t.Errorf("problems note: %s", note)
 	}
+	if note := ProblemsNote(b2.Problems, 3); strings.Contains(note, "newer augmented brain") {
+		t.Errorf("a broken file is not from a newer version: %s", note)
+	}
+	newer := []memory.Problem{{Path: "areas/area-x.md", Err: &memory.UnknownFieldError{Field: "colour"}}}
+	if note := ProblemsNote(newer, 3); !strings.Contains(note, "colour") || !strings.Contains(note, "augmented-brain update") || !strings.Contains(note, "do not remove it") {
+		t.Errorf("a newer note must keep the assistant from rewriting it: %s", note)
+	}
 }
 
 // Names with no Latin letters make no readable id: each person still gets their own

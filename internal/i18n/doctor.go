@@ -78,6 +78,10 @@ var doctorMessages = map[string]msg{
 		en: "space %s: %d notes are not valid",
 		es: "espacio %s: %d notas no son válidas",
 	},
+	"doctor.invalid.newer": {
+		en: "update with `augmented-brain update`: %d of them have a field only a newer version knows (or a typo); `augmented-brain check` inside the space lists them",
+		es: "actualiza con `augmented-brain update`: %d tienen un campo que solo conoce una versión más nueva (o una errata); `augmented-brain check` dentro del espacio las lista",
+	},
 	"doctor.invalid.fix": {
 		en: "run `augmented-brain check` inside the space to see them",
 		es: "lanza `augmented-brain check` dentro del espacio para verlas",

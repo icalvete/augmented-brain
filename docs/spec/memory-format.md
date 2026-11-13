@@ -318,6 +318,17 @@ a run again from the same version keeps that copy and makes no other, so it neve
 notes half moved. Notes of a newer version than the program knows are never written: the
 program asks to be updated.
 
+Anything an earlier program would refuse raises the version, even when the step that
+moves notes to it has nothing to change: a new header field, a new note type, a new
+task status. The program reads a header strictly (a field it does not know makes the
+file not valid), so without the new version an earlier program would only leave those
+notes out. With it, the earlier program refuses the whole folder and asks to be
+updated, and nothing is lost. A header field the program does not know is still said
+as one a newer version may have written: the note is left out, nothing writes over it,
+and `check`, `doctor`, the panel and the session start say to update (or to fix the
+field, if it is a typo). A field added before this rule (`parent`, in 0.3.0) is read
+by every release still covered by the promise of compatibility.
+
 Every note is replaced in one step: written to a temporary file next to it
 (`<name>.<digits>.tmp`), synced to the disk, renamed over the note, and its folder
 synced, so a power cut leaves the old note or the new one, never an empty one. A
