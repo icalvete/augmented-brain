@@ -334,4 +334,29 @@ var guardMessages = map[string]msg{
 		en: "%s to %s",
 		es: "%s a %s",
 	},
+	// memory_trust = "ask": what is about to be saved (guard.trust.what.<tool>).
+	"guard.trust.ask": {
+		en: "this %s, which every session follows from now on. You chose to be asked first (memory_trust = \"ask\" in session.toml; the panel's Guard page changes it).",
+		es: "esto %s, y todas las sesiones lo siguen desde ahora. Elegiste que se te pregunte antes (memory_trust = \"ask\" en session.toml; se cambia en la página Guardia del panel).",
+	},
+	"guard.trust.deny": {
+		en: "this %s, and the user wants to be asked first (memory_trust = \"ask\" in session.toml). This session skips permission questions, so nothing was saved. Tell the user, word for word, what you were going to save: they can save it from a session that asks.",
+		es: "esto %s, y el usuario quiere que se le pregunte antes (memory_trust = \"ask\" en session.toml). Esta sesión se salta las preguntas de permiso, así que no se ha guardado nada. Dile al usuario, palabra por palabra, lo que ibas a guardar: puede guardarlo desde una sesión que pregunte.",
+	},
+	"guard.trust.what.rule_new": {
+		en: "saves a rule",
+		es: "guarda una regla",
+	},
+	"guard.trust.what.note_retire": {
+		en: "retires a rule",
+		es: "retira una regla",
+	},
+	"guard.trust.what.profile_save": {
+		en: "changes your profile",
+		es: "cambia tu perfil",
+	},
+	"guard.trust.what.safety_save": {
+		en: "adds to the guard's lists",
+		es: "añade a las listas del guardia",
+	},
 }
