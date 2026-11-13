@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 func panelPolicy(t *testing.T) (Policy, string) {
@@ -12,6 +14,10 @@ func panelPolicy(t *testing.T) (Policy, string) {
 	cfg := filepath.Join(t.TempDir(), "cfg")
 	if err := os.MkdirAll(cfg, 0o700); err != nil {
 		t.Fatal(err)
+	}
+	// As the hook does: the real path (on Windows, the long form of RUNNER~1).
+	if r, err := paths.Resolve(cfg); err == nil {
+		cfg = r
 	}
 	return Policy{Lang: "en", Hidden: []string{filepath.Join(cfg, "panel.json")},
 		ConfigDirs: []string{cfg, "~/.config/augmented-brain", ".config/augmented-brain", "AB_CONFIG_DIR"}}, cfg
