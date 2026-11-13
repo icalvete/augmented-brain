@@ -117,7 +117,7 @@ func outsidePolicy(t *testing.T) (Policy, string) {
 }
 
 func TestOutsideVerdicts(t *testing.T) {
-	p, home := outsidePolicy(t)
+	p, _ := outsidePolicy(t)
 	tok := "gh" + "p_" + strings.Repeat("a", 36)
 	rows := []pinned{
 		// General rules let it through.
@@ -140,6 +140,7 @@ func TestOutsideVerdicts(t *testing.T) {
 		{"git -C ~/free com_mit -m x", Allow},
 		{"git -C ~/free pu_sh", Allow},
 		{"git -C ~/free pu_sh --force origin main", Allow},
+		{"git -C ~/clone/../free pu_sh origin main", Allow},
 		{"cd ~/free && git com_mit -m x", Allow},
 		{"git -C ~/free send-pack x", Allow},
 		// ...unless it reaches one that is listed: a clone, or a push there.
@@ -176,7 +177,7 @@ func TestOutsideVerdicts(t *testing.T) {
 		{"$(echo ssh) db01", Ask},
 	}
 	for _, r := range rows {
-		cmd := strings.ReplaceAll(unspell(r.cmd), "~/", home+"/")
+		cmd := unspell(r.cmd) // ~ is the home pinnedPolicy set
 		if got := p.Command(cmd); got.Verdict != r.want {
 			t.Errorf("outside %q = %v, want %v (%s)", r.cmd, got.Verdict, r.want, got.Reason)
 		}
@@ -255,7 +256,7 @@ func TestOutsideCorners(t *testing.T) {
 		{"cd ~/free && glab api projects/123/repository/commits -X POST", Deny},
 	}
 	for _, r := range rows {
-		cmd := strings.ReplaceAll(unspell(r.cmd), "~/", home+"/")
+		cmd := unspell(r.cmd) // ~ is the home pinnedPolicy set
 		if got := p.Command(cmd); got.Verdict != r.want {
 			t.Errorf("outside %q = %v, want %v (%s)", r.cmd, got.Verdict, r.want, got.Reason)
 		}

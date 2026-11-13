@@ -99,7 +99,7 @@ func TestOutsideGuard(t *testing.T) {
 		{out, su + "id", ""},
 		{out, "git commit -m x", ""},
 		{out, "aws s3 ls --profile prod", "ask"},
-		{out, "cd " + work + " && " + su + "id", "deny"},
+		{out, "cd " + filepath.ToSlash(work) + " && " + su + "id", "deny"},
 		{work, su + "id", "deny"},
 		{work, "aws s3 ls --profile prod", "ask"},
 	} {

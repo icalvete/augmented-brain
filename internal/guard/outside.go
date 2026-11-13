@@ -104,6 +104,9 @@ func (p Policy) freeRepo(dir string) bool {
 // push names it, "" for the default) stays clear of the lists: a remote of the
 // repository, or an address or path no list names.
 func (p Policy) freePush(dir, dest string) bool {
+	if d, err := p.resolve(dir); err == nil {
+		dir = d // as written (~/app): its remotes and relative paths are read from the folder
+	}
 	if dest == "" || slices.Contains(remoteNames(dir), dest) {
 		return true // its own remotes: listedRepo already compared their addresses
 	}
