@@ -11,6 +11,7 @@ import (
 	"errors"
 	"maps"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -425,9 +426,11 @@ func init() { // in init: the rules call simple, which reads this table
 	add(func(p Policy, c call) Decision { return p.awsTool(c.name, c.env, c.args) },
 		"cdk", "sam", "serverless", "sls", "terraform", "tofu", "pulumi", "eksctl", "copilot")
 	add(func(p Policy, c call) Decision { return p.publish(c.name, c.env, c.args) }, "gh", "glab")
-	add(func(p Policy, c call) Decision { return p.copyHosts(c.name, c.args) }, "scp", "rsync")
+	add(Policy.remoteCopy, "scp", "rsync")
+	add(Policy.sshfs, "sshfs")
+	add(Policy.autossh, "autossh")
 	add(func(p Policy, c call) Decision { return p.shell(c.args, c.stdin, c.env, c.depth) }, shells...)
-	add(Policy.container, "docker", "podman", "kubectl")
+	add(Policy.container, "docker", "podman", "nerdctl", "kubectl", "docker-compose", "podman-compose")
 }
 
 // other is a program with no rule of its own: one run by its path (./deploy.sh) is
@@ -507,17 +510,77 @@ func (p Policy) su(c call) Decision {
 	return p.root(i18n.T(p.Lang, "guard.root.su", c.name, p.rootReason()))
 }
 
-// container is docker, podman and kubectl: one given the whole machine is root here,
-// and what exec runs inside is checked (docker compose exec <service> <command> too).
+// container is docker, podman, nerdctl and kubectl: one given the whole machine is
+// root here, and what exec runs inside is checked (docker compose exec <service>
+// <command> too). Global options before the subcommand (docker --context x run) are
+// skipped, as the program skips them.
 func (p Policy) container(c call) Decision {
-	args := c.args
+	name := c.name
+	args := afterGlobal(c.args, containerGlobal[name])
+	if n, ok := strings.CutSuffix(name, "-compose"); ok { // docker-compose is docker compose
+		name, args = n, append([]string{"compose"}, args...)
+	}
 	if len(args) > 1 && args[0] == "compose" {
-		args = args[1:]
+		args = afterGlobal(args[1:], composeGlobal)
 	}
-	if how := hostAccess(args); how != "" && c.name != "kubectl" {
-		return p.root(i18n.T(p.Lang, "guard.root.container", c.name+" "+args[0], how, p.rootReason()))
+	if name == "kubectl" {
+		if node := kubectlDebugNode(args); node != "" {
+			return p.root(i18n.T(p.Lang, "guard.root.container", "kubectl debug", node, p.rootReason()))
+		}
+	} else if how := hostAccess(args); how != "" {
+		return p.root(i18n.T(p.Lang, "guard.root.container", name+" "+args[0], how, p.rootReason()))
 	}
-	return p.exec(c.name, args, c.env, c.depth)
+	return p.exec(name, args, c.env, c.depth)
+}
+
+// containerGlobal are, for each program, its options before the subcommand that take a
+// value; composeGlobal are those of compose, before its own subcommand.
+var (
+	containerGlobal = map[string][]string{
+		"docker": {"-c", "--context", "-H", "--host", "--config", "-l", "--log-level",
+			"--tlscacert", "--tlscert", "--tlskey"},
+		"podman": {"-c", "--connection", "--url", "--identity", "--root", "--runroot",
+			"--storage-driver", "--storage-opt", "--log-level", "--cgroup-manager", "--conmon",
+			"--events-backend", "--hooks-dir", "--imagestore", "--module", "--network-cmd-path",
+			"--network-config-dir", "--runtime", "--runtime-flag", "--ssh", "--tmpdir",
+			"--volumepath", "--registries-conf", "--cni-config-dir", "--db-backend",
+			"--network-backend", "--out"},
+		"nerdctl": {"-a", "--address", "-H", "--host", "-n", "--namespace", "--snapshotter",
+			"--storage-driver", "--cni-path", "--cni-netconfpath", "--data-root",
+			"--cgroup-manager", "--hosts-dir", "--host-gateway-ip", "--bridge-ip"},
+		"kubectl": {"-n", "--namespace", "--context", "--kubeconfig", "-s", "--server",
+			"--cluster", "--user", "--token", "--as", "--as-group", "--as-uid",
+			"--certificate-authority", "--client-certificate", "--client-key",
+			"--request-timeout", "--tls-server-name", "--cache-dir", "-v", "--v", "--vmodule",
+			"--log-file", "--password", "--username", "--profile", "--profile-output"},
+	}
+	composeGlobal = []string{"-f", "--file", "-p", "--project-name", "--project-directory",
+		"--env-file", "--profile", "--ansi", "--progress", "--parallel"}
+)
+
+func init() {
+	containerGlobal["docker-compose"] = composeGlobal
+	containerGlobal["podman-compose"] = composeGlobal
+}
+
+// afterGlobal returns args from the first word that is neither an option nor the value
+// of one of valued (written apart: --context x; --context=x is one word).
+func afterGlobal(args, valued []string) []string {
+	return args[firstOperand(args, oneOf(valued...)):]
+}
+
+// kubectlDebugNode is the node of kubectl debug node/<name>: a pod on that node with
+// its processes, network and whole disk (under /host). Empty for any other command.
+func kubectlDebugNode(args []string) string {
+	if len(args) == 0 || args[0] != "debug" {
+		return ""
+	}
+	for _, a := range args[1:] {
+		if strings.HasPrefix(a, "node/") || strings.HasPrefix(a, "nodes/") {
+			return a
+		}
+	}
+	return ""
 }
 
 // windowsShell is cmd, powershell or pwsh run from Bash: the guard reads neither.
@@ -1208,18 +1271,21 @@ func (p Policy) publishDeny(name, what string) Decision {
 // ssh asks before reaching an untouchable host, and checks the remote command, or what
 // it sends to the remote shell through stdin.
 func (p Policy) ssh(args []string, stdin string, env map[string]string, depth int) Decision {
-	host, rest := sshTarget(args)
-	host = strings.TrimPrefix(host, "ssh://")
-	p.host = host[strings.LastIndexByte(host, '@')+1:] // the remote command runs there
-	jumps := allow
-	for _, j := range sshJumps(args) {
-		jumps = worse(jumps, p.checkHost("ssh", j))
+	o, rest := readSSH(args, sshValued, true)
+	user, host := sshDest(o.dest)
+	if o.hostName != "" {
+		host = o.hostName // ssh -o HostName=db01 web02 goes to db01
 	}
-	if sshUser(args, host) == "root" {
+	if user == "" {
+		user = o.user
+	}
+	around := p.sshAround("ssh", o, env, depth) // before p.host changes: a ProxyCommand runs here
+	p.host = host                               // the remote command runs there
+	if user == "root" {
 		if d := p.root(i18n.T(p.Lang, "guard.root.ssh", p.host, p.rootReason())); d.Verdict == Deny {
 			return d
 		} else {
-			jumps = worse(jumps, d)
+			around = worse(around, d)
 		}
 	}
 	var d Decision
@@ -1231,57 +1297,145 @@ func (p Policy) ssh(args []string, stdin string, env map[string]string, depth in
 	default:
 		d = p.inner(stdin, env, depth) // the remote shell reads stdin
 	}
-	return worse(worse(p.checkHost("ssh", host), jumps), d)
+	return worse(worse(p.checkHost("ssh", host), around), d)
 }
 
-// sshUser is the user ssh logs in as: user@host, -l user or -o User=user; "" when the
-// command does not say.
-func sshUser(args []string, host string) string {
-	if at := strings.LastIndexByte(host, '@'); at >= 0 {
-		return host[:at]
-	}
-	if u := optValue(args, "-l"); u != "" {
-		return u
-	}
-	for i, a := range args {
-		if a == "-o" && i+1 < len(args) {
-			if k, v, ok := strings.Cut(args[i+1], "="); ok && strings.EqualFold(strings.TrimSpace(k), "User") {
-				return strings.TrimSpace(v)
+// sshValued are ssh's single-letter options that take a value; scpValued are scp's.
+const (
+	sshValued = "BbcDEeFIiJLlmOoPpQRSWw"
+	scpValued = "cDFiJlOoPSX"
+)
+
+// sshOpts is what an ssh command line says about where it goes: the destination as
+// written, the user and the host name given as options, the hosts it jumps through
+// and the commands it runs here to reach the host (ProxyCommand).
+type sshOpts struct {
+	dest, user, hostName string
+	jumps, proxies       []string
+}
+
+// readSSH reads ssh's (or scp's) options as ssh does: -J host, -l user and -o in every
+// form it takes (-o User=root, -oUser=root, -o 'User root', inside a cluster such as
+// -vo). valued are the letters that take a value; withDest says the first operand is
+// the destination, and then rest is the remote command after it. -l is the user only
+// for ssh: scp's -l is a speed limit.
+func readSSH(args []string, valued string, withDest bool) (o sshOpts, rest []string) {
+	option := func(letter byte, v string) {
+		switch letter {
+		case 'J':
+			o.jumps = append(o.jumps, v)
+		case 'l':
+			if withDest {
+				o.user = v
+			}
+		case 'o':
+			k, val := sshOption(v)
+			switch strings.ToLower(k) {
+			case "user":
+				o.user = val
+			case "hostname":
+				o.hostName = val
+			case "proxyjump":
+				o.jumps = append(o.jumps, val)
+			case "proxycommand":
+				o.proxies = append(o.proxies, val)
 			}
 		}
 	}
-	return ""
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if a == "--" {
+			if withDest && i+1 < len(args) {
+				o.dest, rest = args[i+1], args[i+2:]
+			}
+			return o, rest
+		}
+		if len(a) < 2 || a[0] != '-' {
+			if withDest {
+				o.dest, rest = a, args[i+1:]
+				return o, rest
+			}
+			continue
+		}
+		for j := 1; j < len(a); j++ { // a cluster: -vo User=root, -oUser=root
+			if !strings.ContainsRune(valued, rune(a[j])) {
+				continue
+			}
+			v := a[j+1:]
+			if v == "" && i+1 < len(args) {
+				i++
+				v = args[i]
+			}
+			option(a[j], v)
+			break
+		}
+	}
+	return o, nil
 }
 
-// sshJumps are the hosts an ssh command goes through first (-J, ProxyJump).
-func sshJumps(args []string) []string {
-	var out []string
-	add := func(list string) {
+// sshOption splits an -o value as ssh does: Key=value, Key value, Key = value.
+func sshOption(s string) (key, value string) {
+	s = strings.TrimSpace(s)
+	i := strings.IndexAny(s, "= \t")
+	if i < 0 {
+		return s, ""
+	}
+	return s[:i], strings.Trim(s[i:], "= \t")
+}
+
+// sshDest splits an ssh destination ([user@]host, ssh://[user@]host[:port]) into its
+// user and its host.
+func sshDest(dest string) (user, host string) {
+	if d, ok := strings.CutPrefix(dest, "ssh://"); ok {
+		d, _, _ = strings.Cut(d, "/")
+		if at := strings.LastIndexByte(d, '@'); at >= 0 {
+			user, d = d[:at], d[at+1:]
+		}
+		if strings.HasPrefix(d, "[") { // ssh://[::1]:22
+			if end := strings.IndexByte(d, ']'); end > 0 {
+				return user, d[1:end]
+			}
+		}
+		host, _, _ = strings.Cut(d, ":")
+		return user, host
+	}
+	if at := strings.LastIndexByte(dest, '@'); at >= 0 {
+		return dest[:at], dest[at+1:]
+	}
+	return "", dest
+}
+
+// sshAround checks what an ssh connection goes through before the host: the hosts it
+// jumps through, a host given as HostName (scp and rsync -e have no destination of
+// their own to put it in), and a ProxyCommand, which runs here.
+func (p Policy) sshAround(name string, o sshOpts, env map[string]string, depth int) Decision {
+	d := allow
+	for _, list := range o.jumps {
 		for _, h := range strings.Split(list, ",") {
-			if h = strings.TrimPrefix(strings.TrimSpace(h), "ssh://"); h != "" {
+			if _, h = sshDest(strings.TrimSpace(h)); h != "" {
 				h, _, _ = strings.Cut(h, ":") // host:port
-				out = append(out, h)
+				d = worse(d, p.checkHost(name, h))
 			}
 		}
 	}
-	for i, a := range args {
-		switch {
-		case a == "-J" && i+1 < len(args):
-			add(args[i+1])
-		case a == "-o" && i+1 < len(args):
-			if k, v, ok := strings.Cut(args[i+1], "="); ok && strings.EqualFold(strings.TrimSpace(k), "ProxyJump") {
-				add(v)
-			}
+	if o.hostName != "" {
+		d = worse(d, p.checkHost(name, o.hostName))
+	}
+	for _, c := range o.proxies {
+		if !strings.EqualFold(c, "none") {
+			d = worse(d, p.inner(c, env, depth))
 		}
 	}
-	return out
+	return d
 }
 
 // vagrant ssh -c runs its command in the virtual machine: it is checked as ssh's is.
+// What follows -- goes to ssh as it is, so its remote command is checked too.
 func (p Policy) vagrant(args []string, env map[string]string, depth int) Decision {
 	if len(args) == 0 || args[0] != "ssh" {
 		return allow
 	}
+	here := p                    // where a ProxyCommand runs
 	p.host = "(virtual machine)" // a root exception for this machine does not reach it
 	d := allow
 	for i := 1; i < len(args); i++ {
@@ -1291,6 +1445,14 @@ func (p Policy) vagrant(args []string, env map[string]string, depth int) Decisio
 			i++
 		case strings.HasPrefix(a, "--command="):
 			d = worse(d, p.inner(strings.TrimPrefix(a, "--command="), env, depth))
+		case a == "--":
+			// vagrant puts the destination first, so the first word that is not an
+			// option is where the remote command starts.
+			o, rest := readSSH(args[i+1:], sshValued, true)
+			if o.dest != "" {
+				d = worse(d, p.inner(strings.Join(append([]string{o.dest}, rest...), " "), env, depth))
+			}
+			return worse(d, here.sshAround("vagrant", o, env, depth))
 		}
 	}
 	return d
@@ -1312,7 +1474,7 @@ func (p Policy) exec(name string, args []string, env map[string]string, depth in
 		return allow
 	}
 	// docker exec [options] <container> <command>
-	i := firstOperand(args, oneOf("-e", "--env", "--env-file", "-u", "--user", "-w", "--workdir", "--detach-keys"))
+	i := firstOperand(args, oneOf("-e", "--env", "--env-file", "-u", "--user", "-w", "--workdir", "--detach-keys", "--index"))
 	if i+1 >= len(args) {
 		return allow
 	}
@@ -1461,6 +1623,136 @@ func (p Policy) find(args []string, env map[string]string, depth int) Decision {
 	return d
 }
 
+// remoteCopy is scp and rsync: the hosts they copy to or from, and how they get there:
+// scp's -J and -o, the command rsync runs as its remote shell (-e, --rsh, RSYNC_RSH).
+func (p Policy) remoteCopy(c call) Decision {
+	if c.name == "scp" {
+		o, _ := readSSH(c.args, scpValued, false)
+		return worse(p.sshAround("scp", o, c.env, c.depth), p.copyHosts(c.name, c.args))
+	}
+	d := p.copyHosts(c.name, c.args)
+	rsh := c.env["RSYNC_RSH"]
+	for i := 0; i < len(c.args); i++ {
+		a := c.args[i]
+		switch {
+		case a == "--":
+			i = len(c.args)
+		case a == "--rsh" && i+1 < len(c.args):
+			rsh = c.args[i+1]
+			i++
+		case strings.HasPrefix(a, "--rsh="):
+			rsh = strings.TrimPrefix(a, "--rsh=")
+		case len(a) > 1 && a[0] == '-' && a[1] != '-':
+			for j := 1; j < len(a); j++ { // a cluster: -ave 'ssh …'
+				if strings.IndexByte("BfMT", a[j]) >= 0 {
+					break // an option whose value is the rest
+				}
+				if a[j] == 'e' {
+					if rsh = a[j+1:]; rsh == "" && i+1 < len(c.args) {
+						i++
+						rsh = c.args[i]
+					}
+					break
+				}
+			}
+		}
+	}
+	if rsh == "" {
+		return d
+	}
+	// rsync runs the remote shell here as "<rsh> [user@]host rsync --server …". The host
+	// goes without its user: root@ in scp and rsync is not this rule's (it never was).
+	host := ""
+	if h, ok := remoteOperand(c.args); ok {
+		_, h = sshDest(h)
+		host = " " + h
+	}
+	return worse(d, p.inner(rsh+host, c.env, c.depth))
+}
+
+// remoteOperand is the [user@]host of the first host:path argument of scp or rsync.
+func remoteOperand(args []string) (string, bool) {
+	for _, a := range args {
+		if strings.HasPrefix(a, "-") || strings.HasPrefix(a, "/") || strings.HasPrefix(a, ".") {
+			continue
+		}
+		if h, _, ok := strings.Cut(a, ":"); ok && h != "" && !strings.Contains(h, "/") {
+			return h, true
+		}
+	}
+	return "", false
+}
+
+// sshfs mounts a folder of another machine over ssh: the host, its user and the ssh
+// options it passes on in -o (comma-separated: ProxyJump, HostName, User, ssh_command).
+func (p Policy) sshfs(c call) Decision {
+	var o sshOpts
+	dest := ""
+	for i := 0; i < len(c.args); i++ {
+		a := c.args[i]
+		switch {
+		case a == "-o" && i+1 < len(c.args), strings.HasPrefix(a, "-o") && len(a) > 2:
+			v := strings.TrimPrefix(a, "-o")
+			if v == "" {
+				i++
+				v = c.args[i]
+			}
+			for _, part := range strings.Split(v, ",") {
+				k, val := sshOption(part)
+				switch strings.ToLower(k) {
+				case "user":
+					o.user = val
+				case "hostname":
+					o.hostName = val
+				case "proxyjump":
+					o.jumps = append(o.jumps, val)
+				case "proxycommand", "ssh_command":
+					o.proxies = append(o.proxies, val)
+				}
+			}
+		case a == "-p" && i+1 < len(c.args):
+			i++
+		case !strings.HasPrefix(a, "-") && dest == "" && strings.Contains(a, ":"):
+			dest, _, _ = strings.Cut(a, ":")
+		}
+	}
+	around := p.sshAround("sshfs", o, c.env, c.depth)
+	user, host := sshDest(dest)
+	if o.hostName != "" {
+		host = o.hostName
+	}
+	if user == "" {
+		user = o.user
+	}
+	if user == "root" && host != "" {
+		q := p
+		q.host = host
+		if d := q.root(i18n.T(p.Lang, "guard.root.ssh", host, p.rootReason())); d.Verdict == Deny {
+			return d
+		} else {
+			around = worse(around, d)
+		}
+	}
+	return worse(p.checkHost("sshfs", host), around)
+}
+
+// autossh keeps an ssh connection open: its own options (-M port, -f, -V) go, and the
+// rest is ssh's.
+func (p Policy) autossh(c call) Decision {
+	var args []string
+	for i := 0; i < len(c.args); i++ {
+		switch a := c.args[i]; {
+		case a == "-M" && i+1 < len(c.args):
+			i++
+		case strings.HasPrefix(a, "-M"), a == "-f", a == "-V":
+		default:
+			args = append(args, c.args[i:]...)
+			i = len(c.args)
+		}
+	}
+	return p.ssh(args, c.stdin, c.env, c.depth)
+}
+
 // copyHosts asks before copying to or from an untouchable host (host:path arguments).
 func (p Policy) copyHosts(name string, args []string) Decision {
 	for _, a := range args {
@@ -1520,23 +1812,6 @@ func sameHost(host, saved string) bool {
 		return false
 	}
 	return host == saved || strings.HasPrefix(host, saved+".") || strings.HasPrefix(saved, host+".")
-}
-
-// sshTarget returns the destination of an ssh command ([user@]host) and the remote
-// command after it. Unlike firstOperand, it takes a lone - as the destination, as ssh
-// does, so the command after it is still checked.
-func sshTarget(args []string) (string, []string) {
-	takesValue := shortOf("BbcDEeFIiJLlmOoPpQRSWw")
-	for i := 0; i < len(args); i++ {
-		a := args[i]
-		if len(a) < 2 || a[0] != '-' {
-			return a, args[i+1:]
-		}
-		if takesValue(a) {
-			i++
-		}
-	}
-	return "", nil
 }
 
 // shells are the POSIX shells the guard reads: their -c string, their stdin, a script.
@@ -1683,8 +1958,9 @@ func mainRepo(dir string) string {
 }
 
 // hostAccess says how docker run (or create) gives a container the whole machine:
-// --privileged, the host's processes or network namespace, or the host's / mounted
-// inside it. Empty when it does not.
+// --privileged, the host's processes or namespaces, a capability that reaches the host,
+// the host's /, /etc or the container engine's socket mounted inside it, or one of its
+// disks as a device. Empty when it does not.
 func hostAccess(args []string) string {
 	if len(args) > 1 && args[0] == "container" {
 		args = args[1:]
@@ -1693,6 +1969,9 @@ func hostAccess(args []string) string {
 		return ""
 	}
 	for i, a := range args[1:] {
+		if a == "--" {
+			break
+		}
 		next := ""
 		if i+2 < len(args) {
 			next = args[i+2]
@@ -1701,26 +1980,82 @@ func hostAccess(args []string) string {
 		if !hasValue {
 			value = next
 		}
+		if v, ok := strings.CutPrefix(a, "-v"); ok && v != "" && !strings.HasPrefix(v, "-") {
+			key, value = "-v", strings.TrimPrefix(v, "=") // -v/:/h, -v=/:/h
+		}
 		switch {
 		case a == "--privileged" || a == "--privileged=true":
 			return "--privileged"
 		case (key == "--pid" || key == "--userns" || key == "--ipc") && value == "host":
 			return key + " host"
-		case key == "--cap-add" && (strings.EqualFold(value, "ALL") || strings.EqualFold(value, "SYS_ADMIN")):
+		case key == "--cap-add" && hostCapability(value):
 			return "--cap-add " + value
 		case key == "-v" || key == "--volume":
-			if src, _, _ := strings.Cut(value, ":"); src == "/" {
+			if src, _, _ := strings.Cut(value, ":"); hostPath(src) {
 				return "-v " + value
 			}
-		case strings.HasPrefix(a, "-v/:"):
-			return a
 		case key == "--mount":
 			for _, part := range strings.Split(value, ",") {
-				if k, v, _ := strings.Cut(part, "="); (k == "source" || k == "src") && v == "/" {
+				if k, v, _ := strings.Cut(part, "="); (k == "source" || k == "src") && hostPath(v) {
 					return "--mount " + value
 				}
+			}
+		case key == "--device":
+			if dev, _, _ := strings.Cut(value, ":"); hostDisk(dev) {
+				return "--device " + value
 			}
 		}
 	}
 	return ""
+}
+
+// hostCapability says whether a capability (ALL, SYS_ADMIN, CAP_SYS_ADMIN, sys_admin…)
+// is one with which a container reaches the host: kernel modules, raw devices, any
+// file of the host by its handle, or all of them. Several may come in one value.
+func hostCapability(value string) bool {
+	for _, c := range strings.Split(value, ",") {
+		c = strings.ToUpper(strings.TrimSpace(c))
+		c = strings.TrimPrefix(c, "CAP_")
+		switch c {
+		case "ALL", "SYS_ADMIN", "SYS_MODULE", "SYS_RAWIO", "DAC_READ_SEARCH":
+			return true
+		}
+	}
+	return false
+}
+
+// hostPath says whether mounting this folder of the host gives the container the
+// machine: its /, a folder that holds what root runs or reads (/etc, /root, /boot,
+// /proc, /sys, /dev), or the container engine's socket and the folders that hold it.
+// The path is read as the engine reads it: //, /. and /x/.. are /.
+func hostPath(src string) bool {
+	if !strings.HasPrefix(src, "/") {
+		return false // a named volume, or a relative path
+	}
+	src = path.Clean(src)
+	switch src {
+	case "/", "/etc", "/root", "/boot", "/proc", "/sys", "/dev", "/run", "/var/run":
+		return true
+	}
+	switch path.Base(src) {
+	case "docker.sock", "podman.sock", "containerd.sock", "crio.sock":
+		return true
+	}
+	return false
+}
+
+// hostDisk says whether a device is one of the host's disks, or its memory: the
+// container can then read and write the host's files below any permission.
+func hostDisk(dev string) bool {
+	dev = path.Clean(dev)
+	if dev == "/dev/mem" || dev == "/dev/kmem" || dev == "/dev/port" {
+		return true
+	}
+	for _, prefix := range []string{"/dev/sd", "/dev/hd", "/dev/vd", "/dev/xvd", "/dev/nvme",
+		"/dev/mmcblk", "/dev/dm-", "/dev/mapper/", "/dev/disk/", "/dev/loop", "/dev/md"} {
+		if strings.HasPrefix(dev, prefix) {
+			return true
+		}
+	}
+	return false
 }

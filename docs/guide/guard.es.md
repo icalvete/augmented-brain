@@ -28,8 +28,10 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   Salvo que dejes a Claude en un repositorio (más abajo). Pedir ayuda sí pasa: `git
   commit --help`, `gh pr merge --help`, `su --version`.
 - **Hacerse root.** `sudo`, `su` (y `sudo-rs`, `su-rs`), `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
-  sin `--user`, `ssh root@…`, un contenedor al que se le da la máquina entera (`docker
-  run --privileged`, `-v /:/host`, `--pid=host`), y en Windows `gsudo` y `runas`. Claude te da el comando
+  sin `--user`, `ssh root@…` (también `-o User=root`), un contenedor al que se le da la
+  máquina entera (`docker run --privileged`, `-v /:/host`, `--pid=host`, el socket de
+  Docker o uno de los discos de la máquina; también con `podman` y `nerdctl`, y `kubectl
+  debug node/…`), y en Windows `gsudo` y `runas`. Claude te da el comando
   exacto para que lo ejecutes tú. Ejecutar como otro usuario (`sudo -u www-data …`) sí
   vale.
 - **Secretos.** Un token o una clave escritos en un comando o en un fichero que escribe
@@ -51,8 +53,9 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   `eksctl`, `copilot`. Y cualquier otro programa con un perfil de producción puesto en el
   propio comando (`AWS_PROFILE=prod bash deploy.sh`): lo que ejecute puede llegar a AWS
   con él.
-- **Máquinas que no se tocan.** `ssh`, `scp`, `rsync`, `sftp` y `mosh` a una máquina que
-  marcaste como intocable. `db01` y `db01.example.com` cuentan como la misma máquina.
+- **Máquinas que no se tocan.** `ssh`, `scp`, `rsync`, `sftp`, `mosh`, `sshfs` y
+  `autossh` a una máquina que marcaste como intocable, también cuando solo pasan por ella
+  (`-J`, `ProxyJump`) o la nombran en `-o HostName`. `db01` y `db01.example.com` cuentan como la misma máquina.
 - **Lanzar a mano un flujo de publicación** (`gh workflow run release`, o lo mismo por
   `gh api`). Saca una versión, así que decides tú, pero sin ir a un terminal: di que sí
   solo si has pedido tú esa versión ahora. Si dices que no, o nadie contesta, no se lanza
@@ -208,7 +211,7 @@ root allí, después de que confirmes cada uno. Pon una fecha cercana.
 ## Mira por dentro
 
 El guardia lee lo que se ejecuta dentro de otros comandos: `ssh máquina '…'`,
-`vagrant ssh -c`, `docker exec`, `podman exec`, `kubectl exec`, `bash -c`, los bucles, lo
+`vagrant ssh -c` (y tras `--`), `docker exec`, `podman exec`, `kubectl exec`, `bash -c`, los bucles, lo
 que una tubería le pasa a una shell (`echo 'sudo …' | bash`), los scripts cortos que
 lanza Claude (`bash deploy.sh`, `./deploy.sh`), también cuando el mismo comando los
 escribe antes (`echo '…' > x.sh && bash x.sh`), `env -S '…'` y tus alias de git (`git ci`

@@ -41,3 +41,13 @@ func TestDoasIsRoot(t *testing.T) {
 		}
 	}
 }
+
+// Every wrapper with long options that take a value is a wrapper: an entry for a name
+// that is not one would never be read.
+func TestWrapperLongAreWrappers(t *testing.T) {
+	for name := range wrapperLong {
+		if _, ok := wrappers[name]; !ok {
+			t.Errorf("%q has long options in wrapperLong but is not in wrappers", name)
+		}
+	}
+}

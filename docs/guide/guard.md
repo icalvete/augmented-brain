@@ -29,8 +29,9 @@ A program determined to get around it could. Read the
   Unless you let Claude in a repository (below). Asking for help passes: `git commit
   --help`, `gh pr merge --help`, `su --version`.
 - **Becoming root.** `sudo`, `su` (and `sudo-rs`, `su-rs`), `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
-  without `--user`, `ssh root@…`, a container given the whole machine (`docker run
-  --privileged`, `-v /:/host`, `--pid=host`), and on Windows `gsudo` and `runas`. Claude
+  without `--user`, `ssh root@…` (also `-o User=root`), a container given the whole
+  machine (`docker run --privileged`, `-v /:/host`, `--pid=host`, the Docker socket or one
+  of the machine's disks; with `podman` and `nerdctl` too, and `kubectl debug node/…`), and on Windows `gsudo` and `runas`. Claude
   gives you the exact command to run yourself. Running as another user (`sudo -u www-data …`) is fine.
 - **Secrets.** A token or key written in a command or in a file Claude writes. Secrets are
   read from the system keychain, an environment variable or a secrets manager, never
@@ -49,8 +50,9 @@ A program determined to get around it could. Read the
   `sam`, `serverless`, `terraform`, `tofu`, `pulumi`, `eksctl`, `copilot`. And any other
   program with a production profile set in the command itself (`AWS_PROFILE=prod bash
   deploy.sh`): whatever it runs may reach AWS with it.
-- **Machines not to touch.** `ssh`, `scp`, `rsync`, `sftp` and `mosh` to a host you marked
-  as untouchable. `db01` and `db01.example.com` count as the same host.
+- **Machines not to touch.** `ssh`, `scp`, `rsync`, `sftp`, `mosh`, `sshfs` and `autossh`
+  to a host you marked as untouchable, also when they only go through it (`-J`,
+  `ProxyJump`) or name it in `-o HostName`. `db01` and `db01.example.com` count as the same host.
 - **Starting a release workflow by hand** (`gh workflow run release`, or the same
   through `gh api`). It publishes a version, so it is your call, but you do not need a
   terminal: say yes only if you asked for that release now. If you say no, or nobody
@@ -201,7 +203,7 @@ you confirm each one. Keep the date close.
 
 ## It looks inside
 
-The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh -c`,
+The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh -c` (and after `--`),
 `docker exec`, `podman exec`, `kubectl exec`, `bash -c`, loops, what a pipe feeds a shell
 (`echo 'sudo …' | bash`), short scripts Claude runs (`bash deploy.sh`,
 `./deploy.sh`), also when the same command writes them first (`echo '…' > x.sh && bash
