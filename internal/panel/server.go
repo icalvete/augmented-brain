@@ -60,6 +60,19 @@ type Server struct {
 	started time.Time
 	// tickets are the one-use addresses the command opens (ticket.go).
 	tickets tickets
+
+	// net is the panel's second socket, the one Tailscale reaches: everything that
+	// comes through it is from the network, whatever its Host says. Open only while
+	// the panel is remote; mu guards it.
+	mu  sync.Mutex
+	net *netDoor
+}
+
+// netDoor is the socket Tailscale publishes, and its server.
+type netDoor struct {
+	port int
+	srv  *http.Server
+	done chan struct{}
 }
 
 // Remote is the panel published to the user's own Tailscale network (`panel remote`).
@@ -75,10 +88,34 @@ type Remote struct {
 // OwnerHeader is the header Tailscale puts the sender's login in.
 const OwnerHeader = "Tailscale-User-Login"
 
-// viaRemote reports whether r came through the network address.
+// fromNet marks, in a request's context, that it came through the network's socket.
+type fromNet struct{}
+
+// viaRemote reports whether r came through the network's socket. The socket, not the
+// Host header, decides: anyone in the network can send any Host.
 func (s *Server) viaRemote(r *http.Request) bool {
-	rem := s.remote.Load()
-	return rem != nil && r.Host == rem.Host
+	v, _ := r.Context().Value(fromNet{}).(bool)
+	return v
+}
+
+// proxyHeaders are what a proxy (`tailscale serve` among them) adds to a request, and
+// what no browser on this machine sends: on the local socket, a request that carries
+// one did not come straight from this machine.
+var proxyHeaders = []string{"X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto", "Forwarded"}
+
+// proxied reports whether r carries a header a proxy adds, or any of Tailscale's.
+func proxied(r *http.Request) bool {
+	for _, h := range proxyHeaders {
+		if _, ok := r.Header[h]; ok {
+			return true
+		}
+	}
+	for k := range r.Header {
+		if strings.HasPrefix(k, "Tailscale-") {
+			return true
+		}
+	}
+	return false
 }
 
 // origin is the scheme and host the browser sees for r: https through the network,
@@ -207,8 +244,15 @@ func ServeWith(ctx context.Context, cfgDir string, idle time.Duration, remote *R
 		ln.Close()
 		return err
 	}
-	s.remote.Store(remote)
 	s.publish, s.pid, s.started = publish, os.Getpid(), time.Now()
+	defer s.closeNet()
+	if remote != nil {
+		if err := s.openNet(); err != nil {
+			ln.Close()
+			return err
+		}
+		s.remote.Store(remote)
+	}
 	if err := s.writeInfo(); err != nil {
 		ln.Close()
 		return err
@@ -220,14 +264,7 @@ func ServeWith(ctx context.Context, cfgDir string, idle time.Duration, remote *R
 			_ = r.Unpublish()
 		}
 	}()
-	srv := &http.Server{
-		Handler:           s,
-		ReadHeaderTimeout: 10 * time.Second,
-		ReadTimeout:       30 * time.Second,
-		WriteTimeout:      30 * time.Second,
-		IdleTimeout:       time.Minute,
-		MaxHeaderBytes:    32 << 10,
-	}
+	srv := httpServer(s)
 	errc := make(chan error, 1)
 	go func() { errc <- srv.Serve(ln) }()
 	tick := time.NewTicker(min(idle/10+time.Millisecond, time.Minute))
@@ -249,6 +286,60 @@ func ServeWith(ctx context.Context, cfgDir string, idle time.Duration, remote *R
 	shut, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	return srv.Shutdown(shut)
+}
+
+func httpServer(h http.Handler) *http.Server {
+	return &http.Server{
+		Handler:           h,
+		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       time.Minute,
+		MaxHeaderBytes:    32 << 10,
+	}
+}
+
+// openNet opens the network's socket, on a free port of 127.0.0.1 of its own: the one
+// `tailscale serve` publishes. Nothing else in the panel listens there.
+func (s *Server) openNet() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.net != nil {
+		return nil
+	}
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return err
+	}
+	d := &netDoor{port: ln.Addr().(*net.TCPAddr).Port, srv: httpServer(http.HandlerFunc(s.serveNet)), done: make(chan struct{})}
+	go func() { _ = d.srv.Serve(ln); close(d.done) }()
+	s.net = d
+	return nil
+}
+
+// closeNet closes the network's socket, if open.
+func (s *Server) closeNet() {
+	s.mu.Lock()
+	d := s.net
+	s.net = nil
+	s.mu.Unlock()
+	if d == nil {
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_ = d.srv.Shutdown(ctx)
+	<-d.done
+}
+
+// netPort is the network socket's port, or 0.
+func (s *Server) netPort() int {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.net == nil {
+		return 0
+	}
+	return s.net.port
 }
 
 func equal(a, b string) bool { return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1 }
@@ -312,9 +403,18 @@ func (s *Server) sameOrigin(r *http.Request) bool {
 
 func forbidden(w http.ResponseWriter) { http.Error(w, "forbidden", http.StatusForbidden) }
 
-// ServeHTTP checks every request before it reaches a page: the host, the session in
-// the address or the token, the method, and for writes where they come from.
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// ServeHTTP answers the local socket: this machine, on 127.0.0.1.
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) { s.serve(w, r, false) }
+
+// serveNet answers the network's socket: whatever comes there came through Tailscale.
+func (s *Server) serveNet(w http.ResponseWriter, r *http.Request) { s.serve(w, r, true) }
+
+// serve checks every request before it reaches a page: the socket and the host, the
+// session in the address or the token, the method, and for writes where they come from.
+func (s *Server) serve(w http.ResponseWriter, r *http.Request, remote bool) {
+	if remote {
+		r = r.WithContext(context.WithValue(r.Context(), fromNet{}, true))
+	}
 	h := w.Header()
 	h.Set("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'")
 	h.Set("X-Content-Type-Options", "nosniff")
@@ -328,16 +428,18 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.Set("Cross-Origin-Resource-Policy", "same-origin")
 	h.Set("Cache-Control", "no-store")
 
-	// DNS rebinding: a page of another site whose name now points to 127.0.0.1 sends
-	// its own name as Host. Through the network, the name is the machine's own, and the
-	// sender must be its owner: someone else in the network (a shared machine, a guest)
-	// does not get in, even with the address.
-	remote := s.viaRemote(r)
-	if rem := s.remote.Load(); remote && (rem == nil || !strings.EqualFold(r.Header.Get(OwnerHeader), rem.Owner)) {
-		forbidden(w)
-		return
-	}
-	if !remote && !sameHost(r.Host, s.port) {
+	// Through the network's socket, the name is the machine's own, and the sender must
+	// be its owner: someone else in the network (a shared machine, a guest) does not get
+	// in, even with the address, and no Host makes a request local there. On the local
+	// socket, DNS rebinding: a page of another site whose name now points to 127.0.0.1
+	// sends its own name as Host; and a request a proxy passed on is not this machine's.
+	if remote {
+		rem := s.remote.Load()
+		if rem == nil || r.Host != rem.Host || !strings.EqualFold(r.Header.Get(OwnerHeader), rem.Owner) {
+			forbidden(w)
+			return
+		}
+	} else if !sameHost(r.Host, s.port) || proxied(r) {
 		forbidden(w)
 		return
 	}
@@ -347,7 +449,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	// A ticket needs no session: it is how a browser gets one.
 	if strings.HasPrefix(r.URL.Path, "/t/") && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
-		s.redeem(w, r)
+		s.redeem(w, r, remote)
 		return
 	}
 	r, browser, bare := s.inSession(r)
@@ -391,12 +493,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // writeInfo writes InfoFile with what the panel is now.
 func (s *Server) writeInfo() error {
-	return writeInfo(s.cfgDir, Info{PID: s.pid, Port: s.port, Token: s.token, Started: s.started, Remote: s.remote.Load()})
+	i := Info{PID: s.pid, Port: s.port, Token: s.token, Started: s.started, Remote: s.remote.Load()}
+	if i.Remote != nil {
+		i.RemotePort = s.netPort()
+	}
+	return writeInfo(s.cfgDir, i)
 }
 
-// commandOnly reports whether r is the command itself: the token in its header, on
-// 127.0.0.1. Through the network it never is, even with the token: `tailscale serve`
-// reaches the panel from 127.0.0.1 too, so the address alone proves nothing.
+// commandOnly reports whether r is the command itself: the token in its header, on the
+// local socket. Through the network's socket it never is, even with the token.
 func (s *Server) commandOnly(r *http.Request) bool { return s.bearer(r) && !s.viaRemote(r) }
 
 // handleRemote makes the running panel answer through the user's Tailscale network as
@@ -422,9 +527,14 @@ func (s *Server) handleRemote(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprint("tailscale: ", err), http.StatusServiceUnavailable)
 		return
 	}
+	if err := s.openNet(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	s.remote.Store(rem)
 	if err := s.writeInfo(); err != nil {
 		s.remote.Store(nil)
+		s.closeNet()
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -439,6 +549,7 @@ func (s *Server) handleLocal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.remote.Store(nil)
+	s.closeNet() // this request came by the local socket: nothing here waits for itself
 	if err := s.writeInfo(); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

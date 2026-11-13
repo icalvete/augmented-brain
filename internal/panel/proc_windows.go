@@ -3,6 +3,8 @@
 package panel
 
 import (
+	"time"
+
 	"golang.org/x/sys/windows"
 )
 
@@ -36,6 +38,21 @@ func exePath(pid int) (string, error) {
 }
 
 const exactExe = false
+
+// procInfo is when process pid started. Its command line is not read on Windows: nil
+// says so, and ours goes by the program's name and the start time.
+func procInfo(pid int) ([]string, time.Time, error) {
+	h, err := windows.OpenProcess(windows.PROCESS_QUERY_LIMITED_INFORMATION, false, uint32(pid))
+	if err != nil {
+		return nil, time.Time{}, err
+	}
+	defer windows.CloseHandle(h)
+	var created, exited, kernel, user windows.Filetime
+	if err := windows.GetProcessTimes(h, &created, &exited, &kernel, &user); err != nil {
+		return nil, time.Time{}, err
+	}
+	return nil, time.Unix(0, created.Nanoseconds()), nil
+}
 
 // terminate ends the process: Windows has no gentle signal for a process without a
 // window, so it is the same as kill.

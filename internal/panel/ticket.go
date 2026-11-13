@@ -32,6 +32,10 @@ type ticket struct {
 	page    string // the page to open, under /s/<session>/
 	expires time.Time
 	used    bool
+	// remote: the ticket opens the panel through the network's socket only; any other
+	// opens it on 127.0.0.1 only. So a program of this machine cannot spend on
+	// 127.0.0.1 the ticket meant for the phone, nor the network one for this browser.
+	remote bool
 }
 
 type tickets struct {
@@ -39,8 +43,8 @@ type tickets struct {
 	m  map[string]*ticket
 }
 
-// add makes a ticket for page, valid for ttl.
-func (t *tickets) add(page string, ttl time.Duration, now time.Time) (string, error) {
+// add makes a ticket for page, valid for ttl, for the network's socket when remote.
+func (t *tickets) add(page string, ttl time.Duration, remote bool, now time.Time) (string, error) {
 	r, err := random()
 	if err != nil {
 		return "", err
@@ -52,19 +56,20 @@ func (t *tickets) add(page string, ttl time.Duration, now time.Time) (string, er
 	if t.m == nil {
 		t.m = map[string]*ticket{}
 	}
-	t.m[id] = &ticket{page: page, expires: now.Add(ttl)}
+	t.m[id] = &ticket{page: page, expires: now.Add(ttl), remote: remote}
 	return id, nil
 }
 
-// spend uses ticket id: its page and "" when it is good, or why not ("used", "expired",
-// "unknown"). A good ticket is good once.
-func (t *tickets) spend(id string, now time.Time) (page, why string) {
+// spend uses ticket id, which came through the network's socket when remote: its page
+// and "" when it is good, or why not ("used", "expired", "unknown"). A good ticket is
+// good once, and only through its own socket: through the other one it is unknown.
+func (t *tickets) spend(id string, remote bool, now time.Time) (page, why string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	t.prune(now)
 	k, ok := t.m[id]
 	switch {
-	case !ok || len(id) != 32:
+	case !ok || len(id) != 32 || k.remote != remote:
 		return "", "unknown"
 	case k.used:
 		return "", "used"
@@ -105,11 +110,11 @@ func (s *Server) handleTicket(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad page", http.StatusBadRequest)
 		return
 	}
-	ttl := TicketTTL
-	if r.PostForm.Get("remote") == "1" {
+	ttl, remote := TicketTTL, r.PostForm.Get("remote") == "1"
+	if remote {
 		ttl = RemoteTicketTTL
 	}
-	id, err := s.tickets.add(page, ttl, time.Now())
+	id, err := s.tickets.add(page, ttl, remote, time.Now())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -121,9 +126,9 @@ func (s *Server) handleTicket(w http.ResponseWriter, r *http.Request) {
 // redeem answers GET /t/<ticket>: the first time, 303 to the page under the session;
 // after that, 410 with a page that says the link was used or ran out. That page is
 // plain, with no link into the panel: it must not give the session away.
-func (s *Server) redeem(w http.ResponseWriter, r *http.Request) {
+func (s *Server) redeem(w http.ResponseWriter, r *http.Request, remote bool) {
 	id := strings.TrimPrefix(r.URL.Path, "/t/")
-	page, why := s.tickets.spend(id, time.Now())
+	page, why := s.tickets.spend(id, remote, time.Now())
 	if why == "" {
 		s.last.Store(time.Now().UnixNano())
 		http.Redirect(w, r, s.base()+"/"+page, http.StatusSeeOther)

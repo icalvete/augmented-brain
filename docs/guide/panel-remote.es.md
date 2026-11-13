@@ -49,13 +49,17 @@ instala ni cambia nada de Tailscale por ti.
 
 ## Quién puede abrirlo
 
-Tres cosas hacen que sea solo tuyo:
+Cuatro cosas hacen que sea solo tuyo:
 
 - **Solo tu red de Tailscale llega a la dirección.** En internet no existe.
 - **Solo entra tu cuenta.** Tailscale le dice al panel quién manda cada petición (la
   cuenta con la que entraste, con su contraseña y su segundo factor), y el panel solo
   deja entrar al dueño del ordenador. Otra persona de tu red, o alguien con quien
   compartes un dispositivo, recibe «forbidden» aunque tenga la dirección.
+- **La red tiene su propia puerta.** Lo que trae Tailscale llega a un puerto del panel
+  que solo usa él, y se trata como venido de la red diga lo que diga de sí mismo: desde
+  ahí no se puede hacer nada de lo que es solo de este ordenador (configurar una copia
+  de seguridad, volver a una configuración anterior).
 - **La dirección sirve una vez**, y las páginas que abre llevan una llave que cambia
   cada vez que arranca el panel.
 
@@ -73,7 +77,8 @@ augmented-brain panel stop
 Al pararse, le quita la dirección a Tailscale. Si el ordenador se colgó o se reinició con
 el panel publicado, el siguiente panel que arranque la quita, y
 `augmented-brain doctor` avisa mientras siga ahí. El puerto 8443 de tu red de Tailscale es
-del panel: si ya publicas otra cosa ahí, augmented brain no la toca y te lo dice.
+del panel: si ya publicas otra cosa ahí (aunque sea otro programa de este ordenador),
+augmented brain no la toca y te lo dice. Solo retira la dirección que publicó él mismo.
 
 ## Compruébalo
 

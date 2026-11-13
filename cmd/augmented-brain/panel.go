@@ -65,7 +65,17 @@ func cmdPanel(args []string, out, errOut io.Writer) int {
 			if err != nil {
 				return nil, err
 			}
-			return &panel.Remote{Host: st.Host(), Owner: st.Owner, Unpublish: tn.Unserve}, nil
+			// Taken back when the panel stops: only the port recorded as this
+			// configuration's, and only while Tailscale still points at it.
+			unpublish := func() error {
+				port := tailnet.Published(dir)
+				err := tn.Unserve(port)
+				if err == nil {
+					tailnet.Forget(dir, port)
+				}
+				return err
+			}
+			return &panel.Remote{Host: st.Host(), Owner: st.Owner, Unpublish: unpublish}, nil
 		}
 		var r *panel.Remote
 		if remote {
@@ -166,9 +176,10 @@ func panelRemote(c *config.Config, out, errOut io.Writer) int {
 	if err == nil && !st.HTTPS {
 		err = tailnet.ErrNoHTTPS
 	}
+	mine := ownPorts(c.Dir)
 	if err == nil {
 		var cur string
-		if cur, err = tn.Served(); err == nil && cur == "other" {
+		if cur, err = tn.Served(); err == nil && cur != "" && !tailnet.Ours(cur, mine...) {
 			err = tailnet.ErrPortTaken
 		}
 	}
@@ -202,7 +213,16 @@ func panelRemote(c *config.Config, out, errOut io.Writer) int {
 			return 1
 		}
 	}
-	if err := tn.Serve(info.Port); err != nil {
+	if info.RemotePort == 0 {
+		fmt.Fprintln(errOut, "the panel has no socket for the network")
+		return 1
+	}
+	// Recorded first: whatever happens next, only this port is ever taken back.
+	if err := tailnet.Record(c.Dir, info.RemotePort); err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	}
+	if err := tn.Serve(info.RemotePort, mine...); err != nil {
 		if how == panel.Switched {
 			// The panel was open and went remote for this: it goes back to local only,
 			// and the pages open in the browser go on as they were.
@@ -223,6 +243,17 @@ func panelRemote(c *config.Config, out, errOut io.Writer) int {
 	}
 	fmt.Fprintln(out, "\n"+i18n.T(l, "panel.remote.idle", st.Owner))
 	return 0
+}
+
+// ownPorts are the local ports Tailscale may point at for this configuration's panel:
+// the one recorded, and the local port of a remote panel of an earlier program still
+// running (it published that one, and recorded none).
+func ownPorts(dir string) []int {
+	ports := []int{tailnet.Published(dir)}
+	if i, ok := panel.ReadInfo(dir); ok && i.Remote != nil && i.RemotePort == 0 && panel.Alive(i) {
+		ports = append(ports, i.Port)
+	}
+	return ports
 }
 
 // explainTailnet says in the user's language what is missing for the remote panel.

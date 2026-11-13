@@ -34,14 +34,21 @@ import (
 	"github.com/icalvete/augmented-brain/internal/tailnet"
 )
 
-// UnpublishLeftover takes back a Tailscale address of the panel that outlived it (a
-// panel that crashed, or a reboot: Tailscale brings back what was published), so that
-// whatever takes that local port later is never reachable from the network. It does
-// nothing without Tailscale. Tests replace it.
-var UnpublishLeftover = func() error {
-	if err := tailnet.New().Unserve(); err != nil && !errors.Is(err, tailnet.ErrMissing) {
+// UnpublishLeftover takes back a Tailscale address of cfgDir's panel that outlived it
+// (a panel that crashed, or a reboot: Tailscale brings back what was published), so
+// that whatever takes that local port later is never reachable from the network. Only
+// the port the panel recorded (tailnet.Published) is ever taken back: with none, it
+// does nothing and never runs tailscale; the user's own `tailscale serve`, or another
+// configuration's panel, stays. Tests replace it.
+var UnpublishLeftover = func(cfgDir string) error {
+	port := tailnet.Published(cfgDir)
+	if port == 0 {
+		return nil
+	}
+	if err := tailnet.New().Unserve(port); err != nil && !errors.Is(err, tailnet.ErrMissing) {
 		return err
 	}
+	tailnet.Forget(cfgDir, port)
 	return nil
 }
 
@@ -71,6 +78,10 @@ type Info struct {
 	Started time.Time `json:"started"`
 	// Remote is set while the panel is published to the user's Tailscale network.
 	Remote *Remote `json:"remote,omitempty"`
+	// RemotePort is the panel's second socket, the one Tailscale publishes, set with
+	// Remote: what comes there is from the network, whatever its Host says. A panel of
+	// an earlier program has none (it told the network apart by the Host header).
+	RemotePort int `json:"remote_port,omitempty"`
 }
 
 // mac is HMAC-SHA256 of msg under the token, in hex.
@@ -201,6 +212,14 @@ var client = &http.Client{
 	CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
 }
 
+// RemoteWait is how long the command waits for the panel to go remote (POST /remote):
+// the panel asks `tailscale status` then, which may take up to 20 seconds when
+// Tailscale has just woken up or the machine is busy.
+var RemoteWait = 25 * time.Second
+
+// slowClient is client for POST /remote.
+var slowClient = &http.Client{Timeout: RemoteWait, CheckRedirect: client.CheckRedirect}
+
 // Alive reports whether the panel in i answers on its port and proves it knows the
 // token: the command sends a random challenge, and only the real server can answer
 // HMAC-SHA256(token, challenge). The token itself is never sent, so whatever took the
@@ -228,10 +247,21 @@ func lock(cfgDir string) (func(), error) {
 	return filelock.Lock(filepath.Join(cfgDir, lockFile))
 }
 
-// ours reports whether process pid runs this same program: by its path on Linux, by
-// its name elsewhere (best effort). A process that cannot be told is not ours.
-func ours(pid int) bool {
-	if pid == os.Getpid() || !pidAlive(pid) {
+// ours reports whether process pid is the panel's server that started at started: it
+// runs this same program (by its path on Linux, by its name elsewhere), as `panel
+// serve` (Linux and macOS; Windows does not tell), and it started before the panel
+// wrote started (a process id used again belongs to a process that started later). A
+// process that cannot be told is not ours: never end what may be another session's
+// MCP server, a backup or a hook.
+func ours(pid int, started time.Time) bool {
+	if pid == os.Getpid() || !pidAlive(pid) || started.IsZero() {
+		return false
+	}
+	args, since, err := procInfo(pid)
+	if err != nil || since.IsZero() || since.After(started.Add(startSlack)) {
+		return false
+	}
+	if args != nil && !servesPanel(args) {
 		return false
 	}
 	self, err := os.Executable()
@@ -265,9 +295,24 @@ func waitExit(pid int, d time.Duration) bool {
 	}
 }
 
-// end stops process pid when it is ours: gently first, then by force.
-func end(pid int) bool {
-	if !ours(pid) {
+// startSlack is how much later than the panel's start a process may seem to have
+// started, for the clocks' rounding: /proc counts in ticks, ps in seconds.
+const startSlack = 2 * time.Second
+
+// servesPanel reports whether a command line is the panel's server: `panel serve`.
+func servesPanel(args []string) bool {
+	for k := 1; k+1 < len(args); k++ {
+		if args[k] == "panel" && args[k+1] == "serve" {
+			return true
+		}
+	}
+	return false
+}
+
+// end stops the panel's process of i when it is ours: gently first, then by force.
+func end(i Info) bool {
+	pid := i.PID
+	if !ours(pid, i.Started) {
 		return false
 	}
 	_ = terminate(pid)
@@ -281,10 +326,10 @@ func end(pid int) bool {
 // clearStale forgets a panel that does not answer: it ends its process when that is
 // still this program (a server that hangs), and removes the info file.
 func clearStale(cfgDir string, i Info) bool {
-	ended := end(i.PID)
+	ended := end(i)
 	_ = os.Remove(filepath.Join(cfgDir, InfoFile))
 	if i.Remote != nil {
-		_ = UnpublishLeftover()
+		_ = UnpublishLeftover(cfgDir)
 	}
 	return ended
 }
@@ -337,12 +382,21 @@ func GoRemote(cfgDir, self string) (info Info, how string, err error) {
 	}
 	defer unlock()
 	if i, ok := ReadInfo(cfgDir); ok && Alive(i) {
-		if i.Remote != nil {
+		// A panel of an earlier program, remote without a socket of its own, tells the
+		// network apart by the Host header: it is started again, as this one.
+		if i.Remote != nil && i.RemotePort != 0 {
 			return i, WasRemote, nil
 		}
-		if ask(i, "/remote") == nil {
-			if now, ok := ReadInfo(cfgDir); ok && now.PID == i.PID && now.Remote != nil {
-				return now, Switched, nil
+		if i.Remote == nil {
+			err := ask(i, "/remote")
+			if err == nil {
+				if now, ok := ReadInfo(cfgDir); ok && now.PID == i.PID && now.Remote != nil && now.RemotePort != 0 {
+					return now, Switched, nil
+				}
+			} else if !earlier(err) {
+				// Tailscale did not answer in time, or refused: the panel stays as it
+				// is, and so do the pages open in the browser.
+				return Info{}, "", err
 			}
 		}
 		info, _, err := startModeLocked(cfgDir, self, true)
@@ -367,8 +421,34 @@ func GoLocal(cfgDir string) error {
 	return ask(i, "/local")
 }
 
+// answerError is a panel's answer other than 2xx.
+type answerError struct {
+	path   string
+	code   int
+	status string
+	text   string
+}
+
+func (e *answerError) Error() string {
+	if e.text != "" {
+		return fmt.Sprintf("the panel answered %s to %s: %s", e.status, e.path, e.text)
+	}
+	return fmt.Sprintf("the panel answered %s to %s", e.status, e.path)
+}
+
+// earlier reports whether err is the answer of a panel that cannot do what was asked
+// (an earlier program: no such path, or no way to publish), and not a failure of this
+// one (Tailscale slow or stopped, a timeout).
+func earlier(err error) bool {
+	var a *answerError
+	if !errors.As(err, &a) {
+		return false
+	}
+	return a.code == http.StatusNotFound || a.code == http.StatusMethodNotAllowed || a.code == http.StatusNotImplemented
+}
+
 // ask posts to the running panel as the command, with its token. Any answer but 2xx
-// is an error: an earlier panel without that path answers 404, or 403.
+// is an *answerError: an earlier panel without that path answers 404, or 403.
 func ask(i Info, path string) error {
 	req, err := http.NewRequest(http.MethodPost, i.origin()+path, nil)
 	if err != nil {
@@ -376,20 +456,27 @@ func ask(i Info, path string) error {
 	}
 	req.Header.Set("Authorization", "Bearer "+i.Token)
 	req.Header.Set("Origin", i.origin())
-	resp, err := client.Do(req)
+	c := client
+	if path == "/remote" {
+		c = slowClient
+	}
+	resp, err := c.Do(req)
 	if err != nil {
 		return err
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return fmt.Errorf("the panel answered %s to %s", resp.Status, path)
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 300))
+		return &answerError{path: path, code: resp.StatusCode, status: resp.Status, text: strings.TrimSpace(string(body))}
 	}
 	return nil
 }
 
 func startModeLocked(cfgDir, self string, remote bool) (info Info, started bool, err error) {
 	if i, ok := ReadInfo(cfgDir); ok {
-		if Alive(i) && (!remote || i.Remote != nil) {
+		// A remote panel of an earlier program has no socket of its own for the
+		// network (RemotePort): it is stopped and started again, as this one.
+		if Alive(i) && (!remote || (i.Remote != nil && i.RemotePort != 0)) {
 			return i, false, nil
 		}
 		if Alive(i) {
@@ -401,7 +488,7 @@ func startModeLocked(cfgDir, self string, remote bool) (info Info, started bool,
 		}
 	}
 	// No panel answers now: nothing of ours should be published.
-	_ = UnpublishLeftover()
+	_ = UnpublishLeftover(cfgDir)
 	logPath := filepath.Join(cfgDir, logFile)
 	log, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o600)
 	if err != nil {
@@ -487,7 +574,7 @@ func stopRunning(cfgDir string, i Info) error {
 		return err
 	}
 	if err != nil || !waitExit(i.PID, stopWait) {
-		if !end(i.PID) && pidAlive(i.PID) {
+		if !end(i) && pidAlive(i.PID) {
 			if err == nil {
 				err = fmt.Errorf("the panel (process %d) did not stop", i.PID)
 			}

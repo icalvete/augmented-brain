@@ -210,3 +210,36 @@ func waitInfo(t *testing.T, cfg string) Info {
 	t.Fatal("the panel did not start")
 	return Info{}
 }
+
+// Tailscale slow to answer (P-09): `tailscale status` takes 3 seconds, more than the
+// command's usual 2. The panel still switches in place, same process and key; and when
+// Tailscale refuses, the panel is left as it was, not started again.
+func TestGoRemoteWaitsForASlowTailscale(t *testing.T) {
+	_, cfg := fixture(t, "en")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	var fail atomic.Bool
+	publish := func() (*Remote, error) {
+		time.Sleep(3 * time.Second)
+		if fail.Load() {
+			return nil, errors.New("tailscale is stopped")
+		}
+		return &Remote{Host: switchHost, Owner: switchOwner}, nil
+	}
+	errc := make(chan error, 1)
+	go func() { errc <- ServeWith(ctx, cfg, time.Hour, nil, publish) }()
+	defer func() { cancel(); <-errc }()
+	first := waitInfo(t, cfg)
+	fail.Store(true)
+	if _, how, err := GoRemote(cfg, "never-started"); err == nil || how != "" || !strings.Contains(err.Error(), "503") {
+		t.Fatalf("Tailscale stopped: %q %v", how, err)
+	}
+	if i, ok := ReadInfo(cfg); !ok || i.PID != first.PID || i.Token != first.Token || i.Remote != nil {
+		t.Fatalf("the panel changed: %+v", i)
+	}
+	fail.Store(false)
+	info, how, err := GoRemote(cfg, "never-started")
+	if err != nil || how != Switched || info.PID != first.PID || info.Token != first.Token {
+		t.Fatalf("slow Tailscale: %q %v %+v", how, err, info)
+	}
+}
