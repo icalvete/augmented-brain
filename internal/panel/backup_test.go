@@ -92,13 +92,13 @@ func TestBackupPage(t *testing.T) {
 	// Through the network: shown, no buttons, posts refused.
 	const rhost, owner = "box.example.ts.net:8443", "lucia@example.com"
 	s.remote.Store(&Remote{Host: rhost, Owner: owner})
-	w = s.do(t, req{path: s.base() + "/backup?s=work", host: rhost, owner: owner})
+	w = s.do(t, req{path: s.netBase() + "/backup?s=work", host: rhost, owner: owner})
 	if w.Code != http.StatusOK || strings.Contains(w.Body.String(), "Back up now") || !strings.Contains(w.Body.String(), "from another device") {
 		t.Errorf("remote page: %d, button or note wrong", w.Code)
 	}
 	for _, p := range []string{"/backup/run", "/backup/setup"} {
-		form := url.Values{"s": {"work"}, "csrf": {s.csrf}}
-		if w := s.do(t, req{method: http.MethodPost, path: s.base() + p, host: rhost, owner: owner, origin: "https://" + rhost, form: form}); w.Code != http.StatusBadRequest {
+		form := url.Values{"s": {"work"}, "csrf": {s.netCSRF}}
+		if w := s.do(t, req{method: http.MethodPost, path: s.netBase() + p, host: rhost, owner: owner, origin: "https://" + rhost, form: form}); w.Code != http.StatusBadRequest {
 			t.Errorf("remote %s: %d", p, w.Code)
 		}
 	}
@@ -190,12 +190,12 @@ func TestBackupGoBack(t *testing.T) {
 	// Through the network: shown, no form, refused.
 	const rhost, owner = "box.example.ts.net:8443", "lucia@example.com"
 	s.remote.Store(&Remote{Host: rhost, Owner: owner})
-	w := s.do(t, req{path: s.base() + "/backup/back?s=work&c=" + old, host: rhost, owner: owner})
+	w := s.do(t, req{path: s.netBase() + "/backup/back?s=work&c=" + old, host: rhost, owner: owner})
 	if w.Code != http.StatusOK || strings.Contains(w.Body.String(), `name="confirm"`) || !strings.Contains(w.Body.String(), "from another device") {
 		t.Errorf("remote page: %d", w.Code)
 	}
-	form := url.Values{"s": {"work"}, "c": {old}, "confirm": {"yes"}, "name": {"work"}, "csrf": {s.csrf}}
-	if w := s.do(t, req{method: http.MethodPost, path: s.base() + "/backup/back", host: rhost, owner: owner, origin: "https://" + rhost, form: form}); w.Code != http.StatusBadRequest {
+	form := url.Values{"s": {"work"}, "c": {old}, "confirm": {"yes"}, "name": {"work"}, "csrf": {s.netCSRF}}
+	if w := s.do(t, req{method: http.MethodPost, path: s.netBase() + "/backup/back", host: rhost, owner: owner, origin: "https://" + rhost, form: form}); w.Code != http.StatusBadRequest {
 		t.Errorf("remote going back: %d", w.Code)
 	}
 	s.remote.Store(nil)
@@ -211,7 +211,7 @@ func TestBackupGoBack(t *testing.T) {
 		t.Errorf("no copy started after going back: %v", started)
 	}
 	loc := w.Header().Get("Location")
-	page = html.UnescapeString(s.get(t, strings.TrimPrefix(loc, s.base())).Body.String())
+	page = html.UnescapeString(s.get(t, strings.TrimPrefix(loc, s.localBase())).Body.String())
 	if !strings.Contains(page, "Your notes are back as in the copy of") || !strings.Contains(page, "went back to the copy of") {
 		t.Error("the page does not say the notes went back")
 	}

@@ -120,7 +120,7 @@
   <h2 id="verlas-y-cerrarlas">Verlas y cerrarlas</h2>
   <pre><code>augmented-brain session list</code></pre>
   <p>lista las sesiones de tarea abiertas en este ordenador: la tarea, si corre y su carpeta.</p>
-  <ul><li><strong>retirada</strong>: Claude para una sesión que lleva horas sin uso. claude.ai la enseña desconectada. <code>session start</code> con su tarea la trae de vuelta, con toda su conversación.</li><li><strong>fallida</strong>: su última respuesta fue un error, como un login caducado. La línea dice qué hacer.</li></ul>
+  <ul><li><strong>retirada</strong>: Claude para una sesión que lleva horas sin uso. claude.ai la enseña desconectada. <code>session start</code> con su tarea la trae de vuelta, con toda su conversación.</li><li><strong>fallida</strong>: su última respuesta fue un error, como un login caducado. La línea dice qué hacer.</li><li><strong>en espera</strong>: la paró el límite de uso de Claude. La línea dice a qué hora vuelve el límite. Con el acceso remoto instalado (<code>augmented-brain remote install</code>), la sesión se despierta entonces, sola, y sigue con su tarea; te avisa cuando empieza la espera y cuando las sesiones han vuelto. Sin él, escríbele cuando vuelva el límite.</li></ul>
   <pre><code>augmented-brain session stop task-new-website</code></pre>
   <p>cierra la sesión y la quita de Claude Desktop y claude.ai, con su worktree. Cerrar la tarea hace lo mismo, cuando la sesión termina su respuesta. Una sesión también termina al reiniciar el ordenador, y no vuelve sola: pídela otra vez.</p>
   <h2 id="reinicia-una-sesión-tras-actualizar">Reinicia una sesión tras actualizar</h2>

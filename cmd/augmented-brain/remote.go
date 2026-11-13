@@ -4,7 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
+	"path/filepath"
+	"slices"
 	"strings"
+	"time"
+
+	"github.com/icalvete/augmented-brain/internal/backup"
+	"github.com/icalvete/augmented-brain/internal/brain"
+	"github.com/icalvete/augmented-brain/internal/filelock"
+	"github.com/icalvete/augmented-brain/internal/state"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -47,6 +56,9 @@ func cmdRemote(args []string, out, errOut io.Writer) int {
 		runErr = remoteStatus(c, set, sys, out)
 	case "watch": // run by the watch's timer, every two minutes
 		runErr = sys.Watch(c, out)
+		if !errors.Is(runErr, remote.ErrUnsupported) {
+			runErr = errors.Join(runErr, remoteQuota(c, sys, out))
+		}
 	}
 	if errors.Is(runErr, remote.ErrUnsupported) {
 		fmt.Fprintln(errOut, i18n.T(l, "remote.unsupported.os"))
@@ -57,6 +69,73 @@ func cmdRemote(args []string, out, errOut io.Writer) int {
 		return 1
 	}
 	return 0
+}
+
+// remoteQuota is the watch's look at the tasks' sessions the usage limit stopped
+// (remote.WakeQuota). The user hears of it twice, whatever the number of sessions: when
+// the first one stops and when the last one is back, from the next hook that can show
+// them a message; each woken task gets a line in its journal.
+func remoteQuota(c *config.Config, sys remote.System, out io.Writer) error {
+	l := c.Language
+	now := time.Now()
+	rep, err := sys.WakeQuota(c, func(task string) string { return i18n.T(l, "quota.wake.message", task) })
+	notice := func(text string) {
+		fmt.Fprintln(out, text)
+		if nErr := state.AddQuotaNotice(c.Dir, text, now); nErr != nil {
+			err = errors.Join(err, nErr)
+		}
+	}
+	if rep.Began {
+		notice(i18n.T(l, "quota.notice.began", quotaHour(rep.Until, now)))
+	}
+	if rep.Woken != "" {
+		fmt.Fprintln(out, i18n.T(l, "quota.woken", rep.Woken))
+		if jErr := quotaNote(c, rep.Woken); jErr != nil {
+			fmt.Fprintln(out, jErr)
+		}
+	}
+	if rep.Problem != "" {
+		fmt.Fprintln(out, i18n.T(l, "quota.problem", rep.Task, rep.Problem))
+		if rep.GaveUp {
+			notice(i18n.T(l, "quota.notice.gaveup", rep.Task, rep.Problem, rep.Task))
+		}
+	}
+	if rep.Ended {
+		notice(i18n.T(l, "quota.notice.ended", rep.Count))
+	}
+	return err
+}
+
+// quotaHour is the hour of t as the user's clock shows it, with the day when it is not
+// today's.
+func quotaHour(t, now time.Time) string {
+	t = t.Local()
+	if y, m, d := now.Local().Date(); t.Year() != y || t.Month() != m || t.Day() != d {
+		return t.Format("15:04 (2006-01-02)")
+	}
+	return t.Format("15:04")
+}
+
+// quotaNote writes in the task's journal that its session was woken, in whichever
+// space the task is.
+func quotaNote(c *config.Config, task string) error {
+	unlock, err := filelock.Lock(filepath.Join(c.Dir, backup.NotesLock))
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	for _, name := range slices.Sorted(maps.Keys(c.Spaces)) {
+		b, err := brain.Open(c, c.Spaces[name])
+		if err != nil {
+			continue
+		}
+		if _, err := b.Task(task); err != nil {
+			continue
+		}
+		_, err = b.Journal(task, i18n.T(c.Language, "quota.journal"))
+		return err
+	}
+	return nil
 }
 
 func remoteInstall(c *config.Config, set remote.Settings, sys remote.System, out io.Writer) error {

@@ -2,6 +2,53 @@
 
 ## Unreleased
 
+## 0.26.1-beta
+
+Released 2026-11-14.
+
+- **A session stopped by the usage limit comes back at the first try.** In 0.26.0-beta
+  the watch resumed it a moment too soon: Claude started a copy instead, the watch
+  removed the copy, and the session came back two minutes later, on the next look. Now
+  it waits until Claude has really let the session go.
+
+## 0.26.0-beta
+
+Released 2026-11-14.
+
+- **Task sessions go on by themselves when Claude's usage limit resets.** When your
+  plan's usage ran out, a task's session stopped and stayed there until you wrote to it,
+  for hours if you were away. Now the watch that `remote install` sets up reads the hour
+  the limit resets, and wakes each session then, one every two minutes, as the same
+  session with its conversation. You are told when the wait begins and when they are
+  back, and `session list` shows a stopped session as **waiting**, with the hour. Linux
+  only, and only sessions opened with `session start`.
+- **A release waits for the macOS checks, even where a pull request does not.** Pull
+  requests merge without waiting for macOS, which is slow, and run only its Go tests and
+  compat-check; the installer, faults, Safari and remote checks on macOS run on `main`
+  after each merge, and no version is published until the macOS tests have passed there.
+- **From another device, the Guard page only shows.** Through the remote panel you could
+  change the guard's lists and accept them, which only this computer's panel should do,
+  as with going back to a version or setting up a backup. Now the page shows every list,
+  the model and what the assistant saves on its own, and says that changing them is only
+  from this computer.
+- **A note with a field only a newer version knows now asks you to update.** Before, it
+  was only "not valid", and Claude might offer to remove the field. Now `check`,
+  `doctor`, the panel and the session start say a newer augmented brain probably wrote
+  it, and to run `augmented-brain update`. The format's rules also say that any new
+  field, note type or task status raises its version, so an earlier program refuses the
+  notes and asks to be updated instead of leaving some out.
+- **`doctor` and the session start name settings of `guard.toml` and `session.toml` the
+  program does not know.** They were ignored without a word, so a misspelled
+  `untouchable_repo` protected no repository. The message gives the right name when it
+  looks like a typo. The files are still read, so a setting of a newer version does not
+  break an earlier one.
+- **You choose whether the assistant asks before it saves a rule.** A rule, your profile
+  and what is added to the guard's lists change how every session works. Until now the
+  assistant saved them and Claude Code told you. On the panel's Guard page you can now
+  choose "Ask me first": Claude Code shows what would be saved and you say yes or no
+  (`memory_trust` in `session.toml`). Nothing changes unless you choose it. Tasks, the
+  inbox and what it learns are still saved without asking.
+
 ## 0.25.0-beta
 
 Released 2026-11-13.
