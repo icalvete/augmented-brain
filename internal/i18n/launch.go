@@ -180,6 +180,10 @@ var launchMessages = map[string]msg{
 		en: "failed: its last answer was an error (%s). Write to it in Claude Desktop or claude.ai to try again, or open it again: augmented-brain session start %s",
 		es: "fallida: su última respuesta fue un error (%s). Escríbele en Claude Desktop o claude.ai para que lo intente otra vez, o ábrela de nuevo: augmented-brain session start %s",
 	},
+	"session.list.quota": {
+		en: "waiting: Claude's usage limit stopped it, and the limit resets at %s. With remote access installed (augmented-brain remote install) it is woken then; otherwise write to it in Claude Desktop or claude.ai",
+		es: "en espera: la paró el límite de uso de Claude, que vuelve a las %s. Con el acceso remoto instalado (augmented-brain remote install) se despierta entonces; si no, escríbele en Claude Desktop o claude.ai",
+	},
 	"session.list.failed.login": {
 		en: "failed: Claude Code's login expired (%s). Log in again with claude auth login, then open it again: augmented-brain session start %s",
 		es: "fallida: caducó el login de Claude Code (%s). Vuelve a entrar con claude auth login y ábrela de nuevo: augmented-brain session start %s",
