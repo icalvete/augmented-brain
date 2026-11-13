@@ -229,6 +229,18 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/remote.html"/>
   </url>
   <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/task-sessions.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/task-sessions.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/task-sessions.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/task-sessions.html"/>
+  </url>
+  <url>
+    <loc>https://icalvete.github.io/augmented-brain/guide/task-sessions.es.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/task-sessions.html"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/task-sessions.es.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/task-sessions.html"/>
+  </url>
+  <url>
     <loc>https://icalvete.github.io/augmented-brain/guide/import.html</loc>
     <xhtml:link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/import.html"/>
     <xhtml:link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/import.es.html"/>
