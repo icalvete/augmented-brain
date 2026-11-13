@@ -11,6 +11,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/rules"
 	"github.com/icalvete/augmented-brain/internal/setup"
 )
 
@@ -77,7 +78,7 @@ func TestContextShared(t *testing.T) {
 	text := Context(c, s)
 	for _, want := range []string{
 		"## Rules for every space", "### Answer briefly\nShort answers, one idea each.",
-		"## Knowledge for every space", "In " + c.SharedDir() + ":\n- Small steps win (" + filepath.Join("knowledge", "lesson-small-steps.md") + ")",
+		"## Knowledge for every space", "In " + filepath.Join(c.SharedDir(), "knowledge") + ", each in <id>.md:\n- Small steps win (lesson-small-steps)",
 		"a task belongs to one space", // a task in the shared folder is reported, not loaded
 	} {
 		if !strings.Contains(text, want) {
@@ -415,5 +416,69 @@ func TestAssistantInContext(t *testing.T) {
 		if strings.Count(text, "Tranquilo y directo") != 1 {
 			t.Errorf("the personality is said more than once:\n%s", text)
 		}
+	}
+}
+
+// Found in the review of Nov 2026: in a loaded space part 1 went over its budget and the
+// cut fell on the common rules, which went last: 8 % of them reached a real session. Now
+// they come whole in a part of their own, in both languages, and no part is over.
+func TestCommonRulesAlwaysArrive(t *testing.T) {
+	for _, lang := range []string{"en", "es"} {
+		t.Run(lang, func(t *testing.T) {
+			c, s := space(t, lang)
+			home := filepath.Dir(c.Dir)
+			if _, err := setup.AddSpace(c.Dir, setup.Options{Space: "home", WorkFolder: filepath.Join(home, "home"), Memory: filepath.Join(home, "home-brain")}); err != nil {
+				t.Fatal(err)
+			}
+			c, err := config.Load(c.Dir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			s = c.Spaces[s.Name]
+			Now = func() time.Time { return time.Date(2026, 10, 20, 9, 0, 0, 0, time.UTC) }
+			defer func() { Now = time.Now }()
+			b, err := brain.Open(c, s)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := b.SaveProfile(brain.ProfileInput{Name: "Dana", About: strings.Repeat("Runs a bakery's IT and its website. ", 85),
+				Assistant: "Argos", Personality: strings.Repeat("Calm and direct. ", 47)}); err != nil {
+				t.Fatal(err)
+			}
+			long := func(what string, i int) string {
+				return fmt.Sprintf("%s %d: %s", what, i, strings.Repeat("a long sentence of words ", 16))
+			}
+			var inbox strings.Builder
+			inbox.WriteString("# Inbox\n\n")
+			for i := range 10 {
+				fmt.Fprintf(&inbox, "- 2026-10-1%d — %s (from home)\n", i, long("Sent", i))
+			}
+			for i := range 15 {
+				fmt.Fprintf(&inbox, "- 2026-10-0%d — %s (remind: 2026-10-%d)\n", i%9+1, long("Due", i), 14+i%10)
+			}
+			if err := os.WriteFile(filepath.Join(s.Memory, "inbox.md"), []byte(inbox.String()), 0o600); err != nil {
+				t.Fatal(err)
+			}
+
+			note := "\n" + strings.Repeat("A note from the program for this session. ", 28) + "\n"
+			all := ""
+			for n := 1; n <= Parts; n++ {
+				p := Part(c, s, note, n)
+				if size(p) > Budget {
+					t.Errorf("part %d is %d units, over %d", n, size(p), Budget)
+				}
+				all += p
+			}
+			for _, l := range strings.Split(rules.Common(lang), "\n") {
+				if !strings.Contains(all, l) {
+					t.Errorf("the common rules lose a line: %q", l)
+				}
+			}
+			for _, want := range []string{"Sent 0:", "Due 0:", "…", "Calm and direct.", "Runs a bakery"} {
+				if !strings.Contains(all, want) {
+					t.Errorf("the parts lack %q", want)
+				}
+			}
+		})
 	}
 }

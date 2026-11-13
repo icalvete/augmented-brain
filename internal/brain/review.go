@@ -164,7 +164,26 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 			return true, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o600)
 		}
 	}
-	return false, nil
+	// The session start shortens a long capture and marks the cut with "…": that text
+	// takes it out too, when it fits only one capture of that date.
+	start, short := strings.CutSuffix(text, "…")
+	if !short || strings.TrimSpace(start) == "" {
+		return false, nil
+	}
+	found := -1
+	for i, l := range lines {
+		if e, ok := parseInboxLine(l, b.spaceSet()); ok && e.Date == date && strings.HasPrefix(e.Text, start) {
+			if found >= 0 {
+				return false, nil // more than one: the whole text says which
+			}
+			found = i
+		}
+	}
+	if found < 0 {
+		return false, nil
+	}
+	lines = append(lines[:found], lines[found+1:]...)
+	return true, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o600)
 }
 
 // ---- watch dates ----
