@@ -26,7 +26,8 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
 - **Commits y pushes.** `git commit`, `git push`, y lo que publica como un push:
   `git subtree push`, `git send-pack`, `gh release create`, `glab release create`, y
   lanzar a mano un flujo de publicación (`gh workflow run release`); los demás flujos pasan.
-  Salvo que dejes a Claude en un repositorio (más abajo).
+  Salvo que dejes a Claude en un repositorio (más abajo). Pedir ayuda sí pasa: `git
+  commit --help`, `gh pr merge --help`, `su --version`.
 - **Hacerse root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
   sin `--user`, `ssh root@…`, un contenedor al que se le da la máquina entera (`docker
   run --privileged`, `-v /:/host`, `--pid=host`), y en Windows `gsudo` y `runas`. Claude te da el comando
@@ -39,8 +40,8 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   después de un `cd` (`cd ~ && rm -rf .`), y en Windows se escriba como se escriba la
   ruta.
 - **PowerShell.** El guardia lee la shell, no PowerShell, así que para cualquier comando
-  de PowerShell. Claude lo hace en Bash (Git Bash en Windows). En Windows verás ese
-  bloqueo: es lo esperado.
+  de PowerShell, y también `cmd` o `powershell` lanzados desde Bash. Claude lo hace en
+  Bash (Git Bash en Windows). En Windows verás ese bloqueo: es lo esperado.
 
 ## Lo que te pregunta antes
 
@@ -48,7 +49,9 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   los perfiles que puede usar el comando: `--profile`, `AWS_PROFILE`,
   `AWS_DEFAULT_PROFILE`, o `default` si no hay ninguno. Igual con las herramientas que
   llaman a AWS por su cuenta: `cdk`, `sam`, `serverless`, `terraform`, `tofu`, `pulumi`,
-  `eksctl`, `copilot`.
+  `eksctl`, `copilot`. Y cualquier otro programa con un perfil de producción puesto en el
+  propio comando (`AWS_PROFILE=prod bash deploy.sh`): lo que ejecute puede llegar a AWS
+  con él.
 - **Máquinas que no se tocan.** `ssh`, `scp`, `rsync`, `sftp` y `mosh` a una máquina que
   marcaste como intocable. `db01` y `db01.example.com` cuentan como la misma máquina.
 - **Pushes que reescriben la historia**, incluso donde Claude puede hacer push:
