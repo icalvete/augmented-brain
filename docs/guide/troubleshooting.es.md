@@ -125,11 +125,11 @@ carpeta del espacio para ver por qué:
 
 - **No hay red, o no hay acceso.** Comprueba que llegas al repositorio. En GitHub, entra
   con `gh auth login`.
-- **"Stopped after 3m0s without an answer"** (se paró tras 3 minutos sin respuesta). La
-  red o el repositorio no respondían, así que la copia se rindió en vez de esperar para
-  siempre. Vuelve a probar cuando haya red; la siguiente copia no espera detrás de esta.
-- **"Another backup has been running for over 10m0s"** (otra copia lleva más de 10
-  minutos). Estorba una copia que ya no responde. Vuelve a probar más tarde.
+- **«parada tras 3m0s sin respuesta».** La red o el repositorio no respondían, así que
+  la copia se rindió en vez de esperar para siempre. Vuelve a probar cuando haya red; la
+  siguiente copia no espera detrás de esta.
+- **«otra copia lleva más de 10m0s en marcha».** Estorba una copia que ya no responde.
+  Vuelve a probar más tarde.
 - **Un secreto en una nota.** Dice qué fichero es. Quita el secreto y vuelve a hacer la
   copia. `augmented-brain check` también nombra esos ficheros.
 - **Dos máquinas cambiaron la misma nota.** Nombra las notas, y la carpeta donde juntarlas

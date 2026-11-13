@@ -12,6 +12,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/format"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
 
@@ -194,7 +195,7 @@ func ChangesBack(mem, rev string) (Changes, error) {
 func gitEnv(dir string, env []string, args ...string) (string, error) {
 	out, err := runGitEnv(env, append([]string{"-C", dir}, args...)...)
 	if err != nil {
-		return out, fmt.Errorf("git %s: %v: %s", strings.Join(args, " "), err, strings.TrimSpace(out))
+		return out, fmt.Errorf("git %s: %w: %s", strings.Join(args, " "), err, strings.TrimSpace(out))
 	}
 	return out, nil
 }
@@ -282,12 +283,18 @@ func (e *NotValidError) Error() string {
 // the notes' format comes with them, and an older one is moved forward as at the start
 // of a session. Nothing is sent: the next backup does that.
 func GoBack(c *config.Config, s *config.Space, rev, host string) (*Result, error) {
+	res, err := goBack(c, s, rev, host)
+	return res, Localize(err, c.Language)
+}
+
+// goBack is GoBack; GoBack gives its errors the user's language.
+func goBack(c *config.Config, s *config.Space, rev, host string) (*Result, error) {
 	if s.Backup == "" {
-		return nil, fmt.Errorf("space %s has no backup", s.Name)
+		return nil, errors.New(i18n.T(c.Language, "backup.none", s.Name))
 	}
 	unlock, err := filelock.LockWithin(filepath.Join(c.Dir, backupLock), LockWait)
 	if errors.Is(err, filelock.ErrBusy) {
-		return nil, fmt.Errorf("another backup has been running for over %s and did not finish: try again later", LockWait)
+		return nil, errors.New(i18n.T(c.Language, "backup.busy", LockWait))
 	}
 	if err != nil {
 		return nil, err
