@@ -2,6 +2,16 @@
 
 ## Sin publicar
 
+- **Un fichero que no se puede leer ya no apaga un espacio.** Al editar una nota en
+  Emacs queda a su lado un fichero de bloqueo (`.#task-x.md`), y mientras estaba ahí
+  fallaban todas las herramientas del espacio y una sesión nueva arrancaba sin reglas
+  ni índice. Lo mismo pasaba con un enlace roto o un fichero sin permiso de lectura.
+  Ahora los ficheros ocultos se saltan, y un fichero o una carpeta que no se puede leer
+  sale como problema (`augmented-brain check`, la página Salud del panel) mientras el
+  resto del espacio funciona. También se avisa de una carpeta como `tasks/` que es un
+  enlace, en vez de que sus notas desaparezcan, y de una fecha de la cabecera que no
+  sigue `YYYY-MM-DD`. La página Personas del panel enseña las personas de los demás
+  espacios cuando uno no se puede abrir, y dice cuál.
 - **`uninstall` quita solo lo suyo, y todo lo suyo.** Con `--all`, una carpeta de notas
   que era también la carpeta de trabajo se borraba entera, con los repositorios. Ahora
   solo se van las notas, y la carpeta solo si no queda nada más; una carpeta de notas que

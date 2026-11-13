@@ -151,11 +151,22 @@ func openSpaces(c *config.Config) ([]*Brain, error) {
 	return out, nil
 }
 
-// People lists every person once, with the spaces they are in.
-func People(c *config.Config) ([]PersonRow, error) {
-	brains, err := openSpaces(c)
-	if err != nil {
-		return nil, err
+// People lists every person once, with the spaces they are in. A space that cannot be
+// opened is left out and named in unread, so one broken space never hides the people
+// of the others.
+func People(c *config.Config) (rows []PersonRow, unread []string, err error) {
+	var brains []*Brain
+	for _, name := range c.SpaceNames() {
+		sp := c.Spaces[name]
+		if _, err := os.Stat(sp.Memory); errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+		b, err := Open(c, sp)
+		if err != nil {
+			unread = append(unread, name)
+			continue
+		}
+		brains = append(brains, b)
 	}
 	byID := map[string]*PersonRow{}
 	var order []string
@@ -171,14 +182,14 @@ func People(c *config.Config) ([]PersonRow, error) {
 			r.Spaces = append(r.Spaces, b.Space.Name)
 		}
 	}
-	rows := make([]PersonRow, 0, len(order))
+	rows = make([]PersonRow, 0, len(order))
 	for _, id := range order {
 		rows = append(rows, *byID[id])
 	}
 	sort.SliceStable(rows, func(i, j int) bool {
 		return strings.ToLower(rows[i].Name) < strings.ToLower(rows[j].Name)
 	})
-	return rows, nil
+	return rows, unread, nil
 }
 
 // PersonCard joins the files of the person with that id in every space.

@@ -32,9 +32,12 @@ type Memory struct {
 }
 
 // Load reads every note of the memory in dir, except archive/ and docs/ (a task's long
-// documents, which are not notes). It returns what it could
-// read, and one Problem per file that is not a valid note. A note may link (related) to
-// the notes of also: the shared notes, which every space can see.
+// documents, which are not notes) and hidden files (an editor's lock file, such as
+// Emacs's .#note.md). It returns what it could read, and one Problem per file that is
+// not a valid note, cannot be read, or sits in a folder that cannot be opened: one bad
+// file never keeps the rest from loading. Only a memory folder that cannot be read at
+// all is an error. A note may link (related) to the notes of also: the shared notes,
+// which every space can see.
 func Load(dir string, also ...*Memory) (*Memory, []Problem, error) {
 	info, err := os.Stat(dir)
 	if err != nil {
@@ -46,22 +49,32 @@ func Load(dir string, also ...*Memory) (*Memory, []Problem, error) {
 	m := &Memory{Dir: dir, Notes: map[string]*Note{}}
 	var problems []Problem
 	err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
 		rel, _ := filepath.Rel(dir, path)
-		if d.IsDir() {
-			if rel == "archive" || rel == "docs" || (strings.HasPrefix(d.Name(), ".") && rel != ".") {
+		if err != nil {
+			if rel == "." {
+				return err
+			}
+			// A subfolder that cannot be opened: what it holds is left out, and said.
+			problems = append(problems, Problem{filepath.ToSlash(rel), err})
+			if d != nil && d.IsDir() {
 				return filepath.SkipDir
 			}
 			return nil
 		}
-		if !strings.HasSuffix(path, ".md") || skipped[rel] {
+		hidden := strings.HasPrefix(d.Name(), ".") && rel != "."
+		if d.IsDir() {
+			if rel == "archive" || rel == "docs" || hidden {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if hidden || !strings.HasSuffix(path, ".md") || skipped[rel] {
 			return nil
 		}
 		data, err := os.ReadFile(path)
 		if err != nil {
-			return err
+			problems = append(problems, Problem{filepath.ToSlash(rel), unreadable(err)})
+			return nil
 		}
 		n, perr := Parse(rel, data)
 		if perr != nil {
@@ -78,9 +91,61 @@ func Load(dir string, also ...*Memory) (*Memory, []Problem, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	problems = append(problems, linkedFolders(dir)...)
 	problems = append(problems, m.checkLinks(also)...)
+	problems = append(problems, m.checkDates()...)
 	sort.Slice(problems, func(i, j int) bool { return problems[i].Path < problems[j].Path })
 	return m, problems, nil
+}
+
+// unreadable says why a note's file could not be read, in words that point at the fix.
+func unreadable(err error) error {
+	return fmt.Errorf("cannot be read (%w); fix its permissions, or move it out if it is a broken link", err)
+}
+
+// linkedFolders reports the folders of a type of note (tasks, knowledge...) that are a
+// link to another place: the walk does not follow links, so their notes would vanish
+// without a word.
+func linkedFolders(dir string) []Problem {
+	var problems []Problem
+	seen := map[string]bool{}
+	for _, t := range Types {
+		if t.Folder == "" || seen[t.Folder] {
+			continue
+		}
+		seen[t.Folder] = true
+		if fi, err := os.Lstat(filepath.Join(dir, t.Folder)); err == nil && fi.Mode()&fs.ModeSymlink != 0 {
+			problems = append(problems, Problem{t.Folder, errors.New("is a link to another folder; its notes are not read: put the folder itself here")})
+		}
+	}
+	return problems
+}
+
+// checkDates reports dates in a header that are not YYYY-MM-DD (a date written by hand
+// as 2026-11-3 would never come up). Soft problems: the note is kept.
+func (m *Memory) checkDates() []Problem {
+	var problems []Problem
+	bad := func(n *Note, field, value string) {
+		if value == "" {
+			return
+		}
+		if _, err := ParseDate(value); err != nil {
+			problems = append(problems, Problem{n.Path, fmt.Errorf("%s %q is not a date: use YYYY-MM-DD", field, value)})
+		}
+	}
+	for _, id := range m.IDs() {
+		n := m.Notes[id]
+		bad(n, "created", n.Header.Created)
+		bad(n, "updated", n.Header.Updated)
+		for _, w := range n.Header.Watch {
+			if w.Date == "" {
+				problems = append(problems, Problem{n.Path, errors.New("a watch date is missing its date: use YYYY-MM-DD")})
+				continue
+			}
+			bad(n, "watch date", w.Date)
+		}
+	}
+	return problems
 }
 
 // SharedTypes are the types of note the shared folder holds: what applies in every
