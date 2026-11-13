@@ -121,8 +121,11 @@ func printKept(out io.Writer, lang string, kept []leftovers.Worktree) {
 	fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.kept"))
 	for _, k := range kept {
 		key := "clean.kept.changes"
-		if k.Work == remote.KeptCommits {
+		switch k.Work {
+		case remote.KeptCommits:
 			key = "clean.kept.commits"
+		case remote.KeptIgnored:
+			key = "clean.kept.ignored"
 		}
 		fmt.Fprintln(out, "  - "+i18n.T(lang, key, paths.Tilde(k.Folder)))
 	}

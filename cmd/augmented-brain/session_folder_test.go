@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/remote"
 )
@@ -78,6 +79,7 @@ func TestSessionFolderBareGetsTaskWorktree(t *testing.T) {
 
 	c := &config.Config{Dir: filepath.Join(root, "config"), Language: "en"}
 	s := &config.Space{Name: "personal", WorkFolders: []string{filepath.Join(root, "work")}}
+	c.Spaces = map[string]*config.Space{"personal": s}
 	sys := remote.System{GOOS: "linux", Run: func(string, ...string) (string, error) { return "", nil }}
 	var out, errOut bytes.Buffer
 	dir, code := sessionFolder(c, s, sys, "task-new-website", nil, repo, &out, &errOut)
@@ -119,5 +121,42 @@ func TestSessionFolderNoRepository(t *testing.T) {
 	s.WorkFolders = nil
 	if _, code := sessionFolder(c, s, remote.System{GOOS: "linux"}, "task-x", nil, "", &out, &errOut); code == 0 {
 		t.Error("no work folder, yet a folder")
+	}
+}
+
+// On a system where sessions do not run, session start says so before it makes
+// anything: no worktree, no record (R-18).
+func TestSessionStartUnsupportedMakesNothing(t *testing.T) {
+	h, cfg := home(t)
+	useFakeSystem(t, h, "darwin")
+	t.Chdir(filepath.Join(h, "augmented-brain", "personal"))
+	var out, errOut bytes.Buffer
+	if code := run([]string{"session", "start", "task-site"}, nil, &out, &errOut); code != 1 || !strings.Contains(errOut.String(), i18n.T("es", "remote.unsupported")) {
+		t.Fatalf("code %d\n%s%s", code, out.String(), errOut.String())
+	}
+	if _, err := os.Stat(filepath.Join(cfg, "state", "session-worktrees")); !os.IsNotExist(err) {
+		t.Errorf("a worktree record was made: %v", err)
+	}
+}
+
+// --folder outside the task's space is refused: a session there would be in another
+// space, where its task does not exist (R-18).
+func TestSessionFolderOutsideSpace(t *testing.T) {
+	root := t.TempDir()
+	work, elsewhere := filepath.Join(root, "work"), filepath.Join(root, "elsewhere")
+	for _, d := range []string{work, elsewhere} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	s := &config.Space{Name: "personal", WorkFolders: []string{work}}
+	c := &config.Config{Dir: filepath.Join(root, "config"), Language: "en", Spaces: map[string]*config.Space{"personal": s}}
+	sys := remote.System{GOOS: "linux", Run: func(string, ...string) (string, error) { return "", nil }}
+	var out, errOut bytes.Buffer
+	if dir, code := sessionFolder(c, s, sys, "task-x", nil, elsewhere, &out, &errOut); code != 1 || dir != "" {
+		t.Fatalf("sessionFolder = %q %d", dir, code)
+	}
+	if !strings.Contains(errOut.String(), "not inside the work folders of space personal") {
+		t.Errorf("message: %s", errOut.String())
 	}
 }

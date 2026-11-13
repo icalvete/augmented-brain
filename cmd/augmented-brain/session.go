@@ -117,6 +117,8 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			fmt.Fprintln(out, i18n.T(l, "session.worktree.kept.changes", tilde(wt)))
 		case why == remote.KeptCommits:
 			fmt.Fprintln(out, i18n.T(l, "session.worktree.kept.commits", tilde(wt)))
+		case why == remote.KeptIgnored:
+			fmt.Fprintln(out, i18n.T(l, "session.worktree.kept.ignored", tilde(wt)))
 		}
 		return 0
 	}
@@ -135,6 +137,11 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 	} else if id == "" || fs.NArg() > 0 {
 		fmt.Fprintln(errOut, i18n.T(l, "usage.session"))
 		return 2
+	}
+	// Before anything is made: on a system it does not run on, session start changes
+	// nothing (a worktree and its branch would stay, with no sweep there: R-18).
+	if sys.GOOS != "linux" {
+		return sessionErr(l, remote.ErrUnsupported, errOut)
 	}
 	b, err := brain.Open(c, s)
 	if err != nil {
@@ -215,6 +222,12 @@ func sessionFolder(c *config.Config, s *config.Space, sys remote.System, id stri
 			fmt.Fprintln(errOut, err)
 			return "", 1
 		}
+		// A session opened outside the space's work folders would be in another space
+		// (or none), where its task does not exist (R-18).
+		if sp := c.SpaceFor(dir); sp == nil || sp.Name != s.Name {
+			fmt.Fprintln(errOut, i18n.T(l, "session.folder.otherspace", tilde(dir), s.Name, id))
+			return "", 1
+		}
 		if !isGitRepo(dir) || !isBareRepo(dir) {
 			return dir, 0
 		}
@@ -287,6 +300,8 @@ func sessionStopped(l, task string, err error, prefix string, out, errOut io.Wri
 		return 0, true
 	case errors.Is(err, remote.ErrNoSession):
 		fmt.Fprintln(errOut, prefix+i18n.T(l, "session.none", task))
+	case errors.Is(err, remote.ErrCannotTell):
+		fmt.Fprintln(errOut, prefix+i18n.T(l, "session.cannottell", task))
 	case errors.Is(err, remote.ErrStillBusy):
 		fmt.Fprintln(errOut, prefix+i18n.T(l, "session.busy", task))
 	default:

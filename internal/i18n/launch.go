@@ -56,6 +56,22 @@ var launchMessages = map[string]msg{
 		en: "Kept its worktree %s: it has commits not pushed.",
 		es: "Dejo su worktree %s: tiene commits sin subir.",
 	},
+	"session.worktree.kept.ignored": {
+		en: "Kept its worktree %s: it has files git ignores (a .env, a key) that may exist nowhere else.",
+		es: "Dejo su worktree %s: tiene ficheros que git ignora (un .env, una clave) que quizá no estén en otro sitio.",
+	},
+	"session.worktree.why.ignored": {
+		en: "files git ignores (a .env, a key) that may exist nowhere else",
+		es: "ficheros que git ignora (un .env, una clave) que quizá no estén en otro sitio",
+	},
+	"session.folder.otherspace": {
+		en: "%s is not inside the work folders of space %s, where %s lives: a session there would not find its task. Give a folder inside them.",
+		es: "%s no está en las carpetas de trabajo del espacio %s, donde vive %s: una sesión ahí no encontraría su tarea. Dame una carpeta dentro de ellas.",
+	},
+	"session.cannottell": {
+		en: "Claude could not tell whether the session of %s still runs, so it stays on record and its worktree stays too. Try again in a minute; `claude agents` shows what Claude has.",
+		es: "Claude no ha sabido decir si la sesión de %s sigue en marcha, así que sigue apuntada y su worktree se queda. Prueba otra vez dentro de un minuto; `claude agents` enseña lo que tiene Claude.",
+	},
 	"session.worktree.swept": {
 		en: "Removed %s: the worktree of a session that has ended, with nothing that was not on the remote.",
 		es: "Quitado %s: el worktree de una sesión que ya terminó, sin nada que no estuviera en el remoto.",
@@ -109,12 +125,12 @@ var launchMessages = map[string]msg{
 		es: "El worktree %s de la tarea %s tiene %s, y su sesión ya terminó.",
 	},
 	"doctor.worktree.kept.fix": {
-		en: "Push or drop that work; the next session start or doctor removes it then. Or ask for the task's session again: it uses it.",
-		es: "Sube o descarta ese trabajo; después lo quita el próximo session start o doctor. O pide otra vez la sesión de la tarea: lo usa.",
+		en: "Push or drop that work (or move those files somewhere else); the next session start removes it then. Or ask for the task's session again: it uses it.",
+		es: "Sube o descarta ese trabajo (o lleva esos ficheros a otro sitio); después lo quita el próximo session start. O pide otra vez la sesión de la tarea: lo usa.",
 	},
 	"doctor.worktree.swept": {
-		en: "Removed %d worktree(s) of sessions that had ended, with nothing that was not on the remote.",
-		es: "Quitados %d worktree(s) de sesiones que ya terminaron, sin nada que no estuviera en el remoto.",
+		en: "%d worktree(s) of sessions that have ended hold nothing that is not on the remote: the next session start removes them.",
+		es: "%d worktree(s) de sesiones que ya terminaron no tienen nada que no esté en el remoto: los quita el próximo session start.",
 	},
 	"session.untrusted": {
 		en: "Claude does not trust %s yet. A task's session opens only in a folder that accepted Claude's question itself (trusting a folder above it is not enough), so a repository's own settings and hooks never run unasked. Once, in a terminal on %s (from another computer: ssh %s):",

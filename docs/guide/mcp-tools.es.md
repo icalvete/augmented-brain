@@ -162,7 +162,8 @@ nunca se pise. Si la tarea tiene fechas para revisar sin marcar
 como hechas, lo dice: siguen saliendo al empezar la sesión en su día, porque cerrar suele
 ser cuando se apunta lo que hay que mirar más adelante. Si `session start` creó un
 worktree de git para la tarea y su sesión ya no corre, al cerrarla lo quita con su rama
-cuando no tiene nada que no esté en el remoto, y lo dice; si no, dice por qué se queda.
+cuando no tiene nada que no esté en el remoto (ni un fichero que git ignora y que ningún
+build vuelve a hacer, como un `.env`), y lo dice; si no, dice por qué se queda.
 Si la sesión propia de la tarea sigue en marcha (a menudo la que la cierra), un proceso
 aparte cierra esa sesión cuando termina su respuesta, la quita de Claude Desktop y
 claude.ai y quita su worktree de la misma forma. Una sesión que Claude retiró tras horas
@@ -179,7 +180,7 @@ que una tarea cambie código sin tocar la carpeta principal. Creado aquí, es
 `<repo>-<tarea>`, al lado del repositorio, en una rama nueva con el nombre de la tarea,
 desde la rama por defecto de origin tal como está ahora; si se pide otra vez, devuelve
 el mismo. Al cerrar la tarea se quita cada worktree apuntado que no tenga nada sin
-commitear ni sin subir, con la rama creada para él (uno apuntado conserva su rama); uno
+commitear ni sin subir ni ficheros ignorados propios (un `.env`), con la rama creada para él (uno apuntado conserva su rama); uno
 con trabajo propio se queda, y también el de la sesión que cierra, y la respuesta dice
 por qué. Las dos rutas tienen que estar dentro de las carpetas de trabajo del espacio.
 

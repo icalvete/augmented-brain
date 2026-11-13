@@ -134,8 +134,8 @@ del espacio. Para un repositorio bare, la
 tarea recibe un worktree de git propio, en una rama nueva desde la rama por defecto de
 origin. Se va solo cuando no se pierde nada: con `session stop`, al cerrar la tarea o, si
 la sesión terminó de otra forma (un reinicio, cerrarla desde Claude Desktop), en el
-próximo `session start` o `doctor`. Uno con cambios sin commitear o sin subir se queda, y
-`doctor` lo nombra.
+próximo `session start`. Uno con cambios sin commitear o sin subir, o con ficheros que git
+ignora como un `.env`, se queda, y `doctor` lo nombra.
 
 - **Claude tiene que confiar en esa carpeta ella misma.** Que confíe en la carpeta del
   espacio no basta. La primera vez, el comando dice qué hacer: en la máquina (o por

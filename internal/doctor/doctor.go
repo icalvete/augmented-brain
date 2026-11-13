@@ -408,10 +408,11 @@ func guardLists(c *config.Config, l string) []Check {
 	return out
 }
 
-// worktreeChecks sweeps the worktrees session start made for tasks whose session has
-// ended (a reboot, a session closed from Claude Desktop): those with nothing of their
-// own go, and each one that stays, with work not committed or not pushed, gets a
-// warning. Nothing when there are none.
+// worktreeChecks looks at the worktrees session start made for tasks whose session has
+// ended (a reboot, a session closed from Claude Desktop): it counts those with nothing of
+// their own, which the next session start removes, and warns about each one that stays,
+// with work of its own. It removes nothing: doctor is a check, and the panel's Help page
+// runs it (R-05). Nothing when there are none.
 func worktreeChecks(e Env, c *config.Config) []Check {
 	l := c.Language
 	sys := e.Remote
@@ -422,7 +423,7 @@ func worktreeChecks(e Env, c *config.Config) []Check {
 		}
 		sys = &s
 	}
-	removed, kept := sys.SweepWorktrees(c.Dir)
+	removed, kept := sys.SweepableWorktrees(c.Dir)
 	var out []Check
 	if len(removed) > 0 {
 		out = append(out, Check{Info, i18n.T(l, "doctor.worktree.swept", len(removed)), ""})

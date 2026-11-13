@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -21,9 +22,11 @@ import (
 //
 // The worktrees session start makes are written down in the configuration folder
 // (state/session-worktrees/<task>, holding the worktree's path): only those are ever
-// removed, by session stop, by the sweep that session start and doctor run, and when
+// removed, by session stop, by the sweep that session start runs, and when
 // the task is closed; and only when nothing would be lost: no change not committed, no
-// commit that is not on the remote. One with work of its own stays, and doctor names it.
+// commit that is not on the remote, no file git ignores that cannot be made again. One
+// with work of its own stays, and doctor names it. doctor itself removes nothing: it is a
+// check, and the panel's Help page runs it (R-05).
 
 // GitRun runs git in a folder; tests may swap it.
 var GitRun = backup.Git
@@ -60,15 +63,22 @@ func TaskWorktree(cfgDir, repo, task string) (folder, base string, made, fetched
 	folder, branch := TaskWorktreePath(repo, task)
 	if _, statErr := os.Lstat(folder); statErr == nil {
 		if r := WorktreeRoot(folder); r != "" && paths.Same(r, repo) {
+			// A new session is about to start in it: its record counts as new, so no
+			// sweep takes it meanwhile (sweepAfter).
+			now := time.Now()
+			_ = os.Chtimes(filepath.Join(worktreeRecords(cfgDir), recordName(task)), now, now)
 			return folder, "", false, true, nil
 		}
 		return folder, "", false, true, ErrNotOurWorktree
+	}
+	if strings.ContainsAny(folder, "\t\r\n") {
+		return folder, "", false, false, fmt.Errorf("%s: %w", paths.Tilde(folder), ErrOddPath)
 	}
 	base, fetched, err = addWorktree(repo, folder, branch)
 	if err != nil {
 		return folder, base, false, fetched, err
 	}
-	rec := filepath.Join(worktreeRecords(cfgDir), task)
+	rec := filepath.Join(worktreeRecords(cfgDir), recordName(task))
 	if err := os.MkdirAll(filepath.Dir(rec), 0o700); err != nil {
 		return folder, base, true, fetched, err
 	}
@@ -105,31 +115,47 @@ func addWorktree(repo, folder, branch string) (base string, fetched bool, err er
 const (
 	KeptChanges = "changes" // changes not committed
 	KeptCommits = "commits" // commits not on the remote
+	KeptIgnored = "ignored" // files git ignores that no build makes again (a .env, a key)
 )
 
 // RemoveTaskWorktree removes the worktree session start made for a task, with its
-// branch, when it holds no change and no commit that is not on the remote. The caller
-// makes sure no session runs in it. It says whether it removed it, and why not
-// otherwise ("" when there was nothing of ours to remove).
+// branch, when it holds nothing of its own (WorktreeWork). The caller makes sure no
+// session runs in it. It says whether it removed it, and why not otherwise ("" when
+// there was nothing of ours to remove).
 func RemoveTaskWorktree(cfgDir, task string) (folder string, removed bool, why string) {
-	rec := filepath.Join(worktreeRecords(cfgDir), task)
-	data, err := os.ReadFile(rec)
-	if err != nil {
+	folder, branch, ok := recordedWorktree(cfgDir, task)
+	if !ok {
 		return "", false, ""
 	}
-	folder = strings.TrimSpace(string(data))
-	repo := WorktreeRoot(folder)
-	if repo == "" {
-		_ = os.Remove(rec) // removed by hand already
-		return "", false, ""
-	}
-	_, branch := TaskWorktreePath(repo, task)
 	done, why := RemoveWorktree(folder, branch)
 	if !done {
 		return folder, false, why
 	}
-	_ = os.Remove(rec)
+	_ = os.Remove(filepath.Join(worktreeRecords(cfgDir), recordName(task)))
 	return folder, true, ""
+}
+
+// recordedWorktree is the worktree session start made for a task, and its branch. ok is
+// false when there is none; a record that names a folder gone, or one that is not where
+// the task's worktree goes (edited by hand, a state folder restored: R-16), is dropped,
+// and that folder is never touched.
+func recordedWorktree(cfgDir, task string) (folder, branch string, ok bool) {
+	rec := filepath.Join(worktreeRecords(cfgDir), recordName(task))
+	data, err := os.ReadFile(rec)
+	if err != nil {
+		return "", "", false
+	}
+	folder = strings.TrimSpace(string(data))
+	repo := WorktreeRoot(folder)
+	want := ""
+	if repo != "" {
+		want, branch = TaskWorktreePath(repo, task)
+	}
+	if repo == "" || !paths.Same(want, folder) {
+		_ = os.Remove(rec)
+		return "", "", false
+	}
+	return folder, branch, true
 }
 
 // Leftover is a task's worktree that stays because it holds work of its own.
@@ -137,12 +163,26 @@ type Leftover struct {
 	Task, Folder, Why string
 }
 
+// sweepAfter is how old a worktree's record must be before a sweep looks at it: until
+// then its session may still be starting, with no launch record yet (R-05).
+const sweepAfter = 10 * time.Minute
+
 // SweepWorktrees goes through the worktrees session start made whose session no longer
 // runs (a reboot ends launched sessions without session stop, and a session closed from
 // Claude Desktop or a phone never calls it): it removes those with nothing of their own
 // and returns the ones that stay. It does nothing when it cannot tell which sessions
-// run.
+// run, and leaves records made in the last sweepAfter.
 func (s System) SweepWorktrees(cfgDir string) (removed []string, kept []Leftover) {
+	return s.sweep(cfgDir, true)
+}
+
+// SweepableWorktrees is what SweepWorktrees would do, removing nothing: for doctor,
+// which only checks.
+func (s System) SweepableWorktrees(cfgDir string) (removable []string, kept []Leftover) {
+	return s.sweep(cfgDir, false)
+}
+
+func (s System) sweep(cfgDir string, remove bool) (removed []string, kept []Leftover) {
 	entries, err := os.ReadDir(worktreeRecords(cfgDir))
 	if err != nil || len(entries) == 0 {
 		return nil, nil
@@ -156,7 +196,17 @@ func (s System) SweepWorktrees(cfgDir string) (removed []string, kept []Leftover
 		if running[task] {
 			continue
 		}
-		folder, done, why := RemoveTaskWorktree(cfgDir, task)
+		if fi, err := e.Info(); err != nil || time.Since(fi.ModTime()) < sweepAfter {
+			continue
+		}
+		var folder, why string
+		done := false
+		if remove {
+			folder, done, why = RemoveTaskWorktree(cfgDir, task)
+		} else if f, branch, ok := recordedWorktree(cfgDir, task); ok && registered(WorktreeRoot(f), f) {
+			folder, why = f, WorktreeWork(f, branch)
+			done = why == ""
+		}
 		switch {
 		case done:
 			removed = append(removed, folder)
