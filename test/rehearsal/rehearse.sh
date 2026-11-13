@@ -3,8 +3,8 @@
 #
 #   test/rehearsal/rehearse.sh [--vm ubuntu|windows|both] [--from <snapshot>] [--update] [--sessions]
 #
-# It builds the release from this checkout (scripts/release-build.sh, plus the plugin as
-# a marketplace), serves it over HTTP on 127.0.0.1 (a VM reaches this computer's
+# It builds the release from this checkout (scripts/release-build.sh; the plugin travels
+# inside the program), serves it over HTTP on 127.0.0.1 (a VM reaches this computer's
 # 127.0.0.1 at 10.0.2.2), and for each VM: restores the snapshot (`clean` by default: a
 # machine that never saw augmented brain; name another one, say with the last release
 # installed, to rehearse an update), starts it, installs or updates with the published
@@ -50,9 +50,6 @@ mkdir -p "$logs"
 echo "rehearse: building $version…"
 scripts/release-build.sh "$version" "$work/release" >/dev/null
 cp install.sh install.ps1 "$work/release/"
-mkdir -p "$work/mk/marketplace"
-cp -r plugin .claude-plugin "$work/mk/marketplace/"
-tar -C "$work/mk" -czf "$work/release/marketplace.tgz" marketplace
 cp test/rehearsal/checks.py test/rehearsal/smoke.py "$work/release/"
 port=$(python3 -I -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1])')
 (cd "$work/release" && exec python3 -I -m http.server --bind 127.0.0.1 "$port" >/dev/null 2>&1) &
@@ -70,13 +67,13 @@ for vm in $vms; do
   code=0
   if [ "$vm" = ubuntu ]; then
     VAGRANT_CWD="$dir" vagrant ssh -c "set -e
-      export PATH=\$HOME/.local/bin:\$PATH AB_RELEASE_URL=$url AB_MARKETPLACE=\$HOME/ab-release/marketplace
-      rm -rf ~/ab-release && mkdir -p ~/ab-release && curl -fsS $url/marketplace.tgz | tar -C ~/ab-release -xzf -
+      export PATH=\$HOME/.local/bin:\$PATH AB_RELEASE_URL=$url
+      rm -rf ~/ab-release && mkdir -p ~/ab-release
       curl -fsS $url/checks.py -o ~/ab-release/checks.py
       curl -fsS $url/smoke.py -o ~/ab-release/smoke.py
       if [ -n '$update' ]; then
         echo '##### the release published last'
-        curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | env -u AB_RELEASE_URL -u AB_MARKETPLACE AB_YES=1 AB_NO_DESKTOP=1 sh
+        curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | env -u AB_RELEASE_URL AB_YES=1 AB_NO_DESKTOP=1 sh
         augmented-brain --version; augmented-brain doctor || true
         echo '##### updating'
       fi
@@ -95,14 +92,12 @@ for vm in $vms; do
       \$env:AB_RELEASE_URL = '$url'; \$env:AB_YES = '1'; \$env:AB_NO_DESKTOP = '1'
       \$r = \"\$HOME\\ab-release\"; if (Test-Path \$r) { Remove-Item -Recurse -Force \$r }
       New-Item -ItemType Directory \$r | Out-Null
-      Invoke-WebRequest -UseBasicParsing '$url/marketplace.tgz' -OutFile \"\$r\\m.tgz\"; tar -C \$r -xzf \"\$r\\m.tgz\"
-      \$env:AB_MARKETPLACE = \"\$r\\marketplace\"
       Invoke-WebRequest -UseBasicParsing '$url/checks.py' -OutFile \"\$r\\checks.py\"
       if ('$update') {
         Write-Output '##### the release published last'
-        \$keep = \$env:AB_RELEASE_URL, \$env:AB_MARKETPLACE; \$env:AB_RELEASE_URL = \$null; \$env:AB_MARKETPLACE = \$null
+        \$keep = \$env:AB_RELEASE_URL; \$env:AB_RELEASE_URL = \$null
         irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
-        \$env:AB_RELEASE_URL, \$env:AB_MARKETPLACE = \$keep
+        \$env:AB_RELEASE_URL = \$keep
         \$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
         augmented-brain --version; augmented-brain doctor
         Write-Output '##### updating'

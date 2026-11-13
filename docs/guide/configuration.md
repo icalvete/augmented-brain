@@ -238,8 +238,9 @@ The installer reads a few more:
 - `AB_NO_INIT=1`: only install the program, without setting anything up.
 - `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY`, `AB_MARKETPLACE` and
   `AB_DESKTOP_URL`: for testing: which version, where the release files are, the GitHub
-  API to fall back on, the wait between tries, where the plugin comes from, and where
-  the desktop app's apt repository is.
+  API to fall back on, the wait between tries, a folder or repository to take the plugin
+  from instead of the one inside the program, and where the desktop app's apt repository
+  is.
 
 ## Claude Code's own settings
 

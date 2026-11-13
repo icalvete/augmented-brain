@@ -30,6 +30,8 @@ row here with the test that covers it.
 | macOS: downloaded with a browser (Gatekeeper) | `scripts/mac-check.py` (what macOS says of it, and that it still runs from Terminal); the Finder's dialog by hand | CI: macOS; Mac pass |
 | Windows: PowerShell's policy, no winget | by hand | Windows VM rehearsal |
 | The installer's Spanish on Windows | `cmd` `TestInstallPs1IsASCII` | Go |
+| The plugin comes from the program, never from GitHub's `main`: written to the configuration folder with this version's hooks, an installation that follows GitHub moved there on update (plugin and data kept), the folder gone on uninstall | `internal/claudecode` `TestMarketplaceIsLocal`, `TestFilesAreTheRepositorys`, `TestWriteLocal`, `TestUpdate`, `TestUninstall`; `install-check.sh` steps 3, 4 and 8, `install-check.ps1`; `test/rehearsal/checks.py` | Go, CI, rehearsal |
+| The hooks find the program in `~/.local/bin` before the inherited PATH; on Windows the MCP server keeps the user's PATH | `internal/claudecode` `TestInstallFolderFirst`, `TestMCPOnWindows`; the MCP server connects in `install-check.ps1` | Go, CI: Windows |
 
 ## Commands
 

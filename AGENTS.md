@@ -39,7 +39,7 @@ it feels to a newcomer.
 | `internal/i18n` | Every message a person reads, and every text the program writes into notes, in one catalogue: a file per subject (`doctor.go`, `commands.go`, `panel.go`, `import.go`, `init.go`, `notes.go`, `guard.go`, `help.go`, `hook.go`: what the hooks tell the assistant in the configuration's language), each message with its English and Spanish side by side. `T` formats one; `All` gives both, to read back text written in either. |
 | `internal/paths` | Paths and files: `~`, `Resolve`, `Within`, `Rename` (patient on Windows), `WriteAtomic`, the one way the program replaces a file, and `CopyTree`. |
 | `internal/rules`, `internal/templates` | The common rules and the starter files, in English and Spanish. |
-| `plugin/` | The Claude Code plugin: `hooks/hooks.json`, `.mcp.json`, `commands/panel.md` (`/brain:panel`). `.claude-plugin/marketplace.json` makes this repo its marketplace. |
+| `plugin/` | The Claude Code plugin: `hooks/hooks.json`, `.mcp.json`, `commands/panel.md` (`/brain:panel`). `.claude-plugin/marketplace.json` makes this repo its marketplace. Both travel inside the program (`marketplace.go`, `go:embed`): `claudecode.WriteLocal` writes them to `<config>/marketplace/` (the version in `plugin.json`; on Windows `.mcp.json` without its PATH) and `Install`/`Update` have Claude Code read the plugin from there, so it is always the installed version's, never `main`'s. `Update` runs `marketplace add` first, which moves an installation still on GitHub keeping the plugin and its data (never `marketplace remove`: it uninstalls and deletes them). `AB_MARKETPLACE` takes its place for tests. The files written there are in the guard's protected list. |
 | `install.sh` | The installer people run with `curl … \| sh`. |
 | `internal/portcheck` | Used only by tests: reads the repository's tests for what passes on Linux and fails on Windows (`.Perm()` in a test that never looks at `runtime.GOOS`; JSON joined by hand around a path). A line that is fine says `// windows-ok`. |
 | `internal/doccheck` | Used only by tests: whether the reference pages (`docs/guide/commands`, `mcp-tools`, `configuration`, each with its `.es` twin) cover every command and flag (`commands` in `cmd/augmented-brain/commands.go`), MCP tool and parameter, and `config.toml` setting. `AB_DOCS_DIR` points the tests at other pages. |
@@ -140,7 +140,7 @@ Heavier checks, before a release or when you touch what they cover:
 - `test/vm/ubuntu-desktop/Vagrantfile`: for what only a person can judge (the desktop app,
   signing in, the first-session interview). Restore the `clean` snapshot between tries.
   To test unpublished work there, upload a release built with `scripts/release-build.sh`
-  plus the plugin, and run the installer with `AB_RELEASE_URL` and `AB_MARKETPLACE`.
+  (the plugin goes inside the program) and run the installer with `AB_RELEASE_URL`.
 - `test/vm/windows-11/Vagrantfile`: the same on Windows 11 (an evaluation edition,
   about 90 days). From the host, `vagrant winrm -s powershell -c …` runs commands inside
   and the guest reaches the host's 127.0.0.1 at 10.0.2.2, so a release served there with

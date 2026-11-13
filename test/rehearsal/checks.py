@@ -103,6 +103,18 @@ report("doctor in a space", code == 0, (out + err).strip().splitlines()[-1:] if 
 code, out, err = ab("check", cwd=work)
 report("check in a space", code == 0, (out + err).strip()[-120:])
 
+# The plugin travels with the program: Claude Code reads it from the configuration
+# folder, with this version's hooks, never from GitHub's main.
+market = os.path.join(CFGDIR, "marketplace")
+try:
+    claude = shutil.which("claude")
+    listed = json.loads(subprocess.run([claude, "plugin", "marketplace", "list", "--json"], capture_output=True, text=True, timeout=60, **ENC).stdout or "[]")
+    path = next((m.get("path", "") for m in listed if m.get("name") == "augmented-brain"), "")
+    version = json.load(open(os.path.join(market, "plugin", ".claude-plugin", "plugin.json"), encoding="utf-8")).get("version")
+    report("the plugin comes from the program's folder", os.path.normcase(path.rstrip("\\/")) == os.path.normcase(market) and (not EXPECT or version == EXPECT), f"{path} {version}")
+except Exception as ex:  # no claude, or no folder: say what it was
+    report("the plugin comes from the program's folder", False, ex)
+
 # ---- the guard
 print("##### the guard")
 repo = os.path.join(work, "demo-app")
