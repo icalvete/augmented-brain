@@ -139,9 +139,19 @@ func addSpace(c *config.Config, o Options, first, save bool) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
+	// The notes go inside a work folder (work/notes) or apart from it, never around it:
+	// a notes folder that holds the work would mix the user's files with the notes.
+	if paths.Within(work, mem) {
+		return nil, fmt.Errorf("memory folder %s holds the work folder %s: put the notes in a folder of their own, such as %s", mem, work, filepath.Join(work, "notes"))
+	}
 	for _, s := range c.Spaces {
 		if paths.Same(s.Memory, mem) {
 			return nil, fmt.Errorf("memory folder %s already belongs to space %q", mem, s.Name)
+		}
+		for _, w := range s.WorkFolders {
+			if paths.Within(w, mem) {
+				return nil, fmt.Errorf("memory folder %s holds %s, a work folder of space %q: put the notes in a folder of their own", mem, w, s.Name)
+			}
 		}
 	}
 	today := o.Today

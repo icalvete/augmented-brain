@@ -11,6 +11,14 @@
   that is a link is said too, instead of its notes vanishing, and so is a date in a
   header that is not `YYYY-MM-DD`. The panel's People page lists the people of the other
   spaces when one space cannot be opened, and names that space.
+- **`uninstall` removes only what is its own, and everything that is.** With `--all`, a
+  notes folder that was also the work folder used to go whole, repositories and all. Now
+  only the notes go, and the folder only if nothing else is left; a notes folder that
+  holds a work folder, your home folder or a folder with no notes stays whole, and the
+  plan says so. `--config` only removes a folder with a `config.toml`. And `uninstall`
+  now stops the remote access and the sessions opened for tasks first: before, they kept
+  running with no guard and no program to take them away. Setting up a space now
+  refuses a notes folder that holds its work folder.
 - **Looking for secrets is about 30 times faster.** `check`, every backup and every
   note written read the text for secrets at about 2.5 MB a second; with notes of a
   dozen MB, `check` took more than a second. Each kind of secret now has a quick test

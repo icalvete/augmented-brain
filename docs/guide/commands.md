@@ -662,12 +662,15 @@ Removes the program and the Claude Code plugin. Your notes stay.
 augmented-brain uninstall
 ```
 
-It shows what it will remove and asks first.
+It shows what it will remove and asks first. The remote access services and the
+sessions opened for tasks go first; if one cannot be stopped, nothing else is removed.
 
 - `--config`: also remove the configuration and the profile.
 - `--all`: start from scratch: also the configuration, the profile and every space's
   notes. It shows each notes folder with how many notes it has, and warns about those
-  with no backup, which will be gone for good. Your backups are not touched.
+  with no backup, which will be gone for good. Only what augmented brain keeps in a notes
+  folder goes; a folder that holds a work folder, or has no notes, stays whole. Your
+  backups are not touched.
 - `--yes`: do not ask.
 
 See [Installing](install.md#uninstalling).
