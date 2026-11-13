@@ -2,6 +2,42 @@
 
 ## Sin publicar
 
+## 0.23.0-beta
+
+Publicada el 2026-11-13.
+
+- **Se puede comprobar de dónde sale una descarga.** Cada fichero de una versión (los
+  archivos y los dos instaladores) lleva ahora un registro de procedencia firmado por
+  GitHub, que dice qué workflow lo compiló y desde qué commit (`gh attestation verify`),
+  y `checksums.txt` incluye también los instaladores. El mismo commit da los mismos bytes
+  en cualquier sitio. Una versión sale del commit de `main` que fijó su número, nunca de
+  cambios mezclados después, y solo cuando todos sus checks exigidos han pasado ahí; se
+  compila en un trabajo que no puede escribir en el repositorio. La guía de instalación
+  explica cómo comprobar una descarga.
+- **Una copia ya no puede elegir dónde caen sus ficheros, y funciona con tus ajustes de
+  git.** `restore` deja las notas donde estaban solo si es dentro de tu carpeta personal
+  y fuera de sus carpetas ocultas y del sistema (`~/.config`, `~/Library`, `~/AppData`,
+  cualquier `.git`); si no, van a `~/augmented-brain/<espacio>` y te lo dice, para que
+  una copia que alguien ha cambiado no deje ficheros donde el ordenador los ejecuta.
+  Rechaza un nombre de espacio que no vale, y lee la copia de `main` aunque la rama por
+  defecto del repositorio sea otra. La copia no firma, no ejecuta hooks globales ni abre
+  ventanas de contraseña, que la hacían fallar a quien tiene `commit.gpgsign` o
+  `core.hooksPath`. La siguiente sesión y `doctor` avisan de una copia que empezó y no
+  terminó, y de cuando la última buena tiene más de 3 días y las notas han cambiado.
+- **El panel ya no es un rodeo al guardia.** `augmented-brain panel` escribía la dirección
+  del panel con su llave, y `/brain:panel` hace que la lance Claude: con esa dirección y
+  dos comandos que el guardia dejaba pasar (`127.1` en vez de `127.0.0.1`), Claude podía
+  añadir un repositorio a los que puede subir, y el panel sellaba el cambio para que el
+  guardia no notara nada. Ahora el comando escribe un enlace que abre el panel una vez,
+  en los próximos 2 minutos (10 con `panel remote`), y lanzado por Claude con el
+  navegador abierto no escribe ninguno; si otra cosa usó tu enlace antes, el navegador lo
+  dice. Un cambio de las listas del guardia hecho en el panel, o unas listas aceptadas
+  allí, te llega como una línea del propio Claude Code, no de Claude. El guardia deniega
+  una dirección del panel se escriba como se escriba el host. Compactar una
+  conversación, `/clear` o retomarla ya no toma como vistas unas listas cambiadas (solo
+  una sesión que empiezas tú), y un sello que no se puede leer pregunta en vez de dejar
+  pasar un push. Un `*` suelto en un comando que solo nombra la carpeta de configuración
+  ya no se deniega.
 - **El plugin viene dentro del programa.** Claude Code tomaba el plugin (sus hooks, entre
   ellos el guardia) de `main` del repositorio en GitHub, tal como estuviera ese día: un
   cambio ahí llegaba a todos antes de ninguna versión, y durante un rato el plugin podía

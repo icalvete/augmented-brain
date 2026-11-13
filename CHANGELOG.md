@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+## 0.23.0-beta
+
+Released 2026-11-13.
+
+- **You can check where a download comes from.** Every file of a release (the archives
+  and both installers) now carries a provenance record signed by GitHub, saying which
+  workflow built it from which commit (`gh attestation verify`), and `checksums.txt`
+  lists the installers too. The same commit builds the same bytes anywhere. A release
+  is made from the commit of `main` that set its version, never from changes merged
+  after it, and only once every required check has passed there; it is built in a job
+  that cannot write to the repository. The guide to installing says how to check a
+  download.
+- **A backup can no longer choose where its files land, and works with your git
+  settings.** `restore` puts the notes where they were only inside your home folder and
+  outside its hidden and system folders (`~/.config`, `~/Library`, `~/AppData`, any
+  `.git`); otherwise they go to `~/augmented-brain/<space>` and it tells you, so a
+  backup someone changed cannot drop files where your computer runs them. It refuses a
+  space name that is not valid, and reads the backup from `main` even when the
+  repository's default branch is another. The backup ignores signing, global hooks and
+  password windows, which made it fail for anyone with `commit.gpgsign` or
+  `core.hooksPath` set. The next session and `doctor` say when a backup began and never
+  ended, and when the last good one is over 3 days old with notes changed since.
+- **The panel is no longer a way around the guard.** `augmented-brain panel` printed the
+  panel's address with its key, and `/brain:panel` has Claude run it: with that address
+  and two commands the guard let through (`127.1` instead of `127.0.0.1`), Claude could
+  add a repository to the ones it may push to, and the panel sealed the change so the
+  guard noticed nothing. Now the command prints a link that opens the panel once, within
+  2 minutes (10 for `panel remote`), and run by Claude with the browser open it prints
+  none; if something used your link first, the browser says so. A change to the guard's
+  lists made in the panel, or lists accepted there, reaches you as a line from Claude
+  Code itself, not from Claude. The guard denies a panel address however the host is
+  written. Compacting a conversation, `/clear` or resuming no longer takes changed lists
+  as seen (only a session you start does), and a seal that cannot be read asks instead
+  of letting a push through. A plain `*` in a command that only names the configuration
+  folder is no longer denied.
 - **The plugin comes inside the program.** Claude Code took the plugin (its hooks, the
   guard among them) from the repository's `main` on GitHub, as it was that day: a change
   there reached everyone before any release, and for a while the plugin could ask for
