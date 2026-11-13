@@ -96,6 +96,11 @@ own review. What it cannot see:
 - **Local commits from merge, revert and cherry-pick.** The guard stops `git commit`
   where Claude may not commit, but `git merge`, `git revert` and `git cherry-pick` also
   make commits on your computer. They are not published: a push is still stopped.
+- **Rules Claude saves.** Claude saves a rule, your profile or a host for the guard
+  without asking you first, and every later session loads them. A text Claude read (a
+  web page, an email) could talk it into saving one. Nothing stops that, but you are
+  told: Claude Code itself shows you, once, what was saved. If you did not ask for it,
+  tell Claude to undo it, or look at the panel.
 - **Questions in automatic modes.** When the guard asks, Claude Code shows you the
   question. What Claude Code does with it in its fully automatic modes is up to Claude
   Code, not augmented brain.

@@ -19,6 +19,58 @@ var hookMessages = map[string]msg{
 		en: "augmented brain · the guard's lists:\n%s\nIf you did not do it, look at the Guard page of the panel.",
 		es: "augmented brain · las listas del guardia:\n%s\nSi no has sido tú, mira la página Guardia del panel.",
 	},
+	"hook.toolnotice": {
+		en: "augmented brain · the assistant saved, for every session from now on:\n%s\nIf you did not ask for it, tell the assistant to undo it, or look at the panel (Rules, Profile, Guard).",
+		es: "augmented brain · el asistente ha guardado, para todas las sesiones a partir de ahora:\n%s\nSi no se lo has pedido, dile que lo deshaga, o míralo en el panel (Reglas, Perfil, Guardia).",
+	},
+	"hook.toolnotice.rule.new": {
+		en: "new rule «%s» (%s)",
+		es: "regla nueva «%s» (%s)",
+	},
+	"hook.toolnotice.rule.changed": {
+		en: "rule «%s» changed (%s)",
+		es: "regla «%s» cambiada (%s)",
+	},
+	"hook.toolnotice.rule.retired": {
+		en: "rule «%s» retired (%s): it is no longer loaded",
+		es: "regla «%s» retirada (%s): ya no se carga",
+	},
+	"hook.toolnotice.where.shared": {
+		en: "every space",
+		es: "todos los espacios",
+	},
+	"hook.toolnotice.where.space": {
+		en: "space %s",
+		es: "espacio %s",
+	},
+	"hook.toolnotice.profile": {
+		en: "your profile changed: %s",
+		es: "tu perfil ha cambiado: %s",
+	},
+	"hook.toolnotice.part.name": {
+		en: "your name",
+		es: "tu nombre",
+	},
+	"hook.toolnotice.part.about": {
+		en: "about you",
+		es: "sobre ti",
+	},
+	"hook.toolnotice.part.work": {
+		en: "how you like to work",
+		es: "cómo te gusta trabajar",
+	},
+	"hook.toolnotice.part.assistant": {
+		en: "the assistant's name",
+		es: "el nombre del asistente",
+	},
+	"hook.toolnotice.part.personality": {
+		en: "the assistant's personality",
+		es: "la personalidad del asistente",
+	},
+	"hook.toolnotice.safety": {
+		en: "the guard now also asks about: %s",
+		es: "el guardia ahora también pregunta por: %s",
+	},
 	"hook.seal.startnotice": {
 		en: "a session started with lists that changed outside the panel since the last one; they are taken as the ones you have seen",
 		es: "una sesión ha empezado con listas que cambiaron fuera del panel desde la anterior; se toman como las que has visto",

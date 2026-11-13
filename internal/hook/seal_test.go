@@ -135,3 +135,33 @@ func TestGuardNoticeOnce(t *testing.T) {
 		}
 	}
 }
+
+// What a tool saved for every session (a rule, the profile) reaches the user from
+// Claude Code once, from the next hook, next to a notice about the guard's lists.
+func TestToolNoticeOnce(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	for _, hook := range []struct {
+		name string
+		f    func(in *bytes.Reader, out *bytes.Buffer) error
+	}{
+		{"UserPromptSubmit", func(in *bytes.Reader, out *bytes.Buffer) error { return UserPromptSubmit(in, out, cfgDir) }},
+		{"Stop", func(in *bytes.Reader, out *bytes.Buffer) error { return Stop(in, out, cfgDir) }},
+		{"SessionStart", func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, cfgDir) }},
+	} {
+		if err := state.AddToolNotice(cfgDir, "new rule «Deploys» (every space)", time.Now()); err != nil {
+			t.Fatal(err)
+		}
+		if err := state.AddGuardNotice(cfgDir, "changed in the panel: +db01", time.Now()); err != nil {
+			t.Fatal(err)
+		}
+		in := map[string]any{"cwd": work, "session_id": "n1"}
+		o := runAll(t, hook.f, in)
+		msg, _ := o["systemMessage"].(string)
+		if !strings.Contains(msg, "the assistant saved, for every session") || !strings.Contains(msg, "«Deploys»") || !strings.Contains(msg, "+db01") {
+			t.Errorf("%s: notice: %q", hook.name, msg)
+		}
+		if o := runAll(t, hook.f, in); o != nil && o["systemMessage"] != nil {
+			t.Errorf("%s: shown twice: %v", hook.name, o)
+		}
+	}
+}

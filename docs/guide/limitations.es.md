@@ -99,6 +99,11 @@ seguridad ni tu propia revisión. Lo que no puede ver:
 - **Commits locales de merge, revert y cherry-pick.** El guardia para `git commit` donde
   Claude no puede hacer commits, pero `git merge`, `git revert` y `git cherry-pick`
   también hacen commits en tu ordenador. No se publican: un push sigue parado.
+- **Reglas que guarda Claude.** Claude guarda una regla, tu perfil o una máquina para
+  el guardia sin preguntarte antes, y todas las sesiones siguientes los cargan. Un texto
+  que Claude haya leído (una web, un correo) podría convencerle de guardar uno. Nada lo
+  impide, pero te enteras: Claude Code te enseña, una vez, lo que se ha guardado. Si no
+  se lo has pedido, dile a Claude que lo deshaga, o míralo en el panel.
 - **Preguntas en los modos automáticos.** Cuando el guardia pregunta, Claude Code te
   enseña la pregunta. Qué hace Claude Code con ella en sus modos totalmente automáticos
   depende de Claude Code, no de augmented brain.
