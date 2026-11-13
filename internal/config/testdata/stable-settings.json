@@ -1,0 +1,23 @@
+{
+  "config.toml": [
+    "backup",
+    "default_space",
+    "format",
+    "git_allowed_repos",
+    "git_ask_repos",
+    "language",
+    "memory",
+    "production_aws_profiles",
+    "root_ask",
+    "secrets",
+    "spaces",
+    "untouchable_hosts",
+    "work_folders"
+  ],
+  "guard.toml": [
+    "untouchable_repos"
+  ],
+  "session.toml": [
+    "preferred_model"
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "backup": [
+    "all",
+    "auto",
+    "space"
+  ],
+  "backup setup": [],
+  "check": [],
+  "clean": [
+    "yes"
+  ],
+  "config history": [],
+  "config restore": [],
+  "doctor": [],
+  "hook": [
+    "event post-compact",
+    "event pre-tool-use",
+    "event session-end",
+    "event session-start",
+    "event stop",
+    "event user-prompt-submit"
+  ],
+  "import": [
+    "apply",
+    "map",
+    "repos-base"
+  ],
+  "init": [
+    "custom",
+    "language",
+    "memory",
+    "no-plugin",
+    "space",
+    "work",
+    "yes"
+  ],
+  "mcp": [],
+  "panel": [
+    "no-browser"
+  ],
+  "panel remote": [],
+  "panel stop": [],
+  "remote install": [],
+  "remote status": [],
+  "remote uninstall": [],
+  "restore": [
+    "memory",
+    "work"
+  ],
+  "session list": [],
+  "session restart": [
+    "old",
+    "when-idle"
+  ],
+  "session start": [
+    "folder"
+  ],
+  "session stop": [
+    "when-idle"
+  ],
+  "space": [],
+  "space add": [
+    "memory",
+    "space",
+    "work",
+    "yes"
+  ],
+  "uninstall": [
+    "all",
+    "config",
+    "yes"
+  ],
+  "update": [
+    "force",
+    "from",
+    "no-restart",
+    "plugin"
+  ],
+  "version": [],
+  "watch pr": [
+    "every",
+    "max",
+    "repo",
+    "task"
+  ]
+}

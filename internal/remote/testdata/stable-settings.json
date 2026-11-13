@@ -1,0 +1,9 @@
+{
+  "remote.toml": [
+    "enabled",
+    "folders",
+    "name_prefix",
+    "permission_mode",
+    "spaces"
+  ]
+}

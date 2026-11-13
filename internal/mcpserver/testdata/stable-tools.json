@@ -1,0 +1,161 @@
+{
+  "area_new": [
+    "required title",
+    "summary: string",
+    "title: string"
+  ],
+  "backup_setup": [
+    "repo_url: string"
+  ],
+  "capture": [
+    "remind_on: string",
+    "required text",
+    "space: string",
+    "text: string"
+  ],
+  "capture_done": [
+    "date: string",
+    "required date",
+    "required text",
+    "text: string"
+  ],
+  "knowledge_new": [
+    "area: string",
+    "body: string",
+    "id: string",
+    "kind: string",
+    "required kind",
+    "required title",
+    "shared: boolean",
+    "summary: string",
+    "title: string"
+  ],
+  "note_retire": [
+    "id: string",
+    "reason: string",
+    "replaced_by: string",
+    "required id",
+    "required reason",
+    "shared: boolean"
+  ],
+  "pending": [
+    "space: string",
+    "within_days: integer"
+  ],
+  "person_save": [
+    "aliases: array of string",
+    "name: string",
+    "notes: string",
+    "required name",
+    "role: string",
+    "spaces: array of string"
+  ],
+  "profile_save": [
+    "about: string",
+    "assistant_name: string",
+    "assistant_personality: string",
+    "name: string",
+    "work_style: string"
+  ],
+  "repo_describe": [
+    "repo: string",
+    "required repo",
+    "required text",
+    "text: string"
+  ],
+  "review_done": [
+    "processed: array of string",
+    "required summary",
+    "summary: string"
+  ],
+  "rule_new": [
+    "body: string",
+    "id: string",
+    "required body",
+    "required title",
+    "shared: boolean",
+    "summary: string",
+    "title: string"
+  ],
+  "safety_save": [
+    "production_aws_profiles: array of string",
+    "untouchable_hosts: array of string"
+  ],
+  "secret_name_save": [
+    "name: string",
+    "required name",
+    "required service",
+    "service: string",
+    "what: string"
+  ],
+  "session_recover": [
+    "session_id: string"
+  ],
+  "task_close": [
+    "id: string",
+    "required id",
+    "required result",
+    "result: string"
+  ],
+  "task_get": [
+    "id: string",
+    "required id",
+    "space: string"
+  ],
+  "task_journal": [
+    "entry: string",
+    "id: string",
+    "required entry",
+    "required id",
+    "space: string"
+  ],
+  "task_new": [
+    "area: string",
+    "done_when: string",
+    "goal: string",
+    "parent: string",
+    "required title",
+    "summary: string",
+    "title: string"
+  ],
+  "task_park": [
+    "essentials: string",
+    "id: string",
+    "next: string",
+    "required id",
+    "required next",
+    "someday: boolean",
+    "waiting_on: string"
+  ],
+  "task_step": [
+    "add: string",
+    "done: boolean",
+    "id: string",
+    "number: integer",
+    "required id",
+    "space: string",
+    "text: string"
+  ],
+  "task_update": [
+    "area: string",
+    "id: string",
+    "next: string",
+    "reopen: string",
+    "required id",
+    "space: string",
+    "status: string",
+    "summary: string",
+    "waiting_on: string",
+    "watch_date: string",
+    "watch_done: string",
+    "watch_what: string"
+  ],
+  "task_worktree": [
+    "folder: string",
+    "id: string",
+    "repo: string",
+    "required id"
+  ],
+  "weekly_review": [],
+  "where_am_i": []
+}
