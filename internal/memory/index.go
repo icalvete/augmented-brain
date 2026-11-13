@@ -30,10 +30,13 @@ func (m *Memory) index(lang string, compact bool) string {
 	// without the program ever reading them.
 	l := func(key string) string { return i18n.T(lang, "index."+key) }
 	var b strings.Builder
+	// Every field goes through OneLine again, even though Parse already did it: a note
+	// made in memory reaches the index too, and a line break here would open a section
+	// of its own ("## Rules") in what every session reads.
 	line := func(n *Note, extra string) {
-		fmt.Fprintf(&b, "- [%s](%s)", n.Header.Title, n.Path)
-		if n.Header.Summary != "" && !(compact && n.Header.Type == "task") {
-			fmt.Fprintf(&b, " — %s", n.Header.Summary)
+		fmt.Fprintf(&b, "- [%s](%s)", OneLine(n.Header.Title), OneLine(n.Path))
+		if s := OneLine(n.Header.Summary); s != "" && !(compact && n.Header.Type == "task") {
+			fmt.Fprintf(&b, " — %s", s)
 		}
 		b.WriteString(extra + "\n")
 	}
@@ -92,23 +95,23 @@ func (m *Memory) index(lang string, compact bool) string {
 	sort.Strings(groups) // "" (no area) sorts first
 	taskLine := func(t *Note, indent string) {
 		b.WriteString(indent)
-		extra := " · " + t.Header.Status
+		extra := " · " + OneLine(t.Header.Status)
 		if done, total := StepCount(t.Body); total > 0 {
 			extra += " · " + fmt.Sprintf(l("steps"), done, total)
 		}
-		extra += fmt.Sprintf(" · %s %s", l("waits"), t.Header.WaitingOn)
+		extra += fmt.Sprintf(" · %s %s", l("waits"), OneLine(t.Header.WaitingOn))
 		switch {
 		case !compact:
-			extra += fmt.Sprintf(" · %s: %s", l("next"), t.Header.Next)
+			extra += fmt.Sprintf(" · %s: %s", l("next"), OneLine(t.Header.Next))
 		case t.Header.WaitingOn == "me":
-			extra += fmt.Sprintf(" · %s: %s", l("next"), clip(t.Header.Next, maxSessionNext))
+			extra += fmt.Sprintf(" · %s: %s", l("next"), Clip(OneLine(t.Header.Next), maxSessionNext))
 		}
 		line(t, extra)
 	}
 	for _, a := range groups {
 		title := l("noarea")
 		if n, ok := m.Notes[a]; ok {
-			title = n.Header.Title
+			title = OneLine(n.Header.Title)
 		}
 		fmt.Fprintf(&b, "\n### %s\n", title)
 		for _, t := range byArea[a] {
@@ -153,8 +156,8 @@ func (m *Memory) WriteIndex(lang string) (bool, error) {
 // characters: enough to say what is pending; the whole step is in the task.
 const maxSessionNext = 120
 
-// clip cuts s to max characters, ending it with "…" when it was longer.
-func clip(s string, max int) string {
+// Clip cuts s to max characters, ending it with "…" when it was longer.
+func Clip(s string, max int) string {
 	r := []rune(s)
 	if len(r) <= max {
 		return s

@@ -19,6 +19,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/state"
@@ -77,7 +78,7 @@ func cmdWatch(args []string, out, errOut io.Writer) int {
 	if len(rest) == 2 && rest[0] == "pr" {
 		n, _ = strconv.Atoi(strings.TrimPrefix(rest[1], "#"))
 	}
-	if n <= 0 || o.max <= 0 || o.every <= 0 {
+	if n <= 0 || o.max <= 0 || o.every < minWatchEvery {
 		fmt.Fprintln(errOut, i18n.T(l, "usage.watch"))
 		return 2
 	}
@@ -171,7 +172,7 @@ func watchKeep(c *config.Config, s *config.Space, l string, o *watchOpts, n int,
 	r := watchRun(o, n)
 	line := watchLine(l, r)
 	lines := []string{strconv.Itoa(watchCode(r)), line}
-	if err := watchNote(c, s, o.task, r.PR, line); err != nil {
+	if err := watchNote(c, s, o.task, r.PR, line, watchNext(l, r)); err != nil {
 		lines = append(lines, i18n.T(l, "watch.unsaved", o.task, err))
 	} else {
 		lines = append(lines, i18n.T(l, "watch.saved", o.task))
@@ -258,15 +259,55 @@ func readPid(path string) (int, error) {
 	return strconv.Atoi(strings.TrimSpace(string(data)))
 }
 
-// watchLine is what happened, in one line.
-func watchLine(l string, r watch.Result) string {
+// minWatchEvery is how often watch may look at most: gh counts against the user's
+// GitHub quota, and a check takes minutes anyway.
+const minWatchEvery = 10 * time.Second
+
+// What watch quotes from GitHub: the names of the checks, which whoever writes the
+// pull request's workflows chooses, and what gh says when it fails.
+const (
+	maxCheckName = 60
+	maxChecks    = 5
+	maxProblem   = 200
+)
+
+// quoted is text that came from GitHub, as watch writes it: one line, cut short, and
+// between quotes, so it reads as a name and never as an instruction of its own.
+func quoted(s string, max int) string { return "\"" + memory.Clip(memory.OneLine(s), max) + "\"" }
+
+// checkNames lists the names of some checks, at most maxChecks of them.
+func checkNames(l string, names []string) string {
+	var q []string
+	for i, n := range names {
+		if i == maxChecks {
+			q = append(q, i18n.T(l, "watch.andmore", len(names)-maxChecks))
+			break
+		}
+		q = append(q, quoted(n, maxCheckName))
+	}
+	return strings.Join(q, ", ")
+}
+
+// watchLine is what happened, in one line: the whole of it, with the names of the
+// checks, for the output and the task's journal.
+func watchLine(l string, r watch.Result) string { return watchText(l, r, true) }
+
+// watchNext is what happened as the task's next step: a sentence of the program's own,
+// with no names of checks and nothing gh said, which every session reads at the start;
+// those are in the journal.
+func watchNext(l string, r watch.Result) string { return watchText(l, r, false) }
+
+func watchText(l string, r watch.Result, names bool) string {
 	took := minutes(l, r.Elapsed)
 	var line string
 	switch r.Kind {
 	case watch.Green:
 		line = i18n.T(l, "watch.green", r.PR, took)
 	case watch.Failed:
-		line = i18n.T(l, "watch.failed", r.PR, strings.Join(r.Failed, ", "), took)
+		if !names {
+			return i18n.T(l, "watch.failed.next", r.PR, took)
+		}
+		line = i18n.T(l, "watch.failed", r.PR, checkNames(l, r.Failed), took)
 	case watch.Merged:
 		line = i18n.T(l, "watch.merged", r.PR, took)
 	case watch.Closed:
@@ -274,24 +315,31 @@ func watchLine(l string, r watch.Result) string {
 	case watch.Conflict:
 		line = i18n.T(l, "watch.conflict", r.PR, took)
 	case watch.TimedOut:
-		pending := strings.Join(r.Pending, ", ")
+		if !names {
+			return i18n.T(l, "watch.timeout.next", r.PR, took)
+		}
+		pending := checkNames(l, r.Pending)
 		if pending == "" {
-			pending = r.Problem
+			pending = quoted(r.Problem, maxProblem)
 		}
 		line = i18n.T(l, "watch.timeout", r.PR, took, pending)
 	default:
-		line = i18n.T(l, "watch.broken", r.PR, r.Problem, took)
+		if !names {
+			return i18n.T(l, "watch.broken.next", r.PR, took)
+		}
+		line = i18n.T(l, "watch.broken", r.PR, quoted(r.Problem, maxProblem), took)
 	}
-	if len(r.Others) > 0 {
-		line += i18n.T(l, "watch.others", strings.Join(r.Others, ", "))
+	if len(r.Others) > 0 && names {
+		line += i18n.T(l, "watch.others", checkNames(l, r.Others))
 	}
 	return line
 }
 
-// watchNote writes the result in the task: a line in its journal, which keeps the
-// next step it had, and the result as its next step, which every other session hears
-// about before its next answer (package fresh) and Today shows.
-func watchNote(c *config.Config, s *config.Space, task string, pr int, line string) error {
+// watchNote writes the result in the task: a line in its journal (line, the whole of
+// it), which keeps the next step it had, and the result as its next step (next, the
+// program's own words), which every other session hears about before its next answer
+// (package fresh) and Today shows.
+func watchNote(c *config.Config, s *config.Space, task string, pr int, line, next string) error {
 	unlock, err := filelock.Lock(filepath.Join(c.Dir, backup.NotesLock))
 	if err != nil {
 		return err
@@ -308,7 +356,7 @@ func watchNote(c *config.Config, s *config.Space, task string, pr int, line stri
 	if _, err := b.Journal(task, i18n.T(c.Language, "watch.journal", pr, line, t.Header.Next)); err != nil {
 		return err
 	}
-	_, err = b.Update(brain.UpdateInput{ID: task, Next: line})
+	_, err = b.Update(brain.UpdateInput{ID: task, Next: next})
 	return err
 }
 

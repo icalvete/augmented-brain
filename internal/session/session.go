@@ -406,7 +406,7 @@ func arrivedNote(b *brain.Brain) string {
 		"When one is done (or becomes a task), take it out with capture_done, giving its date and text as listed (a shortened one, ending in …, as it is):\n")
 	used := 0
 	for i, e := range got {
-		line := fmt.Sprintf("- %s — %s [from %s]\n", e.Date, shorten(e.Text, lineBudget), e.From)
+		line := fmt.Sprintf("- %s — %s [from %s]\n", e.Date, shorten(memory.OneLine(e.Text), lineBudget), memory.OneLine(e.From))
 		if i == maxArrived || used+size(line) > arrivedBudget {
 			fmt.Fprintf(&out, "- and %d more: see weekly_review\n", len(got)-i)
 			break
@@ -535,7 +535,7 @@ func dueNote(b *brain.Brain, task string) string {
 		if d.TaskID != "" {
 			where = d.TaskID
 		}
-		fmt.Fprintf(&out, "- %s (%s): %s [%s]\n", d.Date, when, shorten(d.What, lineBudget), where)
+		fmt.Fprintf(&out, "- %s (%s): %s [%s]\n", d.Date, when, shorten(memory.OneLine(d.What), lineBudget), where)
 	}
 	if more > 0 {
 		fmt.Fprintf(&out, "- and %d more: see the pending tool\n", more)

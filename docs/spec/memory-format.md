@@ -93,6 +93,19 @@ renamed or deleted, or this computer never had it) is reported, never fixed by i
 tells the assistant to ask the user where it is now. A closed task is not checked. An
 absolute path, or one starting with `~`, is taken as it is.
 
+Every field of the header holds one line. A line break in one, or any other control
+character (tabs, the Unicode line and paragraph separators), is read as a space, and
+spaces in a row as one: a title, summary, status, `waiting_on`, next step or watch
+date written over several lines by hand still makes one line in `MEMORY.md` and at the
+session start, so no field can open a section there. Only `repos` and `related` keep
+their spaces, since they name paths and ids. The program writes them that way too, and
+refuses a field longer than its limit, counted in characters, when it changes: title
+300, summary 1,000, next step 2,000, `waiting_on` 200, a watch date's `what` 1,000. A
+journal entry may be up to 32,000 characters, a capture 4,000, a note 512,000 and the
+profile 64,000; the error says where the longer text goes (a file under `docs/<task>/`,
+which the journal names). A journal entry of several lines keeps them, each one after
+the first indented, so it stays one entry and never starts a heading or a step.
+
 Dates (`created`, `updated`, and each `watch` date of a task) are `YYYY-MM-DD`. One
 written another way (`2026-11-3`) keeps the note, but is reported until fixed, since it
 would never come up.
@@ -248,6 +261,12 @@ repository, and an empty one takes it out. The note is made the first time.
 A capture ending in `(remind: YYYY-MM-DD)` is brought up at the start of the session from
 7 days before that date, and every day after it, until the capture is processed (in the
 weekly review, or marked as dealt with). Any other line (the heading, a paragraph) is left alone.
+
+The text of a capture is one line, read as a header field is (above). Its endings
+`(remind: YYYY-MM-DD)` and `(from <space>)` are marks only the program writes: typed
+as part of the text, they are kept between square brackets instead
+(`[from personal]`), so a capture made here never passes for one another space sent.
+The same holds for `(from <space>)` at the end of a journal entry.
 
 ## Reviews
 

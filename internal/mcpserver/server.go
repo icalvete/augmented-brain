@@ -184,7 +184,10 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				if i.StepsTotal > 0 {
 					steps = fmt.Sprintf(" · %d/%d steps", i.StepsDone, i.StepsTotal)
 				}
-				fmt.Fprintf(&out, "%s- %s (%s)%s · %s%s · waits on %s · next: %s\n", indent, i.ID, i.Title, part, i.Status, steps, i.WaitingOn, i.Next)
+				// The next step is cut here, as the session start does: this list is
+				// for finding a task, and task_get gives it whole.
+				fmt.Fprintf(&out, "%s- %s (%s)%s · %s%s · waits on %s · next: %s\n", indent, i.ID, i.Title, part, i.Status, steps, i.WaitingOn,
+					memory.Clip(i.Next, maxPendingNext))
 			}
 			for _, d := range due {
 				fmt.Fprintf(&out, "! watch %s (%d days): %s [%s]\n", d.Date, d.Days, d.What, d.TaskID)
@@ -889,6 +892,9 @@ func taskRef(id string) string {
 // entries out when they are written (brain.archiveJournal); a note written by hand or by
 // an earlier program may still be longer, and is then shortened for reading only.
 var TaskGetMax = 60000
+
+// maxPendingNext is the most of a task's next step that pending lists, in characters.
+const maxPendingNext = 300
 
 // shortened is n with the oldest entries of its journal left out when it is longer than
 // TaskGetMax, and a line saying where to read them; the note itself is not changed.

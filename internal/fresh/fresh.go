@@ -371,11 +371,11 @@ func Text(lang string, r Report) string {
 		}
 		switch c.Kind {
 		case "gone":
-			b.WriteString(i18n.T(lang, "fresh.gone", c.ID))
+			b.WriteString(i18n.T(lang, "fresh.gone", oneLine(c.ID)))
 		case "new":
-			b.WriteString(i18n.T(lang, "fresh.new", c.ID, oneLine(c.Title), c.Status))
+			b.WriteString(i18n.T(lang, "fresh.new", oneLine(c.ID), oneLine(c.Title), oneLine(c.Status)))
 		default:
-			b.WriteString(i18n.T(lang, "fresh.changed", c.ID, oneLine(c.Title), c.Status, c.WaitingOn, oneLine(c.Next)))
+			b.WriteString(i18n.T(lang, "fresh.changed", oneLine(c.ID), oneLine(c.Title), oneLine(c.Status), oneLine(c.WaitingOn), oneLine(c.Next)))
 		}
 	}
 	return b.String()
@@ -384,7 +384,7 @@ func Text(lang string, r Report) string {
 // oneLine keeps a field on one line and short: it comes from a note anyone may have
 // written.
 func oneLine(s string) string {
-	s = strings.Join(strings.Fields(s), " ")
+	s = memory.OneLine(s)
 	if r := []rune(s); len(r) > 160 {
 		s = string(r[:157]) + "..."
 	}
