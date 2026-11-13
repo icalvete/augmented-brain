@@ -449,6 +449,120 @@ All the commands and their options: [Commands](https://icalvete.github.io/augmen
 
 ---
 
+Source: https://icalvete.github.io/augmented-brain/guide/import.html
+
+# Bring in a memory you already have
+
+
+If Claude Code has been keeping a memory for you, you do not start from zero. Claude Code
+writes it in `~/.claude/projects/<folder>/memory/`. You can bring it into your spaces.
+
+## Find the folder
+
+Claude Code keeps a folder for each folder you opened it in, inside `~/.claude/projects`.
+Its name is that path with each `/` turned into `-`: for `/home/lucia/code/blog`, it is
+`-home-lucia-code-blog`. To see them all:
+
+```bash
+ls ~/.claude/projects
+```
+
+The memory is the `memory` folder inside the one you want. In the commands below, put
+that name where it says `<folder>`.
+
+## First, look
+
+A usual install has two spaces, so first say which space the notes go to. A file of one
+line is enough. Make a file `map.txt` with:
+
+```text
+* = personal
+```
+
+It sends everything to your space "personal". To split the notes between spaces, see
+[More than one space](https://icalvete.github.io/augmented-brain/guide/import.html#more-than-one-space). Then:
+
+```bash
+augmented-brain import ~/.claude/projects/<folder>/memory --map map.txt
+```
+
+With only one space, leave out `--map`. With more and no `--map`, it stops and asks for
+the file.
+
+That writes nothing. It shows where each note would go, and what it could not decide:
+
+- files that are not notes (an index, say);
+- notes about you: copy what matters into your profile;
+- links that would cross from one space to another;
+- ids (the name of each note's file, such as `task-blog`) your space already has.
+
+The folder you import from is only read, now and later.
+
+## Then, write
+
+At the end, it prints the exact command that writes it: the same one with `--apply`.
+When the list looks right, run it:
+
+```bash
+augmented-brain import ~/.claude/projects/<folder>/memory --map map.txt --apply
+```
+
+It never writes over a note that already exists.
+
+## What each file becomes
+
+Each file becomes a note of its kind: by its name (`task-…`, `area-…`, `ref-…`,
+`lesson-…`, `rule-…`, `person-…`), or else by what Claude Code says it is. A task with no
+status comes in parked, waiting on you, with "review this imported task" as its next
+step.
+
+The rest comes along too:
+
+- The captures of your old `inbox.md` (each `- …` line) go to the inbox of the space of
+  `*` (below), or the default space, dated, and never twice.
+- `archive/` and `docs/<task>/` are copied as they are, next to their note, also when you
+  import again later.
+- A file with a secret written in it (a key, a token) is imported, but named in the
+  report. The backup will not upload it until the secret is out. `augmented-brain check`
+  names it too.
+- A reference or lesson that is a list of people (one `## Name` section each, with a word
+  like "people" or "team" in its id or title) comes in as it is, and the report names it.
+  People are notes of their own, so ask Claude to save each one as a person.
+
+## More than one space
+
+A small file says which space each area goes to, which notes go somewhere other than
+their area, and which go to the shared notes:
+
+```text
+area-family = personal
+task-evening-course = work
+lesson-git-small-commits = shared
+* = work
+```
+
+`*` is for everything else; with one space, no file is needed. Pass the file with `--map`:
+
+```bash
+augmented-brain import ~/.claude/projects/<folder>/memory --map map.txt
+```
+
+If the notes name repositories in `repos:` (the list of folders a task
+works in), `--repos-base <folder>` says what those paths
+are relative to. They are then rewritten relative to the space's work folder.
+
+## Turn off the old memory
+
+Has Claude Code been keeping that memory by itself? Then it goes on keeping it for your
+spaces' folders: a second memory, next to the space's, that drifts from it.
+`augmented-brain doctor` tells you, and how to turn it off: `"autoMemoryEnabled": false`
+in Claude Code's settings. What it already has stays, ready to import.
+
+All the options: [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html#augmented-brain-import).
+
+
+---
+
 Source: https://icalvete.github.io/augmented-brain/guide/spaces.html
 
 # Spaces
@@ -1629,6 +1743,7 @@ wording with the same meaning works too.
 | "Leave it for some day." | Parks it as someday: out of the daily list, kept in its area |
 | "Close the task." | Closes it with its result; it is never deleted. A closed task stays closed: closing it again is refused |
 | "Reopen the blog task: the certificate failed again." | Opens it again; the reason goes to its journal |
+| "Open me a session for the blog task." | Starts a Claude session of its own for that task, in its folder; it shows up in Claude Desktop and claude.ai within a minute. Linux only for now ([how](https://icalvete.github.io/augmented-brain/guide/task-sessions.html)) |
 
 ## Inbox and reminders
 
@@ -1636,6 +1751,8 @@ wording with the same meaning works too.
 |---|---|
 | "Note this: look at the new hosting prices." | One dated line in the inbox, no task opened |
 | "Remind me on Thursday to call the insurance." | A capture with a date: it comes up at the start of the session |
+| "Note this in work: renew the parking card." | The capture goes to the inbox of your space "work", marked with the space it came from. It comes up there at every session start until it is done |
+| "I called the insurance, that one is done." | Takes that capture out of the inbox without waiting for the weekly review |
 | "Let's do the weekly review." | Goes through the inbox and the stalled tasks with you, one at a time |
 
 ## Knowledge, rules and people
@@ -1647,9 +1764,11 @@ wording with the same meaning works too.
 | "The newsletter is a new area." | Creates the area |
 | "From now on, answer in short sentences." | A rule, loaded in every session |
 | "This holds everywhere." | Saves the rule or lesson as shared, for every space |
+| "That rule no longer holds." | Retires it: it moves to `archive/`, with when and why, and stops reaching your sessions. Nothing is deleted. Claude asks you first |
 | "Diego runs the hosting company; I call him Dieguito." | Saves Diego as a person, with his nickname |
 | "Why did we pick the cheaper host?" | Finds the decision in your notes, with date and reason |
 | "Change my profile: I prefer the recommendation first." | Rewrites your profile |
+| "Which space am I in?" | Says the space of this session, its notes folder, its areas and how many tasks are live |
 
 ## Safety
 
@@ -1658,6 +1777,7 @@ wording with the same meaning works too.
 | "The AWS profile shop-prod is production." | The guard asks you before commands that use it |
 | "Never touch db01 without asking me." | The guard asks you before ssh, scp or rsync to it |
 | "I stored a new secret, telegram/alerts-bot, for alerts to my phone." | Writes down its name and what it is for, never its value |
+| "Ask me before you save a rule." | This is not set by talking: you choose "Ask me first" on the panel's Guard page, and Claude tells you where. From then on, Claude Code asks you before a rule, your profile or the guard's lists are saved ([more](https://icalvete.github.io/augmented-brain/guide/guard.html#asking-before-claude-saves-a-rule)) |
 
 ## Backup, sessions and the panel
 
@@ -1680,7 +1800,17 @@ At the start of a session, Claude may bring things up without being asked:
 - a new version, to update;
 - notes with problems;
 - what another space sent to this one, until it is done;
-- the guard's lists, if something changed them outside the panel.
+- the guard's lists, if something changed them outside the panel;
+- open sessions still running the program from before an update, which need restarting.
+
+And while you work:
+
+- tasks that changed outside this session (another session, the panel or an edit by
+  hand), before it answers your next message;
+- another model answering than the one you chose, once per session, if you set the
+  model of your sessions on the Guard page;
+- the window using a lot of memory: at 2 GB, then 4 and 8 GB, once each (Linux and
+  macOS; [what to do](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html#the-window-uses-a-lot-of-memory)).
 
 ## Next
 
@@ -1966,178 +2096,12 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
 
 ---
 
-Source: https://icalvete.github.io/augmented-brain/guide/panel-remote.html
-
-# The panel from another device
-
-
-The [panel](https://icalvete.github.io/augmented-brain/guide/panel.html) opens on the computer where augmented brain runs, and only there.
-To open it from another of your devices, your phone or another computer, augmented
-brain uses **[Tailscale](https://tailscale.com)**: a free app that joins your devices in
-a private network of their own. Only your devices are in it; nothing is open to the
-internet.
-
-```bash
-augmented-brain panel remote
-```
-
-It starts the panel, publishes it in your Tailscale network, and prints its address,
-such as `https://my-laptop.example.ts.net:8443/t/…`, and a QR code. Point the
-phone's camera at the code, or open the address on the other computer. The address
-opens the panel once, within 10 minutes: run the command again for another.
-
-If the panel is already open on this computer, it is not stopped: the same panel starts
-answering through the network too, and the pages you have open go on working. If that
-panel came from an earlier version, it has to start again: the command says so, and you
-reload those pages. If publishing fails, the panel stays on this computer only.
-
-## What you need, once
-
-The command checks each of these and, when one is missing, says exactly what to do. It
-never installs or changes anything of Tailscale's for you.
-
-1. **Tailscale on both devices**, signed in with the same account:
-   [tailscale.com/download](https://tailscale.com/download). It works on Linux, macOS,
-   Windows, Android and iPhone.
-2. **HTTPS in your Tailscale network**, so the panel travels encrypted with a real
-   certificate. Turn it on in Tailscale's admin page,
-   [login.tailscale.com/admin/dns](https://login.tailscale.com/admin/dns): **HTTPS
-   Certificates → Enable HTTPS**. One thing to know: the names of your machines (such
-   as `my-laptop.example.ts.net`) then appear in public logs of certificates. Anyone can
-   see that the name exists; nobody outside your devices can reach it.
-3. **On Linux, let your user publish.** Tailscale lets only an administrator publish on
-   the computer. Once, with your administrator password:
-
-   ```bash
-   sudo tailscale set --operator=your-user-name
-   ```
-
-   augmented brain prints this line with your name and does not run it. On macOS and
-   Windows it is not needed.
-
-## Who can open it
-
-Four things keep it yours:
-
-- **Only your Tailscale network reaches the address.** It does not exist on the
-  internet.
-- **Only your account gets in.** Tailscale tells the panel who sends each request (the
-  account you signed in with, with its own password and second factor), and the panel
-  lets in only the owner of the computer. Someone else in your network, or someone you
-  share a device with, gets "forbidden" even with the address.
-- **The network has a door of its own.** What Tailscale brings in arrives at a port of
-  the panel that only it uses, and is treated as coming from the network whatever it
-  says about itself: from there, nothing that is only for this computer can be done.
-  From another device you can look at everything, but you cannot back up now, set up a
-  backup, go back to a backup or to an earlier configuration, or change anything on the
-  Guard page (its lists, the model of your sessions, what the assistant saves on its
-  own).
-- **The address works once**, and the pages it opens hold a key that changes every
-  time the panel starts.
-
-There is no extra password to type: your Tailscale account is the login.
-
-## It is always temporary
-
-The address works while the panel runs. The panel stops by itself after 30 minutes
-without use, or now with:
-
-```bash
-augmented-brain panel stop
-```
-
-When it stops, it takes the address back from Tailscale. If the computer crashed or
-restarted with the panel published, the next time a panel starts it takes it back, and
-`augmented-brain doctor` warns while it is still there. Port 8443 of your Tailscale
-network is the panel's: if you already publish something else there (even another
-program of this computer), augmented brain leaves it alone and says so. It only ever
-takes back the address it published itself.
-
-## Check it
-
-`augmented-brain doctor` has a line about the remote panel once you have used it:
-whether Tailscale is still installed, connected and with HTTPS, and whether an address
-of the panel was left published.
-
-
----
-
-Source: https://icalvete.github.io/augmented-brain/guide/config-history.html
-
-# Configuration versions
-
-
-Your configuration is what augmented brain knows about this computer and about you:
-your spaces, the guard's lists, remote access, your profile and the names of your
-secrets. A wrong change there (a list emptied by mistake, a space pointing to the wrong
-folder) used to have no way back. Now every change is kept as a **version**, and you can
-see what changed and go back.
-
-## What is kept
-
-A version is a copy of these files, in the configuration folder, as they were at one
-moment: `config.toml`, `guard.toml`, `remote.toml`, `session.toml`, `profile.md` and
-`secrets.toml` (only the names of your secrets, never a value). It also says who made the
-change: the panel, a command, the assistant (and with which tool), going back to an
-earlier version, or by hand.
-
-- A new version is kept every time the configuration changes. A change made by hand, or
-  by an older program, is kept the next time augmented brain looks: when a session
-  starts, a command runs, the assistant uses a tool or you save something in the panel.
-- The last **10** are kept. When there is one more, the oldest goes.
-- They stay **only on this computer**, in the `history` folder of the configuration
-  folder. They never go into the backup: the guard's lists may name work machines, and
-  the backup leaves them out on purpose.
-- Your notes are not here. Tasks, rules, knowledge and people (shared ones too) have
-  their own history in the [backup](https://icalvete.github.io/augmented-brain/guide/backup.html).
-
-## In the panel
-
-The panel's **Versions** page lists them, newest first, with when and who. Under each
-one, **What it changed** shows the lines that changed from the version before: green
-what was added, red what was taken away. **Go back to this one** makes it the
-configuration again: it opens first, says what going back does and, when the guard's
-lists would change, which entries each list would gain or lose. Tick the box to confirm,
-then go back.
-
-Going back keeps the configuration you had as a version first, so it can be undone the
-same way. A version that would leave a file the program cannot read is refused, and
-nothing changes. If the guard's lists change, going back from the panel counts as you
-accepting them, as any change on the [Guard](https://icalvete.github.io/augmented-brain/guide/guard.html) page does.
-
-From another device ([the panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html)) the page only
-shows the versions: going back is only from the panel on this computer, because it can
-change what the guard allows.
-
-## With commands
-
-```bash
-augmented-brain config history
-augmented-brain config history 3
-augmented-brain config restore 3
-```
-
-`config history` lists the versions; with a number, it shows what that one changed.
-`config restore` goes back to one. A command can be run by the assistant, so going back
-this way never accepts new guard lists for you: until you accept them in the panel's
-Guard page, or start a new session, the guard asks before every commit, push or merge it
-used to allow. See [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html#augmented-brain-config-history).
-
-Both work even when `config.toml` is broken and nothing else will start: that is when
-going back helps most. `augmented-brain doctor` then says so, and points to them.
-
-`augmented-brain doctor` has a line with how many versions are kept, and says when the
-configuration changed after the newest one.
-
-
----
-
 Source: https://icalvete.github.io/augmented-brain/guide/weekly-review.html
 
 # The weekly review
 
 
-On Monday you open Claude. It says: "The weekly review is due: 3 captures in the inbox
+A week after your last review, you open Claude. It says: "The weekly review is due: 3 captures in the inbox
 and 1 task untouched for two weeks. Shall we do it? About ten minutes." You say yes, and
 it goes through each item with you, one at a time.
 
@@ -2169,7 +2133,8 @@ and takes the processed captures out of the inbox.
 
 The panel has a **Weekly review** page. Each capture has its buttons: a task, a
 reference, a lesson, or drop it. Each untouched task goes on, or goes to some day (or you
-open it to close it). What you decide is noted as you go, in a draft on this computer,
+open it to close it). Sending a capture to an area is not one of the buttons: ask Claude
+for that. What you decide is noted as you go, in a draft on this computer,
 so you can leave and come back. When you finish, it is all written in the review's
 record.
 
@@ -2183,6 +2148,65 @@ captures leave the inbox. Nothing else is deleted.
 Captures added on two computers are both kept. One catch: a capture you processed on one
 computer can come back if the other computer captured something at the same time. It
 just shows up again at the next review.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/connect-services.html
+
+# Connect your services
+
+
+augmented brain keeps your tasks and notes. To read your calendar, your mail, your
+documents or your tickets, your assistant also needs those services. Claude Code talks to
+them through **MCP** (Model Context Protocol): small connectors that give it tools such as
+"list today's meetings" or "read this Jira issue".
+
+## The easy way: claude.ai connectors
+
+If you sign in to Claude Code with your claude.ai account, the connectors you turn on in
+claude.ai also work in Claude Code.
+
+1. Open **claude.ai → Settings → Connectors**.
+2. Connect the services you want: Google Calendar, Gmail, Google Drive, Atlassian (Jira
+   and Confluence), and others. Each one asks you to sign in to that service once.
+3. **Start a new Claude Code session.** Connectors load when a session starts: a session
+   that was already open will not see a connector you just added.
+4. In Claude Code, type `/mcp` to see them. A connector marked as needing authentication
+   is fixed from claude.ai, not from Claude Code.
+
+That is all. Your assistant uses them when a task needs them ("what meetings do I have
+tomorrow?", "summarise the open issues of this epic").
+
+## Without a claude.ai account
+
+If you use Claude Code with an API key (a code from the Anthropic Console instead of
+your claude.ai account), claude.ai connectors are not available. You can
+add MCP servers yourself. A server that runs on your computer is started by a command:
+
+```bash
+claude mcp add --scope user <name> -- <command that starts the server>
+```
+
+A server that runs on the internet has an address instead. Add it with `--transport http`;
+Claude Code opens the service's page to sign in the first time you use it:
+
+```bash
+claude mcp add --scope user --transport http <name> <address of the server>
+```
+
+Many services publish an official MCP server; use those when they exist. Read what a
+server can do before adding it: it acts with your account.
+
+## Good habits
+
+- **Connect only what you use.** Every connector adds tools your assistant has to choose
+  from.
+- **The guard does not see connectors.** augmented brain's guard watches commands and
+  file writes. Actions inside a connector (sending an email, editing a ticket) are
+  confirmed through Claude Code's own permission prompts: read them before you accept.
+- **Never paste a password or a token in the chat** to connect a service. Every connector
+  signs in through the service's own page.
 
 
 ---
@@ -2352,54 +2376,146 @@ another one to finish. Both say why.
 
 ---
 
-Source: https://icalvete.github.io/augmented-brain/guide/connect-services.html
+Source: https://icalvete.github.io/augmented-brain/guide/config-history.html
 
-# Connect your services
+# Configuration versions
 
 
-augmented brain keeps your tasks and notes. To read your calendar, your mail, your
-documents or your tickets, your assistant also needs those services. Claude Code talks to
-them through **MCP** (Model Context Protocol): small connectors that give it tools such as
-"list today's meetings" or "read this Jira issue".
+Your configuration is what augmented brain knows about this computer and about you:
+your spaces, the guard's lists, remote access, your profile and the names of your
+secrets. A wrong change there (a list emptied by mistake, a space pointing to the wrong
+folder) used to have no way back. Now every change is kept as a **version**, and you can
+see what changed and go back.
 
-## The easy way: claude.ai connectors
+## What is kept
 
-If you sign in to Claude Code with your claude.ai account, the connectors you turn on in
-claude.ai also work in Claude Code.
+A version is a copy of these files, in the configuration folder, as they were at one
+moment: `config.toml`, `guard.toml`, `remote.toml`, `session.toml`, `profile.md` and
+`secrets.toml` (only the names of your secrets, never a value). It also says who made the
+change: the panel, a command, the assistant (and with which tool), going back to an
+earlier version, or by hand.
 
-1. Open **claude.ai → Settings → Connectors**.
-2. Connect the services you want: Google Calendar, Gmail, Google Drive, Atlassian (Jira
-   and Confluence), and others. Each one asks you to sign in to that service once.
-3. **Start a new Claude Code session.** Connectors load when a session starts: a session
-   that was already open will not see a connector you just added.
-4. In Claude Code, type `/mcp` to see them. A connector marked as needing authentication
-   is fixed from claude.ai, not from Claude Code.
+- A new version is kept every time the configuration changes. A change made by hand, or
+  by an older program, is kept the next time augmented brain looks: when a session
+  starts, a command runs, the assistant uses a tool or you save something in the panel.
+- The last **10** are kept. When there is one more, the oldest goes.
+- They stay **only on this computer**, in the `history` folder of the configuration
+  folder. They never go into the backup: the guard's lists may name work machines, and
+  the backup leaves them out on purpose.
+- Your notes are not here. Tasks, rules, knowledge and people (shared ones too) have
+  their own history in the [backup](https://icalvete.github.io/augmented-brain/guide/backup.html).
 
-That is all. Your assistant uses them when a task needs them ("what meetings do I have
-tomorrow?", "summarise the open issues of this epic").
+## In the panel
 
-## Without a claude.ai account
+The panel's **Versions** page lists them, newest first, with when and who. Under each
+one, **What it changed** shows the lines that changed from the version before: green
+what was added, red what was taken away. **Go back to this one** makes it the
+configuration again: it opens first, says what going back does and, when the guard's
+lists would change, which entries each list would gain or lose. Tick the box to confirm,
+then go back.
 
-If you use Claude Code with an API key (a code from the Anthropic Console instead of
-your claude.ai account), claude.ai connectors are not available. You can
-add MCP servers yourself:
+Going back keeps the configuration you had as a version first, so it can be undone the
+same way. A version that would leave a file the program cannot read is refused, and
+nothing changes. If the guard's lists change, going back from the panel counts as you
+accepting them, as any change on the [Guard](https://icalvete.github.io/augmented-brain/guide/guard.html) page does.
+
+From another device ([the panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html)) the page only
+shows the versions: going back is only from the panel on this computer, because it can
+change what the guard allows.
+
+## With commands
 
 ```bash
-claude mcp add --scope user <name> -- <command that starts the server>
+augmented-brain config history
+augmented-brain config history 3
+augmented-brain config restore 3
 ```
 
-Many services publish an official MCP server; use those when they exist. Read what a
-server can do before adding it: it acts with your account.
+`config history` lists the versions; with a number, it shows what that one changed.
+`config restore` goes back to one. A command can be run by the assistant, so going back
+this way never accepts new guard lists for you: until you accept them in the panel's
+Guard page, or start a new session, the guard asks before every commit, push or merge it
+used to allow. See [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html#augmented-brain-config-history).
 
-## Good habits
+Both work even when `config.toml` is broken and nothing else will start: that is when
+going back helps most. `augmented-brain doctor` then says so, and points to them.
 
-- **Connect only what you use.** Every connector adds tools your assistant has to choose
-  from.
-- **Your safety rules still apply.** augmented brain's guard watches commands and file
-  writes. Actions inside a connector (sending an email, editing a ticket) are confirmed
-  through Claude Code's own permission prompts: read them before you accept.
-- **Never paste a password or a token in the chat** to connect a service. Every connector
-  signs in through the service's own page.
+`augmented-brain doctor` has a line with how many versions are kept, and says when the
+configuration changed after the newest one.
+
+
+---
+
+Source: https://icalvete.github.io/augmented-brain/guide/anywhere.html
+
+# Working from your phone or another computer
+
+
+Your notes live on one computer. You can still work with them from your phone, a tablet
+or another computer. There are two ways, and they do different things:
+
+- **Talk to Claude** on that computer, from anywhere: [remote access](https://icalvete.github.io/augmented-brain/guide/remote.html). You pick a
+  session in [claude.ai/code](https://claude.ai/code) or Claude Desktop, and work as if you
+  were sitting there.
+- **Look at your notes** in the panel, from anywhere: [the panel from another
+  device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html). Today, your tasks, the inbox, everything the panel shows.
+
+You can use one, the other, or both. Remote access works on Linux, macOS and Windows; the
+panel from another device works wherever [Tailscale](https://tailscale.com) does.
+
+## Set it up once
+
+On the computer that holds your notes:
+
+1. **Remote access.** Run `augmented-brain remote install`, then do what it asks: let
+   Claude trust the folder and, on Linux, turn on "linger" so it survives a reboot (on
+   macOS and Windows it starts when you log in). Details in [Remote access](https://icalvete.github.io/augmented-brain/guide/remote.html).
+2. **The panel.** Install Tailscale on the computer and on your phone, signed in to the
+   same account, then run `augmented-brain panel remote`. It prints an address and a QR
+   code. Details in [The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html).
+
+`augmented-brain doctor` checks both: a line for the door of each space and, once you
+have used it, one for the panel from another device.
+
+## Which session to use
+
+Remote access opens **one door per space**, named `<computer name>-<space>`, such as
+`my-laptop-personal`. A session started through it begins in that space's first work
+folder, so Claude loads that space's notes and rules.
+
+- In claude.ai or Claude Desktop, pick the environment with that name and start a session.
+  You can start as many as you like.
+- To work on a task, say so: "resume task-bake-bread". Claude reads the task and carries
+  on where it was left.
+- To reach another space, use that space's door. Notes never cross between spaces.
+
+## When it stops answering
+
+- **The computer is asleep.** A laptop that sleeps drops the connection. It comes back when
+  it wakes up.
+- **The session was archived** in claude.ai, or ended on Claude's side. On Linux it comes
+  back by itself, in about ten minutes; on macOS and Windows it takes three steps by
+  hand. Both are in [Remote access](https://icalvete.github.io/augmented-brain/guide/remote.html#good-to-know).
+- **Your Claude login expired.** Run `claude` once on the computer and sign in again.
+
+`augmented-brain remote status` says how each door stands, and what to do. Other
+problems are in [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html#remote-access-does-not-work).
+
+## A session for each task
+
+On Linux, the session behind a space's door can open another one for a task ("open me a
+session for the website task"). It shows up in your list within a minute, named after
+the task, in its folder, already reading it. Open as many as you have tasks. On macOS
+and Windows it is not available yet. See [A session per task](https://icalvete.github.io/augmented-brain/guide/task-sessions.html).
+
+## Keep it safe
+
+Both are doors to your computer. Remote access is a permanent one: anyone who gets into
+your Claude account can work on the machine through it. Protect that account with a strong
+password and two-step verification, keep Claude asking before it acts (never
+`bypassPermissions`), and remove the doors you do not use: `augmented-brain remote
+uninstall` and `augmented-brain panel stop`. The panel's address works only for your own
+devices in your Tailscale network, and only while the panel runs.
 
 
 ---
@@ -2755,166 +2871,98 @@ something to clean. Details in [`clean`](https://icalvete.github.io/augmented-br
 
 ---
 
-Source: https://icalvete.github.io/augmented-brain/guide/import.html
+Source: https://icalvete.github.io/augmented-brain/guide/panel-remote.html
 
-# Bring in a memory you already have
+# The panel from another device
 
 
-If Claude Code has been keeping a memory for you, you do not start from zero. Claude Code
-writes it in `~/.claude/projects/<folder>/memory/`. You can bring it into your spaces.
-
-## First, look
-
-```bash
-augmented-brain import ~/.claude/projects/<folder>/memory
-```
-
-With one space, that is all. With more (a usual install has two), it first asks which
-space each note goes to: see [More than one space](https://icalvete.github.io/augmented-brain/guide/import.html#more-than-one-space) and add `--map`.
-
-That writes nothing. It shows where each note would go, and what it could not decide:
-
-- files that are not notes (an index, say);
-- notes about you: copy what matters into your profile;
-- links that would cross from one space to another;
-- ids (the name of each note's file, such as `task-blog`) your space already has.
-
-The folder you import from is only read, now and later.
-
-## Then, write
-
-When the list looks right, run it again with `--apply`:
+The [panel](https://icalvete.github.io/augmented-brain/guide/panel.html) opens on the computer where augmented brain runs, and only there.
+To open it from another of your devices, your phone or another computer, augmented
+brain uses **[Tailscale](https://tailscale.com)**: a free app that joins your devices in
+a private network of their own. Only your devices are in it; nothing is open to the
+internet.
 
 ```bash
-augmented-brain import ~/.claude/projects/<folder>/memory --apply
+augmented-brain panel remote
 ```
 
-It never writes over a note that already exists.
+It starts the panel, publishes it in your Tailscale network, and prints its address,
+such as `https://my-laptop.example.ts.net:8443/t/…`, and a QR code. Point the
+phone's camera at the code, or open the address on the other computer. The address
+opens the panel once, within 10 minutes: run the command again for another.
 
-## What each file becomes
+If the panel is already open on this computer, it is not stopped: the same panel starts
+answering through the network too, and the pages you have open go on working. If that
+panel came from an earlier version, it has to start again: the command says so, and you
+reload those pages. If publishing fails, the panel stays on this computer only.
 
-Each file becomes a note of its kind: by its name (`task-…`, `area-…`, `ref-…`,
-`lesson-…`, `rule-…`, `person-…`), or else by what Claude Code says it is. A task with no
-status comes in parked, waiting on you, with "review this imported task" as its next
-step.
+## What you need, once
 
-The rest comes along too:
+The command checks each of these and, when one is missing, says exactly what to do. It
+never installs or changes anything of Tailscale's for you.
 
-- The captures of your old `inbox.md` (each `- …` line) go to the inbox of the space of
-  `*` (below), or the default space, dated, and never twice.
-- `archive/` and `docs/<task>/` are copied as they are, next to their note, also when you
-  import again later.
-- A file with a secret written in it (a key, a token) is imported, but named in the
-  report. The backup will not upload it until the secret is out. `augmented-brain check`
-  names it too.
-- A reference or lesson that is a list of people (one `## Name` section each, with a word
-  like "people" or "team" in its id or title) comes in as it is, and the report names it.
-  People are notes of their own, so ask Claude to save each one as a person.
+1. **Tailscale on both devices**, signed in with the same account:
+   [tailscale.com/download](https://tailscale.com/download). It works on Linux, macOS,
+   Windows, Android and iPhone.
+2. **HTTPS in your Tailscale network**, so the panel travels encrypted with a real
+   certificate. Turn it on in Tailscale's admin page,
+   [login.tailscale.com/admin/dns](https://login.tailscale.com/admin/dns): **HTTPS
+   Certificates → Enable HTTPS**. One thing to know: the names of your machines (such
+   as `my-laptop.example.ts.net`) then appear in public logs of certificates. Anyone can
+   see that the name exists; nobody outside your devices can reach it.
+3. **On Linux, let your user publish.** Tailscale lets only an administrator publish on
+   the computer. Once, with your administrator password:
 
-## More than one space
+   ```bash
+   sudo tailscale set --operator=your-user-name
+   ```
 
-A small file says which space each area goes to, which notes go somewhere other than
-their area, and which go to the shared notes:
+   augmented brain prints this line with your name and does not run it. On macOS and
+   Windows it is not needed.
 
-```text
-area-family = personal
-task-evening-course = work
-lesson-git-small-commits = shared
-* = work
-```
+## Who can open it
 
-`*` is for everything else; with one space, no file is needed. Pass the file with `--map`:
+Four things keep it yours:
+
+- **Only your Tailscale network reaches the address.** It does not exist on the
+  internet.
+- **Only your account gets in.** Tailscale tells the panel who sends each request (the
+  account you signed in with, with its own password and second factor), and the panel
+  lets in only the owner of the computer. Someone else in your network, or someone you
+  share a device with, gets "forbidden" even with the address.
+- **The network has a door of its own.** What Tailscale brings in arrives at a port of
+  the panel that only it uses, and is treated as coming from the network whatever it
+  says about itself: from there, nothing that is only for this computer can be done.
+  From another device you can look at everything, but you cannot back up now, set up a
+  backup, go back to a backup or to an earlier configuration, or change anything on the
+  Guard page (its lists, the model of your sessions, what the assistant saves on its
+  own).
+- **The address works once**, and the pages it opens hold a key that changes every
+  time the panel starts.
+
+There is no extra password to type: your Tailscale account is the login.
+
+## It is always temporary
+
+The address works while the panel runs. The panel stops by itself after 30 minutes
+without use, or now with:
 
 ```bash
-augmented-brain import ~/.claude/projects/<folder>/memory --map map.txt
+augmented-brain panel stop
 ```
 
-If the notes name repositories in `repos:` (the list of folders a task
-works in), `--repos-base <folder>` says what those paths
-are relative to. They are then rewritten relative to the space's work folder.
+When it stops, it takes the address back from Tailscale. If the computer crashed or
+restarted with the panel published, the next time a panel starts it takes it back, and
+`augmented-brain doctor` warns while it is still there. Port 8443 of your Tailscale
+network is the panel's: if you already publish something else there (even another
+program of this computer), augmented brain leaves it alone and says so. It only ever
+takes back the address it published itself.
 
-## Turn off the old memory
+## Check it
 
-Has Claude Code been keeping that memory by itself? Then it goes on keeping it for your
-spaces' folders: a second memory, next to the space's, that drifts from it.
-`augmented-brain doctor` tells you, and how to turn it off: `"autoMemoryEnabled": false`
-in Claude Code's settings. What it already has stays, ready to import.
-
-All the options: [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html#augmented-brain-import).
-
-
----
-
-Source: https://icalvete.github.io/augmented-brain/guide/anywhere.html
-
-# Working from your phone or another computer
-
-
-Your notes live on one computer. You can still work with them from your phone, a tablet
-or another computer. There are two ways, and they do different things:
-
-- **Talk to Claude** on that computer, from anywhere: [remote access](https://icalvete.github.io/augmented-brain/guide/remote.html). You pick a
-  session in [claude.ai/code](https://claude.ai/code) or Claude Desktop, and work as if you
-  were sitting there.
-- **Look at your notes** in the panel, from anywhere: [the panel from another
-  device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html). Today, your tasks, the inbox, everything the panel shows.
-
-You can use one, the other, or both. Remote access works on Linux, macOS and Windows; the
-panel from another device works wherever [Tailscale](https://tailscale.com) does.
-
-## Set it up once
-
-On the computer that holds your notes:
-
-1. **Remote access.** Run `augmented-brain remote install`, then do what it asks: let
-   Claude trust the folder and, on Linux, turn on "linger" so it survives a reboot (on
-   macOS and Windows it starts when you log in). Details in [Remote access](https://icalvete.github.io/augmented-brain/guide/remote.html).
-2. **The panel.** Install Tailscale on the computer and on your phone, signed in to the
-   same account, then run `augmented-brain panel remote`. It prints an address and a QR
-   code. Details in [The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html).
-
-`augmented-brain doctor` checks both: a line for the door of each space and, once you
-have used it, one for the panel from another device.
-
-## Which session to use
-
-Remote access opens **one door per space**, named `<computer name>-<space>`, such as
-`my-laptop-personal`. A session started through it begins in that space's first work
-folder, so Claude loads that space's notes and rules.
-
-- In claude.ai or Claude Desktop, pick the environment with that name and start a session.
-  You can start as many as you like.
-- To work on a task, say so: "resume task-bake-bread". Claude reads the task and carries
-  on where it was left.
-- To reach another space, use that space's door. Notes never cross between spaces.
-
-## When it stops answering
-
-- **The computer is asleep.** A laptop that sleeps drops the connection. It comes back when
-  it wakes up.
-- **The session was archived** in claude.ai, or ended on Claude's side. On Linux it comes
-  back by itself, in about ten minutes; on macOS and Windows it takes three steps by
-  hand. Both are in [Remote access](https://icalvete.github.io/augmented-brain/guide/remote.html#good-to-know).
-- **Your Claude login expired.** Run `claude` once on the computer and sign in again.
-
-`augmented-brain remote status` says how each door stands, and what to do. Other
-problems are in [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html#remote-access-does-not-work).
-
-## A session for each task
-
-On Linux, the session behind a space's door can open another one for a task ("open me a
-session for the website task"). It shows up in your list within a minute, named after
-the task, in its folder, already reading it. Open as many as you have tasks. On macOS
-and Windows it is not available yet. See [A session per task](https://icalvete.github.io/augmented-brain/guide/task-sessions.html).
-
-## Keep it safe
-
-Both are doors to your computer. Remote access is a permanent one: anyone who gets into
-your Claude account can work on the machine through it. Protect that account with a strong
-password and two-step verification, keep Claude asking before it acts (never
-`bypassPermissions`), and remove the doors you do not use: `augmented-brain remote
-uninstall` and `augmented-brain panel stop`. The panel's address works only for your own
-devices in your Tailscale network, and only while the panel runs.
+`augmented-brain doctor` has a line about the remote panel once you have used it:
+whether Tailscale is still installed, connected and with HTTPS, and whether an address
+of the panel was left published.
 
 
 ---

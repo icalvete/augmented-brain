@@ -50,6 +50,7 @@
 <ul>
   <li><a href="getting-started.es.html">Primeros pasos</a></li>
   <li><a href="install.es.html">Instalación</a></li>
+  <li><a href="import.es.html" aria-current="page">Trae una memoria que ya tienes</a></li>
 </ul>
 <p class="docnav-group">Conceptos</p>
 <ul>
@@ -66,15 +67,17 @@
 <ul>
   <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
   <li><a href="panel.es.html">El panel</a></li>
-  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
-  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="weekly-review.es.html">La revisión semanal</a></li>
-  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+</ul>
+<p class="docnav-group">Ponlo a tu medida</p>
+<ul>
   <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
+  <li><a href="anywhere.es.html">Desde el móvil u otro ordenador</a></li>
   <li><a href="remote.es.html">Acceso remoto</a></li>
   <li><a href="task-sessions.es.html">Una sesión por tarea</a></li>
-  <li><a href="import.es.html" aria-current="page">Trae una memoria que ya tienes</a></li>
-  <li><a href="anywhere.es.html">Desde el móvil u otro ordenador</a></li>
+  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
   <li><a href="update-and-uninstall.es.html">Actualizar y desinstalar</a></li>
 </ul>
 <p class="docnav-group">Referencia</p>
@@ -97,16 +100,23 @@
 <main class="prose" id="main">
   <h1>Trae una memoria que ya tienes</h1>
   <p>Si Claude Code ya te guarda una memoria, no empiezas de cero. Claude Code la escribe en <code>~/.claude/projects/&lt;carpeta&gt;/memory/</code>. Puedes traerla a tus espacios.</p>
-  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#primero-mira">Primero, mira</a></li><li><a href="#luego-escribe">Luego, escribe</a></li><li><a href="#en-qué-se-convierte-cada-fichero">En qué se convierte cada fichero</a></li><li><a href="#más-de-un-espacio">Más de un espacio</a></li><li><a href="#apaga-la-memoria-antigua">Apaga la memoria antigua</a></li></ul></nav>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#busca-la-carpeta">Busca la carpeta</a></li><li><a href="#primero-mira">Primero, mira</a></li><li><a href="#luego-escribe">Luego, escribe</a></li><li><a href="#en-qué-se-convierte-cada-fichero">En qué se convierte cada fichero</a></li><li><a href="#más-de-un-espacio">Más de un espacio</a></li><li><a href="#apaga-la-memoria-antigua">Apaga la memoria antigua</a></li></ul></nav>
+  <h2 id="busca-la-carpeta">Busca la carpeta</h2>
+  <p>Claude Code guarda una carpeta por cada carpeta en la que lo abriste, dentro de <code>~/.claude/projects</code>. Su nombre es esa ruta con cada <code>/</code> cambiada por <code>-</code>: para <code>/home/lucia/code/blog</code>, es <code>-home-lucia-code-blog</code>. Para verlas todas:</p>
+  <pre><code>ls ~/.claude/projects</code></pre>
+  <p>La memoria es la carpeta <code>memory</code> de la que quieras. En los comandos de abajo, pon ese nombre donde dice <code>&lt;carpeta&gt;</code>.</p>
   <h2 id="primero-mira">Primero, mira</h2>
-  <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory</code></pre>
-  <p>Con un solo espacio, ya está. Con más (una instalación normal tiene dos), primero te pide a qué espacio va cada nota: mira <a href="#más-de-un-espacio">Más de un espacio</a> y añade <code>--map</code>.</p>
+  <p>Una instalación normal tiene dos espacios, así que primero di a qué espacio van las notas. Basta un fichero de una línea. Crea un fichero <code>mapa.txt</code> con:</p>
+  <pre><code>* = personal</code></pre>
+  <p>Manda todo a tu espacio “personal”. Para repartir las notas entre espacios, mira <a href="#más-de-un-espacio">Más de un espacio</a>. Luego:</p>
+  <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory --map mapa.txt</code></pre>
+  <p>Con un solo espacio, quita <code>--map</code>. Con más y sin <code>--map</code>, se para y te pide el fichero.</p>
   <p>Eso no escribe nada. Enseña adónde iría cada nota, y lo que no ha podido decidir:</p>
   <ul><li>ficheros que no son notas (un índice, por ejemplo);</li><li>notas sobre ti: copia lo que importe a tu perfil;</li><li>enlaces que cruzarían de un espacio a otro;</li><li>ids (el nombre del fichero de cada nota, como <code>task-blog</code>) que tu espacio ya tiene.</li></ul>
   <p>La carpeta de la que importas solo se lee, ahora y después.</p>
   <h2 id="luego-escribe">Luego, escribe</h2>
-  <p>Cuando la lista esté bien, vuelve a lanzarlo con <code>--apply</code>:</p>
-  <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory --apply</code></pre>
+  <p>Al final, imprime el comando exacto que lo escribe: el mismo con <code>--apply</code>. Cuando la lista esté bien, lánzalo:</p>
+  <pre><code>augmented-brain import ~/.claude/projects/&lt;carpeta&gt;/memory --map mapa.txt --apply</code></pre>
   <p>Nunca escribe encima de una nota que ya existe.</p>
   <h2 id="en-qué-se-convierte-cada-fichero">En qué se convierte cada fichero</h2>
   <p>Cada fichero pasa a ser una nota de su tipo: por su nombre (<code>task-…</code>, <code>area-…</code>, <code>ref-…</code>, <code>lesson-…</code>, <code>rule-…</code>, <code>person-…</code>) o, si no, por lo que Claude Code dice que es. Una tarea sin estado entra aparcada, esperándote, con «revisar esta tarea importada» como siguiente paso.</p>
@@ -125,8 +135,8 @@ lesson-git-commits-pequenos = shared
   <p>¿Claude Code llevaba esa memoria por su cuenta? Entonces la sigue llevando para las carpetas de tus espacios: una segunda memoria, junto a la del espacio, que se va separando de ella. <code>augmented-brain doctor</code> te avisa, y te dice cómo apagarla: <code>"autoMemoryEnabled": false</code> en los ajustes de Claude Code. Lo que ya tiene se queda, listo para importar.</p>
   <p>Todas las opciones: <a href="commands.es.html#augmented-brain-import">Comandos</a>.</p>
   <nav class="pager" aria-label="Anterior / Siguiente">
-    <a class="prev" href="task-sessions.es.html"><span>← Anterior</span>Una sesión por tarea</a>
-    <a class="next" href="anywhere.es.html"><span>Siguiente →</span>Desde el móvil u otro ordenador</a>
+    <a class="prev" href="install.es.html"><span>← Anterior</span>Instalación</a>
+    <a class="next" href="spaces.es.html"><span>Siguiente →</span>Espacios</a>
   </nav>
 </main>
 </div>
