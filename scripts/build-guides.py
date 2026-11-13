@@ -162,6 +162,11 @@ GROUPS = [
                    ""),
              line=("Folders, note headers and what the program reads. The contract.",
                    "Carpetas, cabeceras y lo que lee el programa. El contrato (en inglés).")),
+        dict(slug="compatibility", title=("What stays stable", "Lo que no cambia"),
+             desc=("What augmented brain promises not to break inside 1.x: your notes, your configuration, the commands, the assistant's tools, backups and installing; what it does not promise, and how it is checked.",
+                   "Lo que augmented brain promete no romper dentro de las 1.x: tus notas, tu configuración, los comandos, las herramientas del asistente, las copias e instalar; lo que no promete, y cómo se comprueba."),
+             line=("What every 1.x keeps working, and what may change.",
+                   "Lo que toda 1.x sigue haciendo, y lo que puede cambiar.")),
     ]),
     (("Help", "Ayuda"), [
         dict(slug="troubleshooting", title=("Troubleshooting", "Si algo falla"),

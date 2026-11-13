@@ -9,7 +9,9 @@ you rely on it.
 - **What you have keeps working.** When a version changes how notes or settings are
   kept, it brings the step that moves yours forward, and runs it by itself after a full
   copy. A command, setting or tool that changes name keeps working under the old one
-  and says what replaced it. What it still cannot do is in
+  and says what replaced it. What every 1.x keeps is in
+  [What stays stable](https://icalvete.github.io/augmented-brain/guide/compatibility.html).
+  What it still cannot do is in
   [Known limitations](https://icalvete.github.io/augmented-brain/guide/limitations.html).
 
 - **No warranty.** augmented brain is provided "as is", without warranty of any kind,
@@ -43,7 +45,9 @@ importante antes de confiar en él.
 - **Lo que tienes sigue funcionando.** Cuando una versión cambia cómo se guardan las notas
   o la configuración, trae el paso que pone al día las tuyas, y lo da sola después de una
   copia completa. Un comando, un ajuste o una herramienta que cambia de nombre sigue
-  funcionando con el viejo y dice cuál lo sustituye. Lo que todavía no sabe hacer está en
+  funcionando con el viejo y dice cuál lo sustituye. Lo que mantiene toda 1.x está en
+  [Lo que no cambia](https://icalvete.github.io/augmented-brain/guide/compatibility.es.html).
+  Lo que todavía no sabe hacer está en
   [Limitaciones conocidas](https://icalvete.github.io/augmented-brain/guide/limitations.es.html).
 
 - **Sin garantía.** augmented brain se ofrece "tal cual", sin garantía de ningún tipo,
