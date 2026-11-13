@@ -117,9 +117,9 @@ func TestPersonCardJoinsByIDNotName(t *testing.T) {
 	if byName["work"].Role != "client" || !reflect.DeepEqual(byName["work"].Aliases, []string{"Lu"}) || byName["home"].Role != "friend" {
 		t.Errorf("per space: %+v", card.Spaces)
 	}
-	rows, err := People(c)
-	if err != nil {
-		t.Fatal(err)
+	rows, unread, err := People(c)
+	if err != nil || len(unread) != 0 {
+		t.Fatal(err, unread)
 	}
 	if len(rows) != 2 || rows[0].ID == rows[1].ID {
 		t.Fatalf("people: %+v", rows)

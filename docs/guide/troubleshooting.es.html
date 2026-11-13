@@ -133,6 +133,7 @@
   <p>Si pierdes este ordenador, pierdes las notas de ese espacio. Pide a Claude «configura la copia de seguridad» en una carpeta del espacio. O lanza allí <code>augmented-brain backup setup &lt;dirección de un repositorio privado&gt;</code>, y después <code>augmented-brain backup</code>. Lo tienes en <a href="backup.es.html">Copia de seguridad y restauración</a>.</p>
   <h3 id="una-nota-no-es-válida">Una nota no es válida</h3>
   <p><code>augmented-brain check</code> en una carpeta del espacio lista cada problema con su fichero. Arregla a mano la cabecera (entre las líneas <code>---</code>) y vuelve a lanzar <code>check</code>. Hasta entonces, el índice no se rehace, pero las herramientas siguen funcionando.</p>
+  <p>Un fichero que no se puede leer (por sus permisos, o un enlace roto que dejó una sincronización) sale de la misma forma: arregla sus permisos o sácalo de la carpeta de notas. Un fichero cuyo nombre empieza por punto, como el de bloqueo que deja Emacs mientras editas una nota, se salta.</p>
   <h3 id="un-repositorio-no-está-en-este-ordenador">Un repositorio “no está en este ordenador”</h3>
   <p>Una tarea nombra en <code>repos:</code> un repositorio que no está en ninguna carpeta de trabajo del espacio. Se movió, se cambió de nombre o se borró, o este ordenador nunca lo tuvo. Dile a Claude dónde está ahora, o quítalo de la tarea.</p>
   <h3 id="claude-code-guarda-una-segunda-memoria">Claude Code guarda una segunda memoria</h3>

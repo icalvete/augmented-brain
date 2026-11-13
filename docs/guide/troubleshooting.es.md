@@ -150,6 +150,11 @@ copia de seguridad» en una carpeta del espacio. O lanza allí `augmented-brain 
 Arregla a mano la cabecera (entre las líneas `---`) y vuelve a lanzar `check`. Hasta
 entonces, el índice no se rehace, pero las herramientas siguen funcionando.
 
+Un fichero que no se puede leer (por sus permisos, o un enlace roto que dejó una
+sincronización) sale de la misma forma: arregla sus permisos o sácalo de la carpeta de
+notas. Un fichero cuyo nombre empieza por punto, como el de bloqueo que deja Emacs
+mientras editas una nota, se salta.
+
 ### Un repositorio "no está en este ordenador"
 
 Una tarea nombra en `repos:` un repositorio que no está en ninguna carpeta de trabajo del

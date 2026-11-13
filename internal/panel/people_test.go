@@ -192,3 +192,25 @@ func TestPersonCardSpanish(t *testing.T) {
 		}
 	}
 }
+
+// A space that cannot be opened (its notes written by a newer program) never takes the
+// People page of the others down: they are listed, and the page names that space.
+func TestPeopleWithASpaceThatDoesNotOpen(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	saved(t, s.post(t, "/person", url.Values{"s": {"work"}, "name": {"Lucia Prado"}}), "work file")
+	home := filepath.Join(filepath.Dir(cfg), "brain-home", ".augmented-brain")
+	if err := os.MkdirAll(home, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(home, "format"), []byte("999\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	r := s.get(t, "/people?s=work")
+	if r.Code != http.StatusOK {
+		t.Fatalf("status %d:\n%s", r.Code, r.Body)
+	}
+	page := r.Body.String()
+	if !strings.Contains(page, ">Lucia Prado</a>") || !strings.Contains(page, "The people of home are not here") {
+		t.Errorf("page:\n%s", page)
+	}
+}

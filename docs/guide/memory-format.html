@@ -137,6 +137,8 @@ created: 2026-10-15
 updated: 2026-10-15
 ---</code></pre>
   <p>A repository in <code>repos:</code> that is in none of the space's work folders (it was moved, renamed or deleted, or this computer never had it) is reported, never fixed by itself: <code>augmented-brain check</code> and the panel's Health page list them, and reading the task tells the assistant to ask the user where it is now. A closed task is not checked. An absolute path, or one starting with <code>~</code>, is taken as it is.</p>
+  <p>Dates (<code>created</code>, <code>updated</code>, and each <code>watch</code> date of a task) are <code>YYYY-MM-DD</code>. One written another way (<code>2026-11-3</code>) keeps the note, but is reported until fixed, since it would never come up.</p>
+  <p>A file whose name starts with <code>.</code> is not a note and is never read (an editor's lock file, such as Emacs's <code>.#task-x.md</code>). A file or folder that cannot be read (its permissions, a broken link) is reported and left out; the rest of the space loads as usual. So is a folder of a type of note (<code>tasks/</code>, <code>knowledge/</code>…) that is a link to another place: its notes are not read, so put the folder itself there.</p>
   <h3 id="task-fields">Task fields</h3>
   <p>Tasks add the fields that drive the whole workflow:</p>
   <pre><code>status: plan                     # see "Task lifecycle"
