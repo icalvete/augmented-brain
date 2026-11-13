@@ -480,7 +480,7 @@ func (p Policy) runScript(path string, env map[string]string, depth int, askUnkn
 			}
 			return inner
 		}
-		if askUnknown && p.files.touched[k] {
+		if askUnknown && p.isTouched(k) {
 			return Decision{Ask, i18n.T(p.Lang, "guard.script.written", path)}
 		}
 	}
@@ -1457,7 +1457,18 @@ func (p Policy) resolve(path string) (string, error) {
 	if !filepath.IsAbs(path) && path != "~" && !strings.HasPrefix(path, "~/") && p.Cwd != "" {
 		path = filepath.Join(p.Cwd, path)
 	}
-	return paths.Resolve(path)
+	if p.files == nil {
+		return paths.Resolve(path)
+	}
+	if p.files.resolved == nil {
+		p.files.resolved = map[string]resolved{}
+	}
+	r, ok := p.files.resolved[path]
+	if !ok {
+		r.path, r.err = paths.Resolve(path)
+		p.files.resolved[path] = r
+	}
+	return r.path, r.err
 }
 
 // repoVerdict is what the repository lists say of the repository at dir (resolved):
