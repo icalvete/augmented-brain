@@ -95,7 +95,7 @@ func (b *Brain) Step(in StepInput) (*memory.Note, error) {
 
 // AddStep adds an unticked step at the end of a task's Plan.
 func (b *Brain) AddStep(id, text string) (*memory.Note, error) {
-	text = strings.Join(strings.Fields(text), " ")
+	text = memory.OneLine(text)
 	if text == "" {
 		return nil, errors.New("the step is empty")
 	}

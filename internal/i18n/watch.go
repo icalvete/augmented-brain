@@ -23,6 +23,22 @@ var watchMessages = map[string]msg{
 		en: "PR #%d: a required check failed: %s (%s).",
 		es: "PR #%d: ha fallado un check obligatorio: %s (%s).",
 	},
+	"watch.failed.next": {
+		en: "PR #%d: a required check failed (%s); which one, and the rest, is in the journal.",
+		es: "PR #%d: ha fallado un check obligatorio (%s); cuál, y lo demás, está en el diario.",
+	},
+	"watch.timeout.next": {
+		en: "PR #%d: after %s, checks still pending; which ones is in the journal. I stopped watching it.",
+		es: "PR #%d: tras %s, siguen checks pendientes; cuáles, está en el diario. He dejado de vigilarla.",
+	},
+	"watch.broken.next": {
+		en: "PR #%d: I could not follow it; what gh says is in the journal. I stopped watching it (%s).",
+		es: "PR #%d: no he podido seguirla; lo que dice gh está en el diario. He dejado de vigilarla (%s).",
+	},
+	"watch.andmore": {
+		en: "and %d more",
+		es: "y %d más",
+	},
 	"watch.merged": {
 		en: "PR #%d was merged (%s).",
 		es: "La PR #%d se ha mezclado (%s).",

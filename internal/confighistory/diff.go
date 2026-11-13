@@ -43,9 +43,42 @@ func split(s string) []string {
 	return strings.Split(strings.TrimSuffix(s, "\n"), "\n")
 }
 
-// lines is a line comparison by longest common subsequence. Configuration files are a
-// few hundred lines at most, so the square table is small.
+// maxTable is the largest table lines builds, in cells: about 32 MB. Configuration
+// files are a few hundred lines; one far longer (a profile pasted into by mistake) is
+// shown as replaced whole, rather than taking gigabytes to compare.
+const maxTable = 4_000_000
+
+// lines is a line comparison by longest common subsequence, after the lines the same
+// at the start and at the end, which need no table.
 func lines(a, b []string) []Line {
+	var out []Line
+	for len(a) > 0 && len(b) > 0 && a[0] == b[0] {
+		out = append(out, Line{' ', a[0]})
+		a, b = a[1:], b[1:]
+	}
+	var tail []Line
+	for len(a) > 0 && len(b) > 0 && a[len(a)-1] == b[len(b)-1] {
+		tail = append(tail, Line{' ', a[len(a)-1]})
+		a, b = a[:len(a)-1], b[:len(b)-1]
+	}
+	if (len(a)+1)*(len(b)+1) > maxTable {
+		for _, l := range a {
+			out = append(out, Line{'-', l})
+		}
+		for _, l := range b {
+			out = append(out, Line{'+', l})
+		}
+	} else {
+		out = append(out, table(a, b)...)
+	}
+	for i := len(tail) - 1; i >= 0; i-- {
+		out = append(out, tail[i])
+	}
+	return out
+}
+
+// table compares a and b with the square table of the longest common subsequence.
+func table(a, b []string) []Line {
 	n, m := len(a), len(b)
 	lcs := make([][]int, n+1)
 	for i := range lcs {

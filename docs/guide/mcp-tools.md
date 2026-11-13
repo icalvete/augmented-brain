@@ -16,6 +16,12 @@ A few things hold for every tool:
 - Tools run one at a time, and wait for the panel, so two never write at once.
 - **No secrets.** A tool refuses to write a password, a token or a key into a note.
 - **Nothing is deleted.** Tasks are closed, not removed.
+- **Titles, summaries, next steps and names are one line.** Line breaks in them become
+  spaces, so text copied from outside can never open a section of its own in what
+  every session reads at the start. Each field has a generous limit (a next step, 2,000
+  characters; a journal entry, 32,000): past it, nothing is saved and the error says
+  where the long text goes. The [memory format](../spec/memory-format.md#file-header)
+  lists them all.
 - Dates are written `YYYY-MM-DD`.
 - A parameter is required unless it says optional.
 
@@ -43,8 +49,8 @@ live. It takes no parameters.
 ## `pending`
 
 The live tasks, those waiting on you first, each with its status, steps done, who it
-waits on and its next step. Then the watch dates that are due. Claude uses it for "where
-were we?".
+waits on and its next step (cut at 300 characters: `task_get` gives it whole). Then the
+watch dates that are due. Claude uses it for "where were we?".
 
 - `within_days` (optional): also list watch dates due within this many days. Default 7.
 - `space` (optional): another of your spaces, to list its live tasks instead, read

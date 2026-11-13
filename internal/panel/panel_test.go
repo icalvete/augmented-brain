@@ -763,12 +763,13 @@ func TestInboxDoneTakesOne(t *testing.T) {
 	}
 	page := s.get(t, "/inbox?s=work").Body.String()
 	if !strings.Contains(page, `name="date" value="2026-10-02"><input type="hidden" name="text" value="Call Ana">`) ||
-		!strings.Contains(page, `value=" spaced out"`) {
+		!strings.Contains(page, `value="spaced out"`) { // a capture is read as one line, spaces trimmed
 		t.Fatalf("inbox page:\n%s", page)
 	}
 	if w := s.post(t, "/inbox/done", url.Values{"s": {"work"}, "date": {"2026-10-02"}, "text": {"Call Ana"}}); w.Code != http.StatusSeeOther {
 		t.Fatalf("done: %d %s", w.Code, w.Body)
 	}
+	// A page shown by an earlier program sends the text with its spaces: it still matches.
 	if w := s.post(t, "/inbox/done", url.Values{"s": {"work"}, "date": {"2026-10-03"}, "text": {" spaced out"}}); w.Code != http.StatusSeeOther {
 		t.Fatalf("done, leading space: %d %s", w.Code, w.Body)
 	}

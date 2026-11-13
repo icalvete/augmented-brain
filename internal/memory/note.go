@@ -96,6 +96,7 @@ func Parse(path string, data []byte) (*Note, error) {
 	if err := dec.Decode(&n.Header); err != nil {
 		return nil, fmt.Errorf("header: %w", err)
 	}
+	n.Header.OneLine()
 	if err := n.check(); err != nil {
 		return nil, err
 	}

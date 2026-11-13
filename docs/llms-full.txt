@@ -3261,8 +3261,10 @@ Then it ends on its own and says how it went, in one line.
 augmented-brain watch pr 104 --task task-my-change
 ```
 
-- `--task TASK` writes that line in the task: in its journal (with the next step the
-  task had) and as its next step. Every other session hears of it before its next
+- `--task TASK` writes that line in the task's journal (with the next step the task
+  had), and what happened, in a sentence of the program's own, as its next step: the
+  names of the checks are chosen by whoever writes the pull request's workflows, so
+  they go only in the journal, never in what every session reads at the start. Every other session hears of it before its next
   answer, and the panel's Today shows it. The watching is then done by a process of
   its own, which goes on if the session that started it is closed, restarted or
   retired by Claude: the session only waits for its result. Asked again for the same
@@ -3270,10 +3272,11 @@ augmented-brain watch pr 104 --task task-my-change
   another. The task must be in this folder's space.
 - `--repo OWNER/NAME` is the repository; by default, the one of this folder.
 - `--max` is the longest it watches (3h by default); `--every` how often it looks
-  (30s by default).
+  (30s by default, 10s at least).
 
 The checks that are not required do not decide anything, but the line names those
-still running or failed. It never waits for ever: if GitHub lists no required check
+still running or failed: each name between quotes, on one line and cut at 60
+characters, five at most. It never waits for ever: if GitHub lists no required check
 after 5 minutes, or gh fails three times in a row or gives an answer it does not
 understand, it stops and says what gh said. It needs `gh` with your GitHub login. The
 assistant runs it in the background; its last line asks it to tell you straight away.
@@ -3481,6 +3484,12 @@ A few things hold for every tool:
 - Tools run one at a time, and wait for the panel, so two never write at once.
 - **No secrets.** A tool refuses to write a password, a token or a key into a note.
 - **Nothing is deleted.** Tasks are closed, not removed.
+- **Titles, summaries, next steps and names are one line.** Line breaks in them become
+  spaces, so text copied from outside can never open a section of its own in what
+  every session reads at the start. Each field has a generous limit (a next step, 2,000
+  characters; a journal entry, 32,000): past it, nothing is saved and the error says
+  where the long text goes. The [memory format](https://icalvete.github.io/augmented-brain/guide/memory-format.html#file-header)
+  lists them all.
 - Dates are written `YYYY-MM-DD`.
 - A parameter is required unless it says optional.
 
@@ -3508,8 +3517,8 @@ live. It takes no parameters.
 ## `pending`
 
 The live tasks, those waiting on you first, each with its status, steps done, who it
-waits on and its next step. Then the watch dates that are due. Claude uses it for "where
-were we?".
+waits on and its next step (cut at 300 characters: `task_get` gives it whole). Then the
+watch dates that are due. Claude uses it for "where were we?".
 
 - `within_days` (optional): also list watch dates due within this many days. Default 7.
 - `space` (optional): another of your spaces, to list its live tasks instead, read
@@ -4184,6 +4193,19 @@ renamed or deleted, or this computer never had it) is reported, never fixed by i
 tells the assistant to ask the user where it is now. A closed task is not checked. An
 absolute path, or one starting with `~`, is taken as it is.
 
+Every field of the header holds one line. A line break in one, or any other control
+character (tabs, the Unicode line and paragraph separators), is read as a space, and
+spaces in a row as one: a title, summary, status, `waiting_on`, next step or watch
+date written over several lines by hand still makes one line in `MEMORY.md` and at the
+session start, so no field can open a section there. Only `repos` and `related` keep
+their spaces, since they name paths and ids. The program writes them that way too, and
+refuses a field longer than its limit, counted in characters, when it changes: title
+300, summary 1,000, next step 2,000, `waiting_on` 200, a watch date's `what` 1,000. A
+journal entry may be up to 32,000 characters, a capture 4,000, a note 512,000 and the
+profile 64,000; the error says where the longer text goes (a file under `docs/<task>/`,
+which the journal names). A journal entry of several lines keeps them, each one after
+the first indented, so it stays one entry and never starts a heading or a step.
+
 Dates (`created`, `updated`, and each `watch` date of a task) are `YYYY-MM-DD`. One
 written another way (`2026-11-3`) keeps the note, but is reported until fixed, since it
 would never come up.
@@ -4339,6 +4361,12 @@ repository, and an empty one takes it out. The note is made the first time.
 A capture ending in `(remind: YYYY-MM-DD)` is brought up at the start of the session from
 7 days before that date, and every day after it, until the capture is processed (in the
 weekly review, or marked as dealt with). Any other line (the heading, a paragraph) is left alone.
+
+The text of a capture is one line, read as a header field is (above). Its endings
+`(remind: YYYY-MM-DD)` and `(from <space>)` are marks only the program writes: typed
+as part of the text, they are kept between square brackets instead
+(`[from personal]`), so a capture made here never passes for one another space sent.
+The same holds for `(from <space>)` at the end of a journal entry.
 
 ## Reviews
 

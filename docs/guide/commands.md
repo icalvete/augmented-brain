@@ -552,8 +552,10 @@ Then it ends on its own and says how it went, in one line.
 augmented-brain watch pr 104 --task task-my-change
 ```
 
-- `--task TASK` writes that line in the task: in its journal (with the next step the
-  task had) and as its next step. Every other session hears of it before its next
+- `--task TASK` writes that line in the task's journal (with the next step the task
+  had), and what happened, in a sentence of the program's own, as its next step: the
+  names of the checks are chosen by whoever writes the pull request's workflows, so
+  they go only in the journal, never in what every session reads at the start. Every other session hears of it before its next
   answer, and the panel's Today shows it. The watching is then done by a process of
   its own, which goes on if the session that started it is closed, restarted or
   retired by Claude: the session only waits for its result. Asked again for the same
@@ -561,10 +563,11 @@ augmented-brain watch pr 104 --task task-my-change
   another. The task must be in this folder's space.
 - `--repo OWNER/NAME` is the repository; by default, the one of this folder.
 - `--max` is the longest it watches (3h by default); `--every` how often it looks
-  (30s by default).
+  (30s by default, 10s at least).
 
 The checks that are not required do not decide anything, but the line names those
-still running or failed. It never waits for ever: if GitHub lists no required check
+still running or failed: each name between quotes, on one line and cut at 60
+characters, five at most. It never waits for ever: if GitHub lists no required check
 after 5 minutes, or gh fails three times in a row or gives an answer it does not
 understand, it stops and says what gh said. It needs `gh` with your GitHub login. The
 assistant runs it in the background; its last line asks it to tell you straight away.
