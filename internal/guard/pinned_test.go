@@ -214,12 +214,19 @@ func TestPinnedVerdicts(t *testing.T) {
 		{"gh release edit v1", Deny},
 		{"gh repo sync", Allow},
 		{"gh repo sync owner/repo", Deny},
+		{"gh repo sync -b main", Allow},
+		{"gh repo sync -s owner/up", Allow},
+		{"gh repo sync -b main owner/repo", Deny},
 		{"gh api -X POST repos/o/r/pulls/1/merge", Deny},
 		{"gh api repos/o/r/pulls/1/merge", Allow},
 		{"gh api -f x=1 repos/o/r/releases", Deny},
 		{"gh api -X POST repos/o/r/actions/workflows/deploy.yml/dispatches", Allow},
 		{"gh workflow run 12345", Ask},
 		{"gh workflow run deploy", Allow},
+		{"gh workflow run -f name=release deploy", Allow}, // a field's value is not the workflow
+		{"gh workflow run -R o/r --ref main release", Ask},
+		{"gh api -H 'Accept: x' -X PUT repos/o/r/pulls/1/merge", Deny},
+		{"gh -R o/r api -X POST repos/o/r/releases", Deny},
 		{"gh workflow run", Allow},
 		// changes: a release workflow asks the user instead of being denied, so a release
 		// they asked for goes with one click (denied still in bypassPermissions).
@@ -247,6 +254,8 @@ func TestPinnedVerdicts(t *testing.T) {
 		{"ssh web02 bash -c 'su_do id'", Deny},
 		{"echo 'su_do id' | ssh web02", Deny},
 		{"ssh web02 < cmds.txt", Allow},
+		{"ssh web02 '>/dev/null' 'su_do id'", Deny}, // quoted, it is part of the remote command
+		{"ssh web02 2>/dev/null 'su_do id'", Deny},
 		{"ssh web01 su_do id", Ask},
 		{"mosh db01", Ask},
 		{"mosh web02 -- su_do id", Deny},
