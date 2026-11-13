@@ -244,5 +244,6 @@ Heavier checks, before a release or when you touch what they cover:
   maintainer's, in GitHub: immutable releases, and actions pinned to a full commit SHA
   (every workflow already pins them; `zizmor` and `actionlint` check the workflows in
   `ci.yml`). An
-  assistant prepares the branch but never starts that workflow: the guard denies it
-  (pushing a tag `v<version>` by hand still works too).
+  assistant prepares the branch and may start that workflow only when the maintainer
+  asks for it: the guard asks the maintainer each time (pushing a tag `v<version>` by
+  hand still works too).

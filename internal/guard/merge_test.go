@@ -136,13 +136,13 @@ func TestMergeLikePush(t *testing.T) {
 		{app, nil, "gh api repos/acme/app/releases -f tag_name=v1", Deny},
 		{app, nil, "gh api -X PATCH repos/acme/app/git/refs/heads/main", Deny},
 		{app, nil, "gh pr view 12", Allow},
-		// starting a release workflow by hand publishes a version; other workflows go on
-		{app, nil, "gh workflow run release", Deny},
-		{app, nil, "gh workflow run release.yml -R acme/app", Deny},
-		{app, nil, "gh workflow run --ref main .github/workflows/Release.yaml", Deny},
-		{app, nil, "gh workflow run -R acme/app -f x=1 release", Deny},
-		{app, nil, "gh api -X POST repos/acme/app/actions/workflows/release.yml/dispatches -f ref=main", Deny},
-		{app, nil, "gh api repos/acme/app/actions/workflows/release.yml/dispatches --input body.json", Deny},
+		// starting a release workflow by hand publishes a version, so the user is asked; other workflows go on
+		{app, nil, "gh workflow run release", Ask},
+		{app, nil, "gh workflow run release.yml -R acme/app", Ask},
+		{app, nil, "gh workflow run --ref main .github/workflows/Release.yaml", Ask},
+		{app, nil, "gh workflow run -R acme/app -f x=1 release", Ask},
+		{app, nil, "gh api -X POST repos/acme/app/actions/workflows/release.yml/dispatches -f ref=main", Ask},
+		{app, nil, "gh api repos/acme/app/actions/workflows/release.yml/dispatches --input body.json", Ask},
 		{app, nil, "gh workflow run 123456", Ask},
 		{app, nil, "gh api -X POST repos/acme/app/actions/workflows/123456/dispatches -f ref=main", Ask},
 		{app, nil, "gh workflow run deploy-site -R acme/app", Allow},
@@ -321,5 +321,26 @@ func TestMergeOnlyInCommandWords(t *testing.T) {
 	// A commit that is not allowed is denied as a commit, not as a merge.
 	if r := p.Command(`git commit -m "then gh pr merge 5"`).Reason; !strings.Contains(r, "`git commit` is for the user") {
 		t.Errorf("commit reason: %s", r)
+	}
+}
+
+// Where Claude Code may skip the permission dialog (bypassPermissions), a release
+// workflow is refused instead of asked: without the user's yes it never starts.
+func TestReleaseDispatchWithoutPrompt(t *testing.T) {
+	p := Policy{NoPrompt: true}
+	for _, cmd := range []string{
+		"gh workflow run release",
+		"gh workflow run release.yml -R acme/app",
+		"gh api -X POST repos/acme/app/actions/workflows/release.yml/dispatches -f ref=main",
+	} {
+		if d := p.Command(cmd); d.Verdict != Deny {
+			t.Errorf("%q: %v, want Deny", cmd, d.Verdict)
+		}
+	}
+	if d := p.Command("gh workflow run deploy-site"); d.Verdict != Allow {
+		t.Errorf("deploy-site: %v, want Allow", d.Verdict)
+	}
+	if d := (Policy{Lang: "es", NoPrompt: true}).Command("gh workflow run release"); !strings.Contains(d.Reason, "bypassPermissions") {
+		t.Errorf("reason: %q", d.Reason)
 	}
 }
