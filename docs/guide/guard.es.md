@@ -171,7 +171,8 @@ Hace tres cosas para que las listas sigan siendo tuyas:
   llamar a una página del panel desde un comando, se deniega, se escriba
   como se escriba la dirección: la página Guardia del panel es como tú cambias las
   listas, y funciona con esa llave. `augmented-brain panel` tampoco escribe nunca la
-  llave: escribe un enlace que sirve una vez, y lanzado por Claude no escribe ninguno.
+  llave: escribe un enlace que sirve una vez, y lanzado por Claude no escribe ninguno, ni
+  tampoco `augmented-brain panel remote`: te piden que los lances en una terminal tuya.
 - **Se da cuenta de un cambio que no vio.** El guardia guarda un sello de sus listas: se
   toma cuando empiezas una sesión y al guardar en el panel. Cuando Claude solo añade un
   perfil de producción o una máquina a listas que ya habías aceptado, el sello las sigue:

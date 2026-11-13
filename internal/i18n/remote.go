@@ -308,4 +308,34 @@ var remoteMessages = map[string]msg{
 		en: "fix remote.toml in the configuration folder",
 		es: "arregla remote.toml en la carpeta de configuración",
 	},
+	// remote watch: the sessions the usage limit stopped (remote.WakeQuota). The first
+	// is the session's next turn; the notices are shown to the user by the next hook.
+	"quota.wake.message": {
+		en: "Claude's usage limit stopped this session in the middle of its work, and it has reset now (augmented brain woke the session). Read your task (task_get %s), check where the work stands and go on from where you stopped.",
+		es: "El límite de uso de Claude paró esta sesión en mitad de su trabajo, y ya ha vuelto (augmented brain ha despertado la sesión). Lee tu tarea (task_get %s), comprueba cómo está el trabajo y sigue donde lo dejaste.",
+	},
+	"quota.notice.began": {
+		en: "Claude's usage limit stopped the sessions of your tasks. They are woken on their own when it resets, at %s, one every two minutes.",
+		es: "El límite de uso de Claude ha parado las sesiones de tus tareas. Se despiertan solas cuando vuelva, a las %s, una cada dos minutos.",
+	},
+	"quota.notice.ended": {
+		en: "Claude's usage limit has reset: the sessions of your tasks that waited for it are at work again (%d).",
+		es: "El límite de uso de Claude ha vuelto: las sesiones de tus tareas que lo esperaban ya trabajan otra vez (%d).",
+	},
+	"quota.notice.gaveup": {
+		en: "The session of %s could not be woken after the usage limit reset (%s). Write to it in Claude Desktop or claude.ai, or open it again: augmented-brain session start %s",
+		es: "No se ha podido despertar la sesión de %s al volver el límite de uso (%s). Escríbele en Claude Desktop o claude.ai, o ábrela de nuevo: augmented-brain session start %s",
+	},
+	"quota.woken": {
+		en: "%s: the usage limit has reset; its session was woken.",
+		es: "%s: el límite de uso ha vuelto; su sesión se ha despertado.",
+	},
+	"quota.problem": {
+		en: "%s: its session could not be woken: %s",
+		es: "%s: no se ha podido despertar su sesión: %s",
+	},
+	"quota.journal": {
+		en: "Claude's usage limit stopped this task's session; it reset and augmented brain woke the session, which goes on from where it stopped.",
+		es: "El límite de uso de Claude paró la sesión de esta tarea; ha vuelto y augmented brain ha despertado la sesión, que sigue donde lo dejó.",
+	},
 }

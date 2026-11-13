@@ -3,18 +3,20 @@
 [Read in English](config-history.md)
 
 Tu configuración es lo que augmented brain sabe de este ordenador y de ti: tus espacios,
-las listas del guardia, el acceso remoto, tu perfil y los nombres de tus secretos. Un
-cambio equivocado ahí (una lista vaciada sin querer, un espacio que apunta a la carpeta
-que no es) no tenía vuelta atrás. Ahora cada cambio se guarda como una **versión**, y
-puedes ver qué cambió y volver atrás.
+las listas del guardia, el acceso remoto, tus ajustes de sesión, tu perfil y los nombres
+de tus secretos. Cada cambio se guarda como una **versión**, así que un cambio equivocado
+(una lista vaciada sin querer, un espacio que apunta a la carpeta que no es) se puede ver
+y deshacer.
 
 ## Qué se guarda
 
 Una versión es una copia de estos ficheros de la carpeta de configuración, tal como
 estaban en un momento: `config.toml`, `guard.toml`, `remote.toml`, `session.toml`,
-`profile.md` y `secrets.toml` (solo los nombres de tus secretos, nunca un valor). Dice
-también quién hizo el cambio: el panel, un comando, el asistente (y con qué herramienta),
-una vuelta a una versión anterior, o a mano.
+`profile.md` y `secrets.toml` (solo los nombres de tus secretos, nunca un valor).
+`session.toml` guarda el modelo que quieres para tus sesiones y lo que el asistente
+guarda solo (mira [El guardia](guard.es.md#preguntar-antes-de-que-claude-guarde-una-regla)).
+Dice también quién hizo el cambio: el panel, un comando, el asistente (y con qué
+herramienta), una vuelta a una versión anterior, o a mano.
 
 - Se guarda una versión nueva cada vez que cambia la configuración. Un cambio hecho a
   mano, o con un programa anterior, se guarda la próxima vez que augmented brain mira:
@@ -42,8 +44,11 @@ cambia nada. Si cambian las listas del guardia, volver desde el panel cuenta com
 aceptas, igual que cualquier cambio en la página [Guardia](guard.es.md).
 
 Desde otro dispositivo ([el panel desde otro dispositivo](panel-remote.es.md)) la página
-solo enseña las versiones: volver a una solo se puede desde el panel de este ordenador,
-porque puede cambiar lo que el guardia deja pasar.
+solo enseña las versiones. Volver atrás puede cambiar las listas del guardia, y esas
+deciden lo que Claude puede hacer en este ordenador: así que, como en la página Guardia,
+solo se cambian desde el panel de este ordenador. La lista entera de lo que solo puede
+hacer este ordenador está en
+[el panel desde otro dispositivo](panel-remote.es.md#lo-que-solo-puede-hacer-este-ordenador).
 
 ## Con comandos
 

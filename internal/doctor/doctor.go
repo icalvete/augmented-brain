@@ -175,7 +175,11 @@ func space(c *config.Config, s *config.Space) []Check {
 			i18n.T(l, "doctor.nomemory.fix", filepath.Join(c.Dir, config.FileName))}}
 	}
 	if len(problems) > 0 {
-		return []Check{{Failed, i18n.T(l, "doctor.invalid", s.Name, len(problems)), i18n.T(l, "doctor.invalid.fix")}}
+		fix := i18n.T(l, "doctor.invalid.fix")
+		if newer := countNewer(problems); newer > 0 {
+			fix = i18n.T(l, "doctor.invalid.newer", newer)
+		}
+		return []Check{{Failed, i18n.T(l, "doctor.invalid", s.Name, len(problems)), fix}}
 	}
 	checks := []Check{{OK, i18n.T(l, "doctor.valid", s.Name, i18n.Count(l, "notes", len(m.Notes))), ""}}
 	current, _ := os.ReadFile(filepath.Join(s.Memory, memory.IndexFile))
@@ -445,13 +449,20 @@ func autoMemory(e Env, c *config.Config) []Check {
 		i18n.T(c.Language, "doctor.automemory.fix", filepath.Join(dir, "settings.json"))}}
 }
 
-// guardLists reports on guard.toml (the untouchable repositories) and on whether the
-// guard's lists are the ones the user last saw.
+// guardLists reports on guard.toml (the untouchable repositories), on settings of
+// guard.toml and session.toml this program does not know, and on whether the guard's
+// lists are the ones the user last saw.
 func guardLists(c *config.Config, l string) []Check {
 	var out []Check
+	// Settings of guard.toml and session.toml this program ignores: a misspelled one
+	// does nothing, and the files are not refused for it (a newer program may add some).
+	for _, f := range config.UnknownByFile(l, config.UnknownSettings(c.Dir)) {
+		out = append(out, Check{Warning, i18n.T(l, "doctor.unknownsettings", f[0], f[1]),
+			i18n.T(l, "doctor.unknownsettings.fix", paths.Tilde(filepath.Join(c.Dir, f[0])))})
+	}
 	g, err := config.LoadGuard(c.Dir)
 	if err != nil {
-		return []Check{{Warning, i18n.T(l, "doctor.guardfile.bad", err.Error()), i18n.T(l, "doctor.guardfile.fix", filepath.Join(c.Dir, config.GuardFile))}}
+		return append(out, Check{Warning, i18n.T(l, "doctor.guardfile.bad", err.Error()), i18n.T(l, "doctor.guardfile.fix", filepath.Join(c.Dir, config.GuardFile))})
 	}
 	if len(g.UntouchableRepos) > 0 {
 		out = append(out, Check{Info, i18n.T(l, "doctor.untouchable", len(g.UntouchableRepos)), ""})
@@ -690,4 +701,15 @@ func rulesSize(l, space string, m *memory.Memory, sharedDir string) *Check {
 		longest = append(longest, i18n.T(l, "doctor.rules.one", r.Title, r.Units))
 	}
 	return &Check{Info, i18n.T(l, "doctor.rules", space, len(sizes), total, (total+3)/4, strings.Join(longest, "; ")), i18n.T(l, "doctor.rules.fix")}
+}
+
+// countNewer is how many of the problems are a field only a newer version may know.
+func countNewer(problems []memory.Problem) int {
+	n := 0
+	for _, p := range problems {
+		if _, ok := p.Newer(); ok {
+			n++
+		}
+	}
+	return n
 }

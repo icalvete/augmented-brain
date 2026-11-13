@@ -266,3 +266,70 @@ func TestGuardPageTrust(t *testing.T) {
 		t.Errorf("not back on tell: %+v", ss)
 	}
 }
+
+// Through the network the Guard page only shows: no form, a note that says why, the
+// model and the trust level as text, and every post refused with nothing changed and
+// nothing sealed.
+func TestGuardPageRemoteOnlyShows(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	repo := filepath.Join(filepath.Dir(cfg), "work", "core")
+	if w := s.post(t, "/guard/list", url.Values{"s": {"work"}, "list": {"untouchable"}, "op": {"add"}, "value": {repo}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("add untouchable locally: %d", w.Code)
+	}
+	if w := s.post(t, "/guard/model", url.Values{"s": {"work"}, "value": {"opus"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("model locally: %d", w.Code)
+	}
+	// Something outside the page changes the lists: the accept button would show.
+	if err := config.SetTopList(cfg, "untouchable_hosts", []string{"db1"}); err != nil {
+		t.Fatal(err)
+	}
+	const rhost, owner = "box.example.ts.net:8443", "lucia@example.com"
+	s.remote.Store(&Remote{Host: rhost, Owner: owner})
+	w := s.do(t, req{path: s.netBase() + "/guard?s=work", host: rhost, owner: owner})
+	body := w.Body.String()
+	if w.Code != http.StatusOK || !strings.Contains(body, "from another device") {
+		t.Fatalf("remote page: %d, no note: %.300s", w.Code, body)
+	}
+	// The repository by its folder's name: on Windows the page writes the path its own way.
+	for _, want := range []string{`core</code>`, "<code>db1</code>", "<code>opus</code>", "Save and tell me"} {
+		if !strings.Contains(body, want) {
+			t.Errorf("the remote page does not show %q", want)
+		}
+	}
+	for _, action := range []string{"/guard/list", "/guard/root", "/guard/accept", "/guard/model", "/guard/trust"} {
+		if strings.Contains(body, action+`"`) {
+			t.Errorf("the remote page has the form of %s", action)
+		}
+	}
+
+	before, _ := os.ReadFile(filepath.Join(cfg, config.FileName))
+	beforeGuard, _ := os.ReadFile(filepath.Join(cfg, config.GuardFile))
+	beforeSession, _ := os.ReadFile(filepath.Join(cfg, config.SessionFile))
+	seal := readSeal(t, cfg)
+	for path, form := range map[string]url.Values{
+		"/guard/list":   {"list": {"hosts"}, "op": {"add"}, "value": {"db2"}},
+		"/guard/root":   {"op": {"add"}, "host": {"box"}, "until": {"2099-01-01"}, "confirm": {"box"}},
+		"/guard/accept": {},
+		"/guard/model":  {"value": {"haiku"}},
+		"/guard/trust":  {"value": {"ask"}},
+	} {
+		form.Set("s", "work")
+		form.Set("csrf", s.netCSRF)
+		w := s.do(t, req{method: http.MethodPost, path: s.netBase() + path, host: rhost, owner: owner, origin: "https://" + rhost, form: form})
+		if w.Code != http.StatusBadRequest || !strings.Contains(w.Body.String(), "only from this computer") {
+			t.Errorf("remote %s: %d", path, w.Code)
+		}
+	}
+	after, _ := os.ReadFile(filepath.Join(cfg, config.FileName))
+	afterGuard, _ := os.ReadFile(filepath.Join(cfg, config.GuardFile))
+	afterSession, _ := os.ReadFile(filepath.Join(cfg, config.SessionFile))
+	if string(after) != string(before) || string(afterGuard) != string(beforeGuard) || string(afterSession) != string(beforeSession) {
+		t.Error("a refused change changed a file")
+	}
+	if readSeal(t, cfg) != seal {
+		t.Error("a refused accept sealed the lists")
+	}
+	if n := state.TakeGuardNotice(cfg); strings.Contains(n, "db2") || strings.Contains(n, "accepted") {
+		t.Errorf("a refused change left a notice: %q", n)
+	}
+}
