@@ -4444,8 +4444,19 @@ When a release writes something in a new way, it raises the version and brings a
 that moves version N to N+1. At the start of a session (and in `augmented-brain check`)
 the program copies the whole folder to `migrations/` in the configuration folder, runs
 the missing steps one at a time and writes the new version after each, so a step that
-stops half way runs again from there. Notes of a newer version than the program knows
-are never written: the program asks to be updated.
+stops half way runs again from there. The copy goes in a folder of its own, symbolic
+links copied as links, and holds a file `.copy-complete` once all of it is on the disk;
+a run again from the same version keeps that copy and makes no other, so it never holds
+notes half moved. Notes of a newer version than the program knows are never written: the
+program asks to be updated.
+
+Every note is replaced in one step: written to a temporary file next to it
+(`<name>.<digits>.tmp`), synced to the disk, renamed over the note, and its folder
+synced, so a power cut leaves the old note or the new one, never an empty one. A
+temporary file left by a write cut short is removed at the start of a session once it
+is an hour old. A note that is a symbolic link is never written through: the write is
+refused (the configuration folder may hold links, for people who keep it in a
+repository of their own).
 
 ## Generated files
 
