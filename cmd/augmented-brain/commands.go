@@ -65,7 +65,7 @@ var commands = []command{
 	{name: "config history", run: withoutIn(cmdConfigHistory)},
 	{name: "config restore", run: withoutIn(cmdConfigRestore)},
 	{name: "clean", run: cmdClean, flags: func() []string { fs, _ := cleanFlags(io.Discard); return flagNames(fs) }},
-	{name: "update", run: withoutIn(cmdUpdate), flags: func() []string { fs, _, _, _ := updateFlags(io.Discard); return flagNames(fs) }},
+	{name: "update", run: withoutIn(cmdUpdate), flags: func() []string { fs, _, _, _, _ := updateFlags(io.Discard); return flagNames(fs) }},
 	{name: "uninstall", run: cmdUninstall, flags: func() []string { fs, _, _, _ := uninstallFlags(io.Discard); return flagNames(fs) }},
 	{name: "mcp", run: noArgs(func(_, errOut io.Writer) int { return cmdMCP(errOut) })},
 	{name: "hook", run: cmdHook, words: func() []string {

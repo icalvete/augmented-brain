@@ -22,6 +22,7 @@
 # from, instead of the one the program carries), AB_NO_INIT=1 (only install the program:
 # no checks, no init), AB_API_URL (stands in for GitHub's API of the repository, the second way to
 # download) and AB_RETRY_DELAY (seconds between two tries of a download, default 5).
+# AB_ALLOW_ROOT=1 installs even as root, which it refuses otherwise.
 set -eu
 
 # Everything runs from main, called on the last line: a download cut short runs nothing.
@@ -67,6 +68,15 @@ ask() {
   done
 }
 yn() { say "[Y/n]" "[S/n]"; }
+
+# As root (`curl … | sudo sh`, a common reflex) everything would end up belonging to
+# root: the program, the configuration, the PATH line, Claude Code's files. On macOS
+# sudo keeps HOME, so the user's own folder fills with files they cannot change; on
+# Linux it all goes to /root, where the user never sees it.
+if [ "$(id -u)" = 0 ] && [ "${AB_ALLOW_ROOT:-}" != 1 ]; then
+  fail "$(say "do not run the installer as root (sudo): it needs no root, and as root everything would end up belonging to root. Run it again without sudo. Nothing was installed." \
+              "no lances el instalador como root (sudo): no necesita root, y como root todo acabaría siendo de root. Vuelve a lanzarlo sin sudo. No se ha instalado nada.")"
+fi
 
 # quiet <command…>: runs an installation without its noise (apt, other installers),
 # keeping only what asks for a password, which goes to the terminal. Its output is
@@ -473,10 +483,27 @@ tar -xzf "$TMP/$archive" -C "$TMP"
 mkdir -p "$DIR"
 cp "$TMP/${archive%.tar.gz}/augmented-brain" "$DIR/augmented-brain.new"
 chmod 755 "$DIR/augmented-brain.new"
+# The new program must start before it replaces the one that works (a folder mounted
+# noexec, an antivirus, a build for another system): with none at all, every tool of
+# Claude fails until someone installs it again.
+if ! v="$("$DIR/augmented-brain.new" version 2>/dev/null)" || [ -z "$v" ]; then
+  rm -f "$DIR/augmented-brain.new"
+  fail "$(say "the new program does not start on this computer ($(tilde "$DIR")): not installed; the one you had, if any, is still there." \
+              "el programa nuevo no arranca en este ordenador ($(tilde "$DIR")): no se ha instalado; el que tenías, si había uno, sigue ahí.")"
+fi
+# The one that works stays as .old until the new one answers in its place.
+rm -f "$DIR/augmented-brain.old"
+[ -f "$DIR/augmented-brain" ] && cp -p "$DIR/augmented-brain" "$DIR/augmented-brain.old"
 mv "$DIR/augmented-brain.new" "$DIR/augmented-brain"
+if ! v="$("$DIR/augmented-brain" version 2>/dev/null)" || [ -z "$v" ]; then
+  [ -f "$DIR/augmented-brain.old" ] && mv "$DIR/augmented-brain.old" "$DIR/augmented-brain"
+  fail "$(say "the new program does not start in its place ($(tilde "$DIR")): not installed; the one you had, if any, is back." \
+              "el programa nuevo no arranca en su sitio ($(tilde "$DIR")): no se ha instalado; el que tenías, si había uno, ha vuelto.")"
+fi
+rm -f "$DIR/augmented-brain.old"
 
-say "✓ augmented brain $("$DIR/augmented-brain" version) installed in $(tilde "$DIR")" \
-    "✓ augmented brain $("$DIR/augmented-brain" version) instalado en $(tilde "$DIR")"
+say "✓ augmented brain $v installed in $(tilde "$DIR")" \
+    "✓ augmented brain $v instalado en $(tilde "$DIR")"
 
 # --- 3. PATH ----------------------------------------------------------------------
 
