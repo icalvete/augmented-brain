@@ -27,7 +27,7 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
   Salvo que dejes a Claude en un repositorio (más abajo). Pedir ayuda sí pasa: `git
   commit --help`, `gh pr merge --help`, `su --version`.
-- **Hacerse root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
+- **Hacerse root.** `sudo`, `su` (y `sudo-rs`, `su-rs`), `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
   sin `--user`, `ssh root@…` (también `-o User=root`), un contenedor al que se le da la
   máquina entera (`docker run --privileged`, `-v /:/host`, `--pid=host`, el socket de
   Docker o uno de los discos de la máquina; también con `podman` y `nerdctl`, y `kubectl
@@ -144,7 +144,12 @@ El asistente trabaja en la misma cuenta que tú, así que el guardia no puede se
 Hace tres cosas para que las listas sigan siendo tuyas:
 
 - **Pregunta antes de escribir en los ficheros del guardia** (`config.toml`,
-  `guard.toml`, `secrets.toml`, `remote.toml`, `session.toml` y los ajustes de Claude Code).
+  `guard.toml`, `secrets.toml`, `remote.toml`, `session.toml`, el sello de abajo y los
+  ajustes de Claude Code), o en lo que hace funcionar al guardia: el plugin tal como lo
+  guarda Claude Code (`~/.claude/plugins/cache/augmented-brain/`,
+  `installed_plugins.json`) y el programa `augmented-brain`. Copiar, desempaquetar o
+  sincronizar en la carpeta que guarda uno de ellos también pregunta (`cp -t`, `tar
+  -C`, `rsync`).
 - **Deniega llegar al panel.** Leer `panel.json` (la llave del panel) con una herramienta
   o un comando, y llamar a una página del panel desde un comando, se deniega, se escriba
   como se escriba la dirección: la página Guardia del panel es como tú cambias las
@@ -154,7 +159,10 @@ Hace tres cosas para que las listas sigan siendo tuyas:
   toma cuando empiezas una sesión y al guardar en el panel. Si las listas difieren del
   sello, algo más las cambió, y un commit, push o merge que las listas dejarían pasar
   pregunta antes, y la página Guardia y `doctor` lo dicen, hasta que las aceptes en la
-  página Guardia o empieces una sesión nueva. Una sesión nueva toma las listas como
+  página Guardia o empieces una sesión nueva. Mientras tanto, las listas no pueden
+  ablandar el guardia: la excepción de root de esta máquina no cuenta, y todo comando
+  `aws` y todo `ssh`, `scp` o `rsync` a otra máquina pregunta, porque un perfil o un
+  host quitado puede ser justo lo que cambió. Una sesión nueva toma las listas como
   están, y el propio Claude Code te lo dice. Cuando Claude Code compacta una
   conversación, o después de `/clear`, el sello se queda: eso no eres tú mirando. Si el
   sello no se puede leer, el guardia también pregunta, y `doctor` dice por qué. La

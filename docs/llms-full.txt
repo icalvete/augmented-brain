@@ -915,7 +915,7 @@ A program determined to get around it could. Read the
   `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
   Unless you let Claude in a repository (below). Asking for help passes: `git commit
   --help`, `gh pr merge --help`, `su --version`.
-- **Becoming root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
+- **Becoming root.** `sudo`, `su` (and `sudo-rs`, `su-rs`), `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
   without `--user`, `ssh root@…` (also `-o User=root`), a container given the whole
   machine (`docker run --privileged`, `-v /:/host`, `--pid=host`, the Docker socket or one
   of the machine's disks; with `podman` and `nerdctl` too, and `kubectl debug node/…`), and on Windows `gsudo` and `runas`. Claude
@@ -1026,7 +1026,11 @@ The assistant works in the same account as you, so the guard cannot be a wall. I
 three things so that the lists stay yours:
 
 - **It asks before a write to the guard's files** (`config.toml`, `guard.toml`,
-  `secrets.toml`, `remote.toml`, `session.toml`, and Claude Code's settings).
+  `secrets.toml`, `remote.toml`, `session.toml`, the seal below, and Claude Code's
+  settings), or to what runs the guard: the plugin as Claude Code keeps it
+  (`~/.claude/plugins/cache/augmented-brain/`, `installed_plugins.json`) and the
+  `augmented-brain` program. Copying, unpacking or syncing into the folder that holds
+  one of them asks too (`cp -t`, `tar -C`, `rsync`).
 - **It denies reaching the panel.** Reading `panel.json` (the panel's key) with a tool
   or a command, and calling a panel page from a command, are denied, however the
   address is written: the panel's Guard page is how you change the lists, and it works
@@ -1036,7 +1040,10 @@ three things so that the lists stay yours:
   when you start a session and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
   let through asks first, and the Guard page and `doctor` say so, until you accept them
-  in the Guard page or you start a new session. A new session takes the lists as they
+  in the Guard page or you start a new session. Meanwhile the lists cannot soften the
+  guard: a root exception for this machine does not count, and every `aws` command
+  and every `ssh`, `scp` or `rsync` to another machine asks, since a profile or host
+  taken out may be what changed. A new session takes the lists as they
   are, and Claude Code tells you so itself. When Claude Code compacts a conversation, or
   after `/clear`, the seal stays: that is not you looking. If the seal cannot be read,
   the guard asks too, and `doctor` says why. The Guard page shows what was added and

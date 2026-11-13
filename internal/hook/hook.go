@@ -343,6 +343,7 @@ func policy(cfgDir, dir string) guard.Policy {
 		}
 	}
 	p.Protected = protectedFiles(cfgDir, dir)
+	p.ProtectedDirs = protectedDirs()
 	p.Hidden, p.ConfigDirs = hiddenFiles(cfgDir)
 	return p
 }
@@ -402,7 +403,10 @@ func protectedFiles(cfgDir, dir string) []string {
 		list = []string{filepath.Join(cfgDir, config.FileName), filepath.Join(cfgDir, config.GuardFile),
 			filepath.Join(cfgDir, config.SecretsFile), filepath.Join(cfgDir, "remote.toml"),
 			filepath.Join(cfgDir, config.SessionFile)}
-		// The plugin Claude Code reads in place: its hooks are the guard.
+		// The record of the lists the user last saw: written by hand, it would
+		// accept lists changed outside the panel.
+		list = append(list, filepath.Join(cfgDir, state.Dir, state.SealFile))
+		// The plugin's marketplace: Claude Code copies the plugin from it.
 		for _, f := range claudecode.Files() {
 			list = append(list, filepath.Join(claudecode.LocalDir(cfgDir), filepath.FromSlash(f)))
 		}
@@ -411,6 +415,15 @@ func protectedFiles(cfgDir, dir string) []string {
 		for _, f := range []string{"settings.json", "settings.local.json"} {
 			list = append(list, filepath.Join(home, ".claude", f))
 		}
+		// Which plugins Claude Code loads, and from where.
+		for _, f := range []string{"installed_plugins.json", "known_marketplaces.json"} {
+			list = append(list, filepath.Join(home, ".claude", "plugins", f))
+		}
+		// The program the hooks run: they put ~/.local/bin first in their PATH.
+		list = append(list, filepath.Join(home, ".local", "bin", programName()))
+	}
+	if exe, err := os.Executable(); err == nil {
+		list = append(list, exe) // the program running this hook, wherever it is
 	}
 	for _, f := range []string{"settings.json", "settings.local.json"} {
 		list = append(list, filepath.Join(dir, ".claude", f))
@@ -421,6 +434,28 @@ func protectedFiles(cfgDir, dir string) []string {
 		}
 	}
 	return list
+}
+
+// protectedDirs are the folders whose every file is protected: Claude Code's copy of
+// the plugin, one folder per version, where it reads the hooks that are the guard.
+func protectedDirs() []string {
+	home, err := paths.Home()
+	if err != nil {
+		return nil
+	}
+	d := filepath.Join(home, ".claude", "plugins", "cache", claudecode.MarketplaceName)
+	if r, err := paths.Resolve(d); err == nil {
+		d = r
+	}
+	return []string{d}
+}
+
+// programName is the program's file name on this system.
+func programName() string {
+	if runtime.GOOS == "windows" {
+		return "augmented-brain.exe"
+	}
+	return "augmented-brain"
 }
 
 // hiddenFiles are the files the assistant never reads (the panel's token file) and the

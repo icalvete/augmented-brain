@@ -60,8 +60,12 @@ type Policy struct {
 	Env map[string]string
 	// Protected are files the assistant must not change on its own: the guard's
 	// configuration and Claude Code's settings, which could switch the guard off.
-	// Absolute paths; writing one asks the user.
+	// Absolute paths; writing one asks the user, and so does writing into the folder
+	// that holds one (cp -t <folder>, tar -C <folder>), which may put a file there.
 	Protected []string
+	// ProtectedDirs are folders whose every file is protected that way: Claude Code's
+	// copy of the plugin, whose version changes with each update.
+	ProtectedDirs []string
 	// Hidden are files the assistant must not read at all (the panel's token file), and
 	// ConfigDirs the ways the configuration folder is written in a command (its path,
 	// with ~, and the variable that moves it), to tell that a bare file name is theirs.
@@ -134,6 +138,11 @@ func (p Policy) root(reason string) Decision {
 			continue
 		}
 		for _, n := range names {
+			if n != "" && rootHost(n, e.Host) && p.ConfigChanged {
+				// The exception may be what changed: it counts only once the user
+				// has seen it (the panel's Guard page, or a session they start).
+				return Decision{Deny, i18n.T(p.Lang, "guard.root.changed", reason)}
+			}
 			if n != "" && rootHost(n, e.Host) {
 				return Decision{Ask, i18n.T(p.Lang, "guard.root.exception", where, e.Until.UTC().Format("2006-01-02 15:04"))}
 			}
@@ -210,9 +219,9 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 		for _, r := range c.redirects {
 			d = worse(d, p.protected(r))
 		}
-		if _, name, args := program(c.words); slices.Contains([]string{"sed", "perl", "tee", "cp", "mv", "ln", "rm", "truncate", "install", "dd"}, name) {
+		if _, name, args := program(c.words); writesArgs(name, args) {
 			for _, a := range args {
-				d = worse(d, p.protected(strings.TrimPrefix(a, "of=")))
+				d = worse(d, p.protected(writtenArg(a)))
 			}
 		}
 		if d = worse(d, p.simple(c.words, c.stdin, exported, depth)); d.Verdict == Deny {
@@ -221,6 +230,33 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 		p.recordWrites(c)
 	}
 	return d
+}
+
+// writers are the programs whose arguments name files they may write, read as such by
+// the protected-file rule: a path among them, or the folder that holds one, asks.
+var writers = []string{"sed", "perl", "tee", "cp", "mv", "ln", "rm", "truncate", "install", "dd",
+	"rsync", "tar", "patch", "unzip"}
+
+// writesArgs says whether the arguments of name are read for protected files: one of
+// the writers, or awk changing files in place (gawk -i inplace).
+func writesArgs(name string, args []string) bool {
+	if slices.Contains(writers, name) {
+		return true
+	}
+	if name == "awk" || name == "gawk" {
+		return slices.ContainsFunc(args, func(a string) bool { return strings.Contains(a, "inplace") })
+	}
+	return false
+}
+
+// writtenArg is the path an argument names: dd's of=, tar's --directory=, cp's --target-directory=.
+func writtenArg(a string) string {
+	for _, prefix := range []string{"of=", "--directory=", "--target-directory="} {
+		if strings.HasPrefix(a, prefix) {
+			return strings.TrimPrefix(a, prefix)
+		}
+	}
+	return a
 }
 
 // worse combines two decisions: a deny wins over an ask, and an ask over an allow. Of
@@ -384,8 +420,9 @@ func init() { // in init: the rules call simple, which reads this table
 		return p.root(i18n.T(p.Lang, "guard.root.admin", c.name, p.rootReason()))
 	}, "gsudo", "runas", "sudoedit")
 	add(Policy.source, "source", ".")
-	add(func(p Policy, c call) Decision { return p.sudo(c.name, c.args, c.stdin, c.env, c.depth) }, "sudo", "doas")
-	add(Policy.su, "su", "run0", "pkexec")
+	// sudo-rs and su-rs come with Ubuntu 25.10 and later, next to sudo and su.
+	add(func(p Policy, c call) Decision { return p.sudo(c.name, c.args, c.stdin, c.env, c.depth) }, "sudo", "sudo-rs", "doas")
+	add(Policy.su, "su", "su-rs", "run0", "pkexec")
 	add(func(p Policy, c call) Decision { return p.awsTool(c.name, c.env, c.args) },
 		"cdk", "sam", "serverless", "sls", "terraform", "tofu", "pulumi", "eksctl", "copilot")
 	add(func(p Policy, c call) Decision { return p.publish(c.name, c.env, c.args) }, "gh", "glab")
@@ -1077,11 +1114,16 @@ func profileFlag(args []string, flag string) string {
 
 // listsUnknown asks when the configuration could not be read: then the production
 // profiles and untouchable hosts are unknown, and what would check them cannot.
+// When the lists are not the ones the user last saw (ConfigChanged), a profile or a
+// host taken out of them may be what changed: the command asks too.
 func (p Policy) listsUnknown(what string) (Decision, bool) {
-	if p.ConfigProblem == "" {
-		return allow, false
+	if p.ConfigProblem != "" {
+		return Decision{Ask, i18n.T(p.Lang, "guard.config", what, p.ConfigProblem)}, true
 	}
-	return Decision{Ask, i18n.T(p.Lang, "guard.config", what, p.ConfigProblem)}, true
+	if p.ConfigChanged {
+		return Decision{Ask, i18n.T(p.Lang, "guard.config.changed", what)}, true
+	}
+	return allow, false
 }
 
 // ghValue are the options of gh and glab that take a value, by command, so the value is
@@ -1795,21 +1837,29 @@ func (p Policy) WriteFile(path, text string) Decision {
 	return p.protected(path)
 }
 
-// protected asks before the assistant changes a file in Protected.
+// protected asks before the assistant changes a file in Protected or in ProtectedDirs,
+// or writes into the folder that holds one: a command given a folder (cp -t, tar -C,
+// rsync, cp x <folder>/) may put any file there.
 func (p Policy) protected(path string) Decision {
-	if path == "" || len(p.Protected) == 0 {
+	if path == "" || len(p.Protected) == 0 && len(p.ProtectedDirs) == 0 {
 		return allow
 	}
 	d, err := p.resolve(path)
 	if err != nil {
 		return allow
 	}
+	hit := false
 	for _, f := range p.Protected {
-		if paths.Same(d, f) {
-			return Decision{Ask, i18n.T(p.Lang, "guard.protected", paths.Tilde(d))}
-		}
+		hit = hit || paths.Same(d, f) || paths.Same(d, filepath.Dir(f))
 	}
-	return allow
+	for _, f := range p.ProtectedDirs {
+		hit = hit || paths.Within(d, f) || paths.Same(d, filepath.Dir(f))
+	}
+	if !hit {
+		return allow
+	}
+	// Built only now: Tilde reads the disk, slow on Windows for a line of many writes.
+	return Decision{Ask, i18n.T(p.Lang, "guard.protected", paths.Tilde(d))}
 }
 
 // bashPath turns a path as Git Bash writes it on Windows (/c/Users/ana) into the one
