@@ -70,6 +70,10 @@ type Policy struct {
 	// start of the session, or saved in the panel): something else changed them. Where
 	// the lists would let a commit, a push or a merge through, it asks instead.
 	ConfigChanged bool
+	// NoPrompt says the session may not show the user a permission dialog
+	// (bypassPermissions): what is asked only so the user decides, such as starting a
+	// release workflow, is denied instead.
+	NoPrompt bool
 	// SealProblem, when not empty, says why the record of the lists the user last saw
 	// could not be read: ConfigChanged is set too, since the guard cannot tell.
 	SealProblem string
@@ -999,16 +1003,20 @@ func (p Policy) publish(name string, env map[string]string, args []string) Decis
 }
 
 // dispatch is the answer to starting a GitHub Actions workflow by hand. A release
-// workflow publishes a version, which is for the user, as gh release create is; any
-// other workflow (a deployment of content, say) goes on. A workflow named only by its
-// number cannot be told apart, so the user is asked.
+// workflow publishes a version, which is for the user: the user is asked, so a release
+// they asked for goes with one click, and without their yes nothing starts. Any other
+// workflow (a deployment of content, say) goes on. A workflow named only by its number
+// cannot be told apart, so the user is asked too.
 func (p Policy) dispatch(workflow string) Decision {
 	w := strings.ToLower(workflow)
 	if w == "" {
 		return allow // gh asks which one, and a session cannot answer
 	}
 	if strings.Contains(w, "release") {
-		return Decision{Deny, i18n.T(p.Lang, "guard.dispatch", workflow)}
+		if p.NoPrompt {
+			return Decision{Deny, i18n.T(p.Lang, "guard.dispatch.bypass", workflow)}
+		}
+		return Decision{Ask, i18n.T(p.Lang, "guard.dispatch", workflow)}
 	}
 	if strings.Trim(w, "0123456789") == "" {
 		return Decision{Ask, i18n.T(p.Lang, "guard.dispatch.id", workflow)}

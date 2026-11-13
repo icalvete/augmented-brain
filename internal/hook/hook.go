@@ -37,6 +37,9 @@ type input struct {
 	Cwd       string         `json:"cwd"`
 	ToolName  string         `json:"tool_name"`
 	ToolInput map[string]any `json:"tool_input"`
+	// PreToolUse: the session's permission mode (default, plan, acceptEdits, auto,
+	// dontAsk, bypassPermissions), when Claude Code sends it.
+	PermissionMode string `json:"permission_mode"`
 	// Common to every hook.
 	SessionID      string `json:"session_id"`
 	TranscriptPath string `json:"transcript_path"`
@@ -217,6 +220,9 @@ func backupNote(c *config.Config, s *config.Space, cfgDir string) string {
 func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	i, ok := readChecked(in)
 	p := policy(cfgDir, i.Cwd)
+	// In bypassPermissions Claude Code may skip the dialog an "ask" opens, so what must
+	// never go without the user's yes is refused there instead.
+	p.NoPrompt = i.PermissionMode == "bypassPermissions"
 	var d guard.Decision
 	switch {
 	case !ok:

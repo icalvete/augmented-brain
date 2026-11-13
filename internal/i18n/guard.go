@@ -152,8 +152,12 @@ var guardMessages = map[string]msg{
 		es: "`%s api` con esta llamada fusiona, publica una versión o mueve una rama, como un git push, así que es cosa del usuario. Dale al usuario el comando exacto para que lo lance él.",
 	},
 	"guard.dispatch": {
-		en: "Starting the workflow `%s` by hand publishes a version (it is a release workflow), so it is for the user. Leave the release ready and checked, and give the user the exact command to run themselves, or tell them to press Run workflow on GitHub.",
-		es: "Lanzar a mano el flujo `%s` saca una versión (es un flujo de publicación), así que es cosa del usuario. Deja la versión lista y comprobada, y dale al usuario el comando exacto para que lo lance él, o dile que pulse Run workflow en GitHub.",
+		en: "Starting the workflow `%s` by hand publishes a version (it is a release workflow). Allow it only if you asked for this release now. If you say no, nothing starts: you can run it yourself later, or press Run workflow on GitHub.",
+		es: "Lanzar a mano el flujo `%s` saca una versión (es un flujo de publicación). Permítelo solo si has pedido tú esta versión ahora. Si dices que no, no se lanza nada: puedes lanzarlo tú más tarde, o pulsar Run workflow en GitHub.",
+	},
+	"guard.dispatch.bypass": {
+		en: "Starting the workflow `%s` by hand publishes a version (it is a release workflow), and this session runs in bypassPermissions mode, where the user may never see the permission dialog. Leave the release ready and checked, and give the user the exact command to run themselves, or tell them to press Run workflow on GitHub.",
+		es: "Lanzar a mano el flujo `%s` saca una versión (es un flujo de publicación), y esta sesión está en modo bypassPermissions, donde el usuario puede no ver nunca el diálogo de permiso. Deja la versión lista y comprobada, y dale al usuario el comando exacto para que lo lance él, o dile que pulse Run workflow en GitHub.",
 	},
 	"guard.dispatch.id": {
 		en: "This starts the workflow `%s` by hand, named by its number, so the guard cannot tell whether it publishes a version. Name it by its file instead, or ask the user.",
