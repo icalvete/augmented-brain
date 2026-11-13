@@ -912,9 +912,9 @@ A program determined to get around it could. Read the
 ## What it stops
 
 - **Commits and pushes.** `git commit`, `git push`, and what publishes like a push:
-  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`, and
-  starting a release workflow by hand (`gh workflow run release`); other workflows go on.
-  Unless you let Claude in a repository (below).
+  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
+  Unless you let Claude in a repository (below). Asking for help passes: `git commit
+  --help`, `gh pr merge --help`, `su --version`.
 - **Becoming root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
   without `--user`, `ssh root@…`, a container given the whole machine (`docker run
   --privileged`, `-v /:/host`, `--pid=host`), and on Windows `gsudo` and `runas`. Claude
@@ -925,17 +925,25 @@ A program determined to get around it could. Read the
 - **Wiping your home folder or the whole disk.** `rm -r` of `~` or `/`, also after a
   `cd` (`cd ~ && rm -rf .`), and on Windows however the path is written.
 - **PowerShell.** The guard reads the shell, not PowerShell, so it stops every PowerShell
-  command. Claude runs it in Bash (Git Bash on Windows) instead. You will see that block
-  on Windows: it is expected.
+  command, and `cmd` or `powershell` started from Bash too. Claude runs it in Bash (Git
+  Bash on Windows) instead. You will see that block on Windows: it is expected.
 
 ## What it asks you first
 
 - **Production.** An `aws` command with a profile you marked as production. It checks
   every profile the command may use: `--profile`, `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`,
   or `default` when none is set. The same for tools that call AWS on their own: `cdk`,
-  `sam`, `serverless`, `terraform`, `tofu`, `pulumi`, `eksctl`, `copilot`.
+  `sam`, `serverless`, `terraform`, `tofu`, `pulumi`, `eksctl`, `copilot`. And any other
+  program with a production profile set in the command itself (`AWS_PROFILE=prod bash
+  deploy.sh`): whatever it runs may reach AWS with it.
 - **Machines not to touch.** `ssh`, `scp`, `rsync`, `sftp` and `mosh` to a host you marked
   as untouchable. `db01` and `db01.example.com` count as the same host.
+- **Starting a release workflow by hand** (`gh workflow run release`, or the same
+  through `gh api`). It publishes a version, so it is your call, but you do not need a
+  terminal: say yes only if you asked for that release now. If you say no, or nobody
+  answers, nothing starts. In `bypassPermissions` mode, where Claude Code may skip that
+  dialog, it is stopped instead. Other workflows go on; one named only by its number
+  asks too.
 - **Pushes that rewrite history**, even where Claude may push: `--force`, `--delete`,
   `--mirror`, `--prune`, a refspec starting with `+` or `:`.
 - **What it cannot read.** A program given as a variable (`$TOOL deploy`), commands

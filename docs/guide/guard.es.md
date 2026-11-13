@@ -24,9 +24,9 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
 ## Lo que para
 
 - **Commits y pushes.** `git commit`, `git push`, y lo que publica como un push:
-  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`, y
-  lanzar a mano un flujo de publicación (`gh workflow run release`); los demás flujos pasan.
-  Salvo que dejes a Claude en un repositorio (más abajo).
+  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
+  Salvo que dejes a Claude en un repositorio (más abajo). Pedir ayuda sí pasa: `git
+  commit --help`, `gh pr merge --help`, `su --version`.
 - **Hacerse root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
   sin `--user`, `ssh root@…`, un contenedor al que se le da la máquina entera (`docker
   run --privileged`, `-v /:/host`, `--pid=host`), y en Windows `gsudo` y `runas`. Claude te da el comando
@@ -39,8 +39,8 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   después de un `cd` (`cd ~ && rm -rf .`), y en Windows se escriba como se escriba la
   ruta.
 - **PowerShell.** El guardia lee la shell, no PowerShell, así que para cualquier comando
-  de PowerShell. Claude lo hace en Bash (Git Bash en Windows). En Windows verás ese
-  bloqueo: es lo esperado.
+  de PowerShell, y también `cmd` o `powershell` lanzados desde Bash. Claude lo hace en
+  Bash (Git Bash en Windows). En Windows verás ese bloqueo: es lo esperado.
 
 ## Lo que te pregunta antes
 
@@ -48,9 +48,16 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   los perfiles que puede usar el comando: `--profile`, `AWS_PROFILE`,
   `AWS_DEFAULT_PROFILE`, o `default` si no hay ninguno. Igual con las herramientas que
   llaman a AWS por su cuenta: `cdk`, `sam`, `serverless`, `terraform`, `tofu`, `pulumi`,
-  `eksctl`, `copilot`.
+  `eksctl`, `copilot`. Y cualquier otro programa con un perfil de producción puesto en el
+  propio comando (`AWS_PROFILE=prod bash deploy.sh`): lo que ejecute puede llegar a AWS
+  con él.
 - **Máquinas que no se tocan.** `ssh`, `scp`, `rsync`, `sftp` y `mosh` a una máquina que
   marcaste como intocable. `db01` y `db01.example.com` cuentan como la misma máquina.
+- **Lanzar a mano un flujo de publicación** (`gh workflow run release`, o lo mismo por
+  `gh api`). Saca una versión, así que decides tú, pero sin ir a un terminal: di que sí
+  solo si has pedido tú esa versión ahora. Si dices que no, o nadie contesta, no se lanza
+  nada. En el modo `bypassPermissions`, donde Claude Code puede saltarse ese diálogo, se
+  para. Los demás flujos pasan; uno nombrado solo por su número también pregunta.
 - **Pushes que reescriben la historia**, incluso donde Claude puede hacer push:
   `--force`, `--delete`, `--mirror`, `--prune`, una refspec que empieza por `+` o por `:`.
 - **Lo que no puede leer.** Un programa dado como variable (`$TOOL deploy`), comandos

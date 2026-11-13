@@ -7,8 +7,9 @@
 #
 # The quick part: format; vet compiled for Linux, Windows and macOS; the tests compiled
 # for Windows and macOS too (a test that does not build there fails CI); the tests with
-# -race; the privacy check of what is committed; the generated guides up to date; and
-# the branch's changelog entry in changelog.d/ (scripts/changelog.py).
+# -race; the guard's test coverage, not below its floor (Linux); the privacy check of
+# what is committed; the generated guides up to date; and the branch's changelog entry
+# in changelog.d/ (scripts/changelog.py).
 # Windows and macOS are only compiled here, not run: CI runs them. --windows runs the
 # tests on Windows too (scripts/test-windows.sh, in the VM of test/vm/windows-11): for
 # a change to paths, files, permissions, hooks or commands, the kind that passed on
@@ -49,6 +50,11 @@ done
 
 step "tests (-race)"
 if out=$(go test -race -count=1 ./... 2>&1); then ok; else bad "$(printf '%s\n' "$out" | grep -v '^ok\|no test files' | tail -40)"; fi
+
+if [ "$(uname)" = Linux ]; then
+  step "guard coverage"
+  if out=$(scripts/guard-coverage.sh 2>&1); then ok; else bad "$out"; fi
+fi
 
 step "privacy"
 if out=$(scripts/privacy-check.sh --all 2>&1); then ok; else bad "$out"; fi

@@ -70,6 +70,10 @@ type Policy struct {
 	// start of the session, or saved in the panel): something else changed them. Where
 	// the lists would let a commit, a push or a merge through, it asks instead.
 	ConfigChanged bool
+	// NoPrompt says the session may not show the user a permission dialog
+	// (bypassPermissions): what is asked only so the user decides, such as starting a
+	// release workflow, is denied instead.
+	NoPrompt bool
 	// SealProblem, when not empty, says why the record of the lists the user last saw
 	// could not be read: ConfigChanged is set too, since the guard cannot tell.
 	SealProblem string
@@ -283,11 +287,42 @@ func guardVar(name string) bool {
 	return false
 }
 
+// call is one program as the guard checks it: its name (no path), as written (with its
+// path), its arguments, what it reads on stdin when that is known, its environment (set
+// in the command or exported earlier) and how deep it runs inside other commands.
+type call struct {
+	name, raw string
+	args      []string
+	stdin     string
+	env       map[string]string
+	depth     int
+}
+
+// simple checks one command in three steps: prepare reads what holds for any program
+// (keys written in the command, a program only known when it runs); the program's own
+// rule, if it has one; and the rules for every program, applied to whatever the rule
+// said, so no rule can skip them.
 func (p Policy) simple(words []string, stdin string, exported map[string]string, depth int) Decision {
+	c, d, done := p.prepare(words, stdin, exported, depth)
+	if done {
+		return d
+	}
+	if rule, ok := rules[c.name]; ok {
+		d = rule(p, c)
+	} else {
+		d = p.other(c)
+	}
+	return worse(d, p.everyProgram(c))
+}
+
+// prepare finds the program and its environment, and answers on its own when the
+// command can be judged without knowing the program: AWS keys written in it, or a
+// program that is only known when it runs.
+func (p Policy) prepare(words []string, stdin string, exported map[string]string, depth int) (call, Decision, bool) {
 	env, name, args := program(words)
-	raw := ""
+	c := call{name: name, args: args, stdin: stdin, env: env, depth: depth}
 	if name != "" {
-		raw = words[len(words)-len(args)-1] // the program as written, with its path
+		c.raw = words[len(words)-len(args)-1] // the program as written, with its path
 	}
 	for k, v := range exported {
 		if _, set := env[k]; !set {
@@ -296,103 +331,161 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	}
 	for _, k := range []string{"AWS_SECRET_ACCESS_KEY", "AWS_ACCESS_KEY_ID", "AWS_SESSION_TOKEN"} {
 		if v, ok := env[k]; ok && v != "" && !strings.HasPrefix(v, "$") {
-			return Decision{Deny, i18n.T(p.Lang, "guard.awskey", k)}
+			return c, Decision{Deny, i18n.T(p.Lang, "guard.awskey", k)}, true
 		}
 	}
 	if (strings.HasPrefix(name, "$") || strings.ContainsRune(name, subst)) && !p.inScript {
-		return Decision{Ask, i18n.T(p.Lang, "guard.unknownprogram", strings.ReplaceAll(raw, string(subst), "$(…)"))}
+		return c, Decision{Ask, i18n.T(p.Lang, "guard.unknownprogram", strings.ReplaceAll(c.raw, string(subst), "$(…)"))}, true
 	}
-	switch name {
-	case "git":
-		return p.git(env, args, depth)
-	case "powershell", "pwsh", "cmd":
-		return PowerShell(p.Lang)
-	case "gsudo", "runas", "sudoedit":
-		return p.root(i18n.T(p.Lang, "guard.root.admin", name, p.rootReason()))
-	case "runuser":
-		if u := optValue(args, "-u", "--user"); u != "" && u != "root" && u != "0" {
-			return p.nested(afterOptions(args, "u"), stdin, env, depth)
-		}
-		return p.root(i18n.T(p.Lang, "guard.root.runuser", p.rootReason()))
-	case "systemd-run":
-		// --version and --help only print: they start nothing, as root or otherwise.
-		if len(args) == 1 && (args[0] == "--version" || args[0] == "--help" || args[0] == "-h") {
-			return allow
-		}
-		if !slices.Contains(args, "--user") {
-			return p.root(i18n.T(p.Lang, "guard.root.systemdrun", p.rootReason()))
-		}
-	case "machinectl":
-		if len(args) > 0 && (args[0] == "shell" || args[0] == "login") {
-			if len(args) < 2 || !strings.Contains(args[1], "@") || strings.HasPrefix(args[1], "root@") || strings.HasPrefix(args[1], "@") {
-				return p.root(i18n.T(p.Lang, "guard.root.machinectl", args[0], p.rootReason()))
-			}
-		}
-	case "source", ".":
-		if len(args) > 0 {
-			return p.script(args[0], env, depth)
-		}
-	case "script": // script -qc 'command' [file]: -c may come last in a cluster
-		for i, a := range args {
-			if (a == "--command" || len(a) > 1 && a[0] == '-' && a[1] != '-' && strings.HasSuffix(a, "c")) && i+1 < len(args) {
-				return p.inner(args[i+1], env, depth)
-			}
-			if c, ok := strings.CutPrefix(a, "--command="); ok {
-				return p.inner(c, env, depth)
-			}
-		}
-	case "sudo", "doas":
-		return p.sudo(name, args, stdin, env, depth)
-	case "su", "run0", "pkexec":
-		return p.root(i18n.T(p.Lang, "guard.root.su", name, p.rootReason()))
-	case "aws":
-		return p.aws(env, args)
-	case "cdk", "sam", "serverless", "sls", "terraform", "tofu", "pulumi", "eksctl", "copilot":
-		return p.awsTool(name, env, args)
-	case "aws-vault":
-		return p.awsVault(args, stdin, env, depth)
-	case "gh", "glab":
-		return p.publish(name, env, args)
-	case "ssh":
-		return p.ssh(args, stdin, env, depth)
-	case "mosh":
-		return p.mosh(args, env, depth)
-	case "sftp":
-		return p.sftp(args)
-	case "scp", "rsync":
-		return p.copyHosts(name, args)
-	case "sh", "bash", "zsh", "dash", "ksh":
-		return p.shell(args, stdin, env, depth)
-	case "eval":
-		return p.inner(strings.Join(args, " "), env, depth)
-	case "find":
-		return p.find(args, env, depth)
-	case "rm":
-		return p.rm(args)
-	case "vagrant":
-		return p.vagrant(args, env, depth)
-	case "docker", "podman", "kubectl":
-		if len(args) > 1 && args[0] == "compose" { // docker compose exec <service> <command>
-			args = args[1:]
-		}
-		if how := hostAccess(args); how != "" && name != "kubectl" {
-			return p.root(i18n.T(p.Lang, "guard.root.container", name+" "+args[0], how, p.rootReason()))
-		}
-		return p.exec(name, args, env, depth)
-	default:
-		if strings.Contains(raw, "/") {
-			if d := p.runScript(raw, env, depth, shellScript(raw)); d.Verdict != Allow {
-				return d // ./deploy.sh: what the script runs
-			}
-		}
-	}
-	// Any other program set to a production profile in the command itself.
+	return c, allow, false
+}
+
+// everyProgram is what holds whatever the program: one set to a production profile in
+// the command itself (AWS_PROFILE=prod bash deploy.sh) asks, since whatever it runs may
+// reach AWS with it.
+func (p Policy) everyProgram(c call) Decision {
 	for _, k := range []string{"AWS_PROFILE", "AWS_DEFAULT_PROFILE"} {
-		if prof, ok := env[k]; ok && slices.Contains(p.ProductionAWSProfiles, prof) {
+		if prof, ok := c.env[k]; ok && slices.Contains(p.ProductionAWSProfiles, prof) {
 			return Decision{Ask, i18n.T(p.Lang, "guard.aws.env", prof)}
 		}
 	}
 	return allow
+}
+
+// rules are the programs with a rule of their own. A name here must not be a wrapper:
+// program strips wrappers before the rule is looked up (TestWrappersHaveNoRule).
+var rules map[string]func(Policy, call) Decision
+
+func init() { // in init: the rules call simple, which reads this table
+	rules = map[string]func(Policy, call) Decision{
+		"git":         func(p Policy, c call) Decision { return p.git(c.env, c.args, c.depth) },
+		"runuser":     Policy.runuser,
+		"systemd-run": Policy.systemdRun,
+		"machinectl":  Policy.machinectl,
+		"script":      Policy.scriptCommand,
+		"aws":         func(p Policy, c call) Decision { return p.aws(c.env, c.args) },
+		"aws-vault":   func(p Policy, c call) Decision { return p.awsVault(c.args, c.stdin, c.env, c.depth) },
+		"ssh":         func(p Policy, c call) Decision { return p.ssh(c.args, c.stdin, c.env, c.depth) },
+		"mosh":        func(p Policy, c call) Decision { return p.mosh(c.args, c.env, c.depth) },
+		"sftp":        func(p Policy, c call) Decision { return p.sftp(c.args) },
+		"eval":        func(p Policy, c call) Decision { return p.inner(strings.Join(c.args, " "), c.env, c.depth) },
+		"find":        func(p Policy, c call) Decision { return p.find(c.args, c.env, c.depth) },
+		"rm":          func(p Policy, c call) Decision { return p.rm(c.args) },
+		"vagrant":     func(p Policy, c call) Decision { return p.vagrant(c.args, c.env, c.depth) },
+	}
+	add := func(rule func(Policy, call) Decision, names ...string) {
+		for _, n := range names {
+			rules[n] = rule
+		}
+	}
+	add(func(p Policy, c call) Decision { return p.windowsShell(c.name) }, "powershell", "pwsh", "cmd")
+	add(func(p Policy, c call) Decision {
+		return p.root(i18n.T(p.Lang, "guard.root.admin", c.name, p.rootReason()))
+	}, "gsudo", "runas", "sudoedit")
+	add(Policy.source, "source", ".")
+	add(func(p Policy, c call) Decision { return p.sudo(c.name, c.args, c.stdin, c.env, c.depth) }, "sudo", "doas")
+	add(Policy.su, "su", "run0", "pkexec")
+	add(func(p Policy, c call) Decision { return p.awsTool(c.name, c.env, c.args) },
+		"cdk", "sam", "serverless", "sls", "terraform", "tofu", "pulumi", "eksctl", "copilot")
+	add(func(p Policy, c call) Decision { return p.publish(c.name, c.env, c.args) }, "gh", "glab")
+	add(func(p Policy, c call) Decision { return p.copyHosts(c.name, c.args) }, "scp", "rsync")
+	add(func(p Policy, c call) Decision { return p.shell(c.args, c.stdin, c.env, c.depth) }, shells...)
+	add(Policy.container, "docker", "podman", "kubectl")
+}
+
+// other is a program with no rule of its own: one run by its path (./deploy.sh) is
+// read, when it is a script, for what it runs.
+func (p Policy) other(c call) Decision {
+	if strings.Contains(c.raw, "/") {
+		return p.runScript(c.raw, c.env, c.depth, shellScript(c.raw))
+	}
+	return allow
+}
+
+// onlyAsks says whether a program's arguments are just one of opts (--help, --version):
+// it prints and runs nothing.
+func onlyAsks(args []string, opts ...string) bool {
+	return len(args) == 1 && slices.Contains(opts, args[0])
+}
+
+// runuser runs a command as another user, root unless -u names one.
+func (p Policy) runuser(c call) Decision {
+	if onlyAsks(c.args, "--help", "--version", "-h", "-V") {
+		return allow
+	}
+	if u := optValue(c.args, "-u", "--user"); u != "" && u != "root" && u != "0" {
+		return p.nested(afterOptions(c.args, "u"), c.stdin, c.env, c.depth)
+	}
+	return p.root(i18n.T(p.Lang, "guard.root.runuser", p.rootReason()))
+}
+
+// systemdRun starts the command as a system service, as root unless --user.
+func (p Policy) systemdRun(c call) Decision {
+	if onlyAsks(c.args, "--version", "--help", "-h") {
+		return allow
+	}
+	if !slices.Contains(c.args, "--user") {
+		return p.root(i18n.T(p.Lang, "guard.root.systemdrun", p.rootReason()))
+	}
+	return allow
+}
+
+// machinectl shell and login open a shell as root unless given another user@.
+func (p Policy) machinectl(c call) Decision {
+	args := c.args
+	if len(args) > 0 && (args[0] == "shell" || args[0] == "login") {
+		if len(args) < 2 || !strings.Contains(args[1], "@") || strings.HasPrefix(args[1], "root@") || strings.HasPrefix(args[1], "@") {
+			return p.root(i18n.T(p.Lang, "guard.root.machinectl", args[0], p.rootReason()))
+		}
+	}
+	return allow
+}
+
+// scriptCommand is script -qc 'command' [file]: -c may come last in a cluster.
+func (p Policy) scriptCommand(c call) Decision {
+	for i, a := range c.args {
+		if (a == "--command" || len(a) > 1 && a[0] == '-' && a[1] != '-' && strings.HasSuffix(a, "c")) && i+1 < len(c.args) {
+			return p.inner(c.args[i+1], c.env, c.depth)
+		}
+		if cmd, ok := strings.CutPrefix(a, "--command="); ok {
+			return p.inner(cmd, c.env, c.depth)
+		}
+	}
+	return allow
+}
+
+// source (and .) runs a script in this shell.
+func (p Policy) source(c call) Decision {
+	if len(c.args) > 0 {
+		return p.script(c.args[0], c.env, c.depth)
+	}
+	return allow
+}
+
+// su, run0 and pkexec switch to another user, root by default.
+func (p Policy) su(c call) Decision {
+	if onlyAsks(c.args, "--help", "--version", "-h", "-V") {
+		return allow
+	}
+	return p.root(i18n.T(p.Lang, "guard.root.su", c.name, p.rootReason()))
+}
+
+// container is docker, podman and kubectl: one given the whole machine is root here,
+// and what exec runs inside is checked (docker compose exec <service> <command> too).
+func (p Policy) container(c call) Decision {
+	args := c.args
+	if len(args) > 1 && args[0] == "compose" {
+		args = args[1:]
+	}
+	if how := hostAccess(args); how != "" && c.name != "kubectl" {
+		return p.root(i18n.T(p.Lang, "guard.root.container", c.name+" "+args[0], how, p.rootReason()))
+	}
+	return p.exec(c.name, args, c.env, c.depth)
+}
+
+// windowsShell is cmd, powershell or pwsh run from Bash: the guard reads neither.
+func (p Policy) windowsShell(name string) Decision {
+	return Decision{Deny, i18n.T(p.Lang, "guard.powershell.bash", name)}
 }
 
 // checkHost asks before name reaches target (host or user@host) when the host is
@@ -462,7 +555,8 @@ func (p Policy) script(path string, env map[string]string, depth int) Decision {
 // shellScript says whether a program run by its path is named as a shell script
 // (./x.sh), not a program a build may have just made (./bin/tool).
 func shellScript(path string) bool {
-	return slices.Contains([]string{".sh", ".bash", ".zsh", ".ksh", ".dash"}, strings.ToLower(filepath.Ext(path)))
+	ext := strings.ToLower(filepath.Ext(path))
+	return ext != "" && isShell(ext[1:])
 }
 
 // runScript is script; askUnknown says whether it is surely a script (bash x, source
@@ -571,7 +665,11 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) 
 		if args[j-1] != "-c" {
 			continue
 		}
-		if k, _, _ := strings.Cut(strings.ToLower(args[j]), "="); strings.HasPrefix(k, "alias.") ||
+		k, v, _ := strings.Cut(strings.ToLower(args[j]), "=")
+		if k == "core.pager" && slices.Contains([]string{"", "cat", "less", "more"}, strings.TrimSpace(v)) {
+			continue // a pager that only shows the text: git --no-pager, said another way
+		}
+		if strings.HasPrefix(k, "alias.") ||
 			slices.Contains([]string{"core.sshcommand", "core.pager", "core.editor", "core.hookspath", "core.fsmonitor", "sequence.editor", "credential.helper"}, k) {
 			return Decision{Ask, i18n.T(p.Lang, "guard.git.config", args[j])}
 		}
@@ -605,8 +703,8 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) 
 			return Decision{Deny, i18n.T(p.Lang, "guard.git.publish", sub)}
 		}
 	}
-	if i >= len(args) || (args[i] != "commit" && args[i] != "push") {
-		return allow
+	if i >= len(args) || (args[i] != "commit" && args[i] != "push") || onlyAsks(args[i+1:], "--help", "-h") {
+		return allow // git commit --help shows the manual
 	}
 	if dir != "" && !elsewhere {
 		if d, err := p.resolve(dir); err == nil {
@@ -923,6 +1021,18 @@ func (p Policy) listsUnknown(what string) (Decision, bool) {
 	return Decision{Ask, i18n.T(p.Lang, "guard.config", what, p.ConfigProblem)}, true
 }
 
+// ghValue are the options of gh and glab that take a value, by command, so the value is
+// never taken for a word of the command: "" holds those every command takes. The same
+// letter means different things in different commands (-b is --branch in repo sync and
+// --body in pr merge), so each command has its own list. The free text of a merge is
+// in mergeText.
+var ghValue = map[string][]string{
+	"":             {"-R", "--repo", "--hostname"},
+	"api":          {"-X", "--method", "-H", "--header", "-f", "-F", "--field", "--raw-field"},
+	"workflow run": {"-r", "--ref", "-f", "--raw-field", "-F", "--field"},
+	"repo sync":    {"-b", "--branch", "-s", "--source"},
+}
+
 // syncDestination reports whether gh repo sync names a destination repository (any
 // argument besides "repo", "sync" and the values of --branch and --source).
 func syncDestination(args []string) bool {
@@ -930,7 +1040,7 @@ func syncDestination(args []string) bool {
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		switch {
-		case a == "-b" || a == "--branch" || a == "-s" || a == "--source":
+		case slices.Contains(ghValue["repo sync"], a):
 			i++
 		case strings.HasPrefix(a, "-"):
 		default:
@@ -949,7 +1059,7 @@ func (p Policy) publish(name string, env map[string]string, args []string) Decis
 	var words []string
 	for i := 0; i < len(args); i++ {
 		a := args[i]
-		if slices.Contains([]string{"-R", "--repo", "-X", "--method", "-H", "--header", "-f", "-F", "--field", "--raw-field", "--hostname"}, a) {
+		if slices.Contains(ghValue[""], a) || slices.Contains(ghValue["api"], a) {
 			i++ // the option's value
 			continue
 		}
@@ -989,8 +1099,8 @@ func (p Policy) publish(name string, env map[string]string, args []string) Decis
 	if name == "gh" && what == "repo sync" && syncDestination(args) {
 		blocked = map[string]bool{what: true}
 	}
-	if !blocked[what] {
-		return allow
+	if !blocked[what] || asksHelp(args) {
+		return allow // gh pr merge --help shows the help and does nothing else
 	}
 	if what == "pr merge" || what == "mr merge" || what == "mr accept" {
 		return p.merge(name, what, env, args)
@@ -998,17 +1108,29 @@ func (p Policy) publish(name string, env map[string]string, args []string) Decis
 	return p.publishDeny(name, what)
 }
 
+// asksHelp says whether gh or glab is only asked for help: the two words of the
+// command (pr merge) and --help or -h, nothing else. With anything more the option may
+// be another one's value (--body -h), and the command would run.
+func asksHelp(args []string) bool {
+	return len(args) == 3 && !strings.HasPrefix(args[0], "-") && !strings.HasPrefix(args[1], "-") &&
+		(args[2] == "--help" || args[2] == "-h")
+}
+
 // dispatch is the answer to starting a GitHub Actions workflow by hand. A release
-// workflow publishes a version, which is for the user, as gh release create is; any
-// other workflow (a deployment of content, say) goes on. A workflow named only by its
-// number cannot be told apart, so the user is asked.
+// workflow publishes a version, which is for the user: the user is asked, so a release
+// they asked for goes with one click, and without their yes nothing starts. Any other
+// workflow (a deployment of content, say) goes on. A workflow named only by its number
+// cannot be told apart, so the user is asked too.
 func (p Policy) dispatch(workflow string) Decision {
 	w := strings.ToLower(workflow)
 	if w == "" {
 		return allow // gh asks which one, and a session cannot answer
 	}
 	if strings.Contains(w, "release") {
-		return Decision{Deny, i18n.T(p.Lang, "guard.dispatch", workflow)}
+		if p.NoPrompt {
+			return Decision{Deny, i18n.T(p.Lang, "guard.dispatch.bypass", workflow)}
+		}
+		return Decision{Ask, i18n.T(p.Lang, "guard.dispatch", workflow)}
 	}
 	if strings.Trim(w, "0123456789") == "" {
 		return Decision{Ask, i18n.T(p.Lang, "guard.dispatch.id", workflow)}
@@ -1023,7 +1145,7 @@ func workflowArg(args []string) string {
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		switch {
-		case slices.Contains([]string{"-R", "--repo", "-r", "--ref", "-f", "--raw-field", "-F", "--field", "--hostname"}, a):
+		case slices.Contains(ghValue[""], a) || slices.Contains(ghValue["workflow run"], a):
 			i++
 		case strings.HasPrefix(a, "-"):
 		case !run:
@@ -1044,7 +1166,7 @@ func (p Policy) publishDeny(name, what string) Decision {
 // ssh asks before reaching an untouchable host, and checks the remote command, or what
 // it sends to the remote shell through stdin.
 func (p Policy) ssh(args []string, stdin string, env map[string]string, depth int) Decision {
-	host, rest := sshTarget(dropRedirections(args))
+	host, rest := sshTarget(args)
 	host = strings.TrimPrefix(host, "ssh://")
 	p.host = host[strings.LastIndexByte(host, '@')+1:] // the remote command runs there
 	jumps := allow
@@ -1184,23 +1306,6 @@ func (p Policy) sftp(args []string) Decision {
 	host, _, _ := strings.Cut(strings.TrimPrefix(args[i], "sftp://"), ":")
 	host, _, _ = strings.Cut(host, "/")
 	return p.checkHost("sftp", host)
-}
-
-// dropRedirections takes the redirections out of a command's words (< file, >file,
-// 2>&1…): they are not arguments, and the guard does not know what a file holds.
-func dropRedirections(args []string) []string {
-	var out []string
-	for i := 0; i < len(args); i++ {
-		a := strings.TrimLeft(args[i], "0123456789")
-		if strings.HasPrefix(a, "<") || strings.HasPrefix(a, ">") || strings.HasPrefix(a, "&>") {
-			if strings.TrimLeft(a, "<>&") == "" && i+1 < len(args) {
-				i++ // the operator alone: the file is the next word
-			}
-			continue
-		}
-		out = append(out, args[i])
-	}
-	return out
 }
 
 // shell checks the commands a shell would run: the string after -c (also -lc, -ec…),
@@ -1392,13 +1497,10 @@ func sshTarget(args []string) (string, []string) {
 	return "", nil
 }
 
-func isShell(name string) bool {
-	switch name {
-	case "sh", "bash", "zsh", "dash", "ksh":
-		return true
-	}
-	return false
-}
+// shells are the POSIX shells the guard reads: their -c string, their stdin, a script.
+var shells = []string{"sh", "bash", "zsh", "dash", "ksh"}
+
+func isShell(name string) bool { return slices.Contains(shells, name) }
 
 // Write checks text the assistant is about to write into a file; lang is the user's
 // language, for the reason.
@@ -1518,35 +1620,16 @@ func repoListed(list []string, dir string) bool {
 // when dir is not a linked worktree. A submodule has a .git file too, but its folder
 // is not a worktree's, so it never counts as its parent repository.
 func mainRepo(dir string) string {
-	data, err := os.ReadFile(filepath.Join(dir, ".git"))
-	if err != nil {
-		return "" // a folder (a repository of its own) or nothing
+	own, common, ok := gitDirs(dir)
+	if !ok || common == own {
+		return "" // a repository of its own, or nothing
 	}
-	gitdir, ok := strings.CutPrefix(strings.TrimSpace(string(data)), "gitdir:")
-	if !ok {
-		return ""
+	if c := filepath.Clean(common); filepath.Base(c) == ".git" {
+		if r, err := paths.Resolve(filepath.Dir(c)); err == nil {
+			return r
+		}
 	}
-	gitdir = strings.TrimSpace(gitdir)
-	if !filepath.IsAbs(gitdir) {
-		gitdir = filepath.Join(dir, gitdir)
-	}
-	common, err := os.ReadFile(filepath.Join(gitdir, "commondir"))
-	if err != nil {
-		return ""
-	}
-	c := strings.TrimSpace(string(common))
-	if !filepath.IsAbs(c) {
-		c = filepath.Join(gitdir, c)
-	}
-	c = filepath.Clean(c)
-	if filepath.Base(c) != ".git" {
-		return ""
-	}
-	r, err := paths.Resolve(filepath.Dir(c))
-	if err != nil {
-		return ""
-	}
-	return r
+	return ""
 }
 
 // hostAccess says how docker run (or create) gives a container the whole machine:

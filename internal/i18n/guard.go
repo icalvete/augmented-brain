@@ -4,8 +4,12 @@ package i18n
 // reads it, and the user too when asked: so it is in the user's language.
 var guardMessages = map[string]msg{
 	"guard.unreadable": {
-		en: "the tool call could not be read, so it was not checked; try again.",
-		es: "no se pudo leer la llamada a la herramienta, así que no se ha revisado; inténtalo otra vez.",
+		en: "the tool call could not be read, so it was not checked. Try once more; if it happens again, stop retrying and tell the user.",
+		es: "no se pudo leer la llamada a la herramienta, así que no se ha revisado. Inténtalo una vez más; si vuelve a pasar, no insistas y díselo al usuario.",
+	},
+	"guard.powershell.bash": {
+		en: "`%s` run from Bash is not checked by augmented brain either, so it is blocked. Do the same in POSIX syntax with Bash itself. If it can only be done in cmd or PowerShell, give the user the exact command to run themselves, and wait for its output.",
+		es: "augmented brain tampoco revisa `%s` lanzado desde Bash, así que se bloquea. Haz lo mismo con sintaxis POSIX en el propio Bash. Si solo se puede hacer en cmd o PowerShell, dale al usuario el comando exacto para que lo lance él, y espera a su salida.",
 	},
 	"guard.powershell": {
 		en: "PowerShell commands are not checked by augmented brain yet, so they are blocked. Run the command with the Bash tool instead (Git Bash on Windows), in POSIX syntax. If it can only be done in PowerShell, give the user the exact command to run themselves, and wait for its output.",
@@ -52,8 +56,8 @@ var guardMessages = map[string]msg{
 		es: "pasa de %d KB",
 	},
 	"guard.script.written": {
-		en: "the script %s is written by this same command, so augmented brain cannot read it before it runs; the user confirms it. Write the script first (with the Write tool), then run it in a command of its own.",
-		es: "el script %s lo escribe este mismo comando, así que augmented brain no puede leerlo antes de que se ejecute; el usuario lo confirma. Escribe primero el script (con la herramienta Write) y luego ejecútalo en un comando aparte.",
+		en: "the script %s is written by this same command, so augmented brain cannot read it before it runs; the user confirms it. Write the script first (with the Write tool), or download it in a command of its own, then run it in another.",
+		es: "el script %s lo escribe este mismo comando, así que augmented brain no puede leerlo antes de que se ejecute; el usuario lo confirma. Escribe primero el script (con la herramienta Write), o descárgalo en un comando propio, y luego ejecútalo en otro.",
 	},
 	"guard.protected": {
 		en: "%s holds the guard's settings (or Claude Code's): changing it can switch a check off. Only the user changes it; ask them, showing the change.",
@@ -152,8 +156,12 @@ var guardMessages = map[string]msg{
 		es: "`%s api` con esta llamada fusiona, publica una versión o mueve una rama, como un git push, así que es cosa del usuario. Dale al usuario el comando exacto para que lo lance él.",
 	},
 	"guard.dispatch": {
-		en: "Starting the workflow `%s` by hand publishes a version (it is a release workflow), so it is for the user. Leave the release ready and checked, and give the user the exact command to run themselves, or tell them to press Run workflow on GitHub.",
-		es: "Lanzar a mano el flujo `%s` saca una versión (es un flujo de publicación), así que es cosa del usuario. Deja la versión lista y comprobada, y dale al usuario el comando exacto para que lo lance él, o dile que pulse Run workflow en GitHub.",
+		en: "Starting the workflow `%s` by hand publishes a version (it is a release workflow). Allow it only if you asked for this release now. If you say no, nothing starts: you can run it yourself later, or press Run workflow on GitHub.",
+		es: "Lanzar a mano el flujo `%s` saca una versión (es un flujo de publicación). Permítelo solo si has pedido tú esta versión ahora. Si dices que no, no se lanza nada: puedes lanzarlo tú más tarde, o pulsar Run workflow en GitHub.",
+	},
+	"guard.dispatch.bypass": {
+		en: "Starting the workflow `%s` by hand publishes a version (it is a release workflow), and this session runs in bypassPermissions mode, where the user may never see the permission dialog. Leave the release ready and checked, and give the user the exact command to run themselves, or tell them to press Run workflow on GitHub.",
+		es: "Lanzar a mano el flujo `%s` saca una versión (es un flujo de publicación), y esta sesión está en modo bypassPermissions, donde el usuario puede no ver nunca el diálogo de permiso. Deja la versión lista y comprobada, y dale al usuario el comando exacto para que lo lance él, o dile que pulse Run workflow en GitHub.",
 	},
 	"guard.dispatch.id": {
 		en: "This starts the workflow `%s` by hand, named by its number, so the guard cannot tell whether it publishes a version. Name it by its file instead, or ask the user.",
