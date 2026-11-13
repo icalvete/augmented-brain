@@ -27,6 +27,12 @@
   una, y el arranque ocupa menos: el índice ya no lista las reglas que da enteras, el
   conocimiento compartido dice su carpeta una vez y la nota de `session start` es de una
   línea. `doctor` dice cuánto ocupan tus reglas en cada arranque, con las más largas.
+- **Buscar secretos es unas 30 veces más rápido.** `check`, cada copia de seguridad y
+  cada nota que se guarda buscaban secretos a unos 2,5 MB por segundo; con una docena de
+  MB de notas, `check` tardaba más de un segundo. Ahora cada tipo de secreto tiene antes
+  una prueba rápida, y su búsqueda completa solo corre si la prueba encuentra algo
+  parecido: `check` tarda una décima de segundo o menos. Lo que se encuentra es
+  exactamente lo mismo, y una prueba compara las dos formas con miles de textos.
 
 ## 0.21.0-beta
 

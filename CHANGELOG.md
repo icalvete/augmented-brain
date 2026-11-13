@@ -26,6 +26,12 @@
   and the start takes less room: the index no longer lists the rules it gives whole, the
   shared knowledge names its folder once, and the note about `session start` is one line.
   `doctor` says how much your own rules take of every start, with the longest.
+- **Looking for secrets is about 30 times faster.** `check`, every backup and every
+  note written read the text for secrets at about 2.5 MB a second; with notes of a
+  dozen MB, `check` took more than a second. Each kind of secret now has a quick test
+  first, and its full search runs only when the test finds something like it: `check`
+  takes about a tenth of a second or less. What is found is exactly the same, and a test
+  compares both ways on thousands of texts.
 
 ## 0.21.0-beta
 
