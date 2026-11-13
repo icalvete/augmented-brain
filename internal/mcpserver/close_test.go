@@ -139,3 +139,95 @@ func TestTaskWorktreeTool(t *testing.T) {
 		t.Errorf("a worktree with work was removed: %v", err)
 	}
 }
+
+// task_update with status closed closes the way task_close does: it keeps open
+// subtasks from closing, ends the task's session once its answer ends, removes or
+// explains its worktrees, tells the open watch dates and asks for a result when none
+// was given (P6 of the documentation review).
+func TestUpdateClosedIsTaskClose(t *testing.T) {
+	cs := connect(t, space(t))
+	cfgDir := filepath.Join(os.Getenv("HOME"), "cfg")
+	mustCall(t, cs, "task_new", map[string]any{"title": "Parent"})
+	mustCall(t, cs, "task_new", map[string]any{"title": "Child", "parent": "task-parent"})
+	if out, isErr := call(t, cs, "task_update", map[string]any{"id": "task-parent", "status": "closed", "result": "done"}); !isErr {
+		t.Errorf("closed with an open subtask: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_update", map[string]any{"id": "task-child", "status": "plan", "result": "done"}); !isErr {
+		t.Errorf("a result without closing: %s", out)
+	}
+
+	mustCall(t, cs, "task_new", map[string]any{"title": "Site"})
+	mustCall(t, cs, "task_update", map[string]any{"id": "task-site", "watch_date": "2026-12-01", "watch_what": "traffic"})
+	if err := os.MkdirAll(filepath.Join(cfgDir, "state", "sessions"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(cfgDir, "state", "sessions", "task-site.json"), []byte(`{"id":"abc12345","task":"task-site"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	oldSys, oldStop := NewRemoteSystem, StopSessionWhenIdle
+	t.Cleanup(func() { NewRemoteSystem, StopSessionWhenIdle = oldSys, oldStop })
+	NewRemoteSystem = func() (remote.System, error) {
+		return remote.System{GOOS: "linux",
+			LookPath: func(string) (string, error) { return "/usr/bin/claude", nil },
+			Run: func(name string, args ...string) (string, error) {
+				if len(args) > 0 && args[0] == "agents" {
+					return `[{"pid":4242,"id":"abc12345","status":"busy","state":"working"}]`, nil
+				}
+				return "", nil
+			}}, nil
+	}
+	var stopped []string
+	StopSessionWhenIdle = func(dir, task string) error { stopped = append(stopped, task); return nil }
+	out := mustCall(t, cs, "task_update", map[string]any{"id": "task-site", "status": "closed"})
+	for _, want := range []string{"status: closed", "closes when it finishes this answer", "2026-12-01: traffic", "closed with no result"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("no %q in:\n%s", want, out)
+		}
+	}
+	if len(stopped) != 1 || stopped[0] != "task-site" {
+		t.Errorf("stopped %v", stopped)
+	}
+	got := mustCall(t, cs, "task_get", map[string]any{"id": "task-site"})
+	if !strings.Contains(got, "no result given") {
+		t.Errorf("the note:\n%s", got)
+	}
+	// Changing it again while closed starts nothing more.
+	mustCall(t, cs, "task_update", map[string]any{"id": "task-site", "summary": "kept"})
+	if len(stopped) != 1 {
+		t.Errorf("stopped again: %v", stopped)
+	}
+	if out := mustCall(t, cs, "task_update", map[string]any{"id": "task-child", "status": "closed", "result": "built"}); strings.Contains(out, "no result") || len(stopped) != 1 {
+		t.Errorf("stopped %v:\n%s", stopped, out)
+	}
+	if got := mustCall(t, cs, "task_get", map[string]any{"id": "task-child"}); !strings.Contains(got, "Closed: built") {
+		t.Errorf("the result:\n%s", got)
+	}
+
+	// A noted worktree: kept when it holds work, and closing says why.
+	if _, err := exec.LookPath("git"); err != nil {
+		return
+	}
+	work := filepath.Join(os.Getenv("HOME"), "work")
+	repo := filepath.Join(work, "app")
+	if err := os.MkdirAll(repo, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	git := func(dir string, args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", append([]string{"-C", dir, "-c", "user.name=Lucia", "-c", "user.email=lucia@ejemplo.com", "-c", "init.defaultBranch=main"}, args...)...)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+	git(repo, "init", "-q")
+	git(repo, "commit", "-q", "--allow-empty", "-m", "one")
+	wt := filepath.Join(work, "app-fix")
+	git(repo, "worktree", "add", "-q", "-b", "fix", wt)
+	NewRemoteSystem = oldSys
+	mustCall(t, cs, "task_new", map[string]any{"title": "App"})
+	mustCall(t, cs, "task_worktree", map[string]any{"id": "task-app", "folder": wt})
+	out = mustCall(t, cs, "task_update", map[string]any{"id": "task-app", "status": "closed", "result": "done"})
+	if !strings.Contains(out, "app-fix stays") || !strings.Contains(out, "commits not pushed") {
+		t.Fatalf("close:\n%s", out)
+	}
+}

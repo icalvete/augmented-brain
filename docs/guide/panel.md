@@ -78,6 +78,10 @@ first. Write in its journal, change its status or next step, tick its steps, par
 close it. You can open new tasks too. If a status skips phases, the journal names them.
 When a task waits on a person you have a note of, "waits on" leads to them.
 
+Closing a task here does what closing it in a session does: if the task has a session of
+its own, that session ends once it finishes its answer, and its worktree goes when it
+holds nothing of its own.
+
 To open a closed task again, find it under **Closed** and choose a new status for it; its
 journal says it was reopened from the panel.
 

@@ -9,19 +9,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
-	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/fresh"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -296,15 +295,19 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		WatchWhat string `json:"watch_what,omitempty" jsonschema:"what to look at on watch_date, one line"`
 		WatchDone string `json:"watch_done,omitempty" jsonschema:"mark the watch date on this day (YYYY-MM-DD) as done"`
 		Reopen    string `json:"reopen,omitempty" jsonschema:"only to open a closed task again, with a new status: why, in a few words; it goes to the journal. Ask the user first"`
+		Result    string `json:"result,omitempty" jsonschema:"with status closed: what was achieved, as in task_close"`
 		Space     string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
+	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
 		func(b0 *brain.Brain, in updateIn) (string, error) {
 			u := brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn, Next: in.Next,
 				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone,
-				Reopen: in.Reopen}
+				Reopen: in.Reopen, Result: in.Result}
 			if in.Status+in.WaitingOn+in.Next+in.Summary+in.Area+in.WatchDate+in.WatchDone == "" {
 				return "", errors.New("nothing to change: give at least one field")
+			}
+			if in.Result != "" && in.Status != "closed" {
+				return "", errors.New("result goes with status closed")
 			}
 			b, err := b0.Other(in.Space)
 			if err != nil {
@@ -313,6 +316,10 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			if b != b0 && in.Status == "closed" {
 				// Closing also ends the task's session and worktree, which belong to that space.
 				return "", fmt.Errorf("a task of space %s is closed from a session of that space, not from %s; write here what was decided (task_journal with space) and close it there", b.Space.Name, b0.Space.Name)
+			}
+			wasClosed := false
+			if before, err := b.Task(in.ID); err == nil {
+				wasClosed = before.Header.Status == "closed"
 			}
 			n, err := b.Update(u)
 			if err != nil {
@@ -324,6 +331,13 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				b.Touched(in.ID, true)
 			}
 			out, _ := header(n, nil)
+			if n.Header.Status == "closed" && !wasClosed {
+				// Closed now: the rest of what task_close does.
+				out += openWatches(n) + closedWorktree(b, in.ID)
+				if strings.TrimSpace(in.Result) == "" {
+					out += "\nIt was closed with no result: write what it achieved in its journal (task_journal)."
+				}
+			}
 			return out + fromOther(b), nil
 		})
 
@@ -755,87 +769,25 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 // replace it.
 var NewRemoteSystem = remote.NewSystem
 
-// StopLog is where the detached `session stop --when-idle` writes how it went, in the
-// configuration's state folder: nobody reads its output otherwise.
-const StopLog = "session-stop.log"
-
-// StopDetached is set in the environment of the detached `session stop --when-idle`,
-// which does the waiting: without it the command starts that copy and returns, so a
-// session can close itself from its own Bash (issue #99: waiting there, it kept itself
-// busy, and the two waited for each other).
-const StopDetached = "AB_STOP_DETACHED"
+// StopLog and StopDetached: see the remote package, where closing a task's session lives.
+const (
+	StopLog      = remote.StopLog
+	StopDetached = remote.StopDetached
+)
 
 // StopSessionWhenIdle starts, detached, the process that closes a task's session once
-// it has finished its answer (`session stop <task> --when-idle`), its output appended
-// to StopLog (started afresh past 64 KB). Tests replace it.
-var StopSessionWhenIdle = func(cfgDir, task string) error {
-	self, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	cmd := exec.Command(self, "session", "stop", task, "--when-idle")
-	cmd.Env = append(os.Environ(), "AB_CONFIG_DIR="+cfgDir, StopDetached+"=1")
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
-	logPath := filepath.Join(cfgDir, state.Dir, StopLog)
-	if fi, err := os.Stat(logPath); err == nil && fi.Size() > 64<<10 {
-		_ = os.Remove(logPath)
-	}
-	if err := os.MkdirAll(filepath.Dir(logPath), 0o700); err == nil {
-		if f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600); err == nil {
-			defer f.Close() // the child keeps its own copy
-			cmd.Stdout, cmd.Stderr = f, f
-		}
-	}
-	detach.Cmd(cmd)
-	_, err = detach.Start(cmd)
-	return err
-}
+// it has finished its answer (remote.StopWhenIdle). Tests replace it.
+var StopSessionWhenIdle = remote.StopWhenIdle
 
-// closedWorktree removes the worktree session start made for a closed task, when its
-// session no longer runs and it holds nothing of its own, and says what it did (in
-// English, like every tool's answer: the assistant tells the user in their language).
+// closedWorktree ends the session of a closed task and removes its worktrees
+// (remote.System.ClosedTask), but the one this session works in.
 func closedWorktree(b *brain.Brain, task string) string {
 	sys, err := NewRemoteSystem()
 	if err != nil {
 		return ""
 	}
-	// The task has a session of its own: often the one closing it, in the middle of its
-	// answer. A process of its own closes it once it is idle, worktrees and all.
-	if sys.LaunchRunning(b.ConfigDir, task) {
-		if err := StopSessionWhenIdle(b.ConfigDir, task); err == nil {
-			return "\n" + i18n.T("en", "session.closing")
-		}
-		return ""
-	}
-	var out string
-	// One Claude retired after hours unused answers nothing: closed now, so it leaves
-	// Claude Desktop and claude.ai and its worktree can go below.
-	if remote.HasLaunch(b.ConfigDir, task) {
-		var left *remote.LeftInClaude
-		switch err := sys.Stop(b.ConfigDir, task); {
-		case err == nil:
-			out += "\n" + i18n.T("en", "session.closed.retired")
-		case errors.As(err, &left):
-			out += "\n" + i18n.T("en", "session.left", task, left.ID)
-		}
-	}
-	folder, removed, why := sys.CloseTaskWorktree(b.ConfigDir, task)
-	switch {
-	case removed:
-		out += "\n" + i18n.T("en", "session.worktree.closed", paths.Tilde(folder))
-	case why != "":
-		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(folder), i18n.T("en", "session.worktree.why."+why))
-	}
-	// The worktrees the task's sessions made, but the one this session works in.
 	here, _ := os.Getwd()
-	gone, kept := remote.RemoveNotedWorktrees(b.ConfigDir, task, here)
-	for _, f := range gone {
-		out += "\n" + i18n.T("en", "session.worktree.closed", paths.Tilde(f))
-	}
-	for _, k := range kept {
-		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(k.Folder), i18n.T("en", "session.worktree.why."+k.Why))
-	}
-	return out
+	return sys.ClosedTask(b.ConfigDir, task, StopSessionWhenIdle, here)
 }
 
 // taskWorktree makes the task's worktree of repo, or notes folder, for task_worktree.
