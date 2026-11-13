@@ -322,3 +322,37 @@ func TestPanelRemoteLine(t *testing.T) {
 		t.Errorf("running: %+v", c)
 	}
 }
+
+// A backup address that holds a password (an earlier version kept it as it came) is
+// named, with the address to set up again, without the password.
+func TestBackupPassword(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	work := filepath.Join(home, "work")
+	if err := os.MkdirAll(work, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: work, Memory: "~/brain"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := config.SetSpaceKey(cfg, "work", "backup", "https://ana:Sup3rS3cret@example.com/u/r.git"); err != nil {
+		t.Fatal(err)
+	}
+	c, err := config.Load(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	checks := space(c, c.Spaces["work"])
+	w := find(checks, "password or a token")
+	if w == nil || w.Status != Warning || !strings.Contains(w.Fix, "backup setup https://ana@example.com/u/r.git") || strings.Contains(w.What+w.Fix, "Sup3rS3cret") {
+		t.Errorf("checks = %+v", checks)
+	}
+	if err := config.SetSpaceKey(cfg, "work", "backup", "https://ana@example.com/u/r.git"); err != nil {
+		t.Fatal(err)
+	}
+	c, _ = config.Load(cfg)
+	if w := find(space(c, c.Spaces["work"]), "password or a token"); w != nil {
+		t.Errorf("a clean address was named: %+v", w)
+	}
+}
