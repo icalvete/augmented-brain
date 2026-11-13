@@ -167,7 +167,7 @@ se rechaza: solo se vuelve a abrir con `task_update` y `reopen`, así su resulta
 Cierra una tarea terminada con su resultado. Se guarda, nunca se borra. Una tarea con
 subtareas abiertas no se puede cerrar, y una ya cerrada se rechaza, para que su resultado
 nunca se pise. Si la tarea tiene fechas para revisar sin marcar
-como hechas, lo dice: siguen saliendo al empezar la sesión en su día, porque cerrar suele
+como hechas, lo dice: siguen saliendo al empezar la sesión desde una semana antes de su día, porque cerrar suele
 ser cuando se apunta lo que hay que mirar más adelante. Si `session start` creó un
 worktree de git para la tarea y su sesión ya no corre, al cerrarla lo quita con su rama
 cuando no tiene nada que no esté en el remoto (ni un fichero que git ignora y que ningún
