@@ -21,12 +21,13 @@ type quotaFake struct {
 	copyAs string // --resume starts a copy under this id instead
 	now    time.Time
 	sent   []string
+	slept  int // how many times it waited
 }
 
 func newQuotaFake(t *testing.T) *quotaFake {
 	q := &quotaFake{fake: newFake(t), pid: map[string]int{}, now: time.Unix(1794526000, 0)}
 	q.sys.Now = func() time.Time { return q.now }
-	q.sys.Sleep = func(time.Duration) {}
+	q.sys.Sleep = func(time.Duration) { q.slept++ }
 	q.agentList = func() []map[string]any {
 		var list []map[string]any
 		for id, pid := range q.pid {
@@ -267,5 +268,37 @@ func TestWakeQuotaOnlyOnLinux(t *testing.T) {
 	c, _ := q.load()
 	if _, err := q.sys.WakeQuota(c, func(string) string { return "" }); !errors.Is(err, ErrUnsupported) {
 		t.Fatalf("err = %v", err)
+	}
+}
+
+// After the list shows the session with no process, the daemon's own word is waited
+// for: resumed before it, Claude starts a copy (14-nov).
+func TestWakeQuotaWaitsForTheDaemon(t *testing.T) {
+	q := newQuotaFake(t)
+	q.session("task-a", "aaaa1111")
+	q.limit("aaaa1111", q.now.Add(-time.Hour))
+	if rep := q.look(); rep.Woken != "task-a" {
+		t.Fatalf("no log: %+v", rep)
+	}
+	if want := 1 + int(quotaSettleWait/time.Second); q.slept != want {
+		t.Fatalf("with no log it waited %d times, want %d", q.slept, want)
+	}
+
+	q.session("task-b", "bbbb2222")
+	q.limit("bbbb2222", q.now.Add(-time.Hour))
+	log := "[2020-01-01T00:00:00.000Z] [bg] bg settled bbbb2222 (killed)\n" + // an earlier stop
+		"[" + time.Now().UTC().Format("2006-01-02T15:04:05.000Z") + "] [bg] bg settled bbbb2222 (killed)\n"
+	if err := os.WriteFile(filepath.Join(q.sys.ClaudeDir, daemonLog), []byte(log), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	q.slept = 0
+	if rep := q.look(); rep.Woken != "task-b" {
+		t.Fatalf("with the log: %+v", rep)
+	}
+	if q.slept != 1 {
+		t.Fatalf("the daemon had said so, yet it waited %d times", q.slept)
+	}
+	if q.sys.daemonSettled("bbbb2222", time.Now().Add(time.Hour)) || q.sys.daemonSettled("cccc3333", time.Time{}) {
+		t.Fatal("an earlier line, or another session's, counts")
 	}
 }
