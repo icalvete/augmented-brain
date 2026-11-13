@@ -938,7 +938,9 @@ A program determined to get around it could. Read the
 - **Starting a release workflow by hand** (`gh workflow run release`, or the same
   through `gh api`). It publishes a version, so it is your call, but you do not need a
   terminal: say yes only if you asked for that release now. If you say no, or nobody
-  answers, nothing starts. Other workflows go on; one named only by its number asks too.
+  answers, nothing starts. In `bypassPermissions` mode, where Claude Code may skip that
+  dialog, it is stopped instead. Other workflows go on; one named only by its number
+  asks too.
 - **Pushes that rewrite history**, even where Claude may push: `--force`, `--delete`,
   `--mirror`, `--prune`, a refspec starting with `+` or `:`.
 - **What it cannot read.** A program given as a variable (`$TOOL deploy`), commands

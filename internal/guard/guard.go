@@ -70,6 +70,10 @@ type Policy struct {
 	// start of the session, or saved in the panel): something else changed them. Where
 	// the lists would let a commit, a push or a merge through, it asks instead.
 	ConfigChanged bool
+	// NoPrompt says the session may not show the user a permission dialog
+	// (bypassPermissions): what is asked only so the user decides, such as starting a
+	// release workflow, is denied instead.
+	NoPrompt bool
 	// SealProblem, when not empty, says why the record of the lists the user last saw
 	// could not be read: ConfigChanged is set too, since the guard cannot tell.
 	SealProblem string
@@ -1009,6 +1013,9 @@ func (p Policy) dispatch(workflow string) Decision {
 		return allow // gh asks which one, and a session cannot answer
 	}
 	if strings.Contains(w, "release") {
+		if p.NoPrompt {
+			return Decision{Deny, i18n.T(p.Lang, "guard.dispatch.bypass", workflow)}
+		}
 		return Decision{Ask, i18n.T(p.Lang, "guard.dispatch", workflow)}
 	}
 	if strings.Trim(w, "0123456789") == "" {

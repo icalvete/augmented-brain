@@ -323,3 +323,24 @@ func TestMergeOnlyInCommandWords(t *testing.T) {
 		t.Errorf("commit reason: %s", r)
 	}
 }
+
+// Where Claude Code may skip the permission dialog (bypassPermissions), a release
+// workflow is refused instead of asked: without the user's yes it never starts.
+func TestReleaseDispatchWithoutPrompt(t *testing.T) {
+	p := Policy{NoPrompt: true}
+	for _, cmd := range []string{
+		"gh workflow run release",
+		"gh workflow run release.yml -R acme/app",
+		"gh api -X POST repos/acme/app/actions/workflows/release.yml/dispatches -f ref=main",
+	} {
+		if d := p.Command(cmd); d.Verdict != Deny {
+			t.Errorf("%q: %v, want Deny", cmd, d.Verdict)
+		}
+	}
+	if d := p.Command("gh workflow run deploy-site"); d.Verdict != Allow {
+		t.Errorf("deploy-site: %v, want Allow", d.Verdict)
+	}
+	if d := (Policy{Lang: "es", NoPrompt: true}).Command("gh workflow run release"); !strings.Contains(d.Reason, "bypassPermissions") {
+		t.Errorf("reason: %q", d.Reason)
+	}
+}

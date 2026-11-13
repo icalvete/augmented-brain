@@ -53,7 +53,8 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
 - **Lanzar a mano un flujo de publicación** (`gh workflow run release`, o lo mismo por
   `gh api`). Saca una versión, así que decides tú, pero sin ir a un terminal: di que sí
   solo si has pedido tú esa versión ahora. Si dices que no, o nadie contesta, no se lanza
-  nada. Los demás flujos pasan; uno nombrado solo por su número también pregunta.
+  nada. En el modo `bypassPermissions`, donde Claude Code puede saltarse ese diálogo, se
+  para. Los demás flujos pasan; uno nombrado solo por su número también pregunta.
 - **Pushes que reescriben la historia**, incluso donde Claude puede hacer push:
   `--force`, `--delete`, `--mirror`, `--prune`, una refspec que empieza por `+` o por `:`.
 - **Lo que no puede leer.** Un programa dado como variable (`$TOOL deploy`), comandos

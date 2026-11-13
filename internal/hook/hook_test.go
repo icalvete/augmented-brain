@@ -138,6 +138,12 @@ func TestPreToolUse(t *testing.T) {
 		{map[string]any{"cwd": work, "tool_name": "Monitor", "tool_input": map[string]any{"command": "while true; do git push; sleep 30; done"}}, "deny"},
 		{map[string]any{"cwd": work, "tool_name": "Monitor", "tool_input": map[string]any{"command": "aws logs tail app --follow --profile prod"}}, "ask"},
 		{map[string]any{"cwd": "/", "tool_name": "Monitor", "tool_input": map[string]any{"command": "sudo journalctl -f"}}, "deny"},
+		// A release workflow asks the user; where Claude Code may skip the dialog
+		// (bypassPermissions) it is refused, and other modes still ask.
+		{map[string]any{"cwd": work, "tool_name": "Bash", "tool_input": map[string]any{"command": "gh workflow run release"}}, "ask"},
+		{map[string]any{"cwd": work, "permission_mode": "auto", "tool_name": "Bash", "tool_input": map[string]any{"command": "gh workflow run release"}}, "ask"},
+		{map[string]any{"cwd": work, "permission_mode": "bypassPermissions", "tool_name": "Bash", "tool_input": map[string]any{"command": "gh workflow run release"}}, "deny"},
+		{map[string]any{"cwd": work, "permission_mode": "bypassPermissions", "tool_name": "Bash", "tool_input": map[string]any{"command": "gh workflow run deploy-site"}}, ""},
 		// A WebSocket watch runs no program.
 		{map[string]any{"cwd": work, "tool_name": "Monitor", "tool_input": map[string]any{"ws": map[string]any{"url": "wss://example.invalid/feed"}}}, ""},
 	}
