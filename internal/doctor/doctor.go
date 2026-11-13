@@ -175,7 +175,11 @@ func space(c *config.Config, s *config.Space) []Check {
 			i18n.T(l, "doctor.nomemory.fix", filepath.Join(c.Dir, config.FileName))}}
 	}
 	if len(problems) > 0 {
-		return []Check{{Failed, i18n.T(l, "doctor.invalid", s.Name, len(problems)), i18n.T(l, "doctor.invalid.fix")}}
+		fix := i18n.T(l, "doctor.invalid.fix")
+		if newer := countNewer(problems); newer > 0 {
+			fix = i18n.T(l, "doctor.invalid.newer", newer)
+		}
+		return []Check{{Failed, i18n.T(l, "doctor.invalid", s.Name, len(problems)), fix}}
 	}
 	checks := []Check{{OK, i18n.T(l, "doctor.valid", s.Name, i18n.Count(l, "notes", len(m.Notes))), ""}}
 	current, _ := os.ReadFile(filepath.Join(s.Memory, memory.IndexFile))
@@ -690,4 +694,15 @@ func rulesSize(l, space string, m *memory.Memory, sharedDir string) *Check {
 		longest = append(longest, i18n.T(l, "doctor.rules.one", r.Title, r.Units))
 	}
 	return &Check{Info, i18n.T(l, "doctor.rules", space, len(sizes), total, (total+3)/4, strings.Join(longest, "; ")), i18n.T(l, "doctor.rules.fix")}
+}
+
+// countNewer is how many of the problems are a field only a newer version may know.
+func countNewer(problems []memory.Problem) int {
+	n := 0
+	for _, p := range problems {
+		if _, ok := p.Newer(); ok {
+			n++
+		}
+	}
+	return n
 }

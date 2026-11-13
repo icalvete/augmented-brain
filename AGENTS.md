@@ -188,6 +188,10 @@ Heavier checks, before a release or when you touch what they cover:
   `format.NotesMigrations` (or `ConfigMigrations` for the configuration folder), which
   raises the format version by one: the step must be safe to repeat, and gets a test
   that runs it on notes written the old way.
+  Anything an earlier program would refuse is such a change, even when the step has
+  nothing to move: a new header field, note type or task status (headers are read
+  strictly, so an earlier program would leave those notes out instead of asking to
+  update).
 - **What people have keeps working.** This is a promise in the README and the
   DISCLAIMER: every change to how notes or settings are kept ships with its migration
   (above), and a command, flag, setting or MCP tool that is renamed or removed keeps

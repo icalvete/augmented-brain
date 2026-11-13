@@ -90,6 +90,19 @@ func TestHealthyAndBroken(t *testing.T) {
 	if c := find(checks, "not valid"); c == nil || c.Status != Failed || Worst(checks) != Failed {
 		t.Errorf("broken note not reported: %+v", checks)
 	}
+	if c := find(checks, "not valid"); c != nil && strings.Contains(c.Fix, "augmented-brain update") {
+		t.Errorf("a note with no header does not ask to update: %+v", c)
+	}
+
+	// A field only a newer version knows asks to update.
+	newer := "---\nid: area-new\ntype: area\ntitle: New\ncolour: blue\n---\n"
+	if err := os.WriteFile(filepath.Join(home, "brain", "areas", "area-new.md"), []byte(newer), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	checks = Run(Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: yes, Hook: denies})
+	if c := find(checks, "not valid"); c == nil || !strings.Contains(c.Fix, "augmented-brain update") || !strings.Contains(c.Fix, "1 of them") {
+		t.Errorf("a newer note must ask to update: %+v", c)
+	}
 }
 
 // Two spaces and no default one (a configuration from before 0.2.9): no backup keeps the
