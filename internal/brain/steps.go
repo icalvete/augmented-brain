@@ -71,6 +71,9 @@ func (b *Brain) Step(in StepInput) (*memory.Note, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := closedTask(n); err != nil {
+		return nil, err
+	}
 	steps := memory.Steps(n.Body)
 	if want := strings.TrimSpace(in.Expect); in.Number != 0 && want != "" &&
 		(in.Number < 1 || in.Number > len(steps) || steps[in.Number-1].Text != want) {
@@ -101,6 +104,9 @@ func (b *Brain) AddStep(id, text string) (*memory.Note, error) {
 	}
 	n, err := b.Task(id)
 	if err != nil {
+		return nil, err
+	}
+	if err := closedTask(n); err != nil {
 		return nil, err
 	}
 	body, ok := memory.AddStep(n.Body, text)

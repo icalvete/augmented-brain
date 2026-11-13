@@ -21,6 +21,8 @@ row here with the test that covers it.
 | Which commit of `main` a release is made from | `cmd` `TestReleaseCommit` | Go |
 | A release waits for every required check, comes from `main`, is reproducible and attested | `release.yml` (`gate`, `build`, `publish`) | by hand: the next real release, and `gh attestation verify` on one of its files |
 | The workflows hold no unpinned action, kept credential or shared cache | `zizmor`, `actionlint` | CI (`workflows` in `ci.yml`) |
+| `update` ignores `AB_RELEASE_URL` and `AB_MARKETPLACE`; `--from` takes only https, file or http to this computer; the installer gets no other `AB_` variable | `cmd` `TestUpdateIgnoresReleaseURL`, `TestUpdateFrom`, `TestInstallerEnviron`, `TestUpdateDownloadFails` | Go |
+| A new program that does not start never replaces the old one; the installer refuses root | `cmd` `TestInstallerKeepsWorkingProgram`, `TestInstallerRefusesRoot`; `install.ps1`'s check only by reading, not yet tried with a broken program on Windows | Go |
 | Notes in an older format | `internal/format` tests, `scripts/compat-check.sh` | Go, CI |
 | Uninstall, and install again | `install-check.sh` step 4, `install-check.ps1` step 4 | CI |
 | `uninstall --config`, and install again | `install-check.sh` step 5, `cmd` `TestUninstallConfig` | CI, Go |

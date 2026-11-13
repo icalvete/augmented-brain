@@ -285,17 +285,33 @@ try {
     if ($got -ine $want) { Fail (Text 'the download does not match its checksum: not installed.' 'la descarga no coincide con su suma de comprobaci\u00f3n: no se ha instalado.') }
     Expand-Archive -Path "$tmp\$archive" -DestinationPath $tmp -Force
     $src = Join-Path $tmp ($archive -replace '\.zip$', '') | Join-Path -ChildPath 'augmented-brain.exe'
+    # The new program must start before it replaces the one that works (an antivirus,
+    # a build for another system): with none at all, every tool of Claude fails until
+    # someone installs it again.
+    $v = $null
+    try { $v = & $src version 2>$null } catch {}
+    if ($LASTEXITCODE -ne 0 -or -not $v) {
+      Fail (Text "the new program does not start on this computer: not installed; the one you had, if any, is still there." `
+                 "el programa nuevo no arranca en este ordenador: no se ha instalado; el que ten\u00edas, si hab\u00eda uno, sigue ah\u00ed.")
+    }
     New-Item -ItemType Directory -Path $Dir -Force | Out-Null
     $exe = Join-Path $Dir 'augmented-brain.exe'
     # A running program cannot be overwritten on Windows, but it can be renamed: the
-    # update command runs this installer from the very program it replaces.
+    # update command runs this installer from the very program it replaces. The old
+    # one comes back if the new one cannot be copied or does not answer in its place.
     Remove-Item "$exe.old" -Force -ErrorAction SilentlyContinue
     if (Test-Path $exe) { Move-Item $exe "$exe.old" -Force }
-    Copy-Item $src $exe
+    $v = $null
+    try { Copy-Item $src $exe -ErrorAction Stop; $v = & $exe version 2>$null } catch {}
+    if ($LASTEXITCODE -ne 0 -or -not $v) {
+      Remove-Item $exe -Force -ErrorAction SilentlyContinue
+      if (Test-Path "$exe.old") { Move-Item "$exe.old" $exe -Force }
+      Fail (Text "the new program does not start in its place: not installed; the one you had, if any, is back." `
+                 "el programa nuevo no arranca en su sitio: no se ha instalado; el que ten\u00edas, si hab\u00eda uno, ha vuelto.")
+    }
   } finally {
     Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
   }
-  $v = & $exe version
   Say "+ augmented brain $v installed in $(Tilde $Dir)" "+ augmented brain $v instalado en $(Tilde $Dir)"
 
   # --- 3. PATH ------------------------------------------------------------------------

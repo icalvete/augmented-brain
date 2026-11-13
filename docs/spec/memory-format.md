@@ -274,7 +274,9 @@ The weekly review goes through the inbox (each capture becomes a task, goes to a
 knowledge, or is dropped), the live tasks untouched for 14 days or more, and the dates due
 in the coming week. Processed captures leave the inbox, and the review is kept as
 `reviews/review-<date>.md` (`type: review`), with what was decided as its body and the
-first line as its summary. When the last review is 7 days old or more and there is
+first line as its summary; the captures it took out of the inbox follow, as dated lines
+under a heading of their own. The review is saved first: one that cannot be saved takes
+nothing out of the inbox. When the last review is 7 days old or more and there is
 something to go through, the session start offers a new one. A review done in the
 panel keeps one line per decision while it goes on in a draft on this machine
 (`review-<space>.draft` in the configuration folder, never in the notes), and writes

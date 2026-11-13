@@ -35,9 +35,6 @@ func (b *Brain) UpdateNote(id, typ, title, summary, area, body string) (*memory.
 			return nil, err
 		}
 	}
-	if err := b.archiveCopy(old, "-"+b.today()); err != nil {
-		return nil, err
-	}
 	cp := *old
 	if t := strings.TrimSpace(title); t != "" {
 		cp.Header.Title = t
@@ -53,6 +50,13 @@ func (b *Brain) UpdateNote(id, typ, title, summary, area, body string) (*memory.
 			body += "\n"
 		}
 		cp.Body = body
+	}
+	// The old version is kept only for a change that will be saved.
+	if err := b.refuse(&cp); err != nil {
+		return nil, err
+	}
+	if err := b.archiveCopy(old, "-"+b.today()); err != nil {
+		return nil, err
 	}
 	return &cp, b.save(&cp)
 }
