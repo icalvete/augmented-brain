@@ -1166,7 +1166,8 @@ three things so that the lists stay yours:
   or a command, also by a pattern or by copying, archiving or searching its folder, and
   calling a panel page from a command, are denied, however the address is written: the panel's Guard page is how you change the lists, and it works
   with that key. `augmented-brain panel` never prints the key either: it prints a link
-  that works once, and run by Claude it prints none.
+  that works once, and run by Claude it prints none, nor does `augmented-brain panel
+  remote`: they ask you to run them in a terminal of your own.
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
   when you start a session and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
@@ -1732,7 +1733,9 @@ It opens your browser on **Today**, with the space of the folder you ran it in. 
 terminal it also prints an address, in case the browser did not open (on a computer with
 no screen, say). That address opens the panel **once**, within 2 minutes; run the command
 again for another. When Claude runs it for you, it only opens the browser: Claude never
-sees an address that opens the panel.
+sees an address that opens the panel. If the browser cannot open (Claude working in the
+background, a computer with no screen), it prints no address either and asks you to run
+the command in a terminal of your own.
 
 The panel changes your notes the same way Claude does, with the same program, and they
 wait for each other: you can have both open at once.
@@ -1800,6 +1803,10 @@ Open one. Its essentials come first, the other sections folded, and the journal 
 first. Write in its journal, change its status or next step, tick its steps, park it or
 close it. You can open new tasks too. If a status skips phases, the journal names them.
 When a task waits on a person you have a note of, "waits on" leads to them.
+
+Closing a task here does what closing it in a session does: if the task has a session of
+its own, that session ends once it finishes its answer, and its worktree goes when it
+holds nothing of its own.
 
 To open a closed task again, find it under **Closed** and choose a new status for it; its
 journal says it was reopened from the panel.
@@ -2023,6 +2030,11 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
   use it. Treat the address of the pages like a password: do not share it. It stops
   working when the panel stops. If something else used your link first, your browser
   says "This link was already used" instead of opening: you know.
+- On Linux the browser gets a small file, readable only by you, that takes it to the
+  address, instead of the address itself: what a program is started with can be read by
+  every user of the computer. When your default browser is a snap or a flatpak (the
+  Firefox that comes with Ubuntu is a snap), it cannot read that file, and gets the
+  address as before; so do the browsers of macOS.
 - It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
   note cannot put HTML or scripts of its own in the page. The links of the Help page go to
   the website only when you click them.
@@ -2873,7 +2885,12 @@ Four things keep it yours:
   entrance, not by what the visit says about itself. So a visit cannot pretend to come
   from this computer, and what only this computer may do stays here (see below).
 - **The address works once**, and the pages it opens hold a key that changes every
-  time the panel starts.
+  time the panel starts. That key is the other device's own: it does not open the
+  panel on this computer, and the key of this computer's pages does not open it from
+  another device. So whoever got hold of the address from another device still could
+  not do here what only this computer may.
+  The address is for you, not for Claude: run by Claude, the command publishes nothing
+  and asks you to run it in a terminal of your own.
 
 There is no extra password to type: your Tailscale account is the login.
 
@@ -4055,6 +4072,12 @@ journal, and when it skips phases (straight from `definition` to `execution`, sa
 line names the ones skipped: skipping is allowed, and it is seen. A closed task opens
 again only with `reopen`.
 
+`status` `closed` closes the task exactly as [`task_close`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_close) does: open
+subtasks keep it from closing, the result goes to the note, open watch dates are named,
+and the task's session and worktrees are dealt with the same way. Without `result` it
+still closes, with a line saying no result was given, and Claude writes the result in
+the journal.
+
 - `id`: the task's id.
 - `status` (optional): `definition`, `analysis`, `plan`, `execution`, `validation`,
   `closed`, `parked` or `someday`.
@@ -4067,6 +4090,8 @@ again only with `reopen`.
 - `watch_done` (optional): mark the watch date of this day as done.
 - `reopen` (optional): only to open a closed task again, with a new `status`: why, in a
   few words. It goes to the journal. Claude asks you first.
+- `result` (optional): with `status` `closed`, what the task achieved, as in
+  `task_close`. With any other status it is refused.
 - `space` (optional): another of your spaces, whose task this is. Claude uses it only
   when you ask to work on a task of that space from here. Closing it is left to a
   session of that space. See

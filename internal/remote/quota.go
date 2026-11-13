@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -29,8 +30,11 @@ import (
 // --resume <session id> <message>`: it comes back under the same id, with its
 // conversation and its saved options (--remote-control among them, so the same thread
 // in Claude Desktop and claude.ai), and the message is its next turn. Resumed before
-// Claude has let the process go (a fraction of a second after `stop` returns), Claude
-// starts a copy under another id instead, and says so.
+// Claude's daemon has let the session go, Claude starts a copy under another id
+// instead, and says so. The list is not enough to tell: on 14-nov the session showed no
+// process there two seconds before the daemon wrote "bg settled <id> (killed)" in its
+// log, and a resume in between made a copy. So after the list, the log is waited for
+// (daemonSettled), or quotaSettleWait when it cannot be read.
 //
 // Only a task's own session is woken (one on record, launched by `session start`), one
 // on each look of the watch: the sessions of a stopped batch come back a look apart
@@ -45,6 +49,48 @@ const quotaMargin = time.Minute
 // quotaStopWait is how long a stopped session may take to lose its process (10 seconds
 // measured on 13-nov).
 const quotaStopWait = 40 * time.Second
+
+// quotaSettleWait is how long, after the list shows the session with no process, the
+// daemon's "settled" line is waited for (it came within five seconds of the stop on
+// 13 and 14-nov).
+const quotaSettleWait = 15 * time.Second
+
+// daemonLog is the log of Claude's daemon, in Claude's folder.
+const daemonLog = "daemon.log"
+
+// daemonSettled says whether Claude's daemon wrote, at since or later, that it let the
+// session with this id go: a line "[<time>] [bg] bg settled <id> (…)" at the end of
+// its log. false when the log cannot be read or says nothing of it.
+func (s System) daemonSettled(id string, since time.Time) bool {
+	if s.ClaudeDir == "" {
+		return false
+	}
+	f, err := os.Open(filepath.Join(s.ClaudeDir, daemonLog))
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+	const tail = 64 << 10
+	if info, err := f.Stat(); err == nil && info.Size() > tail {
+		if _, err := f.Seek(-tail, io.SeekEnd); err != nil {
+			return false
+		}
+	}
+	data, err := io.ReadAll(f)
+	if err != nil {
+		return false
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		stamp, rest, ok := strings.Cut(strings.TrimPrefix(line, "["), "] ")
+		if !ok || !strings.Contains(rest, "bg settled "+id+" ") {
+			continue
+		}
+		if at, err := time.Parse(time.RFC3339Nano, stamp); err == nil && !at.Before(since) {
+			return true
+		}
+	}
+	return false
+}
 
 // quotaTries is how many times a session is tried before it is left to the user.
 const quotaTries = 3
@@ -217,6 +263,7 @@ func (s System) wakeStopped(claude string, r launchRecord, a claudeAgent, messag
 	}
 	s.wakeDaemon(claude)
 	if a.Pid > 0 {
+		since := time.Now().Add(-time.Second)
 		if _, err := s.Run(claude, "stop", r.ID); err != nil {
 			return fmt.Errorf("claude stop %s: %w", r.ID, err)
 		}
@@ -233,6 +280,9 @@ func (s System) wakeStopped(claude string, r launchRecord, a claudeAgent, messag
 		if !gone {
 			// Resumed now, Claude would start a copy. It is stopped: the next look resumes it.
 			return fmt.Errorf("claude stop %s: the session still has a process after %d seconds", r.ID, int(quotaStopWait.Seconds()))
+		}
+		for waited := time.Duration(0); waited < quotaSettleWait && !s.daemonSettled(r.ID, since); waited += time.Second {
+			s.sleep(time.Second)
 		}
 	}
 	bg, bgArgs := s.scoped(claude, "--bg", "--resume", a.SessionID, message)
