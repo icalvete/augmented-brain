@@ -1314,6 +1314,10 @@ var panelMessages = map[string]msg{
 		en: "No people yet.",
 		es: "Aún no hay personas.",
 	},
+	"panel.people.unread": {
+		en: "The people of %s are not here: that space could not be opened. To see why, run augmented-brain doctor.",
+		es: "Faltan las personas de %s: ese espacio no se ha podido abrir. Para ver por qué, ejecuta augmented-brain doctor.",
+	},
 	"panel.f.kind": {
 		en: "Kind",
 		es: "Tipo",

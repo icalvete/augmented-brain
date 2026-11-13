@@ -109,18 +109,19 @@ func (v *view) list(types ...string) []noteRow {
 type notesData struct {
 	Heading, Hint, Empty string
 	Rows                 []noteRow
-	NewPerson            bool // the people page: a form to add one
+	NewPerson            bool   // the people page: a form to add one
+	Unread               string // the people page: the spaces that could not be opened, said
 }
 
 func (s *Server) knowledge(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("knowledge", v.t("knowledge"))
-	p.D = notesData{v.t("knowledge"), v.t("knowledge.hint"), v.t("knowledge.none"), v.list("reference", "lesson"), false}
+	p.D = notesData{v.t("knowledge"), v.t("knowledge.hint"), v.t("knowledge.none"), v.list("reference", "lesson"), false, ""}
 	return "notes", p, nil
 }
 
 func (s *Server) rules(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("rules", v.t("rules"))
-	p.D = notesData{v.t("rules"), v.t("rules.hint"), v.t("rules.none"), v.list("rule"), false}
+	p.D = notesData{v.t("rules"), v.t("rules.hint"), v.t("rules.none"), v.list("rule"), false, ""}
 	return "notes", p, nil
 }
 
@@ -128,7 +129,7 @@ func (s *Server) rules(v *view, _ *http.Request) (string, page, error) {
 // are in. Each says how many live tasks wait on them in this space.
 func (s *Server) people(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("people", v.t("people"))
-	list, err := brain.People(v.c)
+	list, unread, err := brain.People(v.c)
 	if err != nil {
 		return "", page{}, err
 	}
@@ -145,7 +146,11 @@ func (s *Server) people(v *view, _ *http.Request) (string, page, error) {
 		}
 		rows = append(rows, row)
 	}
-	p.D = notesData{v.t("people"), v.t("people.hint"), v.t("people.none"), rows, true}
+	d := notesData{v.t("people"), v.t("people.hint"), v.t("people.none"), rows, true, ""}
+	if len(unread) > 0 {
+		d.Unread = v.t("people.unread", strings.Join(unread, ", "))
+	}
+	p.D = d
 	return "notes", p, nil
 }
 
