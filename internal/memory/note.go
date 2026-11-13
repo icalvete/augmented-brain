@@ -103,6 +103,9 @@ func Parse(path string, data []byte) (*Note, error) {
 	return n, nil
 }
 
+// Validate says what is wrong with a note's header, before anything is written for it.
+func (n *Note) Validate() error { return n.check() }
+
 func (n *Note) check() error {
 	h := &n.Header
 	var problems []string

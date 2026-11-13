@@ -24,6 +24,23 @@ func TestReviewDoneThroughMCP(t *testing.T) {
 	}
 }
 
+// review_done with a summary it refuses takes no capture out of the inbox.
+func TestReviewDoneRefusedKeepsInbox(t *testing.T) {
+	cs := connect(t, space(t))
+	for _, c := range []string{"idea A that matters", "idea B that matters"} {
+		if _, isErr := call(t, cs, "capture", map[string]any{"text": c}); isErr {
+			t.Fatal("capture failed")
+		}
+	}
+	if _, isErr := call(t, cs, "review_done", map[string]any{"summary": "   ", "processed": []string{"idea A that matters", "idea B that matters"}}); !isErr {
+		t.Fatal("an empty review was saved")
+	}
+	text, _ := call(t, cs, "weekly_review", map[string]any{})
+	if !strings.Contains(text, "idea A that matters") || !strings.Contains(text, "idea B that matters") {
+		t.Errorf("a refused review took captures out:\n%s", text)
+	}
+}
+
 // secret_name_save through MCP: a name is kept, a value is refused.
 func TestSecretNameSaveThroughMCP(t *testing.T) {
 	cs := connect(t, space(t))
