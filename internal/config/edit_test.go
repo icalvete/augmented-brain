@@ -59,3 +59,36 @@ func TestForFile(t *testing.T) {
 		t.Errorf("file:\n%s\nwant it to end with:\n%s", text, want)
 	}
 }
+
+// An edit whose result would not load never reaches the disk, not even for a moment:
+// the guard reads the file at every command. One that loads is written once.
+func TestEditChecksBeforeWriting(t *testing.T) {
+	dir := t.TempDir()
+	text := "language = \"en\"\n\n[spaces.work]\nmemory = \"/m\"\n"
+	write(t, dir, text)
+	var wrote []string
+	orig := writeAtomic
+	t.Cleanup(func() { writeAtomic = orig })
+	writeAtomic = func(path, text string) error {
+		wrote = append(wrote, text)
+		return orig(path, text)
+	}
+	if err := SetDefaultSpace(dir, "nope"); err == nil {
+		t.Fatal("a default space that does not exist was accepted")
+	}
+	if len(wrote) != 0 {
+		t.Errorf("a text that does not load was written: %q", wrote)
+	}
+	if data, _ := os.ReadFile(filepath.Join(dir, FileName)); string(data) != text {
+		t.Errorf("the file changed: %q", data)
+	}
+	if err := SetDefaultSpace(dir, "work"); err != nil {
+		t.Fatal(err)
+	}
+	if len(wrote) != 1 || !strings.Contains(wrote[0], `default_space = "work"`) {
+		t.Errorf("written: %q", wrote)
+	}
+	if c, err := Load(dir); err != nil || c.DefaultSpace != "work" {
+		t.Errorf("loaded back: %v %v", c, err)
+	}
+}
