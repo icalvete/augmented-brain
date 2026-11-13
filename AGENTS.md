@@ -63,7 +63,9 @@ go build ./cmd/augmented-brain
 
 `scripts/precheck.sh` runs all of that and more before every push (the `pre-push` hook,
 with `git config core.hooksPath .githooks`): vet compiled for Linux, Windows and macOS,
-the tests compiled for Windows and macOS, the privacy check and the generated guides,
+the tests compiled for Windows and macOS, the guard's test coverage (`scripts/guard-coverage.sh`:
+never below `internal/guard/coverage-floor`; raise the floor when a change raises it),
+the privacy check and the generated guides,
 in well under a minute. `--full` adds `compat-check`. `--windows` also runs every
 package's tests on Windows, in the VM of `test/vm/windows-11` (`scripts/test-windows.sh`,
 about 3 minutes): use it for a change to paths, files, permissions, hooks or commands,

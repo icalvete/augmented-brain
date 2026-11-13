@@ -39,6 +39,9 @@ jobs:
         run: go vet ./...
       - name: Test
         run: go test -race ./...
+      - name: The guard's tests cover no less than before
+        if: matrix.os == 'ubuntu-latest'
+        run: scripts/guard-coverage.sh
       - name: Build every release target
         run: scripts/release-build.sh 0.0.0-ci /tmp/dist
 
