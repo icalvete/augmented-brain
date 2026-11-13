@@ -82,10 +82,8 @@ jobs:
           v="${TAG#v}"
           test "$(cat VERSION)" = "$v" || { echo "VERSION says $(cat VERSION), the tag $v"; exit 1; }
           grep -qx "## $v" CHANGELOG.md || { echo "CHANGELOG.md has no section ## $v"; exit 1; }
-          if [ -d changelog.d ]; then
-            left="$(find changelog.d -name '*.md' ! -name README.md)"
-            test -z "$left" || { echo "changelog.d still holds entries: run scripts/changelog.py release $v"; echo "$left"; exit 1; }
-          fi
+          left="$(find changelog.d -name '*.md' ! -name README.md)"
+          test -z "$left" || { echo "changelog.d still holds entries: run scripts/changelog.py release $v"; echo "$left"; exit 1; }
 
   build:
     needs: gate
