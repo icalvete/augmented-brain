@@ -27,13 +27,24 @@ Each space (work, personal…) gets its own door, with its own name:
 `<computer name>-<space>`, such as `my-laptop-personal`. A session opened through that door
 starts in a folder that belongs to that space, so Claude loads that space's notes and
 rules, and nothing crosses between spaces. By default only your default space has a door.
-To open one for work too, see [Configuration](configuration.md).
+To open one for work too, list both spaces in `remote.toml`, in the configuration folder,
+and run `augmented-brain remote install` again:
+
+```toml
+spaces = ["personal", "work"]
+```
 
 That folder is the space's first work folder, the one you named when you made the space:
 where you already work, so a session from your phone opens where you would open one at
-the computer. To start somewhere else inside the space, set `folders` in
-[`remote.toml`](configuration.md). Only a space with no work folder gets a folder of its
-own, `~/.config/augmented-brain/remote/<space>`.
+the computer. To start somewhere else inside the space, name the folder in `remote.toml`:
+
+```toml
+folders = { work = "~/code/clients" }
+```
+
+Only a space with no work folder gets a folder of its own, `remote/<space>` inside the
+configuration folder (see [Where everything lives](where-things-live.md)). Every setting
+of `remote.toml` is in [Configuration](configuration.md#remotetoml).
 
 ## Install it
 
@@ -74,6 +85,18 @@ sudo loginctl enable-linger your-user-name
 
 macOS and Windows have no linger: there the service starts when you log in.
 
+## Keep it safe
+
+**This is a permanent door to your computer.** Anyone who gets into your Claude account
+can work on the machine through it.
+
+- Claude asks before it acts, as always (permission mode `default`), and the guard stays
+  in force: it stops pushes, root and secrets, and asks before production.
+- **Do not set `permission_mode` to `bypassPermissions`.** It lets whoever connects run
+  anything with no question, and leaves the machine open.
+- Protect your Claude account: a strong password and two-step verification.
+- Remove the door whenever you do not need it: `augmented-brain remote uninstall`.
+
 ## Check it
 
 ```bash
@@ -81,11 +104,13 @@ augmented-brain remote status
 ```
 
 For each space it says whether the service is running, whether Claude trusts its folder,
-and on Linux whether linger is on, with what to do about each problem. On Linux it also
-says how the watch stands (the one that brings back a service whose server archived the
-session, see below): whether it is running and how long ago it last looked.
-`augmented-brain doctor` shows the same, one line per space, and one more for the watch
-only when it fails.
+and on Linux whether linger is on, with what to do about each problem.
+
+On Linux, `install` also sets up a **watch**: a small timer that looks at the services
+every two minutes and brings back one whose session the server archived (see "Good to
+know" below). `status` says how it stands: whether it is running and how long ago it
+last looked. `augmented-brain doctor` shows the same, one line per space, and one more
+for the watch only when it fails.
 
 When a service fails, it says why. On Linux, in the system journal:
 
@@ -107,71 +132,9 @@ tell you to run `augmented-brain remote install` again, which brings it up to da
 2. Choose the environment named `<computer name>-<space>`, the name `status` shows.
 3. Start a session. Start as many as you like: each one begins in that space's folder.
 
-## A session per task
-
-This part is for Linux only for now: it has been tried only there. On macOS and Windows
-`session start` says it is not available.
-
-The door's own sessions all start in the space's folder. To work on a task in its own
-session, in its own folder, ask the session you are in: "open me a session for the website
-task". Every session on Linux knows how, here or from another computer, because the start
-of each one tells it. It runs
-
-```bash
-augmented-brain session start task-new-website
-```
-
-and within a minute a new session, named after the task, shows up in claude.ai and Claude
-Desktop. It starts on its own: it reads its task, tells you where it stands and gets on
-with the next step. It hears only what is its task's: that task's dates, not the rest of
-the space's reminders, the weekly review or sessions to recover, which come up in your
-other sessions. When it stops, it tells the session that asked for it, in one line. The folder is the
-first of the task's repositories found in the space's work folders, or the one `--folder`
-gives; with no repository, the space's folder. For a bare repository, the task gets a git worktree of its own, on a new branch
-from origin's default branch. It goes away by itself when nothing would be lost: with
-`session stop`, when the task is closed, or, for a session that ended some other way (a
-reboot, closing it from Claude Desktop), at the next `session start`. One with work not
-committed or not pushed, or files git ignores such as a `.env`, stays, and `doctor` names
-it.
-
-- **Claude must trust that folder itself.** Trusting the space's folder is not enough. The
-  first time, the command says what to do: on the machine (or through `ssh`), go to the
-  folder, run `claude`, accept the question and close it with `/exit`. Then ask again.
-  For a git worktree, Claude keeps the answer under its main repository: trusting either
-  one is enough.
-- **One task per folder.** Two tasks in one folder would step on each other's changes,
-  so a folder another task's session uses is refused. Give it another one with
-  `--folder` (a git worktree of the repository, for example).
-- **It ends with `augmented-brain session stop <task>`**, which also takes it out of
-  Claude Desktop and claude.ai, when its task is closed (once it has finished its
-  answer), or when the machine restarts. After a reboot only the
-  doors come back: ask for the task sessions again. `augmented-brain session list`
-  shows the open ones.
-- **Claude retires a session left unused for hours.** It stops running, and claude.ai
-  shows it as disconnected. `session list` calls it retired; `session start` with its
-  task brings it back with its whole conversation, and `session stop` and closing the
-  task close it all the same.
-- **It waits on a pull request with `augmented-brain watch pr`.** The session leaves
-  [`watch pr`](commands.md#augmented-brain-watch-pr) running in the background with its
-  task. When the checks pass or fail, or the pull request is merged, it writes the result
-  in the task, so your other sessions hear of it even if this one is gone, and tells
-  the session to let you know at once. It never waits for ever: 3 hours at most.
-- **A session that cannot work is not left open.** `session start` checks first that
-  Claude Code is logged in, then waits for the first answer (up to a minute). If that
-  answer is an error, such as an expired login, it closes the session and says what to
-  do. A session whose answer fails later shows as failed in `session list`.
-
-## Keep it safe
-
-**This is a permanent door to your computer.** Anyone who gets into your Claude account
-can work on the machine through it.
-
-- Claude asks before it acts, as always (permission mode `default`), and the guard stays
-  in force: it stops pushes, root and secrets, and asks before production.
-- **Do not set `permission_mode` to `bypassPermissions`.** It lets whoever connects run
-  anything with no question, and leaves the machine open.
-- Protect your Claude account: a strong password and two-step verification.
-- Remove the door whenever you do not need it: `augmented-brain remote uninstall`.
+The door's sessions all start in the space's folder. On Linux, a task can also get a
+session of its own, in its own folder: ask the session you are in, "open me a session
+for the website task". See [A session per task](task-sessions.md).
 
 ## Good to know
 
@@ -181,13 +144,37 @@ can work on the machine through it.
   restarts by itself (an update, a power cut), nobody can connect until someone logs in.
 - If your Claude login expires, the service keeps running but nobody can connect. `status`
   and `doctor` say so; run `claude` once and sign in again.
-- **If the server archives the session** (you archived it in claude.ai, say), on Linux the
-  service comes back by itself with a new, empty session of the same name, in about ten
-  minutes: a watch looks every two minutes (see
-  [`remote watch`](commands.md#augmented-brain-remote-watch)). On macOS and Windows,
-  run `augmented-brain remote install` again.
+- **If the server archives the session** (you archived it in claude.ai, say), the service
+  keeps running with nobody behind it. On Linux the watch brings it back by itself, with
+  a new, empty session of the same name, in about ten minutes (see
+  [`remote watch`](commands.md#augmented-brain-remote-watch)).
 - Sessions you start from the phone belong to the space of their folder: the work door
   opens work notes. To reach another space, use that space's door.
+
+### An archived session on macOS and Windows
+
+There is no watch there, and installing again is not enough: Claude keeps a note of the
+archived session, `bridge-pointer.json`, and a new service picks it up again and loses
+it at once. Set the note aside by hand:
+
+1. Stop the doors:
+
+   ```bash
+   augmented-brain remote uninstall
+   ```
+
+2. In `.claude/projects` inside your home folder, open the folder whose name ends in the
+   name of the door's folder (Claude names it after the whole path, with `-` in place of
+   each separator). Rename `bridge-pointer.json` there to `bridge-pointer.json.archived`.
+   Do not delete it.
+3. Start the doors again:
+
+   ```bash
+   augmented-brain remote install
+   ```
+
+A new, empty session of the same name shows up within a few minutes: Claude's side first
+lets the old one go. The conversation of the archived session does not come back.
 
 ## Take it away
 
@@ -195,12 +182,12 @@ can work on the machine through it.
 augmented-brain remote uninstall
 ```
 
-It stops and removes the services and, on Linux, the watch (on Windows, also the program they were running). The
-folders, and their place in the space's work
-folders, stay, and nothing else is deleted. Remove them by hand if you want.
+It stops the services and removes them, and on Linux the watch too. On Windows it also
+ends the programs those services had started. The folders, and their place in the
+space's work folders, stay, and nothing else is deleted. Remove them by hand if you want.
 
 ## The settings
 
 `remote.toml`, in the configuration folder: `enabled`, `spaces`, `name_prefix`,
-`permission_mode` and `folders`. See [Configuration](configuration.md). The commands are in
-[Commands](commands.md).
+`permission_mode` and `folders`. See [Configuration](configuration.md#remotetoml). The
+commands are in [Commands](commands.md).

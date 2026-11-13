@@ -72,6 +72,7 @@
   <li><a href="backup.html">Backup and restore</a></li>
   <li><a href="connect-services.html">Connect your services</a></li>
   <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
   <li><a href="import.html">Bring in a memory you already have</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
@@ -179,6 +180,8 @@
   <p>Run <code>augmented-brain remote status</code>: under each problem, <code>→</code> says what to do. The usual causes:</p>
   <ul><li><strong>Claude does not trust the folder yet.</strong> Run <code>cd &lt;folder&gt; &amp;&amp; claude</code> once and say yes.</li><li><strong>The computer restarted and nobody has logged in.</strong> On a Mac and on Windows, remote access starts when you log in. On Windows it also stops when you sign out.</li><li><strong>Linux: “linger” is off.</strong> Linger is the setting that lets your services run with nobody logged in. Without it, remote access stops when you log out and does not start after a reboot. <code>remote install</code> prints the command to turn it on; an administrator runs it.</li><li><strong>Linux without systemd's user services</strong> (a container, WSL without systemd). <code>remote install</code> stops there, changing nothing.</li></ul>
   <p>See <a href="remote.html">Remote access</a>.</p>
+  <h3 id="two-remote-sessions-with-the-same-name">Two remote sessions with the same name</h3>
+  <p>When the door of a space moves to another folder (a new version starts it in your work folder, say), Claude's side keeps the old session too, with the same name, in another group of the list. Nothing answers in the old one: what you write there is lost. Use the one in the group named after the new folder, and archive the old one in claude.ai or Claude Desktop.</p>
   <h2 id="the-computer">The computer</h2>
   <h3 id="the-window-uses-a-lot-of-memory">The window uses a lot of memory</h3>
   <p>Claude says that the window uses a lot of memory, or <code>doctor</code> warns about a Claude window of several GB. The process that holds the window's sessions has grown far past normal: VS Code's extension host (the program inside VS Code that runs Claude and the other extensions), or Claude itself in a terminal. It normally stays near 0.5 GB for days. Now and then one grows without stopping, and the system ends up closing it, with every Claude session of the window. The length of the conversation has nothing to do with it.</p>

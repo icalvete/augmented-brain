@@ -160,6 +160,7 @@ Spanish:
   [The weekly review](https://icalvete.github.io/augmented-brain/guide/weekly-review.html), [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html),
   [Connect your services](https://icalvete.github.io/augmented-brain/guide/connect-services.html), [Bring in a memory](https://icalvete.github.io/augmented-brain/guide/import.html),
   [The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html), [Remote access](https://icalvete.github.io/augmented-brain/guide/remote.html),
+  [A session per task](https://icalvete.github.io/augmented-brain/guide/task-sessions.html),
   [Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html), [From your phone or another computer](https://icalvete.github.io/augmented-brain/guide/anywhere.html),
   [Updating and uninstalling](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.html).
 - **Reference**: [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html), [MCP tools](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html),

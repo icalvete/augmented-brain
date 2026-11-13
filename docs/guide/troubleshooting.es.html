@@ -72,6 +72,7 @@
   <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
   <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
   <li><a href="remote.es.html">Acceso remoto</a></li>
+  <li><a href="task-sessions.es.html">Una sesión por tarea</a></li>
   <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
   <li><a href="anywhere.es.html">Desde el móvil u otro ordenador</a></li>
   <li><a href="update-and-uninstall.es.html">Actualizar y desinstalar</a></li>
@@ -179,6 +180,8 @@
   <p>Lanza <code>augmented-brain remote status</code>: debajo de cada problema, <code>→</code> dice qué hacer. Las causas de siempre:</p>
   <ul><li><strong>Claude aún no confía en la carpeta.</strong> Lanza una vez <code>cd &lt;carpeta&gt; &amp;&amp; claude</code> y di que sí.</li><li><strong>El ordenador se reinició y nadie ha entrado.</strong> En un Mac y en Windows, el acceso remoto arranca cuando entras en tu sesión. En Windows, además, se para cuando la cierras.</li><li><strong>Linux: el «linger» está apagado.</strong> El linger es el ajuste que deja funcionar tus servicios sin que nadie haya entrado. Sin él, el acceso remoto se para cuando cierras la sesión y no arranca tras reiniciar. <code>remote install</code> escribe el comando para activarlo; lo lanza un administrador.</li><li><strong>Linux sin servicios de usuario de systemd</strong> (un contenedor, WSL sin systemd). <code>remote install</code> se para ahí, sin cambiar nada.</li></ul>
   <p>Lo tienes en <a href="remote.es.html">Acceso remoto</a>.</p>
+  <h3 id="dos-sesiones-remotas-con-el-mismo-nombre">Dos sesiones remotas con el mismo nombre</h3>
+  <p>Cuando la puerta de un espacio se cambia de carpeta (por ejemplo, porque una versión nueva la arranca en tu carpeta de trabajo), el lado de Claude conserva también la sesión vieja, con el mismo nombre, en otro grupo de la lista. En la vieja no contesta nadie: lo que escribas ahí se pierde. Usa la del grupo con el nombre de la carpeta nueva, y archiva la vieja en claude.ai o Claude Desktop.</p>
   <h2 id="el-ordenador">El ordenador</h2>
   <h3 id="la-ventana-usa-mucha-memoria">La ventana usa mucha memoria</h3>
   <p>Claude te dice que la ventana usa mucha memoria, o <code>doctor</code> avisa de una ventana de Claude de varios GB. El proceso que lleva las sesiones de la ventana ha crecido mucho más de lo normal: el host de extensiones de VS Code (el programa dentro de VS Code que ejecuta Claude y las demás extensiones), o el propio Claude en un terminal. Lo normal es que se quede cerca de 0,5 GB durante días. De vez en cuando uno crece sin parar, y el sistema acaba cerrándolo, con todas las sesiones de Claude de la ventana. La longitud de la conversación no tiene nada que ver.</p>

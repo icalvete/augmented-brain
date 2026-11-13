@@ -315,6 +315,14 @@ causes:
 
 See [Remote access](remote.md).
 
+### Two remote sessions with the same name
+
+When the door of a space moves to another folder (a new version starts it in your work
+folder, say), Claude's side keeps the old session too, with the same name, in another
+group of the list. Nothing answers in the old one: what you write there is lost. Use the
+one in the group named after the new folder, and archive the old one in claude.ai or
+Claude Desktop.
+
 ## The computer
 
 ### The window uses a lot of memory

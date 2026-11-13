@@ -170,6 +170,7 @@ y en inglés:
   [Trae una memoria que ya tienes](https://icalvete.github.io/augmented-brain/guide/import.es.html),
   [El panel desde otro dispositivo](https://icalvete.github.io/augmented-brain/guide/panel-remote.es.html),
   [Acceso remoto](https://icalvete.github.io/augmented-brain/guide/remote.es.html),
+  [Una sesión por tarea](https://icalvete.github.io/augmented-brain/guide/task-sessions.es.html),
   [Versiones de la configuración](https://icalvete.github.io/augmented-brain/guide/config-history.es.html),
   [Desde el móvil u otro ordenador](https://icalvete.github.io/augmented-brain/guide/anywhere.es.html),
   [Actualizar y desinstalar](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.es.html).
