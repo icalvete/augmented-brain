@@ -208,7 +208,7 @@ func TestCopyTree(t *testing.T) {
 		t.Error("a skipped folder was copied")
 	}
 	if links {
-		if to, err := os.Readlink(filepath.Join(exact, "tasks", "link.md")); err != nil || to != "../top.md" {
+		if to, err := os.Readlink(filepath.Join(exact, "tasks", "link.md")); err != nil || filepath.ToSlash(to) != "../top.md" {
 			t.Errorf("the link in the copy: %q %v", to, err)
 		}
 	}
