@@ -242,7 +242,7 @@ Heavier checks, before a release or when you touch what they cover:
   `release.yml` takes the version from `VERSION` on `main` and the commit that last set it
   or changed its section of the changelog (`scripts/release-commit.sh`: what merged
   later waits for the next version), refuses one already tagged, a tag on a commit not
-  on `main`, or a commit where any required check has not passed
+  on `main`, or a commit where any required check, or a macOS one, has not passed
   (`scripts/release-checks.sh`); then a read-only job with no cache builds the archives,
   the installers and `checksums.txt` (reproducible: the same commit and Go give the same
   bytes), and another, in the environment `release`, attests their provenance and
