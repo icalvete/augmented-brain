@@ -163,7 +163,8 @@ Spanish:
   [Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html), [From your phone or another computer](https://icalvete.github.io/augmented-brain/guide/anywhere.html),
   [Updating and uninstalling](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.html).
 - **Reference**: [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html), [MCP tools](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html),
-  [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html), [Memory format](https://icalvete.github.io/augmented-brain/guide/memory-format.html).
+  [Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html), [Memory format](https://icalvete.github.io/augmented-brain/guide/memory-format.html),
+  [What stays stable](https://icalvete.github.io/augmented-brain/guide/compatibility.html).
 - **Help**: [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html), [Known limitations](https://icalvete.github.io/augmented-brain/guide/limitations.html), [Changelog](CHANGELOG.md).
 
 Inspired by *Building a Second Brain* by Tiago Forte and *Getting Things Done* by David

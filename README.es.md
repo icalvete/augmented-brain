@@ -175,7 +175,8 @@ y en inglés:
   [Actualizar y desinstalar](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.es.html).
 - **Referencia**: [Comandos](https://icalvete.github.io/augmented-brain/guide/commands.es.html), [Herramientas MCP](https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html),
   [Configuración](https://icalvete.github.io/augmented-brain/guide/configuration.es.html),
-  [Formato de la memoria](https://icalvete.github.io/augmented-brain/guide/memory-format.html) (en inglés).
+  [Formato de la memoria](https://icalvete.github.io/augmented-brain/guide/memory-format.html) (en inglés),
+  [Lo que no cambia](https://icalvete.github.io/augmented-brain/guide/compatibility.es.html).
 - **Ayuda**: [Si algo falla](https://icalvete.github.io/augmented-brain/guide/troubleshooting.es.html), [Limitaciones conocidas](https://icalvete.github.io/augmented-brain/guide/limitations.es.html),
   [Registro de cambios](CHANGELOG.es.md).
 
