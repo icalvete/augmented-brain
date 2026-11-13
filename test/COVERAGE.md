@@ -104,6 +104,10 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Configuration edits leave a version | `internal/panel` `TestPanelChangesLeaveVersions` | Go |
 | The Guard page: what changed, the box, the warnings | `TestGuardPageShowsWhatChanged`, `TestGuardPageWarnsOnDangerousLists`, the browser check | Go, CI |
 | A ticket opens the panel once (303, then 410); only the command gets one; through the network, for the owner only | `internal/panel` `TestTicketOnce`, `TestTicketOnlyForTheCommand`, `TestTicketFromTheCommand`; the browser and Mac checks spend one | Go, CI |
+| Through Tailscale, the panel's own socket: no Host makes a request local, local-only actions refused; the local socket refuses proxied requests; tickets only through their own socket | `internal/panel` `TestNetSocketIgnoresHost`, `TestLocalSocketRefusesProxied`, `TestNetSocketIsItsOwn`, `TestTicketOnlyForTheCommand` | Go |
+| Only the address the panel published is taken back; the user's own `tailscale serve` on 8443 stays | `internal/tailnet` `TestALocalProxyOfTheUser`, `internal/panel` `TestUnpublishLeftoverOnlyOurs`, `cmd` `TestPanelRemoteLeavesTheUsersProxy`, `internal/doctor` `TestPanelRemoteLine` | Go |
+| A stale `panel.json` never ends another process (not `panel serve`, or started later) | `internal/panel` `TestStopLeavesAReusedPID`, `TestStopEndsAServerThatHangs` | Go |
+| `panel remote` waits for a slow Tailscale and never restarts the panel for it | `internal/panel` `TestGoRemoteWaitsForASlowTailscale` | Go |
 | A change to the guard's lists made in the panel reaches the user once, from Claude Code | panel `TestGuardChangeLeavesNotice`, hook `TestGuardNoticeOnce` | Go |
 | Each page says what it is; hiding it is remembered | `TestIntroHideAndShow`, `TestIntroAnchors` (the guide's anchors exist) | Go |
 | Going back to a version asks, and warns about the guard | `TestVersionsPage` | Go |

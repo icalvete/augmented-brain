@@ -161,7 +161,7 @@ func TestSessionIndex(t *testing.T) {
 			t.Errorf("session index has %q:\n%s", not, idx)
 		}
 	}
-	if got := clip(strings.Repeat("a", 130), maxSessionNext); len([]rune(got)) != maxSessionNext || !strings.HasSuffix(got, "…") {
+	if got := Clip(strings.Repeat("a", 130), maxSessionNext); len([]rune(got)) != maxSessionNext || !strings.HasSuffix(got, "…") {
 		t.Errorf("clip: %q", got)
 	}
 	if full := m.Index("en"); !strings.Contains(full, "what d is") || !strings.Contains(full, "call her") {

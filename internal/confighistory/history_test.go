@@ -2,6 +2,7 @@ package confighistory
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -143,6 +144,29 @@ func TestCompare(t *testing.T) {
 	}
 	if want := "~| c|-d|+D| e|~"; strings.Join(got, "|") != want {
 		t.Errorf("lines %q, want %q", strings.Join(got, "|"), want)
+	}
+}
+
+// Two long versions of a file that differ in the middle are compared without building
+// a table of every line against every other: past maxTable, the part that changed is
+// shown as replaced whole, and the lines the same at both ends stay as they are.
+func TestCompareLongFiles(t *testing.T) {
+	var a, b strings.Builder
+	a.WriteString("top\n")
+	b.WriteString("top\n")
+	for i := range 3000 {
+		fmt.Fprintf(&a, "old %d\n", i)
+		fmt.Fprintf(&b, "new %d\n", i)
+	}
+	a.WriteString("bottom\n")
+	b.WriteString("bottom\n")
+	ds := Compare(map[string]string{"profile.md": a.String()}, map[string]string{"profile.md": b.String()}, 1)
+	if len(ds) != 1 {
+		t.Fatalf("%+v", ds)
+	}
+	ls := ds[0].Lines
+	if ls[0].Op != ' ' || ls[0].Text != "top" || ls[1].Op != '-' || ls[3001].Op != '+' || ls[len(ls)-1].Text != "bottom" {
+		t.Errorf("lines: %+v ... %+v", ls[:3], ls[len(ls)-2:])
 	}
 }
 

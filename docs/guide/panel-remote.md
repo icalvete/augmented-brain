@@ -48,7 +48,7 @@ never installs or changes anything of Tailscale's for you.
 
 ## Who can open it
 
-Three things keep it yours:
+Four things keep it yours:
 
 - **Only your Tailscale network reaches the address.** It does not exist on the
   internet.
@@ -56,6 +56,10 @@ Three things keep it yours:
   account you signed in with, with its own password and second factor), and the panel
   lets in only the owner of the computer. Someone else in your network, or someone you
   share a device with, gets "forbidden" even with the address.
+- **The network has a door of its own.** What Tailscale brings in arrives at a port of
+  the panel that only it uses, and is treated as coming from the network whatever it
+  says about itself: from there, nothing that is only for this computer (setting up a
+  backup, going back to an earlier configuration) can be done.
 - **The address works once**, and the pages it opens hold a key that changes every
   time the panel starts.
 
@@ -73,8 +77,9 @@ augmented-brain panel stop
 When it stops, it takes the address back from Tailscale. If the computer crashed or
 restarted with the panel published, the next time a panel starts it takes it back, and
 `augmented-brain doctor` warns while it is still there. Port 8443 of your Tailscale
-network is the panel's: if you already publish something else there, augmented brain
-leaves it alone and says so.
+network is the panel's: if you already publish something else there (even another
+program of this computer), augmented brain leaves it alone and says so. It only ever
+takes back the address it published itself.
 
 ## Check it
 

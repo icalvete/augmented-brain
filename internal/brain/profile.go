@@ -43,9 +43,16 @@ type ProfileInput struct {
 
 // SaveProfile writes the user's profile, keeping the date it was first written.
 func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
-	name := strings.TrimSpace(in.Name)
+	// The names are one line each: a name with a line break in it would write a
+	// heading of its own into the profile, which every session reads.
+	name, assistant := memory.OneLine(in.Name), memory.OneLine(in.Assistant)
 	if name == "" {
 		return nil, errors.New("the profile needs the user's name")
+	}
+	for _, f := range []struct{ what, text string }{{"user's name", name}, {"assistant's name", assistant}} {
+		if err := tooLong(f.what, f.text, maxName, "a name goes here; the rest goes in about or in the personality"); err != nil {
+			return nil, err
+		}
 	}
 	word := func(key string) string { return i18n.T(b.Language, "profile."+key) }
 	if workStyleIn(in.About) || workStyleIn(in.WorkStyle) {
@@ -77,7 +84,7 @@ func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
 	if style := strings.TrimSpace(in.WorkStyle); style != "" {
 		body.WriteString(style + "\n")
 	}
-	assistant, personality := strings.TrimSpace(in.Assistant), strings.TrimSpace(in.Personality)
+	personality := strings.TrimSpace(in.Personality)
 	if assistant != "" || personality != "" {
 		// Only lines with something in them: an empty "- Name:" line is what marks a
 		// blank profile (ProfileEmpty).
@@ -94,6 +101,9 @@ func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
 		Header: memory.Header{ID: "profile", Type: "profile", Title: word("title"), Summary: word("summary"),
 			Created: created, Updated: b.today()},
 		Body: body.String(),
+	}
+	if err := tooLong("profile", n.Body, maxProfile, "keep in the profile who the user is and how they like to work, and put the rest in knowledge notes (knowledge_new)"); err != nil {
+		return nil, err
 	}
 	if what := guard.FindSecret(n.Body); what != "" {
 		return nil, secretError(what)
@@ -150,6 +160,22 @@ func takeSection(lines []string, key string) (section, rest []string, found bool
 	return nil, lines, false
 }
 
+// takeAll takes every section under the heading key out of lines (see takeSection):
+// their lines, one after the other, and the lines left.
+func takeAll(lines []string, key string) (sections, rest []string) {
+	rest = lines
+	for {
+		section, left, found := takeSection(rest, key)
+		if !found {
+			return sections, rest
+		}
+		if len(sections) > 0 {
+			sections = append(sections, "")
+		}
+		sections, rest = append(sections, section...), left
+	}
+}
+
 // assistantFrom reads the Assistant section: its first name line is the assistant's
 // name, everything else is the personality.
 func assistantFrom(section []string) (name, personality string) {
@@ -201,24 +227,12 @@ func LoadProfile(cfgDir string) (ProfileInput, error) {
 		return ProfileInput{}, err
 	}
 	var in ProfileInput
-	section, lines, _ := takeSection(strings.Split(n.Body, "\n"), "profile.assistant")
-	in.Assistant, in.Personality = assistantFrom(section)
-	rest := lines
-	for i, l := range lines {
-		if !heading(l, "profile.work") {
-			continue
-		}
-		end := len(lines)
-		for j := i + 1; j < len(lines); j++ {
-			if strings.HasPrefix(lines[j], "## ") {
-				end = j
-				break
-			}
-		}
-		in.WorkStyle = strings.TrimSpace(strings.Join(lines[i+1:end], "\n"))
-		rest = append(slices.Clip(lines[:i]), lines[end:]...)
-		break
-	}
+	// A heading written twice (by hand, or by an earlier program that took a name of
+	// several lines) has its sections joined, so what is loaded can always be saved.
+	assistant, rest := takeAll(strings.Split(n.Body, "\n"), "profile.assistant")
+	in.Assistant, in.Personality = assistantFrom(assistant)
+	work, rest := takeAll(rest, "profile.work")
+	in.WorkStyle = strings.TrimSpace(strings.Join(work, "\n"))
 	var about []string
 	aboutHeading, otherHeading := false, false
 	for _, l := range rest {

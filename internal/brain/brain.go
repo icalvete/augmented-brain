@@ -146,6 +146,9 @@ func (b *Brain) save(n *memory.Note) error {
 	if b.broken(n.Path) {
 		return fmt.Errorf("%s is not a valid note, so it is not written over; fix it first (`augmented-brain check` says what is wrong)", n.Path)
 	}
+	if err := checkHeader(n, b.Mem.Notes[n.Header.ID]); err != nil {
+		return err
+	}
 	if err := noNewSecret(n, b.Mem.Notes[n.Header.ID]); err != nil {
 		return err
 	}
@@ -241,7 +244,7 @@ func (b *Brain) NewTask(in NewTaskInput) (*memory.Note, error) {
 		return nil, err
 	}
 	next := b.text("next")
-	body := strings.NewReplacer("{{SUMMARY}}", in.Summary, "{{NEXT}}", next, "{{DATE}}", b.today()).Replace(string(tmpl))
+	body := strings.NewReplacer("{{SUMMARY}}", memory.OneLine(in.Summary), "{{NEXT}}", next, "{{DATE}}", b.today()).Replace(string(tmpl))
 	if g := oneLine(in.Goal); g != "" {
 		body = setLine(body, "goal", g)
 	}
@@ -365,7 +368,7 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 		if strings.TrimSpace(in.WatchWhat) == "" {
 			return nil, errors.New("a watch date needs what to look at")
 		}
-		h.Watch = append(h.Watch, memory.Watch{Date: in.WatchDate, What: strings.TrimSpace(in.WatchWhat)})
+		h.Watch = append(h.Watch, memory.Watch{Date: in.WatchDate, What: memory.OneLine(in.WatchWhat)})
 		sort.SliceStable(h.Watch, func(i, j int) bool { return h.Watch[i].Date < h.Watch[j].Date })
 	}
 	if in.WatchDone != "" {
@@ -414,6 +417,9 @@ func (b *Brain) Journal(id, entry string) (*memory.Note, error) {
 	if strings.TrimSpace(entry) == "" {
 		return nil, errors.New("the journal entry is empty")
 	}
+	if err := tooLong("journal entry", entry, maxJournal, longText); err != nil {
+		return nil, err
+	}
 	cp := *n
 	cp.Body = b.journalLine(cp.Body, entry)
 	return &cp, b.save(&cp)
@@ -433,9 +439,11 @@ func (b *Brain) journalLine(body, entry string) string {
 	if body != "" && !strings.HasSuffix(body, "\n") {
 		body += "\n"
 	}
-	entry = strings.TrimSpace(entry)
+	entry = multiline(entry)
 	if b.origin != "" {
 		entry += fromMark(b.origin)
+	} else {
+		entry = b.ownWords(entry, false)
 	}
 	return body + memory.DatedLine(b.today(), entry)
 }
@@ -452,7 +460,8 @@ type ParkInput struct {
 // Park pauses a task: status parked (or someday), the next step, a journal entry, and
 // optionally a rewritten essentials section (the first section of the body).
 func (b *Brain) Park(in ParkInput) (*memory.Note, error) {
-	if strings.TrimSpace(in.Next) == "" {
+	in.Next = memory.OneLine(in.Next)
+	if in.Next == "" {
 		return nil, errors.New("parking needs the next step: exactly how to resume")
 	}
 	n, err := b.Task(in.ID)
@@ -535,7 +544,7 @@ func setLine(body, key, value string) string {
 }
 
 // oneLine joins text into one line.
-func oneLine(text string) string { return strings.Join(strings.Fields(text), " ") }
+func oneLine(text string) string { return memory.OneLine(text) }
 
 // replaceFirstSection swaps the text under the first level-2 heading ("## " at the start
 // of a line, outside code blocks) for text. It only does so when another level-2
@@ -708,12 +717,17 @@ func (b *Brain) open(c *config.Config, s *config.Space) (*Brain, error) {
 }
 
 func (b *Brain) capture(text, remind, from string) error {
-	text = strings.TrimSpace(strings.ReplaceAll(text, "\n", " "))
+	text = memory.OneLine(text)
 	if text == "" {
 		return errors.New("nothing to capture")
 	}
+	if err := tooLong("capture", text, maxCapture, longText); err != nil {
+		return err
+	}
 	if from != "" {
 		text += fromMark(from)
+	} else {
+		text = b.ownWords(text, true)
 	}
 	if remind != "" {
 		if err := checkDate(remind); err != nil {

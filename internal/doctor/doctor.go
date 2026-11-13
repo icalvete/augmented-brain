@@ -634,7 +634,7 @@ func panelRemote(e Env, c *config.Config) []Check {
 	case !st.HTTPS:
 		return []Check{{Warning, i18n.T(l, "doctor.panelremote.nohttps"), i18n.T(l, "doctor.panelremote.nohttps.fix")}}
 	}
-	if cur, err := tn.Served(); err == nil && cur != "" && cur != "other" && !remotePanelRunning(c.Dir) {
+	if cur, err := tn.Served(); err == nil && tailnet.Ours(cur, tailnet.Published(c.Dir)) && !remotePanelRunning(c.Dir) {
 		return []Check{{Warning, i18n.T(l, "doctor.panelremote.leftover", tailnet.Port, cur),
 			i18n.T(l, "doctor.panelremote.leftover.fix", tailnet.Port)}}
 	}

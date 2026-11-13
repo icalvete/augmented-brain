@@ -19,6 +19,12 @@ Hay cosas que valen para todas:
 - **Nada de secretos.** Una herramienta se niega a escribir una contraseña, un token o
   una clave en una nota.
 - **No se borra nada.** Las tareas se cierran, no se quitan.
+- **Títulos, resúmenes, siguientes pasos y nombres van en una línea.** Sus saltos de
+  línea pasan a ser espacios, así que un texto copiado de fuera nunca puede abrir una
+  sección propia en lo que lee cada sesión al empezar. Cada campo tiene un límite
+  holgado (un siguiente paso, 2.000 caracteres; una entrada del diario, 32.000): si se
+  pasa, no se guarda nada y el error dice dónde va el texto largo. El
+  [formato de la memoria](../spec/memory-format.md#file-header) (en inglés) los lista todos.
 - Las fechas se escriben `AAAA-MM-DD`.
 - Un parámetro es obligatorio salvo que diga opcional.
 
@@ -46,8 +52,8 @@ están vivas. No tiene parámetros.
 ## `pending`
 
 Las tareas vivas, primero las que esperan por ti, cada una con su estado, los pasos
-hechos, a quién espera y su siguiente paso. Después, las fechas para revisar que han
-llegado. Claude la usa para "¿en qué estábamos?".
+hechos, a quién espera y su siguiente paso (cortado a 300 caracteres: `task_get` lo da
+entero). Después, las fechas para revisar que han llegado. Claude la usa para "¿en qué estábamos?".
 
 - `within_days` (opcional): lista también las fechas para revisar que llegan en estos
   días. Por defecto, 7.

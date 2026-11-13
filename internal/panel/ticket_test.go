@@ -50,7 +50,7 @@ func TestTicketOnce(t *testing.T) {
 	// Run out: 410 too, and it stays spent.
 	w = s.askTicket(t, url.Values{"page": {""}})
 	id = strings.TrimSpace(w.Body.String())
-	if page, why := s.tickets.spend(id, time.Now().Add(TicketTTL+time.Second)); page != "" || why != "expired" {
+	if page, why := s.tickets.spend(id, false, time.Now().Add(TicketTTL+time.Second)); page != "" || why != "expired" {
 		t.Errorf("late: %q %q", page, why)
 	}
 	s.tickets.m[id].expires = time.Now().Add(-time.Second)
@@ -87,16 +87,29 @@ func TestTicketOnlyForTheCommand(t *testing.T) {
 	if w := s.do(t, req{path: "/t/" + id, host: rhost, owner: "guest@example.com"}); w.Code != http.StatusForbidden {
 		t.Errorf("someone else in the network: %d", w.Code)
 	}
+	// A program of this machine cannot spend the phone's ticket on 127.0.0.1.
+	if w := s.do(t, req{path: "/t/" + id}); w.Code != http.StatusForbidden {
+		t.Errorf("the phone's ticket on 127.0.0.1: %d", w.Code)
+	}
 	if w := s.do(t, req{path: "/t/" + id, host: rhost, owner: owner}); w.Code != http.StatusSeeOther {
 		t.Errorf("the owner's phone: %d", w.Code)
 	}
-	if page, why := s.tickets.spend("x", time.Now()); page != "" || why != "unknown" {
+	// Nor is a ticket for this machine's browser any use through the network.
+	w = s.askTicket(t, url.Values{"page": {""}})
+	local := strings.TrimSpace(w.Body.String())
+	if w := s.do(t, req{path: "/t/" + local, host: rhost, owner: owner}); w.Code != http.StatusForbidden {
+		t.Errorf("a local ticket through the network: %d", w.Code)
+	}
+	if w := s.do(t, req{path: "/t/" + local}); w.Code != http.StatusSeeOther {
+		t.Errorf("the local ticket, still good on 127.0.0.1: %d", w.Code)
+	}
+	if page, why := s.tickets.spend("x", true, time.Now()); page != "" || why != "unknown" {
 		t.Errorf("spend x: %q %q", page, why)
 	}
 	// A remote ticket waits longer, for the phone.
 	w = s.askTicket(t, url.Values{"page": {""}, "remote": {"1"}})
 	id = strings.TrimSpace(w.Body.String())
-	if page, why := s.tickets.spend(id, time.Now().Add(TicketTTL+time.Minute)); why != "" || page != "" {
+	if page, why := s.tickets.spend(id, true, time.Now().Add(TicketTTL+time.Minute)); why != "" || page != "" {
 		t.Errorf("remote ticket after %v: %q", TicketTTL+time.Minute, why)
 	}
 }

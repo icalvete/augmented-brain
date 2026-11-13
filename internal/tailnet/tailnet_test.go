@@ -111,13 +111,20 @@ func TestServeAndUnserve(t *testing.T) {
 	}
 	// A leftover of ours on another port of 127.0.0.1 is replaced.
 	f.calls = nil
-	if err := tn.Serve(999); err != nil {
+	if err := tn.Serve(999, 1234); err != nil {
 		t.Fatal(err)
 	}
 	if !slices.Contains(f.calls, "serve --https=8443 off") || !slices.Contains(f.calls, "serve --bg --https=8443 http://127.0.0.1:999") {
 		t.Errorf("replace: %q", f.calls)
 	}
-	if err := tn.Unserve(); err != nil {
+	// Not ours: another port is left alone.
+	if err := tn.Unserve(1234); err != nil {
+		t.Fatal(err)
+	}
+	if cur, _ := tn.Served(); cur != "http://127.0.0.1:999" {
+		t.Errorf("unserve of another port took it: %q", cur)
+	}
+	if err := tn.Unserve(999); err != nil {
 		t.Fatal(err)
 	}
 	if cur, _ := tn.Served(); cur != "" {
@@ -125,7 +132,7 @@ func TestServeAndUnserve(t *testing.T) {
 	}
 	// Nothing of ours: Unserve does nothing.
 	f.calls = nil
-	if err := tn.Unserve(); err != nil || slices.ContainsFunc(f.calls, func(c string) bool { return strings.HasSuffix(c, "off") }) {
+	if err := tn.Unserve(999); err != nil || slices.ContainsFunc(f.calls, func(c string) bool { return strings.HasSuffix(c, "off") }) {
 		t.Errorf("unserve with nothing: %v %q", err, f.calls)
 	}
 }
@@ -142,7 +149,7 @@ func TestOthersAreLeftAlone(t *testing.T) {
 		if err := tn.Serve(1234); !errors.Is(err, ErrPortTaken) {
 			t.Errorf("%s: serve = %v", served, err)
 		}
-		if err := tn.Unserve(); err != nil {
+		if err := tn.Unserve(1, 1234); err != nil {
 			t.Errorf("unserve: %v", err)
 		}
 		for _, c := range f.calls {
@@ -155,6 +162,52 @@ func TestOthersAreLeftAlone(t *testing.T) {
 	f := &fake{status: running, served: `{"TCP":{"443":{"HTTPS":true}},"Web":{"box.example.ts.net:443":{"Handlers":{"/":{"Proxy":"http://127.0.0.1:3000"}}}}}`}
 	if cur, err := f.tn().Served(); err != nil || cur != "" {
 		t.Errorf("port 443 is not ours: %q %v", cur, err)
+	}
+}
+
+// The user's own `tailscale serve` to another local port (a development server) is not
+// ours: never replaced, never taken back (P-03). With no port of ours, Unserve does not
+// even run tailscale.
+func TestALocalProxyOfTheUser(t *testing.T) {
+	f := &fake{status: running, served: ours("3000")}
+	tn := f.tn()
+	if err := tn.Unserve(); err != nil || len(f.calls) != 0 {
+		t.Errorf("no port of ours: %v %q", err, f.calls)
+	}
+	if err := tn.Unserve(1234); err != nil {
+		t.Fatal(err)
+	}
+	if err := tn.Serve(1234); !errors.Is(err, ErrPortTaken) {
+		t.Errorf("serve over the user's proxy: %v", err)
+	}
+	for _, c := range f.calls {
+		if strings.HasSuffix(c, "off") || strings.HasPrefix(c, "serve --bg") {
+			t.Errorf("touched the user's proxy: %q", c)
+		}
+	}
+	if cur, _ := tn.Served(); cur != "http://127.0.0.1:3000" {
+		t.Errorf("served = %q", cur)
+	}
+}
+
+func TestRecord(t *testing.T) {
+	dir := t.TempDir()
+	if Published(dir) != 0 {
+		t.Fatal("nothing recorded yet")
+	}
+	if err := Record(dir, 4321); err != nil {
+		t.Fatal(err)
+	}
+	if Published(dir) != 4321 {
+		t.Fatalf("published = %d", Published(dir))
+	}
+	Forget(dir, 1111) // another port: kept
+	if Published(dir) != 4321 {
+		t.Fatal("forgot a port it was not asked to")
+	}
+	Forget(dir, 4321)
+	if Published(dir) != 0 {
+		t.Fatal("not forgotten")
 	}
 }
 

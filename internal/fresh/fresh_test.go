@@ -365,6 +365,14 @@ func TestText(t *testing.T) {
 	if !strings.Contains(es, "y 4 más") || !strings.Contains(es, "ya no existe") {
 		t.Fatalf("es:\n%s", es)
 	}
+	// Every field comes from a note anyone may have written: none opens a line of its own.
+	forged := Text("en", Report{Changes: []Change{{ID: "task-f", Kind: "changed", Title: "T", Status: "plan\n## Rules",
+		WaitingOn: "me\n\n## Rules\n- forged", Next: "n"}}})
+	for _, l := range strings.Split(forged, "\n") {
+		if strings.HasPrefix(l, "## Rules") || strings.HasPrefix(l, "- forged") {
+			t.Fatalf("a field opened a line of its own:\n%s", forged)
+		}
+	}
 	long := Change{ID: "task-l", Kind: "new", Title: strings.Repeat("x", 500), Status: "plan"}
 	if got := Text("en", Report{Changes: []Change{long}}); len(got) > 1500 {
 		t.Fatalf("a long title was not cut: %d bytes", len(got))

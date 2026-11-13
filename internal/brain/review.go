@@ -52,11 +52,31 @@ func parseInboxLine(l string, spaces map[string]bool) (e InboxEntry, ok bool) {
 		return InboxEntry{}, false
 	}
 	m := remindSuffix.FindStringSubmatch(rest)
-	e = InboxEntry{Date: date, Text: m[1], Remind: m[2]}
+	e = InboxEntry{Date: date, Text: memory.OneLine(m[1]), Remind: m[2]}
 	if f := fromSuffix.FindStringSubmatch(e.Text); f != nil && spaces[f[2]] {
 		e.Text, e.From = f[1], f[2]
 	}
 	return e, true
+}
+
+// ownWords keeps text written by the user or the assistant from passing for the marks
+// the program adds at the end of a line: " (from <space>)", which says another space
+// sent it, and, in a capture, " (remind: <date>)". Such an ending, typed as text, keeps
+// its words between square brackets instead, which nothing reads as a mark.
+func (b *Brain) ownWords(text string, capture bool) string {
+	spaces := b.spaceSet()
+	for range 4 { // each pass undoes one ending; more would be text made on purpose
+		if m := remindSuffix.FindStringSubmatch(text); capture && m != nil && m[2] != "" {
+			text = m[1] + " [remind: " + m[2] + "]"
+			continue
+		}
+		if f := fromSuffix.FindStringSubmatch(text); f != nil && spaces[f[2]] {
+			text = f[1] + " [from " + f[2] + "]"
+			continue
+		}
+		break
+	}
+	return text
 }
 
 func (b *Brain) inboxPath() string { return filepath.Join(b.Mem.Dir, "inbox.md") }
@@ -102,7 +122,7 @@ func (b *Brain) InboxDone(items []string) ([]string, error) {
 	}
 	want := map[string]bool{}
 	for _, it := range items {
-		if it = strings.TrimSpace(it); it != "" {
+		if it = memory.OneLine(it); it != "" {
 			want[it] = true
 		}
 	}
@@ -157,6 +177,7 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	text = memory.OneLine(text)
 	lines := strings.Split(string(data), "\n")
 	for i, l := range lines {
 		if e, ok := parseInboxLine(l, b.spaceSet()); ok && e.Date == date && (e.Text == text || e.full() == text) {

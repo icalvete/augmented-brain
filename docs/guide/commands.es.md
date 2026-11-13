@@ -566,8 +566,10 @@ Entonces termina sola y dice cómo ha ido, en una línea.
 augmented-brain watch pr 104 --task task-my-change
 ```
 
-- `--task TAREA` apunta esa línea en la tarea: en su diario (con el siguiente paso que
-  tenía) y como su siguiente paso. Las demás sesiones se enteran antes de su próxima
+- `--task TAREA` apunta esa línea en el diario de la tarea (con el siguiente paso que
+  tenía), y lo que ha pasado, en una frase del propio programa, como su siguiente paso:
+  los nombres de los checks los elige quien escribe los workflows de la pull request,
+  así que van solo al diario, nunca a lo que lee cada sesión al empezar. Las demás sesiones se enteran antes de su próxima
   respuesta, y Hoy, en el panel, lo enseña. La vigilancia la hace entonces un proceso
   propio, que sigue aunque la sesión que la lanzó se cierre, se reinicie o Claude la
   retire: la sesión solo espera su resultado. Si se pide otra vez para la misma pull
@@ -575,10 +577,11 @@ augmented-brain watch pr 104 --task task-my-change
   tiene que ser del espacio de esta carpeta.
 - `--repo DUEÑO/NOMBRE` es el repositorio; por defecto, el de esta carpeta.
 - `--max` es lo más que vigila (3h por defecto); `--every`, cada cuánto mira (30s por
-  defecto).
+  defecto, 10s como mínimo).
 
 Los checks que no son obligatorios no deciden nada, pero la línea nombra los que siguen
-en marcha o han fallado. Nunca espera para siempre: si GitHub no da ningún check
+en marcha o han fallado: cada nombre entre comillas, en una línea y cortado a 60
+caracteres, cinco como mucho. Nunca espera para siempre: si GitHub no da ningún check
 obligatorio en 5 minutos, o gh falla tres veces seguidas o da una respuesta que no
 entiende, para y dice qué ha dicho gh. Necesita `gh` con tu login de GitHub. El
 asistente la lanza en segundo plano; su última línea le pide que te lo diga en el acto.
