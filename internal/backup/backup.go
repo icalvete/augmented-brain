@@ -140,18 +140,6 @@ func sameDir(a, b string) bool {
 	return a == b
 }
 
-// checkURL refuses what cannot be a repository's address: nothing, or something git
-// would read as one of its options.
-func checkURL(url string) error {
-	switch {
-	case strings.TrimSpace(url) == "":
-		return errors.New("the backup needs the URL of a private repository")
-	case strings.HasPrefix(strings.TrimSpace(url), "-"):
-		return fmt.Errorf("%q is not the address of a repository", url)
-	}
-	return nil
-}
-
 // links returns the symbolic links in the tree of rev in the repository at dir. A
 // backup never holds one: augmented brain writes none, and one in a backup could make
 // a write of a note land outside the notes, or a read take a file from elsewhere.
@@ -398,7 +386,11 @@ func writeMeta(c *config.Config, s *config.Space) error {
 		return err
 	}
 	carries := ProfileSpace(c) == s.Name
-	one := &config.Config{Language: c.Language, Spaces: map[string]*config.Space{s.Name: s}, Dir: dir}
+	// The address travels inside the backup: never a password in it, even one an
+	// earlier version let into config.toml (doctor tells the user to take it out).
+	kept := *s
+	kept.Backup = WithoutPassword(s.Backup)
+	one := &config.Config{Language: c.Language, Spaces: map[string]*config.Space{s.Name: &kept}, Dir: dir}
 	if carries {
 		one.DefaultSpace = s.Name // so a restore makes it the default space again
 	}

@@ -19,14 +19,19 @@ conecta y hace la primera copia. Para eso usa `gh`, la herramienta oficial de Gi
 la terminal. Si no la tienes, Claude te dice cómo instalarla, y te guía en el único paso
 que necesita tu navegador: entrar con tu cuenta.
 
-¿Prefieres otro sitio (GitLab, el git de tu empresa)? Dale a Claude la dirección del
-repositorio, o hazlo tú, en una carpeta del espacio:
+¿Prefieres otro sitio (GitLab, el git de tu empresa)? Hazlo tú, en una carpeta del
+espacio:
 
 ```bash
 augmented-brain backup setup git@gitlab.com:lucia/cerebro-trabajo.git
 ```
 
-Usa un repositorio **privado**: dentro van tus notas.
+Claude no acepta una dirección para esto: una que le hubiera pasado una página o un
+mensaje que leyó mandaría allí todas tus notas. Usa un repositorio **privado**: dentro van
+tus notas. Y una dirección sin contraseña: queda guardada en la configuración y dentro de
+la propia copia, así que `backup setup` la rechaza. Deja que git guarde el acceso (en
+GitHub, `gh auth setup-git`; o una dirección ssh como la de arriba). Si una versión
+anterior guardó una, `augmented-brain doctor` te dice cómo quitarla.
 
 La página [Copia de seguridad](panel.es.md#copia-de-seguridad) del panel hace lo mismo con
 dos botones, y enseña las últimas copias de cada espacio y un **Hacer una copia ahora**.

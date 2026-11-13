@@ -1960,14 +1960,19 @@ connects it and makes the first copy. For that it uses `gh`, GitHub's official c
 line. If you do not have it, Claude tells you how to install it, and walks you through
 the one step that needs your browser: logging in.
 
-Rather somewhere else (GitLab, your company's git)? Give Claude the repository's address,
-or do it yourself, in a folder of the space:
+Rather somewhere else (GitLab, your company's git)? Do it yourself, in a folder of the
+space:
 
 ```bash
 augmented-brain backup setup git@gitlab.com:lucia/brain-work.git
 ```
 
-Use a **private** repository: your notes are in it.
+Claude does not take an address for this: one it was handed by a page or a message it
+read would send all your notes there. Use a **private** repository: your notes are in
+it. And an address without a password: it is kept in the configuration and inside the
+backup itself, so `backup setup` refuses one. Let git keep the login instead (for
+GitHub, `gh auth setup-git`; or an ssh address like the one above). If an earlier version
+kept one, `augmented-brain doctor` tells you how to take it out.
 
 The panel's [Backup](https://icalvete.github.io/augmented-brain/guide/panel.html#backup) page does the same with two buttons, and shows
 each space's last copies and a **Back up now**.
@@ -3695,13 +3700,17 @@ shows it. Saving a name that is listed changes what it is for.
 Sets up the backup of this space: a private git repository that keeps its notes, pushed
 by itself every time a session ends.
 
-- `repo_url` (optional): a private git repository you can push to. Without it, the tool
-  creates `augmented-brain-<space>` in your GitHub account with the `gh` command line.
-  When `gh` is missing or not logged in, it returns the steps to guide you through.
+It creates `augmented-brain-<space>`, a private repository in your GitHub account, with
+the `gh` command line, and makes the first copy right away. When `gh` is missing or not
+logged in, it returns the steps to guide you through.
 
-It makes the first copy right away. If the space already has a backup, it says where it
-goes and how the last one went; it never moves it elsewhere: only you do, with
-`augmented-brain backup setup <url>`.
+- `repo_url`: refused. A backup somewhere else (GitLab, your company's git) is yours to
+  set up, with `augmented-brain backup setup <url>` or the panel's Backup page: an
+  address Claude passes on could come from anything it read, and one call would send
+  every note there.
+
+If the space already has a backup, it says where it goes and how the last one went; it
+never moves it elsewhere: only you do, with `augmented-brain backup setup <url>`.
 
 ## `session_recover`
 
@@ -3812,7 +3821,8 @@ Claude never edits this file on its own: the guard asks you first. Two tools add
 and only add:
 
 - `safety_save` adds production profiles and untouchable machines.
-- `backup_setup` writes a space's `backup`, and never moves an existing backup elsewhere.
+- `backup_setup` writes a space's `backup`, only for the repository it creates in your
+  GitHub account, and never moves an existing backup elsewhere.
 
 To take anything out, edit the file yourself.
 

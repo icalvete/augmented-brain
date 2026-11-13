@@ -26,7 +26,7 @@ func (s *Server) space(v *view, _ *http.Request) (string, page, error) {
 		Mismatches                                                         []brain.Mismatch
 		Notes, Dead                                                        int
 		IndexStale, BackupKnown, BackupOK, ReviewDue, IsDefault            bool
-	}{Memory: sp.Memory, Backup: sp.Backup, LastReview: v.b.LastReview(), WorkFolders: sp.WorkFolders,
+	}{Memory: sp.Memory, Backup: backup.WithoutPassword(sp.Backup), LastReview: v.b.LastReview(), WorkFolders: sp.WorkFolders,
 		Problems: problems, Notes: len(v.b.Mem.Notes), IndexStale: string(current) != v.b.Mem.Index(v.lang),
 		ReviewDue: due, IsDefault: v.c.DefaultSpace == sp.Name, Mismatches: v.b.Mismatches()}
 	d.Dead = len(state.Read(v.c.Dir, sp.Name).Unclosed("", time.Now()))

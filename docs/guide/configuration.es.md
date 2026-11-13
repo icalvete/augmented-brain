@@ -96,8 +96,8 @@ Claude nunca edita este fichero por su cuenta: el guardia te pregunta antes. Dos
 herramientas le añaden cosas, y solo añaden:
 
 - `safety_save` añade perfiles de producción y máquinas intocables.
-- `backup_setup` escribe el `backup` de un espacio, y nunca lleva a otro sitio una copia
-  que ya existe.
+- `backup_setup` escribe el `backup` de un espacio, solo para el repositorio que crea en
+  tu cuenta de GitHub, y nunca lleva a otro sitio una copia que ya existe.
 
 Para quitar cualquier cosa, edita tú el fichero.
 

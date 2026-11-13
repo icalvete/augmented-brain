@@ -170,8 +170,9 @@
   <ul><li><code>service</code>: the service the secret is kept under in the keychain, such as <code>telegram</code>.</li><li><code>name</code>: its name under that service, such as <code>alerts-bot</code>.</li><li><code>what</code> (optional): what it is for, in a few words.</li></ul>
   <h2 id="backup_setup"><code>backup_setup</code></h2>
   <p>Sets up the backup of this space: a private git repository that keeps its notes, pushed by itself every time a session ends.</p>
-  <ul><li><code>repo_url</code> (optional): a private git repository you can push to. Without it, the tool creates <code>augmented-brain-&lt;space&gt;</code> in your GitHub account with the <code>gh</code> command line. When <code>gh</code> is missing or not logged in, it returns the steps to guide you through.</li></ul>
-  <p>It makes the first copy right away. If the space already has a backup, it says where it goes and how the last one went; it never moves it elsewhere: only you do, with <code>augmented-brain backup setup &lt;url&gt;</code>.</p>
+  <p>It creates <code>augmented-brain-&lt;space&gt;</code>, a private repository in your GitHub account, with the <code>gh</code> command line, and makes the first copy right away. When <code>gh</code> is missing or not logged in, it returns the steps to guide you through.</p>
+  <ul><li><code>repo_url</code>: refused. A backup somewhere else (GitLab, your company's git) is yours to set up, with <code>augmented-brain backup setup &lt;url&gt;</code> or the panel's Backup page: an address Claude passes on could come from anything it read, and one call would send every note there.</li></ul>
+  <p>If the space already has a backup, it says where it goes and how the last one went; it never moves it elsewhere: only you do, with <code>augmented-brain backup setup &lt;url&gt;</code>.</p>
   <h2 id="session_recover"><code>session_recover</code></h2>
   <p>Reads what you and Claude said in an earlier session of this space that did not end well, after the last journal entry of its task. Only the messages, no tool output, at most the last 20,000 characters, from Claude Code's record on this computer (kept 30 days). Claude then writes in the journal what is missing.</p>
   <ul><li><code>session_id</code> (optional): the session to recover. Without it, the one the session start offered.</li></ul>

@@ -17,6 +17,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
+	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/setup"
@@ -343,30 +344,53 @@ func TestSafetySave(t *testing.T) {
 	}
 }
 
-// backup_setup with a repository given: connected, first copy pushed, and asking again
-// says where it backs up.
+// backup_setup never takes an address (found in the review of 2026-11-13, N-01): one
+// call would send every note wherever the assistant was told. It writes nothing and
+// pushes nothing; once the user has set it up, the tool says where it backs up and
+// never moves it.
 func TestBackupSetup(t *testing.T) {
 	if _, err := exec.LookPath("git"); err != nil {
 		t.Skip("git not installed")
 	}
-	cs := connect(t, space(t))
+	open := space(t)
+	cs := connect(t, open)
 	remote := filepath.Join(t.TempDir(), "remote.git")
 	if out, err := exec.Command("git", "init", "-q", "--bare", "-b", "main", remote).CombinedOutput(); err != nil {
 		t.Fatal(err, string(out))
 	}
-	out, isErr := call(t, cs, "backup_setup", map[string]any{"repo_url": remote})
-	if isErr || !strings.Contains(out, "Backup of space work set up") {
-		t.Fatalf("setup: %s", out)
+	cfgDir := filepath.Join(os.Getenv("HOME"), "cfg")
+	for _, url := range []string{remote, "https://x:y@example.com/r.git"} {
+		out, isErr := call(t, cs, "backup_setup", map[string]any{"repo_url": url})
+		if !isErr || !strings.Contains(out, "augmented-brain backup setup <url>") {
+			t.Errorf("setup with %s: %v %s", url, isErr, out)
+		}
 	}
-	if log, err := exec.Command("git", "--git-dir", remote, "log", "--oneline", "main").CombinedOutput(); err != nil || len(log) == 0 {
-		t.Errorf("nothing pushed: %v %s", err, log)
+	if b, _ := os.ReadFile(filepath.Join(cfgDir, config.FileName)); strings.Contains(string(b), "backup") {
+		t.Errorf("config.toml gained a backup:\n%s", b)
 	}
-	// Found in the review of 2026-11-03: the tool never moves a backup somewhere else.
+	if log, err := exec.Command("git", "--git-dir", remote, "log", "--oneline", "--all").CombinedOutput(); err != nil || len(log) != 0 {
+		t.Errorf("something was pushed: %v %s", err, log)
+	}
+
+	// The user sets it up in a terminal.
+	b, err := open()
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := config.Load(cfgDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := backup.Setup(c, c.Spaces[b.Space.Name], remote); err != nil {
+		t.Fatal(err)
+	}
 	if out, isErr := call(t, cs, "backup_setup", map[string]any{"repo_url": remote + "-other"}); !isErr || !strings.Contains(out, "is for the user") {
 		t.Errorf("moving the backup through the tool: %s", out)
 	}
-	if out, _ := call(t, cs, "backup_setup", map[string]any{}); !strings.Contains(out, "already backs up to "+remote) {
-		t.Errorf("second call: %s", out)
+	for _, in := range []map[string]any{{}, {"repo_url": remote}} {
+		if out, _ := call(t, cs, "backup_setup", in); !strings.Contains(out, "already backs up to "+remote) {
+			t.Errorf("asking again (%v): %s", in, out)
+		}
 	}
 }
 

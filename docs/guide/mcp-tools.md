@@ -338,13 +338,17 @@ shows it. Saving a name that is listed changes what it is for.
 Sets up the backup of this space: a private git repository that keeps its notes, pushed
 by itself every time a session ends.
 
-- `repo_url` (optional): a private git repository you can push to. Without it, the tool
-  creates `augmented-brain-<space>` in your GitHub account with the `gh` command line.
-  When `gh` is missing or not logged in, it returns the steps to guide you through.
+It creates `augmented-brain-<space>`, a private repository in your GitHub account, with
+the `gh` command line, and makes the first copy right away. When `gh` is missing or not
+logged in, it returns the steps to guide you through.
 
-It makes the first copy right away. If the space already has a backup, it says where it
-goes and how the last one went; it never moves it elsewhere: only you do, with
-`augmented-brain backup setup <url>`.
+- `repo_url`: refused. A backup somewhere else (GitLab, your company's git) is yours to
+  set up, with `augmented-brain backup setup <url>` or the panel's Backup page: an
+  address Claude passes on could come from anything it read, and one call would send
+  every note there.
+
+If the space already has a backup, it says where it goes and how the last one went; it
+never moves it elsewhere: only you do, with `augmented-brain backup setup <url>`.
 
 ## `session_recover`
 

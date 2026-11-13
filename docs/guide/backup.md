@@ -17,14 +17,19 @@ connects it and makes the first copy. For that it uses `gh`, GitHub's official c
 line. If you do not have it, Claude tells you how to install it, and walks you through
 the one step that needs your browser: logging in.
 
-Rather somewhere else (GitLab, your company's git)? Give Claude the repository's address,
-or do it yourself, in a folder of the space:
+Rather somewhere else (GitLab, your company's git)? Do it yourself, in a folder of the
+space:
 
 ```bash
 augmented-brain backup setup git@gitlab.com:lucia/brain-work.git
 ```
 
-Use a **private** repository: your notes are in it.
+Claude does not take an address for this: one it was handed by a page or a message it
+read would send all your notes there. Use a **private** repository: your notes are in
+it. And an address without a password: it is kept in the configuration and inside the
+backup itself, so `backup setup` refuses one. Let git keep the login instead (for
+GitHub, `gh auth setup-git`; or an ssh address like the one above). If an earlier version
+kept one, `augmented-brain doctor` tells you how to take it out.
 
 The panel's [Backup](panel.md#backup) page does the same with two buttons, and shows
 each space's last copies and a **Back up now**.
