@@ -311,6 +311,13 @@ func TestPanelRemoteLine(t *testing.T) {
 		t.Errorf("ready: %+v", c)
 	}
 	served = `{"TCP":{"8443":{"HTTPS":true}},"Web":{"box.example.ts.net:8443":{"Handlers":{"/":{"Proxy":"http://127.0.0.1:4321"}}}}}`
+	// A proxy to a local port the panel never recorded is the user's own (P-03).
+	if c := find(Run(env), "remote panel"); c == nil || c.Status != OK {
+		t.Errorf("the user's own proxy taken for a leftover: %+v", c)
+	}
+	if err := tailnet.Record(cfg, 4321); err != nil {
+		t.Fatal(err)
+	}
 	if c := find(Run(env), "remote panel"); c == nil || c.Status != Warning || !strings.Contains(c.Fix, "tailscale serve --https=8443 off") {
 		t.Errorf("leftover: %+v", c)
 	}

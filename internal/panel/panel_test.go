@@ -59,8 +59,11 @@ type req struct {
 	method, path, host, origin, referer string
 	bearer                              string
 	owner                               string // the Tailscale login header
-	form                                url.Values
-	body                                string
+	// net sends it through the network's socket, the one Tailscale reaches; so does
+	// owner, since only Tailscale sets that header.
+	net  bool
+	form url.Values
+	body string
 }
 
 func (s *Server) do(t *testing.T, r req) *httptest.ResponseRecorder {
@@ -95,7 +98,11 @@ func (s *Server) do(t *testing.T, r req) *httptest.ResponseRecorder {
 		q.Header.Set(OwnerHeader, r.owner)
 	}
 	w := httptest.NewRecorder()
-	s.ServeHTTP(w, q)
+	if r.net || r.owner != "" {
+		s.serveNet(w, q)
+	} else {
+		s.ServeHTTP(w, q)
+	}
 	return w
 }
 

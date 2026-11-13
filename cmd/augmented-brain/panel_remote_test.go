@@ -107,3 +107,40 @@ func TestQRText(t *testing.T) {
 		t.Error("no light quiet zone around the code")
 	}
 }
+
+// The user's own `tailscale serve` on port 8443 to another local port (a development
+// server) is not the panel's (P-03): `panel remote` says the port is taken, and neither
+// replaces nor takes it back.
+func TestPanelRemoteLeavesTheUsersProxy(t *testing.T) {
+	h, _ := home(t)
+	useFakeSystem(t, h, "linux")
+	var calls []string
+	old := panelTailnet
+	t.Cleanup(func() { panelTailnet = old })
+	panelTailnet = func() tailnet.Tailnet {
+		return tailnet.Tailnet{
+			Run: func(name string, args ...string) (string, error) {
+				call := strings.Join(args, " ")
+				calls = append(calls, call)
+				switch call {
+				case "status --json":
+					return `{"BackendState":"Running","Self":{"DNSName":"box.example.ts.net.","UserID":1},"User":{"1":{"LoginName":"lucia@example.com"}},"CertDomains":["box.example.ts.net"]}`, nil
+				case "serve status --json":
+					return `{"TCP":{"8443":{"HTTPS":true}},"Web":{"box.example.ts.net:8443":{"Handlers":{"/":{"Proxy":"http://127.0.0.1:3000"}}}}}`, nil
+				}
+				return "", errors.New("unexpected " + call)
+			},
+			LookPath: func(string) (string, error) { return "/usr/bin/tailscale", nil },
+			GOOS:     "linux",
+		}
+	}
+	var out, errOut bytes.Buffer
+	if code := run([]string{"panel", "remote"}, nil, &out, &errOut); code != 1 || !strings.Contains(errOut.String(), "8443") {
+		t.Fatalf("%d %q", code, errOut.String())
+	}
+	for _, c := range calls {
+		if strings.HasPrefix(c, "serve --") {
+			t.Errorf("touched the user's proxy: %q", c)
+		}
+	}
+}
