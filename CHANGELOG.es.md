@@ -1,5 +1,18 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **Compilado con un Go que aún recibe arreglos de seguridad.** Las versiones se
+  compilaban con Go 1.25.0, que lleva 46 vulnerabilidades conocidas en la biblioteca de
+  Go a las que el programa puede llegar (entre ellas, en el panel web, la red y el manejo
+  de ficheros). Ahora se compilan con Go 1.26.11, y `golang.org/x/sys` pasa a la 0.50.0.
+  Compilar desde el código necesita Go 1.26 o posterior. Instalar la próxima versión las
+  cierra para ti.
+- **Las vulnerabilidades se vigilan.** Con cada cambio y cada semana, la CI busca
+  vulnerabilidades conocidas a las que el programa pueda llegar, en Linux, macOS y
+  Windows; Dependabot propone versiones nuevas de módulos y acciones. `SECURITY.md` dice
+  cómo avisar en privado de un problema de seguridad.
+
 ## 0.20.0-beta
 
 Publicada el 2026-11-12.

@@ -184,7 +184,7 @@ Allen, adaptados a trabajar con un asistente de IA.
 
 ## Desarrollo
 
-Necesita Go 1.25 o posterior. `go test ./...` y `go build ./cmd/augmented-brain`. ¿Trabajas
+Necesita Go 1.26 o posterior. `go test ./...` y `go build ./cmd/augmented-brain`. ¿Trabajas
 con un agente de IA? Su manual es [AGENTS.md](AGENTS.md) (en inglés): el mapa del código,
 las comprobaciones y las reglas de la casa.
 

@@ -171,7 +171,7 @@ Allen, adapted to working with an AI assistant.
 
 ## Development
 
-Needs Go 1.25 or later. `go test ./...` and `go build ./cmd/augmented-brain`. Working
+Needs Go 1.26 or later. `go test ./...` and `go build ./cmd/augmented-brain`. Working
 with an AI coding agent? Its handbook is [AGENTS.md](AGENTS.md): the map of the code, the
 checks and the rules of the house.
 
