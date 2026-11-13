@@ -2,6 +2,13 @@
 
 ## Sin publicar
 
+- **Buscar secretos es unas 30 veces más rápido.** `check`, cada copia de seguridad y
+  cada nota que se guarda buscaban secretos a unos 2,5 MB por segundo; con una docena de
+  MB de notas, `check` tardaba más de un segundo. Ahora cada tipo de secreto tiene antes
+  una prueba rápida, y su búsqueda completa solo corre si la prueba encuentra algo
+  parecido: `check` tarda una décima de segundo o menos. Lo que se encuentra es
+  exactamente lo mismo, y una prueba compara las dos formas con miles de textos.
+
 ## 0.21.0-beta
 
 Publicada el 2026-11-13.
