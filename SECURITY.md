@@ -26,7 +26,7 @@ and in every module the program uses (`govulncheck`, for Linux, macOS and Window
 Dependabot proposes newer versions of the modules and of the CI's actions.
 
 Every release is built by GitHub from a commit of `main` whose required checks all
-passed, with every file attested (`gh attestation verify`) and listed in `checksums.txt`;
+passed, the macOS ones included (a pull request does not wait for them; a release does), with every file attested (`gh attestation verify`) and listed in `checksums.txt`;
 the build is reproducible. How to check a download: [Installing](docs/guide/install.md#check-a-download).
 
 ---
@@ -57,5 +57,5 @@ de Go y en cada módulo que usa el programa (`govulncheck`, para Linux, macOS y 
 Dependabot propone versiones nuevas de los módulos y de las acciones de la CI.
 
 Cada versión la compila GitHub desde un commit de `main` con todos sus checks exigidos en
-verde, con cada fichero atestado (`gh attestation verify`) y en `checksums.txt`; la
+verde, también los de macOS (una pull request no los espera; una versión sí), con cada fichero atestado (`gh attestation verify`) y en `checksums.txt`; la
 compilación es reproducible. Cómo comprobar una descarga: [Instalación](docs/guide/install.es.md#comprobar-una-descarga).

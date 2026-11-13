@@ -50,6 +50,7 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
@@ -65,14 +66,17 @@
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html" aria-current="page">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
-  <li><a href="remote.html">Remote access</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html" aria-current="page">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -94,14 +98,14 @@
 <script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
 <main class="prose" id="main">
   <h1>Configuration versions</h1>
-  <p>Your configuration is what augmented brain knows about this computer and about you: your spaces, the guard's lists, remote access, your profile and the names of your secrets. A wrong change there (a list emptied by mistake, a space pointing to the wrong folder) used to have no way back. Now every change is kept as a <strong>version</strong>, and you can see what changed and go back.</p>
+  <p>Your configuration is what augmented brain knows about this computer and about you: your spaces, the guard's lists, remote access, your session settings, your profile and the names of your secrets. Every change to it is kept as a <strong>version</strong>, so a wrong change (a list emptied by mistake, a space pointing to the wrong folder) can be seen and undone.</p>
   <h2 id="what-is-kept">What is kept</h2>
-  <p>A version is a copy of these files, in the configuration folder, as they were at one moment: <code>config.toml</code>, <code>guard.toml</code>, <code>remote.toml</code>, <code>session.toml</code>, <code>profile.md</code> and <code>secrets.toml</code> (only the names of your secrets, never a value). It also says who made the change: the panel, a command, the assistant (and with which tool), going back to an earlier version, or by hand.</p>
+  <p>A version is a copy of these files, in the configuration folder, as they were at one moment: <code>config.toml</code>, <code>guard.toml</code>, <code>remote.toml</code>, <code>session.toml</code>, <code>profile.md</code> and <code>secrets.toml</code> (only the names of your secrets, never a value). <code>session.toml</code> holds the model you want your sessions to use and what the assistant saves on its own (see <a href="guard.html#asking-before-claude-saves-a-rule">The guard</a>). It also says who made the change: the panel, a command, the assistant (and with which tool), going back to an earlier version, or by hand.</p>
   <ul><li>A new version is kept every time the configuration changes. A change made by hand, or by an older program, is kept the next time augmented brain looks: when a session starts, a command runs, the assistant uses a tool or you save something in the panel.</li><li>The last <strong>10</strong> are kept. When there is one more, the oldest goes.</li><li>They stay <strong>only on this computer</strong>, in the <code>history</code> folder of the configuration folder. They never go into the backup: the guard's lists may name work machines, and the backup leaves them out on purpose.</li><li>Your notes are not here. Tasks, rules, knowledge and people (shared ones too) have their own history in the <a href="backup.html">backup</a>.</li></ul>
   <h2 id="in-the-panel">In the panel</h2>
   <p>The panel's <strong>Versions</strong> page lists them, newest first, with when and who. Under each one, <strong>What it changed</strong> shows the lines that changed from the version before: green what was added, red what was taken away. <strong>Go back to this one</strong> makes it the configuration again: it opens first, says what going back does and, when the guard's lists would change, which entries each list would gain or lose. Tick the box to confirm, then go back.</p>
   <p>Going back keeps the configuration you had as a version first, so it can be undone the same way. A version that would leave a file the program cannot read is refused, and nothing changes. If the guard's lists change, going back from the panel counts as you accepting them, as any change on the <a href="guard.html">Guard</a> page does.</p>
-  <p>From another device (<a href="panel-remote.html">the panel from another device</a>) the page only shows the versions: going back is only from the panel on this computer, because it can change what the guard allows.</p>
+  <p>From another device (<a href="panel-remote.html">the panel from another device</a>) the page only shows the versions. Going back can change the guard's lists, and those decide what Claude may do on this computer: so, as on the Guard page, they change only from this computer's panel. The whole list of what only this computer can do is in <a href="panel-remote.html#what-only-this-computer-can-do">the panel from another device</a>.</p>
   <h2 id="with-commands">With commands</h2>
   <pre><code>augmented-brain config history
 augmented-brain config history 3
@@ -110,8 +114,8 @@ augmented-brain config restore 3</code></pre>
   <p>Both work even when <code>config.toml</code> is broken and nothing else will start: that is when going back helps most. <code>augmented-brain doctor</code> then says so, and points to them.</p>
   <p><code>augmented-brain doctor</code> has a line with how many versions are kept, and says when the configuration changed after the newest one.</p>
   <nav class="pager" aria-label="Previous / Next">
-    <a class="prev" href="panel-remote.html"><span>← Previous</span>The panel from another device</a>
-    <a class="next" href="weekly-review.html"><span>Next →</span>The weekly review</a>
+    <a class="prev" href="backup.html"><span>← Previous</span>Backup and restore</a>
+    <a class="next" href="anywhere.html"><span>Next →</span>From your phone or another computer</a>
   </nav>
 </main>
 </div>
