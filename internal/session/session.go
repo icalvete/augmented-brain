@@ -648,6 +648,20 @@ func BackupFailedNote(lang, space string, when time.Time, reason string) string 
 		"(running `augmented-brain backup` in the space's folder shows the problem).\n", space, when.Format("2006-01-02 15:04"), reason, FirstAnswerLine(lang))
 }
 
+// BackupCutShortNote tells the assistant that a backup of the space began and never
+// ended: the computer went off, or the process was stopped, half way.
+func BackupCutShortNote(lang, space string, when time.Time) string {
+	return fmt.Sprintf("\nA backup of space %s began at %s and never ended (the computer went off or it was stopped half way). %stell them the notes may not be backed up, and offer to run `augmented-brain backup` in the space's folder to check.\n",
+		space, when.Format("2006-01-02 15:04"), FirstAnswerLine(lang))
+}
+
+// BackupBehindNote tells the assistant that the space's last good backup is days old
+// and the notes changed since: the automatic backup is not running.
+func BackupBehindNote(lang, space string, when time.Time) string {
+	return fmt.Sprintf("\nThe last backup of space %s that went through was at %s, and its notes changed since: the automatic backup at the end of each session has not run. %stell them the latest notes are not backed up, and offer to run `augmented-brain backup` in the space's folder (if AB_NO_AUTO_BACKUP is set in their environment, that is why).\n",
+		space, when.Format("2006-01-02 15:04"), FirstAnswerLine(lang))
+}
+
 // BackupWarningNote tells the assistant that the last backup of the space went through
 // but left something out (files too big for it).
 func BackupWarningNote(lang, space string, when time.Time, warning string) string {

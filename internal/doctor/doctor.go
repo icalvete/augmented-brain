@@ -190,7 +190,12 @@ func space(c *config.Config, s *config.Space) []Check {
 	// this computer loses the space's notes.
 	if s.Backup == "" {
 		checks = append(checks, Check{Info, i18n.T(l, "doctor.nobackup", s.Name), i18n.T(l, "doctor.nobackup.fix")})
-	} else if backup.HasPassword(s.Backup) {
+	} else if began, cut := backup.CutShort(c.Dir, s.Name, time.Now()); cut {
+		checks = append(checks, Check{Warning, i18n.T(l, "doctor.backupcut", s.Name, began.Format("2006-01-02 15:04")), i18n.T(l, "doctor.backupcheck.fix")})
+	} else if st, ok := backup.LastStatus(c.Dir, s.Name); ok && st.Behind(s.Memory, time.Now()) {
+		checks = append(checks, Check{Warning, i18n.T(l, "doctor.backupbehind", s.Name, st.Time.Format("2006-01-02 15:04")), i18n.T(l, "doctor.backupcheck.fix")})
+	}
+	if s.Backup != "" && backup.HasPassword(s.Backup) {
 		// Earlier versions kept such an address as it came, in config.toml and inside the
 		// backup itself: the password is in the backup's history.
 		checks = append(checks, Check{Warning, i18n.T(l, "doctor.backuppassword", s.Name),

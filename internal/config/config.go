@@ -48,6 +48,10 @@ type Space struct {
 	// NotRestored are the repositories a restored backup listed for the assistant to
 	// commit in, which a restore never brings back; never written.
 	NotRestored []string `toml:"-"`
+	// Unsafe are the folders a restored backup named for its notes or work that a backup
+	// may not choose (outside the home, in its hidden or system folders): the restore
+	// used the usual place instead; never written.
+	Unsafe []string `toml:"-"`
 }
 
 // Config is the whole configuration file.

@@ -233,6 +233,14 @@ var commandMessages = map[string]msg{
 		en: "✓ Space %s restored: its notes are in %s",
 		es: "✓ Espacio %s recuperado: sus notas están en %s",
 	},
+	"restore.unsafe": {
+		en: "The backup asked for %s, a place a backup may not choose (outside your home folder, or in its hidden or system folders, where the computer runs what it finds). The space went to the usual place instead. If you want it elsewhere, restore again with --memory and --work.",
+		es: "La copia pedía %s, un sitio que una copia no puede elegir (fuera de tu carpeta personal, o en sus carpetas ocultas o del sistema, donde el ordenador ejecuta lo que encuentra). El espacio ha ido al sitio de siempre. Si lo quieres en otro, recupéralo otra vez con --memory y --work.",
+	},
+	"restore.where": {
+		en: "  Notes: %s\n  Work folder: %s",
+		es: "  Notas: %s\n  Carpeta de trabajo: %s",
+	},
 	"restore.secrets": {
 		en: "The backup names %d secrets this computer's keychain does not have (only their names travel, never their values). Store each one with the command under it, which asks for the value:",
 		es: "La copia nombra %d secretos que el llavero de este ordenador no tiene (solo viajan sus nombres, nunca su valor). Guarda cada uno con el comando que va debajo, que te pide el valor:",
