@@ -114,8 +114,36 @@ var guardMessages = map[string]msg{
 
 	// git, gh and glab.
 	"guard.git.config": {
-		en: "`git -c %s` makes git run a command of its own, which augmented brain cannot check; the user confirms it.",
-		es: "`git -c %s` hace que git ejecute un comando propio, que augmented brain no puede revisar; el usuario lo confirma.",
+		en: "the git setting `%s` (given with -c, git config or git's variables) makes git run a command of its own, or take an alias, settings or a remote augmented brain cannot check; the user confirms it.",
+		es: "el ajuste de git `%s` (con -c, git config o las variables de git) hace que git ejecute un comando propio, o tome un alias, ajustes o un remoto que augmented brain no puede revisar; el usuario lo confirma.",
+	},
+	"guard.git.configfile": {
+		en: "`%s` has git read settings from a file augmented brain does not read, where an alias or a command may hide; the user confirms it.",
+		es: "`%s` hace que git lea sus ajustes de un fichero que augmented brain no lee, donde puede esconderse un alias o un comando; el usuario lo confirma.",
+	},
+	"guard.git.pushto": {
+		en: "this push goes to `%s`, a repository the assistant may not push to, even from one where it may. Leave the change ready and checked, and give the user the exact command to run themselves.",
+		es: "este push va a `%s`, un repositorio donde el asistente no puede hacer push, aunque salga de uno donde sí. Deja el cambio listo y comprobado, y dale al usuario el comando exacto para que lo lance él.",
+	},
+	"guard.git.pushelsewhere": {
+		en: "this push goes to `%s`, which is not a remote of the repository, so the repository lists say nothing of it. The user confirms where it goes. To push to a remote of the repository, name it (origin).",
+		es: "este push va a `%s`, que no es un remoto del repositorio, así que las listas de repositorios no dicen nada de él. El usuario confirma adónde va. Para subir a un remoto del repositorio, nómbralo (origin).",
+	},
+	"guard.api.graphql": {
+		en: "`%s api graphql` with a mutation, or with a query augmented brain cannot read (a file, a variable), changes things on the server. The user confirms it.",
+		es: "`%s api graphql` con una mutación, o con una consulta que augmented brain no puede leer (un fichero, una variable), cambia cosas en el servidor. El usuario lo confirma.",
+	},
+	"guard.api.dispatch": {
+		en: "`%s` starts workflows of the repository (repository_dispatch), and the guard cannot tell whether one publishes a version. The user confirms it.",
+		es: "`%s` lanza flujos del repositorio (repository_dispatch), y el guardia no sabe si alguno saca una versión. El usuario lo confirma.",
+	},
+	"guard.gh.rerun": {
+		en: "`%s` runs a workflow again, and the guard cannot tell whether it publishes a version. The user confirms it.",
+		es: "`%s` vuelve a lanzar un flujo, y el guardia no sabe si saca una versión. El usuario lo confirma.",
+	},
+	"guard.gh.alias": {
+		en: "`%s` keeps a command under another name, and later the guard may not see what it is. The user confirms it.",
+		es: "`%s` guarda un comando con otro nombre, y luego el guardia puede no ver qué es. El usuario lo confirma.",
 	},
 	"guard.git.publish": {
 		en: "`git %s` publishes like a git push, so it is for the user. Leave the change ready and checked, and give the user the exact command to run themselves.",
