@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
 
@@ -162,6 +163,29 @@ func TestToolNoticeOnce(t *testing.T) {
 		}
 		if o := runAll(t, hook.f, in); o != nil && o["systemMessage"] != nil {
 			t.Errorf("%s: shown twice: %v", hook.name, o)
+		}
+	}
+}
+
+// A setting of guard.toml or session.toml this program does not know is ignored, so
+// the session start has the assistant tell the user, with the right name and the file;
+// with none, nothing is said.
+func TestSessionStartUnknownSettings(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	ctx := func() string {
+		o := startSession(t, cfgDir, work, "startup")
+		return o["hookSpecificOutput"].(map[string]any)["additionalContext"].(string)
+	}
+	if c := ctx(); strings.Contains(c, "does not know") || strings.Contains(c, "no conoce") {
+		t.Fatalf("no unknown settings, yet: %s", c)
+	}
+	if err := os.WriteFile(filepath.Join(cfgDir, config.GuardFile), []byte("untouchable_repo = []\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	c := ctx()
+	for _, want := range []string{"guard.toml has settings", "untouchable_repo (did you mean untouchable_repos?)", paths.Tilde(filepath.Join(cfgDir, config.GuardFile))} {
+		if !strings.Contains(c, want) {
+			t.Errorf("missing %q in:\n%s", want, c)
 		}
 	}
 }

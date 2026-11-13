@@ -50,6 +50,7 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
@@ -65,14 +66,17 @@
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html" aria-current="page">Connect your services</a></li>
-  <li><a href="remote.html">Remote access</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -100,14 +104,16 @@
   <ol><li>Open <strong>claude.ai → Settings → Connectors</strong>.</li><li>Connect the services you want: Google Calendar, Gmail, Google Drive, Atlassian (Jira and Confluence), and others. Each one asks you to sign in to that service once.</li><li><strong>Start a new Claude Code session.</strong> Connectors load when a session starts: a session that was already open will not see a connector you just added.</li><li>In Claude Code, type <code>/mcp</code> to see them. A connector marked as needing authentication is fixed from claude.ai, not from Claude Code.</li></ol>
   <p>That is all. Your assistant uses them when a task needs them (“what meetings do I have tomorrow?”, “summarise the open issues of this epic”).</p>
   <h2 id="without-a-claudeai-account">Without a claude.ai account</h2>
-  <p>If you use Claude Code with an API key (a code from the Anthropic Console instead of your claude.ai account), claude.ai connectors are not available. You can add MCP servers yourself:</p>
+  <p>If you use Claude Code with an API key (a code from the Anthropic Console instead of your claude.ai account), claude.ai connectors are not available. You can add MCP servers yourself. A server that runs on your computer is started by a command:</p>
   <pre><code>claude mcp add --scope user &lt;name&gt; -- &lt;command that starts the server&gt;</code></pre>
+  <p>A server that runs on the internet has an address instead. Add it with <code>--transport http</code>; Claude Code opens the service's page to sign in the first time you use it:</p>
+  <pre><code>claude mcp add --scope user --transport http &lt;name&gt; &lt;address of the server&gt;</code></pre>
   <p>Many services publish an official MCP server; use those when they exist. Read what a server can do before adding it: it acts with your account.</p>
   <h2 id="good-habits">Good habits</h2>
-  <ul><li><strong>Connect only what you use.</strong> Every connector adds tools your assistant has to choose from.</li><li><strong>Your safety rules still apply.</strong> augmented brain's guard watches commands and file writes. Actions inside a connector (sending an email, editing a ticket) are confirmed through Claude Code's own permission prompts: read them before you accept.</li><li><strong>Never paste a password or a token in the chat</strong> to connect a service. Every connector signs in through the service's own page.</li></ul>
+  <ul><li><strong>Connect only what you use.</strong> Every connector adds tools your assistant has to choose from.</li><li><strong>The guard does not see connectors.</strong> augmented brain's guard watches commands and file writes. Actions inside a connector (sending an email, editing a ticket) are confirmed through Claude Code's own permission prompts: read them before you accept.</li><li><strong>Never paste a password or a token in the chat</strong> to connect a service. Every connector signs in through the service's own page.</li></ul>
   <nav class="pager" aria-label="Previous / Next">
-    <a class="prev" href="backup.html"><span>← Previous</span>Backup and restore</a>
-    <a class="next" href="remote.html"><span>Next →</span>Remote access</a>
+    <a class="prev" href="weekly-review.html"><span>← Previous</span>The weekly review</a>
+    <a class="next" href="backup.html"><span>Next →</span>Backup and restore</a>
   </nav>
 </main>
 </div>

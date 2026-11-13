@@ -27,10 +27,17 @@ tomorrow?", "summarise the open issues of this epic").
 
 If you use Claude Code with an API key (a code from the Anthropic Console instead of
 your claude.ai account), claude.ai connectors are not available. You can
-add MCP servers yourself:
+add MCP servers yourself. A server that runs on your computer is started by a command:
 
 ```bash
 claude mcp add --scope user <name> -- <command that starts the server>
+```
+
+A server that runs on the internet has an address instead. Add it with `--transport http`;
+Claude Code opens the service's page to sign in the first time you use it:
+
+```bash
+claude mcp add --scope user --transport http <name> <address of the server>
 ```
 
 Many services publish an official MCP server; use those when they exist. Read what a
@@ -40,8 +47,8 @@ server can do before adding it: it acts with your account.
 
 - **Connect only what you use.** Every connector adds tools your assistant has to choose
   from.
-- **Your safety rules still apply.** augmented brain's guard watches commands and file
-  writes. Actions inside a connector (sending an email, editing a ticket) are confirmed
-  through Claude Code's own permission prompts: read them before you accept.
+- **The guard does not see connectors.** augmented brain's guard watches commands and
+  file writes. Actions inside a connector (sending an email, editing a ticket) are
+  confirmed through Claude Code's own permission prompts: read them before you accept.
 - **Never paste a password or a token in the chat** to connect a service. Every connector
   signs in through the service's own page.

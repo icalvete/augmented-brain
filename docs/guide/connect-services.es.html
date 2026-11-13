@@ -50,6 +50,7 @@
 <ul>
   <li><a href="getting-started.es.html">Primeros pasos</a></li>
   <li><a href="install.es.html">Instalación</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
 </ul>
 <p class="docnav-group">Conceptos</p>
 <ul>
@@ -65,14 +66,17 @@
 <ul>
   <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
   <li><a href="panel.es.html">El panel</a></li>
-  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
-  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="weekly-review.es.html">La revisión semanal</a></li>
-  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+</ul>
+<p class="docnav-group">Ponlo a tu medida</p>
+<ul>
   <li><a href="connect-services.es.html" aria-current="page">Conecta tus servicios</a></li>
-  <li><a href="remote.es.html">Acceso remoto</a></li>
-  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="anywhere.es.html">Desde el móvil u otro ordenador</a></li>
+  <li><a href="remote.es.html">Acceso remoto</a></li>
+  <li><a href="task-sessions.es.html">Una sesión por tarea</a></li>
+  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
   <li><a href="update-and-uninstall.es.html">Actualizar y desinstalar</a></li>
 </ul>
 <p class="docnav-group">Referencia</p>
@@ -100,14 +104,16 @@
   <ol><li>Abre <strong>claude.ai → Ajustes → Conectores</strong>.</li><li>Conecta los servicios que quieras: Google Calendar, Gmail, Google Drive, Atlassian (Jira y Confluence) y otros. Cada uno te pide entrar en ese servicio una vez.</li><li><strong>Empieza una sesión nueva de Claude Code.</strong> Los conectores se cargan al empezar la sesión: una sesión que ya estaba abierta no verá un conector que acabas de añadir.</li><li>En Claude Code, escribe <code>/mcp</code> para verlos. Si alguno pide autenticación, se arregla desde claude.ai, no desde Claude Code.</li></ol>
   <p>Y ya está. Tu asistente los usa cuando una tarea los necesita (“¿qué reuniones tengo mañana?”, “resúmeme las incidencias abiertas de esta épica”).</p>
   <h2 id="sin-cuenta-de-claudeai">Sin cuenta de claude.ai</h2>
-  <p>Si usas Claude Code con una API key (un código de la consola de Anthropic en vez de tu cuenta de claude.ai), los conectores de claude.ai no están disponibles. Puedes añadir servidores MCP tú mismo:</p>
+  <p>Si usas Claude Code con una API key (un código de la consola de Anthropic en vez de tu cuenta de claude.ai), los conectores de claude.ai no están disponibles. Puedes añadir servidores MCP tú mismo. Un servidor que corre en tu ordenador se arranca con un comando:</p>
   <pre><code>claude mcp add --scope user &lt;nombre&gt; -- &lt;comando que arranca el servidor&gt;</code></pre>
+  <p>Un servidor que corre en internet tiene, en cambio, una dirección. Se añade con <code>--transport http</code>; Claude Code abre la página del servicio para entrar la primera vez que lo usas:</p>
+  <pre><code>claude mcp add --scope user --transport http &lt;nombre&gt; &lt;dirección del servidor&gt;</code></pre>
   <p>Muchos servicios publican un servidor MCP oficial; usa esos cuando existan. Lee qué puede hacer un servidor antes de añadirlo: actúa con tu cuenta.</p>
   <h2 id="buenos-hábitos">Buenos hábitos</h2>
-  <ul><li><strong>Conecta solo lo que uses.</strong> Cada conector añade herramientas entre las que tu asistente tiene que elegir.</li><li><strong>Tus reglas de seguridad siguen valiendo.</strong> El guardia de augmented brain vigila los comandos y las escrituras de ficheros. Las acciones dentro de un conector (enviar un correo, editar un ticket) se confirman con los avisos de permiso de Claude Code: léelos antes de aceptar.</li><li><strong>Nunca pegues una contraseña o un token en el chat</strong> para conectar un servicio. Cada conector entra por la página del propio servicio.</li></ul>
+  <ul><li><strong>Conecta solo lo que uses.</strong> Cada conector añade herramientas entre las que tu asistente tiene que elegir.</li><li><strong>El guardia no ve los conectores.</strong> El guardia de augmented brain vigila los comandos y las escrituras de ficheros. Las acciones dentro de un conector (enviar un correo, editar un ticket) se confirman con los avisos de permiso de Claude Code: léelos antes de aceptar.</li><li><strong>Nunca pegues una contraseña o un token en el chat</strong> para conectar un servicio. Cada conector entra por la página del propio servicio.</li></ul>
   <nav class="pager" aria-label="Anterior / Siguiente">
-    <a class="prev" href="backup.es.html"><span>← Anterior</span>Copia de seguridad y restauración</a>
-    <a class="next" href="remote.es.html"><span>Siguiente →</span>Acceso remoto</a>
+    <a class="prev" href="weekly-review.es.html"><span>← Anterior</span>La revisión semanal</a>
+    <a class="next" href="backup.es.html"><span>Siguiente →</span>Copia de seguridad y restauración</a>
   </nav>
 </main>
 </div>

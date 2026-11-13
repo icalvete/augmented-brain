@@ -1,7 +1,9 @@
 # What the tests cover
 
 Every case the beta tests set out to cover, and what covers it. **Go** is `go test ./...`
-(Linux, macOS and Windows in CI); the scripts run in CI where the last column says. A case
+(Linux, macOS and Windows in CI); the scripts run in CI where the last column says. On a
+pull request, macOS runs only the Go tests and compat-check; the rest of its column runs on
+`main` after each merge. A case
 with **by hand** has no automated test: it is a step of the release rehearsal or of the
 pass on a real Mac, written in [the Mac pass](#the-pass-on-a-real-mac).
 
@@ -106,6 +108,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Configuration edits leave a version | `internal/panel` `TestPanelChangesLeaveVersions` | Go |
 | `memory_trust`: with "ask", saving a rule, the profile or the guard's lists asks first (refused where questions are skipped); the Guard page saves it | `internal/hook` `TestPreToolUseMemoryTrust`, `TestMatcherNamesTheMemoryTools`, `internal/config` `TestMemoryTrust`, `internal/panel` `TestGuardPageTrust`, the browser check, the rehearsal. The question itself, in a real session: by hand | Go, CI, VMs |
 | The Guard page: what changed, the box, the warnings | `TestGuardPageShowsWhatChanged`, `TestGuardPageWarnsOnDangerousLists`, the browser check | Go, CI |
+| The Guard page from another device: shows, changes nothing, seals nothing | `TestGuardPageRemoteOnlyShows` | Go |
 | A ticket opens the panel once (303, then 410); only the command gets one; through the network, for the owner only | `internal/panel` `TestTicketOnce`, `TestTicketOnlyForTheCommand`, `TestTicketFromTheCommand`; the browser and Mac checks spend one | Go, CI |
 | Through Tailscale, the panel's own socket: no Host makes a request local, local-only actions refused; the local socket refuses proxied requests; tickets only through their own socket | `internal/panel` `TestNetSocketIgnoresHost`, `TestLocalSocketRefusesProxied`, `TestNetSocketIsItsOwn`, `TestTicketOnlyForTheCommand` | Go |
 | Only the address the panel published is taken back; the user's own `tailscale serve` on 8443 stays | `internal/tailnet` `TestALocalProxyOfTheUser`, `internal/panel` `TestUnpublishLeftoverOnlyOurs`, `cmd` `TestPanelRemoteLeavesTheUsersProxy`, `internal/doctor` `TestPanelRemoteLine` | Go |

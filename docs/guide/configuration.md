@@ -177,6 +177,11 @@ The panel's Guard page writes it, and the guard asks before Claude writes it. If
 is missing or `preferred_model` is empty, the model is not checked. It is a file of its own for the
 same reason as `guard.toml`. It is not carried by backups.
 
+A line of `guard.toml` or `session.toml` the program does not know is ignored, not
+refused: a newer version may add settings there, and an earlier one keeps working.
+`doctor` and the start of a session name it, with the right name when it looks like a
+typo, because a misspelled setting there does nothing.
+
 ## `remote.toml`
 
 Next to `config.toml`, `remote.toml` holds the settings of [remote access](remote.md),

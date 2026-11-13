@@ -475,6 +475,18 @@ var panelMessages = map[string]msg{
 		en: "changed in the panel, what the assistant saves on its own: it now asks you before it saves a rule, your profile or the guard's lists.",
 		es: "cambiado en el panel, lo que el asistente guarda solo: ahora te pregunta antes de guardar una regla, tu perfil o las listas del guardia.",
 	},
+	"panel.guard.remote": {
+		en: "You are on the panel from another device: here you can see the guard's lists; changing or accepting them, the model and what the assistant saves on its own is only from this computer's panel.",
+		es: "Estás en el panel desde otro dispositivo: aquí puedes ver las listas del guardia; cambiarlas o aceptarlas, el modelo y lo que el asistente guarda por su cuenta solo se puede desde el panel de este ordenador.",
+	},
+	"panel.guard.localonly": {
+		en: "Changing the guard is only from this computer's panel.",
+		es: "Cambiar el guardia solo se puede desde el panel de este ordenador.",
+	},
+	"panel.guard.model.unset": {
+		en: "None: no check.",
+		es: "Ninguno: no se comprueba.",
+	},
 	"panel.guard.model": {
 		en: "Model of your sessions",
 		es: "Modelo de tus sesiones",

@@ -372,7 +372,7 @@ nada raro. El vigilante ve un servicio sin sesión en dos miradas seguidas y lo 
 Si después sigue sin sesión, Claude intentaba reabrir la sesión archivada: el vigilante
 cambia el nombre de su registro (`bridge-pointer.json` pasa a
 `bridge-pointer.json.archived`, en el proyecto de la carpeta en `~/.claude/projects`) y lo
-reinicia otra vez, así que empieza una sesión nueva, en unos tres minutos. La
+reinicia otra vez, así que empieza una sesión nueva: unos diez minutos en total. La
 conversación de la sesión archivada no vuelve. Lo que hace queda en el registro del
 sistema (`journalctl --user -u augmented-brain-watch-remote`). No tiene opciones.
 
@@ -391,9 +391,10 @@ detienen y lo dicen, y el vigilante no reinicia ese servicio.
 Abre una sesión remota propia para una tarea, para que desde otro ordenador puedas
 trabajar en varias tareas a la vez, cada una en su sesión. Son cuatro comandos, `start`,
 `stop`, `restart` y `list`, cada uno con su apartado abajo; `restart` también reinicia
-las demás sesiones de Claude de este ordenador. Por ahora solo en Linux: solo
-se ha probado ahí. Sin subcomando, o con otro, `session` muestra su uso. Mira
-[Acceso remoto](remote.es.md#una-sesión-por-tarea).
+las demás sesiones de Claude de este ordenador. `start`, `stop` y `list` son por ahora
+solo de Linux: solo se han probado ahí; `restart` funciona también en macOS. Sin
+subcomando, o con otro, `session` muestra su uso. Mira
+[Una sesión por tarea](task-sessions.es.md).
 
 ## augmented-brain session start
 

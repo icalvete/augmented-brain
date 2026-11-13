@@ -74,6 +74,16 @@ una sesión nueva, un commit, push o merge que permiten pregunta antes. `doctor`
 Abre la página Guardia del panel, mira qué cambió y acéptalo. Lo tienes en
 [El guardia](guard.es.md#solo-tú-cambias-las-listas-del-guardia).
 
+### "Ajustes que esta versión no conoce" en `guard.toml` o `session.toml`
+
+`doctor` y el inicio de una sesión lo dicen cuando uno de estos ficheros tiene una línea
+que el programa no conoce. Esa línea no se tiene en cuenta: un `untouchable_repo` mal
+escrito no protege ningún repositorio, y un `memory_trust` mal escrito deja a Claude
+guardando sin preguntar. Si parece una errata, el mensaje dice el nombre correcto.
+Corrige el nombre en el fichero. Si esa línea la escribió una versión más nueva,
+actualiza con `augmented-brain update`. Lo tienes en
+[Configuración](configuration.es.md#guardtoml).
+
 ### Claude necesita root en una máquina
 
 Claude te da el comando exacto para que lo lances tú. Para una migración que necesita
@@ -150,6 +160,11 @@ copia de seguridad» en una carpeta del espacio. O lanza allí `augmented-brain 
 Arregla a mano la cabecera (entre las líneas `---`) y vuelve a lanzar `check`. Hasta
 entonces, el índice no se rehace, pero las herramientas siguen funcionando.
 
+Cuando `check` dice que no conoce un campo, lo más probable es que lo escribiera una
+versión más nueva, en otro ordenador o en una sesión abierta después de actualizar.
+Actualiza con `augmented-brain update` y no quites el campo. Si es una errata de un
+campo que conoces, corrígela.
+
 Un fichero que no se puede leer (por sus permisos, o un enlace roto que dejó una
 sincronización) sale de la misma forma: arregla sus permisos o sácalo de la carpeta de
 notas. Un fichero cuyo nombre empieza por punto, como el de bloqueo que deja Emacs
@@ -194,6 +209,14 @@ normal es que Claude aún no confíe en la carpeta (lanza una vez `cd <carpeta> 
 o que el linger esté apagado. `remote install` se para, sin cambiar nada, en una máquina
 sin servicios de usuario de systemd (un contenedor, WSL sin systemd). Lo tienes en
 [Acceso remoto](remote.es.md).
+
+### Dos sesiones remotas con el mismo nombre
+
+Cuando la puerta de un espacio se cambia de carpeta (por ejemplo, porque una versión nueva
+la arranca en tu carpeta de trabajo), el lado de Claude conserva también la sesión vieja,
+con el mismo nombre, en otro grupo de la lista. En la vieja no contesta nadie: lo que
+escribas ahí se pierde. Usa la del grupo con el nombre de la carpeta nueva, y archiva la
+vieja en claude.ai o Claude Desktop.
 
 ### Una sesión se cortó
 
