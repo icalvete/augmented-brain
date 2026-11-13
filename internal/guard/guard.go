@@ -112,6 +112,11 @@ type Policy struct {
 	cdNamed bool
 	// files are the files the command line writes before it may run one as a script.
 	files *lineFiles
+	// from is the file the command being checked reads as its standard input (< f, or
+	// cat f | …), when its stdin is not text the line holds; blind says it reads the
+	// output of a program the guard cannot know (curl … | sh). Set for each command.
+	from  string
+	blind bool
 }
 
 var allow = Decision{Allow, ""}
@@ -193,12 +198,17 @@ func (p Policy) Command(line string) Decision {
 // commands after them. A deny wins over an ask.
 func (p Policy) commands(cmds []command, exported map[string]string, depth int) Decision {
 	d := allow
+	from := make([]string, len(cmds)) // what each command reads, when not its stdin text
+	blind := make([]bool, len(cmds))
 	for i, c := range cmds {
 		if c.piped && c.stdin == "" && i > 0 {
 			// echo 'sudo id' | bash: bash reads what echo writes. Kept in the list, so a
 			// command further down the pipe (… | tee x | bash) gets it too.
-			cmds[i].stdin = output(cmds[i-1])
+			cmds[i].stdin, from[i], blind[i] = output(cmds[i-1], from[i-1], blind[i-1])
 			c.stdin = cmds[i].stdin
+		}
+		if c.stdin == "" && len(c.inputs) > 0 {
+			from[i], blind[i] = c.inputs[len(c.inputs)-1], false // bash < f: the last one wins
 		}
 		if len(c.words) > 0 && (base(c.words[0]) == "cd" || base(c.words[0]) == "pushd") {
 			p = p.cd(c.words[1:]) // the commands after it run there
@@ -224,7 +234,12 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 				d = worse(d, p.protected(writtenArg(a)))
 			}
 		}
-		if d = worse(d, p.simple(c.words, c.stdin, exported, depth)); d.Verdict == Deny {
+		if p.copiesHidden(c.words) {
+			return p.panelDeny()
+		}
+		q := p
+		q.from, q.blind = from[i], blind[i]
+		if d = worse(d, q.simple(c.words, c.stdin, exported, depth)); d.Verdict == Deny {
 			return d
 		}
 		p.recordWrites(c)
@@ -268,23 +283,63 @@ func worse(a, b Decision) Decision {
 	return a
 }
 
-// output returns what a command writes when that is known from the command line alone:
-// cat or tee of its heredoc or here-string, echo and printf of their arguments. A shell
-// or ssh at the end of a pipe runs it, so the guard checks it as their stdin.
-func output(c command) string {
+// output returns what a command writes, for the command after it in a pipe: echo and
+// printf of their arguments, cat and tee of what they read (their heredoc or
+// here-string, or the file named in from, or cat's one file). A shell or ssh at the end
+// of a pipe runs it, so the guard checks it as their stdin. Of any other program the
+// output is not known: blind is true.
+func output(c command, inFrom string, inBlind bool) (text, from string, blind bool) {
 	_, name, args := program(c.words)
+	if c.stdin == "" && len(c.inputs) > 0 {
+		inFrom, inBlind = c.inputs[len(c.inputs)-1], false
+	}
 	switch name {
-	case "cat", "tee":
-		return c.stdin
+	case "tee":
+		return c.stdin, inFrom, inBlind
+	case "cat":
+		files := slices.DeleteFunc(slices.Clone(args), func(a string) bool { return strings.HasPrefix(a, "-") && a != "-" })
+		switch {
+		case len(files) == 0:
+			return c.stdin, inFrom, inBlind
+		case len(files) == 1 && files[0] != "-":
+			return "", files[0], false
+		}
+		return "", "", true
 	case "echo":
 		for len(args) > 0 && (args[0] == "-n" || args[0] == "-e" || args[0] == "-E" || args[0] == "-ne" || args[0] == "-en") {
 			args = args[1:]
 		}
-		return strings.ReplaceAll(strings.Join(args, " "), `\n`, "\n") + "\n"
+		return strings.ReplaceAll(strings.Join(args, " "), `\n`, "\n") + "\n", "", false
 	case "printf":
-		return strings.ReplaceAll(strings.Join(args, " "), `\n`, "\n") + "\n"
+		return strings.ReplaceAll(strings.Join(args, " "), `\n`, "\n") + "\n", "", false
 	}
-	return ""
+	return "", "", true
+}
+
+// fromStdin checks the commands a program reads from its standard input (a shell with
+// no -c and no script, at): the text the line holds, the file it is given (bash < f),
+// or, when it reads the output of a program the guard cannot know, the user is asked.
+func (p Policy) fromStdin(name, stdin string, env map[string]string, depth int) Decision {
+	switch {
+	case stdin != "":
+		return p.inner(stdin, env, depth)
+	case p.from != "":
+		return p.script(p.from, env, depth)
+	case p.blind:
+		return Decision{Ask, i18n.T(p.Lang, "guard.stdin", name)}
+	}
+	return allow
+}
+
+// stdinPath says whether a script path is the program's own standard input.
+func stdinPath(path string) bool {
+	return path == "/dev/stdin" || path == "/dev/fd/0" || path == "/proc/self/fd/0"
+}
+
+// unknownWord says whether a word is only known when the command runs: it holds a
+// variable or a command substitution.
+func unknownWord(w string) bool {
+	return strings.ContainsRune(w, '$') || strings.ContainsRune(w, subst) || strings.ContainsRune(w, '`')
 }
 
 // inner checks a command line run by another command (ssh, sh -c, a heredoc for bash).
@@ -374,7 +429,86 @@ func (p Policy) prepare(words []string, stdin string, exported map[string]string
 	if (strings.HasPrefix(name, "$") || strings.ContainsRune(name, subst)) && !p.inScript {
 		return c, Decision{Ask, i18n.T(p.Lang, "guard.unknownprogram", strings.ReplaceAll(c.raw, string(subst), "$(…)"))}, true
 	}
+	if sub, ok := subcommand(name, args); ok && unknownWord(sub) && !p.inScript {
+		return c, Decision{Ask, i18n.T(p.Lang, "guard.unknownsub", name, strings.ReplaceAll(sub, string(subst), "$(…)"))}, true
+	}
+	if name != "" {
+		if token, ok := xargsBefore(words[:len(words)-len(args)-1]); ok && xargsFills(name, args, token) {
+			return c, Decision{Ask, i18n.T(p.Lang, "guard.xargs", name)}, true
+		}
+	}
 	return c, allow, false
+}
+
+// gitValued are git's options before the subcommand that take the next word as value.
+var gitValued = []string{"-C", "-c", "--git-dir", "--work-tree", "--namespace", "--super-prefix", "--config-env"}
+
+// subcommand is the word that says what git, gh or glab does (push, pr), after the
+// options before it; ok is false for other programs, or when there is no such word.
+func subcommand(name string, args []string) (string, bool) {
+	var valued []string
+	switch name {
+	case "git":
+		valued = gitValued
+	case "gh", "glab":
+		valued = ghValue[""]
+	default:
+		return "", false
+	}
+	if i := firstOperand(args, oneOf(valued...)); i < len(args) {
+		return args[i], true
+	}
+	return "", false
+}
+
+// xargsBefore says whether xargs is among the wrappers before a program (the words
+// before it), and the word its -I (or -i, --replace) puts the input in place of.
+func xargsBefore(prefix []string) (token string, ok bool) {
+	for i, w := range prefix {
+		if base(w) != "xargs" {
+			continue
+		}
+		ok = true
+		for j := i + 1; j < len(prefix); j++ {
+			a := prefix[j]
+			switch {
+			case a == "-I" && j+1 < len(prefix):
+				token = prefix[j+1]
+			case strings.HasPrefix(a, "-I") && len(a) > 2:
+				token = a[2:]
+			case a == "-i" || a == "--replace":
+				token = "{}"
+			case strings.HasPrefix(a, "--replace="):
+				token = strings.TrimPrefix(a, "--replace=")
+			case strings.HasPrefix(a, "-i") && len(a) > 2:
+				token = a[2:]
+			}
+		}
+	}
+	return token, ok
+}
+
+// xargsFills says whether the words xargs reads may become what a program does rather
+// than what it works on: git, gh or glab given their subcommand, a shell given its
+// commands or its script.
+func xargsFills(name string, args []string, token string) bool {
+	fills := func(w string) bool { return token != "" && w == token }
+	if _, ok := map[string]bool{"git": true, "gh": true, "glab": true}[name]; ok {
+		sub, ok := subcommand(name, args)
+		return !ok || fills(sub)
+	}
+	if !isShell(name) {
+		return false
+	}
+	for i, a := range args {
+		switch {
+		case strings.HasPrefix(a, "-") && !strings.HasPrefix(a, "--") && strings.ContainsRune(a[1:], 'c'):
+			return i+1 >= len(args) || fills(args[i+1])
+		case !strings.HasPrefix(a, "-") && !strings.HasPrefix(a, "+"):
+			return fills(a) // the script
+		}
+	}
+	return true // sh with nothing: the first word read is the script
 }
 
 // everyProgram is what holds whatever the program: one set to a production profile in
@@ -408,6 +542,9 @@ func init() { // in init: the rules call simple, which reads this table
 		"eval":        func(p Policy, c call) Decision { return p.inner(strings.Join(c.args, " "), c.env, c.depth) },
 		"find":        func(p Policy, c call) Decision { return p.find(c.args, c.env, c.depth) },
 		"rm":          func(p Policy, c call) Decision { return p.rm(c.args) },
+		"mv":          Policy.mv,
+		"tmux":        Policy.tmux,
+		"sg":          Policy.sg,
 		"vagrant":     func(p Policy, c call) Decision { return p.vagrant(c.args, c.env, c.depth) },
 	}
 	add := func(rule func(Policy, call) Decision, names ...string) {
@@ -429,7 +566,8 @@ func init() { // in init: the rules call simple, which reads this table
 	add(Policy.remoteCopy, "scp", "rsync")
 	add(Policy.sshfs, "sshfs")
 	add(Policy.autossh, "autossh")
-	add(func(p Policy, c call) Decision { return p.shell(c.args, c.stdin, c.env, c.depth) }, shells...)
+	add(func(p Policy, c call) Decision { return p.shell(c.name, c.args, c.stdin, c.env, c.depth) }, shells...)
+	add(Policy.at, "at", "batch")
 	add(Policy.container, "docker", "podman", "nerdctl", "kubectl", "docker-compose", "podman-compose")
 }
 
@@ -497,9 +635,112 @@ func (p Policy) scriptCommand(c call) Decision {
 // source (and .) runs a script in this shell.
 func (p Policy) source(c call) Decision {
 	if len(c.args) > 0 {
-		return p.script(c.args[0], c.env, c.depth)
+		return p.shellScript(c.name, c.args[0], c.stdin, c.env, c.depth)
 	}
 	return allow
+}
+
+// shellScript checks the script a shell or source runs: a file, its own standard
+// input (/dev/stdin), or the output of a command (<(…)), which the guard cannot see.
+func (p Policy) shellScript(name, path, stdin string, env map[string]string, depth int) Decision {
+	switch {
+	case stdinPath(path):
+		return p.fromStdin(name, stdin, env, depth)
+	case strings.ContainsRune(path, subst):
+		return Decision{Ask, i18n.T(p.Lang, "guard.procsubst", name)}
+	}
+	return p.script(path, env, depth)
+}
+
+// at and batch run later the commands they read: from their standard input, or from
+// the file of -f.
+func (p Policy) at(c call) Decision {
+	if f := optValue(c.args, "-f"); f != "" {
+		return p.script(f, c.env, c.depth)
+	}
+	if slices.ContainsFunc(c.args, func(a string) bool { return a == "-l" || a == "-d" || a == "-r" || a == "-c" }) {
+		return allow // lists, removes or shows jobs
+	}
+	return p.fromStdin(c.name, c.stdin, c.env, c.depth)
+}
+
+// sg runs a command with another group: sg group -c 'command', or sg group command.
+func (p Policy) sg(c call) Decision {
+	args := c.args
+	if len(args) > 0 && args[0] == "-" {
+		args = args[1:]
+	}
+	if len(args) < 2 {
+		return allow
+	}
+	if args[1] == "-c" {
+		if len(args) < 3 {
+			return allow
+		}
+		return p.inner(args[2], c.env, c.depth)
+	}
+	return p.inner(strings.Join(args[1:], " "), c.env, c.depth)
+}
+
+// tmuxRuns are tmux's commands whose last words are a shell command it runs, and
+// send-keys, whose words are typed into a shell; tmuxValued the options that take a
+// value, of those commands and of tmux itself.
+var (
+	tmuxRuns = map[string]bool{"new-session": true, "new": true, "new-window": true, "neww": true,
+		"split-window": true, "splitw": true, "respawn-pane": true, "respawnp": true,
+		"respawn-window": true, "respawnw": true, "run-shell": true, "run": true,
+		"display-popup": true, "popup": true, "send-keys": true, "send": true}
+	tmuxValued = "ceFfLlnSsTtxyw" // not -d: in new-session and new-window it takes no value
+)
+
+// tmux checks what tmux runs: the command of -c, and the shell command at the end of
+// the commands that start one (new-session, new-window, split-window, run-shell…) or
+// the keys send-keys types. Commands joined with \; are each read.
+func (p Policy) tmux(c call) Decision {
+	args := c.args
+	for len(args) > 0 && strings.HasPrefix(args[0], "-") {
+		a := args[0]
+		args = args[1:]
+		if a == "-c" && len(args) > 0 {
+			return p.inner(args[0], c.env, c.depth) // tmux -c: a shell command, as sh -c
+		}
+		if len(a) == 2 && strings.ContainsRune("LSfT", rune(a[1])) && len(args) > 0 {
+			args = args[1:]
+		}
+	}
+	d := allow
+	for len(args) > 0 {
+		end := slices.Index(args, ";")
+		if end < 0 {
+			end = len(args)
+		}
+		cmd := args[:end]
+		if len(cmd) > 0 && tmuxRuns[cmd[0]] {
+			rest := cmd[1:]
+			for len(rest) > 0 && strings.HasPrefix(rest[0], "-") && rest[0] != "-" {
+				a := rest[0]
+				rest = rest[1:]
+				if a == "--" {
+					break
+				}
+				if len(a) == 2 && strings.ContainsRune(tmuxValued, rune(a[1])) && len(rest) > 0 {
+					rest = rest[1:]
+				}
+			}
+			if cmd[0] == "send-keys" || cmd[0] == "send" {
+				for _, k := range rest {
+					d = worse(d, p.inner(k, c.env, c.depth))
+				}
+			} else if len(rest) > 0 {
+				d = worse(d, p.inner(strings.Join(rest, " "), c.env, c.depth))
+			}
+		}
+		if end == len(args) {
+			break
+		}
+		args = args[end+1:]
+	}
+	return d
 }
 
 // su, run0 and pkexec switch to another user, root by default.
@@ -888,7 +1129,10 @@ func (p Policy) rm(args []string) Decision {
 				return Decision{Ask, i18n.T(p.Lang, "guard.rm.var", o, v)}
 			}
 		}
-		if o = strings.TrimSuffix(o, "*"); o == "" {
+		if strings.Trim(o, "/*") == string(subst) { // rm -r "$(…)": known only when it runs
+			return Decision{Ask, i18n.T(p.Lang, "guard.rm.subst")}
+		}
+		if o = wholeFolder(o); o == "" {
 			o = "." // rm -r * empties the folder it runs in
 		}
 		if o = strings.TrimRight(o, "/"); o == "" {
@@ -904,6 +1148,100 @@ func (p Policy) rm(args []string) Decision {
 		} else if err == nil && home != "" && d == home {
 			return Decision{Deny, i18n.T(p.Lang, "guard.rm.home", paths.Tilde(d))}
 		}
+	}
+	return allow
+}
+
+// wholeFolder is the folder a pattern empties when its last part matches nearly every
+// name in it: ~/*, ~/.*, ~/[a-z]*, ~/?* are ~/. A pattern with a fixed start (build*)
+// is read without its last *, as the name it starts with.
+func wholeFolder(o string) string {
+	slash := strings.LastIndexAny(o, `/\`)
+	last := o[slash+1:]
+	if last != "" && (strings.ContainsRune("*?[", rune(last[0])) || strings.HasPrefix(last, ".*") || strings.HasPrefix(last, ".[") || strings.HasPrefix(last, ".?")) {
+		return o[:slash+1]
+	}
+	return strings.TrimSuffix(o, "*")
+}
+
+// homeOrAbove says whether a path is the home folder, a folder that holds it, or a
+// disk's root: what mv takes away and rsync --delete empties.
+func (p Policy) homeOrAbove(o string) (string, bool) {
+	o = homeVar.ReplaceAllString(o, "~")
+	d, err := p.resolve(o)
+	if err != nil {
+		return "", false
+	}
+	if filepath.Dir(d) == d {
+		return d, true
+	}
+	home, _ := paths.Home()
+	if h, err := paths.Resolve(home); err == nil {
+		home = h
+	}
+	return paths.Tilde(d), home != "" && paths.Within(home, d)
+}
+
+// mv never moves away the home folder, a folder that holds it or a disk's root.
+func (p Policy) mv(c call) Decision {
+	var operands []string
+	target := false
+	for i := 0; i < len(c.args); i++ {
+		a := c.args[i]
+		switch {
+		case a == "--":
+			operands = append(operands, c.args[i+1:]...)
+			i = len(c.args)
+		case a == "-t" || a == "--target-directory":
+			target = true
+			i++
+		case strings.HasPrefix(a, "--target-directory=") || strings.HasPrefix(a, "-t") && len(a) > 2:
+			target = true
+		case a == "-S" || a == "--suffix":
+			i++
+		case strings.HasPrefix(a, "-") && len(a) > 1:
+		default:
+			operands = append(operands, a)
+		}
+	}
+	if !target && len(operands) > 0 {
+		operands = operands[:len(operands)-1] // the last one is where they go
+	}
+	for _, o := range operands {
+		if d, ok := p.homeOrAbove(o); ok {
+			return Decision{Deny, i18n.T(p.Lang, "guard.mv.home", d)}
+		}
+	}
+	return allow
+}
+
+// syncDeletes is rsync --delete (or one of its kin) into the home folder, a folder that
+// holds it or a disk's root: it deletes there whatever the source does not have.
+func (p Policy) syncDeletes(args []string) Decision {
+	deletes := slices.ContainsFunc(args, func(a string) bool {
+		return a == "--del" || strings.HasPrefix(a, "--delete")
+	})
+	if !deletes {
+		return allow
+	}
+	var last string
+	for i := 0; i < len(args); i++ {
+		switch a := args[i]; {
+		case a == "--":
+			if i+1 < len(args) {
+				last = args[len(args)-1]
+			}
+			i = len(args)
+		case strings.HasPrefix(a, "-"):
+		default:
+			last = a
+		}
+	}
+	if last == "" || strings.Contains(last, ":") {
+		return allow // another machine's folder: not this one's home
+	}
+	if d, ok := p.homeOrAbove(last); ok {
+		return Decision{Deny, i18n.T(p.Lang, "guard.rsync.delete", d)}
 	}
 	return allow
 }
@@ -1514,15 +1852,33 @@ func (p Policy) sftp(args []string) Decision {
 
 // shell checks the commands a shell would run: the string after -c (also -lc, -ec…),
 // or what it reads from stdin when it runs no script.
-func (p Policy) shell(args []string, stdin string, env map[string]string, depth int) Decision {
+func (p Policy) shell(name string, args []string, stdin string, env map[string]string, depth int) Decision {
 	if noExec(args) {
 		return allow // sh -n x.sh: reads the script for its syntax, runs nothing
 	}
 	wantsC := false
+	d := allow
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		if wantsC && !strings.HasPrefix(a, "-") && !strings.HasPrefix(a, "+") {
-			return p.inner(a, env, depth)
+			return worse(d, p.inner(a, env, depth))
+		}
+		if name == "fish" { // fish -C, --command and --init-command run their value
+			if v, ok := strings.CutPrefix(a, "--command="); ok {
+				return worse(d, p.inner(v, env, depth))
+			}
+			if v, ok := strings.CutPrefix(a, "--init-command="); ok {
+				d = worse(d, p.inner(v, env, depth))
+				continue
+			}
+			if (a == "-C" || a == "--init-command" || a == "--command") && i+1 < len(args) {
+				i++
+				if a == "--command" {
+					return worse(d, p.inner(args[i], env, depth))
+				}
+				d = worse(d, p.inner(args[i], env, depth))
+				continue
+			}
 		}
 		switch {
 		case a == "-o" || a == "+o" || a == "-O" || a == "+O" || a == "--rcfile" || a == "--init-file":
@@ -1530,10 +1886,10 @@ func (p Policy) shell(args []string, stdin string, env map[string]string, depth 
 		case strings.HasPrefix(a, "-") && !strings.HasPrefix(a, "--") && strings.ContainsRune(a[1:], 'c'):
 			wantsC = true
 		case !strings.HasPrefix(a, "-") && !strings.HasPrefix(a, "+"):
-			return p.script(a, env, depth) // runs a script file
+			return worse(d, p.shellScript(name, a, stdin, env, depth)) // runs a script file
 		}
 	}
-	return p.inner(stdin, env, depth)
+	return worse(d, p.fromStdin(name, stdin, env, depth))
 }
 
 // noExec says whether a shell's options turn on noexec (-n, -en, -o noexec), which
@@ -1630,7 +1986,7 @@ func (p Policy) remoteCopy(c call) Decision {
 		o, _ := readSSH(c.args, scpValued, false)
 		return worse(p.sshAround("scp", o, c.env, c.depth), p.copyHosts(c.name, c.args))
 	}
-	d := p.copyHosts(c.name, c.args)
+	d := worse(p.copyHosts(c.name, c.args), p.syncDeletes(c.args))
 	rsh := c.env["RSYNC_RSH"]
 	for i := 0; i < len(c.args); i++ {
 		a := c.args[i]
@@ -1815,7 +2171,7 @@ func sameHost(host, saved string) bool {
 }
 
 // shells are the POSIX shells the guard reads: their -c string, their stdin, a script.
-var shells = []string{"sh", "bash", "zsh", "dash", "ksh"}
+var shells = []string{"sh", "bash", "zsh", "dash", "ksh", "mksh", "fish", "tcsh", "csh"}
 
 func isShell(name string) bool { return slices.Contains(shells, name) }
 

@@ -199,7 +199,7 @@ func FuzzParse(f *testing.F) {
 		start := time.Now()
 		for _, c := range parse(line) {
 			program(c.words)
-			output(c)
+			output(c, "", false)
 		}
 		if el := time.Since(start); el > 2*slowLimit() {
 			t.Fatalf("parse took %v for %d bytes", el, len(line))

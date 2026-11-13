@@ -74,7 +74,8 @@ func (p Policy) recordWrites(c command) {
 		return
 	}
 	_, name, args := program(c.words)
-	text, known := output(c), true
+	text, _, _ := output(c, "", false)
+	known := true
 	if name == "cat" && len(args) > 0 || text == "" && !(name == "echo" || name == "printf") {
 		known = false
 	}

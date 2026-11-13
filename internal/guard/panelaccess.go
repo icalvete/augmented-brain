@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -92,7 +93,8 @@ func (p Policy) panelAccess(line string) bool {
 	if panelAddress(line) {
 		return true
 	}
-	if !strings.Contains(line, "panel.") && !strings.Contains(line, "panel*") && !strings.Contains(line, "panel?") && !strings.Contains(line, "*") {
+	flat := strings.NewReplacer(`"`, "", "'", "", `\`, "").Replace(line) // pan""el.json is panel.json
+	if !strings.Contains(flat, "panel") && !strings.ContainsAny(flat, "*?[") {
 		return false
 	}
 	inConfig := p.runsInConfig(line)
@@ -113,6 +115,9 @@ func (p Policy) panelAccess(line string) bool {
 					return true
 				}
 			}
+		}
+		if sw.glob && p.patternHidden(w) { // ~/.config/augmented-b*/pan*: the whole path, part by part
+			return true
 		}
 		if base != panelFile && strings.ContainsAny(w, `/\`) { // a pattern: its folder is the file's
 			if r, err := p.resolve(filepath.Dir(w)); err == nil {
@@ -177,7 +182,7 @@ type shellWord struct {
 func shellWords(line string) []shellWord {
 	var out []shellWord
 	var cur strings.Builder
-	glob, quote := false, rune(0)
+	glob, quote, escaped := false, rune(0), false
 	flush := func() {
 		if cur.Len() > 0 {
 			out = append(out, shellWord{cur.String(), glob})
@@ -193,6 +198,11 @@ func shellWords(line string) []shellWord {
 			} else {
 				cur.WriteRune(r)
 			}
+		case escaped:
+			escaped = false
+			cur.WriteRune(r)
+		case r == '\\':
+			escaped = true // the next rune stands for itself
 		case r == '"' || r == '\'':
 			quote = r
 		case strings.ContainsRune(" \t\r\n`;|&<>()={}", r):
@@ -213,4 +223,78 @@ func unescape(s string) string {
 		return u
 	}
 	return s
+}
+
+// patternHidden says whether a pattern with a folder (~/.config/*/panel.json) would
+// match the panel's token file: it is made absolute as the shell would, and matched
+// against the file's path part by part.
+func (p Policy) patternHidden(w string) bool {
+	if !strings.ContainsAny(w, `/\`) {
+		return false
+	}
+	pattern := w
+	if pattern == "~" || strings.HasPrefix(pattern, "~/") {
+		home, err := paths.Home()
+		if err != nil {
+			return false
+		}
+		pattern = filepath.Join(home, pattern[1:])
+	} else if !filepath.IsAbs(pattern) {
+		if p.Cwd == "" || p.lost {
+			return false
+		}
+		pattern = filepath.Join(p.Cwd, pattern)
+	}
+	for _, h := range p.Hidden {
+		if ok, err := filepath.Match(filepath.ToSlash(pattern), filepath.ToSlash(h)); err == nil && ok {
+			return true
+		}
+	}
+	return false
+}
+
+// copiers are the programs that, given a folder, read every file in it: a copy, an
+// archive, a search.
+var copiers = []string{"cp", "rsync", "tar", "zip", "7z", "7za", "scp", "rclone", "rg", "ag", "cpio", "pax"}
+
+// copiesHidden says whether a command copies, archives or searches the folder that
+// holds the panel's token file, or a folder that holds that one inside the home
+// folder (cp -r ~/.config /tmp/c): the copy can then be read where the guard does not
+// look. grep counts when recursive; ls and cat of other files in the folder do not.
+func (p Policy) copiesHidden(words []string) bool {
+	if len(p.Hidden) == 0 {
+		return false
+	}
+	_, name, args := program(words)
+	recursive := slices.Contains(copiers, name)
+	if name == "grep" || name == "egrep" || name == "fgrep" {
+		recursive = slices.ContainsFunc(args, func(a string) bool {
+			return a == "--recursive" || a == "--dereference-recursive" ||
+				len(a) > 1 && a[0] == '-' && a[1] != '-' && strings.ContainsAny(a, "rR")
+		})
+	}
+	if !recursive {
+		return false
+	}
+	home, _ := paths.Home()
+	if h, err := paths.Resolve(home); err == nil {
+		home = h
+	}
+	for _, a := range args {
+		a = writtenArg(a)
+		if a == "" || strings.HasPrefix(a, "-") {
+			continue
+		}
+		d, err := p.resolve(a)
+		if err != nil {
+			continue
+		}
+		for _, h := range p.Hidden {
+			dir := filepath.Dir(h)
+			if paths.Same(d, dir) || paths.Within(dir, d) && home != "" && !paths.Same(d, home) && paths.Within(d, home) {
+				return true
+			}
+		}
+	}
+	return false
 }

@@ -37,7 +37,9 @@ A program determined to get around it could. Read the
   read from the system keychain, an environment variable or a secrets manager, never
   typed in.
 - **Wiping your home folder or the whole disk.** `rm -r` of `~` or `/`, also after a
-  `cd` (`cd ~ && rm -rf .`), and on Windows however the path is written.
+  `cd` (`cd ~ && rm -rf .`) or with a pattern that takes everything in it (`rm -rf ~/*`,
+  `~/.*`), and on Windows however the path is written. Moving it away (`mv ~ …`) or
+  emptying it with `rsync --delete` too.
 - **PowerShell.** The guard reads the shell, not PowerShell, so it stops every PowerShell
   command, and `cmd` or `powershell` started from Bash too. Claude runs it in Bash (Git
   Bash on Windows) instead. You will see that block on Windows: it is expected.
@@ -66,7 +68,11 @@ A program determined to get around it could. Read the
   `find -exec`, a git alias), a command longer than 256 KB, `rm -rf "$DIR/"*` with a
   variable that may be empty, an `rm -r .` after a `cd` it cannot follow, a script it
   cannot read or larger than 64 KB, a script that the same command writes in a way it
-  cannot read and then runs (`curl -o x.sh … && sh x.sh`).
+  cannot read and then runs (`curl -o x.sh … && sh x.sh`). And a shell fed what a
+  program writes (`curl … | sh`: save it to a file and run the file, and it is read), a
+  script that is a command's output (`source <(…)`), git, gh or glab told what to do by
+  a variable (`git $cmd`), `xargs` handing git or a shell the words it reads, and
+  `rm -r "$(…)"`.
 - **The guard's own settings.** Claude never changes augmented brain's configuration or
   Claude Code's settings on its own, since a line there could switch a check off.
 
@@ -145,8 +151,8 @@ three things so that the lists stay yours:
   `augmented-brain` program. Copying, unpacking or syncing into the folder that holds
   one of them asks too (`cp -t`, `tar -C`, `rsync`).
 - **It denies reaching the panel.** Reading `panel.json` (the panel's key) with a tool
-  or a command, and calling a panel page from a command, are denied, however the
-  address is written: the panel's Guard page is how you change the lists, and it works
+  or a command, also by a pattern or by copying, archiving or searching its folder, and
+  calling a panel page from a command, are denied, however the address is written: the panel's Guard page is how you change the lists, and it works
   with that key. `augmented-brain panel` never prints the key either: it prints a link
   that works once, and run by Claude it prints none.
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
@@ -207,7 +213,10 @@ The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh 
 `docker exec`, `podman exec`, `kubectl exec`, `bash -c`, loops, what a pipe feeds a shell
 (`echo 'sudo …' | bash`), short scripts Claude runs (`bash deploy.sh`,
 `./deploy.sh`), also when the same command writes them first (`echo '…' > x.sh && bash
-x.sh`), `env -S '…'`, and your git aliases (`git ci` when `ci` stands for `commit`). A shell that only checks a script's syntax
+x.sh`), a file a shell reads (`bash < x.sh`, `cat x.sh | bash`), `env -S '…'`, braces
+and `$IFS` as the shell expands them, the programs that run the rest of their line
+(`strace`, `screen`, `tmux`, `setpriv`, `sg`, `at`, and the shells `fish`, `tcsh`, `csh`
+and `mksh`), and your git aliases (`git ci` when `ci` stands for `commit`). A shell that only checks a script's syntax
 (`sh -n install.sh`, `bash -o noexec`) runs nothing, so it is let through. It checks the commands Claude leaves running to watch something, and
 those of the helpers Claude starts (subagents and workflows).
 

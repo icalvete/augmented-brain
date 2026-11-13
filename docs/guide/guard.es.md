@@ -38,8 +38,9 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   Claude. Los secretos se leen del llavero del sistema, de una variable de entorno o de un
   gestor de secretos. Nunca se escriben a mano.
 - **Borrar tu carpeta personal o el disco entero.** `rm -r` de `~` o de `/`, también
-  después de un `cd` (`cd ~ && rm -rf .`), y en Windows se escriba como se escriba la
-  ruta.
+  después de un `cd` (`cd ~ && rm -rf .`) o con un patrón que se lleva todo lo de dentro
+  (`rm -rf ~/*`, `~/.*`), y en Windows se escriba como se escriba la ruta. También
+  llevársela a otro sitio (`mv ~ …`) o vaciarla con `rsync --delete`.
 - **PowerShell.** El guardia lee la shell, no PowerShell, así que para cualquier comando
   de PowerShell, y también `cmd` o `powershell` lanzados desde Bash. Claude lo hace en
   Bash (Git Bash en Windows). En Windows verás ese bloqueo: es lo esperado.
@@ -69,7 +70,11 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   `rm -rf "$DIR/"*` con una variable que puede estar vacía, un `rm -r .` después de un
   `cd` que no puede seguir, un script que no puede leer o de más de 64 KB, un script que
   el mismo comando escribe de una forma que no puede leer y luego ejecuta
-  (`curl -o x.sh … && sh x.sh`).
+  (`curl -o x.sh … && sh x.sh`). Y una shell que ejecuta lo que escribe un programa
+  (`curl … | sh`: guárdalo en un fichero y ejecuta el fichero, y se lee), un script que
+  es la salida de un comando (`source <(…)`), git, gh o glab cuando una variable dice
+  qué hacen (`git $cmd`), `xargs` pasándole a git o a una shell las palabras que lee, y
+  `rm -r "$(…)"`.
 - **Los ajustes del propio guardia.** Claude nunca cambia por su cuenta la configuración
   de augmented brain ni los ajustes de Claude Code, porque una línea ahí podría apagar una
   comprobación.
@@ -151,7 +156,8 @@ Hace tres cosas para que las listas sigan siendo tuyas:
   sincronizar en la carpeta que guarda uno de ellos también pregunta (`cp -t`, `tar
   -C`, `rsync`).
 - **Deniega llegar al panel.** Leer `panel.json` (la llave del panel) con una herramienta
-  o un comando, y llamar a una página del panel desde un comando, se deniega, se escriba
+  o un comando, también con un patrón o copiando, archivando o buscando en su carpeta, y
+  llamar a una página del panel desde un comando, se deniega, se escriba
   como se escriba la dirección: la página Guardia del panel es como tú cambias las
   listas, y funciona con esa llave. `augmented-brain panel` tampoco escribe nunca la
   llave: escribe un enlace que sirve una vez, y lanzado por Claude no escribe ninguno.
@@ -214,8 +220,11 @@ El guardia lee lo que se ejecuta dentro de otros comandos: `ssh máquina '…'`,
 `vagrant ssh -c` (y tras `--`), `docker exec`, `podman exec`, `kubectl exec`, `bash -c`, los bucles, lo
 que una tubería le pasa a una shell (`echo 'sudo …' | bash`), los scripts cortos que
 lanza Claude (`bash deploy.sh`, `./deploy.sh`), también cuando el mismo comando los
-escribe antes (`echo '…' > x.sh && bash x.sh`), `env -S '…'` y tus alias de git (`git ci`
-cuando `ci` quiere decir `commit`). Una shell que solo comprueba la sintaxis de un script
+escribe antes (`echo '…' > x.sh && bash x.sh`), un fichero que lee una shell
+(`bash < x.sh`, `cat x.sh | bash`), `env -S '…'`, las llaves y `$IFS` como los expande la
+shell, los programas que ejecutan el resto de su línea (`strace`, `screen`, `tmux`,
+`setpriv`, `sg`, `at`, y las shells `fish`, `tcsh`, `csh` y `mksh`) y tus alias de git
+(`git ci` cuando `ci` quiere decir `commit`). Una shell que solo comprueba la sintaxis de un script
 (`sh -n install.sh`, `bash -o noexec`) no ejecuta nada, así que pasa. Mira los comandos que Claude deja en
 marcha para vigilar algo, y los de los ayudantes que Claude lanza (subagentes y flujos de
 trabajo).

@@ -13,14 +13,19 @@ type command struct {
 	piped     bool     // reads the output of the command before it (a | b)
 	redirects []string // the files of its redirections (> f, 2>>f, < f), not arguments
 	outputs   []string // those of them it writes to (> f, >> f, <> f)
-	// tooDeep stands for substitutions nested deeper than maxNest, never read: the
-	// guard asks the user about them.
+	inputs    []string // those it reads as its standard input (< f, 0< f)
+	// tooDeep stands for substitutions nested deeper than maxNest, or braces that
+	// make more than maxBraces words, never read: the guard asks the user about them.
 	tooDeep bool
 }
 
 // maxNest is how many $(…) inside one another parse reads; deeper ones become a
 // command marked tooDeep. It keeps a line of thousands of $( from taking seconds.
 const maxNest = 8
+
+// maxBraces is how many words the braces of one word may make ({a,b}{c,d} makes four);
+// past it the command is marked tooDeep, and the user is asked.
+const maxBraces = 64
 
 // parse splits a shell command line into simple commands. It understands quotes,
 // backslashes, comments, the separators ; & | ( ) { } and newlines, heredocs and
@@ -64,8 +69,12 @@ type parser struct {
 	hereString bool // the word being read is the text of a <<<, not an argument
 	redirect   bool // the word being read is the file of a redirection
 	redirectTo bool // and the redirection writes to it
+	redirectIn bool // or is the command's standard input
 	redirects  []string
 	outputs    []string
+	inputs     []string
+	braced     bool // the word being read has a { outside quotes: braces may expand
+	tooDeep    bool // the command being read has braces that make too many words
 
 	subs    []string  // substitutions, parsed once the line is done
 	pending []heredoc // heredocs whose body starts on the next line
@@ -92,6 +101,10 @@ func (p *parser) step() {
 		p.singleQuoted()
 	case r == '"':
 		p.doubleQuoted()
+	case r == '$' && ifsAt(rs, i) > 0:
+		// $IFS outside quotes splits words, as a blank does: su${IFS}do is two words.
+		p.endWord()
+		p.i += ifsAt(rs, i) - 1
 	case r == '$' && ahead(1) == '(' && p.arithmetic(i):
 		p.cur.WriteRune(subst)
 		p.inWord = true
@@ -141,26 +154,102 @@ func (p *parser) step() {
 			p.i++
 		}
 	default:
+		if r == '{' && (i == 0 || rs[i-1] != '$') {
+			p.braced = true // ${x} is a variable, not braces
+		}
 		p.cur.WriteRune(r)
 		p.inWord = true
 	}
+}
+
+// ifsAt returns the length of $IFS or ${IFS} at i, or 0 when the text there is not one.
+func ifsAt(rs []rune, i int) int {
+	for _, form := range []string{"${IFS}", "$IFS"} {
+		n := len(form)
+		if i+n > len(rs) || string(rs[i:i+n]) != form {
+			continue
+		}
+		if form == "$IFS" && i+n < len(rs) && isNameRune(rs[i+n]) {
+			return 0 // $IFSX is another variable
+		}
+		return n
+	}
+	return 0
+}
+
+func isNameRune(r rune) bool {
+	return r == '_' || r >= 'A' && r <= 'Z' || r >= 'a' && r <= 'z' || r >= '0' && r <= '9'
+}
+
+// expandBraces is the shell's brace expansion of a word: a{b,c}d is abd acd, groups
+// one after another or inside one another too. A group with no comma ({}, ${x}) stays
+// as it is. ok is false when the word would make more than maxBraces words.
+func expandBraces(w string) (words []string, ok bool) {
+	words = []string{w}
+	for changed := true; changed; {
+		changed = false
+		var next []string
+		for _, s := range words {
+			e, did := braceOnce(s)
+			changed = changed || did
+			next = append(next, e...)
+			if len(next) > maxBraces {
+				return nil, false
+			}
+		}
+		words = next
+	}
+	return words, true
+}
+
+// braceOnce expands the innermost group with a comma in s, if there is one.
+func braceOnce(s string) ([]string, bool) {
+	open := -1
+	for i := 0; i < len(s); i++ {
+		switch s[i] {
+		case '{':
+			if i == 0 || s[i-1] != '$' {
+				open = i
+			}
+		case '}':
+			if open < 0 {
+				continue
+			}
+			inner := s[open+1 : i]
+			if !strings.Contains(inner, ",") {
+				open = -1
+				continue
+			}
+			var out []string
+			for _, alt := range strings.Split(inner, ",") {
+				out = append(out, s[:open]+alt+s[i+1:])
+			}
+			return out, true
+		}
+	}
+	return []string{s}, false
 }
 
 // redirection reads an operator such as >, >>, 2>, &>, >&2, <, <> or >| at p.i. It is
 // never part of a word: in "git status>log" the word is status. A number just before
 // it is the file descriptor, not an argument; the word after it is the file, kept apart.
 func (p *parser) redirection() {
+	fd := ""
 	if p.inWord && isDigits(p.cur.String()) {
+		fd = p.cur.String()
 		p.cur.Reset()
 		p.inWord = false
 	}
 	p.endWord()
+	start := p.i
 	writes := p.rs[p.i] == '>'
 	for p.i+1 < len(p.rs) && strings.ContainsRune("<>&|", p.rs[p.i+1]) && !(p.rs[p.i+1] == '|' && p.rs[p.i] != '>') {
 		p.i++
 		writes = writes || p.rs[p.i] == '>'
 	}
+	op := string(p.rs[start : p.i+1])
 	p.redirect, p.redirectTo = true, writes
+	p.redirectIn = op == "<" && (fd == "" || fd == "0") // < f and 0< f, not <&3 or 3< f
 }
 
 func isDigits(s string) bool {
@@ -291,22 +380,33 @@ func (p *parser) endWord() {
 		if p.redirectTo {
 			p.outputs = append(p.outputs, p.cur.String())
 		}
+		if p.redirectIn {
+			p.inputs = append(p.inputs, p.cur.String())
+		}
+	case p.braced:
+		words, ok := expandBraces(p.cur.String())
+		if !ok {
+			p.tooDeep = true
+			words = []string{p.cur.String()}
+		}
+		p.words = append(p.words, words...)
 	default:
 		p.words = append(p.words, p.cur.String())
 	}
 	p.cur.Reset()
-	p.inWord = false
+	p.inWord, p.braced = false, false
 }
 
 // endCommand ends the command being read, if it has anything in it.
 func (p *parser) endCommand() {
 	p.endWord()
 	p.redirect = false
-	if len(p.words) > 0 || p.stdin != "" || len(p.redirects) > 0 {
-		p.out = append(p.out, command{words: p.words, stdin: p.stdin, piped: p.piped, redirects: p.redirects, outputs: p.outputs})
+	if len(p.words) > 0 || p.stdin != "" || len(p.redirects) > 0 || p.tooDeep {
+		p.out = append(p.out, command{words: p.words, stdin: p.stdin, piped: p.piped, redirects: p.redirects,
+			outputs: p.outputs, inputs: p.inputs, tooDeep: p.tooDeep})
 		p.piped = false
 	}
-	p.words, p.stdin, p.redirects, p.outputs = nil, "", nil, nil
+	p.words, p.stdin, p.redirects, p.outputs, p.inputs, p.tooDeep = nil, "", nil, nil, nil, false
 }
 
 // balanced returns the text up to the parenthesis that closes one opened just before
@@ -416,6 +516,9 @@ var wrappers = map[string]string{
 	"timeout": "ks", "xargs": "nIPLsdEa", "watch": "ndg", "stdbuf": "ioe", "builtin": "",
 	"ionice": "cnp", "chrt": "p", "taskset": "", "setsid": "", "unbuffer": "", "caffeinate": "", "npx": "pc",
 	"time": "fo", "flock": "wEc", "busybox": "", "sshpass": "pfdP", "proxychains": "f", "torsocks": "",
+	// They run their arguments too, though they do something else first (Rev 29d).
+	"strace": "abeEIoOpPsSuUX", "ltrace": "aeEnoOpPsSuUw", "ssh-agent": "aEOPt", "setpriv": "",
+	"dbus-launch": "", "dbus-run-session": "", "screen": "cehpSsTt", "valgrind": "",
 }
 
 // wrapperLong lists, for each wrapper, the long options that take a value. Written
@@ -434,6 +537,12 @@ var wrapperLong = map[string][]string{
 	"npx":    {"--package", "--call"},
 	"time":   {"--format", "--output"},
 	"flock":  {"--wait", "--timeout", "--conflict-exit-code"},
+	"strace": {"--output", "--expr", "--signal", "--trace", "--attach", "--user", "--string-limit",
+		"--columns", "--env", "--trace-path", "--summary-sort-by"},
+	"setpriv": {"--reuid", "--regid", "--ruid", "--euid", "--rgid", "--egid", "--groups", "--inh-caps",
+		"--ambient-caps", "--bounding-set", "--securebits", "--pdeathsig", "--selinux-label",
+		"--apparmor-profile", "--landlock-access", "--landlock-rule", "--seccomp-filter"},
+	"dbus-run-session": {"--config-file", "--dbus-daemon"},
 }
 
 // program strips variable assignments (NAME=value), reserved words and wrappers from
@@ -476,7 +585,9 @@ func program(words []string) (env map[string]string, name string, args []string)
 			if wrapper == "command" && (a == "-v" || a == "-V") {
 				return env, "", nil // a lookup, nothing runs
 			}
-			short := !strings.HasPrefix(a, "--") && len(a) == 2 && strings.ContainsRune(opts, rune(a[1]))
+			// -s, or a cluster of letters whose last takes the value (screen -dmS name)
+			short := !strings.HasPrefix(a, "--") && len(a) >= 2 && strings.ContainsRune(opts, rune(a[len(a)-1])) &&
+				(len(a) == 2 || letters(a[1:]))
 			if (short || slices.Contains(wrapperLong[wrapper], a)) && i < len(words) {
 				i++ // the option's value
 			}
@@ -527,6 +638,16 @@ func envSplit(a string, words []string, i int) ([]string, bool) {
 	}
 	out := append(append(append([]string{}, words[:i]...), strings.Fields(value)...), words[rest:]...)
 	return out, true
+}
+
+// letters says whether s is only ASCII letters: a cluster of options (-dmS).
+func letters(s string) bool {
+	for _, r := range s {
+		if !(r >= 'A' && r <= 'Z' || r >= 'a' && r <= 'z') {
+			return false
+		}
+	}
+	return s != ""
 }
 
 func isName(s string) bool {
