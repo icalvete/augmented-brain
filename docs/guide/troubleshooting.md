@@ -143,6 +143,11 @@ repository>` there, and then `augmented-brain backup`. See [Backup and restore](
 the header (between the `---` lines) by hand, and run `check` again. Until then, the
 index is not rebuilt, but the tools keep working.
 
+When `check` says a field "is not one this version knows", a newer version, on another
+computer or in a session started after an update, most likely wrote it. Update with
+`augmented-brain update` and do not remove the field. If it is a typo of a field you
+know, fix it.
+
 A file that cannot be read (its permissions, or a broken link left by a sync) is listed
 the same way: fix its permissions, or move it out of the notes folder. A file whose name
 starts with a dot, such as the lock file Emacs leaves while you edit a note, is skipped.
