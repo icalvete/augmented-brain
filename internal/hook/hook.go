@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
@@ -66,14 +67,18 @@ type output struct {
 	SystemMessage string `json:"systemMessage,omitempty"`
 }
 
-// userNotice is what the user must hear about the guard's lists (state.TakeGuardNotice),
-// as a message Claude Code shows them directly, or "". Taking it removes it.
+// userNotice is what the user must hear about the guard's lists (state.TakeGuardNotice)
+// and about what a tool saved for every session (state.TakeToolNotice), as a message
+// Claude Code shows them directly, or "". Taking it removes it.
 func userNotice(lang, cfgDir string) string {
-	n := state.TakeGuardNotice(cfgDir)
-	if n == "" {
-		return ""
+	var parts []string
+	if n := state.TakeGuardNotice(cfgDir); n != "" {
+		parts = append(parts, i18n.T(lang, "hook.guardnotice", n))
 	}
-	return i18n.T(lang, "hook.guardnotice", n)
+	if n := state.TakeToolNotice(cfgDir); n != "" {
+		parts = append(parts, i18n.T(lang, "hook.toolnotice", n))
+	}
+	return strings.Join(parts, "\n\n")
 }
 
 func read(in io.Reader) input {

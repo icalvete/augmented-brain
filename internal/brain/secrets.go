@@ -8,6 +8,7 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/BurntSushi/toml"
@@ -148,7 +149,11 @@ func MoveSecrets(cfgDir string) error {
 
 // ErrSecretName is a service or a name that is not one plain word, or a description
 // that is not one plain line.
-var ErrSecretName = errors.New("service and name are single words (letters, digits, . _ @ + -, not starting with -), and what it is for one line of plain text")
+var ErrSecretName = errors.New("service and name are single words (letters, digits, . _ @ + -, not starting with -), and what it is for one line of plain text, up to 160 characters")
+
+// secretWhatMax is how long what a secret is for may be: a few words, never a value
+// pasted with them.
+const secretWhatMax = 160
 
 // ErrSecretValue is a name or a description that looks like a secret itself.
 var ErrSecretValue = errors.New("that looks like a secret's value: only its name and what it is for are kept")
@@ -157,10 +162,12 @@ var ErrSecretValue = errors.New("that looks like a secret's value: only its name
 // It refuses anything that looks like a value.
 func (b *Brain) SaveSecretName(in SecretName) (string, error) {
 	in.Service, in.Name, in.What = strings.TrimSpace(in.Service), strings.TrimSpace(in.Name), strings.TrimSpace(in.What)
-	if !secretPart.MatchString(in.Service) || !secretPart.MatchString(in.Name) || !plainLine(in.What) {
+	if !secretPart.MatchString(in.Service) || !secretPart.MatchString(in.Name) || !plainLine(in.What) ||
+		utf8.RuneCountInString(in.What) > secretWhatMax {
 		return "", ErrSecretName
 	}
-	if kind := guard.FindSecret(in.Key() + " " + in.What); kind != "" {
+	if kind := guard.FindSecret(in.Key() + " " + in.What); kind != "" || looksLikeValue(in.Service) ||
+		looksLikeValue(in.Name) || looksLikeValue(in.What) {
 		return "", ErrSecretValue
 	}
 	if err := MoveSecrets(b.ConfigDir); err != nil {
@@ -217,6 +224,49 @@ func (b *Brain) ForgetSecretName(service, name string) error {
 		return fmt.Errorf("there is no secret %s in the list", key)
 	}
 	return writeSecrets(b.ConfigDir, list)
+}
+
+// What gives a value away where a name or a few words should be. FindSecret knows the
+// tokens of each provider by their prefix; these catch the rest: a value said with its
+// label, one inside an address, a JWT, a PIN.
+var (
+	// labelled is "password=…", "token: …", "the password is …", in English or Spanish.
+	labelled = regexp.MustCompile(`(?i)\b(?:pass(?:word|wd|phrase)?|pwd|contraseña|clave|secret[oa]?|token|api[_-]?key|pin|cvv|cvc)\s*(=|:|\bis\b|\bes\b)\s*([^\s,;]+)`)
+	// inURL is a password in an address: scheme://user:password@host.
+	inURL = regexp.MustCompile(`://[^/\s:@]+:[^/\s@]+@`)
+	// jwt is three base64url blocks, the first a JSON header: "{\"" is always "eyJ".
+	jwt = regexp.MustCompile(`\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.`)
+	// pinCode is a card or phone code with its number.
+	pinCode = regexp.MustCompile(`(?i)\b(?:pin|cvv|cvc)\b\D{0,3}\d{3,}`)
+	// tokenWord is a long run of the characters keys are made of.
+	tokenWord = regexp.MustCompile(`[A-Za-z0-9+/=_-]{20,}`)
+	// nameWord is a long word that is still a name: pieces no longer than a word, each
+	// in one case, such as "github-actions-deploy-2024" or "S3_BACKUP_BUCKET_KEY".
+	nameWord = regexp.MustCompile(`^(?:[a-z0-9]{1,12}|[A-Z0-9]{1,12})(?:[-_.](?:[a-z0-9]{1,12}|[A-Z0-9]{1,12}))+$`)
+)
+
+// looksLikeValue says whether text holds what looks like a secret's value rather than
+// a name or a description.
+func looksLikeValue(text string) bool {
+	if inURL.MatchString(text) || jwt.MatchString(text) || pinCode.MatchString(text) {
+		return true
+	}
+	for _, m := range labelled.FindAllStringSubmatch(text, -1) {
+		// "password=x" gives a value whatever it is; "the token is for the bot" or
+		// "API key: deploys" does not, so after "is" or ":" only a word with digits or
+		// signs counts.
+		if m[1] == "=" || strings.IndexFunc(strings.TrimRight(m[2], ".!?)"), func(r rune) bool {
+			return !unicode.IsLetter(r)
+		}) >= 0 {
+			return true
+		}
+	}
+	for _, w := range tokenWord.FindAllString(text, -1) {
+		if strings.ContainsAny(w, "0123456789") && strings.IndexFunc(w, unicode.IsLetter) >= 0 && !nameWord.MatchString(w) {
+			return true
+		}
+	}
+	return false
 }
 
 // plainLine says whether text is one line of printable text, which the configuration
