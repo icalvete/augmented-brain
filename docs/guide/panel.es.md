@@ -11,7 +11,9 @@ augmented-brain panel
 
 Abre tu navegador en **Hoy**, con el espacio de la carpeta desde la que lo lanzas. Si no
 puede (en un ordenador sin pantalla, por ejemplo), escribe una dirección para que la
-abras tú.
+abras tú. Esa dirección abre el panel **una vez**, en los próximos 2 minutos; vuelve a
+lanzar el comando para tener otra. Cuando lo lanza Claude por ti, abre el navegador y
+Claude nunca ve una dirección que abra el panel.
 
 El panel cambia tus notas igual que Claude, con el mismo programa, y se esperan el uno al
 otro: puedes tener los dos abiertos a la vez.
@@ -171,10 +173,12 @@ Tus comentarios de `config.toml` se quedan donde están. Si las listas no son la
 por última vez (algo las cambió fuera de esta página), un aviso lo dice y enseña qué
 cambió: lo añadido y lo quitado, lista por lista, frente a las listas que aceptaste por
 última vez (si esas ya no están entre las versiones guardadas, lo dice). Después, un botón
-para aceptarlas; hasta entonces (o hasta que empiece una sesión nueva) un commit, push o merge que las
-listas permiten pregunta antes. Claude
-no puede abrir esta página: el guardia le niega la llave del panel. Mira
-[El guardia](guard.es.md).
+para aceptarlas; hasta entonces (o hasta que empieces una sesión nueva) un commit, push o
+merge que las listas permiten pregunta antes. Lo que cambies o aceptes aquí te lo dice
+el propio Claude Code en tus sesiones abiertas, después de la siguiente respuesta o
+mensaje, en una línea que empieza por «augmented brain · las listas del guardia». Si no
+has sido tú, mira aquí. Claude no puede abrir esta página: nunca ve la dirección del
+panel, y el guardia le niega la llave del panel. Mira [El guardia](guard.es.md).
 
 ## Versiones
 
@@ -255,10 +259,12 @@ dice, con un enlace para verla como está ahora.
 - Funciona **solo en este ordenador**. Las otras máquinas de tu red no llegan a él.
   Para abrirlo desde el móvil u otro ordenador tuyo, usa `augmented-brain panel remote`:
   mira [El panel desde otro dispositivo](panel-remote.es.md).
-- La dirección lleva una **llave**, nueva cada vez que el panel arranca. Sin ella el panel
-  no responde nada, así que ningún otro programa ni página web de tu ordenador puede
-  usarlo. Trata la dirección como una contraseña: no la compartas. Deja de valer cuando el
-  panel se para.
+- La dirección que recibes lo abre **una vez**. Después el panel lleva tu navegador a sus
+  páginas, cuya dirección lleva una **llave**, nueva cada vez que el panel arranca. Sin
+  ella el panel no responde nada, así que ningún otro programa ni página web de tu
+  ordenador puede usarlo. Trata la dirección de las páginas como una contraseña: no la
+  compartas. Deja de valer cuando el panel se para. Si otra cosa usó tu enlace antes, tu
+  navegador dice «Este enlace ya se usó» en vez de abrirse: te enteras.
 - No carga **nada de internet**: ni fuentes ni estadísticas. Funciona sin conexión. Una
   nota tampoco puede meter HTML ni scripts propios en la página. Los enlaces de la página
   Ayuda van a la web solo cuando los pulsas.

@@ -90,7 +90,9 @@ seguridad ni tu propia revisión. Lo que no puede ver:
   los ajustes de augmented brain o de Claude Code con sus herramientas de ficheros o con
   comandos habituales. Un programa pequeño escrito en el momento (en Python, por ejemplo)
   aún podría cambiarlos; el guardia lo nota después y pregunta antes de un commit o un
-  push, pero no lo impide.
+  push, pero no lo impide. Un programa así también podría usar el panel con un enlace
+  que haya visto: el enlace sirve una vez, así que tu navegador diría que ya se usó, y
+  Claude Code te dice lo que cambió el panel.
 - **Alias de git en ficheros incluidos.** Tus alias de git cuentan como lo que quieren
   decir (`git ci` por `git commit`) cuando están en tus ajustes de git habituales. Un
   alias en un fichero que esos ajustes incluyen con `include` no se ve.

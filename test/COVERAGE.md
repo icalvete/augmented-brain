@@ -67,6 +67,8 @@ row here with the test that covers it.
 | Case | Covered by | Where |
 |---|---|---|
 | What it stops: push, root, secrets, production, untouchable hosts and repositories | `internal/guard` (one test file per subject), `internal/hook` `TestPreToolUse`; `checks.py` | Go, rehearsal |
+| A panel address however the host is written; a bare `*` only in the configuration folder | `internal/guard` `TestPanelAccessShapes`, `TestPanelAccessBareNames`; `testdata/innocent-commands.txt` | Go |
+| The seal: kept on compaction, /clear, resume and fork; one that cannot be read asks | `internal/hook` `TestSessionStartCompactKeepsAsking`, `TestSealUnreadableAsks` | Go |
 | What it must let through: everyday commands, in the shapes of real sessions (reading git, `sh -n`, `go test`, `gh pr checks`, pipelines, heredocs, loops, `$((…))`) | `internal/hook` `TestInnocentCommands`, over `internal/hook/testdata/innocent-commands.txt` | Go, every pull request |
 
 A false positive found by hand goes into that corpus with its fix. The corpus is made up
@@ -98,6 +100,8 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Every edit saves | `internal/panel` (one test per page) | Go |
 | Configuration edits leave a version | `internal/panel` `TestPanelChangesLeaveVersions` | Go |
 | The Guard page: what changed, the box, the warnings | `TestGuardPageShowsWhatChanged`, `TestGuardPageWarnsOnDangerousLists`, the browser check | Go, CI |
+| A ticket opens the panel once (303, then 410); only the command gets one; through the network, for the owner only | `internal/panel` `TestTicketOnce`, `TestTicketOnlyForTheCommand`, `TestTicketFromTheCommand`; the browser and Mac checks spend one | Go, CI |
+| A change to the guard's lists made in the panel reaches the user once, from Claude Code | panel `TestGuardChangeLeavesNotice`, hook `TestGuardNoticeOnce` | Go |
 | Each page says what it is; hiding it is remembered | `TestIntroHideAndShow`, `TestIntroAnchors` (the guide's anchors exist) | Go |
 | Going back to a version asks, and warns about the guard | `TestVersionsPage` | Go |
 | Cut-off sessions from Today; Sessions out of the menu | `TestSessions` | Go |
