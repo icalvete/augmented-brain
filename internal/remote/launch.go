@@ -94,6 +94,9 @@ type LaunchStatus struct {
 	Folder  string
 	Active  string
 	Problem string // with Failed, what the session said: Claude Code's own error text
+	// Resets, with Failed, is when the usage limit that stopped the session resets
+	// (quota.go); zero for any other error.
+	Resets time.Time
 }
 
 // FolderTrusted says whether Claude's server would start in folder: the folder itself
@@ -334,6 +337,7 @@ func (s System) Launches(cfgDir string) ([]LaunchStatus, error) {
 			if st.Active == "active" {
 				if _, problem := state.LastAnswer(s.transcript(sessionOf[r.ID])); problem != "" {
 					st.Active, st.Problem = Failed, problem
+					st.Resets, _ = s.QuotaResets(sessionOf[r.ID])
 				}
 			}
 			res = append(res, st)
