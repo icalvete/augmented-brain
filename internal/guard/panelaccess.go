@@ -101,7 +101,9 @@ func (p Policy) panelAccess(line string) bool {
 	for _, sw := range shellWords(line) {
 		w := sw.text
 		base := filepath.Base(w)
-		hit := base == panelFile
+		// pan\el.json is panel.json in the shell; a backslash is kept in the word, since
+		// on Windows it separates folders.
+		hit := base == panelFile || strings.ReplaceAll(base, `\`, "") == panelFile
 		if !hit && sw.glob && strings.ContainsAny(base, "*?[") {
 			ok, err := filepath.Match(base, panelFile)
 			hit = err == nil && ok
@@ -182,7 +184,7 @@ type shellWord struct {
 func shellWords(line string) []shellWord {
 	var out []shellWord
 	var cur strings.Builder
-	glob, quote, escaped := false, rune(0), false
+	glob, quote := false, rune(0)
 	flush := func() {
 		if cur.Len() > 0 {
 			out = append(out, shellWord{cur.String(), glob})
@@ -198,11 +200,6 @@ func shellWords(line string) []shellWord {
 			} else {
 				cur.WriteRune(r)
 			}
-		case escaped:
-			escaped = false
-			cur.WriteRune(r)
-		case r == '\\':
-			escaped = true // the next rune stands for itself
 		case r == '"' || r == '\'':
 			quote = r
 		case strings.ContainsRune(" \t\r\n`;|&<>()={}", r):
