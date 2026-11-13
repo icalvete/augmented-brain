@@ -206,13 +206,15 @@ func TestPinnedVerdicts(t *testing.T) {
 		{"gh api -X POST repos/o/r/pulls/1/merge", Deny},
 		{"gh api repos/o/r/pulls/1/merge", Allow},
 		{"gh api -f x=1 repos/o/r/releases", Deny},
-		{"gh api -X POST repos/o/r/actions/workflows/release.yml/dispatches", Deny},
 		{"gh api -X POST repos/o/r/actions/workflows/deploy.yml/dispatches", Allow},
-		{"gh workflow run release", Deny},
 		{"gh workflow run 12345", Ask},
 		{"gh workflow run deploy", Allow},
-		{"gh workflow run -r main release", Deny},
 		{"gh workflow run", Allow},
+		// changes: a release workflow asks the user instead of being denied, so a release
+		// they asked for goes with one click (denied still in bypassPermissions).
+		{"gh api -X POST repos/o/r/actions/workflows/release.yml/dispatches", Ask},
+		{"gh workflow run release", Ask},
+		{"gh workflow run -r main release", Ask},
 		{"glab mr merge 3", Deny},
 		{"glab mr accept 3", Deny},
 		{"glab release create v1", Deny},
