@@ -44,7 +44,8 @@ it feels to a newcomer.
 | `internal/portcheck` | Used only by tests: reads the repository's tests for what passes on Linux and fails on Windows (`.Perm()` in a test that never looks at `runtime.GOOS`; JSON joined by hand around a path). A line that is fine says `// windows-ok`. |
 | `internal/doccheck` | Used only by tests: whether the reference pages (`docs/guide/commands`, `mcp-tools`, `configuration`, each with its `.es` twin) cover every command and flag (`commands` in `cmd/augmented-brain/commands.go`), MCP tool and parameter, and `config.toml` setting. `AB_DOCS_DIR` points the tests at other pages. |
 | `docs/` | The website (GitHub Pages, served from `main`): the landing pages, the documentation in `docs/guide/` (Markdown sources, rendered with a sidebar by `scripts/build-guides.py`, which also writes `docs/llms-full.txt`) and the format spec. |
-| `scripts/` | Checks, builders and release helpers (below). |
+| `scripts/` | Checks, builders and release helpers (below). `changelog.py`: the changelog entries of `changelog.d/`, checked (`check`) and gathered into both changelogs at a release (`release`). |
+| `changelog.d/` | The changelog entries waiting for the next release, one pair of files per pull request (`README.md` says how). |
 | `test/rehearsal/` | The rehearsal before a release: `rehearse.sh` builds the release from the checkout, serves it to the VMs, installs or updates from a snapshot (`--from`, `clean` by default; `--update` installs the release published last first) and runs `checks.py` there (the program, the guard, notes through MCP, the hooks, backup and restore; `--sessions` adds a real Claude), all with made-up data. Logs in `logs/`, not committed. |
 | `test/vm/ubuntu-desktop/` | A clean Ubuntu desktop VM (Vagrant + VirtualBox) to try it as a newcomer. |
 | `test/vm/windows-11/` | A clean Windows 11 VM, the same way, for the Windows work (evaluation edition, about 90 days). |
@@ -157,9 +158,16 @@ Heavier checks, before a release or when you touch what they cover:
   Spanish: a new message goes in `internal/i18n`, in the file of its subject, with both
   languages (`TestCatalog` checks they have the same placeholders); no package keeps a
   language table of its own. Outside Go: `say` in `install.sh`, the templates,
-  `README.md` and `README.es.md`, `CHANGELOG.md` and `CHANGELOG.es.md`,
+  `README.md` and `README.es.md`, each entry of `changelog.d/` (`.en.md` and `.es.md`),
   `docs/index.html` and `docs/es/index.html`, each guide and its `.es` twin. Change one,
   change the other.
+- **A change people notice brings its changelog entry, in a file of its own.** Never in
+  `CHANGELOG.md` or `CHANGELOG.es.md`: two pull requests that both add a line there
+  conflict as soon as one merges. The entry goes in `changelog.d/<name>.en.md` and
+  `.es.md` (the branch's name; how to write it in `changelog.d/README.md`), and the
+  release gathers them. `scripts/changelog.py check --base origin/main` (in precheck)
+  wants one when the branch changes the program, and accepts a commit line
+  `Changelog: none` for a change no one notices.
 - **The docs are checked as people read them.** `cmd/augmented-brain/docsite_test.go`: every
   relative link and #anchor leads somewhere, a Spanish page links Spanish guides, every
   guide has its `.es` twin with the same headings and examples, sits in `GROUPS` and is
@@ -217,10 +225,11 @@ Heavier checks, before a release or when you touch what they cover:
 - `main` takes changes only through a pull request whose CI is green and up to date with
   `main` (a GitHub ruleset; no force push, no deletion, no one bypasses it). Tags `v*`
   cannot be moved or deleted once pushed.
-- A release: on a branch, set `VERSION`, rename the `## Unreleased` section of
-  `CHANGELOG.md` and `CHANGELOG.es.md` to `## <version>` with its date (`Released <date>.`,
-  `Publicada el <date>.`), commit, open a pull request and merge it
-  when CI is green. Publishing is then the maintainer's one gesture: Run workflow on
+- A release: on a branch, set `VERSION`, run `python3 -I scripts/changelog.py release
+  <version>` (it writes `## <version>` with its date, `Released <date>.` and `Publicada el
+  <date>.`, in `CHANGELOG.md` and `CHANGELOG.es.md` with every entry of `changelog.d/`,
+  and empties the folder), commit, open a pull request and merge it when CI is green.
+  `release.yml` refuses a release while `changelog.d/` still holds entries. Publishing is then the maintainer's one gesture: Run workflow on
   `release` in GitHub's Actions tab (or `gh workflow run release -R icalvete/augmented-brain`).
   `release.yml` takes the version from `VERSION` on `main`, refuses one already tagged or a
   commit whose required checks failed, tags it, builds the archives, checksums and
