@@ -3751,7 +3751,9 @@ that one or choose another title. Nothing is ever saved twice without anyone kno
 ## `rule_new`
 
 Saves a rule you give on how to work. Every session loads it. A title that already exists
-creates nothing: Claude is told its id.
+creates nothing: Claude is told its id. Claude Code tells you, once, which rule was saved
+or changed, in a message of its own at the end of the answer: if you did not ask for it,
+tell Claude to undo it.
 
 - `id` (optional): to change a rule that exists. What is sent replaces what it had, what
   is left out stays, and the version it replaces is kept in `archive/`.
@@ -3765,7 +3767,7 @@ creates nothing: Claude is told its id.
 Retires a rule, reference or lesson that no longer holds, without deleting it. It moves
 to `archive/`, which is never loaded, so a retired rule stops reaching the session start.
 A line at its end says when, why and what replaces it. For a duplicate or an old
-version; Claude asks you first.
+version; Claude asks you first. When it retires a rule, Claude Code tells you, once.
 
 - `id`: the rule, reference or lesson.
 - `reason`: why, in a few words. It stays with the note.
@@ -3806,6 +3808,7 @@ the reference `ref-repositories`, one line per repository; a new one replaces th
 Saves who you are, how you like to work, and the name and personality you give Claude.
 Every space shares it, and every session starts by reading it. Claude sends only the
 parts that change: a part left out keeps what it has, and an empty one is cleared.
+Claude Code tells you, once, which parts changed.
 
 - `name` (needed the first time): what you want to be called.
 - `about` (optional): what you do and work on, in short lines starting with `- `.
@@ -3821,7 +3824,7 @@ parts that change: a part left out keeps what it has, and an empty one is cleare
 
 Adds to what the guard asks you about. The lists hold on this whole machine, in every
 space. It only adds: to take one out, you edit the configuration yourself, and the
-answer says where.
+answer says where. Claude Code tells you, once, what was added.
 
 - `production_aws_profiles` (optional): AWS CLI profiles that reach production. The guard
   asks before commands that use them.
@@ -3831,12 +3834,15 @@ answer says where.
 ## `secret_name_save`
 
 Writes down the name of a secret you keep in the system keychain, and what it is for.
-Never its value: a value is refused. The list is the same in every space; the panel
-shows it. Saving a name that is listed changes what it is for.
+Never its value: a value is refused. That covers the tokens of known services, a long
+run of letters and digits, a password said with its label (`password=…`, "the password
+is …"), an address with a password in it, a JWT and a PIN or CVV with its number. The
+list is the same in every space; the panel shows it. Saving a name that is listed changes
+what it is for.
 
 - `service`: the service the secret is kept under in the keychain, such as `telegram`.
 - `name`: its name under that service, such as `alerts-bot`.
-- `what` (optional): what it is for, in a few words.
+- `what` (optional): what it is for, in a few words: 160 characters at most.
 
 ## `backup_setup`
 
@@ -5008,6 +5014,11 @@ own review. What it cannot see:
 - **Local commits from merge, revert and cherry-pick.** The guard stops `git commit`
   where Claude may not commit, but `git merge`, `git revert` and `git cherry-pick` also
   make commits on your computer. They are not published: a push is still stopped.
+- **Rules Claude saves.** Claude saves a rule, your profile or a host for the guard
+  without asking you first, and every later session loads them. A text Claude read (a
+  web page, an email) could talk it into saving one. Nothing stops that, but you are
+  told: Claude Code itself shows you, once, what was saved. If you did not ask for it,
+  tell Claude to undo it, or look at the panel.
 - **Questions in automatic modes.** When the guard asks, Claude Code shows you the
   question. What Claude Code does with it in its fully automatic modes is up to Claude
   Code, not augmented brain.

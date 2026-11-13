@@ -523,9 +523,17 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				return "", err
 			}
 			if in.ID != "" {
-				return header(b.UpdateNote(in.ID, "rule", in.Title, in.Summary, "", in.Body))
+				n, err := b.UpdateNote(in.ID, "rule", in.Title, in.Summary, "", in.Body)
+				if err == nil {
+					toolNotice(b, "hook.toolnotice.rule.changed", n.Header.Title, noticeWhere(b, in.Shared))
+				}
+				return header(n, err)
 			}
-			return header(b.NewRule(in.Title, in.Summary, in.Body))
+			n, err := b.NewRule(in.Title, in.Summary, in.Body)
+			if err == nil {
+				toolNotice(b, "hook.toolnotice.rule.new", n.Header.Title, noticeWhere(b, in.Shared))
+			}
+			return header(n, err)
 		})
 
 	type retireIn struct {
@@ -540,9 +548,14 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			if err != nil {
 				return "", err
 			}
+			old, wasRule := b.Mem.Notes[in.ID]
+			wasRule = wasRule && old.Header.Type == "rule"
 			dest, err := b.RetireNote(in.ID, in.Reason, in.ReplacedBy)
 			if err != nil {
 				return "", err
+			}
+			if wasRule {
+				toolNotice(b, "hook.toolnotice.rule.retired", old.Header.Title, noticeWhere(b, in.Shared))
 			}
 			return in.ID + " retired: it is now " + dest + " and is no longer loaded.", nil
 		})
@@ -583,7 +596,12 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 	}
 	tool(s, locked, "safety_save", "Add to what the guard must ask the user about: production AWS profiles and hosts not to touch. They apply on this whole machine, in every space and outside them. Use it in the first session and when the user names a new one. It only adds: to take one out, the user edits the configuration file themselves (the answer says where).",
 		func(b *brain.Brain, in safetyIn) (string, error) {
-			return b.SaveSafety(brain.SafetyInput{ProductionAWSProfiles: in.ProductionAWSProfiles, UntouchableHosts: in.UntouchableHosts})
+			added := safetyAdded(b.ConfigDir, in.ProductionAWSProfiles, in.UntouchableHosts)
+			out, err := b.SaveSafety(brain.SafetyInput{ProductionAWSProfiles: in.ProductionAWSProfiles, UntouchableHosts: in.UntouchableHosts})
+			if err == nil && len(added) > 0 {
+				toolNotice(b, "hook.toolnotice.safety", strings.Join(added, ", "))
+			}
+			return out, err
 		})
 
 	type secretIn struct {
@@ -633,6 +651,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			if err != nil {
 				return "", err
 			}
+			changed := profileChanges(b, p, [5]*string{in.Name, in.About, in.WorkStyle, in.Assistant, in.Personality})
 			for _, f := range []struct {
 				from *string
 				to   *string
@@ -642,6 +661,9 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				}
 			}
 			n, err := b.SaveProfile(p)
+			if err == nil && len(changed) > 0 {
+				toolNotice(b, "hook.toolnotice.profile", strings.Join(changed, ", "))
+			}
 			return render(n, err)
 		})
 

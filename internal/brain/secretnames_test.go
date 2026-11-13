@@ -81,3 +81,38 @@ func TestMoveSecrets(t *testing.T) {
 		t.Errorf("file: %q", l)
 	}
 }
+
+// Found in the review of nov-2026 (N-12): only tokens with a provider's prefix were
+// refused, so a password said in words, a JWT or a bare key went into the list.
+func TestSecretNamesRefuseValues(t *testing.T) {
+	b := open(t, "en")
+	for _, in := range []SecretName{
+		{"db", "admin", "the password is Tr0ub4dor&3xyz"},
+		{"db", "admin", "password=hunter2hunter2"},
+		{"db", "admin", "password: hunter2hunter2"},
+		{"db", "admin", "la contraseña es Pa55word!"},
+		{"db", "admin", "https://admin:s3cret@db.example.com/x"},
+		{"api", "session", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.c2lnbmF0dXJlLWhlcmU"},
+		{"git", "deploy", "key 3f786850e387550fdab836ed7e6dc881de23001b"},
+		{"api", "x", "token " + strings.Repeat("aZ9+", 11)},
+		{"api", "k8Xv2Qp7Lm4Rt9Wz3Yb6Nc1D", "the api"},
+		{"aws", "secret", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYzz1EXAMPLE"},
+		{"bank", "card", "PIN 4821, CVV 993"},
+		{"bank", "card", strings.Repeat("words ", 30)},
+	} {
+		if _, err := b.SaveSecretName(in); err != ErrSecretValue && err != ErrSecretName {
+			t.Errorf("%+v saved (%v)", in, err)
+		}
+	}
+	for _, in := range []SecretName{
+		{"telegram", "alerts-bot", "the bot that sends alerts"},
+		{"github", "actions-deploy-token-2024", "the token is for the deploy workflow"},
+		{"aws", "S3_BACKUP_BUCKET_KEY", "API key: backups of the photos"},
+		{"mail", "smtp", "la contraseña es la del correo del trabajo"},
+		{"bank", "card-pin", "the PIN of the family card"},
+	} {
+		if _, err := b.SaveSecretName(in); err != nil {
+			t.Errorf("%+v refused: %v", in, err)
+		}
+	}
+}

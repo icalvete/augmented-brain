@@ -265,7 +265,9 @@ id, para cambiar esa o elegir otro título. Nada se guarda dos veces sin que nad
 ## `rule_new`
 
 Guarda una regla que das sobre cómo trabajar. Cada sesión la carga. Un título que ya
-existe no crea nada: Claude recibe su id.
+existe no crea nada: Claude recibe su id. Claude Code te dice, una vez, qué regla se ha
+guardado o cambiado, en un mensaje propio al acabar la respuesta: si no se lo has pedido,
+dile a Claude que lo deshaga.
 
 - `id` (opcional): para cambiar una regla que existe. Lo que se manda sustituye a lo que
   tenía, lo que no se manda se queda, y la versión sustituida se guarda en `archive/`.
@@ -279,7 +281,8 @@ existe no crea nada: Claude recibe su id.
 Retira una regla, referencia o lección que ya no vale, sin borrarla. Pasa a `archive/`,
 que nunca se carga, así que una regla retirada deja de llegar al inicio de la sesión.
 Una línea al final dice cuándo, por qué y qué la sustituye. Para un duplicado o una
-versión vieja; Claude te pregunta antes.
+versión vieja; Claude te pregunta antes. Cuando retira una regla, Claude Code te lo dice,
+una vez.
 
 - `id`: la regla, referencia o lección.
 - `reason`: por qué, en pocas palabras. Se queda con la nota.
@@ -322,7 +325,7 @@ anterior.
 Guarda quién eres, cómo te gusta trabajar, y el nombre y la personalidad que le das a
 Claude. Lo comparten todos los espacios, y cada sesión empieza leyéndolo. Claude manda
 solo las partes que cambian: una parte que no se manda conserva lo que tiene, y una
-vacía se borra.
+vacía se borra. Claude Code te dice, una vez, qué partes han cambiado.
 
 - `name` (hace falta la primera vez): cómo quieres que te llamen.
 - `about` (opcional): a qué te dedicas y en qué trabajas, en líneas cortas que empiezan
@@ -339,7 +342,7 @@ vacía se borra.
 
 Añade cosas a lo que el guardia te pregunta. Las listas valen en toda esta máquina, en
 todos los espacios. Solo añade: para quitar algo, editas tú la configuración, y la
-respuesta dice dónde.
+respuesta dice dónde. Claude Code te dice, una vez, qué se ha añadido.
 
 - `production_aws_profiles` (opcional): perfiles de AWS CLI que llegan a producción. El
   guardia pregunta antes de los comandos que los usan.
@@ -349,13 +352,16 @@ respuesta dice dónde.
 ## `secret_name_save`
 
 Apunta el nombre de un secreto que guardas en el llavero del sistema, y para qué es.
-Nunca su valor: un valor se rechaza. La lista es la misma en todos los espacios; el panel
-la enseña. Guardar un nombre que ya está en la lista cambia para qué es.
+Nunca su valor: un valor se rechaza. Eso incluye los tokens de servicios conocidos, una
+tira larga de letras y números, una contraseña dicha con su etiqueta (`password=…`, «la
+contraseña es …»), una dirección con contraseña, un JWT y un PIN o CVV con su número. La
+lista es la misma en todos los espacios; el panel la enseña. Guardar un nombre que ya
+está en la lista cambia para qué es.
 
 - `service`: el servicio bajo el que se guarda el secreto en el llavero, como
   `telegram`.
 - `name`: su nombre dentro de ese servicio, como `alerts-bot`.
-- `what` (opcional): para qué es, en pocas palabras.
+- `what` (opcional): para qué es, en pocas palabras: 160 caracteres como mucho.
 
 ## `backup_setup`
 
