@@ -36,7 +36,7 @@ func (b *Brain) archiveJournal(n *memory.Note) (string, error) {
 	fmt.Fprintf(&file, "# %s · %s\n\n", n.Header.Title, fmt.Sprintf(b.text("journal.archive.title"), s.First, s.Last))
 	fmt.Fprintf(&file, "%s\n\n", fmt.Sprintf(b.text("journal.archive.from"), n.Path, b.today(), memory.JournalArchiveAt/1024))
 	file.WriteString(s.Moved)
-	if err := paths.WriteAtomic(filepath.Join(b.Mem.Dir, filepath.FromSlash(rel)), []byte(file.String()), 0o600); err != nil {
+	if err := paths.WriteAtomicNoLink(filepath.Join(b.Mem.Dir, filepath.FromSlash(rel)), []byte(file.String()), 0o600); err != nil {
 		return "", err
 	}
 	// Dated as the last entry it stands for, so the journal stays in date order.

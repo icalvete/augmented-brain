@@ -136,7 +136,7 @@ func (p inboxDone) write() error {
 	if len(p.gone) == 0 {
 		return nil
 	}
-	return paths.WriteAtomic(p.path, []byte(strings.Join(p.keep, "\n")), 0o600)
+	return paths.WriteAtomicNoLink(p.path, []byte(strings.Join(p.keep, "\n")), 0o600)
 }
 
 func (b *Brain) planInboxDone(items []string) (inboxDone, error) {
@@ -215,7 +215,7 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 	for i, l := range lines {
 		if e, ok := parseInboxLine(l, b.spaceSet()); ok && e.Date == date && (e.Text == text || e.full() == text) {
 			lines = append(lines[:i], lines[i+1:]...)
-			return true, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o600)
+			return true, paths.WriteAtomicNoLink(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o600)
 		}
 	}
 	// The session start shortens a long capture and marks the cut with "…": that text
@@ -237,7 +237,7 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 		return false, nil
 	}
 	lines = append(lines[:found], lines[found+1:]...)
-	return true, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o600)
+	return true, paths.WriteAtomicNoLink(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o600)
 }
 
 // ---- watch dates ----

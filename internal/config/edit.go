@@ -174,7 +174,7 @@ func listLine(key string, values []string) string {
 // re-encoding (and losing) the rest of the file.
 type lineEditor struct {
 	dir, path string
-	old       string // the text as read, put back if the change does not load
+	old       string // the text as read, kept whole for an edit that adds to the end
 	lines     []string
 }
 
@@ -232,17 +232,14 @@ func (f *lineEditor) insert(at int, lines ...string) {
 // save writes the edited lines back (see write).
 func (f *lineEditor) save() error { return f.write(strings.Join(f.lines, "\n")) }
 
-// write replaces the file with text and loads it back; if it does not load, the old
-// text is put back and the error returned, so a bad edit never leaves a broken file.
+// write checks that text loads as the configuration and only then replaces the file
+// with it, so a bad edit never reaches the disk, not even for a moment: the guard
+// reads this file at every command.
 func (f *lineEditor) write(text string) error {
-	if err := writeAtomic(f.path, text); err != nil {
-		return err
-	}
-	if _, err := Load(f.dir); err != nil {
-		_ = writeAtomic(f.path, f.old)
+	if _, err := parse(text, f.dir); err != nil {
 		return fmt.Errorf("%s: %w", i18n.T(langOf(f.dir), "config.wouldbreak", f.path), err)
 	}
-	return nil
+	return writeAtomic(f.path, text)
 }
 
 // langOf is the language of the configuration in dir, for what an edit says: the
@@ -256,6 +253,7 @@ func langOf(dir string) string {
 
 // writeAtomic replaces a file in one step (write, then rename). When the path is a
 // symlink, the file it points to is replaced and the link is kept.
-func writeAtomic(path, text string) error {
+// A variable so tests can see every text that reaches the disk.
+var writeAtomic = func(path, text string) error {
 	return paths.WriteAtomic(path, []byte(text), 0o600)
 }

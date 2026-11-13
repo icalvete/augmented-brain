@@ -108,7 +108,7 @@ func Write(memDir string, v int) error {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
-	return paths.WriteAtomic(filepath.Join(dir, File), []byte(strconv.Itoa(v)+"\n"), 0o600)
+	return paths.WriteAtomicNoLink(filepath.Join(dir, File), []byte(strconv.Itoa(v)+"\n"), 0o600)
 }
 
 // CheckNotes refuses notes written by a newer program. It reads one small file, so
@@ -164,8 +164,9 @@ func ensure(dir, cfgDir, name, lang string, v, target int, steps []Migration, no
 	case v == target:
 		return r, write(v) // records it when it was only implied; cheap
 	}
-	r.Copy = filepath.Join(cfgDir, CopiesDir, fmt.Sprintf("%s-%d-%s", name, v, now.Format("20060102-150405")))
-	if err := paths.CopyTree(dir, r.Copy, CopiesDir, "state", ".git"); err != nil { // the machine's state and earlier copies stay out
+	copied, err := copyBefore(dir, cfgDir, name, v, now)
+	r.Copy = copied
+	if err != nil {
 		return r, &stepError{i18n.T(lang, "format.copying", dir, target, err), err}
 	}
 	for r.To < target {
@@ -188,4 +189,52 @@ func ensure(dir, cfgDir, name, lang string, v, target int, steps []Migration, no
 		r.Done = append(r.Done, step.What)
 	}
 	return r, nil
+}
+
+// CompleteFile, inside a copy made before a migration, says the copy was finished.
+const CompleteFile = ".copy-complete"
+
+// copyBefore makes the copy of dir at version v that a migration starts from, in
+// <cfgDir>/migrations/<name>-<v>-<time>, and returns where it is. When a finished
+// copy of the same folder at the same version is already there (a migration that
+// stopped half way and runs again), that one is kept and no other is made: a copy
+// made now would hold the notes half migrated. A new copy always goes in a folder of
+// its own, never one that exists, and is marked finished only once all of it is on
+// the disk.
+func copyBefore(dir, cfgDir, name string, v int, now time.Time) (string, error) {
+	copies := filepath.Join(cfgDir, CopiesDir)
+	prefix := fmt.Sprintf("%s-%d-", name, v)
+	if entries, err := os.ReadDir(copies); err == nil {
+		for _, e := range entries {
+			if !e.IsDir() || !strings.HasPrefix(e.Name(), prefix) {
+				continue
+			}
+			p := filepath.Join(copies, e.Name())
+			if _, err := os.Stat(filepath.Join(p, CompleteFile)); err == nil {
+				return p, nil
+			}
+		}
+	}
+	if err := os.MkdirAll(copies, 0o700); err != nil {
+		return "", err
+	}
+	base := filepath.Join(copies, prefix+now.Format("20060102-150405"))
+	dst := base
+	for i := 2; ; i++ {
+		err := os.Mkdir(dst, 0o700)
+		if err == nil {
+			break
+		}
+		if !errors.Is(err, fs.ErrExist) {
+			return "", err
+		}
+		dst = fmt.Sprintf("%s-%d", base, i)
+	}
+	if err := paths.CopyTreeExact(dir, dst, CopiesDir, "state", ".git"); err != nil { // the machine's state and earlier copies stay out
+		return dst, err
+	}
+	if err := paths.WriteAtomic(filepath.Join(dst, CompleteFile), []byte(now.UTC().Format(time.RFC3339)+"\n"), 0o600); err != nil {
+		return dst, err
+	}
+	return dst, paths.SyncDir(copies)
 }

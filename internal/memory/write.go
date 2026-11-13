@@ -41,5 +41,5 @@ func Save(dir string, n *Note) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	return paths.WriteAtomic(path, data, 0o600)
+	return paths.WriteAtomicNoLink(path, data, 0o600)
 }
