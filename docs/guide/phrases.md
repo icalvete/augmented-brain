@@ -23,7 +23,7 @@ wording with the same meaning works too.
 | "Leave it for some day." | Parks it as someday: out of the daily list, kept in its area |
 | "Close the task." | Closes it with its result; it is never deleted. A closed task stays closed: closing it again is refused |
 | "Reopen the blog task: the certificate failed again." | Opens it again; the reason goes to its journal |
-| "Open me a session for the blog task." | Starts a Claude session of its own for that task, in its folder; it shows up in Claude Desktop and claude.ai within a minute. Linux only for now ([how](remote.md#a-session-per-task)) |
+| "Open me a session for the blog task." | Starts a Claude session of its own for that task, in its folder; it shows up in Claude Desktop and claude.ai within a minute. Linux only for now ([how](task-sessions.md)) |
 
 ## Inbox and reminders
 

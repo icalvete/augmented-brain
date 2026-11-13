@@ -23,7 +23,7 @@ forma de decir lo mismo también.
 | "Déjala para algún día." | La aparca como algún día: fuera de la lista diaria, guardada en su área |
 | "Cierra la tarea." | La cierra con su resultado; nunca se borra. Una tarea cerrada se queda cerrada: cerrarla otra vez se rechaza |
 | "Reabre la tarea del blog: el certificado ha vuelto a fallar." | La abre otra vez; el motivo va a su diario |
-| "Ábreme una sesión para la tarea del blog." | Arranca una sesión de Claude solo para esa tarea, en su carpeta; sale en Claude Desktop y en claude.ai en menos de un minuto. Por ahora, solo en Linux ([cómo](remote.es.md#una-sesión-por-tarea)) |
+| "Ábreme una sesión para la tarea del blog." | Arranca una sesión de Claude solo para esa tarea, en su carpeta; sale en Claude Desktop y en claude.ai en menos de un minuto. Por ahora, solo en Linux ([cómo](task-sessions.es.md)) |
 
 ## Buzón y recordatorios
 

@@ -75,6 +75,7 @@
   <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html" aria-current="page">From your phone or another computer</a></li>
   <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
   <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
@@ -100,24 +101,19 @@
   <p>Your notes live on one computer. You can still work with them from your phone, a tablet or another computer. There are two ways, and they do different things:</p>
   <ul><li><strong>Talk to Claude</strong> on that computer, from anywhere: <a href="remote.html">remote access</a>. You pick a session in <a href="https://claude.ai/code">claude.ai/code</a> or Claude Desktop, and work as if you were sitting there.</li><li><strong>Look at your notes</strong> in the panel, from anywhere: <a href="panel-remote.html">the panel from another device</a>. Today, your tasks, the inbox, everything the panel shows.</li></ul>
   <p>You can use one, the other, or both. Remote access works on Linux, macOS and Windows; the panel from another device works wherever <a href="https://tailscale.com">Tailscale</a> does.</p>
-  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#set-it-up-once">Set it up once</a></li><li><a href="#which-session-to-use">Which session to use</a></li><li><a href="#when-it-stops-answering">When it stops answering</a></li><li><a href="#an-old-session-with-the-same-name">An old session with the same name</a></li><li><a href="#starting-new-sessions-from-the-phone">Starting new sessions from the phone</a></li><li><a href="#keep-it-safe">Keep it safe</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#set-it-up-once">Set it up once</a></li><li><a href="#which-session-to-use">Which session to use</a></li><li><a href="#when-it-stops-answering">When it stops answering</a></li><li><a href="#a-session-for-each-task">A session for each task</a></li><li><a href="#keep-it-safe">Keep it safe</a></li></ul></nav>
   <h2 id="set-it-up-once">Set it up once</h2>
   <p>On the computer that holds your notes:</p>
   <ol><li><strong>Remote access.</strong> Run <code>augmented-brain remote install</code>, then do what it asks: let Claude trust the folder and, on Linux, turn on “linger” so it survives a reboot (on macOS and Windows it starts when you log in). Details in <a href="remote.html">Remote access</a>.</li><li><strong>The panel.</strong> Install Tailscale on the computer and on your phone, signed in to the same account, then run <code>augmented-brain panel remote</code>. It prints an address and a QR code. Details in <a href="panel-remote.html">The panel from another device</a>.</li></ol>
-  <p><code>augmented-brain doctor</code> checks both, one line each.</p>
+  <p><code>augmented-brain doctor</code> checks both: a line for the door of each space and, once you have used it, one for the panel from another device.</p>
   <h2 id="which-session-to-use">Which session to use</h2>
   <p>Remote access opens <strong>one door per space</strong>, named <code>&lt;computer name&gt;-&lt;space&gt;</code>, such as <code>my-laptop-personal</code>. A session started through it begins in that space's first work folder, so Claude loads that space's notes and rules.</p>
   <ul><li>In claude.ai or Claude Desktop, pick the environment with that name and start a session. You can start as many as you like.</li><li>To work on a task, say so: “resume task-bake-bread”. Claude reads the task and carries on where it was left.</li><li>To reach another space, use that space's door. Notes never cross between spaces.</li></ul>
   <h2 id="when-it-stops-answering">When it stops answering</h2>
-  <ul><li><strong>The computer is asleep.</strong> A laptop that sleeps drops the connection. It comes back when it wakes up.</li><li><strong>The session was archived.</strong> Archiving a session in claude.ai, or leaving it unused for long, can end it on Claude's side while the service on your computer keeps running with nothing behind it. Start the service again, on the computer:</li></ul>
-  <p><code></code><code>bash systemctl --user restart augmented-brain-remote-personal </code><code></code></p>
-  <p>The new session can take up to a few minutes to appear: Claude's side first lets the old one expire. The watch does this by itself within a few minutes; if you restart by hand, run <code>augmented-brain remote watch</code> first, so the sessions of your tasks started from there keep running.</p>
-  <ul><li><strong>Your Claude login expired.</strong> <code>augmented-brain remote status</code> says so. Run <code>claude</code> once on the computer and sign in again.</li></ul>
-  <p><code>augmented-brain remote status</code> says how each door stands, and what to do.</p>
-  <h2 id="an-old-session-with-the-same-name">An old session with the same name</h2>
-  <p>When the door of a space moves to another folder (a new version starts it in your work folder, say), Claude's side keeps the old session too, with the same name, in another group of the list. Nothing answers in the old one: what you write there is lost. Use the one in the group named after the new folder, and archive the old one in claude.ai or Claude Desktop.</p>
-  <h2 id="starting-new-sessions-from-the-phone">Starting new sessions from the phone</h2>
-  <p>Ask the session behind the space's door to open one for a task (“open me a session for the website task”). It runs <code>augmented-brain session start</code>, and a session of its own for that task shows up in your list within a minute, named after the task, in its folder, already reading it. Open as many as you have tasks. The first time in a folder it tells you how to make Claude trust it. See <a href="remote.html#a-session-per-task">A session per task</a>.</p>
+  <ul><li><strong>The computer is asleep.</strong> A laptop that sleeps drops the connection. It comes back when it wakes up.</li><li><strong>The session was archived</strong> in claude.ai, or ended on Claude's side. On Linux it comes back by itself, in about ten minutes; on macOS and Windows it takes three steps by hand. Both are in <a href="remote.html#good-to-know">Remote access</a>.</li><li><strong>Your Claude login expired.</strong> Run <code>claude</code> once on the computer and sign in again.</li></ul>
+  <p><code>augmented-brain remote status</code> says how each door stands, and what to do. Other problems are in <a href="troubleshooting.html#remote-access-does-not-work">Troubleshooting</a>.</p>
+  <h2 id="a-session-for-each-task">A session for each task</h2>
+  <p>On Linux, the session behind a space's door can open another one for a task (“open me a session for the website task”). It shows up in your list within a minute, named after the task, in its folder, already reading it. Open as many as you have tasks. On macOS and Windows it is not available yet. See <a href="task-sessions.html">A session per task</a>.</p>
   <h2 id="keep-it-safe">Keep it safe</h2>
   <p>Both are doors to your computer. Remote access is a permanent one: anyone who gets into your Claude account can work on the machine through it. Protect that account with a strong password and two-step verification, keep Claude asking before it acts (never <code>bypassPermissions</code>), and remove the doors you do not use: <code>augmented-brain remote uninstall</code> and <code>augmented-brain panel stop</code>. The panel's address works only for your own devices in your Tailscale network, and only while the panel runs.</p>
   <nav class="pager" aria-label="Previous / Next">
