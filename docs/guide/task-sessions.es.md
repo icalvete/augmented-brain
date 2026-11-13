@@ -72,9 +72,11 @@ trabajo.
 
 Cuando el repositorio de la tarea es bare, `session start` le hace a la tarea un worktree
 propio a su lado: `site-new-website` para la tarea `task-new-website` de `site`, en una
-rama nueva con el nombre de la tarea, desde la rama por defecto de origin tal como está
-ahora (antes la trae). Así dos tareas de un repositorio nunca comparten carpeta, y una
-sesión nunca empieza con código viejo. Si se pide otra vez, usa el mismo worktree.
+rama nueva con el nombre de la tarea, desde la rama por defecto de origin. Antes la
+trae, así que la rama empieza con el código de ahora; si no llega a origin, empieza con
+lo último que este ordenador sabía, y lo dice. Si una sesión anterior de la tarea dejó
+su rama, el worktree coge esa rama tal como estaba. Así dos tareas de un repositorio
+nunca comparten carpeta. Si se pide otra vez, usa el mismo worktree.
 Claude guarda la confianza de un worktree con su repositorio principal: basta con
 confiar en uno de los dos.
 

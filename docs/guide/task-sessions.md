@@ -70,9 +70,11 @@ of work.
 
 When the task's repository is bare, `session start` makes the task a worktree of its
 own next to it: `site-new-website` for the task `task-new-website` of `site`, on a new
-branch named after the task, from the default branch of origin as it is now (it fetches
-first). So two tasks of one repository never share a folder, and a session never starts
-on old code. Asked again, it uses the same worktree. Claude keeps the trust of a
+branch named after the task, from the default branch of origin. It fetches first, so
+the branch starts from the code of now; if origin cannot be reached, it starts from what
+this computer last knew, and says so. If an earlier session of the task left its branch,
+the worktree takes that branch as it was. So two tasks of one repository never share a
+folder. Asked again, it uses the same worktree. Claude keeps the trust of a
 worktree under its main repository: trusting either one is enough.
 
 The worktree goes away by itself when nothing would be lost: with `session stop`, when
