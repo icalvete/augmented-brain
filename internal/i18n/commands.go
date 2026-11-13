@@ -34,6 +34,11 @@ var commandMessages = map[string]msg{
 		en: "%s: unknown settings: %s",
 		es: "%s: ajustes desconocidos: %s",
 	},
+	// One unknown setting of guard.toml or session.toml, with the known one it looks like.
+	"config.unknown.near": {
+		en: "%s (did you mean %s?)",
+		es: "%s (¿querías decir %s?)",
+	},
 	// What is wrong with the configuration file (config.toml).
 	"config.nodir": {
 		en: "the configuration folder is unknown: HOME is not set, nor AB_CONFIG_DIR",

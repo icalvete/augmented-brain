@@ -2,6 +2,14 @@ package i18n
 
 // `augmented-brain doctor`, the health check.
 var doctorMessages = map[string]msg{
+	"doctor.unknownsettings": {
+		en: "%s has settings this version does not know, and ignores them: %s",
+		es: "%s tiene ajustes que esta versión no conoce, y no los tiene en cuenta: %s",
+	},
+	"doctor.unknownsettings.fix": {
+		en: "correct the name in %s; if a newer augmented brain wrote it, update this one (augmented-brain update)",
+		es: "corrige el nombre en %s; si lo escribió un augmented brain más nuevo, actualiza este (augmented-brain update)",
+	},
 	"doctor.noconfig": {
 		en: "no configuration in %s",
 		es: "no hay configuración en %s",
