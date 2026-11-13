@@ -94,7 +94,7 @@ func joinAdditions(dir, rel string) bool {
 	if _, err := memory.Parse(rel, []byte(joined)); err != nil {
 		return false
 	}
-	if err := paths.WriteAtomic(filepath.Join(dir, filepath.FromSlash(rel)), []byte(joined), 0o600); err != nil {
+	if err := paths.WriteAtomicNoLink(filepath.Join(dir, filepath.FromSlash(rel)), []byte(joined), 0o600); err != nil {
 		return false
 	}
 	_, err = git(dir, "add", "--", rel)

@@ -53,5 +53,5 @@ func MarkMemory(cfgDir, key string, step int64, alive func(key string) bool) err
 	if err != nil {
 		return err
 	}
-	return paths.WriteAtomic(memoryFile(cfgDir), data, 0o600)
+	return paths.WriteAtomicQuick(memoryFile(cfgDir), data, 0o600)
 }

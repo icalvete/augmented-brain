@@ -82,7 +82,7 @@ func changeModel(cfgDir string, now time.Time, change func(*modelMarks)) error {
 	if err != nil {
 		return err
 	}
-	return paths.WriteAtomic(modelFile(cfgDir), data, 0o600)
+	return paths.WriteAtomicQuick(modelFile(cfgDir), data, 0o600)
 }
 
 // MarkModel records that a session was warned about model.

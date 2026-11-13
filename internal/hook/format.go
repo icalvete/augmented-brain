@@ -13,6 +13,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/format"
+	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/session"
 )
 
@@ -54,6 +55,10 @@ func migrate(c *config.Config, s *config.Space, cfgDir string) string {
 		return out.String()
 	}
 	defer unlock()
+	// What a write cut short by a crash or a power cut left behind; under the lock, so
+	// no write of this machine is going on.
+	paths.CleanTemps(s.Memory, TempAge, ".git", "docs")
+	paths.CleanTemps(cfgDir, TempAge, ".git", format.CopiesDir, "remote")
 	r, err := format.EnsureNotes(s.Memory, cfgDir, s.Name, c.Language, now)
 	say("the notes of space "+s.Name, r, err)
 	if _, err := os.Stat(c.SharedDir()); err == nil {
@@ -62,6 +67,11 @@ func migrate(c *config.Config, s *config.Space, cfgDir string) string {
 	}
 	return out.String()
 }
+
+// TempAge is how old a temporary file left by a write must be before the session
+// start removes it: well past any write still going on (another machine's, through a
+// synced folder).
+const TempAge = time.Hour
 
 // LockWait is the most a session-start hook waits for the notes lock: hooks have ten
 // seconds, and a backup or an import may hold it for longer.
