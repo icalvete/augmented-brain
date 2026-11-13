@@ -101,9 +101,19 @@ func (p Policy) panelAccess(line string) bool {
 	for _, sw := range shellWords(line) {
 		w := sw.text
 		base := filepath.Base(w)
-		// pan\el.json is panel.json in the shell; a backslash is kept in the word, since
-		// on Windows it separates folders.
-		hit := base == panelFile || strings.ReplaceAll(base, `\`, "") == panelFile
+		// pan\el.json is panel.json in the shell. The backslash is kept in the word, since
+		// on Windows it separates folders, so the name after the last / is also read
+		// without it, and its folder is the word up to that /.
+		if i := strings.LastIndex(w, "/"); i > 0 && strings.ReplaceAll(w[i+1:], `\`, "") == panelFile {
+			if r, err := p.resolve(w[:i]); err == nil {
+				for _, h := range p.Hidden {
+					if paths.Same(r, filepath.Dir(h)) {
+						return true
+					}
+				}
+			}
+		}
+		hit := base == panelFile
 		if !hit && sw.glob && strings.ContainsAny(base, "*?[") {
 			ok, err := filepath.Match(base, panelFile)
 			hit = err == nil && ok

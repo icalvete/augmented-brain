@@ -214,6 +214,8 @@ func TestPanelFileOtherNames(t *testing.T) {
 		{"cat ~/.config/*/settings.json", Allow},
 		{"ls ~/.config/augmented-b*", Allow},
 		{"cd \"$D\" && cp -r x /tmp/c", Allow},
+		{"cat /tmp/pan\\el.json", Allow},
+		{"cd \"$D\" && cat x/pan\\el.json", Allow},
 	}
 	for i := range rows {
 		rows[i].cmd = r.Replace(rows[i].cmd)
