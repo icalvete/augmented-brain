@@ -32,7 +32,7 @@ var (
 // maxFile caps what a download keeps in memory: release files are a few MB.
 const maxFile = 64 << 20
 
-// Download fetches one file of a release into dst. With base (AB_RELEASE_URL, for
+// Download fetches one file of a release into dst. With base (update --from, for
 // tests and the rehearsal) it is <base>/<name>, http(s) or file://; otherwise the file
 // of release version from the public address, and when that fails from GitHub's API.
 // It tries Tries times. dst is written only when the whole file arrived; the error

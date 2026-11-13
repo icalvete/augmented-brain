@@ -285,6 +285,22 @@ var commandMessages = map[string]msg{
 		en: "the update did not finish: the program is still %s, not %s. Nothing else changed; run `augmented-brain update` again later.",
 		es: "la actualización no ha terminado: el programa sigue siendo la %s, no la %s. No ha cambiado nada más; vuelve a lanzar `augmented-brain update` más tarde.",
 	},
+	"update.envignored": {
+		en: "%s is set, but `update` ignores it: a program setting it should not decide where the update comes from. It updates from GitHub (`--from <address>` is for tests).",
+		es: "%s está puesta, pero `update` no le hace caso: no debe decidir de dónde viene la actualización un programa que la haya puesto. Actualiza desde GitHub (`--from <dirección>` es para pruebas).",
+	},
+	"update.from": {
+		en: "Updating from %s, not from GitHub.",
+		es: "Actualizando desde %s, no desde GitHub.",
+	},
+	"update.badfrom": {
+		en: "--from %s: the address must be https://, file:// or http:// to this computer (127.0.0.1, localhost) or to the host of a test VM (10.0.2.2). Nothing was updated.",
+		es: "--from %s: la dirección tiene que ser https://, file:// o http:// a este ordenador (127.0.0.1, localhost) o al anfitrión de una máquina virtual de pruebas (10.0.2.2). No se ha actualizado nada.",
+	},
+	"update.broken": {
+		en: "the update did not finish: the program in place does not start (`augmented-brain version` fails). Install it again with the installer: https://icalvete.github.io/augmented-brain/",
+		es: "la actualización no ha terminado: el programa instalado no arranca (`augmented-brain version` falla). Vuelve a instalarlo con el instalador: https://icalvete.github.io/augmented-brain/es/",
+	},
 	"update.before.check": {
 		en: "Before updating, the health check found this (it was there before the new version):",
 		es: "Antes de actualizar, la revisión ha encontrado esto (ya estaba antes de la versión nueva):",
