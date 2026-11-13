@@ -771,9 +771,6 @@ func (b *Brain) capture(text, remind, from string) error {
 	if what := guard.FindSecret(text); what != "" {
 		return secretError(what)
 	}
-	if fi, err := os.Lstat(b.inboxPath()); err == nil && fi.Mode()&os.ModeSymlink != 0 {
-		return fmt.Errorf("%s is a symbolic link, which augmented brain never writes through; replace it with a plain file", b.inboxPath())
-	}
 	// The inbox is small: it is written whole, so a crash never leaves half a line, and
 	// a last line with no newline (written by hand) keeps the capture on a line of its own.
 	data, err := os.ReadFile(b.inboxPath())
@@ -784,7 +781,7 @@ func (b *Brain) capture(text, remind, from string) error {
 		data = append(data, '\n')
 	}
 	data = append(data, memory.DatedLine(b.today(), text)...)
-	return paths.WriteAtomic(b.inboxPath(), data, 0o600)
+	return paths.WriteAtomicNoLink(b.inboxPath(), data, 0o600)
 }
 
 // NewArea creates an area: a responsibility with no end date.

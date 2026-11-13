@@ -149,7 +149,7 @@ func (m *Memory) WriteIndex(lang string) (bool, error) {
 	if old, err := os.ReadFile(path); err == nil && string(old) == text {
 		return false, nil
 	}
-	return true, paths.WriteAtomic(path, []byte(text), 0o600)
+	return true, paths.WriteAtomicNoLink(path, []byte(text), 0o600)
 }
 
 // maxSessionNext is the most of a task's next step the session start shows, in

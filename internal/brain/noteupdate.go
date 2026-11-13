@@ -95,7 +95,7 @@ func (b *Brain) RetireNote(id, reason, replacedBy string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := paths.WriteAtomic(dest, data, 0o644); err != nil {
+	if err := paths.WriteAtomicNoLink(dest, data, 0o644); err != nil {
 		return "", err
 	}
 	if err := os.Remove(filepath.Join(b.Mem.Dir, filepath.FromSlash(old.Path))); err != nil {
@@ -131,7 +131,7 @@ func (b *Brain) archiveCopy(n *memory.Note, suffix string) error {
 	if err != nil {
 		return err
 	}
-	return paths.WriteAtomic(dest, data, 0o644)
+	return paths.WriteAtomicNoLink(dest, data, 0o644)
 }
 
 // archivePath is a free path for n in archive/<folder>/: <id><suffix>.md, or with -2,
