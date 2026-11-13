@@ -13,6 +13,11 @@
   decirlo, y deja su worktree en paz. Dos `session start` de una tarea a la vez abren una
   sola sesión. En macOS y Windows, `session start` dice que no está disponible antes de
   crear nada, y se rechaza un `--folder` fuera del espacio de la tarea.
+
+## 0.22.0-beta
+
+Publicada el 2026-11-13.
+
 - **Un fichero que no se puede leer ya no apaga un espacio.** Al editar una nota en
   Emacs queda a su lado un fichero de bloqueo (`.#task-x.md`), y mientras estaba ahí
   fallaban todas las herramientas del espacio y una sesión nueva arrancaba sin reglas
