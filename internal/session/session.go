@@ -50,18 +50,20 @@ func ContextFor(c *config.Config, s *config.Space, note, task string) string {
 // Parts is how many SessionStart hooks share the session text. Claude Code cuts each
 // hook's text at 10,000 characters, so one hook cannot carry the index of a big space;
 // each part has a Budget of its own.
-const Parts = 1 + indexParts + rulesParts
+const Parts = 9
 
-// indexParts carry the index (parts 2 to 4), rulesParts the user's rules (5 to 9),
-// whole: in real sessions the assistant does not open a rule's file before acting.
-const indexParts, rulesParts = 3, 5
+// indexParts is the most parts the index takes. The rest, after part 1, carry the
+// rules: the common rules first, in a part of their own, then the user's rules, whole:
+// in real sessions the assistant does not open a rule's file before acting.
+const indexParts = 3
 
-// Part returns part n (1 to Parts) of the session text: 1 is the heading with note, the
-// profile and the common rules; then the index; then the user's rules. Each part is
-// built on its own, so the hooks can run at the same time, in any order. A part with
-// nothing to say is "", and the others count only those with something: "part 3 of
-// 6" when three slots are empty, so the assistant never waits for a part that is not
-// coming.
+// Part returns part n (1 to Parts) of the session text: 1 is the heading with note and
+// the profile; then the index; then the common rules; then the user's rules. Each part
+// is built on its own, so the hooks can run at the same time, in any order: every part
+// works out the same layout, which depends on the notes and never on the note or the
+// task, and takes its own slot of it. A part with nothing to say is "", and the others
+// count only those with something, so the assistant never waits for a part that is
+// not coming.
 func Part(c *config.Config, s *config.Space, note string, n int) string {
 	return PartFor(c, s, note, "", n)
 }
@@ -76,64 +78,75 @@ func PartFor(c *config.Config, s *config.Space, note, task string, n int) string
 		}
 		return ""
 	}
-	// Every part works out the same pieces, so each knows how many there are and its own
-	// number. Parts has one digit, so the tag measured with it is as long as any.
+	slots := layout(c, s, m, shared)
+	total := 1 + len(slots)
+	if n == 1 {
+		return firstPart(c, s, m, problems, note, task, total)
+	}
+	if n < 2 || n > total {
+		return ""
+	}
+	return partTag(s.Name, n, total) + slots[n-2]
+}
+
+// layout is the text of parts 2 onwards, in order and without their tags: the index
+// (in up to indexParts parts), the common rules, and the user's rules in what is left.
+func layout(c *config.Config, s *config.Space, m, shared *memory.Memory) []string {
 	where := filepath.Join(s.Memory, memory.IndexFile)
 	if len(shared.Notes) > 0 {
 		where += "; the shared notes are in " + shared.Dir
 	}
 	cutNote := fmt.Sprintf("\n\n(The index was cut to fit. Read it whole in %s.)\n", where)
 	rulesEnd := "\n(Cut to fit. Read the rules in " + s.Memory + " and the shared notes in " + shared.Dir + ".)\n"
+	// Parts has one digit, so the tag measured with it is as long as any.
 	room := Budget - size(partTag(s.Name, Parts, Parts))
 	chunks := lines("\n"+m.SessionIndex(c.Language)+sharedKnowledge(shared), room-size(cutNote))
-	indexCut := len(chunks) > indexParts
-	if indexCut {
+	if len(chunks) > indexParts {
 		chunks = chunks[:indexParts]
+		chunks[len(chunks)-1] += cutNote
 	}
-	pieces := rulePieces(m, shared, room-size(rulesEnd))
-	total := 1 + len(chunks) + len(pieces)
-	switch {
-	case n == 1:
-		head := heading(c, s, m, problems, note, task) + assistantText(c)
-		if total > 1 {
-			head += fmt.Sprintf("\n(This is part 1 of %d: the index of the space and the user's rules come in the other parts.)\n", total)
-		}
-		profile := section("Who the user is", profileText(c, s))
-		common := section("Rules", rules.Common(c.Language))
-		if size(head+profile+common) > Budget && size(profile) > profileBudget {
-			profile = cut(profile, profileBudget) + fmt.Sprintf("\n(The profile was cut to fit. Read it whole in %s.)\n", filepath.Join(c.Dir, "profile.md"))
-		}
-		return within(head+profile+common, "\n(Cut to fit. Read the profile in "+filepath.Join(c.Dir, "profile.md")+".)\n")
-	case n > 1 && n <= 1+indexParts:
-		k := n - 2
-		if k >= len(chunks) {
-			return ""
-		}
-		text := partTag(s.Name, 2+k, total) + chunks[k]
-		if indexCut && k == len(chunks)-1 {
-			text += cutNote
-		}
-		return text
-	case n > 1+indexParts && n <= Parts:
-		k := n - 2 - indexParts
-		if k >= len(pieces) {
-			return ""
-		}
-		return within(partTag(s.Name, 2+len(chunks)+k, total)+pieces[k], rulesEnd)
+	common := section("Rules", rules.Common(c.Language))
+	if size(common) > room { // never with the rules shipped; a guard all the same
+		common = cut(common, room-size(rulesEnd)) + rulesEnd
 	}
-	return ""
+	out := append(chunks, common)
+	for _, p := range rulePieces(m, shared, room-size(rulesEnd), Parts-1-len(out)) {
+		out = append(out, within(p, room, rulesEnd))
+	}
+	return out
 }
 
-// partTag heads part n of total.
+// firstPart is part 1: the heading with the note and what comes up today, the
+// assistant's name and personality, and the profile. When they do not fit, the profile
+// is cut to profileBudget, and then the end of the part, saying what was left out.
+func firstPart(c *config.Config, s *config.Space, m *memory.Memory, problems []memory.Problem, note, task string, total int) string {
+	head := heading(c, s, m, problems, note, task) + assistantText(c)
+	if total > 1 {
+		head += fmt.Sprintf("\n(This is part 1 of %d. The rules and the index of the space come in the other parts, which may arrive in any order: read them together.)\n", total)
+	}
+	profilePath := filepath.Join(c.Dir, "profile.md")
+	profile := section("Who the user is", profileText(c, s))
+	if size(head+profile) > Budget && size(profile) > profileBudget {
+		profile = cut(profile, profileBudget) + fmt.Sprintf("\n(The profile was cut to fit. Read it whole in %s.)\n", profilePath)
+	}
+	end := "\n(Cut to fit: the rest of the profile is in " + profilePath + ".)\n"
+	if size(head) > Budget-size(end) {
+		// Only a very long note gets here: what comes up today is in the pending tool.
+		end = "\n(Cut to fit: the pending tool lists what comes up, and the profile is in " + profilePath + ".)\n"
+	}
+	return within(head+profile, Budget, end)
+}
+
+// partTag heads part n of total. Part 1 says once that the parts go together.
 func partTag(space string, n, total int) string {
-	return fmt.Sprintf("# augmented brain · space %s · part %d of %d\n\nThe start of this session comes in %d parts, which may arrive in any order: read them together.\n", space, n, total, total)
+	return fmt.Sprintf("# augmented brain · space %s · part %d of %d\n", space, n, total)
 }
 
-// rulePieces packs the user's rules, shared and of the space, into at most rulesParts
+// rulePieces packs the user's rules, shared and of the space, into at most parts
 // pieces of max units: each whole, without its History section, in the first piece
 // with room, and one longer than a piece across pieces of its own. A rule that cannot
 // go whole goes in one line, with the path of its file.
-func rulePieces(m, shared *memory.Memory, max int) []string {
+func rulePieces(m, shared *memory.Memory, max, parts int) []string {
 	type item struct {
 		group         int
 		whole, line   string
@@ -184,7 +197,7 @@ func rulePieces(m, shared *memory.Memory, max int) []string {
 	}
 	var pieces [][]*item
 	var raw []string // a rule longer than a piece, cut in pieces of its own
-	slots := func() int { return rulesParts - len(pieces) - len(raw) }
+	slots := func() int { return parts - len(pieces) - len(raw) }
 	place := func(it *item) bool {
 		for i, p := range pieces {
 			if size(render(append(p[:len(p):len(p)], it))) <= max {
@@ -291,12 +304,12 @@ func loadSpace(c *config.Config, s *config.Space) (m, shared *memory.Memory, pro
 	return m, shared, problems, ""
 }
 
-// within returns text, or its start and end when it is over Budget.
-func within(text, end string) string {
-	if size(text) <= Budget {
+// within returns text, or its start and end when it is over max units.
+func within(text string, max int, end string) string {
+	if size(text) <= max {
 		return text
 	}
-	return cut(text, Budget-size(end)) + end
+	return cut(text, max-size(end)) + end
 }
 
 // lines splits text into pieces of at most max units, at line ends when it can.
@@ -328,21 +341,25 @@ type parts struct{ head, profile, common, userRules, index string }
 func (p parts) join() string { return p.head + p.profile + p.common + p.userRules + p.index }
 
 // sharedKnowledge lists the shared references and lessons, one line each with its title
-// and file, for the assistant to open when one bears on the work. The summaries stay in
-// the files: the titles say enough to know which one to open, and the list loads at
-// every start.
+// and id, for the assistant to open when one bears on the work: their folder is said
+// once, and a note elsewhere goes by its path. The summaries stay in the files: the
+// titles say enough to know which one to open, and the list loads at every start.
 func sharedKnowledge(shared *memory.Memory) string {
 	var lines []string
 	for _, typ := range []string{"reference", "lesson"} {
 		for _, n := range shared.OfType(typ) {
-			lines = append(lines, fmt.Sprintf("- %s (%s)", n.Header.Title, filepath.FromSlash(n.Path)))
+			name := filepath.FromSlash(n.Path)
+			if n.Path == "knowledge/"+n.Header.ID+".md" {
+				name = n.Header.ID
+			}
+			lines = append(lines, fmt.Sprintf("- %s (%s)", n.Header.Title, name))
 		}
 	}
 	if len(lines) == 0 {
 		return ""
 	}
 	return section("Knowledge for every space (open the file when it bears on the work)",
-		"In "+shared.Dir+":\n"+strings.Join(lines, "\n"))
+		"In "+filepath.Join(shared.Dir, "knowledge")+", each in <id>.md:\n"+strings.Join(lines, "\n"))
 }
 
 // heading is what always goes whole: where the memory is, the caller's note, broken
@@ -368,8 +385,13 @@ func heading(c *config.Config, s *config.Space, m *memory.Memory, problems []mem
 	return head + arrivedNote(b) + dueNote(b, "") + reviewNote(b)
 }
 
-// maxArrived is the most captures from other spaces the session start lists.
-const maxArrived = 10
+// maxArrived is the most captures from other spaces the session start lists, and
+// arrivedBudget the most units they take together.
+const maxArrived, arrivedBudget = 10, 2000
+
+// lineBudget is the most units of one capture or due item the session start gives: a
+// longer one is shortened, ending in "…".
+const lineBudget = 200
 
 // arrivedNote lists what other spaces sent to this one (capture with space): work
 // approved elsewhere for this space, which must not wait for the weekly review to be
@@ -381,13 +403,16 @@ func arrivedNote(b *brain.Brain) string {
 	}
 	var out strings.Builder
 	out.WriteString("\n## Sent from other spaces\n\nOther spaces sent these to this one. Mention them in your first answer, briefly, after what is due. " +
-		"When one is done (or becomes a task), take it out with capture_done, giving its date and text as listed:\n")
+		"When one is done (or becomes a task), take it out with capture_done, giving its date and text as listed (a shortened one, ending in …, as it is):\n")
+	used := 0
 	for i, e := range got {
-		if i == maxArrived {
-			fmt.Fprintf(&out, "- and %d more: see weekly_review\n", len(got)-maxArrived)
+		line := fmt.Sprintf("- %s — %s [from %s]\n", e.Date, shorten(e.Text, lineBudget), e.From)
+		if i == maxArrived || used+size(line) > arrivedBudget {
+			fmt.Fprintf(&out, "- and %d more: see weekly_review\n", len(got)-i)
 			break
 		}
-		fmt.Fprintf(&out, "- %s — %s [from %s]\n", e.Date, e.Text, e.From)
+		used += size(line)
+		out.WriteString(line)
 	}
 	return out.String()
 }
@@ -510,7 +535,7 @@ func dueNote(b *brain.Brain, task string) string {
 		if d.TaskID != "" {
 			where = d.TaskID
 		}
-		fmt.Fprintf(&out, "- %s (%s): %s [%s]\n", d.Date, when, d.What, where)
+		fmt.Fprintf(&out, "- %s (%s): %s [%s]\n", d.Date, when, shorten(d.What, lineBudget), where)
 	}
 	if more > 0 {
 		fmt.Fprintf(&out, "- and %d more: see the pending tool\n", more)
@@ -714,4 +739,28 @@ func section(title, body string) string {
 		return ""
 	}
 	return "\n## " + title + "\n\n" + strings.TrimSpace(body) + "\n"
+}
+
+// RuleSize is how much of the session start one of the user's rules takes.
+type RuleSize struct {
+	Title string
+	Units int
+}
+
+// RuleSizes measures the user's rules, shared and of the space, as the session start
+// gives them (whole, without their History), longest first: they are loaded at every
+// start, and only the user decides how long they are.
+func RuleSizes(m, shared *memory.Memory) []RuleSize {
+	var out []RuleSize
+	for _, mem := range []*memory.Memory{shared, m} {
+		if mem == nil {
+			continue
+		}
+		for _, r := range mem.OfType("rule") {
+			body, _ := withoutHistory(strings.TrimSpace(r.Body))
+			out = append(out, RuleSize{r.Header.Title, size("### " + r.Header.Title + "\n" + body + "\n\n")})
+		}
+	}
+	slices.SortStableFunc(out, func(a, b RuleSize) int { return b.Units - a.Units })
+	return out
 }

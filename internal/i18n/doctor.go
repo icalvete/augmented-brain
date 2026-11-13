@@ -82,6 +82,18 @@ var doctorMessages = map[string]msg{
 		en: "%s: %d tasks are over %d KB, too long to read in one go: %s",
 		es: "%s: %d tareas pasan de %d KB, demasiado largas para leerlas de una vez: %s",
 	},
+	"doctor.rules": {
+		en: "%s: the user's rules (%d, shared and of the space) take %d characters of every session start, about %d tokens; the longest: %s",
+		es: "%s: las reglas del usuario (%d, compartidas y del espacio) ocupan %d caracteres de cada arranque de sesión, unos %d tokens; las más largas: %s",
+	},
+	"doctor.rules.one": {
+		en: "%s (%d)",
+		es: "%s (%d)",
+	},
+	"doctor.rules.fix": {
+		en: "they go whole to every session: a shorter rule costs less each time, and a rule's History section stays in its file",
+		es: "van enteras a cada sesión: una regla más corta cuesta menos cada vez, y la sección Historia de una regla se queda en su fichero",
+	},
 	"doctor.journals.fix": {
 		en: "run `augmented-brain check` inside the space: it moves their oldest journal entries to archive/journals/, with a line in the journal saying where",
 		es: "lanza `augmented-brain check` dentro del espacio: mueve las entradas más antiguas de su diario a archive/journals/, con una línea en el diario que dice dónde",

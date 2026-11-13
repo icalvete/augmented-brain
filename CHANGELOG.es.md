@@ -2,6 +2,13 @@
 
 ## Sin publicar
 
+- **Claude recibe enteras las reglas comunes en cada sesión.** Iban al final de la
+  primera parte del arranque, y en un espacio cargado (capturas largas de otros espacios,
+  muchas fechas pendientes) ese final se cortaba: en un espacio real solo llegaba el 8 %.
+  Ahora van en una parte propia, las capturas y las fechas se acortan a una línea cada
+  una, y el arranque ocupa menos: el índice ya no lista las reglas que da enteras, el
+  conocimiento compartido dice su carpeta una vez y la nota de `session start` es de una
+  línea. `doctor` dice cuánto ocupan tus reglas en cada arranque, con las más largas.
 - **El guardia vuelve a tratar `doas` como root, como dice su guía.** `doas id` pasaba
   como si fuera solo `id`. Ahora `doas`, como `sudo`, se para salvo que ejecute el
   comando como otro usuario (`doas -u deploy …`), y una prueba vigila que ningún otro

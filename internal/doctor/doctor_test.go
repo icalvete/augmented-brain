@@ -356,3 +356,42 @@ func TestBackupPassword(t *testing.T) {
 		t.Errorf("a clean address was named: %+v", w)
 	}
 }
+
+// The user's rules go whole to every session start: doctor says how much they take,
+// with the longest, shared ones included and their History left out.
+func TestRulesSize(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	work := filepath.Join(home, "work")
+	if err := os.MkdirAll(work, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: work, Memory: "~/brain"}); err != nil {
+		t.Fatal(err)
+	}
+	c, err := config.Load(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if find(space(c, c.Spaces["work"]), "rules") != nil {
+		t.Error("a line about rules with none")
+	}
+	write := func(path, text string) {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(filepath.Join(c.Spaces["work"].Memory, "rules", "rule-long.md"), "---\nid: rule-long\ntype: rule\ntitle: Long one\n---\n"+strings.Repeat("x", 500)+"\n\n## History\n"+strings.Repeat("y", 5000)+"\n")
+	write(filepath.Join(c.SharedDir(), "rules", "rule-short.md"), "---\nid: rule-short\ntype: rule\ntitle: Short one\n---\nBe brief.\n")
+	r := find(space(c, c.Spaces["work"]), "rules (2,")
+	if r == nil || r.Status != Info || !strings.Contains(r.What, "the longest: Long one (") || !strings.Contains(r.What, "; Short one (") {
+		t.Fatalf("rules line: %+v", r)
+	}
+	if !strings.Contains(r.What, "take 540 characters") { // the History's 5,000 do not count
+		t.Errorf("the History was counted: %s", r.What)
+	}
+}

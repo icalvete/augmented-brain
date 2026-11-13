@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Claude gets the common rules whole in every session.** They went at the end of the
+  first part of the session start, and in a busy space (long captures from other spaces,
+  many dates due) the end was cut: in one real space only 8 % of them arrived. Now they
+  come in a part of their own, captures and dates due are shortened to one line each,
+  and the start takes less room: the index no longer lists the rules it gives whole, the
+  shared knowledge names its folder once, and the note about `session start` is one line.
+  `doctor` says how much your own rules take of every start, with the longest.
 - **The guard treats `doas` as root again, as its guide says.** `doas id` went through
   as if it were just `id`. Now `doas`, like `sudo`, is stopped unless it runs the
   command as another user (`doas -u deploy …`), and a test makes sure no other command

@@ -19,9 +19,10 @@ const IndexFile = "MEMORY.md"
 func (m *Memory) Index(lang string) string { return m.index(lang, false) }
 
 // SessionIndex is the index as the session start gives it: like Index, but each live
-// task without its summary, and with its next step only when it waits on the user. In
-// real sessions the assistant reads a task (task_get) before working on it, so the rest
-// only took room at every start.
+// task without its summary, and with its next step only when it waits on the user, and
+// without the list of rules, which the session start gives whole. In real sessions the
+// assistant reads a task (task_get) before working on it, so the rest only took room at
+// every start.
 func (m *Memory) SessionIndex(lang string) string { return m.index(lang, true) }
 
 func (m *Memory) index(lang string, compact bool) string {
@@ -56,7 +57,9 @@ func (m *Memory) index(lang string, compact bool) string {
 	if p := m.OfType("profile"); len(p) > 0 {
 		section(l("profile"), p)
 	}
-	section(l("rules"), m.OfType("rule"))
+	if !compact { // the session start gives the rules whole, in parts of their own
+		section(l("rules"), m.OfType("rule"))
+	}
 	areas := m.OfType("area")
 	section(l("areas"), areas)
 	if people := m.OfType("person"); len(people) > 0 {

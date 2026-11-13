@@ -78,6 +78,9 @@ There are three levels:
 A rule that holds everywhere goes to the shared notes. Tell Claude "this holds
 everywhere".
 
+Your rules are read at the start of every session, so each one costs a little room every
+time. `augmented-brain doctor` says how much they take, and which are the longest.
+
 ## Your profile
 
 Who you are and how you like to work: your name, what you do, your language, how long

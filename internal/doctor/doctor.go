@@ -25,6 +25,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/remote"
+	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/tailnet"
 	"github.com/icalvete/augmented-brain/internal/version"
@@ -181,6 +182,9 @@ func space(c *config.Config, s *config.Space) []Check {
 	if big := m.Oversized(); len(big) > 0 {
 		checks = append(checks, Check{Warning, i18n.T(l, "doctor.journals", s.Name, len(big), memory.JournalArchiveAt/1024, strings.Join(big, ", ")),
 			i18n.T(l, "doctor.journals.fix")})
+	}
+	if r := rulesSize(l, s.Name, m, c.SharedDir()); r != nil {
+		checks = append(checks, *r)
 	}
 	// Not a failure (a new install has none yet), but said: without a backup, losing
 	// this computer loses the space's notes.
@@ -600,4 +604,27 @@ func remotePanelRunning(cfgDir string) bool {
 		Remote *struct{ Host string } `json:"remote"`
 	}
 	return json.Unmarshal(data, &i) == nil && i.Remote != nil && i.Remote.Host != ""
+}
+
+// rulesSize says how much of every session start the user's rules take (they go whole,
+// and only the user decides how long they are), with the three longest: nothing when
+// there are none.
+func rulesSize(l, space string, m *memory.Memory, sharedDir string) *Check {
+	shared, _, err := memory.LoadShared(sharedDir)
+	if err != nil {
+		shared = nil
+	}
+	sizes := session.RuleSizes(m, shared)
+	if len(sizes) == 0 {
+		return nil
+	}
+	total := 0
+	for _, r := range sizes {
+		total += r.Units
+	}
+	var longest []string
+	for _, r := range sizes[:min(3, len(sizes))] {
+		longest = append(longest, i18n.T(l, "doctor.rules.one", r.Title, r.Units))
+	}
+	return &Check{Info, i18n.T(l, "doctor.rules", space, len(sizes), total, (total+3)/4, strings.Join(longest, "; ")), i18n.T(l, "doctor.rules.fix")}
 }
