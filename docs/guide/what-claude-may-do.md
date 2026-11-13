@@ -18,6 +18,11 @@ happens.
 Both must say yes. A yes from the guard never skips a question from Claude Code, and the
 other way round.
 
+If you keep augmented brain to your spaces, outside their folders the guard only
+protects its own files, your home folder and what your lists name: there, the rest is
+up to Claude Code's permissions alone. See
+[Outside every space](spaces.md#outside-every-space).
+
 ## Never, whatever you say
 
 - Becoming root, unless you open an exception for one machine until a date (below).

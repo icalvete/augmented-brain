@@ -18,6 +18,11 @@ y qué no pasa nunca.
 Los dos tienen que decir que sí. Un sí del guardia nunca se salta una pregunta de Claude
 Code, ni al revés.
 
+Si haces que augmented brain se quede en tus espacios, fuera de sus carpetas el guardia
+solo protege sus propios ficheros, tu carpeta personal y lo que nombran tus listas: ahí,
+lo demás depende solo de los permisos de Claude Code. Mira
+[Fuera de todos los espacios](spaces.es.md#fuera-de-todos-los-espacios).
+
 ## Nunca, digas lo que digas
 
 - Hacerse root, salvo que abras una excepción para una máquina hasta una fecha (más abajo).

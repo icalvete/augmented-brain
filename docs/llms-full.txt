@@ -1338,6 +1338,11 @@ happens.
 Both must say yes. A yes from the guard never skips a question from Claude Code, and the
 other way round.
 
+If you keep augmented brain to your spaces, outside their folders the guard only
+protects its own files, your home folder and what your lists name: there, the rest is
+up to Claude Code's permissions alone. See
+[Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+
 ## Never, whatever you say
 
 - Becoming root, unless you open an exception for one machine until a date (below).
@@ -5214,6 +5219,16 @@ own review. What it cannot see:
   web page, an email) could talk it into saving one. Nothing stops that, but you are
   told: Claude Code itself shows you, once, what was saved. If you did not ask for it,
   tell Claude to undo it, or look at the panel.
+- **Only in your spaces: a script that moves into one.** When augmented brain keeps to
+  your spaces, a command run outside them that goes into one (`cd ~/work/app`,
+  `git -C ~/work/app`) is checked with every rule. A script that changes folder inside
+  itself is not: run from outside, `bash build.sh` that moves into a space is checked as
+  outside. See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+- **Only in your spaces, with an earlier version still open.** A Claude session started
+  before an update keeps the earlier program, which does not know this choice. Its start
+  accepts the guard's lists as that program counts them, so until a session of the new
+  version starts again, augmented brain acts on the whole computer. It is the safe side,
+  and Claude Code tells you each time the lists are accepted.
 - **Questions in automatic modes.** When the guard asks, Claude Code shows you the
   question. What Claude Code does with it in its fully automatic modes is up to Claude
   Code, not augmented brain.
