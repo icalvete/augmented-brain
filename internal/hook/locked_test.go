@@ -58,7 +58,7 @@ func TestGuardCannotBeSwitchedOff(t *testing.T) {
 		{"Write the program", "Write", map[string]any{"file_path": program, "content": "#!/bin/sh\n"}, "ask"},
 		{"Write installed_plugins.json", "Write", map[string]any{"file_path": installed, "content": "{}"}, "ask"},
 		{"Write the seal", "Write", map[string]any{"file_path": seal, "content": "x\n"}, "ask"},
-		{"cp over the program", "Bash", map[string]any{"command": "cp /tmp/x ~/.local/bin/augmented-brain"}, "ask"},
+		{"cp over the program", "Bash", map[string]any{"command": "cp /tmp/x ~/.local/bin/" + programName()}, "ask"},
 		{"cp -t into the program's folder", "Bash", map[string]any{"command": "cp -t ~/.local/bin /tmp/augmented-brain"}, "ask"},
 		{"> the cached hooks.json", "Bash", map[string]any{"command": "echo '{}' > " + slash(cached)}, "ask"},
 		{"rm the plugin's cache", "Bash", map[string]any{"command": "rm -rf ~/.claude/plugins/cache/augmented-brain"}, "ask"},

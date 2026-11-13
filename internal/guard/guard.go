@@ -1573,18 +1573,18 @@ func (p Policy) protected(path string) Decision {
 	if err != nil {
 		return allow
 	}
-	ask := Decision{Ask, i18n.T(p.Lang, "guard.protected", paths.Tilde(d))}
+	hit := false
 	for _, f := range p.Protected {
-		if paths.Same(d, f) || paths.Same(d, filepath.Dir(f)) {
-			return ask
-		}
+		hit = hit || paths.Same(d, f) || paths.Same(d, filepath.Dir(f))
 	}
 	for _, f := range p.ProtectedDirs {
-		if paths.Within(d, f) || paths.Same(d, filepath.Dir(f)) {
-			return ask
-		}
+		hit = hit || paths.Within(d, f) || paths.Same(d, filepath.Dir(f))
 	}
-	return allow
+	if !hit {
+		return allow
+	}
+	// Built only now: Tilde reads the disk, slow on Windows for a line of many writes.
+	return Decision{Ask, i18n.T(p.Lang, "guard.protected", paths.Tilde(d))}
 }
 
 // bashPath turns a path as Git Bash writes it on Windows (/c/Users/ana) into the one
