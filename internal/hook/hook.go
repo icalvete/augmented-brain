@@ -189,14 +189,23 @@ func launchedTask(cfgDir string, i input) string {
 
 // backupNote says when the space's last backup failed or left files out.
 func backupNote(c *config.Config, s *config.Space, cfgDir string) string {
+	if s.Backup == "" {
+		return ""
+	}
+	now := time.Now()
+	if began, cut := backup.CutShort(cfgDir, s.Name, now); cut {
+		return session.BackupCutShortNote(c.Language, s.Name, began)
+	}
 	st, ok := backup.LastStatus(cfgDir, s.Name)
 	switch {
-	case !ok || s.Backup == "":
+	case !ok:
 		return ""
 	case !st.OK:
 		return session.BackupFailedNote(c.Language, s.Name, st.Time, st.Error)
 	case st.Warning != "":
 		return session.BackupWarningNote(c.Language, s.Name, st.Time, st.Warning)
+	case st.Behind(s.Memory, now):
+		return session.BackupBehindNote(c.Language, s.Name, st.Time)
 	}
 	return ""
 }

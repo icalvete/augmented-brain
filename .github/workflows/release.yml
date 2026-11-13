@@ -2,74 +2,144 @@ name: release
 
 # A version is published in one of two ways, both by the maintainer:
 # - Run workflow on GitHub (or `gh workflow run release`), on main: the version is the
-#   one in VERSION, and this workflow makes its tag. The guard keeps assistants from
-#   starting it (internal/guard, dispatch).
-# - Pushing a tag v<version> by hand, as before.
+#   one in VERSION, and this workflow makes its tag on the commit of main that last set
+#   VERSION or changed that version's section of the changelog
+#   (scripts/release-commit.sh), not on whatever main holds at the moment of the click.
+#   The guard keeps assistants from starting it (internal/guard, dispatch).
+# - Pushing a tag v<version> by hand, on a commit of main.
+#
+# Three jobs, each with only the permissions it needs:
+# - gate (read only): which commit and tag; the commit is on main; every required check
+#   passed on it (scripts/release-checks.sh); VERSION and the changelog agree.
+# - build (read only, no cache, no credentials left on disk): the archives, the
+#   installers and checksums.txt, byte for byte the same anyone gets from that commit
+#   (scripts/release-build.sh).
+# - publish (no code, no Go): a provenance attestation of every file, signed by GitHub
+#   for this workflow and commit, and the release. It runs in the environment
+#   "release", where the repository's settings can ask the maintainer to approve it.
+# How anyone checks a download: docs/guide/install.md, "Check a download".
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
 
-permissions:
-  contents: write
-  checks: read
-  statuses: read
+permissions: {}
 
 concurrency:
   group: release
   cancel-in-progress: false
 
 jobs:
-  release:
+  gate:
     runs-on: ubuntu-latest
     timeout-minutes: 10   # a stuck runner fails here instead of waiting six hours
+    permissions:
+      contents: read
+      checks: read
+    outputs:
+      tag: ${{ steps.which.outputs.tag }}
+      sha: ${{ steps.which.outputs.sha }}
     steps:
-      - uses: actions/checkout@v7
-      - name: Which version
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Which version and commit
+        id: which
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ]; then
-            echo "TAG=$GITHUB_REF_NAME" >> "$GITHUB_ENV"
-            exit 0
-          fi
           main="$(gh api "repos/$GITHUB_REPOSITORY" --jq .default_branch)"
-          [ "$GITHUB_REF" = "refs/heads/$main" ] || { echo "Run it on $main, not $GITHUB_REF_NAME."; exit 1; }
-          tag="v$(cat VERSION)"
-          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
-            echo "$tag is already published. Raise VERSION in a pull request first."; exit 1
+          git fetch --quiet origin "refs/heads/$main:refs/remotes/origin/$main"
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            [ "$GITHUB_REF" = "refs/heads/$main" ] || { echo "Run it on $main, not $GITHUB_REF_NAME."; exit 1; }
+            sha="$(scripts/release-commit.sh "$GITHUB_SHA")"
+            tag="v$(git show "$sha:VERSION")"
+            if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+              echo "$tag is already published. Raise VERSION in a pull request first."; exit 1
+            fi
+            later="$(git log --first-parent --format='  %h %s' "$sha..$GITHUB_SHA")"
+            if [ -n "$later" ]; then
+              echo "Changes on $main after $tag's commit; they wait for the next version:"
+              echo "$later"
+            fi
+          else
+            tag="$GITHUB_REF_NAME"
+            sha="$GITHUB_SHA"
+            git merge-base --is-ancestor "$sha" "origin/$main" || {
+              echo "$tag points at $sha, which is not on $main: a release comes from $main only."; exit 1; }
           fi
-          # main takes only pull requests with green CI; still, a required check that
-          # failed on this commit stops the release. Checks still running do not.
-          gh api "repos/$GITHUB_REPOSITORY/rules/branches/$main" \
-            --jq '.[] | select(.type=="required_status_checks") | .parameters.required_status_checks[].context' > "$RUNNER_TEMP/required"
-          gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/check-runs" --paginate \
-            --jq '.check_runs[] | select(.conclusion=="failure" or .conclusion=="cancelled" or .conclusion=="timed_out") | .name' > "$RUNNER_TEMP/failed"
-          failed="$(grep -Fx -f "$RUNNER_TEMP/required" "$RUNNER_TEMP/failed" || true)"
-          if [ -n "$failed" ]; then
-            echo "Required checks failed on $GITHUB_SHA:"; echo "$failed"; exit 1
-          fi
-          echo "Publishing $tag from $GITHUB_SHA."
-          echo "TAG=$tag" >> "$GITHUB_ENV"
-      - name: The tag, VERSION and CHANGELOG.md agree
+          scripts/release-checks.sh "$GITHUB_REPOSITORY" "$sha"
+          echo "Publishing $tag from $sha."
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+      - name: The tag, VERSION and the changelog agree
+        env:
+          TAG: ${{ steps.which.outputs.tag }}
+          SHA: ${{ steps.which.outputs.sha }}
         run: |
+          git checkout --quiet "$SHA"
           v="${TAG#v}"
           test "$(cat VERSION)" = "$v" || { echo "VERSION says $(cat VERSION), the tag $v"; exit 1; }
           grep -qx "## $v" CHANGELOG.md || { echo "CHANGELOG.md has no section ## $v"; exit 1; }
           left="$(find changelog.d -name '*.md' ! -name README.md)"
           test -z "$left" || { echo "changelog.d still holds entries: run scripts/changelog.py release $v"; echo "$left"; exit 1; }
-      - uses: actions/setup-go@v7
+
+  build:
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+          persist-credentials: false
+      # No cache: one written by another job could put other code in the release.
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
-      - name: Test
-        run: go test -race ./...
+          cache: false
+      - name: The modules are the ones go.sum names
+        run: go mod verify
       - name: Build
-        run: scripts/release-build.sh "$TAG" dist
+        env:
+          TAG: ${{ needs.gate.outputs.tag }}
+        run: |
+          scripts/release-build.sh "$TAG" release/dist
+          awk -v v="## ${TAG#v}" '$0==v{on=1;next} /^## /{on=0} on' CHANGELOG.md > release/notes.md
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release
+          path: release/
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    needs: [gate, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: release
+    permissions:
+      contents: write       # the release and, with Run workflow, its tag
+      id-token: write       # the attestation's signature
+      attestations: write   # keeping the attestation in the repository
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release
+          path: release
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release/dist/*
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.gate.outputs.tag }}
+          SHA: ${{ needs.gate.outputs.sha }}
         run: |
-          cp install.sh install.ps1 dist/
-          notes="$(awk -v v="## ${TAG#v}" '$0==v{on=1;next} /^## /{on=0} on' CHANGELOG.md)"
-          # With Run workflow the tag does not exist yet: the release makes it on this commit.
-          gh release create "$TAG" dist/* --target "$GITHUB_SHA" --title "$TAG" --notes "${notes:-See CHANGELOG.md}"
+          [ -s release/notes.md ] || echo "See CHANGELOG.md" > release/notes.md
+          # With Run workflow the tag does not exist yet: the release makes it on that commit.
+          gh release create "$TAG" release/dist/* -R "$GITHUB_REPOSITORY" --target "$SHA" \
+            --title "$TAG" --notes-file release/notes.md

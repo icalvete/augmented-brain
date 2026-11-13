@@ -315,6 +315,34 @@ configuration in `%APPDATA%\augmented-brain`; your notes in
 - To work without the app: `cd ~\augmented-brain\work; claude` (Windows PowerShell has no
   `&&`).
 
+## Check a download
+
+You do not need this to install. It is for whoever wants to be sure that what they
+downloaded is what the project published, made from its public code.
+
+Every release is built by GitHub from a commit of `main`, never on someone's computer,
+and GitHub signs a record of it: which workflow built each file, from which commit.
+With the [GitHub CLI](https://cli.github.com/) (`gh`), check any file of a release,
+the installer included:
+
+```bash
+gh attestation verify augmented-brain_0.23.0-beta_linux_amd64.tar.gz -R icalvete/augmented-brain
+```
+
+It ends with `Verification succeeded!` and names the workflow and the commit. A file
+changed after it was built fails.
+
+`checksums.txt`, in every release, holds the SHA-256 of each archive and of both
+installers. The installers check the archive against it; you can check any file too:
+
+```bash
+sha256sum --ignore-missing -c checksums.txt
+```
+
+The build is reproducible: the same commit, built with the Go version in `go.mod`, gives
+the same bytes. `scripts/release-build.sh <version>` from a clone of that tag writes
+the same `checksums.txt` as the release.
+
 ## Updating
 
 When a new version is out, Claude tells you at the start of a session and offers to
@@ -2050,6 +2078,13 @@ To turn the automatic backup off, set `AB_NO_AUTO_BACKUP=1` in your environment.
    It replaces the empty space with yours: notes, tasks, rules and the space's settings,
    readable by you only. If anything fails half way, the empty space stays as it was. If
    that space already had notes of yours, it leaves it alone.
+
+   The notes go where they were on the old machine, as long as that is inside your home
+   folder. A backup cannot choose a place outside it, or in its hidden or system folders
+   (`~/.config`, `~/Library`, `~/AppData`, any `.git`): your computer runs some of what
+   it finds there, and someone else may have changed the backup. Then the space goes to
+   `~/augmented-brain/<space>`, and `restore` tells you. To choose the place yourself,
+   use `--memory` and `--work`.
 4. Open Claude. It carries on where you left off, and the backup keeps running by itself.
 
 Restore the default space (`personal`) too: your profile, your shared notes and the list
@@ -2116,6 +2151,20 @@ Some things are left out on purpose:
 Claude tells you at the start of the next session, with the reason. Running
 `augmented-brain backup` in a folder of the space shows the problem. The usual ones are
 in [Troubleshooting](https://icalvete.github.io/augmented-brain/guide/troubleshooting.html#the-backup-failed).
+
+It also tells you when a backup began and never ended (the computer went off half way),
+and when the last good one is over 3 days old and your notes changed since: the
+automatic backup is not running (say, `AB_NO_AUTO_BACKUP` was left set). `doctor` says
+the same.
+
+Your git settings for your code do not get in the way: the backup never signs its
+commits, never runs your global hooks (`core.hooksPath`) and never opens a window asking
+for a password. A credential helper that already has it (`gh`'s, your keychain's) still
+works.
+
+Backups go to the branch `main`, and `restore` reads them from there, even from a
+repository whose default branch is another (one made with `git init --bare` on a
+server, say).
 
 A backup never hangs: each step stops after 3 minutes without an answer (or a download
 slower than 1 KB a second for a minute), and a backup waits at most 10 minutes for

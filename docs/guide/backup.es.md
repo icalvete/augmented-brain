@@ -69,6 +69,13 @@ Para apagar la copia automática, pon `AB_NO_AUTO_BACKUP=1` en tu entorno.
    Sustituye el espacio vacío por el tuyo: notas, tareas, reglas y la configuración del
    espacio, que solo puedes leer tú. Si algo falla a medias, el espacio vacío se queda
    como estaba. Si ese espacio ya tenía notas tuyas, no lo toca.
+
+   Las notas van donde estaban en la máquina vieja, siempre que sea dentro de tu carpeta
+   personal. Una copia no puede elegir un sitio fuera de ella, ni en sus carpetas ocultas
+   o del sistema (`~/.config`, `~/Library`, `~/AppData`, cualquier `.git`): el ordenador
+   ejecuta parte de lo que encuentra ahí, y alguien podría haber cambiado la copia.
+   Entonces el espacio va a `~/augmented-brain/<espacio>`, y `restore` te lo dice. Para
+   elegir tú el sitio, usa `--memory` y `--work`.
 4. Abre Claude. Sigue donde lo dejaste, y la copia sigue haciéndose sola.
 
 Recupera también el espacio por defecto (`personal`): con él vienen tu perfil, tus notas
@@ -138,6 +145,19 @@ Algunas cosas se quedan fuera a propósito:
 Claude te lo dice al empezar la siguiente sesión, con el motivo. Si lanzas
 `augmented-brain backup` en una carpeta del espacio, ves el problema. Los más comunes
 están en [Si algo falla](troubleshooting.es.md#ha-fallado-la-copia-de-seguridad).
+
+También te avisa cuando una copia empezó y no terminó (se apagó el ordenador a medias),
+y cuando la última copia buena tiene más de 3 días y tus notas han cambiado desde
+entonces: la copia automática no se está haciendo (por ejemplo, se quedó puesto
+`AB_NO_AUTO_BACKUP`). `doctor` dice lo mismo.
+
+Tus ajustes de git para tu código no estorban: la copia nunca firma sus commits, nunca
+ejecuta tus hooks globales (`core.hooksPath`) y nunca abre una ventana pidiendo una
+contraseña. Un ayudante de credenciales que ya la tiene (el de `gh`, el de tu llavero)
+sigue funcionando.
+
+Las copias van a la rama `main`, y `restore` las lee de ahí, aunque la rama por defecto
+del repositorio sea otra (uno creado con `git init --bare` en un servidor, por ejemplo).
 
 Una copia nunca se queda colgada: cada paso se para tras 3 minutos sin respuesta (o una
 descarga de menos de 1 KB por segundo durante un minuto), y una copia espera como mucho

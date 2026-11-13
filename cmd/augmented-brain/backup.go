@@ -94,6 +94,9 @@ func backupSpaces(c *config.Config, spaces []*config.Space, out, errOut io.Write
 	host, _ := os.Hostname()
 	code := 0
 	for _, s := range spaces {
+		// Written first: a backup cut short (the computer went off) leaves it behind,
+		// and the next session says so.
+		backup.RecordStarted(c.Dir, s.Name, time.Now())
 		res, err := backup.Run(c, s, host)
 		backup.RecordStatusWarning(c.Dir, s.Name, err, res.Warning(c.Language), time.Now())
 		if w := res.Warning(c.Language); w != "" && err == nil {
@@ -163,6 +166,14 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 		lang = c.Language
 	}
 	fmt.Fprintln(out, i18n.T(lang, "restore.done", s.Name, paths.Tilde(s.Memory)))
+	if len(s.Unsafe) > 0 {
+		fmt.Fprintln(out, i18n.T(lang, "restore.unsafe", strings.Join(s.Unsafe, ", ")))
+		work := "-"
+		if len(s.WorkFolders) > 0 {
+			work = strings.Join(tildes(s.WorkFolders), ", ")
+		}
+		fmt.Fprintln(out, i18n.T(lang, "restore.where", paths.Tilde(s.Memory), work))
+	}
 	if _, err := os.Stat(filepath.Join(dir, config.AskSafetyFile)); err == nil {
 		fmt.Fprintln(out, i18n.T(lang, "restore.nolists"))
 	}

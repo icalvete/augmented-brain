@@ -14,6 +14,18 @@ var doctorMessages = map[string]msg{
 		en: "space %s has no backup: if this computer is lost, so are its notes",
 		es: "el espacio %s no tiene copia de seguridad: si pierdes este ordenador, pierdes sus notas",
 	},
+	"doctor.backupcut": {
+		en: "a backup of space %s began at %s and never ended (the computer went off or it was stopped half way)",
+		es: "una copia del espacio %s empezó el %s y no terminó (se apagó el ordenador o se paró a medias)",
+	},
+	"doctor.backupbehind": {
+		en: "the last backup of space %s that went through was at %s, and its notes changed since: the automatic backup is not running",
+		es: "la última copia buena del espacio %s fue el %s, y sus notas han cambiado desde entonces: la copia automática no se está haciendo",
+	},
+	"doctor.backupcheck.fix": {
+		en: "run `augmented-brain backup` in a folder of the space: it backs up now, or says what stops it. If AB_NO_AUTO_BACKUP is set in your environment, the automatic backup is off",
+		es: "lanza `augmented-brain backup` en una carpeta del espacio: hace la copia ahora, o dice qué lo impide. Si tienes AB_NO_AUTO_BACKUP en tu entorno, la copia automática está apagada",
+	},
 	"doctor.backuppassword": {
 		en: "the address of space %s's backup holds a password or a token: it is kept in the configuration and in the backup itself",
 		es: "la dirección de la copia del espacio %s lleva una contraseña o un token: queda guardada en la configuración y dentro de la propia copia",

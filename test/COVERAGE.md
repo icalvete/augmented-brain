@@ -18,6 +18,9 @@ row here with the test that covers it.
 | Update from the release published last | `install-check.sh` step 8, `install-check.ps1` step 5 | CI, real download from GitHub |
 | A download that fails (504, 404, cut, checksum) | `cmd` `TestUpdateDownloadFails`, `TestInstallerDownloadFails`, `TestInstallerFallsBackToAPI`, `TestInstallPs1DownloadFails`; `internal/update` `TestDownload` | Go |
 | Update with nothing newer, or GitHub out of reach | `cmd` `TestUpdateNothingNewer` | Go |
+| Which commit of `main` a release is made from | `cmd` `TestReleaseCommit` | Go |
+| A release waits for every required check, comes from `main`, is reproducible and attested | `release.yml` (`gate`, `build`, `publish`) | by hand: the next real release, and `gh attestation verify` on one of its files |
+| The workflows hold no unpinned action, kept credential or shared cache | `zizmor`, `actionlint` | CI (`workflows` in `ci.yml`) |
 | Notes in an older format | `internal/format` tests, `scripts/compat-check.sh` | Go, CI |
 | Uninstall, and install again | `install-check.sh` step 4, `install-check.ps1` step 4 | CI |
 | `uninstall --config`, and install again | `install-check.sh` step 5, `cmd` `TestUninstallConfig` | CI, Go |
@@ -43,7 +46,7 @@ row here with the test that covers it.
 | `doctor` | `internal/doctor` (12 tests), `internal/remote` `TestLingering` (background sessions that keep their process), `cmd` `TestSaysThereIsNoBackup`, `TestConfigRestoreFixesABrokenConfig` |
 | `clean` and its `doctor` line (worktrees of Claude Code: clean, with changes, with commits, locked by a dead or a live session, locked for another reason, used by a running session, on a branch of the user's; records of missing worktrees; scratch folders of running, recent and old sessions) | `internal/leftovers` (3 tests, real git repositories); tried by hand on 12-nov on a real computer (the list only) |
 | `import` | `internal/importer`, `cmd` `TestImportMissingSource` |
-| `backup`, `backup setup`, `restore` | `internal/backup` (25 tests), `cmd` `TestBackupSpaceFlag`, `TestRestoreNamesTheSecrets` |
+| `backup`, `backup setup`, `restore` | `internal/backup` (38 tests), `cmd` `TestBackupSpaceFlag`, `TestRestoreNamesTheSecrets` |
 | `panel`, `panel remote`, `panel stop` | `internal/panel`, `cmd` `TestPanelRemoteExplains`, `TestExplainTailnet`; `scripts/panel-browser-check.py` |
 | `remote install`, `uninstall`, `status` | `test/rehearsal/smoke.py`: on Linux with the real systemd and a pretend claude, install, a reboot of the VM, and the unit back with its PATH (claude's folder and the program's) and permission mode (rehearsal, Ubuntu VM); `internal/remote` (14 tests on Linux's systemd; `TestLaunchdInstallStatusUninstall`, `TestPlistText`, `TestLaunchdErrors` for macOS; `TestTasksInstallStatusUninstall`, `TestTaskText`, `TestTasksErrors` for Windows, all with fakes); `scripts/remote-check.py` for real with a pretend claude (CI: macOS and Windows; tried in the Windows VM, also with the real claude not signed in); a real connection from claude.ai on a Mac and on Windows by hand |
 | Task sessions outlive a restart of remote access (Claude's daemon kept out of the service) | `internal/remote` `TestWatchKeepsTheDaemonOutside`, `TestWatchDoesNotRestartOverTheDaemon`, `TestInstallAndUninstallKeepTheDaemon`, `TestStartInItsOwnScope` (fakes); on 11-nov, by hand on a real Linux machine with throwaway user services: a detached process moved to `augmented-brain-kept-<pid>.scope` outlived a restart, and one started through `systemd-run --scope` inside a service outlived its stop |
