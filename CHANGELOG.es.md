@@ -12,6 +12,11 @@
   enlace, en vez de que sus notas desaparezcan, y de una fecha de la cabecera que no
   sigue `YYYY-MM-DD`. La página Personas del panel enseña las personas de los demás
   espacios cuando uno no se puede abrir, y dice cuál.
+
+## 0.21.0-beta
+
+Publicada el 2026-11-13.
+
 - **El guardia vuelve a tratar `doas` como root, como dice su guía.** `doas id` pasaba
   como si fuera solo `id`. Ahora `doas`, como `sudo`, se para salvo que ejecute el
   comando como otro usuario (`doas -u deploy …`), y una prueba vigila que ningún otro

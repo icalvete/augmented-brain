@@ -11,6 +11,11 @@
   that is a link is said too, instead of its notes vanishing, and so is a date in a
   header that is not `YYYY-MM-DD`. The panel's People page lists the people of the other
   spaces when one space cannot be opened, and names that space.
+
+## 0.21.0-beta
+
+Released 2026-11-13.
+
 - **The guard treats `doas` as root again, as its guide says.** `doas id` went through
   as if it were just `id`. Now `doas`, like `sudo`, is stopped unless it runs the
   command as another user (`doas -u deploy …`), and a test makes sure no other command
