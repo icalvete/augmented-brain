@@ -1,7 +1,6 @@
 package guard
 
 import (
-	"bufio"
 	"io"
 	"os"
 	"path/filepath"
@@ -71,65 +70,14 @@ func findRepo(dir string) string {
 	return ""
 }
 
-// gitDirOf is the git folder of the repository or worktree at dir: for a worktree, its
-// repository's, where the shared config is.
-func gitDirOf(dir string) string {
-	gitdir := filepath.Join(dir, ".git")
-	info, err := os.Lstat(gitdir)
-	if err != nil || info.IsDir() {
-		return gitdir
-	}
-	data, err := os.ReadFile(gitdir)
-	if err != nil {
-		return gitdir
-	}
-	g, ok := strings.CutPrefix(strings.TrimSpace(string(data)), "gitdir:")
-	if !ok {
-		return gitdir
-	}
-	gitdir = strings.TrimSpace(g)
-	if !filepath.IsAbs(gitdir) {
-		gitdir = filepath.Join(dir, gitdir)
-	}
-	if common, err := os.ReadFile(filepath.Join(gitdir, "commondir")); err == nil {
-		c := strings.TrimSpace(string(common))
-		if !filepath.IsAbs(c) {
-			c = filepath.Join(gitdir, c)
-		}
-		gitdir = c
-	}
-	return gitdir
-}
-
 // parseAlias reads the value of name in the [alias] section of a git config file; the
-// last one wins, as in git. A small reader, like parseRemotes.
+// last one wins, as in git.
 func parseAlias(r io.Reader, name string) (string, bool) {
-	value, found, inAlias := "", false, false
-	sc := bufio.NewScanner(r)
-	sc.Buffer(make([]byte, 0, 64<<10), maxGitConfig)
-	for sc.Scan() {
-		line := strings.TrimSpace(sc.Text())
-		if line == "" || line[0] == '#' || line[0] == ';' {
-			continue
+	value, found := "", false
+	readGitConfig(r, func(section, key, v string) {
+		if strings.EqualFold(section, "alias") && strings.EqualFold(key, name) {
+			value, found = v, true
 		}
-		if line[0] == '[' {
-			end := strings.IndexByte(line, ']')
-			inAlias = end > 0 && strings.EqualFold(strings.TrimSpace(line[1:end]), "alias")
-			if end < 0 || !inAlias {
-				continue
-			}
-			line = strings.TrimSpace(line[end+1:]) // [alias] ci = commit, on one line
-			if line == "" {
-				continue
-			}
-		}
-		if !inAlias {
-			continue
-		}
-		key, v, ok := strings.Cut(line, "=")
-		if ok && strings.EqualFold(strings.TrimSpace(key), name) {
-			value, found = configValue(v), true
-		}
-	}
+	})
 	return value, found
 }
