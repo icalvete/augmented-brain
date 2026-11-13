@@ -64,6 +64,8 @@ func TestShellExpansions(t *testing.T) {
 		{"git log --format='%h %s' -n 5", Allow},
 		{"git commit -m \"$(cat msg.txt)\"", Deny},      // a commit outside a listed repository, as before
 		{"ls {a,b}{c,d}{e,f}{g,h}{i,j}{k,l}{m,n}", Ask}, // more words than are read
+		{"echo $IFSX", Allow},
+		{"echo x}{a,b}", Allow},
 	}
 	for i := range rows {
 		rows[i].cmd = r.Replace(rows[i].cmd)
@@ -104,6 +106,9 @@ func TestProgramsThatRun(t *testing.T) {
 		{"tcsh -c 'su_do id'", Deny},
 		{"csh -c 'su_do id'", Deny},
 		{"mksh -c 'su_do id'", Deny},
+		{"fish --init-command='su_do id'", Deny},
+		{"sg - docker -c 'su_do id'", Deny},
+		{"tmux new-session -d -- 'su_do id'", Deny},
 		// still as before
 		{"strace -c ls", Allow},
 		{"strace -e trace=open -o /tmp/t ls", Allow},
@@ -120,6 +125,9 @@ func TestProgramsThatRun(t *testing.T) {
 		{"at -l", Allow},
 		{"fish -c 'ls'", Allow},
 		{"bash -C script.sh", Allow},
+		{"sg docker -c", Allow},
+		{"sg docker", Allow},
+		{"xargs -0n 1 echo", Allow},
 	})
 }
 
@@ -148,6 +156,12 @@ func TestShellInput(t *testing.T) {
 		{"echo pu_sh | xargs git", Ask},
 		{"echo pu_sh | xargs -I% git %", Ask},
 		{"echo x | xargs bash", Ask},
+		{"echo pu_sh | xargs -I % git %", Ask},
+		{"echo pu_sh | xargs -i git {}", Ask},
+		{"echo pu_sh | xargs --replace=@ git @", Ask},
+		{"echo pu_sh | xargs -i@ git @", Ask},
+		{"echo x | xargs -I{} bash {}", Ask},
+		{"cat a b | bash", Ask},
 		// still as before
 		{"echo su_do id | bash", Deny},
 		{"bash < aws.sh", Allow},
@@ -163,6 +177,8 @@ func TestShellInput(t *testing.T) {
 		{"echo a b | xargs -n1 echo", Allow},
 		{"ls | xargs -I{} sh -c 'echo {}'", Allow},
 		{"diff <(sort a) <(sort b)", Allow},
+		{"echo -e 'ls' | sh", Allow},
+		{"ls | xargs -I{} bash x.sh {}", Allow},
 	})
 }
 
@@ -186,6 +202,7 @@ func TestPanelFileOtherNames(t *testing.T) {
 		{"zip -r /tmp/c.zip CFG", Deny},
 		{"grep -r token CFG", Deny},
 		{"rg token CFG", Deny},
+		{"cat .config/augmented-b*/pan*", Deny},
 		// still as before
 		{"ls CFG", Allow},
 		{"cat CFG/config.toml", Allow},
@@ -196,6 +213,7 @@ func TestPanelFileOtherNames(t *testing.T) {
 		{"grep -rn 'panel.json' internal/", Allow},
 		{"cat ~/.config/*/settings.json", Allow},
 		{"ls ~/.config/augmented-b*", Allow},
+		{"cd \"$D\" && cp -r x /tmp/c", Allow},
 	}
 	for i := range rows {
 		rows[i].cmd = r.Replace(rows[i].cmd)
@@ -226,6 +244,10 @@ func TestHomeOtherWays(t *testing.T) {
 		{"mv $HOME /tmp/x", Deny},
 		{"mv -t /tmp ~", Deny},
 		{"mv / /tmp/x", Deny},
+		{"mv -- ~ /tmp/x", Deny},
+		{"mv --target-directory=/tmp ~", Deny},
+		{"mv -S .bak -f ~ /tmp/x", Deny},
+		{"rsync -a --delete -- /tmp/empty/ ~/", Deny},
 		// still as before
 		{"rm -rf ~/proyecto/build/*", Allow},
 		{"rm -rf build*", Allow},
@@ -236,5 +258,7 @@ func TestHomeOtherWays(t *testing.T) {
 		{"mv ~/proyecto/build /tmp/b", Allow},
 		{"mv /tmp/x ~", Allow},
 		{"mv a b", Allow},
+		{"rsync -a --delete dist/ web02:/srv/", Allow},
+		{"cd \"$D\" && mv x y", Allow},
 	})
 }

@@ -116,9 +116,6 @@ func (p Policy) panelAccess(line string) bool {
 				}
 			}
 		}
-		if sw.glob && p.patternHidden(w) { // ~/.config/augmented-b*/pan*: the whole path, part by part
-			return true
-		}
 		if base != panelFile && strings.ContainsAny(w, `/\`) { // a pattern: its folder is the file's
 			if r, err := p.resolve(filepath.Dir(w)); err == nil {
 				for _, h := range p.Hidden {
@@ -127,6 +124,9 @@ func (p Policy) panelAccess(line string) bool {
 					}
 				}
 			}
+		}
+		if sw.glob && p.patternHidden(w) { // ~/.config/augmented-b*/pan*: the whole path, part by part
+			return true
 		}
 		// A name built from a variable ($AB_CONFIG_DIR/panel.json): if the line also
 		// names the configuration folder, deny.
