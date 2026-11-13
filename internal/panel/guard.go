@@ -50,6 +50,8 @@ type guardData struct {
 	LastStart   string // what the last session start said about its model
 	Ask         bool   // memory_trust of session.toml is "ask" (or a value not known)
 	Language    string
+	Reach       string   // where augmented brain acts: machine or spaces
+	SpaceDirs   []string // the folders of the spaces, with ~
 }
 
 func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
@@ -59,6 +61,8 @@ func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
 		d.Problem = err.Error()
 	}
 	d.Untouchable = g.UntouchableRepos
+	d.Reach = reachOf(g)
+	d.SpaceDirs = tildeEach(v.c.SpaceDirs())
 	if ss, err := config.LoadSession(v.c.Dir); err == nil {
 		d.Model = ss.PreferredModel
 		d.Ask = ss.Trust() == config.TrustAsk
@@ -122,6 +126,15 @@ type listChange struct {
 var guardListKeys = []struct{ key, title string }{
 	{"untouchable", "guard.untouchable"}, {"allowed", "guard.allowed"}, {"ask", "guard.ask"},
 	{"root", "guard.root"}, {"profiles", "guard.profiles"}, {"hosts", "guard.hosts"},
+	{"reach", "guard.reach"},
+}
+
+// reachOf is where guard.toml says augmented brain acts, the default written out.
+func reachOf(g config.Guard) string {
+	if g.OnlySpaces() {
+		return config.ReachSpaces
+	}
+	return config.ReachMachine
 }
 
 // guardListsOf are the lists GuardFingerprint covers, by key.
@@ -129,7 +142,7 @@ func guardListsOf(c *config.Config, g config.Guard) map[string][]string {
 	allowed, ask := c.GitLists()
 	profiles, hosts := c.GuardLists()
 	return map[string][]string{"untouchable": g.UntouchableRepos, "allowed": allowed, "ask": ask,
-		"root": c.RootAsk, "profiles": profiles, "hosts": hosts}
+		"root": c.RootAsk, "profiles": profiles, "hosts": hosts, "reach": {reachOf(g)}}
 }
 
 // listChanges compares the sealed lists with the current ones, list by list.
@@ -309,7 +322,8 @@ func (s *Server) guardList(v *view, r *http.Request) (string, error) {
 			if err != nil {
 				return err
 			}
-			return config.SaveGuard(v.c.Dir, config.Guard{UntouchableRepos: out})
+			g.UntouchableRepos = out // the rest of the file as it was
+			return config.SaveGuard(v.c.Dir, *g)
 		case "allowed", "ask":
 			sp, ok := v.c.Spaces[field(r, "space")]
 			if !ok {
@@ -408,6 +422,31 @@ func (s *Server) guardAccept(v *view, r *http.Request) (string, error) {
 	}
 	_ = state.AddGuardNotice(v.c.Dir, v.t("guard.notice.accepted", what), time.Now())
 	return "/guard", nil
+}
+
+// guardReach saves where augmented brain acts (reach of guard.toml), sealed like the
+// lists. Keeping it to the spaces takes rules away outside them, so it needs the box
+// ticked that says the user understands which; and like going back to a version, it
+// is changed only from this computer's own panel.
+func (s *Server) guardReach(v *view, r *http.Request) (string, error) {
+	if s.viaRemote(r) {
+		return "", errors.New(v.t("guard.err.remote"))
+	}
+	value := field(r, "value")
+	if value != config.ReachMachine && value != config.ReachSpaces {
+		return "", errors.New(v.t("guard.err.op"))
+	}
+	if value == config.ReachSpaces && field(r, "confirm") != "yes" {
+		return "", errors.New(v.t("guard.err.reachconfirm"))
+	}
+	err := v.sealed(func(g *config.Guard) error {
+		if reachOf(*g) == value {
+			return nil
+		}
+		g.Reach = value
+		return config.SaveGuard(v.c.Dir, *g)
+	})
+	return "/guard", err
 }
 
 // guardModel saves the preferred model of session.toml (empty: no check), keeping the

@@ -162,6 +162,18 @@ var doctorMessages = map[string]msg{
 		en: "Claude Code plugin %s: installed",
 		es: "plugin de Claude Code %s: instalado",
 	},
+	"doctor.reach.machine": {
+		en: "augmented brain acts in every Claude Code session of this computer (reach on the panel's Guard page)",
+		es: "augmented brain actúa en todas las sesiones de Claude Code de este ordenador (reach, en la página Guardia del panel)",
+	},
+	"doctor.reach.spaces": {
+		en: "augmented brain keeps to the folders of your spaces: outside them, no memory, and the guard only protects its own files and what your lists name (reach on the panel's Guard page)",
+		es: "augmented brain se queda en las carpetas de tus espacios: fuera de ellas, ni memoria, y el guardia solo protege sus propios ficheros y lo que nombran tus listas (reach, en la página Guardia del panel)",
+	},
+	"doctor.reach.unsealed": {
+		en: "guard.toml says augmented brain keeps to your spaces, but nobody accepted that change: until you do, it acts on the whole computer",
+		es: "guard.toml dice que augmented brain se queda en tus espacios, pero nadie ha aceptado ese cambio: hasta que lo hagas, actúa en todo el ordenador",
+	},
 	"doctor.guardfile.bad": {
 		en: "guard.toml cannot be read, so the guard asks about every commit and push (%s)",
 		es: "guard.toml no se puede leer, así que el guardia pregunta por cada commit y push (%s)",

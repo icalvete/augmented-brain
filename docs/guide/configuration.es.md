@@ -141,11 +141,19 @@ Junto a `config.toml`, `guard.toml` guarda lo que el guardia nunca permite:
 
 ```toml
 untouchable_repos = ["~/work/core", "~/work/cli-*"]
+reach = "spaces"
 ```
 
 - `untouchable_repos`: repositorios donde Claude nunca hace commit, push ni merge, digan
   lo que digan `git_allowed_repos` y `git_ask_repos`. Para todo el ordenador. Misma forma
   que esas listas (`~`, un `*` en la última parte, los worktrees cuentan).
+- `reach`: dónde actúa augmented brain. `"machine"` (o ninguna línea, lo normal): en
+  todas las sesiones de Claude Code del ordenador. `"spaces"`: solo en las carpetas de tus
+  espacios; una sesión fuera de ellas no recibe memoria ni avisos, y el guardia solo
+  protege sus propios ficheros, tu carpeta personal y lo que nombran tus listas. Mira
+  [Fuera de todos los espacios](spaces.es.md#fuera-de-todos-los-espacios). Se cambia en la
+  página Guardia del panel: escrito aquí a mano, cuenta solo cuando lo aceptas allí, y
+  hasta entonces augmented brain actúa en todo el ordenador.
 
 La página Guardia del panel lo escribe. Si el fichero falta, nada es intocable; si no se
 puede leer, el guardia pregunta antes de cada commit y push. Es un fichero aparte por la

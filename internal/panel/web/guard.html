@@ -13,6 +13,18 @@
   </form>
 </div>{{end}}
 
+<h2>{{t "guard.reach"}}</h2>
+<p class="hint">{{t "guard.reach.hint"}}</p>
+{{if .SpaceDirs}}<p class="hint">{{t "guard.reach.dirs"}} {{range .SpaceDirs}}<code>{{.}}</code> {{end}}</p>{{end}}
+<form method="post" action="{{$.Base}}/guard/reach" class="stack">
+  {{template "fields" (fields $)}}
+  <label><input type="radio" name="value" value="machine"{{if ne .Reach "spaces"}} checked{{end}}> {{t "guard.reach.machine"}}</label>
+  <label><input type="radio" name="value" value="spaces"{{if eq .Reach "spaces"}} checked{{end}}> {{t "guard.reach.spaces"}}</label>
+  <p class="flash warn">{{t "guard.reach.warn"}}</p>
+  {{if ne .Reach "spaces"}}<label><input type="checkbox" name="confirm" value="yes"> {{t "guard.reach.confirm"}}</label>{{else}}<input type="hidden" name="confirm" value="yes">{{end}}
+  <button type="submit">{{t "save"}}</button>
+</form>
+
 <h2>{{t "guard.untouchable"}}</h2>
 <p class="hint">{{t "guard.untouchable.hint"}}</p>
 {{if .Untouchable}}<ul class="cards">{{range .Untouchable}}<li class="card">

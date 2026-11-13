@@ -136,11 +136,19 @@ Next to `config.toml`, `guard.toml` holds what the guard never allows:
 
 ```toml
 untouchable_repos = ["~/work/core", "~/work/cli-*"]
+reach = "spaces"
 ```
 
 - `untouchable_repos`: repositories where Claude never commits, pushes or merges,
   whatever `git_allowed_repos` and `git_ask_repos` say. For the whole computer. Same form
   as those lists (`~`, a `*` in the last part, worktrees count).
+- `reach`: where augmented brain acts. `"machine"` (or no line, the default): in every
+  Claude Code session of the computer. `"spaces"`: only in the folders of your spaces;
+  a session outside them gets no memory and no notices, and the guard only protects its
+  own files, your home folder and what your lists name. See
+  [Outside every space](spaces.md#outside-every-space). Change it on the panel's Guard
+  page: written here by hand, it counts only once you accept it there, and until then
+  augmented brain acts on the whole computer.
 
 The panel's Guard page writes it. If the file is missing, nothing is untouchable; if it
 cannot be read, the guard asks before every commit and push. It is a file of its own for

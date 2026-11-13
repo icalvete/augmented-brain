@@ -266,3 +266,54 @@ func TestGuardPageTrust(t *testing.T) {
 		t.Errorf("not back on tell: %+v", ss)
 	}
 }
+
+func TestGuardPageReach(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	home := filepath.Dir(cfg)
+	sealNow(t, cfg)
+	if body := s.get(t, "/guard?s=work").Body.String(); !strings.Contains(body, "Where augmented brain acts") {
+		t.Fatalf("the page does not show reach: %.200s", body)
+	}
+	// Keeping to the spaces takes rules away outside them: it needs the box.
+	if w := s.post(t, "/guard/reach", url.Values{"s": {"work"}, "value": {"spaces"}}); w.Code != http.StatusBadRequest {
+		t.Errorf("spaces without the box: %d", w.Code)
+	}
+	if g, _ := config.LoadGuard(cfg); g.OnlySpaces() {
+		t.Fatal("saved without the box")
+	}
+	repo := filepath.Join(home, "work", "core")
+	if w := s.post(t, "/guard/list", url.Values{"s": {"work"}, "list": {"untouchable"}, "op": {"add"}, "value": {repo}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("add untouchable: %d", w.Code)
+	}
+	if w := s.post(t, "/guard/reach", url.Values{"s": {"work"}, "value": {"spaces"}, "confirm": {"yes"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("spaces: %d", w.Code)
+	}
+	g, err := config.LoadGuard(cfg)
+	if err != nil || !g.OnlySpaces() || len(g.UntouchableRepos) != 1 {
+		t.Fatalf("guard.toml after reach: %+v %v", g, err)
+	}
+	c, _ := config.Load(cfg)
+	if readSeal(t, cfg) != c.GuardFingerprint(g) {
+		t.Error("reach saved in the panel was not sealed")
+	}
+	if n := state.TakeGuardNotice(cfg); !strings.Contains(n, "+spaces") || !strings.Contains(n, "-machine") {
+		t.Errorf("the notice does not say reach changed: %q", n)
+	}
+	// A change of a list keeps reach.
+	if w := s.post(t, "/guard/list", url.Values{"s": {"work"}, "list": {"untouchable"}, "op": {"remove"}, "value": {g.UntouchableRepos[0]}, "confirm": {"core"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("remove untouchable: %d", w.Code)
+	}
+	if g, _ = config.LoadGuard(cfg); !g.OnlySpaces() {
+		t.Error("changing a list dropped reach")
+	}
+	// Back to the whole machine needs no box.
+	if w := s.post(t, "/guard/reach", url.Values{"s": {"work"}, "value": {"machine"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("machine: %d", w.Code)
+	}
+	if g, _ = config.LoadGuard(cfg); g.OnlySpaces() {
+		t.Error("still spaces")
+	}
+	if w := s.post(t, "/guard/reach", url.Values{"s": {"work"}, "value": {"everywhere"}}); w.Code != http.StatusBadRequest {
+		t.Errorf("an unknown value: %d", w.Code)
+	}
+}
