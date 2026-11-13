@@ -25,6 +25,13 @@ type lineFiles struct {
 	// long line names files, and following links costs a system call per folder (slow
 	// on Windows), so no path is resolved twice.
 	resolved map[string]resolved
+	// inSpace says the line, read with only the rules that hold outside the spaces,
+	// reached into a space or went where the guard cannot follow: it is read again
+	// with every rule. remotes are the remote addresses of the lists' repositories,
+	// read once (remotesRead).
+	inSpace     bool
+	remotes     []string
+	remotesRead bool
 }
 
 type resolved struct {
