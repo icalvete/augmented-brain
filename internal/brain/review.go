@@ -244,7 +244,7 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 
 func checkDate(d string) error {
 	if _, err := memory.ParseDate(d); err != nil {
-		return fmt.Errorf("date %q: use YYYY-MM-DD", d)
+		return i18n.Errorf("err.date", d)
 	}
 	return nil
 }
@@ -376,7 +376,7 @@ func (b *Brain) SaveReview(summary string) (*memory.Note, error) {
 func (b *Brain) FinishReview(summary string, processed []string) (*memory.Note, []string, error) {
 	summary = strings.TrimSpace(summary)
 	if summary == "" {
-		return nil, nil, errors.New("a review needs a summary: what was decided. Nothing was saved, and the inbox is as it was")
+		return nil, nil, i18n.Errorf("err.review.summary")
 	}
 	p, err := b.planInboxDone(processed)
 	if err != nil {
@@ -404,7 +404,7 @@ func (b *Brain) FinishReview(summary string, processed []string) (*memory.Note, 
 		Body:   body,
 	}
 	if err := b.save(n); err != nil {
-		return nil, nil, fmt.Errorf("%w\n(the inbox is as it was: no capture was taken out)", err)
+		return nil, nil, i18n.Errorf("err.review.inbox", err)
 	}
 	if err := p.write(); err != nil {
 		return n, nil, fmt.Errorf("the review was saved in %s, but the captures could not be taken out of the inbox, so they are still there (take them out again with capture_done): %w", n.Path, err)
