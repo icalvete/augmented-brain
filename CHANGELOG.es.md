@@ -2,6 +2,32 @@
 
 ## Sin publicar
 
+## 0.25.0-beta
+
+Publicada el 2026-11-13.
+
+- **Las reglas de git y gh valen se pida como se pida.** Un push desde un repositorio
+  donde Claude puede hacer push pregunta ahora si va a un sitio que no es uno de sus
+  remotos, y se deniega si ese sitio es un repositorio intocable. Los ajustes de git que
+  ejecutan un comando o traen un alias se revisan se den como se den, y también los
+  comandos que git lanza desde sus opciones. Fusionar, hacer commit de un fichero o mover
+  una rama con `gh api` o `glab api` se para como `gh pr merge`; volver a lanzar un flujo,
+  un `repository_dispatch` y guardar un alias de gh preguntan antes. En un repositorio
+  intocable también se deniegan `merge`, `cherry-pick`, `revert`, `am` y `pull`.
+- **El instalador de Windows ya no enseña el error de winget cuando consigue Git por
+  otro camino.** En un Windows recién instalado, winget a menudo aún no puede instalar
+  Git, y el instalador lo descarga de la página de Git for Windows. Hasta ahora enseñaba
+  antes las últimas líneas del error de winget, que parecían un fallo; ahora solo salen
+  si el otro camino también falla. Lo mismo con la app de escritorio: la salida de winget
+  solo sale si la app no queda instalada.
+- **El guardia lee más de lo que hace la shell antes de ejecutar un comando.** Expande
+  las llaves y `$IFS` como la shell, lee el fichero que se le pasa a una shell
+  (`bash < x.sh`) y pregunta antes de que una shell ejecute lo que le escribe otro
+  programa (`curl … | sh`): guárdalo en un fichero y ejecuta el fichero, y el guardia lo
+  lee. También lee los programas que ejecutan el resto de su línea (`strace`, `screen`,
+  `tmux`, `at`, las shells `fish` y `csh`). Llevarse la carpeta personal a otro sitio,
+  vaciarla con `rsync --delete` o borrarla con un patrón se paran, como `rm -rf ~`.
+
 ## 0.24.0-beta
 
 Publicada el 2026-11-13.

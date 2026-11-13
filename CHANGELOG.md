@@ -2,6 +2,32 @@
 
 ## Unreleased
 
+## 0.25.0-beta
+
+Released 2026-11-13.
+
+- **git and gh rules hold however the command is put.** A push from a repository where
+  Claude may push now asks when it goes somewhere that is not one of its remotes, and is
+  denied when that place is an untouchable repository. git settings that run a command
+  or bring an alias are checked however they are given, and so are the commands git
+  runs from its options. Merging, committing a file or moving a branch through `gh api`
+  or `glab api` is stopped like `gh pr merge`; running a workflow again, a
+  `repository_dispatch` and saving a gh alias ask first. In an untouchable repository,
+  `merge`, `cherry-pick`, `revert`, `am` and `pull` are denied too.
+- **The Windows installer no longer shows winget's error when it gets Git another way.**
+  On a Windows just installed, winget often cannot install Git yet, and the installer
+  downloads it from Git for Windows' own page instead. Until now it first showed winget's
+  last lines of error, which looked like a failure; now they appear only if the other way
+  fails too. The same for the desktop app: winget's output shows only if the app is not
+  installed.
+- **The guard reads more of what the shell does before it runs a command.** It expands
+  braces and `$IFS` as the shell does, reads the file a shell is fed (`bash < x.sh`),
+  and asks before a shell runs what another program writes to it (`curl … | sh`): save
+  it to a file and run the file, and the guard reads it. Programs that run the rest of
+  their line (`strace`, `screen`, `tmux`, `at`, the `fish` and `csh` shells) are read
+  too. Moving the home folder away, emptying it with `rsync --delete` or deleting it
+  with a pattern are stopped, as `rm -rf ~` is.
+
 ## 0.24.0-beta
 
 Released 2026-11-13.
