@@ -1,12 +1,16 @@
 # Dependabot opens a pull request when a module or a GitHub action has a newer version,
 # once a week and grouped, so it is one pull request per kind, not one per module.
 # Its pull requests get no repository secrets: the privacy job in ci.yml knows that.
+# A version is proposed only once it is a week old (cooldown): a release that was
+# hijacked is usually found and pulled within days, before it reaches this repository.
 version: 2
 updates:
   - package-ecosystem: gomod
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       go-modules:
         patterns: ['*']
@@ -14,6 +18,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    cooldown:
+      default-days: 7
     groups:
       actions:
         patterns: ['*']
