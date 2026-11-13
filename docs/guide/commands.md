@@ -130,7 +130,8 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
 - tasks too long to read in one go, which `check` shortens;
 - how much of every session start your rules take, with the three longest: they go whole
   to every session, so a shorter rule costs less each time;
-- Claude Code, git and the plugin;
+- Claude Code, git and the plugin, and whether Claude Code is recent enough to stop
+  everything when the guard fails (2.1.295 or later);
 - the guard, for real, with a command that must be stopped;
 - the guard's lists, the root exceptions in `root_ask`, and those that have ended;
 - Claude sessions still running an older version after an update;

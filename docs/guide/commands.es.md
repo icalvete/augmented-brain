@@ -135,7 +135,8 @@ algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Re
 - las tareas demasiado largas para leerlas de una vez, que `check` acorta;
 - cuánto ocupan tus reglas en cada arranque de sesión, con las tres más largas: van
   enteras a cada sesión, así que una regla más corta cuesta menos cada vez;
-- Claude Code, git y el plugin;
+- Claude Code, git y el plugin, y si Claude Code es lo bastante reciente para pararlo todo
+  cuando el guardia falla (2.1.295 o posterior);
 - el guardia, de verdad, con un comando que tiene que parar;
 - las listas del guardia, las excepciones de root en `root_ask` y las que ya han
   terminado;

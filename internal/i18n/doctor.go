@@ -174,6 +174,14 @@ var doctorMessages = map[string]msg{
 		en: "check the permissions of the state folder inside the configuration folder (it must belong to you), then look at the Guard page of the panel and press accept",
 		es: "revisa los permisos de la carpeta state dentro de la carpeta de configuración (tiene que ser tuya) y después mira la página Guardia del panel y pulsa aceptar",
 	},
+	"doctor.claudeold": {
+		en: "Claude Code %s is older than %s: when the guard fails (it hangs, crashes or is missing), this version lets every command and file change through unchecked instead of stopping them",
+		es: "Claude Code %s es anterior a la %s: cuando el guardia falla (se cuelga, se cae o no está), esta versión deja pasar sin revisar todos los comandos y cambios de ficheros en vez de pararlos",
+	},
+	"doctor.claudeold.fix": {
+		en: "update Claude Code (`claude update`)",
+		es: "actualiza Claude Code (`claude update`)",
+	},
 	"doctor.guard.ok": {
 		en: "guard: it blocks a risky command, as it should",
 		es: "guardia: bloquea un comando arriesgado, como debe",

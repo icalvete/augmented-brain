@@ -78,7 +78,9 @@ type Policy struct {
 	ConfigProblem string
 	// GuardProblem, when not empty, says why guard.toml could not be read: the
 	// untouchable repositories are unknown, so a commit, push or merge the other lists
-	// would let through asks the user instead, until the file is fixed.
+	// would let through asks the user instead, until the file is fixed. The hook sets
+	// ConfigProblem too then, on purpose: a broken guard.toml may mean the configuration
+	// is not as the user left it, so every command the lists cover asks as well.
 	GuardProblem string
 	// RootAsk are the machines where becoming root asks the user instead of being denied,
 	// each until a time; Hostname is this machine's name, for an exception for it. Now

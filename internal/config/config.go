@@ -111,8 +111,20 @@ type notFound struct{ dir string }
 func (e notFound) Error() string        { return i18n.T(i18n.FromEnv(), "config.notfound", e.dir) }
 func (e notFound) Is(target error) bool { return target == ErrNotFound }
 
+// ErrNoDir means the configuration folder is unknown (Dir failed): Load refuses "",
+// which would read a config.toml of the current folder.
+var ErrNoDir = errors.New("no configuration folder")
+
+type noDir struct{}
+
+func (noDir) Error() string        { return i18n.T(i18n.FromEnv(), "config.nodir") }
+func (noDir) Is(target error) bool { return target == ErrNoDir }
+
 // Load reads and checks the configuration in dir. Paths come back absolute, with ~ expanded.
 func Load(dir string) (*Config, error) {
+	if dir == "" {
+		return nil, noDir{}
+	}
 	path := filepath.Join(dir, FileName)
 	var c Config
 	md, err := toml.DecodeFile(path, &c)

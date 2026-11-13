@@ -7,6 +7,14 @@ var hookMessages = map[string]msg{
 		en: "augmented brain: since this session last looked, these tasks changed outside it (another session, the panel or a hand edit). What you read about them earlier (the index at the start, an earlier answer) is out of date: before you state their status, say they are pending or done, or act on them, read them with task_get. Mention it to the user only when it bears on what you are doing.\n",
 		es: "augmented brain: desde la última vez que esta sesión miró, estas tareas han cambiado fuera de ella (otra sesión, el panel o una edición a mano). Lo que leíste de ellas antes (el índice del inicio, una respuesta anterior) está desfasado: antes de decir su estado, darlas por pendientes o hechas, o actuar sobre ellas, léelas con task_get. Coméntaselo al usuario solo si afecta a lo que estás haciendo.\n",
 	},
+	"hook.panic": {
+		en: "the guard failed while checking this action. It is a bug in augmented brain, not in the command: do not try variants of it. Tell the user, who can report it from the Help page of the panel.",
+		es: "el guardia ha fallado al revisar esta acción. Es un error de augmented brain, no del comando: no pruebes variantes. Díselo al usuario, que puede informar de él desde la página Ayuda del panel.",
+	},
+	"hook.panic.log": {
+		en: "The details are in %s.",
+		es: "Los detalles están en %s.",
+	},
 	"hook.guardnotice": {
 		en: "augmented brain · the guard's lists:\n%s\nIf you did not do it, look at the Guard page of the panel.",
 		es: "augmented brain · las listas del guardia:\n%s\nSi no has sido tú, mira la página Guardia del panel.",

@@ -223,29 +223,52 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 		PermissionDecision: decision, PermissionDecisionReason: "augmented brain: " + d.Reason}})
 }
 
-// toolDecision is the guard's answer to one tool call.
+// toolCases are the tools toolDecision checks; the plugin's PreToolUse matcher names
+// the same ones (a test compares them).
+var toolCases = []string{"Bash", "Monitor", "PowerShell", "Read", "Grep", "Write", "Edit", "MultiEdit", "NotebookEdit"}
+
+// toolDecision is the guard's answer to one tool call. A call whose command or path is
+// there but is not text, or a Bash call with no command, is refused: a new shape of
+// call from Claude Code must not switch the guard off without anyone noticing.
 func toolDecision(p guard.Policy, i input) guard.Decision {
-	var d guard.Decision
+	unreadable := guard.Decision{Verdict: guard.Deny, Reason: i18n.T(p.Lang, "guard.unreadable")}
+	// text is the field key of the call: ok is false when it is there but not text.
+	text := func(key string) (string, bool) {
+		v, there := i.ToolInput[key]
+		if !there {
+			return "", true
+		}
+		s, isText := v.(string)
+		return s, isText
+	}
 	switch i.ToolName {
 	case "Bash", "Monitor":
-		cmd, _ := i.ToolInput["command"].(string)
-		d = p.Command(cmd)
-	case "PowerShell":
-		d = guard.PowerShell(p.Lang)
-	case "Read":
-		path, _ := i.ToolInput["file_path"].(string)
-		d = p.ReadFile(path)
-	case "Grep":
-		path, _ := i.ToolInput["path"].(string)
-		d = p.ReadFile(path)
-	case "Write", "Edit", "MultiEdit", "NotebookEdit":
-		path, _ := i.ToolInput["file_path"].(string)
-		if path == "" {
-			path, _ = i.ToolInput["notebook_path"].(string)
+		cmd, ok := text("command")
+		if _, there := i.ToolInput["command"]; !ok || !there && i.ToolName == "Bash" {
+			return unreadable // a Monitor with no command watches a WebSocket: nothing runs
 		}
-		d = p.WriteFile(path, written(i.ToolInput))
+		return p.Command(cmd)
+	case "PowerShell":
+		return guard.PowerShell(p.Lang)
+	case "Read", "Grep":
+		key := map[string]string{"Read": "file_path", "Grep": "path"}[i.ToolName]
+		path, ok := text(key)
+		if !ok {
+			return unreadable
+		}
+		return p.ReadFile(path)
+	case "Write", "Edit", "MultiEdit", "NotebookEdit":
+		path, ok := text("file_path")
+		notebook, ok2 := text("notebook_path")
+		if !ok || !ok2 {
+			return unreadable
+		}
+		if path == "" {
+			path = notebook
+		}
+		return p.WriteFile(path, written(i.ToolInput))
 	}
-	return d
+	return guard.Decision{}
 }
 
 // Getenv reads the hook's environment, which the assistant's commands inherit; tests
@@ -269,7 +292,8 @@ func policy(cfgDir, dir string) guard.Policy {
 	}
 	c, _, err := load(cfgDir, dir)
 	switch {
-	case errors.Is(err, config.ErrNotFound):
+	case errors.Is(err, config.ErrNotFound) && !leftovers(cfgDir):
+		// Not set up yet: no lists to apply.
 	case err != nil:
 		p.ConfigProblem = err.Error()
 	default:
@@ -282,6 +306,8 @@ func policy(cfgDir, dir string) guard.Policy {
 		p.Hostname, _ = os.Hostname()
 		p.Lang = c.Language
 		if g, err := config.LoadGuard(cfgDir); err != nil {
+			// The untouchable repositories are unknown, and so is whether the rest
+			// was left as the user meant: everything the lists cover asks.
 			p.ConfigProblem = err.Error()
 			p.GuardProblem = err.Error()
 		} else {
@@ -299,6 +325,18 @@ func policy(cfgDir, dir string) guard.Policy {
 	p.Protected = protectedFiles(cfgDir, dir)
 	p.Hidden, p.ConfigDirs = hiddenFiles(cfgDir)
 	return p
+}
+
+// leftovers says whether cfgDir holds what only a set-up configuration writes (the
+// guard's lists, its state, its history) though config.toml is gone: that is a broken
+// configuration, not one never set up, and the guard asks instead of applying nothing.
+func leftovers(cfgDir string) bool {
+	for _, f := range []string{config.GuardFile, "state", "history"} {
+		if _, err := os.Stat(filepath.Join(cfgDir, f)); err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 // written collects the text a write would put in the file: every string in the tool's
@@ -339,12 +377,15 @@ func written(v any) string {
 // configuration, and Claude Code's settings (yours and the project's), where a line can
 // switch the plugin, and so the guard, off.
 func protectedFiles(cfgDir, dir string) []string {
-	list := []string{filepath.Join(cfgDir, config.FileName), filepath.Join(cfgDir, config.GuardFile),
-		filepath.Join(cfgDir, config.SecretsFile), filepath.Join(cfgDir, "remote.toml"),
-		filepath.Join(cfgDir, config.SessionFile)}
-	// The plugin Claude Code reads in place: its hooks are the guard.
-	for _, f := range claudecode.Files() {
-		list = append(list, filepath.Join(claudecode.LocalDir(cfgDir), filepath.FromSlash(f)))
+	var list []string
+	if cfgDir != "" { // unknown: never a file of the current folder in its place
+		list = []string{filepath.Join(cfgDir, config.FileName), filepath.Join(cfgDir, config.GuardFile),
+			filepath.Join(cfgDir, config.SecretsFile), filepath.Join(cfgDir, "remote.toml"),
+			filepath.Join(cfgDir, config.SessionFile)}
+		// The plugin Claude Code reads in place: its hooks are the guard.
+		for _, f := range claudecode.Files() {
+			list = append(list, filepath.Join(claudecode.LocalDir(cfgDir), filepath.FromSlash(f)))
+		}
 	}
 	if home, err := paths.Home(); err == nil {
 		for _, f := range []string{"settings.json", "settings.local.json"} {
@@ -365,6 +406,9 @@ func protectedFiles(cfgDir, dir string) []string {
 // hiddenFiles are the files the assistant never reads (the panel's token file) and the
 // ways a command can write the configuration folder.
 func hiddenFiles(cfgDir string) (hidden, dirs []string) {
+	if cfgDir == "" {
+		return nil, []string{".config/augmented-brain", "AB_CONFIG_DIR"}
+	}
 	f := filepath.Join(cfgDir, "panel.json")
 	if r, err := paths.Resolve(f); err == nil {
 		f = r

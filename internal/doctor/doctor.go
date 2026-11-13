@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -70,6 +71,8 @@ type Env struct {
 	// Leftovers is where to look for what Claude Code leaves behind; nil means this
 	// computer's.
 	Leftovers *leftovers.Env
+	// ClaudeVersion returns what `claude --version` prints; nil means ask claude.
+	ClaudeVersion func() (string, error)
 }
 
 // Run returns every check, in the order they are shown. Later checks are skipped when
@@ -230,7 +233,59 @@ func plugin(e Env) []Check {
 		return []Check{{Failed, i18n.T(e.Lang, "doctor.plugin.missing", claudecode.Plugin),
 			claudecode.Manual}}
 	}
-	return []Check{{OK, i18n.T(e.Lang, "doctor.plugin.ok", claudecode.Plugin), ""}, guardWorks(e)}
+	out := []Check{{OK, i18n.T(e.Lang, "doctor.plugin.ok", claudecode.Plugin), ""}, guardWorks(e)}
+	if c, ok := claudeVersion(e); ok {
+		out = append(out, c)
+	}
+	return out
+}
+
+// minClaude is the first Claude Code that honours the hook's onFailure: block. With
+// an earlier one, a guard that hangs, crashes or is missing lets every command through.
+var minClaude = []int{2, 1, 295}
+
+// claudeVersion warns when Claude Code is older than minClaude. ok is false when there
+// is nothing to say: the version is recent, or it cannot be read.
+func claudeVersion(e Env) (Check, bool) {
+	get := e.ClaudeVersion
+	if get == nil {
+		if !askClaude {
+			return Check{}, false
+		}
+		get = func() (string, error) {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			out, err := exec.CommandContext(ctx, "claude", "--version").Output()
+			return string(out), err
+		}
+	}
+	text, err := get()
+	if err != nil {
+		return Check{}, false
+	}
+	v, ok := parseVersion(text)
+	if !ok || slices.Compare(v, minClaude) >= 0 {
+		return Check{}, false
+	}
+	return Check{Warning, i18n.T(e.Lang, "doctor.claudeold", strings.Fields(text)[0], "2.1.295"),
+		i18n.T(e.Lang, "doctor.claudeold.fix")}, true
+}
+
+// parseVersion reads the first word of text as numbers separated by dots (2.1.322).
+func parseVersion(text string) ([]int, bool) {
+	f := strings.Fields(text)
+	if len(f) == 0 {
+		return nil, false
+	}
+	var v []int
+	for _, part := range strings.Split(f[0], ".") {
+		n, err := strconv.Atoi(part)
+		if err != nil {
+			return nil, false
+		}
+		v = append(v, n)
+	}
+	return v, len(v) == 3
 }
 
 // guardWorks runs the PreToolUse hook end to end with a command it must block. If the

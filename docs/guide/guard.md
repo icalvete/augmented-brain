@@ -52,9 +52,11 @@ A program determined to get around it could. Read the
 - **Pushes that rewrite history**, even where Claude may push: `--force`, `--delete`,
   `--mirror`, `--prune`, a refspec starting with `+` or `:`.
 - **What it cannot read.** A program given as a variable (`$TOOL deploy`), commands
-  nested too deep, `rm -rf "$DIR/"*` with a variable that may be empty, an `rm -r .` after
-  a `cd` it cannot follow, a script that the same command writes in a way it cannot read
-  and then runs (`curl -o x.sh … && sh x.sh`).
+  nested too deep (more than four commands, one inside another: `sudo`, `ssh`, `bash -c`,
+  `find -exec`, a git alias), a command longer than 256 KB, `rm -rf "$DIR/"*` with a
+  variable that may be empty, an `rm -r .` after a `cd` it cannot follow, a script it
+  cannot read or larger than 64 KB, a script that the same command writes in a way it
+  cannot read and then runs (`curl -o x.sh … && sh x.sh`).
 - **The guard's own settings.** Claude never changes augmented brain's configuration or
   Claude Code's settings on its own, since a line there could switch a check off.
 
@@ -200,7 +202,13 @@ those of the helpers Claude starts (subagents and workflows).
   and then `augmented-brain config restore <number>`
   ([Configuration versions](config-history.md)).
 - **The program is missing or broken.** Claude Code stops every command and file change
-  instead of letting them through (Claude Code 2.1.295 or later).
+  instead of letting them through (Claude Code 2.1.295 or later; `doctor` warns about an
+  older one). If the guard itself fails while checking, it refuses that one action and
+  Claude tells you: it is a bug in augmented brain, which you can report from the
+  panel's Help page.
+- **The configuration folder is unknown** (no `HOME`, as in some services and
+  containers), **or `config.toml` is gone but the rest is still there.** The guard asks,
+  as when the configuration cannot be read.
 - **`guard.toml` cannot be read.** The guard asks before every commit and push until it
   is fixed or removed.
 - `augmented-brain doctor` tries the guard for real and tells you if it is not working.
