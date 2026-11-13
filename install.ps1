@@ -67,9 +67,11 @@ function Ask([string]$q) {
 }
 # Quiet <scriptblock>: runs an installation without its noise; its output is shown only
 # when it fails.
-# Busy <program> <arguments>: a long step, shown as a dot every few seconds instead of
-# silence. On failure it shows only the last lines of the output and keeps all of it.
-function Busy([string]$exe, [string[]]$arguments) {
+# Busy <program> <arguments> [-Hold]: a long step, shown as a dot every few seconds
+# instead of silence. On failure it shows only the last lines of the output and keeps all
+# of it. With -Hold it shows nothing yet: there is another way to get it, and Held shows
+# the output only if that fails too, so a newcomer never reads an error that did not matter.
+function Busy([string]$exe, [string[]]$arguments, [switch]$Hold) {
   $log = [IO.Path]::GetTempFileName()
   $p = Start-Process -FilePath $exe -ArgumentList $arguments -NoNewWindow -PassThru `
     -RedirectStandardOutput $log -RedirectStandardError "$log.err"
@@ -78,9 +80,16 @@ function Busy([string]$exe, [string[]]$arguments) {
   Write-Host ''
   $p.WaitForExit()
   if ($p.ExitCode -eq 0) { Remove-Item -Force $log, "$log.err" -ErrorAction SilentlyContinue; return $true }
+  $script:heldLog = $log
+  if (-not $Hold) { Held }
+  return $false
+}
+# Held: the last lines of the output Busy kept, and where the whole of it is.
+function Held {
+  if (-not $script:heldLog) { return }
+  $log = $script:heldLog
   Get-Content $log, "$log.err" -ErrorAction SilentlyContinue | Select-Object -Last 12 | ForEach-Object { Write-Host "    | $_" }
   Say "(the whole output is in $log)" "(la salida completa est\u00e1 en $log)"
-  return $false
 }
 
 function Quiet([scriptblock]$b) {
@@ -184,11 +193,14 @@ try {
         Write-Host "  $cmd"; return
       }
       Say "Installing Git for Windows..." "Instalando Git for Windows..."
-      $ok = $winget -and (Busy 'winget' @('install', '--id', 'Git.Git', '-e', '--source', 'winget', '--silent', '--accept-source-agreements', '--accept-package-agreements', '--disable-interactivity'))
+      $script:heldLog = $null
+      $ok = $winget -and (Busy 'winget' @('install', '--id', 'Git.Git', '-e', '--source', 'winget', '--silent', '--accept-source-agreements', '--accept-package-agreements', '--disable-interactivity') -Hold)
       if (-not $ok) {
-        # No winget, or one that cannot reach its source: Git's own release, checked.
-        if ($winget) { Say "winget could not install it; downloading it from Git for Windows' own page instead..." "winget no ha podido instalarlo; lo descargo de la p\u00e1gina de Git for Windows..." }
-        if (-not (GitFromGitHub)) { Fail (Text 'Git was not installed. Install it from https://git-scm.com/download/win, then run this installer again.' 'Git no se ha instalado. Inst\u00e1lalo desde https://git-scm.com/download/win y vuelve a lanzar este instalador.') }
+        # No winget, or one that cannot reach its source (a Windows just installed often
+        # has not set its sources up yet): Git's own release, checked. winget's output is
+        # shown only if this fails too.
+        if ($winget) { Say "Downloading it from Git for Windows' own page instead..." "Lo descargo de la p\u00e1gina de Git for Windows..." }
+        if (-not (GitFromGitHub)) { Held; Fail (Text 'Git was not installed. Install it from https://git-scm.com/download/win, then run this installer again.' 'Git no se ha instalado. Inst\u00e1lalo desde https://git-scm.com/download/win y vuelve a lanzar este instalador.') }
       }
       $env:Path = "$gitCmd;$env:Path"
       if (-not (HasGit)) { Fail (Text 'Git was installed but cannot be found; open a new terminal and run this installer again.' 'Git se instal\u00f3, pero no lo encuentro; abre una terminal nueva y vuelve a lanzar este instalador.') }
@@ -222,12 +234,14 @@ try {
       if (Ask (Text 'Install it too?' '\u00bfLa instalo tambi\u00e9n?')) {
         Say "Installing the desktop app (it can take a couple of minutes). If Windows asks for permission in a window, accept it." `
             "Instalando la app de escritorio (puede tardar un par de minutos). Si Windows te pide permiso en una ventana, ac\u00e9ptalo."
-        $ok = Busy 'winget' @('install', '--id', 'Anthropic.Claude', '-e', '--source', 'winget', '--silent', '--accept-source-agreements', '--accept-package-agreements', '--disable-interactivity')
-        # What counts is whether the app is there, not winget's exit code.
+        $script:heldLog = $null
+        $null = Busy 'winget' @('install', '--id', 'Anthropic.Claude', '-e', '--source', 'winget', '--silent', '--accept-source-agreements', '--accept-package-agreements', '--disable-interactivity') -Hold
+        # What counts is whether the app is there, not winget's exit code: its output is
+        # shown only when the app is not.
         if (DesktopApp) {
           Say "+ Claude desktop app installed" "+ app de escritorio de Claude instalada"
-          if (-not $ok) { Say "(winget reported other problems, shown above; the app is installed)" "(winget avis\u00f3 de otros problemas, arriba; la app est\u00e1 instalada)" }
         } else {
+          Held
           Say "The desktop app was not installed; you can use Claude in the terminal." "La app de escritorio no se ha instalado; puedes usar Claude en la terminal."
         }
       }
