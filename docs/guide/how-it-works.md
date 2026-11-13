@@ -138,4 +138,4 @@ This page used to hold more. Each part now has a page of its own:
 - <a id="the-backup"></a><a id="on-a-new-machine"></a>The backup, and a new machine: [Backup and restore](backup.md).
 - <a id="bring-in-a-memory-you-already-have"></a>Importing an existing memory: [Bring in a memory](import.md).
 - <a id="the-panel"></a>The panel and every page in it: [The panel](panel.md).
-- <a id="update-it"></a><a id="remove-it"></a>Updating and removing it: [Installing](install.md#updating).
+- <a id="update-it"></a><a id="remove-it"></a>Updating and removing it: [Updating and uninstalling](update-and-uninstall.md).

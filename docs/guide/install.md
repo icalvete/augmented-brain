@@ -178,29 +178,10 @@ update it. You can also do it yourself:
 augmented-brain update
 ```
 
-It updates the program and the Claude Code plugin. Before, it checks the installation
-(and shows what fails) and backs up every space that has a backup; if a backup fails,
-it updates nothing (`--force` updates anyway). If no space has a backup, it says that it
-goes ahead with no copy to go back to. After, it restarts the idle sessions that still run the old version, with the same
-conversation, and says which are left and which task each space has active: ask those
-sessions to park their task. Running the install command again also
-updates, without those steps. `augmented-brain update --plugin` updates only the plugin.
-
-It first asks GitHub for the latest version, once: if GitHub does not answer, it says so
-and stops. The download is then tried three times, also through GitHub's API. If it still
-fails, or the program is not the new version afterwards, it says so and ends with an
-error: nothing changed, run it again later.
-
-Then close and open the sessions it could not restart (one that was answering, or on
-Windows those of Claude Desktop). A session that was open keeps the old program until it restarts,
-and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new
-session tell you how many sessions still run the old version.
-
-Your notes and settings stay as they are. Sometimes a new version stores notes in a new
-way. Then the first session moves them to the new way, after keeping a full copy in the
-`migrations/` folder of the configuration, and Claude tells you. An older version never
-breaks notes a newer one wrote: it refuses them and asks to be updated. So update every
-computer you use.
+It backs up your spaces first, updates the program and the Claude Code plugin, and
+restarts the sessions still running the old version. Running the install command again
+also updates. What each step does, and what to do with the sessions it leaves: [Updating
+and uninstalling](update-and-uninstall.md#updating).
 
 ## Uninstalling
 
@@ -208,33 +189,9 @@ computer you use.
 augmented-brain uninstall
 ```
 
-It shows what it will remove and asks. It removes the program, the Claude Code plugin and
-what Claude Code keeps of it (its cache, its data and its server's logs).
-
-- **First, what would keep running without it:** the [remote access](remote.md) services
-  and the sessions opened for tasks (`session start`). Without the plugin they would go
-  on with no guard, and with no program left to take them away. If one cannot be
-  stopped, nothing else is removed: it tells you why, so you can fix it and run it again.
-
-- **Your notes stay** in `~/augmented-brain/`: they are yours. If you install it again,
-  you find everything as it was.
-- **The configuration stays** too. `--config` removes it, with your profile.
-- **To start from scratch**, `--all` also removes every space's notes. First it shows each
-  folder with how many notes it has, and asks. It removes only what augmented brain keeps
-  there (the note folders, `MEMORY.md`, `inbox.md`, `docs/`, `archive/`), and the folder
-  only if nothing else is left. Anything of yours inside a space's folder stays. A notes
-  folder that holds a work folder, your home folder, or a folder with no notes is left
-  whole, and the plan says so. `--config` only removes a folder that holds a
-  `config.toml`. Your backup on GitHub is not deleted: it says which one it is and how to delete
-  it. If a space has no backup, it warns you that its notes will be gone for good. To keep
-  them, answer no and set up the backup first.
-- Claude Code, its desktop app, git and the PATH entry stay: Claude Code lives in that
-  same folder.
-
-On Windows the program file disappears a moment after the command ends, because Windows
-does not let a running program delete itself.
-
-All the commands and their options: [Commands](commands.md).
+It removes the program and the Claude Code plugin, after showing what it will remove and
+asking. Your notes and the configuration stay; `--config` and `--all` go further. What
+each level removes and keeps: [Updating and uninstalling](update-and-uninstall.md#uninstalling).
 
 ## If something goes wrong
 

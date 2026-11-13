@@ -98,7 +98,7 @@ What `augmented-brain update` may end with:
 - **"The backup failed, so nothing was updated"**: fix the backup (see below) and update
   again, or run `augmented-brain update --force`.
 
-See [Installing](install.md#updating).
+See [Updating and uninstalling](update-and-uninstall.md#updating).
 
 ### The install stopped half way
 
@@ -269,7 +269,7 @@ follow.
 ### What if I stop using it?
 
 Your notes stay where they are, as plain files. There is nothing to export. See
-[Installing](install.md#uninstalling).
+[Updating and uninstalling](update-and-uninstall.md#uninstalling).
 
 ## Still stuck
 

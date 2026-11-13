@@ -260,7 +260,7 @@ augmented-brain config history 3</code></pre>
   <pre><code>augmented-brain uninstall</code></pre>
   <p>It shows what it will remove and asks first. The remote access services and the sessions opened for tasks go first; if one cannot be stopped, nothing else is removed.</p>
   <ul><li><code>--config</code>: also remove the configuration and the profile.</li><li><code>--all</code>: start from scratch: also the configuration, the profile and every space's notes. It shows each notes folder with how many notes it has, and warns about those with no backup, which will be gone for good. Only what augmented brain keeps in a notes folder goes; a folder that holds a work folder, or has no notes, stays whole. Your backups are not touched.</li><li><code>--yes</code>: do not ask.</li></ul>
-  <p>See <a href="install.html#uninstalling">Installing</a>.</p>
+  <p>See <a href="update-and-uninstall.html#uninstalling">Updating and uninstalling</a>.</p>
   <h2 id="augmented-brain-mcp">augmented-brain mcp</h2>
   <p>Runs the MCP server: the tools Claude uses to keep your tasks and notes. <strong>Claude Code starts it</strong>, through the plugin; you do not.</p>
   <p>It talks over its input and output. It finds the space again on every call, from the folder Claude works in. The tools are in <a href="mcp-tools.html">MCP tools</a>. It takes no options.</p>

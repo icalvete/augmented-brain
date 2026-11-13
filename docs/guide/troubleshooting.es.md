@@ -105,7 +105,7 @@ Cómo puede acabar `augmented-brain update`:
 - **"La copia de seguridad ha fallado, así que no se ha actualizado nada"**: arregla la
   copia (más abajo) y vuelve a actualizar, o lanza `augmented-brain update --force`.
 
-Lo tienes en [Instalación](install.es.md#actualizar).
+Lo tienes en [Actualizar y desinstalar](update-and-uninstall.es.md#actualizar).
 
 ### La instalación se paró a medias
 
@@ -283,7 +283,7 @@ pueden venir otros asistentes.
 ### ¿Y si dejo de usarlo?
 
 Tus notas se quedan donde están, como ficheros normales. No hay nada que exportar. Lo
-tienes en [Instalación](install.es.md#desinstalar).
+tienes en [Actualizar y desinstalar](update-and-uninstall.es.md#desinstalar).
 
 ## ¿Sigues atascado?
 

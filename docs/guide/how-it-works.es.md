@@ -139,4 +139,4 @@ Esta página tenía más cosas. Ahora cada parte tiene su propia página:
 - <a id="la-copia-de-seguridad"></a><a id="en-una-máquina-nueva"></a>La copia de seguridad, y una máquina nueva: [Copia de seguridad y restauración](backup.es.md).
 - <a id="trae-una-memoria-que-ya-tienes"></a>Importar una memoria que ya tienes: [Trae una memoria](import.es.md).
 - <a id="el-panel"></a>El panel y cada una de sus páginas: [El panel](panel.es.md).
-- <a id="actualizarlo"></a><a id="quitarlo"></a>Actualizarlo y quitarlo: [Instalación](install.es.md#actualizar).
+- <a id="actualizarlo"></a><a id="quitarlo"></a>Actualizarlo y quitarlo: [Actualizar y desinstalar](update-and-uninstall.es.md).

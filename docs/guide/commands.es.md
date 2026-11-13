@@ -714,7 +714,7 @@ quita nada más.
   sin notas, se queda entera. Tus copias de seguridad no se tocan.
 - `--yes`: no pregunta.
 
-Lo tienes en [Instalación](install.es.md#desinstalar).
+Lo tienes en [Actualizar y desinstalar](update-and-uninstall.es.md#desinstalar).
 
 ## augmented-brain mcp
 
