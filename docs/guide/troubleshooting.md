@@ -143,6 +143,10 @@ repository>` there, and then `augmented-brain backup`. See [Backup and restore](
 the header (between the `---` lines) by hand, and run `check` again. Until then, the
 index is not rebuilt, but the tools keep working.
 
+A file that cannot be read (its permissions, or a broken link left by a sync) is listed
+the same way: fix its permissions, or move it out of the notes folder. A file whose name
+starts with a dot, such as the lock file Emacs leaves while you edit a note, is skipped.
+
 ### A repository is "not on this computer"
 
 A task names a repository in `repos:` that is in none of the space's work folders. It

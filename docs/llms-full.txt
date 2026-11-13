@@ -4083,6 +4083,16 @@ renamed or deleted, or this computer never had it) is reported, never fixed by i
 tells the assistant to ask the user where it is now. A closed task is not checked. An
 absolute path, or one starting with `~`, is taken as it is.
 
+Dates (`created`, `updated`, and each `watch` date of a task) are `YYYY-MM-DD`. One
+written another way (`2026-11-3`) keeps the note, but is reported until fixed, since it
+would never come up.
+
+A file whose name starts with `.` is not a note and is never read (an editor's lock
+file, such as Emacs's `.#task-x.md`). A file or folder that cannot be read (its
+permissions, a broken link) is reported and left out; the rest of the space loads as
+usual. So is a folder of a type of note (`tasks/`, `knowledge/`…) that is a link to
+another place: its notes are not read, so put the folder itself there.
+
 ### Task fields
 
 Tasks add the fields that drive the whole workflow:
@@ -4595,6 +4605,10 @@ repository>` there, and then `augmented-brain backup`. See [Backup and restore](
 `augmented-brain check` in a folder of the space lists each problem with its file. Fix
 the header (between the `---` lines) by hand, and run `check` again. Until then, the
 index is not rebuilt, but the tools keep working.
+
+A file that cannot be read (its permissions, or a broken link left by a sync) is listed
+the same way: fix its permissions, or move it out of the notes folder. A file whose name
+starts with a dot, such as the lock file Emacs leaves while you edit a note, is skipped.
 
 ### A repository is "not on this computer"
 

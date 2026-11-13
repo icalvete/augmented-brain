@@ -133,6 +133,7 @@
   <p>If this computer is lost, so are that space's notes. Ask Claude “set up the backup” in a folder of the space. Or run <code>augmented-brain backup setup &lt;address of a private repository&gt;</code> there, and then <code>augmented-brain backup</code>. See <a href="backup.html">Backup and restore</a>.</p>
   <h3 id="a-note-is-not-valid">A note is not valid</h3>
   <p><code>augmented-brain check</code> in a folder of the space lists each problem with its file. Fix the header (between the <code>---</code> lines) by hand, and run <code>check</code> again. Until then, the index is not rebuilt, but the tools keep working.</p>
+  <p>A file that cannot be read (its permissions, or a broken link left by a sync) is listed the same way: fix its permissions, or move it out of the notes folder. A file whose name starts with a dot, such as the lock file Emacs leaves while you edit a note, is skipped.</p>
   <h3 id="a-repository-is-not-on-this-computer">A repository is “not on this computer”</h3>
   <p>A task names a repository in <code>repos:</code> that is in none of the space's work folders. It was moved, renamed or deleted, or this computer never had it. Tell Claude where it is now, or remove it from the task.</p>
   <h3 id="claude-code-keeps-a-second-memory">Claude Code keeps a second memory</h3>

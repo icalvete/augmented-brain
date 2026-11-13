@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **One file that cannot be read no longer takes a space down.** Editing a note in Emacs
+  leaves a lock file (`.#task-x.md`) next to it, and while it was there every tool of the
+  space failed and a new session started with no rules or index. The same happened with
+  a broken link or a file without read permission. Now hidden files are skipped, and a
+  file or folder that cannot be read is listed as a problem (`augmented-brain check`,
+  the panel's Health page) while the rest of the space works. A folder such as `tasks/`
+  that is a link is said too, instead of its notes vanishing, and so is a date in a
+  header that is not `YYYY-MM-DD`. The panel's People page lists the people of the other
+  spaces when one space cannot be opened, and names that space.
 - **Claude gets the common rules whole in every session.** They went at the end of the
   first part of the session start, and in a busy space (long captures from other spaces,
   many dates due) the end was cut: in one real space only 8 % of them arrived. Now they
