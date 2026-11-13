@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 0.26.1-beta
+
+Released 2026-11-14.
+
+- **A session stopped by the usage limit comes back at the first try.** In 0.26.0-beta
+  the watch resumed it a moment too soon: Claude started a copy instead, the watch
+  removed the copy, and the session came back two minutes later, on the next look. Now
+  it waits until Claude has really let the session go.
+
 ## 0.26.0-beta
 
 Released 2026-11-14.
