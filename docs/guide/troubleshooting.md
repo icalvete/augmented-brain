@@ -70,6 +70,15 @@ command, or going back to a version). Until you accept them in the Guard page or
 new session, a commit, push or merge they allow asks first. `doctor` says so. Open the
 panel's Guard page, look at what changed and accept. See [The guard](guard.md#only-you-change-the-guards-lists).
 
+### "Settings this version does not know" in `guard.toml` or `session.toml`
+
+`doctor` and the start of a session say so when one of these files has a line the
+program does not know. The line is ignored: a misspelled `untouchable_repo` protects no
+repository, and a misspelled `memory_trust` leaves Claude saving without asking. The
+message gives the right name when it looks like a typo. Correct the name in the file.
+If a newer version wrote that line, update with `augmented-brain update`. See
+[Configuration](configuration.md#guardtoml).
+
 ### Claude needs root on a machine
 
 Claude gives you the exact command to run yourself. For a migration that needs many
@@ -142,6 +151,11 @@ repository>` there, and then `augmented-brain backup`. See [Backup and restore](
 `augmented-brain check` in a folder of the space lists each problem with its file. Fix
 the header (between the `---` lines) by hand, and run `check` again. Until then, the
 index is not rebuilt, but the tools keep working.
+
+When `check` says a field "is not one this version knows", a newer version, on another
+computer or in a session started after an update, most likely wrote it. Update with
+`augmented-brain update` and do not remove the field. If it is a typo of a field you
+know, fix it.
 
 A file that cannot be read (its permissions, or a broken link left by a sync) is listed
 the same way: fix its permissions, or move it out of the notes folder. A file whose name
