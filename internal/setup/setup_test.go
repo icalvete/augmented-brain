@@ -138,6 +138,11 @@ func TestAddSpaceErrors(t *testing.T) {
 		{Options{Space: "x", WorkFolder: "~/m/work/MEMORY.md", Memory: "~/m/x"}, "is a file"},
 		{Options{Space: "x", WorkFolder: "~/work/sub", Memory: "~/m/x"}, "already belongs"},
 		{Options{Space: "x", WorkFolder: "~", Memory: "~/m/work"}, "memory folder"},
+		// Notes around the work: uninstall --all would have taken the work with them.
+		{Options{Space: "x", WorkFolder: "~/proj", Memory: "~/proj"}, "holds the work folder"},
+		{Options{Space: "x", WorkFolder: "~/code/proj", Memory: "~/code"}, "holds the work folder"},
+		{Options{Space: "x", WorkFolder: "~/proj", Memory: "~"}, "holds the work folder"},
+		{Options{Space: "x", WorkFolder: "~/proj", Memory: "~/work"}, "a work folder of space"},
 	}
 	for _, c := range cases {
 		_, err := AddSpace(cfgDir, c.o)

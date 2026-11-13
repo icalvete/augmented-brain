@@ -2,6 +2,15 @@
 
 ## Sin publicar
 
+- **`uninstall` quita solo lo suyo, y todo lo suyo.** Con `--all`, una carpeta de notas
+  que era también la carpeta de trabajo se borraba entera, con los repositorios. Ahora
+  solo se van las notas, y la carpeta solo si no queda nada más; una carpeta de notas que
+  contiene una carpeta de trabajo, tu carpeta personal o una carpeta sin notas se queda
+  entera, y el plan lo dice. `--config` solo borra una carpeta con un `config.toml`. Y
+  `uninstall` para primero el acceso remoto y las sesiones abiertas para tareas: antes
+  seguían funcionando sin guardia y sin el programa que sabe quitarlos. Al crear un
+  espacio, ya no se acepta una carpeta de notas que contenga su carpeta de trabajo.
+
 - **El guardia vuelve a tratar `doas` como root, como dice su guía.** `doas id` pasaba
   como si fuera solo `id`. Ahora `doas`, como `sudo`, se para salvo que ejecute el
   comando como otro usuario (`doas -u deploy …`), y una prueba vigila que ningún otro

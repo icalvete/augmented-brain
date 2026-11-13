@@ -201,6 +201,24 @@ try:
     report("…and the service manager forgot it", not already_there(), "")
     code, out = ab("remote", "status")
     report("remote status after uninstall: not set up", code == 0 and "not set up" in out, out.strip())
+
+    # Uninstalling augmented brain takes the remote access with it: left behind, it
+    # would keep running with no guard and no program to take it away.
+    code, out = ab("remote", "install")
+    installed = True
+    report("remote install, again", code == 0 and os.path.exists(unit_file()), out.strip()[-300:])
+    deadline = time.time() + 120
+    while time.time() < deadline and not fake_pids():
+        time.sleep(3)
+    before = fake_pids()
+    code, out = ab("uninstall", "--yes")
+    installed = code != 0
+    report("uninstall", code == 0 and "remote access" in out, out.strip()[-300:])
+    report("…removed the service", not os.path.exists(unit_file()), unit_file())
+    time.sleep(3)
+    left = [p for p in before if alive(p)]
+    report("…and the claude it ran is gone", bool(before) and not left, (before, left))
+    report("…and the service manager forgot it", not already_there(), "")
 finally:
     if installed:
         ab("remote", "uninstall")

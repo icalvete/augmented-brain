@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **`uninstall` removes only what is its own, and everything that is.** With `--all`, a
+  notes folder that was also the work folder used to go whole, repositories and all. Now
+  only the notes go, and the folder only if nothing else is left; a notes folder that
+  holds a work folder, your home folder or a folder with no notes stays whole, and the
+  plan says so. `--config` only removes a folder with a `config.toml`. And `uninstall`
+  now stops the remote access and the sessions opened for tasks first: before, they kept
+  running with no guard and no program to take them away. Setting up a space now
+  refuses a notes folder that holds its work folder.
+
 - **The guard treats `doas` as root again, as its guide says.** `doas id` went through
   as if it were just `id`. Now `doas`, like `sudo`, is stopped unless it runs the
   command as another user (`doas -u deploy …`), and a test makes sure no other command

@@ -187,12 +187,22 @@ augmented-brain uninstall
 Te enseña lo que va a quitar y te pregunta. Quita el programa, el plugin de Claude Code y
 lo que Claude Code guarda de él (su caché, sus datos y los registros de su servidor).
 
+- **Primero, lo que seguiría funcionando sin él:** los servicios del
+  [acceso remoto](remote.es.md) y las sesiones abiertas para tareas (`session start`). Sin
+  el plugin seguirían sin guardia, y sin el programa que sabe quitarlos. Si alguno no se
+  puede parar, no quita nada más: te dice por qué, para que lo arregles y lo vuelvas a
+  lanzar.
+
 - **Tus notas se quedan** en `~/augmented-brain/`: son tuyas. Si vuelves a instalarlo,
   lo encuentras todo como estaba.
 - **La configuración también se queda.** `--config` la borra, con tu perfil.
 - **Para empezar de cero**, `--all` borra además las notas de cada espacio. Antes te
-  enseña cada carpeta con cuántas notas tiene, y te pregunta. Lo que tengas tuyo dentro
-  de la carpeta de un espacio se queda. Tu copia de seguridad en GitHub no se borra: te
+  enseña cada carpeta con cuántas notas tiene, y te pregunta. Solo borra lo que augmented
+  brain guarda allí (las carpetas de notas, `MEMORY.md`, `inbox.md`, `docs/`, `archive/`),
+  y la carpeta solo si no queda nada más. Lo que tengas tuyo dentro de la carpeta de un
+  espacio se queda. Una carpeta de notas que contiene una carpeta de trabajo, tu carpeta
+  personal o una carpeta sin notas se deja entera, y el plan lo dice. `--config` solo
+  borra una carpeta que tenga un `config.toml`. Tu copia de seguridad en GitHub no se borra: te
   dice cuál es y cómo borrarla. Si un espacio no tiene copia de seguridad, te avisa de que
   sus notas se perderán para siempre. Para conservarlas, responde que no y configura antes
   la copia.
