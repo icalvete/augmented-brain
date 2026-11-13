@@ -7,6 +7,30 @@ var hookMessages = map[string]msg{
 		en: "augmented brain: since this session last looked, these tasks changed outside it (another session, the panel or a hand edit). What you read about them earlier (the index at the start, an earlier answer) is out of date: before you state their status, say they are pending or done, or act on them, read them with task_get. Mention it to the user only when it bears on what you are doing.\n",
 		es: "augmented brain: desde la última vez que esta sesión miró, estas tareas han cambiado fuera de ella (otra sesión, el panel o una edición a mano). Lo que leíste de ellas antes (el índice del inicio, una respuesta anterior) está desfasado: antes de decir su estado, darlas por pendientes o hechas, o actuar sobre ellas, léelas con task_get. Coméntaselo al usuario solo si afecta a lo que estás haciendo.\n",
 	},
+	"hook.guardnotice": {
+		en: "augmented brain · the guard's lists:\n%s\nIf you did not do it, look at the Guard page of the panel.",
+		es: "augmented brain · las listas del guardia:\n%s\nSi no has sido tú, mira la página Guardia del panel.",
+	},
+	"hook.seal.startnotice": {
+		en: "a session started with lists that changed outside the panel since the last one; they are taken as the ones you have seen",
+		es: "una sesión ha empezado con listas que cambiaron fuera del panel desde la anterior; se toman como las que has visto",
+	},
+	"hook.seal.taken": {
+		en: "The guard's lists (repositories it allows, asks about or never allows, root exceptions, production profiles, untouchable hosts) are not the ones saved when a session last started, and the panel did not change them. If the user did not do it, say so.",
+		es: "Las listas del guardia (repositorios que permite, por los que pregunta o que nunca permite, excepciones de root, perfiles de producción, hosts intocables) no son las que se guardaron cuando empezó la última sesión, y no las cambió el panel. Si no fue el usuario, dilo.",
+	},
+	"hook.seal.kept": {
+		en: "The guard's lists (repositories, root exceptions, production profiles, untouchable hosts) are not the ones the user last saw, and the panel did not change them. Until the user accepts them on the panel's Guard page, a commit, push or merge they would let through asks first. If the user did not do it, say so.",
+		es: "Las listas del guardia (repositorios, excepciones de root, perfiles de producción, hosts intocables) no son las que el usuario vio por última vez, y no las cambió el panel. Hasta que las acepte en la página Guardia del panel, un commit, push o merge que dejarían pasar pregunta antes. Si no fue el usuario, dilo.",
+	},
+	"hook.seal.unread": {
+		en: "The record of the guard's lists the user last saw cannot be read (%v): until it can, a commit, push or merge the lists would let through asks first. `augmented-brain doctor` shows the problem.",
+		es: "No se puede leer el registro de las listas del guardia que el usuario vio por última vez (%v): hasta que se pueda, un commit, push o merge que las listas dejarían pasar pregunta antes. `augmented-brain doctor` enseña el problema.",
+	},
+	"hook.seal.unwritten": {
+		en: "The guard's lists changed outside the panel since the last session, and they could not be saved as the ones the user has seen (%v): a commit, push or merge they would let through asks first.",
+		es: "Las listas del guardia cambiaron fuera del panel desde la última sesión, y no se han podido guardar como las que el usuario ha visto (%v): un commit, push o merge que dejarían pasar pregunta antes.",
+	},
 	"fresh.changed": {
 		en: "- %s (%s): now %s, waits on %s, next: %s\n",
 		es: "- %s (%s): ahora %s, espera a %s, siguiente: %s\n",

@@ -133,15 +133,22 @@ Hace tres cosas para que las listas sigan siendo tuyas:
 - **Pregunta antes de escribir en los ficheros del guardia** (`config.toml`,
   `guard.toml`, `secrets.toml`, `remote.toml`, `session.toml` y los ajustes de Claude Code).
 - **Deniega llegar al panel.** Leer `panel.json` (la llave del panel) con una herramienta
-  o un comando, y llamar a una página del panel desde un comando, se deniega: la página
-  Guardia del panel es como tú cambias las listas, y funciona con esa llave.
+  o un comando, y llamar a una página del panel desde un comando, se deniega, se escriba
+  como se escriba la dirección: la página Guardia del panel es como tú cambias las
+  listas, y funciona con esa llave. `augmented-brain panel` tampoco escribe nunca la
+  llave: escribe un enlace que sirve una vez, y lanzado por Claude no escribe ninguno.
 - **Se da cuenta de un cambio que no vio.** El guardia guarda un sello de sus listas: se
-  toma al empezar una sesión y al guardar en el panel. Si las listas difieren del sello,
-  algo más las cambió, y un commit, push o merge que las listas dejarían pasar pregunta
-  antes, y la página Guardia y `doctor` lo dicen, hasta que las aceptes en la página
-  Guardia o empiece una sesión nueva. Una sesión nueva toma las listas como están, y
-  Claude te dice en su primera respuesta que han cambiado. La página Guardia enseña qué
-  se ha añadido y quitado desde entonces.
+  toma cuando empiezas una sesión y al guardar en el panel. Si las listas difieren del
+  sello, algo más las cambió, y un commit, push o merge que las listas dejarían pasar
+  pregunta antes, y la página Guardia y `doctor` lo dicen, hasta que las aceptes en la
+  página Guardia o empieces una sesión nueva. Una sesión nueva toma las listas como
+  están, y el propio Claude Code te lo dice. Cuando Claude Code compacta una
+  conversación, o después de `/clear`, el sello se queda: eso no eres tú mirando. Si el
+  sello no se puede leer, el guardia también pregunta, y `doctor` dice por qué. La
+  página Guardia enseña qué se ha añadido y quitado desde entonces.
+- **Te dice lo que cambió el panel.** Un cambio de las listas hecho en el panel, o unas
+  listas aceptadas allí, te llega como una línea del propio Claude Code, no de Claude,
+  después de la siguiente respuesta o mensaje en tus sesiones abiertas.
 
 Lo que esto no para: un script que Claude escriba en línea (`python -c`, un heredoc)
 todavía puede editar los ficheros, como puede hacer cualquier cosa que tu cuenta pueda.

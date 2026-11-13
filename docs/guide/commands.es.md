@@ -240,7 +240,8 @@ augmented-brain panel
 
 Arranca el panel por detrás, o encuentra el que ya está en marcha, y abre el navegador en
 Hoy, con el espacio de esta carpeta. Vuelve enseguida. El panel se para solo después de
-30 minutos sin usarlo.
+30 minutos sin usarlo. La dirección que escribe abre el panel una vez, en los próximos 2
+minutos; lanzado por Claude, con el navegador abierto, no escribe ninguna.
 
 - `--no-browser`: solo escribe la dirección, sin abrir el navegador. `AB_NO_BROWSER=1`
   hace lo mismo.
@@ -260,7 +261,7 @@ augmented-brain panel remote
 Arranca el panel y lo publica solo en tu red de Tailscale. Si el panel ya está abierto,
 ese mismo panel responde también por la red, así que las páginas que tienes abiertas
 siguen funcionando. Escribe la dirección y un código QR para abrirla desde el móvil. Solo
-pueden abrirla tus dispositivos, con la cuenta a la que pertenece este ordenador; la dirección deja de funcionar cuando el panel se para.
+pueden abrirla tus dispositivos, con la cuenta a la que pertenece este ordenador; la dirección lo abre una vez, en los próximos 10 minutos, y las páginas dejan de funcionar cuando el panel se para.
 Lo que falte (el propio Tailscale, HTTPS en tu red, dejar publicar a tu usuario) lo
 explica, con el paso que hay que dar: nunca instala ni cambia nada de Tailscale por ti.
 Lo tienes en [El panel desde otro dispositivo](panel-remote.es.md).

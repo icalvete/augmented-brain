@@ -167,9 +167,11 @@ the notes yours only.
 ### The panel does not open, or its address stopped working
 
 On a computer with no screen, `augmented-brain panel` prints the address to open
-yourself. The address carries a key that changes each time the panel starts, and the
-panel stops after 30 minutes without use. Run `augmented-brain panel` again for a new
-address.
+yourself. That address works once, within 2 minutes. The pages it opens carry a key
+that changes each time the panel starts, and the panel stops after 30 minutes without
+use. Run `augmented-brain panel` again for a new address. If your browser says "This
+link was already used" and you did not open it, something else did: look at the
+panel's Guard page.
 
 ### The panel from another device does not open
 

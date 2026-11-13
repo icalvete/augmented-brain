@@ -9,11 +9,13 @@ their spaces.
 1. If the user wrote `stop` ($ARGUMENTS), run `augmented-brain panel stop` with the Bash
    tool and tell them the panel is stopped. Nothing else.
 2. Otherwise run `augmented-brain panel` with the Bash tool. It starts the panel (or finds
-   the one already running), tries to open the browser, prints the address and returns
-   at once. If the command is not found, run `~/.local/bin/augmented-brain panel`.
-3. Give the user the address it printed, whole, as a link they can click: it carries the
-   key that lets their browser in, so do not shorten it. Say in one or two
-   short lines that it only works on this computer and stops by itself after 30
-   minutes without use.
+   the one already running), opens it in the browser and returns at once. If the command
+   is not found, run `~/.local/bin/augmented-brain panel`.
+3. If it says the panel is open in the browser, tell the user so. If it printed an
+   address instead (the browser could not open), give it to them whole, as a link they
+   can click, and say it opens the panel once, within 2 minutes. Either way, say in one
+   short line that it only works on this computer and stops by itself after 30 minutes
+   without use.
 
-Answer in the user's language. Do not open, fetch or test the address yourself.
+Answer in the user's language. Never open, fetch or test the address yourself: it
+works once, and if you used it, the user's browser would say it was already used.

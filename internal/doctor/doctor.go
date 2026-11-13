@@ -402,7 +402,9 @@ func guardLists(c *config.Config, l string) []Check {
 			out = append(out, Check{Warning, i18n.T(l, "doctor.untouchable.both", paths.Tilde(r)), i18n.T(l, "doctor.untouchable.both.fix")})
 		}
 	}
-	if seal := state.ReadSeal(c.Dir); seal != "" && seal != c.GuardFingerprint(g) {
+	if seal, err := state.ReadSeal(c.Dir); err != nil {
+		out = append(out, Check{Warning, i18n.T(l, "doctor.sealunread", err), i18n.T(l, "doctor.sealunread.fix")})
+	} else if seal != "" && seal != c.GuardFingerprint(g) {
 		out = append(out, Check{Warning, i18n.T(l, "doctor.guardchanged"), i18n.T(l, "doctor.guardchanged.fix")})
 	}
 	return out

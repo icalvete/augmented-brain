@@ -75,7 +75,7 @@ func (p Policy) merge(name, what string, env map[string]string, args []string) D
 		return Decision{Ask, i18n.T(p.Lang, "guard.guardfile", name+" "+what, paths.Tilde(dir), p.GuardProblem)}
 	}
 	if verdict == Allow && p.ConfigChanged {
-		return Decision{Ask, i18n.T(p.Lang, "guard.changed", name+" "+what, paths.Tilde(dir), p.facts(dir))}
+		return p.changedAsk(name+" "+what, dir)
 	}
 	if verdict == Ask {
 		return Decision{Ask, i18n.T(p.Lang, "guard.merge.ask", name+" "+what, paths.Tilde(dir), p.facts(dir))}
@@ -396,4 +396,13 @@ func (p Policy) facts(dir string) string {
 		remotes = []string{i18n.T(p.Lang, "guard.facts.noremote")}
 	}
 	return i18n.T(p.Lang, "guard.facts", branch, strings.Join(remotes, ", "))
+}
+
+// changedAsk is the question for a commit, push or merge the lists would let through
+// while they are not the ones the user last saw, or the guard cannot tell (SealProblem).
+func (p Policy) changedAsk(what, dir string) Decision {
+	if p.SealProblem != "" {
+		return Decision{Ask, i18n.T(p.Lang, "guard.sealunread", what, paths.Tilde(dir), p.SealProblem, p.facts(dir))}
+	}
+	return Decision{Ask, i18n.T(p.Lang, "guard.changed", what, paths.Tilde(dir), p.facts(dir))}
 }

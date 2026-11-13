@@ -117,6 +117,10 @@ var guardMessages = map[string]msg{
 		en: "`%s` in %s would go through, but the guard's lists (repositories, root exceptions, profiles, hosts) are not the ones the user last saw: something changed them outside the panel. Say so, show what changed if you know, and ask the user to confirm. %s",
 		es: "`%s` en %s pasaría, pero las listas del guardia (repositorios, excepciones de root, perfiles, hosts) no son las que el usuario vio por última vez: algo las cambió fuera del panel. Dilo, enseña qué cambió si lo sabes y pide al usuario que lo confirme. %s",
 	},
+	"guard.sealunread": {
+		en: "`%s` in %s would go through, but the record of the guard's lists the user last saw cannot be read (%s), so the guard cannot tell whether something changed them. Say so and ask the user to confirm; `augmented-brain doctor` shows the problem. %s",
+		es: "`%s` en %s pasaría, pero no se puede leer el registro de las listas del guardia que el usuario vio por última vez (%s), así que el guardia no sabe si algo las cambió. Dilo y pide al usuario que lo confirme; `augmented-brain doctor` enseña el problema. %s",
+	},
 	"guard.facts": {
 		en: "Branch: %s. Remote: %s.",
 		es: "Rama: %s. Remoto: %s.",

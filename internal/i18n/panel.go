@@ -326,6 +326,34 @@ var panelMessages = map[string]msg{
 		en: "Careful: until that date, on that machine, the assistant may run commands as root, the most powerful user, after you confirm each one. Keep the date close.",
 		es: "Cuidado: hasta esa fecha, en esa máquina, el asistente podrá lanzar comandos como root, el usuario con más poder, después de que confirmes cada uno. Pon una fecha cercana.",
 	},
+	"panel.ticket.used": {
+		en: "This link was already used",
+		es: "Este enlace ya se usó",
+	},
+	"panel.ticket.used.text": {
+		en: "Each link to the panel opens it once. If you did not open it yourself a moment ago, something else did: tell the assistant to stop, and look at the Guard page. To open the panel again, run /brain:panel.",
+		es: "Cada enlace al panel lo abre una sola vez. Si no lo has abierto tú hace un momento, lo ha abierto otra cosa: dile al asistente que pare y mira la página Guardia. Para abrir el panel otra vez, usa /brain:panel.",
+	},
+	"panel.ticket.expired": {
+		en: "This link has run out",
+		es: "Este enlace ha caducado",
+	},
+	"panel.ticket.expired.text": {
+		en: "A link to the panel works for a couple of minutes (ten through your network). To open the panel again, run /brain:panel.",
+		es: "Un enlace al panel sirve un par de minutos (diez a través de tu red). Para abrir el panel otra vez, usa /brain:panel.",
+	},
+	"panel.guard.notice.changed": {
+		en: "changed in the panel: %s",
+		es: "cambiadas en el panel: %s",
+	},
+	"panel.guard.notice.accepted": {
+		en: "accepted in the panel as they are: %s",
+		es: "aceptadas en el panel tal como están: %s",
+	},
+	"panel.guard.notice.unknown": {
+		en: "what changed is not known",
+		es: "no se sabe qué cambió",
+	},
 	"panel.guard.accept": {
 		en: "I have seen them, accept",
 		es: "Las he visto, aceptar",
@@ -1582,6 +1610,18 @@ var panelMessages = map[string]msg{
 		en: "It works only on this computer, and stops by itself after 30 minutes without use. To stop it now: augmented-brain panel stop",
 		es: "Solo funciona en este ordenador, y se para solo tras 30 minutos sin uso. Para pararlo ya: augmented-brain panel stop",
 	},
+	"panel.cli.opened": {
+		en: "The panel is open in your browser.",
+		es: "El panel está abierto en tu navegador.",
+	},
+	"panel.cli.opened.running": {
+		en: "The panel was already running: it is open in your browser.",
+		es: "El panel ya estaba en marcha: está abierto en tu navegador.",
+	},
+	"panel.cli.once": {
+		en: "That address opens the panel once, within 2 minutes. To open it again, run this command again.",
+		es: "Esa dirección abre el panel una vez, en los próximos 2 minutos. Para abrirlo otra vez, vuelve a lanzar este comando.",
+	},
 	"panel.cli.nobrowser": {
 		en: "Open that address in your browser.",
 		es: "Abre esa dirección en tu navegador.",
@@ -1604,8 +1644,8 @@ var panelMessages = map[string]msg{
 		es: "En el móvil, apunta la cámara a este código:",
 	},
 	"panel.remote.idle": {
-		en: "Only your devices in your Tailscale network, signed in with your account (%s), can open it. The address stops working when the panel stops: after 30 minutes without use, or with augmented-brain panel stop.",
-		es: "Solo pueden abrirla tus dispositivos de tu red de Tailscale, con tu cuenta (%s). La dirección deja de funcionar cuando el panel se para: tras 30 minutos sin uso, o con augmented-brain panel stop.",
+		en: "Only your devices in your Tailscale network, signed in with your account (%s), can open it. The address opens the panel once, within 10 minutes; the page it opens works until the panel stops: after 30 minutes without use, or with augmented-brain panel stop.",
+		es: "Solo pueden abrirla tus dispositivos de tu red de Tailscale, con tu cuenta (%s). La dirección abre el panel una vez, en los próximos 10 minutos; la página que abre funciona hasta que el panel se para: tras 30 minutos sin uso, o con augmented-brain panel stop.",
 	},
 	"panel.remote.missing": {
 		en: "To open the panel from your other devices, augmented brain uses Tailscale, a free app that joins your devices in a private network of their own. It is not installed here.\nInstall it on this computer and on the device you want to use (the same account on both): https://tailscale.com/download\nThen run augmented-brain panel remote again.",

@@ -58,6 +58,8 @@ type Server struct {
 	publish func() (*Remote, error)
 	pid     int
 	started time.Time
+	// tickets are the one-use addresses the command opens (ticket.go).
+	tickets tickets
 }
 
 // Remote is the panel published to the user's own Tailscale network (`panel remote`).
@@ -341,6 +343,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if !remote && r.URL.Path == "/ping" && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
 		s.ping(w, r)
+		return
+	}
+	// A ticket needs no session: it is how a browser gets one.
+	if strings.HasPrefix(r.URL.Path, "/t/") && (r.Method == http.MethodGet || r.Method == http.MethodHead) {
+		s.redeem(w, r)
 		return
 	}
 	r, browser, bare := s.inSession(r)

@@ -100,33 +100,60 @@ func cmdPanel(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
+	wd, _ := os.Getwd()
+	page := panelPage(c, wd)
 	info, started, err := panel.Start(dir, self)
 	if err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
-	wd, _ := os.Getwd()
-	address := panelAddress(c, info.URL(), wd)
-	if started {
-		fmt.Fprintln(out, i18n.T(l, "panel.cli.started", address))
-	} else {
-		fmt.Fprintln(out, i18n.T(l, "panel.cli.running", address))
+	t, err := panel.Ticket(info, page, false)
+	if err != nil {
+		// A panel of an earlier program, without tickets: start this one instead.
+		if _, err = panel.Stop(dir); err == nil {
+			if info, started, err = panel.Start(dir, self); err == nil {
+				t, err = panel.Ticket(info, page, false)
+			}
+		}
+		if err != nil {
+			fmt.Fprintln(errOut, err)
+			return 1
+		}
 	}
-	if noBrowser || panel.OpenBrowser(address) != nil {
-		fmt.Fprintln(out, i18n.T(l, "panel.cli.nobrowser"))
+	address := info.TicketURL(t)
+	opened := !noBrowser && panel.OpenBrowser(address) == nil
+	switch {
+	case opened && os.Getenv("CLAUDECODE") != "":
+		// Run by the assistant (/brain:panel): the browser has the link, and the
+		// assistant does not need it. It never sees an address that opens the panel.
+		if started {
+			fmt.Fprintln(out, i18n.T(l, "panel.cli.opened"))
+		} else {
+			fmt.Fprintln(out, i18n.T(l, "panel.cli.opened.running"))
+		}
+	default:
+		if started {
+			fmt.Fprintln(out, i18n.T(l, "panel.cli.started", address))
+		} else {
+			fmt.Fprintln(out, i18n.T(l, "panel.cli.running", address))
+		}
+		if !opened {
+			fmt.Fprintln(out, i18n.T(l, "panel.cli.nobrowser"))
+		}
+		fmt.Fprintln(out, i18n.T(l, "panel.cli.once"))
 	}
 	fmt.Fprintln(out, i18n.T(l, "panel.cli.idle"))
 	return 0
 }
 
-// panelAddress is the page to open: Today, on the space of the folder the panel was
-// asked for in (so /brain:panel in a work session shows work), or else the panel's
-// first page, which shows the default space.
-func panelAddress(c *config.Config, base, wd string) string {
+// panelPage is the page to open: Today, on the space of the folder the panel was asked
+// for in (so /brain:panel in a work session shows work), or else the panel's first
+// page, which shows the default space.
+func panelPage(c *config.Config, wd string) string {
 	if s := c.SpaceFor(wd); s != nil {
-		return base + "today?s=" + url.QueryEscape(s.Name)
+		return "today?s=" + url.QueryEscape(s.Name)
 	}
-	return base
+	return ""
 }
 
 // panelRemote is `panel remote`: the panel, also published to the user's own Tailscale
@@ -159,6 +186,22 @@ func panelRemote(c *config.Config, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
+	wd, _ := os.Getwd()
+	page := panelPage(c, wd)
+	t, err := panel.Ticket(info, page, true)
+	if err != nil {
+		// A panel of an earlier program, without tickets: start this one instead.
+		if _, err = panel.Stop(c.Dir); err == nil {
+			if info, _, err = panel.GoRemote(c.Dir, self); err == nil {
+				how = panel.Restarted
+				t, err = panel.Ticket(info, page, true)
+			}
+		}
+		if err != nil {
+			fmt.Fprintln(errOut, err)
+			return 1
+		}
+	}
 	if err := tn.Serve(info.Port); err != nil {
 		if how == panel.Switched {
 			// The panel was open and went remote for this: it goes back to local only,
@@ -172,8 +215,7 @@ func panelRemote(c *config.Config, out, errOut io.Writer) int {
 		fmt.Fprintln(out, i18n.T(l, "panel.remote.restarted"))
 	}
 	_ = tailnet.MarkUsed(c.Dir)
-	wd, _ := os.Getwd()
-	address := panelAddress(c, info.RemoteURL(), wd)
+	address := info.RemoteTicketURL(t)
 	fmt.Fprintln(out, i18n.T(l, "panel.remote.open", address))
 	if code := qrText(address); code != "" {
 		fmt.Fprintln(out, "\n"+i18n.T(l, "panel.remote.qr"))

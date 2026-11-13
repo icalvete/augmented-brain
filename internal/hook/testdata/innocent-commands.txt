@@ -396,3 +396,13 @@ aws --version
 aws s3 ls --profile demo-dev
 ----
 sudo -u www-data ls /var/www
+## ---- a * and the configuration folder's name, without reading the folder (G-15)
+----
+echo "a * b" && echo AB_CONFIG_DIR
+----
+AB_CONFIG_DIR=/tmp/x augmented-brain doctor && ls *
+----
+cat <<'EOF' > /tmp/prueba.sh
+export AB_CONFIG_DIR=/tmp/x
+echo $((2 * 3))
+EOF

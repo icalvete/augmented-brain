@@ -129,15 +129,22 @@ three things so that the lists stay yours:
 - **It asks before a write to the guard's files** (`config.toml`, `guard.toml`,
   `secrets.toml`, `remote.toml`, `session.toml`, and Claude Code's settings).
 - **It denies reaching the panel.** Reading `panel.json` (the panel's key) with a tool
-  or a command, and calling a panel page from a command, are denied: the panel's Guard
-  page is how you change the lists, and it works with that key.
+  or a command, and calling a panel page from a command, are denied, however the
+  address is written: the panel's Guard page is how you change the lists, and it works
+  with that key. `augmented-brain panel` never prints the key either: it prints a link
+  that works once, and run by Claude it prints none.
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
-  when a session starts and when you save in the panel. If the lists differ from the
+  when you start a session and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
   let through asks first, and the Guard page and `doctor` say so, until you accept them
-  in the Guard page or a new session starts. A new session takes the lists as they are,
-  and Claude tells you in its first answer that they changed. The Guard page shows what
-  was added and removed since then.
+  in the Guard page or you start a new session. A new session takes the lists as they
+  are, and Claude Code tells you so itself. When Claude Code compacts a conversation, or
+  after `/clear`, the seal stays: that is not you looking. If the seal cannot be read,
+  the guard asks too, and `doctor` says why. The Guard page shows what was added and
+  removed since then.
+- **It tells you what the panel changed.** A change to the lists made in the panel, or
+  lists accepted there, reaches you as a line from Claude Code itself, not from Claude,
+  after the next answer or message in your open sessions.
 
 What this does not stop: a script that Claude writes in line (`python -c`, a heredoc) can
 still edit the files, as it can anything your account can. The guard then notices the

@@ -97,7 +97,7 @@ func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
 	for _, f := range []string{config.FileName, config.GuardFile, config.SecretsFile, config.SessionFile, "remote.toml", "panel.json"} {
 		d.Protected = append(d.Protected, paths.Tilde(filepath.Join(v.c.Dir, f)))
 	}
-	if seal := state.ReadSeal(v.c.Dir); seal != "" && seal != v.c.GuardFingerprint(g) {
+	if seal, err := state.ReadSeal(v.c.Dir); err != nil || (seal != "" && seal != v.c.GuardFingerprint(g)) {
 		d.Changed = true
 		if sc, sg, ok := sealedVersion(v.c.Dir, seal); ok {
 			d.Known = true
@@ -210,8 +210,9 @@ func (v *view) sealed(change func(g *config.Guard) error) error {
 	if err != nil {
 		return err
 	}
-	seal := state.ReadSeal(v.c.Dir)
-	clean := seal == "" || seal == v.c.GuardFingerprint(g)
+	seal, err := state.ReadSeal(v.c.Dir)
+	clean := err == nil && (seal == "" || seal == v.c.GuardFingerprint(g))
+	before := guardListsOf(v.c, g)
 	if err := change(&g); err != nil {
 		return err
 	}
@@ -224,10 +225,30 @@ func (v *view) sealed(change func(g *config.Guard) error) error {
 		return err
 	}
 	v.c = c
+	if ch := listChanges(v, before, guardListsOf(c, g2)); len(ch) > 0 {
+		_ = state.AddGuardNotice(v.c.Dir, v.t("guard.notice.changed", changesText(ch)), time.Now())
+	}
 	if clean {
 		return state.WriteSeal(v.c.Dir, c.GuardFingerprint(g2))
 	}
 	return nil
+}
+
+// changesText is a list's changes in one line, for the notice the next hook shows the
+// user: "Allowed repositories: +~/work/core; Untouchable hosts: -db01".
+func changesText(chs []listChange) string {
+	var parts []string
+	for _, ch := range chs {
+		var items []string
+		for _, a := range ch.Added {
+			items = append(items, "+"+a)
+		}
+		for _, r := range ch.Removed {
+			items = append(items, "-"+r)
+		}
+		parts = append(parts, ch.List+": "+strings.Join(items, ", "))
+	}
+	return strings.Join(parts, "; ")
 }
 
 func tildeEach(list []string) []string {
@@ -372,7 +393,19 @@ func (s *Server) guardAccept(v *view, r *http.Request) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return "/guard", state.WriteSeal(v.c.Dir, v.c.GuardFingerprint(g))
+	what := v.t("guard.notice.unknown")
+	if seal, err := state.ReadSeal(v.c.Dir); err == nil && seal != "" {
+		if sc, sg, ok := sealedVersion(v.c.Dir, seal); ok {
+			if ch := listChanges(v, guardListsOf(sc, sg), guardListsOf(v.c, g)); len(ch) > 0 {
+				what = changesText(ch)
+			}
+		}
+	}
+	if err := state.WriteSeal(v.c.Dir, v.c.GuardFingerprint(g)); err != nil {
+		return "", err
+	}
+	_ = state.AddGuardNotice(v.c.Dir, v.t("guard.notice.accepted", what), time.Now())
+	return "/guard", nil
 }
 
 // guardModel saves the preferred model of session.toml (empty: no check).

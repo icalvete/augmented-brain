@@ -10,7 +10,10 @@ augmented-brain panel
 ```
 
 It opens your browser on **Today**, with the space of the folder you ran it in. If it
-cannot (on a computer with no screen, say), it prints an address to open yourself.
+cannot (on a computer with no screen, say), it prints an address to open yourself. That
+address opens the panel **once**, within 2 minutes; run the command again for another.
+When Claude runs it for you, it opens the browser and Claude never sees an address that
+opens the panel.
 
 The panel changes your notes the same way Claude does, with the same program, and they
 wait for each other: you can have both open at once.
@@ -167,9 +170,12 @@ saw (something changed them outside this page), a notice says so and shows what 
 what was added and what was removed, list by list, compared with the lists you last
 accepted (when those are no longer among the kept versions, it says so). Then an accept
 button;
-until then (or until a new session starts) a commit, push or merge that the lists allow
-asks first. Claude cannot open this page:
-the guard denies it the panel's key. See [The guard](guard.md).
+until then (or until you start a new session) a commit, push or merge that the lists allow
+asks first. Whatever you change or accept here, Claude Code itself tells you in your
+open sessions, after the next answer or message, in a line that starts with
+"augmented brain · the guard's lists". If you did not do it, look here. Claude cannot
+open this page: it never sees the panel's address, and the guard denies it the panel's
+key. See [The guard](guard.md).
 
 ## Versions
 
@@ -248,10 +254,12 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
 - It works **only on this computer**. Other machines on your network cannot reach it.
   To open it from your phone or another computer of yours, use
   `augmented-brain panel remote`: see [The panel from another device](panel-remote.md).
-- The address carries a **key**, made new each time the panel starts. Without it the
-  panel answers nothing, so another program or web page on your computer cannot use it.
-  Treat the address like a password: do not share it. It stops working when the panel
-  stops.
+- The address you get opens it **once**. The panel then takes your browser to its
+  pages, whose address carries a **key**, made new each time the panel starts. Without
+  it the panel answers nothing, so another program or web page on your computer cannot
+  use it. Treat the address of the pages like a password: do not share it. It stops
+  working when the panel stops. If something else used your link first, your browser
+  says "This link was already used" instead of opening: you know.
 - It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
   note cannot put HTML or scripts of its own in the page. The links of the Help page go to
   the website only when you click them.
