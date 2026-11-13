@@ -78,7 +78,9 @@ type Policy struct {
 	ConfigProblem string
 	// GuardProblem, when not empty, says why guard.toml could not be read: the
 	// untouchable repositories are unknown, so a commit, push or merge the other lists
-	// would let through asks the user instead, until the file is fixed.
+	// would let through asks the user instead, until the file is fixed. The hook sets
+	// ConfigProblem too then, on purpose: a broken guard.toml may mean the configuration
+	// is not as the user left it, so every command the lists cover asks as well.
 	GuardProblem string
 	// RootAsk are the machines where becoming root asks the user instead of being denied,
 	// each until a time; Hostname is this machine's name, for an exception for it. Now
@@ -144,7 +146,13 @@ func PowerShell(lang string) Decision {
 	return Decision{Deny, i18n.T(lang, "guard.powershell")}
 }
 
+// maxDepth is how deep the guard follows a command run by another one (sudo, ssh,
+// bash -c, find -exec, a git alias…); past it the user is asked. Every level counts,
+// so no input can keep the guard busy for long.
 const maxDepth = 4
+
+// maxCommand is the longest command line the guard reads; a longer one asks the user.
+const maxCommand = 256 << 10
 
 // rootReason is why becoming root is denied, and what to do instead.
 func (p Policy) rootReason() string { return i18n.T(p.Lang, "guard.root") }
@@ -159,6 +167,9 @@ func (p Policy) Command(line string) Decision {
 	}
 	if p.panelAccess(line) {
 		return p.panelDeny()
+	}
+	if len(line) > maxCommand {
+		return Decision{Ask, i18n.T(p.Lang, "guard.toolong", len(line)>>10)}
 	}
 	p.files = &lineFiles{written: map[string]string{}, touched: map[string]bool{}}
 	return p.commands(parse(line), map[string]string{}, 0)
@@ -183,10 +194,13 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 		}
 		if len(c.words) > 0 && base(c.words[0]) == "export" {
 			for _, a := range c.words[1:] {
-				if eq := strings.IndexByte(a, '='); eq > 0 && isName(a[:eq]) {
+				if eq := strings.IndexByte(a, '='); eq > 0 && isName(a[:eq]) && guardVar(a[:eq]) {
 					exported[a[:eq]] = a[eq+1:]
 				}
 			}
+		}
+		if c.tooDeep {
+			d = worse(d, Decision{Ask, i18n.T(p.Lang, "guard.depth")})
 		}
 		for _, r := range c.redirects {
 			d = worse(d, p.protected(r))
@@ -246,6 +260,29 @@ func (p Policy) inner(line string, exported map[string]string, depth int) Decisi
 	return p.commands(parse(line), maps.Clone(exported), depth+1)
 }
 
+// nested checks a command that another one runs with its arguments (sudo id, ssh host
+// ls, find -exec rm): one level deeper, and past maxDepth the user is asked.
+func (p Policy) nested(words []string, stdin string, env map[string]string, depth int) Decision {
+	if len(words) == 0 {
+		return allow
+	}
+	if depth >= maxDepth {
+		return Decision{Ask, i18n.T(p.Lang, "guard.depth")}
+	}
+	return p.simple(words, stdin, env, depth+1)
+}
+
+// guardVar says whether the guard reads an exported variable (the AWS profile and
+// keys, where git and gh look): only those are carried to the commands after export.
+func guardVar(name string) bool {
+	for _, prefix := range []string{"AWS_", "GIT_", "GH_", "GITLAB_"} {
+		if strings.HasPrefix(name, prefix) {
+			return true
+		}
+	}
+	return false
+}
+
 func (p Policy) simple(words []string, stdin string, exported map[string]string, depth int) Decision {
 	env, name, args := program(words)
 	raw := ""
@@ -267,14 +304,14 @@ func (p Policy) simple(words []string, stdin string, exported map[string]string,
 	}
 	switch name {
 	case "git":
-		return p.git(env, args)
+		return p.git(env, args, depth)
 	case "powershell", "pwsh", "cmd":
 		return PowerShell(p.Lang)
 	case "gsudo", "runas", "sudoedit":
 		return p.root(i18n.T(p.Lang, "guard.root.admin", name, p.rootReason()))
 	case "runuser":
 		if u := optValue(args, "-u", "--user"); u != "" && u != "root" && u != "0" {
-			return p.simple(afterOptions(args, "u"), stdin, env, depth)
+			return p.nested(afterOptions(args, "u"), stdin, env, depth)
 		}
 		return p.root(i18n.T(p.Lang, "guard.root.runuser", p.rootReason()))
 	case "systemd-run":
@@ -416,8 +453,8 @@ func afterOptions(args []string, withValue string) []string {
 const maxScript = 64 << 10
 
 // script checks what a shell script would run (bash deploy.sh, ./deploy.sh, source
-// env.sh) when it is a small text file already on disk; a script it cannot read is
-// let through, as before.
+// env.sh) when it is a small text file already on disk; one it cannot read, or too
+// large to, asks the user.
 func (p Policy) script(path string, env map[string]string, depth int) Decision {
 	return p.runScript(path, env, depth, true)
 }
@@ -428,8 +465,9 @@ func shellScript(path string) bool {
 	return slices.Contains([]string{".sh", ".bash", ".zsh", ".ksh", ".dash"}, strings.ToLower(filepath.Ext(path)))
 }
 
-// runScript is script; askUnknown says whether a file this command line changed in a
-// way the guard cannot follow asks the user.
+// runScript is script; askUnknown says whether it is surely a script (bash x, source
+// x, ./x.sh), so that one the guard cannot read, or this command line changed in a way
+// it cannot follow, asks the user.
 func (p Policy) runScript(path string, env map[string]string, depth int, askUnknown bool) Decision {
 	if p.files != nil {
 		k := p.fileKey(path)
@@ -442,7 +480,7 @@ func (p Policy) runScript(path string, env map[string]string, depth int, askUnkn
 			}
 			return inner
 		}
-		if askUnknown && p.files.touched[k] {
+		if askUnknown && p.isTouched(k) {
 			return Decision{Ask, i18n.T(p.Lang, "guard.script.written", path)}
 		}
 	}
@@ -451,11 +489,23 @@ func (p Policy) runScript(path string, env map[string]string, depth int, askUnkn
 		return allow
 	}
 	info, err := os.Stat(d)
-	if err != nil || !info.Mode().IsRegular() || info.Size() > maxScript {
-		return allow
+	if err != nil || !info.Mode().IsRegular() {
+		return allow // nothing there to run, or not a file
+	}
+	if info.Size() > maxScript {
+		if !askUnknown {
+			return allow // ./bin/tool: a program a build made
+		}
+		return Decision{Ask, i18n.T(p.Lang, "guard.script.unread", paths.Tilde(d), i18n.T(p.Lang, "guard.script.big", maxScript>>10))}
 	}
 	data, err := os.ReadFile(d)
-	if err != nil || bytes.IndexByte(data, 0) >= 0 {
+	if err != nil {
+		if !askUnknown {
+			return allow
+		}
+		return Decision{Ask, i18n.T(p.Lang, "guard.script.unread", paths.Tilde(d), err.Error())}
+	}
+	if bytes.IndexByte(data, 0) >= 0 {
 		return allow // a program, not a script
 	}
 	p.inScript = true
@@ -494,12 +544,12 @@ func shortOf(letters string) func(string) bool {
 // git blocks commit and push unless the repository is explicitly allowed, written with -C.
 // Each -C is taken from the one before it, as git does. A repository given another way
 // (--git-dir, --work-tree, GIT_DIR, GIT_WORK_TREE) is never taken as listed.
-func (p Policy) git(env map[string]string, args []string) Decision {
-	return p.gitExpanded(env, args, 0)
+func (p Policy) git(env map[string]string, args []string, depth int) Decision {
+	return p.gitExpanded(env, args, 0, depth)
 }
 
-// gitExpanded is git after n aliases were expanded.
-func (p Policy) gitExpanded(env map[string]string, args []string, n int) Decision {
+// gitExpanded is git after n aliases were expanded; depth is how deep it runs.
+func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) Decision {
 	dir := ""
 	elsewhere := env["GIT_DIR"] != "" || env["GIT_WORK_TREE"] != ""
 	withValue := map[string]bool{"-C": true, "-c": true, "--git-dir": true, "--work-tree": true,
@@ -529,10 +579,10 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n int) Decisio
 	if i < len(args) && n < 5 && !gitBuiltin[args[i]] {
 		if v, ok := p.gitAlias(dir, elsewhere, args[i]); ok {
 			if shell, ok := strings.CutPrefix(v, "!"); ok { // a shell command, given the arguments
-				return p.inner(strings.Join(append([]string{shell}, args[i+1:]...), " "), env, 0)
+				return p.inner(strings.Join(append([]string{shell}, args[i+1:]...), " "), env, depth)
 			}
 			expanded := append(append(slices.Clone(args[:i]), strings.Fields(v)...), args[i+1:]...)
-			return p.gitExpanded(env, expanded, n+1)
+			return p.gitExpanded(env, expanded, n+1, depth)
 		}
 	}
 	if i < len(args) {
@@ -542,13 +592,13 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n int) Decisio
 			for len(cmd) > 0 && strings.HasPrefix(cmd[0], "-") {
 				cmd = cmd[1:]
 			}
-			return p.inner(strings.Join(cmd, " "), env, 0)
+			return p.inner(strings.Join(cmd, " "), env, depth)
 		case sub == "rebase" || sub == "bisect":
 			if c := optValue(args[i+1:], "-x", "--exec"); c != "" {
-				return p.inner(c, env, 0)
+				return p.inner(c, env, depth)
 			}
 			if sub == "bisect" && i+2 < len(args) && args[i+1] == "run" {
-				return p.simple(args[i+2:], "", env, 0)
+				return p.nested(args[i+2:], "", env, depth)
 			}
 		case sub == "send-pack" || sub == "subtree" && i+1 < len(args) && args[i+1] == "push" ||
 			sub == "svn" && i+1 < len(args) && args[i+1] == "dcommit":
@@ -758,12 +808,12 @@ func (p Policy) sudo(name string, args []string, stdin string, env map[string]st
 		if d.Verdict == Deny || len(rest) == 0 {
 			return d
 		}
-		return worse(d, p.simple(rest, stdin, env, depth)) // what runs as root is checked too
+		return worse(d, p.nested(rest, stdin, env, depth)) // what runs as root is checked too
 	}
 	if len(rest) == 0 {
 		return allow
 	}
-	return p.simple(rest, stdin, env, depth)
+	return p.nested(rest, stdin, env, depth)
 }
 
 // unknownProfile asks when a profile is a variable and production profiles exist: the
@@ -840,7 +890,7 @@ func (p Policy) awsVault(args []string, stdin string, env map[string]string, dep
 	if len(rest) > 0 {
 		sub := maps.Clone(env)
 		sub["AWS_PROFILE"] = prof
-		inner = p.simple(rest, stdin, sub, depth)
+		inner = p.nested(rest, stdin, sub, depth)
 	}
 	d := allow
 	if u, unknown := p.listsUnknown("aws-vault"); unknown {
@@ -1011,7 +1061,7 @@ func (p Policy) ssh(args []string, stdin string, env map[string]string, depth in
 	var d Decision
 	switch {
 	case len(rest) > 0 && isShell(base(rest[0])):
-		d = p.simple(rest, stdin, env, depth)
+		d = p.nested(rest, stdin, env, depth)
 	case len(rest) > 0:
 		d = p.inner(strings.Join(rest, " "), env, depth)
 	default:
@@ -1085,7 +1135,7 @@ func (p Policy) vagrant(args []string, env map[string]string, depth int) Decisio
 // exec checks the command that docker exec, podman exec and kubectl exec run in a
 // container, as if it ran here: becoming root there is still for the user.
 func (p Policy) exec(name string, args []string, env map[string]string, depth int) Decision {
-	if len(args) == 0 || args[0] != "exec" || depth >= maxDepth {
+	if len(args) == 0 || args[0] != "exec" {
 		return allow
 	}
 	p.host = "(container)" // a root exception for this machine does not reach it
@@ -1093,7 +1143,7 @@ func (p Policy) exec(name string, args []string, env map[string]string, depth in
 	if name == "kubectl" {
 		// kubectl exec <pod> [options] -- <command>
 		if i := slices.Index(args, "--"); i >= 0 && i+1 < len(args) {
-			return p.simple(args[i+1:], "", env, depth+1)
+			return p.nested(args[i+1:], "", env, depth)
 		}
 		return allow
 	}
@@ -1102,7 +1152,7 @@ func (p Policy) exec(name string, args []string, env map[string]string, depth in
 	if i+1 >= len(args) {
 		return allow
 	}
-	return p.simple(args[i+1:], "", env, depth+1)
+	return p.nested(args[i+1:], "", env, depth)
 }
 
 // mosh is ssh for unsteady connections: the same checks on its host and its command.
@@ -1119,7 +1169,7 @@ func (p Policy) mosh(args []string, env map[string]string, depth int) Decision {
 	if len(rest) > 0 {
 		q := p
 		q.host = host[strings.LastIndexByte(host, '@')+1:]
-		d = q.simple(rest, "", env, depth)
+		d = q.nested(rest, "", env, depth)
 	}
 	return worse(p.checkHost("mosh", host), d)
 }
@@ -1244,8 +1294,8 @@ func (p Policy) find(args []string, env map[string]string, depth int) Decision {
 			return r
 		}
 	}
-	for i, a := range args {
-		if a == "-exec" || a == "-execdir" || a == "-ok" || a == "-okdir" {
+	for i := 0; i < len(args); i++ {
+		if a := args[i]; a == "-exec" || a == "-execdir" || a == "-ok" || a == "-okdir" {
 			var cmd []string
 			for _, w := range args[i+1:] {
 				if w == ";" || w == "+" {
@@ -1253,7 +1303,10 @@ func (p Policy) find(args []string, env map[string]string, depth int) Decision {
 				}
 				cmd = append(cmd, w)
 			}
-			if d = worse(d, p.simple(cmd, "", env, depth)); d.Verdict == Deny {
+			// The command is checked once, and the search goes on after it: a -exec
+			// inside it is its own (find -exec find -exec …), never read twice.
+			i += len(cmd)
+			if d = worse(d, p.nested(cmd, "", env, depth)); d.Verdict == Deny {
 				return d
 			}
 		}
@@ -1404,7 +1457,18 @@ func (p Policy) resolve(path string) (string, error) {
 	if !filepath.IsAbs(path) && path != "~" && !strings.HasPrefix(path, "~/") && p.Cwd != "" {
 		path = filepath.Join(p.Cwd, path)
 	}
-	return paths.Resolve(path)
+	if p.files == nil {
+		return paths.Resolve(path)
+	}
+	if p.files.resolved == nil {
+		p.files.resolved = map[string]resolved{}
+	}
+	r, ok := p.files.resolved[path]
+	if !ok {
+		r.path, r.err = paths.Resolve(path)
+		p.files.resolved[path] = r
+	}
+	return r.path, r.err
 }
 
 // repoVerdict is what the repository lists say of the repository at dir (resolved):

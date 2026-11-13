@@ -402,3 +402,20 @@ func TestRulesSize(t *testing.T) {
 		t.Errorf("the History was counted: %s", r.What)
 	}
 }
+
+// A Claude Code older than 2.1.295 lets every command through when the guard fails:
+// doctor says so; a recent one, or one it cannot ask, adds nothing.
+func TestClaudeVersion(t *testing.T) {
+	answer := func(s string, err error) func() (string, error) { return func() (string, error) { return s, err } }
+	if c, ok := claudeVersion(Env{Lang: "en", ClaudeVersion: answer("2.1.200 (Claude Code)\n", nil)}); !ok || c.Status != Warning || !strings.Contains(c.What, "2.1.200") {
+		t.Errorf("old: %v %+v", ok, c)
+	}
+	for _, v := range []string{"2.1.295 (Claude Code)", "2.1.322 (Claude Code)", "3.0.0", "nonsense", ""} {
+		if c, ok := claudeVersion(Env{Lang: "en", ClaudeVersion: answer(v, nil)}); ok {
+			t.Errorf("%q: %+v", v, c)
+		}
+	}
+	if _, ok := claudeVersion(Env{Lang: "en", ClaudeVersion: answer("", errors.New("no claude"))}); ok {
+		t.Error("an error says nothing")
+	}
+}
