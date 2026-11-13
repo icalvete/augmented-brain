@@ -131,7 +131,11 @@ func (p Policy) freeGh(name string, env map[string]string, args []string, words 
 			return false
 		}
 	}
-	named, ok := mergeTargets(name, env, p.Env, withoutText(name, args))
+	words2 := withoutText(name, args)
+	if slices.ContainsFunc(words2, func(a string) bool { return strings.ContainsAny(a, "$`") || strings.ContainsRune(a, subst) }) {
+		return false // a word only known when it runs may name a repository of the lists
+	}
+	named, ok := mergeTargets(name, env, p.Env, words2)
 	if !ok {
 		return false
 	}

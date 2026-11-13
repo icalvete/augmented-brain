@@ -219,3 +219,54 @@ func TestOutsideEveryRule(t *testing.T) {
 		}
 	}
 }
+
+func TestAPIRepo(t *testing.T) {
+	for path, want := range map[string]struct {
+		repo string
+		ok   bool
+	}{
+		"repos/me/mine/merges":                {"me/mine", true},
+		"/repos/me/mine":                      {"me/mine", true},
+		"projects/grp%2Fapp/repository/files": {"grp/app", true},
+		"projects/123/repository/commits":     {"", false},
+		"projects/%zz/x":                      {"", false},
+		"graphql":                             {"", false},
+		"repos":                               {"", false},
+		"user/emails":                         {"", true},
+	} {
+		repo, ok := apiRepo(path)
+		if repo != want.repo || ok != want.ok {
+			t.Errorf("apiRepo(%q) = %q %v, want %q %v", path, repo, ok, want.repo, want.ok)
+		}
+	}
+}
+
+// The corners: a list entry with a *, a command on another machine, a repository the
+// guard reaches through GIT_DIR, a pull request it cannot read.
+func TestOutsideCorners(t *testing.T) {
+	p, home := outsidePolicy(t)
+	p.GitAllowedRepos = []string{filepath.Join(home, "repos", "mi*")} // ~/repos/mine, by its pattern
+	rows := []pinned{
+		{"git -C ~/clone pu_sh", Deny},                   // a clone of a repository matched by a *
+		{"ssh web02 git -C /srv/app com_mit -m x", Deny}, // another machine: its folders are not known
+		{"cd ~/free && GIT_DIR=/x/.git gh pr merge 3", Deny},
+		{"cd ~/free && gh pr merge \"$PR\"", Deny},
+		{"cd ~/free && gh api graphql -F query=@q.graphql", Ask},
+		{"cd ~/free && glab api projects/123/repository/commits -X POST", Deny},
+	}
+	for _, r := range rows {
+		cmd := strings.ReplaceAll(unspell(r.cmd), "~/", home+"/")
+		if got := p.Command(cmd); got.Verdict != r.want {
+			t.Errorf("outside %q = %v, want %v (%s)", r.cmd, got.Verdict, r.want, got.Reason)
+		}
+	}
+	if p.freeRepo("") {
+		t.Error("an unknown folder counts as free")
+	}
+	q := p
+	q.outside = true
+	q.lost = true
+	if q.freeRepo("relative") {
+		t.Error("a folder lost after a cd counts as free")
+	}
+}
