@@ -18,6 +18,7 @@
     "untouchable_repos"
   ],
   "session.toml": [
+    "memory_trust",
     "preferred_model"
   ]
 }
