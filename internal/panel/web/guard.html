@@ -116,6 +116,15 @@
 </form>
 {{if .LastStart}}<p class="hint">{{.LastStart}}</p>{{end}}
 
+<h2>{{t "guard.trust"}}</h2>
+<p class="hint">{{t "guard.trust.hint"}}</p>
+<form method="post" action="{{$.Base}}/guard/trust" class="stack">
+  {{template "fields" (fields $)}}
+  <label><input type="radio" name="value" value="tell"{{if not .Ask}} checked{{end}}> {{t "guard.trust.tell"}}</label>
+  <label><input type="radio" name="value" value="ask"{{if .Ask}} checked{{end}}> {{t "guard.trust.ask"}}</label>
+  <button type="submit">{{t "save"}}</button>
+</form>
+
 <h2>{{t "guard.protected"}}</h2>
 <p class="hint">{{t "guard.protected.hint"}}</p>
 <ul class="plain">{{range .Protected}}<li><code>{{.}}</code></li>{{end}}</ul>

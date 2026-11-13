@@ -66,6 +66,7 @@ func TestPanelChangesLeaveVersions(t *testing.T) {
 		{"secret", "/secret", url.Values{"s": {"work"}, "service": {"mail"}, "name": {"smtp"}, "what": {"sending mail"}}},
 		{"guard host", "/guard/list", url.Values{"s": {"work"}, "list": {"hosts"}, "op": {"add"}, "value": {"db01"}}},
 		{"guard model", "/guard/model", url.Values{"s": {"work"}, "value": {"opus"}}},
+		{"guard trust", "/guard/trust", url.Values{"s": {"work"}, "value": {"ask"}}},
 	} {
 		before := count()
 		if w := s.post(t, c.path, c.form); w.Code != http.StatusSeeOther {

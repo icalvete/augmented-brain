@@ -180,6 +180,16 @@ try:
             page.wait_for_load_state("networkidle")
             cfgtext = open(os.path.join(CFG, "config.toml"), encoding="utf-8").read()
             report(f"{engine}: with the box ticked it is added", "app-" + engine in cfgtext, "")
+            # What the assistant saves on its own: choose "ask first", then back.
+            for level in ("ask", "tell"):
+                page.goto(f"{base}/guard?s=work")
+                trust = page.locator("form[action$='/guard/trust']")
+                trust.locator(f"input[name=value][value={level}]").check()
+                trust.locator("button[type=submit]").click()
+                page.wait_for_load_state("networkidle")
+                sestext = open(os.path.join(CFG, "session.toml"), encoding="utf-8").read()
+                shown = page.locator(f"form[action$='/guard/trust'] input[name=value][value={level}]").is_checked()
+                report(f"{engine}: the Guard page saves memory_trust = {level}", f'memory_trust = "{level}"' in sestext and shown, sestext)
             ctx.close()
             browser.close()
 

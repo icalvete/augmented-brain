@@ -48,6 +48,7 @@ type guardData struct {
 	Problem     string // why guard.toml cannot be read, when it cannot
 	Model       string // preferred_model of session.toml
 	LastStart   string // what the last session start said about its model
+	Ask         bool   // memory_trust of session.toml is "ask" (or a value not known)
 	Language    string
 }
 
@@ -60,6 +61,7 @@ func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
 	d.Untouchable = g.UntouchableRepos
 	if ss, err := config.LoadSession(v.c.Dir); err == nil {
 		d.Model = ss.PreferredModel
+		d.Ask = ss.Trust() == config.TrustAsk
 	} else if d.Problem == "" {
 		d.Problem = err.Error()
 	}
@@ -408,11 +410,40 @@ func (s *Server) guardAccept(v *view, r *http.Request) (string, error) {
 	return "/guard", nil
 }
 
-// guardModel saves the preferred model of session.toml (empty: no check).
+// guardModel saves the preferred model of session.toml (empty: no check), keeping the
+// rest of the file.
 func (s *Server) guardModel(v *view, r *http.Request) (string, error) {
 	value := field(r, "value")
 	if len(value) > 100 || strings.ContainsAny(value, "\r\n\"\\") {
 		return "", errors.New(v.t("err.required", v.t("f.model")))
 	}
-	return "/guard", config.SaveSession(v.c.Dir, config.Session{PreferredModel: value})
+	ss, err := config.LoadSession(v.c.Dir)
+	if err != nil {
+		return "", err
+	}
+	ss.PreferredModel = value
+	return "/guard", config.SaveSession(v.c.Dir, ss)
+}
+
+// guardTrust saves memory_trust of session.toml: whether the assistant asks before it
+// saves a rule, the profile or the guard's lists. The next hook tells the user, as
+// with the lists: a level changed behind their back would be one they never chose.
+func (s *Server) guardTrust(v *view, r *http.Request) (string, error) {
+	value := field(r, "value")
+	if value != config.TrustTell && value != config.TrustAsk {
+		return "", errors.New(v.t("err.required", v.t("guard.trust")))
+	}
+	ss, err := config.LoadSession(v.c.Dir)
+	if err != nil {
+		return "", err
+	}
+	if ss.MemoryTrust == value {
+		return "/guard", nil
+	}
+	ss.MemoryTrust = value
+	if err := config.SaveSession(v.c.Dir, ss); err != nil {
+		return "", err
+	}
+	_ = state.AddGuardNotice(v.c.Dir, v.t("guard.trust.notice."+value), time.Now())
+	return "/guard", nil
 }
