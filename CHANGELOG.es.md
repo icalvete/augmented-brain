@@ -1,5 +1,12 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **El guardia vuelve a tratar `doas` como root, como dice su guía.** `doas id` pasaba
+  como si fuera solo `id`. Ahora `doas`, como `sudo`, se para salvo que ejecute el
+  comando como otro usuario (`doas -u deploy …`), y una prueba vigila que ningún otro
+  comando con regla propia pueda saltarse igual.
+
 ## 0.20.0-beta
 
 Publicada el 2026-11-12.

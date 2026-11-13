@@ -387,12 +387,14 @@ var reserved = map[string]bool{
 }
 
 // wrappers run the command that follows them. The value lists the short options that
-// take a value, so the value is not taken for the program.
+// take a value, so the value is not taken for the program. A name here never reaches
+// the switch in simple: one with a rule of its own (sudo, doas) must not be listed
+// (TestWrappersHaveNoRule).
 var wrappers = map[string]string{
 	"env": "uCS", "nohup": "", "exec": "a", "command": "", "nice": "n",
 	"timeout": "ks", "xargs": "nIPLsdEa", "watch": "ndg", "stdbuf": "ioe", "builtin": "",
 	"ionice": "cnp", "chrt": "p", "taskset": "", "setsid": "", "unbuffer": "", "caffeinate": "", "npx": "pc",
-	"time": "fo", "flock": "wEc", "busybox": "", "sshpass": "pfdP", "doas": "", "proxychains": "f", "torsocks": "",
+	"time": "fo", "flock": "wEc", "busybox": "", "sshpass": "pfdP", "proxychains": "f", "torsocks": "",
 }
 
 // program strips variable assignments (NAME=value), reserved words and wrappers from

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **The guard treats `doas` as root again, as its guide says.** `doas id` went through
+  as if it were just `id`. Now `doas`, like `sudo`, is stopped unless it runs the
+  command as another user (`doas -u deploy …`), and a test makes sure no other command
+  with a rule of its own can be skipped the same way.
+
 ## 0.20.0-beta
 
 Released 2026-11-12.
