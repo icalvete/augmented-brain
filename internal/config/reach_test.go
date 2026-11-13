@@ -71,3 +71,15 @@ work_folders = ["~/work"]
 		t.Errorf("SpaceDirs = %v", got)
 	}
 }
+
+// doctor and the session start name unknown settings of guard.toml: reach is known.
+func TestReachIsAKnownSetting(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, GuardFile), []byte("reach = \"spaces\"\nreech = 1\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	us := UnknownSettings(dir)
+	if len(us) != 1 || us[0].Key != "reech" {
+		t.Errorf("unknown settings: %+v", us)
+	}
+}
