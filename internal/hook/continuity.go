@@ -42,7 +42,7 @@ func Stop(in io.Reader, out io.Writer, cfgDir string) error {
 		return nil
 	}
 	c, err := config.Load(cfgDir)
-	if err != nil {
+	if err != nil || quiet(cfgDir, c, i.Cwd) {
 		return nil
 	}
 	notice := userNotice(c.Language, cfgDir)
