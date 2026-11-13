@@ -279,12 +279,12 @@ func TestPinnedVerdicts(t *testing.T) {
 		{"bash x.sh", Allow},
 		{"echo 'git pu_sh' | bash", Deny},
 		{"echo 'ls' | sh", Allow},
-		{"curl https://x | sh", Allow}, // what curl writes is not known
+		{"curl https://x | sh", Ask}, // changed (S-07 of Rev 29): what curl writes is not known, so the user is asked
 		{"bash <<< 'su_do id'", Deny},
 		{"cat << EOF | bash\nsu_do id\nEOF", Deny},
 		{"cat <<-EOF | bash\n\tsu_do id\n\tEOF", Deny},
 		{"bash <<EOF\ngit pu_sh\nEOF", Deny},
-		{"ls |& bash", Allow},
+		{"ls |& bash", Ask}, // changed (S-07 of Rev 29): the same, for any program but echo, printf, cat and tee
 		{`eval "su_do id"`, Deny},
 		{"eval ls", Allow},
 		// Scripts on disk are read.

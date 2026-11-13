@@ -32,8 +32,24 @@ var guardMessages = map[string]msg{
 		es: "el comando da a %s un valor escrito en él. Usa un perfil de AWS (--profile o AWS_PROFILE) en vez de claves en la línea de comandos.",
 	},
 	"guard.depth": {
-		en: "the command runs commands nested too deep for augmented brain to check; the user confirms it.",
-		es: "el comando ejecuta comandos anidados demasiado hondo para que augmented brain los revise; el usuario lo confirma.",
+		en: "the command runs commands nested too deep, or makes too many words, for augmented brain to check; the user confirms it.",
+		es: "el comando ejecuta comandos anidados demasiado hondo, o forma demasiadas palabras, para que augmented brain los revise; el usuario lo confirma.",
+	},
+	"guard.unknownsub": {
+		en: "what %s does here is only known when it runs (`%s`), so augmented brain cannot check it; the user confirms it.",
+		es: "lo que hace %s aquí solo se sabe al ejecutarlo (`%s`), así que augmented brain no puede revisarlo; el usuario lo confirma.",
+	},
+	"guard.stdin": {
+		en: "%s runs the commands another program writes to it, which augmented brain cannot see beforehand; the user confirms it. To have it checked, save them to a file first and run that file.",
+		es: "%s ejecuta las órdenes que le escribe otro programa, y augmented brain no puede verlas antes; el usuario lo confirma. Para que se revisen, guárdalas antes en un fichero y ejecuta ese fichero.",
+	},
+	"guard.procsubst": {
+		en: "%s runs what a command writes (<(…)), which augmented brain cannot see beforehand; the user confirms it.",
+		es: "%s ejecuta lo que escribe un comando (<(…)), y augmented brain no puede verlo antes; el usuario lo confirma.",
+	},
+	"guard.xargs": {
+		en: "xargs gives %s words it reads, which here say what it runs; augmented brain cannot see them beforehand, so the user confirms it.",
+		es: "xargs le pasa a %s palabras que lee, y aquí dicen qué ejecuta; augmented brain no puede verlas antes, así que el usuario lo confirma.",
 	},
 	"guard.toolong": {
 		en: "the command is %d KB long, too long for augmented brain to check; the user confirms it.",
@@ -231,6 +247,18 @@ var guardMessages = map[string]msg{
 	"guard.rm.var": {
 		en: "`rm -r %s`: if %s is empty or unset, this deletes from the disk root or the current folder. Check the variable first (for example ${VAR:?}), or the user confirms it.",
 		es: "`rm -r %s`: si %s está vacía o sin definir, esto borra desde la raíz del disco o desde la carpeta actual. Comprueba antes la variable (por ejemplo ${VAR:?}), o el usuario lo confirma.",
+	},
+	"guard.rm.subst": {
+		en: "`rm -r` of a folder only known when the command runs ($(…)): if it comes out empty or as the home folder, this deletes far more than meant. The user confirms it.",
+		es: "`rm -r` de una carpeta que solo se sabe al ejecutar ($(…)): si sale vacía o es la carpeta personal, esto borra mucho más de lo pensado. El usuario lo confirma.",
+	},
+	"guard.mv.home": {
+		en: "`mv` of %s would take the user's home folder away with it; it is never run.",
+		es: "`mv` de %s se llevaría con ella la carpeta personal del usuario; nunca se ejecuta.",
+	},
+	"guard.rsync.delete": {
+		en: "`rsync --delete` into %s would delete what the user's home folder holds; it is never run.",
+		es: "`rsync --delete` hacia %s borraría lo que guarda la carpeta personal del usuario; nunca se ejecuta.",
 	},
 	"guard.rm.all": {
 		en: "`rm -r` of the whole disk is never run.",

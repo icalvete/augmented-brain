@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -92,13 +93,26 @@ func (p Policy) panelAccess(line string) bool {
 	if panelAddress(line) {
 		return true
 	}
-	if !strings.Contains(line, "panel.") && !strings.Contains(line, "panel*") && !strings.Contains(line, "panel?") && !strings.Contains(line, "*") {
+	flat := strings.NewReplacer(`"`, "", "'", "", `\`, "").Replace(line) // pan""el.json is panel.json
+	if !strings.Contains(flat, "panel") && !strings.ContainsAny(flat, "*?[") {
 		return false
 	}
 	inConfig := p.runsInConfig(line)
 	for _, sw := range shellWords(line) {
 		w := sw.text
 		base := filepath.Base(w)
+		// pan\el.json is panel.json in the shell. The backslash is kept in the word, since
+		// on Windows it separates folders, so the name after the last / is also read
+		// without it, and its folder is the word up to that /.
+		if i := strings.LastIndex(w, "/"); i > 0 && strings.ReplaceAll(w[i+1:], `\`, "") == panelFile {
+			if r, err := p.resolve(w[:i]); err == nil {
+				for _, h := range p.Hidden {
+					if paths.Same(r, filepath.Dir(h)) {
+						return true
+					}
+				}
+			}
+		}
 		hit := base == panelFile
 		if !hit && sw.glob && strings.ContainsAny(base, "*?[") {
 			ok, err := filepath.Match(base, panelFile)
@@ -122,6 +136,9 @@ func (p Policy) panelAccess(line string) bool {
 					}
 				}
 			}
+		}
+		if sw.glob && p.patternHidden(w) { // ~/.config/augmented-b*/pan*: the whole path, part by part
+			return true
 		}
 		// A name built from a variable ($AB_CONFIG_DIR/panel.json): if the line also
 		// names the configuration folder, deny.
@@ -213,4 +230,78 @@ func unescape(s string) string {
 		return u
 	}
 	return s
+}
+
+// patternHidden says whether a pattern with a folder (~/.config/*/panel.json) would
+// match the panel's token file: it is made absolute as the shell would, and matched
+// against the file's path part by part.
+func (p Policy) patternHidden(w string) bool {
+	if !strings.ContainsAny(w, `/\`) {
+		return false
+	}
+	pattern := w
+	if pattern == "~" || strings.HasPrefix(pattern, "~/") {
+		home, err := paths.Home()
+		if err != nil {
+			return false
+		}
+		pattern = filepath.Join(home, pattern[1:])
+	} else if !filepath.IsAbs(pattern) {
+		if p.Cwd == "" || p.lost {
+			return false
+		}
+		pattern = filepath.Join(p.Cwd, pattern)
+	}
+	for _, h := range p.Hidden {
+		if ok, err := filepath.Match(filepath.ToSlash(pattern), filepath.ToSlash(h)); err == nil && ok {
+			return true
+		}
+	}
+	return false
+}
+
+// copiers are the programs that, given a folder, read every file in it: a copy, an
+// archive, a search.
+var copiers = []string{"cp", "rsync", "tar", "zip", "7z", "7za", "scp", "rclone", "rg", "ag", "cpio", "pax"}
+
+// copiesHidden says whether a command copies, archives or searches the folder that
+// holds the panel's token file, or a folder that holds that one inside the home
+// folder (cp -r ~/.config /tmp/c): the copy can then be read where the guard does not
+// look. grep counts when recursive; ls and cat of other files in the folder do not.
+func (p Policy) copiesHidden(words []string) bool {
+	if len(p.Hidden) == 0 {
+		return false
+	}
+	_, name, args := program(words)
+	recursive := slices.Contains(copiers, name)
+	if name == "grep" || name == "egrep" || name == "fgrep" {
+		recursive = slices.ContainsFunc(args, func(a string) bool {
+			return a == "--recursive" || a == "--dereference-recursive" ||
+				len(a) > 1 && a[0] == '-' && a[1] != '-' && strings.ContainsAny(a, "rR")
+		})
+	}
+	if !recursive {
+		return false
+	}
+	home, _ := paths.Home()
+	if h, err := paths.Resolve(home); err == nil {
+		home = h
+	}
+	for _, a := range args {
+		a = writtenArg(a)
+		if a == "" || strings.HasPrefix(a, "-") {
+			continue
+		}
+		d, err := p.resolve(a)
+		if err != nil {
+			continue
+		}
+		for _, h := range p.Hidden {
+			dir := filepath.Dir(h)
+			if paths.Same(d, dir) || paths.Within(dir, d) && home != "" && !paths.Same(d, home) && paths.Within(d, home) {
+				return true
+			}
+		}
+	}
+	return false
 }

@@ -406,6 +406,43 @@ cat <<'EOF' > /tmp/prueba.sh
 export AB_CONFIG_DIR=/tmp/x
 echo $((2 * 3))
 EOF
+## ---- braces, $IFS, pipes into xargs, programs that run others (Rev 29d)
+----
+mkdir -p ~/proyecto/src/{api,web}/test
+----
+cp config.{yml,yml.bak}
+----
+while IFS= read -r line; do echo "$line"; done < lista.txt
+----
+git ls-files '*.go' | xargs gofmt -l
+----
+git ls-files -z | xargs -0 git add
+----
+find . -name '*.tmp' -print0 | xargs -0 rm -f
+----
+ls *.md | xargs -I{} sh -c 'wc -l {}'
+----
+curl -s https://example.com/datos.json | jq '.items[] | {name, id}'
+----
+git diff | bash -n
+----
+tmux new-session -d -s pruebas 'go test ./...'
+----
+tmux send-keys -t pruebas 'make test' Enter
+----
+strace -c -f ls
+----
+screen -ls
+----
+rsync -a --delete dist/ ~/proyecto/publicado/
+----
+mv ~/proyecto/build /tmp/build-viejo
+----
+rm -rf ~/proyecto/build/*
+----
+tar -czf /tmp/proyecto.tgz ~/proyecto
+----
+grep -rn 'TODO' ~/proyecto/src
 ## ---- git and gh shapes next to the doors closed in Rev 29c
 ----
 GIT_EDITOR=true git rebase --continue
