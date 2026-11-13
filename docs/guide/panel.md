@@ -51,7 +51,9 @@ A task nobody has changed for 14 days is marked "untouched N days".
 
 Open one. Its essentials come first, the other sections folded, and the journal newest
 first. Write in its journal, change its status or next step, tick its steps, park it or
-close it. You can open new tasks too. A closed task opens again only if you choose a new
+close it. Closing it here does what closing it in a session does: if the task has a
+session of its own, that session ends once it finishes its answer, and its worktree goes
+when it holds nothing of its own. You can open new tasks too. A closed task opens again only if you choose a new
 status for it; its journal says it was reopened from the panel. If a status skips
 phases, the journal names them. When a task waits on a person you have a note of,
 "waits on" leads to them.

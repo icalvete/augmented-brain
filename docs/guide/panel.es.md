@@ -52,7 +52,9 @@ marcada «parada N días».
 
 Abre una. Primero lo esencial, las demás secciones plegadas, y el diario con lo último
 arriba. Escribe en su diario, cambia su estado o su siguiente paso, marca sus pasos,
-apárcala o ciérrala. También puedes abrir tareas nuevas. Una tarea cerrada solo se
+apárcala o ciérrala. Cerrarla aquí hace lo mismo que cerrarla en una sesión: si la tarea
+tiene una sesión propia, esa sesión acaba cuando termina su respuesta, y su worktree se
+quita cuando no tiene nada suyo. También puedes abrir tareas nuevas. Una tarea cerrada solo se
 reabre si le eliges un estado nuevo; su diario dice que se reabrió desde el panel. Si un
 estado se salta fases, el diario las nombra. Si una tarea espera a una
 persona de la que tienes nota, «espera a» te lleva a ella.
