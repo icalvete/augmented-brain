@@ -210,6 +210,14 @@ o que el linger esté apagado. `remote install` se para, sin cambiar nada, en un
 sin servicios de usuario de systemd (un contenedor, WSL sin systemd). Lo tienes en
 [Acceso remoto](remote.es.md).
 
+### Dos sesiones remotas con el mismo nombre
+
+Cuando la puerta de un espacio se cambia de carpeta (por ejemplo, porque una versión nueva
+la arranca en tu carpeta de trabajo), el lado de Claude conserva también la sesión vieja,
+con el mismo nombre, en otro grupo de la lista. En la vieja no contesta nadie: lo que
+escribas ahí se pierde. Usa la del grupo con el nombre de la carpeta nueva, y archiva la
+vieja en claude.ai o Claude Desktop.
+
 ### Una sesión se cortó
 
 La ventana se cerró a la fuerza, o el ordenador se apagó. La siguiente sesión te ofrece
