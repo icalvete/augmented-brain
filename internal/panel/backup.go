@@ -315,5 +315,5 @@ func (s *Server) backupBack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q := url.Values{"started": {name}, "back": {when}, "s": {name}}
-	http.Redirect(w, r, s.base()+"/backup?"+q.Encode(), http.StatusSeeOther)
+	http.Redirect(w, r, s.base(r)+"/backup?"+q.Encode(), http.StatusSeeOther)
 }

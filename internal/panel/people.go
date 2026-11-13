@@ -213,9 +213,9 @@ func (s *Server) personCard(w http.ResponseWriter, r *http.Request) {
 	case err != nil:
 		s.failForm(w, r, v, err)
 	case bad != nil:
-		s.render(w, http.StatusBadRequest, name, p)
+		s.render(w, r, http.StatusBadRequest, name, p)
 	default:
-		http.Redirect(w, r, s.base()+redirect, http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+redirect, http.StatusSeeOther)
 	}
 }
 

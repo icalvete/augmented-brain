@@ -19,7 +19,7 @@ import (
 func (s *Server) routes() *http.ServeMux {
 	m := http.NewServeMux()
 	m.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, s.base()+"/today", http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+"/today", http.StatusSeeOther)
 	})
 	m.Handle("GET /static/", s.static)
 	s.page(m, "/today", "today", s.today)
@@ -230,11 +230,11 @@ func (s *Server) lang() string {
 	return i18n.FromEnv()
 }
 
-func (s *Server) render(w http.ResponseWriter, status int, name string, p page) {
+func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, name string, p page) {
 	if _, ok := s.pages[p.Lang]; !ok {
 		p.Lang = "en"
 	}
-	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote.Load() != nil
+	p.CSRF, p.Base, p.Remote = s.csrfFor(r), s.base(r), s.remote.Load() != nil
 	p.Hints = loadHints(s.cfgDir)
 	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "backup", "space", "guard", "versions", "help"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
@@ -342,7 +342,7 @@ func (s *Server) fail(w http.ResponseWriter, r *http.Request, v *view, status in
 		back = strings.TrimPrefix(ref, own)
 	}
 	p.D = message{Heading: p.Title, Text: text, Back: back}
-	s.render(w, status, "message", p)
+	s.render(w, r, status, "message", p)
 }
 
 // readRoute is a page: its section and the handler that fills it in.
@@ -397,7 +397,7 @@ func (s *Server) servePage(w http.ResponseWriter, r *http.Request, rt readRoute,
 	q := r.URL.Query()
 	q.Del("ok")
 	p.Here = (&url.URL{Path: r.URL.Path, RawQuery: q.Encode()}).String()
-	s.render(w, status, name, p)
+	s.render(w, r, status, name, p)
 }
 
 // failForm answers a form that could not be saved: its page again when there is one
@@ -420,7 +420,7 @@ func (s *Server) again(w http.ResponseWriter, r *http.Request, lang string, err 
 	if errors.Is(err, errNoSpace) {
 		return false
 	}
-	ref, own := r.Header.Get("Referer"), s.origin(r)+s.base()
+	ref, own := r.Header.Get("Referer"), s.origin(r)+s.base(r)
 	if !strings.HasPrefix(ref, own+"/") {
 		return false
 	}
@@ -481,7 +481,7 @@ func (s *Server) write(h func(*view, *http.Request) (string, error)) http.Handle
 		q.Set("s", v.b.Space.Name)
 		q.Set("ok", doneKey(r))
 		u.RawQuery = q.Encode()
-		http.Redirect(w, r, s.base()+u.String(), http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+u.String(), http.StatusSeeOther)
 	}
 }
 

@@ -18,7 +18,7 @@ func TestNetSocketIgnoresHost(t *testing.T) {
 	s, _ := fixture(t, "en")
 	const rhost, owner, guest = "box.example.ts.net:8443", "lucia@example.com", "guest@example.com"
 	s.remote.Store(&Remote{Host: rhost, Owner: owner})
-	tasks := s.base() + "/tasks"
+	tasks := s.netBase() + "/tasks"
 	ping := "/ping?c=" + strings.Repeat("ab", 32)
 	for i, r := range []req{
 		{net: true, path: tasks, host: host, owner: guest},
@@ -45,8 +45,8 @@ func TestNetSocketIgnoresHost(t *testing.T) {
 	// 127.0.0.1's, the door itself does (403). Never a copy, never a restore.
 	for h, want := range map[string]int{rhost: http.StatusBadRequest, host: http.StatusForbidden} {
 		for _, p := range []string{"/backup/setup", "/backup/back", "/backup/run", "/versions/restore"} {
-			form := url.Values{"s": {"work"}, "csrf": {s.csrf}, "url": {"https://github.com/someone/else.git"}, "confirm": {"yes"}, "id": {"x"}}
-			if w := s.do(t, req{net: true, method: "POST", path: s.base() + p, host: h, owner: owner, origin: "https://" + h, form: form}); w.Code != want {
+			form := url.Values{"s": {"work"}, "csrf": {s.netCSRF}, "url": {"https://github.com/someone/else.git"}, "confirm": {"yes"}, "id": {"x"}}
+			if w := s.do(t, req{net: true, method: "POST", path: s.netBase() + p, host: h, owner: owner, origin: "https://" + h, form: form}); w.Code != want {
 				t.Errorf("%s through the network, Host %s: %d, want %d", p, h, w.Code, want)
 			}
 		}
@@ -93,8 +93,9 @@ func TestNetSocketIsItsOwn(t *testing.T) {
 	if err != nil || how != Switched || info.RemotePort == 0 || info.RemotePort == info.Port {
 		t.Fatalf("GoRemote: %q %v %+v", how, err, info)
 	}
-	get := func(port int, h, login string) int {
-		q, _ := http.NewRequest(http.MethodGet, "http://127.0.0.1:"+strconv.Itoa(port)+"/s/"+sessionOf(info.Token)+"/tasks", nil)
+	// Each socket has its session: the one of the other socket is refused there.
+	getAs := func(session string, port int, h, login string) int {
+		q, _ := http.NewRequest(http.MethodGet, "http://127.0.0.1:"+strconv.Itoa(port)+"/s/"+session+"/tasks", nil)
 		q.Host = h
 		if login != "" {
 			q.Header.Set(OwnerHeader, login)
@@ -106,7 +107,19 @@ func TestNetSocketIsItsOwn(t *testing.T) {
 		resp.Body.Close()
 		return resp.StatusCode
 	}
+	get := func(port int, h, login string) int {
+		if port == info.RemotePort {
+			return getAs(netSessionOf(info.Token), port, h, login)
+		}
+		return getAs(sessionOf(info.Token), port, h, login)
+	}
 	local := "127.0.0.1:" + strconv.Itoa(info.Port)
+	if c := getAs(sessionOf(info.Token), info.RemotePort, rhost, owner); c != http.StatusForbidden {
+		t.Errorf("network socket, the local session: %d", c)
+	}
+	if c := getAs(netSessionOf(info.Token), info.Port, local, ""); c != http.StatusForbidden {
+		t.Errorf("local socket, the network's session: %d", c)
+	}
 	if c := get(info.RemotePort, local, "guest@example.com"); c != http.StatusForbidden {
 		t.Errorf("network socket, Host 127.0.0.1: %d", c)
 	}
@@ -131,7 +144,7 @@ func TestNetSocketIsItsOwn(t *testing.T) {
 }
 
 func newReq(s *Server, path string) *http.Request {
-	q := httptest.NewRequest(http.MethodGet, s.base()+path, nil)
+	q := httptest.NewRequest(http.MethodGet, s.localBase()+path, nil)
 	q.Host = host
 	return q
 }

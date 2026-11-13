@@ -16,8 +16,8 @@ import (
 func (s *Server) postFrom(t *testing.T, path, from string, form url.Values) (int, string, http.Header) {
 	t.Helper()
 	form.Set("csrf", s.csrf)
-	w := s.do(t, req{method: http.MethodPost, path: s.base() + path, origin: "http://" + host,
-		referer: "http://" + host + s.base() + from, form: form})
+	w := s.do(t, req{method: http.MethodPost, path: s.localBase() + path, origin: "http://" + host,
+		referer: "http://" + host + s.localBase() + from, form: form})
 	return w.Code, html.UnescapeString(w.Body.String()), w.Header()
 }
 
