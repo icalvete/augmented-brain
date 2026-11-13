@@ -160,6 +160,11 @@ copia de seguridad» en una carpeta del espacio. O lanza allí `augmented-brain 
 Arregla a mano la cabecera (entre las líneas `---`) y vuelve a lanzar `check`. Hasta
 entonces, el índice no se rehace, pero las herramientas siguen funcionando.
 
+Cuando `check` dice que no conoce un campo, lo más probable es que lo escribiera una
+versión más nueva, en otro ordenador o en una sesión abierta después de actualizar.
+Actualiza con `augmented-brain update` y no quites el campo. Si es una errata de un
+campo que conoces, corrígela.
+
 Un fichero que no se puede leer (por sus permisos, o un enlace roto que dejó una
 sincronización) sale de la misma forma: arregla sus permisos o sácalo de la carpeta de
 notas. Un fichero cuyo nombre empieza por punto, como el de bloqueo que deja Emacs

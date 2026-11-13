@@ -102,6 +102,10 @@ var commandMessages = map[string]msg{
 		en: "moving %s from format %d to %d (%s): %v; a copy from before is in %s",
 		es: "al pasar %s del formato %d al %d (%s): %v; hay una copia de antes en %s",
 	},
+	"check.newer": {
+		en: "%s: the field %q is not one this version knows. A newer augmented brain wrote it: update with `augmented-brain update`. If it is a typo, fix it in the note's header.",
+		es: "%s: este programa no conoce el campo %q. Lo escribió una versión más nueva de augmented brain: actualiza con `augmented-brain update`. Si es una errata, corrígela en la cabecera de la nota.",
+	},
 	"check.summary": {
 		en: "space %s: %s, %s",
 		es: "espacio %s: %s, %s",
