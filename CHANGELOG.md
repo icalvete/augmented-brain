@@ -12,6 +12,11 @@
   uninstalling removes the folder. The plugin no longer needs git, the hooks look for the
   program in `~/.local/bin` before anywhere else, and on Windows the MCP server keeps
   your PATH as it is.
+
+## 0.22.0-beta
+
+Released 2026-11-13.
+
 - **Cleaning up a task's worktree no longer loses work.** A worktree left on another
   commit (to compare, to review) went with its branch and the commits on it that were on
   no remote. Now the task's branch counts as well as where the worktree is. Files git
@@ -23,11 +28,6 @@
   its worktree alone. Two `session start` of one task at once open one session. On macOS
   and Windows, `session start` says it is not available before it makes anything, and
   `--folder` outside the task's space is refused.
-
-## 0.22.0-beta
-
-Released 2026-11-13.
-
 - **One file that cannot be read no longer takes a space down.** Editing a note in Emacs
   leaves a lock file (`.#task-x.md`) next to it, and while it was there every tool of the
   space failed and a new session started with no rules or index. The same happened with
