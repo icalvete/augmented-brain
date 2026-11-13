@@ -60,6 +60,8 @@ Four things keep it yours:
   panel on this computer, and the key of this computer's pages does not open it from
   another device. So whoever got hold of the address from another device still could
   not do here what only this computer may.
+  The address is for you, not for Claude: run by Claude, the command publishes nothing
+  and asks you to run it in a terminal of your own.
 
 There is no extra password to type: your Tailscale account is the login.
 

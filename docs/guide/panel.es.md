@@ -13,7 +13,10 @@ Abre tu navegador en **Hoy**, con el espacio de la carpeta desde la que lo lanza
 una terminal también escribe una dirección, por si el navegador no se abrió (en un
 ordenador sin pantalla, por ejemplo). Esa dirección abre el panel **una vez**, en los
 próximos 2 minutos; vuelve a lanzar el comando para tener otra. Cuando lo lanza Claude
-por ti, solo abre el navegador: Claude nunca ve una dirección que abra el panel.
+por ti, solo abre el navegador: Claude nunca ve una dirección que abra el panel. Si el
+navegador no puede abrirse (Claude trabajando en segundo plano, un ordenador sin
+pantalla), tampoco escribe la dirección y te pide que lances el comando en una terminal
+tuya.
 
 El panel cambia tus notas igual que Claude, con el mismo programa, y se esperan el uno al
 otro: puedes tener los dos abiertos a la vez.
@@ -311,6 +314,11 @@ dice, con un enlace para verla como está ahora.
   ordenador puede usarlo. Trata la dirección de las páginas como una contraseña: no la
   compartas. Deja de valer cuando el panel se para. Si otra cosa usó tu enlace antes, tu
   navegador dice «Este enlace ya se usó» en vez de abrirse: te enteras.
+- En Linux el navegador recibe un pequeño fichero, que solo tú puedes leer, que lo lleva
+  a la dirección, en vez de la dirección misma: con qué se arranca un programa lo puede
+  leer cualquier usuario del ordenador. Si tu navegador por defecto es un snap o un
+  flatpak (el Firefox que trae Ubuntu es un snap), no puede leer ese fichero, y recibe la
+  dirección como antes; igual que los navegadores de macOS.
 - No carga **nada de internet**: ni fuentes ni estadísticas. Funciona sin conexión. Una
   nota tampoco puede meter HTML ni scripts propios en la página. Los enlaces de la página
   Ayuda van a la web solo cuando los pulsas.
