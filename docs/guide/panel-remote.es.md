@@ -58,8 +58,10 @@ Cuatro cosas hacen que sea solo tuyo:
   compartes un dispositivo, recibe «forbidden» aunque tenga la dirección.
 - **La red tiene su propia puerta.** Lo que trae Tailscale llega a un puerto del panel
   que solo usa él, y se trata como venido de la red diga lo que diga de sí mismo: desde
-  ahí no se puede hacer nada de lo que es solo de este ordenador (configurar una copia
-  de seguridad, volver a una configuración anterior).
+  ahí no se puede hacer nada de lo que es solo de este ordenador. Desde otro dispositivo
+  puedes mirarlo todo, pero no hacer una copia ahora, configurar una copia de seguridad,
+  volver a una copia o a una configuración anterior, ni cambiar nada en la página
+  Guardia (sus listas, el modelo de tus sesiones, lo que el asistente guarda solo).
 - **La dirección sirve una vez**, y las páginas que abre llevan una llave que cambia
   cada vez que arranca el panel.
 

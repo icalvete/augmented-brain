@@ -9,6 +9,8 @@ import (
 	"slices"
 	"sort"
 	"strings"
+
+	"github.com/icalvete/augmented-brain/internal/i18n"
 )
 
 // Generated files and free-form files: they have no header and are not notes.
@@ -21,6 +23,25 @@ type Problem struct {
 }
 
 func (p Problem) Error() string { return fmt.Sprintf("%s: %v", p.Path, p.Err) }
+
+// Newer is the field of a header this program does not know, when that is what is
+// wrong with the file: a newer program may have written it.
+func (p Problem) Newer() (field string, ok bool) {
+	var u *UnknownFieldError
+	if errors.As(p.Err, &u) {
+		return u.Field, true
+	}
+	return "", false
+}
+
+// Text is the problem for a person, in lang: an unknown field says to update; anything
+// else is the checker's own words.
+func (p Problem) Text(lang string) string {
+	if field, ok := p.Newer(); ok {
+		return i18n.T(lang, "check.newer", p.Path, field)
+	}
+	return p.Error()
+}
 
 // Memory is the content of one space's memory folder.
 type Memory struct {

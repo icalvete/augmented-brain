@@ -1767,7 +1767,8 @@ asks first. Whatever you change or accept here, Claude Code itself tells you in 
 open sessions, after the next answer or message, in a line that starts with
 "augmented brain · the guard's lists". If you did not do it, look here. Claude cannot
 open this page: it never sees the panel's address, and the guard denies it the panel's
-key. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
+key. From another device the page only shows: the lists decide what Claude may do on
+this computer, so they change only from this computer's panel. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
 
 ## Versions
 
@@ -1922,8 +1923,11 @@ Four things keep it yours:
   share a device with, gets "forbidden" even with the address.
 - **The network has a door of its own.** What Tailscale brings in arrives at a port of
   the panel that only it uses, and is treated as coming from the network whatever it
-  says about itself: from there, nothing that is only for this computer (setting up a
-  backup, going back to an earlier configuration) can be done.
+  says about itself: from there, nothing that is only for this computer can be done.
+  From another device you can look at everything, but you cannot back up now, set up a
+  backup, go back to a backup or to an earlier configuration, or change anything on the
+  Guard page (its lists, the model of your sessions, what the assistant saves on its
+  own).
 - **The address works once**, and the pages it opens hold a key that changes every
   time the panel starts.
 
@@ -4236,6 +4240,11 @@ The panel's Guard page writes it, and the guard asks before Claude writes it. If
 is missing or `preferred_model` is empty, the model is not checked. It is a file of its own for the
 same reason as `guard.toml`. It is not carried by backups.
 
+A line of `guard.toml` or `session.toml` the program does not know is ignored, not
+refused: a newer version may add settings there, and an earlier one keeps working.
+`doctor` and the start of a session name it, with the right name when it looks like a
+typo, because a misspelled setting there does nothing.
+
 ## `remote.toml`
 
 Next to `config.toml`, `remote.toml` holds the settings of [remote access](https://icalvete.github.io/augmented-brain/guide/remote.html),
@@ -4648,6 +4657,17 @@ a run again from the same version keeps that copy and makes no other, so it neve
 notes half moved. Notes of a newer version than the program knows are never written: the
 program asks to be updated.
 
+Anything an earlier program would refuse raises the version, even when the step that
+moves notes to it has nothing to change: a new header field, a new note type, a new
+task status. The program reads a header strictly (a field it does not know makes the
+file not valid), so without the new version an earlier program would only leave those
+notes out. With it, the earlier program refuses the whole folder and asks to be
+updated, and nothing is lost. A header field the program does not know is still said
+as one a newer version may have written: the note is left out, nothing writes over it,
+and `check`, `doctor`, the panel and the session start say to update (or to fix the
+field, if it is a typo). A field added before this rule (`parent`, in 0.3.0) is read
+by every release still covered by the promise of compatibility.
+
 Every note is replaced in one step: written to a temporary file next to it
 (`<name>.<digits>.tmp`), synced to the disk, renamed over the note, and its folder
 synced, so a power cut leaves the old note or the new one, never an empty one. A
@@ -4983,6 +5003,15 @@ command, or going back to a version). Until you accept them in the Guard page or
 new session, a commit, push or merge they allow asks first. `doctor` says so. Open the
 panel's Guard page, look at what changed and accept. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html#only-you-change-the-guards-lists).
 
+### "Settings this version does not know" in `guard.toml` or `session.toml`
+
+`doctor` and the start of a session say so when one of these files has a line the
+program does not know. The line is ignored: a misspelled `untouchable_repo` protects no
+repository, and a misspelled `memory_trust` leaves Claude saving without asking. The
+message gives the right name when it looks like a typo. Correct the name in the file.
+If a newer version wrote that line, update with `augmented-brain update`. See
+[Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html#guardtoml).
+
 ### Claude needs root on a machine
 
 Claude gives you the exact command to run yourself. For a migration that needs many
@@ -5055,6 +5084,11 @@ repository>` there, and then `augmented-brain backup`. See [Backup and restore](
 `augmented-brain check` in a folder of the space lists each problem with its file. Fix
 the header (between the `---` lines) by hand, and run `check` again. Until then, the
 index is not rebuilt, but the tools keep working.
+
+When `check` says a field "is not one this version knows", a newer version, on another
+computer or in a session started after an update, most likely wrote it. Update with
+`augmented-brain update` and do not remove the field. If it is a typo of a field you
+know, fix it.
 
 A file that cannot be read (its permissions, or a broken link left by a sync) is listed
 the same way: fix its permissions, or move it out of the notes folder. A file whose name

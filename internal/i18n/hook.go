@@ -3,6 +3,14 @@ package i18n
 // What the hooks tell the assistant in the language of the configuration. These are
 // instructions to the assistant, which passes them on in the user's language.
 var hookMessages = map[string]msg{
+	"hook.unknownsettings": {
+		en: "%s has settings this augmented brain does not know, so it ignores them: %s. A misspelled setting there does nothing (a misspelled untouchable_repos protects no repository).",
+		es: "%s tiene ajustes que este augmented brain no conoce, así que no los tiene en cuenta: %s. Un ajuste mal escrito ahí no hace nada (un untouchable_repos mal escrito no protege ningún repositorio).",
+	},
+	"hook.unknownsettings.fix": {
+		en: "what is ignored, and that they can correct the name in %s, or update (augmented-brain update) if a newer version wrote it. Do not edit that file yourself.",
+		es: "qué se ignora, y que puede corregir el nombre en %s, o actualizar (augmented-brain update) si lo escribió una versión más nueva. No edites tú ese fichero.",
+	},
 	"fresh.head": {
 		en: "augmented brain: since this session last looked, these tasks changed outside it (another session, the panel or a hand edit). What you read about them earlier (the index at the start, an earlier answer) is out of date: before you state their status, say they are pending or done, or act on them, read them with task_get. Mention it to the user only when it bears on what you are doing.\n",
 		es: "augmented brain: desde la última vez que esta sesión miró, estas tareas han cambiado fuera de ella (otra sesión, el panel o una edición a mano). Lo que leíste de ellas antes (el índice del inicio, una respuesta anterior) está desfasado: antes de decir su estado, darlas por pendientes o hechas, o actuar sobre ellas, léelas con task_get. Coméntaselo al usuario solo si afecta a lo que estás haciendo.\n",
