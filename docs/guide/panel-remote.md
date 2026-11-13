@@ -56,7 +56,8 @@ Four things keep it yours:
   entrance, not by what the visit says about itself. So a visit cannot pretend to come
   from this computer, and what only this computer may do stays here (see below).
 - **The address works once**, and the pages it opens hold a key that changes every
-  time the panel starts.
+  time the panel starts. It is for you, not for Claude: run by Claude, the command
+  publishes nothing and asks you to run it in a terminal of your own.
 
 There is no extra password to type: your Tailscale account is the login.
 

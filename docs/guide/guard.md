@@ -165,7 +165,8 @@ three things so that the lists stay yours:
   or a command, also by a pattern or by copying, archiving or searching its folder, and
   calling a panel page from a command, are denied, however the address is written: the panel's Guard page is how you change the lists, and it works
   with that key. `augmented-brain panel` never prints the key either: it prints a link
-  that works once, and run by Claude it prints none.
+  that works once, and run by Claude it prints none, nor does `augmented-brain panel
+  remote`: they ask you to run them in a terminal of your own.
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
   when you start a session and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would

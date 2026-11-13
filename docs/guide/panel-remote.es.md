@@ -56,7 +56,8 @@ Cuatro cosas hacen que sea solo tuyo:
   no por lo que la visita diga de sí misma. Así, una visita no puede hacerse pasar por
   este ordenador, y lo que solo puede hacer este ordenador se queda aquí (mira abajo).
 - **La dirección sirve una vez**, y las páginas que abre llevan una llave que cambia
-  cada vez que arranca el panel.
+  cada vez que arranca el panel. Es para ti, no para Claude: lanzado por Claude, el
+  comando no publica nada y te pide que lo lances en una terminal tuya.
 
 No hay otra contraseña que teclear: tu cuenta de Tailscale es la entrada.
 

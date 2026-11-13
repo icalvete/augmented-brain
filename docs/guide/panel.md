@@ -13,7 +13,9 @@ It opens your browser on **Today**, with the space of the folder you ran it in. 
 terminal it also prints an address, in case the browser did not open (on a computer with
 no screen, say). That address opens the panel **once**, within 2 minutes; run the command
 again for another. When Claude runs it for you, it only opens the browser: Claude never
-sees an address that opens the panel.
+sees an address that opens the panel. If the browser cannot open (Claude working in the
+background, a computer with no screen), it prints no address either and asks you to run
+the command in a terminal of your own.
 
 The panel changes your notes the same way Claude does, with the same program, and they
 wait for each other: you can have both open at once.
@@ -300,6 +302,11 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
   use it. Treat the address of the pages like a password: do not share it. It stops
   working when the panel stops. If something else used your link first, your browser
   says "This link was already used" instead of opening: you know.
+- On Linux the browser gets a small file, readable only by you, that takes it to the
+  address, instead of the address itself: what a program is started with can be read by
+  every user of the computer. When your default browser is a snap or a flatpak (the
+  Firefox that comes with Ubuntu is a snap), it cannot read that file, and gets the
+  address as before; so do the browsers of macOS.
 - It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
   note cannot put HTML or scripts of its own in the page. The links of the Help page go to
   the website only when you click them.

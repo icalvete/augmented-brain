@@ -1166,7 +1166,8 @@ three things so that the lists stay yours:
   or a command, also by a pattern or by copying, archiving or searching its folder, and
   calling a panel page from a command, are denied, however the address is written: the panel's Guard page is how you change the lists, and it works
   with that key. `augmented-brain panel` never prints the key either: it prints a link
-  that works once, and run by Claude it prints none.
+  that works once, and run by Claude it prints none, nor does `augmented-brain panel
+  remote`: they ask you to run them in a terminal of your own.
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
   when you start a session and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
@@ -1732,7 +1733,9 @@ It opens your browser on **Today**, with the space of the folder you ran it in. 
 terminal it also prints an address, in case the browser did not open (on a computer with
 no screen, say). That address opens the panel **once**, within 2 minutes; run the command
 again for another. When Claude runs it for you, it only opens the browser: Claude never
-sees an address that opens the panel.
+sees an address that opens the panel. If the browser cannot open (Claude working in the
+background, a computer with no screen), it prints no address either and asks you to run
+the command in a terminal of your own.
 
 The panel changes your notes the same way Claude does, with the same program, and they
 wait for each other: you can have both open at once.
@@ -2019,6 +2022,11 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
   use it. Treat the address of the pages like a password: do not share it. It stops
   working when the panel stops. If something else used your link first, your browser
   says "This link was already used" instead of opening: you know.
+- On Linux the browser gets a small file, readable only by you, that takes it to the
+  address, instead of the address itself: what a program is started with can be read by
+  every user of the computer. When your default browser is a snap or a flatpak (the
+  Firefox that comes with Ubuntu is a snap), it cannot read that file, and gets the
+  address as before; so do the browsers of macOS.
 - It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
   note cannot put HTML or scripts of its own in the page. The links of the Help page go to
   the website only when you click them.
@@ -2865,7 +2873,8 @@ Four things keep it yours:
   entrance, not by what the visit says about itself. So a visit cannot pretend to come
   from this computer, and what only this computer may do stays here (see below).
 - **The address works once**, and the pages it opens hold a key that changes every
-  time the panel starts.
+  time the panel starts. It is for you, not for Claude: run by Claude, the command
+  publishes nothing and asks you to run it in a terminal of your own.
 
 There is no extra password to type: your Tailscale account is the login.
 

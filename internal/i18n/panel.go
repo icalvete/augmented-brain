@@ -1663,6 +1663,10 @@ var panelMessages = map[string]msg{
 		en: "Open that address in your browser.",
 		es: "Abre esa dirección en tu navegador.",
 	},
+	"panel.cli.own.terminal": {
+		en: "The panel could not open in a browser from here, and its address is not shown here: it is for you, not for the assistant. Run this command in a terminal of your own (not through Claude):\n  augmented-brain panel",
+		es: "Desde aquí el panel no se ha podido abrir en un navegador, y su dirección no se enseña aquí: es para ti, no para el asistente. Lanza este comando en un terminal tuyo (no a través de Claude):\n  augmented-brain panel",
+	},
 	"panel.cli.stopped": {
 		en: "Panel stopped.",
 		es: "Panel parado.",
@@ -1675,6 +1679,10 @@ var panelMessages = map[string]msg{
 	"panel.remote.open": {
 		en: "The panel is open for your other devices at:\n  %s",
 		es: "El panel está abierto para tus otros dispositivos en:\n  %s",
+	},
+	"panel.remote.own.terminal": {
+		en: "The address that opens the panel from your other devices is not shown here: it is for you, not for the assistant. Run this command in a terminal of your own (not through Claude):\n  augmented-brain panel remote",
+		es: "La dirección que abre el panel desde tus otros dispositivos no se enseña aquí: es para ti, no para el asistente. Lanza este comando en un terminal tuyo (no a través de Claude):\n  augmented-brain panel remote",
 	},
 	"panel.remote.qr": {
 		en: "On your phone, point the camera at this code:",
