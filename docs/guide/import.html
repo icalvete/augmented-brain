@@ -50,6 +50,7 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html" aria-current="page">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
@@ -65,14 +66,16 @@
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
-  <li><a href="remote.html">Remote access</a></li>
-  <li><a href="import.html" aria-current="page">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -95,16 +98,23 @@
 <main class="prose" id="main">
   <h1>Bring in a memory you already have</h1>
   <p>If Claude Code has been keeping a memory for you, you do not start from zero. Claude Code writes it in <code>~/.claude/projects/&lt;folder&gt;/memory/</code>. You can bring it into your spaces.</p>
-  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#first-look">First, look</a></li><li><a href="#then-write">Then, write</a></li><li><a href="#what-each-file-becomes">What each file becomes</a></li><li><a href="#more-than-one-space">More than one space</a></li><li><a href="#turn-off-the-old-memory">Turn off the old memory</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#find-the-folder">Find the folder</a></li><li><a href="#first-look">First, look</a></li><li><a href="#then-write">Then, write</a></li><li><a href="#what-each-file-becomes">What each file becomes</a></li><li><a href="#more-than-one-space">More than one space</a></li><li><a href="#turn-off-the-old-memory">Turn off the old memory</a></li></ul></nav>
+  <h2 id="find-the-folder">Find the folder</h2>
+  <p>Claude Code keeps a folder for each folder you opened it in, inside <code>~/.claude/projects</code>. Its name is that path with each <code>/</code> turned into <code>-</code>: for <code>/home/lucia/code/blog</code>, it is <code>-home-lucia-code-blog</code>. To see them all:</p>
+  <pre><code>ls ~/.claude/projects</code></pre>
+  <p>The memory is the <code>memory</code> folder inside the one you want. In the commands below, put that name where it says <code>&lt;folder&gt;</code>.</p>
   <h2 id="first-look">First, look</h2>
-  <pre><code>augmented-brain import ~/.claude/projects/&lt;folder&gt;/memory</code></pre>
-  <p>With one space, that is all. With more (a usual install has two), it first asks which space each note goes to: see <a href="#more-than-one-space">More than one space</a> and add <code>--map</code>.</p>
+  <p>A usual install has two spaces, so first say which space the notes go to. A file of one line is enough. Make a file <code>map.txt</code> with:</p>
+  <pre><code>* = personal</code></pre>
+  <p>It sends everything to your space “personal”. To split the notes between spaces, see <a href="#more-than-one-space">More than one space</a>. Then:</p>
+  <pre><code>augmented-brain import ~/.claude/projects/&lt;folder&gt;/memory --map map.txt</code></pre>
+  <p>With only one space, leave out <code>--map</code>. With more and no <code>--map</code>, it stops and asks for the file.</p>
   <p>That writes nothing. It shows where each note would go, and what it could not decide:</p>
   <ul><li>files that are not notes (an index, say);</li><li>notes about you: copy what matters into your profile;</li><li>links that would cross from one space to another;</li><li>ids (the name of each note's file, such as <code>task-blog</code>) your space already has.</li></ul>
   <p>The folder you import from is only read, now and later.</p>
   <h2 id="then-write">Then, write</h2>
-  <p>When the list looks right, run it again with <code>--apply</code>:</p>
-  <pre><code>augmented-brain import ~/.claude/projects/&lt;folder&gt;/memory --apply</code></pre>
+  <p>At the end, it prints the exact command that writes it: the same one with <code>--apply</code>. When the list looks right, run it:</p>
+  <pre><code>augmented-brain import ~/.claude/projects/&lt;folder&gt;/memory --map map.txt --apply</code></pre>
   <p>It never writes over a note that already exists.</p>
   <h2 id="what-each-file-becomes">What each file becomes</h2>
   <p>Each file becomes a note of its kind: by its name (<code>task-…</code>, <code>area-…</code>, <code>ref-…</code>, <code>lesson-…</code>, <code>rule-…</code>, <code>person-…</code>), or else by what Claude Code says it is. A task with no status comes in parked, waiting on you, with “review this imported task” as its next step.</p>
@@ -123,8 +133,8 @@ lesson-git-small-commits = shared
   <p>Has Claude Code been keeping that memory by itself? Then it goes on keeping it for your spaces' folders: a second memory, next to the space's, that drifts from it. <code>augmented-brain doctor</code> tells you, and how to turn it off: <code>"autoMemoryEnabled": false</code> in Claude Code's settings. What it already has stays, ready to import.</p>
   <p>All the options: <a href="commands.html#augmented-brain-import">Commands</a>.</p>
   <nav class="pager" aria-label="Previous / Next">
-    <a class="prev" href="remote.html"><span>← Previous</span>Remote access</a>
-    <a class="next" href="anywhere.html"><span>Next →</span>From your phone or another computer</a>
+    <a class="prev" href="install.html"><span>← Previous</span>Installing</a>
+    <a class="next" href="spaces.html"><span>Next →</span>Spaces</a>
   </nav>
 </main>
 </div>

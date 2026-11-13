@@ -23,6 +23,7 @@ forma de decir lo mismo también.
 | "Déjala para algún día." | La aparca como algún día: fuera de la lista diaria, guardada en su área |
 | "Cierra la tarea." | La cierra con su resultado; nunca se borra. Una tarea cerrada se queda cerrada: cerrarla otra vez se rechaza |
 | "Reabre la tarea del blog: el certificado ha vuelto a fallar." | La abre otra vez; el motivo va a su diario |
+| "Ábreme una sesión para la tarea del blog." | Arranca una sesión de Claude solo para esa tarea, en su carpeta; sale en Claude Desktop y en claude.ai en menos de un minuto. Por ahora, solo en Linux ([cómo](remote.es.md#una-sesión-por-tarea)) |
 
 ## Buzón y recordatorios
 
@@ -30,6 +31,8 @@ forma de decir lo mismo también.
 |---|---|
 | "Apunta esto: mirar los precios del hosting nuevo." | Una línea con fecha en el buzón, sin abrir tarea |
 | "Recuérdame el jueves que llame al seguro." | Una captura con fecha: sale al empezar la sesión |
+| "Apunta esto en trabajo: renovar la tarjeta del parking." | La captura va al buzón de tu espacio "trabajo", marcada con el espacio del que viene. Sale allí al empezar cada sesión hasta que se hace |
+| "Ya he llamado al seguro, eso está hecho." | Saca esa captura del buzón sin esperar a la revisión semanal |
 | "Vamos con la revisión semanal." | Repasa contigo el buzón y las tareas paradas, una a una |
 
 ## Conocimiento, reglas y personas
@@ -41,9 +44,11 @@ forma de decir lo mismo también.
 | "La newsletter es un área nueva." | Crea el área |
 | "A partir de ahora, contesta con frases cortas." | Una regla, que se carga en cada sesión |
 | "Esto vale para todo." | Guarda la regla o la lección como compartida, para todos los espacios |
+| "Esa regla ya no vale." | La retira: pasa a `archive/`, con cuándo y por qué, y deja de llegar a tus sesiones. No se borra nada. Claude te pregunta antes |
 | "Diego lleva la empresa del hosting; yo le llamo Dieguito." | Guarda a Diego como persona, con su apodo |
 | "¿Por qué elegimos el hosting más barato?" | Busca la decisión en tus notas, con su fecha y su motivo |
 | "Cambia mi perfil: prefiero la recomendación primero." | Reescribe tu perfil |
+| "¿En qué espacio estoy?" | Dice el espacio de esta sesión, su carpeta de notas, sus áreas y cuántas tareas hay vivas |
 
 ## Seguridad
 
@@ -52,6 +57,7 @@ forma de decir lo mismo también.
 | "El perfil de AWS tienda-prod es producción." | El guardia te pregunta antes de los comandos que lo usan |
 | "No toques nunca db01 sin preguntarme." | El guardia te pregunta antes de un ssh, scp o rsync a esa máquina |
 | "He guardado un secreto nuevo, telegram/alertas-bot, para los avisos al móvil." | Apunta su nombre y para qué sirve, nunca su valor |
+| "Pregúntame antes de guardar una regla." | Esto no se cambia hablando: lo eliges tú en la página Guardia del panel, "Preguntarme antes", y Claude te dice dónde. Desde entonces, Claude Code te pregunta antes de guardar una regla, tu perfil o las listas del guardia ([más](guard.es.md#preguntar-antes-de-que-claude-guarde-una-regla)) |
 
 ## Copia de seguridad, sesiones y el panel
 
@@ -74,7 +80,18 @@ Al empezar una sesión, Claude puede sacar cosas sin que se lo pidas:
 - una versión nueva, para actualizar;
 - notas con problemas;
 - lo que otro espacio mandó a este, hasta que se hace;
-- las listas del guardia, si algo las cambió fuera del panel.
+- las listas del guardia, si algo las cambió fuera del panel;
+- sesiones abiertas que siguen con el programa de antes de una actualización, y que hay
+  que reiniciar.
+
+Y mientras trabajas:
+
+- tareas que han cambiado fuera de esta sesión (otra sesión, el panel o una edición a
+  mano), antes de contestar tu siguiente mensaje;
+- que responde otro modelo que el que elegiste, una vez por sesión, si pusiste el modelo
+  de tus sesiones en la página Guardia;
+- que la ventana usa mucha memoria: a los 2 GB, y luego a los 4 y los 8 GB, una vez cada
+  uno (Linux y macOS; [qué hacer](troubleshooting.es.md#la-ventana-usa-mucha-memoria)).
 
 ## Por dónde seguir
 
