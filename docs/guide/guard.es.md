@@ -21,6 +21,14 @@ como texto. Pilla los errores que comete un asistente, también escondidos dentr
 comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
 [aviso legal](../../DISCLAIMER.md#aviso-legal).
 
+## Dónde vigila
+
+En todas partes. El guardia lee cada comando de cada sesión de Claude Code de este
+ordenador, dentro de tus espacios o no, y sus listas valen para todo el ordenador. Un
+repositorio que no está en ellas queda cerrado a commit y push, en cualquier proyecto. Lo
+demás que cambia fuera de tus espacios está en
+[Espacios](spaces.es.md#fuera-de-todos-los-espacios).
+
 ## Lo que para
 
 - **Commits y pushes.** `git commit`, `git push`, y lo que publica como un push:

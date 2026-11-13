@@ -22,6 +22,13 @@ as text. It catches the mistakes an assistant makes, also hidden inside other co
 A program determined to get around it could. Read the
 [disclaimer](../../DISCLAIMER.md).
 
+## Where it watches
+
+Everywhere. The guard reads every command in every Claude Code session on this computer,
+inside your spaces or not, and its lists hold for the whole computer. A repository that is
+not in them is closed to commits and pushes, in any project. What else changes outside
+your spaces is in [Spaces](spaces.md#outside-every-space).
+
 ## What it stops
 
 - **Commits and pushes.** `git commit`, `git push`, and what publishes like a push:
