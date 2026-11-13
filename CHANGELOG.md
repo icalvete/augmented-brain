@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.22.0-beta
+
+Released 2026-11-13.
+
 - **One file that cannot be read no longer takes a space down.** Editing a note in Emacs
   leaves a lock file (`.#task-x.md`) next to it, and while it was there every tool of the
   space failed and a new session started with no rules or index. The same happened with
