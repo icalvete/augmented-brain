@@ -455,7 +455,7 @@ What it does on each look:
 - **Still no session.** Then Claude was trying to reopen the archived session. The watch
   renames Claude's record of it (`bridge-pointer.json` becomes
   `bridge-pointer.json.archived`, in the folder's project in `~/.claude/projects`) and
-  restarts the service again, so a new session starts, in about three minutes. The
+  restarts the service again, so a new session starts: about ten minutes in all. The
   conversation of the archived session does not come back.
 - **Task sessions kept safe.** Stopping a service stops everything started inside it.
   A task session started from a remote session can start Claude's background service
@@ -475,7 +475,7 @@ several tasks at once, each in its own session. It is four commands, `start`, `s
 `restart` and `list`, each with its own section below. `start`, `stop` and `list` work
 on Linux only for now: they have been tried only there. `restart` works on Linux and
 macOS. Without a subcommand, or with another, `session` prints its usage. Why and how to
-use them: [A session per task](remote.md#a-session-per-task).
+use them: [A session per task](task-sessions.md).
 
 ## augmented-brain session start
 
@@ -508,7 +508,8 @@ after the task. A new branch starts from origin's default branch as it is now: i
 fetches first, and if origin cannot be reached it starts from what this computer last
 knew of it, and says so. If an earlier session of the task left its branch, the worktree
 picks it up again. Asked again, it uses the same worktree. The same goes for a bare
-repository given with `--folder`.
+repository given with `--folder`. See
+[Worktrees, for a bare repository](task-sessions.md#worktrees-for-a-bare-repository).
 
 **Rules:**
 

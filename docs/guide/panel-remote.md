@@ -58,8 +58,11 @@ Four things keep it yours:
   share a device with, gets "forbidden" even with the address.
 - **The network has a door of its own.** What Tailscale brings in arrives at a port of
   the panel that only it uses, and is treated as coming from the network whatever it
-  says about itself: from there, nothing that is only for this computer (setting up a
-  backup, going back to an earlier configuration) can be done.
+  says about itself: from there, nothing that is only for this computer can be done.
+  From another device you can look at everything, but you cannot back up now, set up a
+  backup, go back to a backup or to an earlier configuration, or change anything on the
+  Guard page (its lists, the model of your sessions, what the assistant saves on its
+  own).
 - **The address works once**, and the pages it opens hold a key that changes every
   time the panel starts.
 

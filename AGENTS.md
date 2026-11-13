@@ -188,6 +188,10 @@ Heavier checks, before a release or when you touch what they cover:
   `format.NotesMigrations` (or `ConfigMigrations` for the configuration folder), which
   raises the format version by one: the step must be safe to repeat, and gets a test
   that runs it on notes written the old way.
+  Anything an earlier program would refuse is such a change, even when the step has
+  nothing to move: a new header field, note type or task status (headers are read
+  strictly, so an earlier program would leave those notes out instead of asking to
+  update).
 - **What people have keeps working.** This is a promise in the README and the
   DISCLAIMER: every change to how notes or settings are kept ships with its migration
   (above), and a command, flag, setting or MCP tool that is renamed or removed keeps
@@ -238,7 +242,7 @@ Heavier checks, before a release or when you touch what they cover:
   `release.yml` takes the version from `VERSION` on `main` and the commit that last set it
   or changed its section of the changelog (`scripts/release-commit.sh`: what merged
   later waits for the next version), refuses one already tagged, a tag on a commit not
-  on `main`, or a commit where any required check has not passed
+  on `main`, or a commit where any required check, or a macOS one, has not passed
   (`scripts/release-checks.sh`); then a read-only job with no cache builds the archives,
   the installers and `checksums.txt` (reproducible: the same commit and Go give the same
   bytes), and another, in the environment `release`, attests their provenance and

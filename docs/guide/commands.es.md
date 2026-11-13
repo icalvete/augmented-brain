@@ -465,7 +465,7 @@ Lo que hace en cada vuelta:
 - **Sigue sin sesión.** Entonces Claude intentaba reabrir la sesión archivada. El
   vigilante renombra lo que Claude apunta de ella (`bridge-pointer.json` pasa a
   `bridge-pointer.json.archived`, en el proyecto de la carpeta en `~/.claude/projects`) y
-  reinicia otra vez el servicio, para que empiece una sesión nueva, en unos tres minutos.
+  reinicia otra vez el servicio, para que empiece una sesión nueva: unos diez minutos en total.
   La conversación de la sesión archivada no vuelve.
 - **Las sesiones de tareas, a salvo.** Parar un servicio para todo lo que se arrancó
   dentro de él. La sesión de una tarea abierta desde una sesión remota puede arrancar
@@ -485,7 +485,7 @@ varias tareas a la vez, cada una en su sesión. Son cuatro comandos, `start`, `s
 `restart` y `list`, cada uno con su apartado abajo. `start`, `stop` y `list` funcionan
 por ahora solo en Linux: solo se han probado ahí. `restart` funciona en Linux y macOS.
 Sin subcomando, o con otro, `session` muestra su uso. Para qué sirven y cómo usarlos:
-[Una sesión por tarea](remote.es.md#una-sesión-por-tarea).
+[Una sesión por tarea](task-sessions.es.md).
 
 ## augmented-brain session start
 
@@ -518,7 +518,8 @@ repositorio, en una carpeta a su lado. Para la tarea `task-new-website` de `site
 por defecto de origin tal como está ahora: antes la trae, y si no llega a origin parte de
 lo último que este ordenador sabía de ella, y lo dice. Si una sesión anterior de la tarea
 dejó su rama, el worktree la retoma. Si se pide otra vez, usa el mismo worktree. Lo
-mismo vale para un repositorio bare dado con `--folder`.
+mismo vale para un repositorio bare dado con `--folder`. Mira
+[Worktrees, para un repositorio bare](task-sessions.es.md#worktrees-para-un-repositorio-bare).
 
 **Reglas:**
 
