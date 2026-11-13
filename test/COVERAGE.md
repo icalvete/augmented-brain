@@ -1,7 +1,9 @@
 # What the tests cover
 
 Every case the beta tests set out to cover, and what covers it. **Go** is `go test ./...`
-(Linux, macOS and Windows in CI); the scripts run in CI where the last column says. A case
+(Linux, macOS and Windows in CI); the scripts run in CI where the last column says. On a
+pull request, macOS runs only the Go tests and compat-check; the rest of its column runs on
+`main` after each merge. A case
 with **by hand** has no automated test: it is a step of the release rehearsal or of the
 pass on a real Mac, written in [the Mac pass](#the-pass-on-a-real-mac).
 
