@@ -326,6 +326,18 @@ var panelMessages = map[string]msg{
 		en: "Careful: until that date, on that machine, the assistant may run commands as root, the most powerful user, after you confirm each one. Keep the date close.",
 		es: "Cuidado: hasta esa fecha, en esa máquina, el asistente podrá lanzar comandos como root, el usuario con más poder, después de que confirmes cada uno. Pon una fecha cercana.",
 	},
+	"panel.guard.notice.changed": {
+		en: "changed in the panel: %s",
+		es: "cambiadas en el panel: %s",
+	},
+	"panel.guard.notice.accepted": {
+		en: "accepted in the panel as they are: %s",
+		es: "aceptadas en el panel tal como están: %s",
+	},
+	"panel.guard.notice.unknown": {
+		en: "what changed is not known",
+		es: "no se sabe qué cambió",
+	},
 	"panel.guard.accept": {
 		en: "I have seen them, accept",
 		es: "Las he visto, aceptar",

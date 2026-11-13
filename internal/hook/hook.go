@@ -61,6 +61,18 @@ type specific struct {
 
 type output struct {
 	HookSpecificOutput specific `json:"hookSpecificOutput"`
+	// SystemMessage is shown to the user by Claude Code itself, not by the assistant.
+	SystemMessage string `json:"systemMessage,omitempty"`
+}
+
+// userNotice is what the user must hear about the guard's lists (state.TakeGuardNotice),
+// as a message Claude Code shows them directly, or "". Taking it removes it.
+func userNotice(lang, cfgDir string) string {
+	n := state.TakeGuardNotice(cfgDir)
+	if n == "" {
+		return ""
+	}
+	return i18n.T(lang, "hook.guardnotice", n)
 }
 
 func read(in io.Reader) input {
@@ -107,7 +119,7 @@ func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 	i := read(in)
 	c, s, err := load(cfgDir, i.Cwd)
 	if n > 1 && (err != nil || s == nil) {
-		return write(out, output{specific{HookEventName: "SessionStart"}})
+		return write(out, output{HookSpecificOutput: specific{HookEventName: "SessionStart"}})
 	}
 	var text string
 	switch {
@@ -134,7 +146,11 @@ func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 		freshBaseline(c, s, i, cfgDir)
 		text = session.ContextFor(c, s, note, task)
 	}
-	return write(out, output{specific{HookEventName: "SessionStart", AdditionalContext: text}})
+	o := output{HookSpecificOutput: specific{HookEventName: "SessionStart", AdditionalContext: text}}
+	if n <= 1 && c != nil {
+		o.SystemMessage = userNotice(c.Language, cfgDir)
+	}
+	return write(out, o)
 }
 
 // startNote is what this session must hear first, on top of the space's text: the
@@ -158,7 +174,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir, task string) 
 	note += askSafety(c, cfgDir)
 	note += rootNote(c)
 	note += oldServersNote(c, task == "")
-	note += guardSealNote(c, cfgDir)
+	note += guardSealNote(c, cfgDir, i.Source)
 	note += launcherNote(c)
 	// A change made by hand since the last version becomes one: it can be undone too.
 	_, _ = confighistory.Record(cfgDir, confighistory.ByOutside, "")
@@ -202,7 +218,7 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	if decision == "" {
 		return nil
 	}
-	return write(out, output{specific{HookEventName: "PreToolUse",
+	return write(out, output{HookSpecificOutput: specific{HookEventName: "PreToolUse",
 		PermissionDecision: decision, PermissionDecisionReason: "augmented brain: " + d.Reason}})
 }
 
@@ -269,7 +285,12 @@ func policy(cfgDir, dir string) guard.Policy {
 			p.GuardProblem = err.Error()
 		} else {
 			p.UntouchableRepos = g.UntouchableRepos
-			if seal := state.ReadSeal(cfgDir); seal != "" && seal != c.GuardFingerprint(g) {
+			seal, err := state.ReadSeal(cfgDir)
+			switch {
+			case err != nil:
+				p.ConfigChanged = true
+				p.SealProblem = err.Error()
+			case seal != "" && seal != c.GuardFingerprint(g):
 				p.ConfigChanged = true
 			}
 		}
@@ -347,25 +368,37 @@ func hiddenFiles(cfgDir string) (hidden, dirs []string) {
 	return []string{f}, dirs
 }
 
-// guardSealNote compares the guard's lists with the ones the user last saw, says so when
-// they differ, and takes the current ones as the ones the user knows from now on (a
-// session that starts is the user opening it). A change after this point is what the
-// guard asks about.
-func guardSealNote(c *config.Config, cfgDir string) string {
+// guardSealNote compares the guard's lists with the ones the user last saw and says so
+// when they differ. Only a session the user starts (source startup, or none from an
+// earlier Claude Code) takes the current lists as the ones the user knows from now on,
+// and then the user hears it directly, not through the assistant. A compaction, /clear,
+// a resume or a fork is not the user looking: the lists stay unsealed and the guard
+// keeps asking before a commit, push or merge until the user accepts them in the panel.
+func guardSealNote(c *config.Config, cfgDir, source string) string {
 	g, err := config.LoadGuard(cfgDir)
 	if err != nil {
 		return ""
 	}
 	cur := c.GuardFingerprint(g)
-	old := state.ReadSeal(cfgDir)
+	old, err := state.ReadSeal(cfgDir)
+	if err != nil {
+		return "\n" + i18n.T(c.Language, "hook.seal.unread", err) + " " + session.TellUserLine(c.Language) + ".\n"
+	}
 	if old == cur {
 		return ""
 	}
-	_ = state.WriteSeal(cfgDir, cur)
 	if old == "" {
-		return "" // the first time: nothing to compare
+		_ = state.WriteSeal(cfgDir, cur) // the first time: nothing to compare
+		return ""
 	}
-	return "\nThe guard's lists (repositories it allows, asks about or never allows, root exceptions, production profiles, untouchable hosts) are not the ones saved when a session last started, and the panel did not change them. If the user did not do it, say so. " + session.TellUserLine(c.Language) + ".\n"
+	if source != "" && source != "startup" {
+		return "\n" + i18n.T(c.Language, "hook.seal.kept") + " " + session.TellUserLine(c.Language) + ".\n"
+	}
+	if err := state.WriteSeal(cfgDir, cur); err != nil {
+		return "\n" + i18n.T(c.Language, "hook.seal.unwritten", err) + " " + session.TellUserLine(c.Language) + ".\n"
+	}
+	_ = state.AddGuardNotice(cfgDir, i18n.T(c.Language, "hook.seal.startnotice"), time.Now())
+	return "\n" + i18n.T(c.Language, "hook.seal.taken") + " " + session.TellUserLine(c.Language) + ".\n"
 }
 
 // GOOS is the system the hook runs on; tests change it.

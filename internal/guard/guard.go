@@ -70,6 +70,9 @@ type Policy struct {
 	// start of the session, or saved in the panel): something else changed them. Where
 	// the lists would let a commit, a push or a merge through, it asks instead.
 	ConfigChanged bool
+	// SealProblem, when not empty, says why the record of the lists the user last saw
+	// could not be read: ConfigChanged is set too, since the guard cannot tell.
+	SealProblem string
 	// ConfigProblem, when not empty, says why the configuration could not be read: the
 	// lists above are unknown, so a command they would cover asks the user every time.
 	ConfigProblem string
@@ -569,7 +572,7 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n int) Decisio
 				return Decision{Ask, i18n.T(p.Lang, "guard.git.ask", args[i], paths.Tilde(d), p.facts(d))}
 			case Allow:
 				if p.ConfigChanged {
-					return Decision{Ask, i18n.T(p.Lang, "guard.changed", "git "+args[i], paths.Tilde(d), p.facts(d))}
+					return p.changedAsk("git "+args[i], d)
 				}
 				if args[i] == "push" && rewrites(args[i+1:]) {
 					return Decision{Ask, i18n.T(p.Lang, "guard.git.rewrite")}

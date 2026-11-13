@@ -45,6 +45,7 @@ func Stop(in io.Reader, out io.Writer, cfgDir string) error {
 	if err != nil {
 		return nil
 	}
+	notice := userNotice(c.Language, cfgDir)
 	mem := memoryNote(c.Language, cfgDir)
 	model := modelStopNote(c.Language, cfgDir, i)
 	journal, err := journalNote(c, cfgDir, i.Cwd, i.SessionID, mem != "" || model != "")
@@ -58,10 +59,10 @@ func Stop(in io.Reader, out io.Writer, cfgDir string) error {
 		}
 	}
 	text := strings.Join(notes, "\n\n")
-	if text == "" {
+	if text == "" && notice == "" {
 		return nil
 	}
-	return write(out, output{specific{HookEventName: "Stop", AdditionalContext: text}})
+	return write(out, output{HookSpecificOutput: specific{HookEventName: "Stop", AdditionalContext: text}, SystemMessage: notice})
 }
 
 // journalNote is the reminder to write in the journal of the session's active task,

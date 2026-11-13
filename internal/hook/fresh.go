@@ -41,26 +41,33 @@ func freshBaseline(c *config.Config, s *config.Space, i input, cfgDir string) {
 // It never blocks the message: any problem means nothing is said.
 func UserPromptSubmit(in io.Reader, out io.Writer, cfgDir string) error {
 	i := read(in)
-	key := fresh.HookKey(Getenv)
-	if key == "" {
+	c, s, err := load(cfgDir, i.Cwd)
+	if err != nil {
 		return nil
 	}
-	c, s, err := load(cfgDir, i.Cwd)
-	if err != nil || s == nil {
-		return nil
+	notice := userNotice(c.Language, cfgDir)
+	say := func(text string) error {
+		if text == "" && notice == "" {
+			return nil
+		}
+		o := output{SystemMessage: notice}
+		if text != "" {
+			o.HookSpecificOutput = specific{HookEventName: "UserPromptSubmit", AdditionalContext: text}
+		}
+		return write(out, o)
+	}
+	key := fresh.HookKey(Getenv)
+	if key == "" || s == nil {
+		return say("")
 	}
 	unlock, err := filelock.LockWithin(filepath.Join(cfgDir, backup.NotesLock), FreshWait)
 	if err != nil {
-		return nil
+		return say("")
 	}
 	r, err := fresh.Check(cfgDir, key, fresh.SpaceOf(s.Name, s.Memory), Now())
 	unlock()
 	if err != nil {
-		return nil
+		return say("")
 	}
-	text := fresh.Text(c.Language, r)
-	if text == "" {
-		return nil
-	}
-	return write(out, output{specific{HookEventName: "UserPromptSubmit", AdditionalContext: text}})
+	return say(fresh.Text(c.Language, r))
 }
