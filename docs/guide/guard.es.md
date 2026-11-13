@@ -24,8 +24,7 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
 ## Lo que para
 
 - **Commits y pushes.** `git commit`, `git push`, y lo que publica como un push:
-  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`, y
-  lanzar a mano un flujo de publicación (`gh workflow run release`); los demás flujos pasan.
+  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`.
   Salvo que dejes a Claude en un repositorio (más abajo).
 - **Hacerse root.** `sudo`, `su`, `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
   sin `--user`, `ssh root@…`, un contenedor al que se le da la máquina entera (`docker
@@ -51,6 +50,10 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
   `eksctl`, `copilot`.
 - **Máquinas que no se tocan.** `ssh`, `scp`, `rsync`, `sftp` y `mosh` a una máquina que
   marcaste como intocable. `db01` y `db01.example.com` cuentan como la misma máquina.
+- **Lanzar a mano un flujo de publicación** (`gh workflow run release`, o lo mismo por
+  `gh api`). Saca una versión, así que decides tú, pero sin ir a un terminal: di que sí
+  solo si has pedido tú esa versión ahora. Si dices que no, o nadie contesta, no se lanza
+  nada. Los demás flujos pasan; uno nombrado solo por su número también pregunta.
 - **Pushes que reescriben la historia**, incluso donde Claude puede hacer push:
   `--force`, `--delete`, `--mirror`, `--prune`, una refspec que empieza por `+` o por `:`.
 - **Lo que no puede leer.** Un programa dado como variable (`$TOOL deploy`), comandos
