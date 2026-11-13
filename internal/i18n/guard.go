@@ -98,6 +98,11 @@ var guardMessages = map[string]msg{
 		es: "esto entra en %s como root. %s",
 	},
 	// The machine, then the date and time the exception ends.
+	// The reason root is denied comes first.
+	"guard.root.changed": {
+		en: "%s This machine's root exception does not count now: the guard's lists are not the ones the user last saw (something changed them outside the panel), and the exception may be what changed. It counts again once the user accepts the lists in the panel's Guard page.",
+		es: "%s La excepción de root de esta máquina no cuenta ahora: las listas del guardia no son las que el usuario vio por última vez (algo las cambió fuera del panel) y la excepción puede ser lo que cambió. Vuelve a contar cuando el usuario acepte las listas en la página Guardia del panel.",
+	},
 	"guard.root.exception": {
 		en: "this would run as root on %s, which has a temporary root exception until %s UTC (root_ask). The user confirms each command: say first what it does and why.",
 		es: "esto se ejecutaría como root en %s, que tiene una excepción temporal para root hasta el %s UTC (root_ask). El usuario confirma cada comando: di antes qué hace y por qué.",
@@ -259,6 +264,10 @@ var guardMessages = map[string]msg{
 	"guard.config": {
 		en: "%s may reach production or an untouchable host, and augmented brain cannot tell: it cannot read its configuration (%s). The user confirms first; `augmented-brain doctor` shows how to fix the configuration.",
 		es: "%s puede llegar a producción o a un host intocable, y augmented brain no puede saberlo: no puede leer su configuración (%s). El usuario lo confirma antes; `augmented-brain doctor` enseña cómo arreglar la configuración.",
+	},
+	"guard.config.changed": {
+		en: "%s may reach production or an untouchable host, and the guard's lists are not the ones the user last saw: something changed them outside the panel, perhaps to take a profile or a host out. The user confirms first; say so, and that they can accept the lists in the panel's Guard page.",
+		es: "%s puede llegar a producción o a un host intocable, y las listas del guardia no son las que el usuario vio por última vez: algo las cambió fuera del panel, quizá para quitar un perfil o un host. El usuario lo confirma antes; díselo, y que puede aceptar las listas en la página Guardia del panel.",
 	},
 	"guard.config.aws": {
 		en: "this AWS command",
