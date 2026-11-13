@@ -50,6 +50,7 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
@@ -65,15 +66,17 @@
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html" aria-current="page">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
+  <li><a href="anywhere.html">From your phone or another computer</a></li>
   <li><a href="remote.html">Remote access</a></li>
   <li><a href="task-sessions.html">A session per task</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
-  <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="panel-remote.html" aria-current="page">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -98,23 +101,28 @@
   <p>The <a href="panel.html">panel</a> opens on the computer where augmented brain runs, and only there. To open it from another of your devices, your phone or another computer, augmented brain uses <strong><a href="https://tailscale.com">Tailscale</a></strong>: a free app that joins your devices in a private network of their own. Only your devices are in it; nothing is open to the internet.</p>
   <pre><code>augmented-brain panel remote</code></pre>
   <p>It starts the panel, publishes it in your Tailscale network, and prints its address, such as <code>https://my-laptop.example.ts.net:8443/t/…</code>, and a QR code. Point the phone's camera at the code, or open the address on the other computer. The address opens the panel once, within 10 minutes: run the command again for another.</p>
-  <p>If the panel is already open on this computer, it is not stopped: the same panel starts answering through the network too, and the pages you have open go on working. If that panel came from an earlier version, it has to start again: the command says so, and you reload those pages. If publishing fails, the panel stays on this computer only.</p>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#what-you-need-once">What you need, once</a></li><li><a href="#who-can-open-it">Who can open it</a></li><li><a href="#what-only-this-computer-can-do">What only this computer can do</a></li><li><a href="#it-is-always-temporary">It is always temporary</a></li><li><a href="#check-it">Check it</a></li><li><a href="#if-the-panel-was-already-open">If the panel was already open</a></li></ul></nav>
   <h2 id="what-you-need-once">What you need, once</h2>
   <p>The command checks each of these and, when one is missing, says exactly what to do. It never installs or changes anything of Tailscale's for you.</p>
   <ol><li><strong>Tailscale on both devices</strong>, signed in with the same account: <a href="https://tailscale.com/download">tailscale.com/download</a>. It works on Linux, macOS, Windows, Android and iPhone.</li><li><strong>HTTPS in your Tailscale network</strong>, so the panel travels encrypted with a real certificate. Turn it on in Tailscale's admin page, <a href="https://login.tailscale.com/admin/dns">login.tailscale.com/admin/dns</a>: <strong>HTTPS Certificates → Enable HTTPS</strong>. One thing to know: the names of your machines (such as <code>my-laptop.example.ts.net</code>) then appear in public logs of certificates. Anyone can see that the name exists; nobody outside your devices can reach it.</li><li><strong>On Linux, let your user publish.</strong> Tailscale lets only an administrator publish on the computer. Once, with your administrator password:<pre><code>sudo tailscale set --operator=your-user-name</code></pre>augmented brain prints this line with your name and does not run it. On macOS and Windows it is not needed.</li></ol>
   <h2 id="who-can-open-it">Who can open it</h2>
   <p>Four things keep it yours:</p>
-  <ul><li><strong>Only your Tailscale network reaches the address.</strong> It does not exist on the internet.</li><li><strong>Only your account gets in.</strong> Tailscale tells the panel who sends each request (the account you signed in with, with its own password and second factor), and the panel lets in only the owner of the computer. Someone else in your network, or someone you share a device with, gets “forbidden” even with the address.</li><li><strong>The network has a door of its own.</strong> What Tailscale brings in arrives at a port of the panel that only it uses, and is treated as coming from the network whatever it says about itself: from there, nothing that is only for this computer can be done. From another device you can look at everything, but you cannot back up now, set up a backup, go back to a backup or to an earlier configuration, or change anything on the Guard page (its lists, the model of your sessions, what the assistant saves on its own).</li><li><strong>The address works once</strong>, and the pages it opens hold a key that changes every time the panel starts.</li></ul>
+  <ul><li><strong>Only your Tailscale network reaches the address.</strong> It does not exist on the internet.</li><li><strong>Only your account gets in.</strong> Tailscale tells the panel who sends each request (the account you signed in with, with its own password and second factor), and the panel lets in only the owner of the computer. Someone else in your network, or someone you share a device with, gets “forbidden” even with the address.</li><li><strong>What comes from another device is always treated as such.</strong> Tailscale hands the panel its visits through an entrance of their own, and the panel knows them by that entrance, not by what the visit says about itself. So a visit cannot pretend to come from this computer, and what only this computer may do stays here (see below).</li><li><strong>The address works once</strong>, and the pages it opens hold a key that changes every time the panel starts.</li></ul>
   <p>There is no extra password to type: your Tailscale account is the login.</p>
+  <h2 id="what-only-this-computer-can-do">What only this computer can do</h2>
+  <p>From another device you can read every page and do most things: tasks, the inbox, reminders, people, your profile. A few things change your backup or what Claude may do, so the panel does them only on this computer, and from another device the page only shows:</p>
+  <ul><li>back up now;</li><li>set up a backup;</li><li>go back to a copy of your notes;</li><li>go back to an earlier configuration, on the Versions page;</li><li>change anything on the Guard page: its lists, the model of your sessions and what the assistant saves on its own.</li></ul>
   <h2 id="it-is-always-temporary">It is always temporary</h2>
   <p>The address works while the panel runs. The panel stops by itself after 30 minutes without use, or now with:</p>
   <pre><code>augmented-brain panel stop</code></pre>
   <p>When it stops, it takes the address back from Tailscale. If the computer crashed or restarted with the panel published, the next time a panel starts it takes it back, and <code>augmented-brain doctor</code> warns while it is still there. Port 8443 of your Tailscale network is the panel's: if you already publish something else there (even another program of this computer), augmented brain leaves it alone and says so. It only ever takes back the address it published itself.</p>
   <h2 id="check-it">Check it</h2>
   <p><code>augmented-brain doctor</code> has a line about the remote panel once you have used it: whether Tailscale is still installed, connected and with HTTPS, and whether an address of the panel was left published.</p>
+  <h2 id="if-the-panel-was-already-open">If the panel was already open</h2>
+  <p>If the panel is already open on this computer when you run <code>augmented-brain panel remote</code>, it is not stopped: the same panel starts answering through the network too, and the pages you have open go on working. If that panel came from an earlier version, it has to start again: the command says so, and you reload those pages. If publishing fails, the panel stays on this computer only.</p>
   <nav class="pager" aria-label="Previous / Next">
-    <a class="prev" href="panel.html"><span>← Previous</span>The panel</a>
-    <a class="next" href="config-history.html"><span>Next →</span>Configuration versions</a>
+    <a class="prev" href="task-sessions.html"><span>← Previous</span>A session per task</a>
+    <a class="next" href="update-and-uninstall.html"><span>Next →</span>Updating and uninstalling</a>
   </nav>
 </main>
 </div>
