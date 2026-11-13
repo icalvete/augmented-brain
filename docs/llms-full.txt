@@ -3592,7 +3592,7 @@ At least one field besides `id` and `space` is needed.
 
 Steps are the small parts of a task: checkboxes (`- [ ] text`) in its Plan. This tool adds
 one, or ticks or unticks one. Each change writes a short journal line, and the answer
-lists the steps.
+lists the steps. A closed task's steps stay as they were closed.
 
 - `id`: the task's id.
 - `add` (optional): add this step, unticked, at the end of the Plan, instead of ticking
@@ -3619,7 +3619,8 @@ done or decided.
 
 ## `task_park`
 
-Pauses a task without losing anything, before switching to other work.
+Pauses a task without losing anything, before switching to other work. A closed task is
+refused: it opens again only with `task_update` and `reopen`, so its result stays.
 
 - `id`: the task's id.
 - `next`: exactly how to resume: a command, a file or a decision.
@@ -3698,8 +3699,10 @@ item at a time. It takes no parameters.
 
 ## `review_done`
 
-Finishes the weekly review. It saves what was decided in `reviews/`, and takes the
-processed captures out of the inbox.
+Finishes the weekly review. It saves what was decided in `reviews/`, with the captures
+it takes out of the inbox (each with its date), and only then takes them out. A review
+that cannot be saved (an empty summary, something that looks like a secret) leaves the
+inbox as it was, so no capture is lost.
 
 - `summary`: what was decided, in a few lines.
 - `processed` (optional): the text of each capture dealt with, exactly as `weekly_review`
@@ -4383,7 +4386,9 @@ The weekly review goes through the inbox (each capture becomes a task, goes to a
 knowledge, or is dropped), the live tasks untouched for 14 days or more, and the dates due
 in the coming week. Processed captures leave the inbox, and the review is kept as
 `reviews/review-<date>.md` (`type: review`), with what was decided as its body and the
-first line as its summary. When the last review is 7 days old or more and there is
+first line as its summary; the captures it took out of the inbox follow, as dated lines
+under a heading of their own. The review is saved first: one that cannot be saved takes
+nothing out of the inbox. When the last review is 7 days old or more and there is
 something to go through, the session start offers a new one. A review done in the
 panel keeps one line per decision while it goes on in a draft on this machine
 (`review-<space>.draft` in the configuration folder, never in the notes), and writes

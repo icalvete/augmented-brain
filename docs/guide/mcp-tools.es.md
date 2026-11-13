@@ -121,7 +121,8 @@ Hace falta al menos un campo además de `id` y `space`.
 
 Los pasos son las partes pequeñas de una tarea: casillas (`- [ ] texto`) en su Plan. Esta
 herramienta añade una, o la marca o la desmarca. Cada cambio escribe una línea corta en
-el diario, y la respuesta lista los pasos.
+el diario, y la respuesta lista los pasos. Los pasos de una tarea cerrada se quedan como
+se cerró.
 
 - `id`: el id de la tarea.
 - `add` (opcional): añade este paso, sin marcar, al final del Plan, en vez de marcar
@@ -149,7 +150,8 @@ que se hace o se decide algo.
 
 ## `task_park`
 
-Deja una tarea en pausa sin perder nada, antes de pasar a otra cosa.
+Deja una tarea en pausa sin perder nada, antes de pasar a otra cosa. Una tarea cerrada
+se rechaza: solo se vuelve a abrir con `task_update` y `reopen`, así su resultado se queda.
 
 - `id`: el id de la tarea.
 - `next`: cómo retomarla exactamente: un comando, un fichero o una decisión.
@@ -227,8 +229,10 @@ repasa contigo, una cosa cada vez. No tiene parámetros.
 
 ## `review_done`
 
-Termina la revisión semanal. Guarda lo decidido en `reviews/`, y saca del buzón las
-capturas procesadas.
+Termina la revisión semanal. Guarda lo decidido en `reviews/`, con las capturas que
+saca del buzón (cada una con su fecha), y solo después las saca. Una revisión que no se
+puede guardar (un resumen vacío, algo con pinta de secreto) deja el buzón como estaba,
+así que no se pierde ninguna captura.
 
 - `summary`: lo que se ha decidido, en unas pocas líneas.
 - `processed` (opcional): el texto de cada captura resuelta, tal como la listó
