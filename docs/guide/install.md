@@ -141,6 +141,34 @@ configuration in `%APPDATA%\augmented-brain`; your notes in
 - To work without the app: `cd ~\augmented-brain\work; claude` (Windows PowerShell has no
   `&&`).
 
+## Check a download
+
+You do not need this to install. It is for whoever wants to be sure that what they
+downloaded is what the project published, made from its public code.
+
+Every release is built by GitHub from a commit of `main`, never on someone's computer,
+and GitHub signs a record of it: which workflow built each file, from which commit.
+With the [GitHub CLI](https://cli.github.com/) (`gh`), check any file of a release,
+the installer included:
+
+```bash
+gh attestation verify augmented-brain_0.23.0-beta_linux_amd64.tar.gz -R icalvete/augmented-brain
+```
+
+It ends with `Verification succeeded!` and names the workflow and the commit. A file
+changed after it was built fails.
+
+`checksums.txt`, in every release, holds the SHA-256 of each archive and of both
+installers. The installers check the archive against it; you can check any file too:
+
+```bash
+sha256sum --ignore-missing -c checksums.txt
+```
+
+The build is reproducible: the same commit, built with the Go version in `go.mod`, gives
+the same bytes. `scripts/release-build.sh <version>` from a clone of that tag writes
+the same `checksums.txt` as the release.
+
 ## Updating
 
 When a new version is out, Claude tells you at the start of a session and offers to

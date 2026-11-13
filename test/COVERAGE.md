@@ -18,6 +18,9 @@ row here with the test that covers it.
 | Update from the release published last | `install-check.sh` step 8, `install-check.ps1` step 5 | CI, real download from GitHub |
 | A download that fails (504, 404, cut, checksum) | `cmd` `TestUpdateDownloadFails`, `TestInstallerDownloadFails`, `TestInstallerFallsBackToAPI`, `TestInstallPs1DownloadFails`; `internal/update` `TestDownload` | Go |
 | Update with nothing newer, or GitHub out of reach | `cmd` `TestUpdateNothingNewer` | Go |
+| Which commit of `main` a release is made from | `cmd` `TestReleaseCommit` | Go |
+| A release waits for every required check, comes from `main`, is reproducible and attested | `release.yml` (`gate`, `build`, `publish`) | by hand: the next real release, and `gh attestation verify` on one of its files |
+| The workflows hold no unpinned action, kept credential or shared cache | `zizmor`, `actionlint` | CI (`workflows` in `ci.yml`) |
 | Notes in an older format | `internal/format` tests, `scripts/compat-check.sh` | Go, CI |
 | Uninstall, and install again | `install-check.sh` step 4, `install-check.ps1` step 4 | CI |
 | `uninstall --config`, and install again | `install-check.sh` step 5, `cmd` `TestUninstallConfig` | CI, Go |

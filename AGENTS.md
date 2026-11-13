@@ -222,8 +222,16 @@ Heavier checks, before a release or when you touch what they cover:
   `Publicada el <date>.`), commit, open a pull request and merge it
   when CI is green. Publishing is then the maintainer's one gesture: Run workflow on
   `release` in GitHub's Actions tab (or `gh workflow run release -R icalvete/augmented-brain`).
-  `release.yml` takes the version from `VERSION` on `main`, refuses one already tagged or a
-  commit whose required checks failed, tags it, builds the archives, checksums and
-  `install.sh` and publishes them; the installer always takes the latest release. An
+  `release.yml` takes the version from `VERSION` on `main` and the commit that last set it
+  or changed its section of the changelog (`scripts/release-commit.sh`: what merged
+  later waits for the next version), refuses one already tagged, a tag on a commit not
+  on `main`, or a commit where any required check has not passed
+  (`scripts/release-checks.sh`); then a read-only job with no cache builds the archives,
+  the installers and `checksums.txt` (reproducible: the same commit and Go give the same
+  bytes), and another, in the environment `release`, attests their provenance and
+  publishes them; the installer always takes the latest release. Two settings are the
+  maintainer's, in GitHub: immutable releases, and actions pinned to a full commit SHA
+  (every workflow already pins them; `zizmor` and `actionlint` check the workflows in
+  `ci.yml`). An
   assistant prepares the branch but never starts that workflow: the guard denies it
   (pushing a tag `v<version>` by hand still works too).
