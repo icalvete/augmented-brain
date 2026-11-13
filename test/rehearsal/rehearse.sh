@@ -1,7 +1,7 @@
 #!/bin/sh
 # rehearse.sh — the rehearsal before a release, in the VMs, from this checkout.
 #
-#   test/rehearsal/rehearse.sh [--vm ubuntu|windows|both] [--from <snapshot>] [--update] [--sessions]
+#   test/rehearsal/rehearse.sh [--vm ubuntu|windows|both] [--from <snapshot>] [--update | --update-from <version>] [--sessions]
 #
 # It builds the release from this checkout (scripts/release-build.sh; the plugin travels
 # inside the program), serves it over HTTP on 127.0.0.1 (a VM reaches this computer's
@@ -12,6 +12,8 @@
 # logs go to test/rehearsal/logs/ (not committed). --update first installs the release
 # published last, from GitHub, and runs its doctor, so the release of this checkout goes in
 # as an update: the same as --from a snapshot with the last release, without keeping one.
+# --update-from <version> does the same from a release you name (say 0.23.0-beta): once
+# this checkout is published, the release published last is this same version.
 # On Ubuntu it then runs the smoke test with a real systemd (smoke.py): remote install,
 # a reboot of the VM, the unit back with its PATH and permission mode, and session start.
 # --sessions also asks a real Claude a couple of things: the VM's Claude must be logged in (in a snapshot you keep for that).
@@ -29,12 +31,14 @@ vms=both
 from=clean
 sessions=""
 update=""
+oldversion=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --vm) vms=$2; shift 2 ;;
     --from) from=$2; shift 2 ;;
     --sessions) sessions=--sessions; shift ;;
     --update) update=1; shift ;;
+    --update-from) update=1; oldversion=$2; shift 2 ;;
     *) echo "rehearse: unknown option $1"; exit 2 ;;
   esac
 done
@@ -61,7 +65,7 @@ for vm in $vms; do
   dir="$main/test/vm/ubuntu-desktop"; name=augmented-brain-ubuntu
   [ "$vm" = windows ] && { dir="$main/test/vm/windows-11"; name=augmented-brain-windows; }
   log="$logs/$vm-$(date +%Y%m%d-%H%M).log"
-  echo "rehearse: $vm, from snapshot $from${update:+, updating the release published last} (log: $log)"
+  echo "rehearse: $vm, from snapshot $from${update:+, updating ${oldversion:-the release published last}} (log: $log)"
   VBoxManage snapshot "$name" restore "$from" >/dev/null
   VAGRANT_CWD="$dir" vagrant up --no-provision >/dev/null
   code=0
@@ -73,7 +77,7 @@ for vm in $vms; do
       curl -fsS $url/smoke.py -o ~/ab-release/smoke.py
       if [ -n '$update' ]; then
         echo '##### the release published last'
-        curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | env -u AB_RELEASE_URL AB_YES=1 AB_NO_DESKTOP=1 sh
+        curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | env -u AB_RELEASE_URL AB_VERSION='${oldversion:-latest}' AB_YES=1 AB_NO_DESKTOP=1 sh
         augmented-brain --version; augmented-brain doctor || true
         echo '##### updating'
       fi
@@ -95,9 +99,9 @@ for vm in $vms; do
       Invoke-WebRequest -UseBasicParsing '$url/checks.py' -OutFile \"\$r\\checks.py\"
       if ('$update') {
         Write-Output '##### the release published last'
-        \$keep = \$env:AB_RELEASE_URL; \$env:AB_RELEASE_URL = \$null
+        \$keep = \$env:AB_RELEASE_URL; \$env:AB_RELEASE_URL = \$null; \$env:AB_VERSION = '${oldversion:-latest}'
         irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
-        \$env:AB_RELEASE_URL = \$keep
+        \$env:AB_RELEASE_URL = \$keep; \$env:AB_VERSION = \$null
         \$env:Path = [Environment]::GetEnvironmentVariable('Path','Machine') + ';' + [Environment]::GetEnvironmentVariable('Path','User')
         augmented-brain --version; augmented-brain doctor
         Write-Output '##### updating'
