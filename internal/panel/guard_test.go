@@ -290,7 +290,8 @@ func TestGuardPageRemoteOnlyShows(t *testing.T) {
 	if w.Code != http.StatusOK || !strings.Contains(body, "from another device") {
 		t.Fatalf("remote page: %d, no note: %.300s", w.Code, body)
 	}
-	for _, want := range []string{repo, "db1", "<code>opus</code>", "Save and tell me"} {
+	// The repository by its folder's name: on Windows the page writes the path its own way.
+	for _, want := range []string{`core</code>`, "<code>db1</code>", "<code>opus</code>", "Save and tell me"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("the remote page does not show %q", want)
 		}
