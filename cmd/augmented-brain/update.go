@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -21,14 +23,46 @@ import (
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
-// updateFlags are update's flags: --plugin, --force and --no-restart.
-func updateFlags(errOut io.Writer) (*flag.FlagSet, *bool, *bool, *bool) {
+// updateFlags are update's flags: --plugin, --force, --no-restart and --from.
+func updateFlags(errOut io.Writer) (*flag.FlagSet, *bool, *bool, *bool, *string) {
 	fs := flag.NewFlagSet("update", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	plugin := fs.Bool("plugin", false, "update only the Claude Code plugin")
 	force := fs.Bool("force", false, "update even when the backup before it fails")
 	noRestart := fs.Bool("no-restart", false, "do not restart the idle Claude sessions still running the old program")
-	return fs, plugin, force, noRestart
+	from := fs.String("from", "", "for tests: install the release at this address instead of GitHub's latest")
+	return fs, plugin, force, noRestart, from
+}
+
+// ignoredEnv are the variables of the installer's tests that `update` never obeys: a
+// project's .claude/settings.json can set the environment of a Claude session, and the
+// session may run `update` for the user. Where the release comes from is said with
+// --from, on the command line, where the guard and the user see it.
+var ignoredEnv = []string{"AB_RELEASE_URL", "AB_MARKETPLACE"}
+
+// installerEnv are the variables of augmented brain passed on to the installer `update`
+// runs; any other AB_ variable is left out (see ignoredEnv). The rest of the
+// environment (PATH, HOME, the system's own) goes as it is.
+var installerEnv = map[string]bool{"AB_CONFIG_DIR": true, "AB_INSTALL_DIR": true}
+
+// checkFrom accepts the address of --from: https://, file:// (a release in a folder) or
+// http:// only to this computer or to the host of a test VM (10.0.2.2), where the
+// rehearsal serves its release.
+func checkFrom(addr string) error {
+	u, err := url.Parse(addr)
+	if err != nil {
+		return err
+	}
+	switch u.Scheme {
+	case "https", "file":
+		return nil
+	case "http":
+		switch u.Hostname() {
+		case "127.0.0.1", "localhost", "::1", "10.0.2.2":
+			return nil
+		}
+	}
+	return errors.New(addr)
 }
 
 // cmdUpdate brings augmented brain up to date: the program through the published
@@ -42,7 +76,7 @@ func updateFlags(errOut io.Writer) (*flag.FlagSet, *bool, *bool, *bool) {
 // --no-restart), and for those left, which task each space has active, to park before
 // restarting Claude.
 func cmdUpdate(args []string, out, errOut io.Writer) int {
-	fs, pluginOnly, force, noRestart := updateFlags(errOut)
+	fs, pluginOnly, force, noRestart, from := updateFlags(errOut)
 	if _, ok := parseArgs(fs, args, 0, errOut); !ok {
 		return 2
 	}
@@ -56,7 +90,20 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 		return updatePlugin(lang, out, errOut)
 	}
 
-	base := os.Getenv("AB_RELEASE_URL")
+	for _, v := range ignoredEnv {
+		if os.Getenv(v) != "" {
+			fmt.Fprintln(errOut, i18n.T(lang, "update.envignored", v))
+			os.Unsetenv(v)
+		}
+	}
+	base := *from
+	if base != "" {
+		if err := checkFrom(base); err != nil {
+			fmt.Fprintln(errOut, i18n.T(lang, "update.badfrom", base))
+			return 2
+		}
+		fmt.Fprintln(out, i18n.T(lang, "update.from", base))
+	}
 	latest := ""
 	if base == "" {
 		var err error
@@ -79,7 +126,13 @@ func cmdUpdate(args []string, out, errOut io.Writer) int {
 		return 1
 	}
 	now := installedVersion()
-	if latest != "" && now != "" && update.Newer(latest, now) {
+	if now == "" {
+		// The installer checks the new program before it replaces the old one, and puts
+		// the old one back when it does not start: this is what is left, said plainly.
+		fmt.Fprintln(errOut, i18n.T(lang, "update.broken"))
+		return 1
+	}
+	if latest != "" && update.Newer(latest, now) {
 		fmt.Fprintln(errOut, i18n.T(lang, "update.notdone", now, latest))
 		return 1
 	}
@@ -118,12 +171,30 @@ func runInstaller(lang, base, latest string, out, errOut io.Writer) error {
 	// AB_VERSION: the installer takes the very release just checked, not whatever is
 	// latest a moment later. AB_EXIT_CODE: install.ps1 ends with an error code when it
 	// fails, which it never does in a person's own window.
-	cmd.Env = append(os.Environ(), "AB_LANGUAGE="+lang, "AB_NO_DESKTOP=1", "AB_EXIT_CODE=1")
+	// AB_RELEASE_URL only from --from (base).
+	cmd.Env = append(installerEnviron(os.Environ()), "AB_LANGUAGE="+lang, "AB_NO_DESKTOP=1", "AB_EXIT_CODE=1")
 	if latest != "" {
 		cmd.Env = append(cmd.Env, "AB_VERSION="+latest)
 	}
+	if base != "" {
+		cmd.Env = append(cmd.Env, "AB_RELEASE_URL="+base)
+	}
 	cmd.Stdout, cmd.Stderr = out, errOut
 	return cmd.Run()
+}
+
+// installerEnviron is env without the variables of augmented brain the installer must not get
+// from it: every AB_ one but those of installerEnv.
+func installerEnviron(env []string) []string {
+	var keep []string
+	for _, kv := range env {
+		name, _, _ := strings.Cut(kv, "=")
+		if strings.HasPrefix(strings.ToUpper(name), "AB_") && !installerEnv[strings.ToUpper(name)] {
+			continue
+		}
+		keep = append(keep, kv)
+	}
+	return keep
 }
 
 // beforeUpdate checks the installation and backs up every space that has a backup,

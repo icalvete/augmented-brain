@@ -254,7 +254,11 @@ El instalador lee alguna más:
   `AB_DESKTOP_URL`: para pruebas: qué versión, dónde están los ficheros de la versión
   publicada, la API de GitHub a la que recurrir, la espera entre intentos, una carpeta o un
   repositorio del que tomar el plugin en vez del que lleva el programa, y dónde está el
-  repositorio apt de la app de escritorio.
+  repositorio apt de la app de escritorio. `augmented-brain update` no hace caso de
+  ninguna: para sus pruebas usa `--from`.
+- `AB_ALLOW_ROOT=1`: en Linux y macOS, instala aunque sea como root (`sudo`). Sin ella, el
+  instalador se niega: no necesita root, y como root el programa y sus ajustes acabarían
+  siendo de root, o en la carpeta de root, no en la tuya.
 
 ## Los ajustes de Claude Code
 

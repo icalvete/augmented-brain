@@ -240,7 +240,10 @@ The installer reads a few more:
   `AB_DESKTOP_URL`: for testing: which version, where the release files are, the GitHub
   API to fall back on, the wait between tries, a folder or repository to take the plugin
   from instead of the one inside the program, and where the desktop app's apt repository
-  is.
+  is. `augmented-brain update` ignores them all: for its tests it takes `--from`.
+- `AB_ALLOW_ROOT=1`: on Linux and macOS, install even as root (`sudo`). Without it the
+  installer refuses: it needs no root, and as root the program and its settings would
+  end up belonging to root, or in root's home, not yours.
 
 ## Claude Code's own settings
 

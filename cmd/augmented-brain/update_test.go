@@ -31,11 +31,10 @@ func TestUpdateDownloadFails(t *testing.T) {
 	}))
 	defer srv.Close()
 	t.Setenv("AB_CONFIG_DIR", t.TempDir())
-	t.Setenv("AB_RELEASE_URL", srv.URL)
 	t.Setenv("AB_LANGUAGE", "en")
 	quickRetries(t)
 	var out, errOut bytes.Buffer
-	if code := cmdUpdate(nil, &out, &errOut); code == 0 {
+	if code := cmdUpdate([]string{"--from", srv.URL}, &out, &errOut); code == 0 {
 		t.Fatalf("a failed download was taken for an update:\n%s%s", out.String(), errOut.String())
 	}
 	if !strings.Contains(errOut.String(), "did not finish") || !strings.Contains(errOut.String(), "504") {
@@ -174,5 +173,74 @@ func TestAfterUpdate(t *testing.T) {
 	afterUpdate("es", "0.10.0-alpha", true, &out)
 	if !strings.Contains(out.String(), "task-mudanza") || strings.Contains(out.String(), "1 sesiones") {
 		t.Errorf("some left:\n%s", out.String())
+	}
+}
+
+// AB_RELEASE_URL (and AB_MARKETPLACE) never decide where an update comes from: a
+// project's settings can put them in a Claude session's environment. `update` says it
+// ignores them and asks GitHub as always; nothing is asked of the address they name.
+func TestUpdateIgnoresReleaseURL(t *testing.T) {
+	asked := false
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		asked = true
+		fmt.Fprintln(w, "echo pwned")
+	}))
+	defer srv.Close()
+	home(t)
+	t.Setenv("AB_LANGUAGE", "en")
+	t.Setenv("AB_RELEASE_URL", srv.URL)
+	t.Setenv("AB_MARKETPLACE", srv.URL)
+	old := latestRelease
+	latestRelease = func(*http.Client) (string, error) { return "0.0.1", nil } // nothing newer
+	t.Cleanup(func() { latestRelease = old })
+	var out, errOut bytes.Buffer
+	if code := cmdUpdate(nil, &out, &errOut); code != 0 {
+		t.Fatalf("exit %d\n%s%s", code, out.String(), errOut.String())
+	}
+	for _, v := range []string{"AB_RELEASE_URL", "AB_MARKETPLACE"} {
+		if !strings.Contains(errOut.String(), v+" está puesta, pero `update` no le hace caso") {
+			t.Errorf("it does not say it ignores %s:\n%s", v, errOut.String())
+		}
+	}
+	if !strings.Contains(out.String(), "es la última versión") {
+		t.Errorf("it did not ask GitHub:\n%s", out.String())
+	}
+	if asked {
+		t.Error("the address of AB_RELEASE_URL was asked")
+	}
+}
+
+// --from takes https://, file:// and http:// only to this computer or a test VM's host.
+func TestUpdateFrom(t *testing.T) {
+	for addr, ok := range map[string]bool{
+		"https://example.com/r":     true,
+		"file:///tmp/release":       true,
+		"http://127.0.0.1:8000":     true,
+		"http://localhost:8000/rel": true,
+		"http://10.0.2.2:8000":      true,
+		"http://example.com/r":      false,
+		"http://127.0.0.1.evil.com": false,
+		"ftp://127.0.0.1/r":         false,
+		"127.0.0.1:8000":            false,
+	} {
+		if err := checkFrom(addr); (err == nil) != ok {
+			t.Errorf("%s: %v", addr, err)
+		}
+	}
+	t.Setenv("AB_CONFIG_DIR", t.TempDir())
+	t.Setenv("AB_LANGUAGE", "en")
+	var out, errOut bytes.Buffer
+	if code := cmdUpdate([]string{"--from", "http://example.com/r"}, &out, &errOut); code != 2 || !strings.Contains(errOut.String(), "Nothing was updated") {
+		t.Errorf("exit %d\n%s%s", code, out.String(), errOut.String())
+	}
+}
+
+// The installer gets no AB_ variable but those of installerEnv: the system's own go.
+func TestInstallerEnviron(t *testing.T) {
+	got := installerEnviron([]string{"PATH=/bin", "HOME=/h", "AB_CONFIG_DIR=/c", "AB_INSTALL_DIR=/b",
+		"AB_RELEASE_URL=http://x", "AB_MARKETPLACE=/m", "AB_DESKTOP_URL=x", "ab_api_url=x", "LANG=es_ES.UTF-8"})
+	want := "PATH=/bin HOME=/h AB_CONFIG_DIR=/c AB_INSTALL_DIR=/b LANG=es_ES.UTF-8"
+	if strings.Join(got, " ") != want {
+		t.Errorf("got %q", got)
 	}
 }
