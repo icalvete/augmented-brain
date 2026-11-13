@@ -1,15 +1,15 @@
 package guard
 
 import (
-	"bufio"
 	"cmp"
-	"github.com/icalvete/augmented-brain/internal/repostat"
 	"io"
 	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/icalvete/augmented-brain/internal/repostat"
 
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -253,33 +253,11 @@ const maxGitConfig = 1 << 20
 // .git/config (for a worktree, its repository's), without running git. Includes are
 // not followed: a remote only there is not found, and the merge is denied.
 func remoteURLs(dir string) []string {
-	gitdir := filepath.Join(dir, ".git")
-	info, err := os.Lstat(gitdir)
-	if err != nil {
+	_, common, ok := gitDirs(dir)
+	if !ok {
 		return nil
 	}
-	if !info.IsDir() {
-		data, err := os.ReadFile(gitdir)
-		if err != nil {
-			return nil
-		}
-		g, ok := strings.CutPrefix(strings.TrimSpace(string(data)), "gitdir:")
-		if !ok {
-			return nil
-		}
-		gitdir = strings.TrimSpace(g)
-		if !filepath.IsAbs(gitdir) {
-			gitdir = filepath.Join(dir, gitdir)
-		}
-		if common, err := os.ReadFile(filepath.Join(gitdir, "commondir")); err == nil {
-			c := strings.TrimSpace(string(common))
-			if !filepath.IsAbs(c) {
-				c = filepath.Join(gitdir, c)
-			}
-			gitdir = c
-		}
-	}
-	f, err := os.Open(filepath.Join(gitdir, "config"))
+	f, err := os.Open(filepath.Join(common, "config"))
 	if err != nil {
 		return nil
 	}
@@ -288,40 +266,16 @@ func remoteURLs(dir string) []string {
 }
 
 // parseRemotes reads the url values of the [remote "<name>"] sections of a git config
-// file. It is a small reader, not git's: what it does not understand is skipped.
+// file (also the old form [remote.origin]).
 func parseRemotes(r io.Reader) []string {
 	var urls []string
-	inRemote := false
-	sc := bufio.NewScanner(r)
-	sc.Buffer(make([]byte, 0, 64<<10), maxGitConfig)
-	for sc.Scan() {
-		line := strings.TrimSpace(sc.Text())
-		if line == "" || line[0] == '#' || line[0] == ';' {
-			continue
+	readGitConfig(r, func(section, key, value string) {
+		name, _, _ := strings.Cut(section, " ")
+		name, _, _ = strings.Cut(name, ".")
+		if strings.EqualFold(name, "remote") && section != name && strings.EqualFold(key, "url") && value != "" {
+			urls = append(urls, value)
 		}
-		if line[0] == '[' {
-			end := strings.IndexByte(line, ']')
-			if end < 0 {
-				inRemote = false
-				continue
-			}
-			section := strings.TrimSpace(line[1:end])
-			name, _, _ := strings.Cut(section, " ")
-			name, _, _ = strings.Cut(name, ".") // the old form [remote.origin]
-			inRemote = strings.EqualFold(name, "remote") && section != name
-			continue
-		}
-		if !inRemote {
-			continue
-		}
-		key, value, found := strings.Cut(line, "=")
-		if !found || !strings.EqualFold(strings.TrimSpace(key), "url") {
-			continue
-		}
-		if v := configValue(value); v != "" {
-			urls = append(urls, v)
-		}
-	}
+	})
 	return urls
 }
 
@@ -349,26 +303,11 @@ func configValue(v string) string {
 // headBranch is the branch checked out in the repository or worktree at dir, read from
 // its HEAD without running git; empty when HEAD is detached or cannot be read.
 func headBranch(dir string) string {
-	gitdir := filepath.Join(dir, ".git")
-	info, err := os.Lstat(gitdir)
-	if err != nil {
+	own, _, ok := gitDirs(dir)
+	if !ok {
 		return ""
 	}
-	if !info.IsDir() {
-		data, err := os.ReadFile(gitdir)
-		if err != nil {
-			return ""
-		}
-		g, ok := strings.CutPrefix(strings.TrimSpace(string(data)), "gitdir:")
-		if !ok {
-			return ""
-		}
-		gitdir = strings.TrimSpace(g)
-		if !filepath.IsAbs(gitdir) {
-			gitdir = filepath.Join(dir, gitdir)
-		}
-	}
-	head, err := os.ReadFile(filepath.Join(gitdir, "HEAD"))
+	head, err := os.ReadFile(filepath.Join(own, "HEAD"))
 	if err != nil {
 		return ""
 	}

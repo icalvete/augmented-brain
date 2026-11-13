@@ -1017,6 +1017,18 @@ func (p Policy) listsUnknown(what string) (Decision, bool) {
 	return Decision{Ask, i18n.T(p.Lang, "guard.config", what, p.ConfigProblem)}, true
 }
 
+// ghValue are the options of gh and glab that take a value, by command, so the value is
+// never taken for a word of the command: "" holds those every command takes. The same
+// letter means different things in different commands (-b is --branch in repo sync and
+// --body in pr merge), so each command has its own list. The free text of a merge is
+// in mergeText.
+var ghValue = map[string][]string{
+	"":             {"-R", "--repo", "--hostname"},
+	"api":          {"-X", "--method", "-H", "--header", "-f", "-F", "--field", "--raw-field"},
+	"workflow run": {"-r", "--ref", "-f", "--raw-field", "-F", "--field"},
+	"repo sync":    {"-b", "--branch", "-s", "--source"},
+}
+
 // syncDestination reports whether gh repo sync names a destination repository (any
 // argument besides "repo", "sync" and the values of --branch and --source).
 func syncDestination(args []string) bool {
@@ -1024,7 +1036,7 @@ func syncDestination(args []string) bool {
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		switch {
-		case a == "-b" || a == "--branch" || a == "-s" || a == "--source":
+		case slices.Contains(ghValue["repo sync"], a):
 			i++
 		case strings.HasPrefix(a, "-"):
 		default:
@@ -1043,7 +1055,7 @@ func (p Policy) publish(name string, env map[string]string, args []string) Decis
 	var words []string
 	for i := 0; i < len(args); i++ {
 		a := args[i]
-		if slices.Contains([]string{"-R", "--repo", "-X", "--method", "-H", "--header", "-f", "-F", "--field", "--raw-field", "--hostname"}, a) {
+		if slices.Contains(ghValue[""], a) || slices.Contains(ghValue["api"], a) {
 			i++ // the option's value
 			continue
 		}
@@ -1125,7 +1137,7 @@ func workflowArg(args []string) string {
 	for i := 0; i < len(args); i++ {
 		a := args[i]
 		switch {
-		case slices.Contains([]string{"-R", "--repo", "-r", "--ref", "-f", "--raw-field", "-F", "--field", "--hostname"}, a):
+		case slices.Contains(ghValue[""], a) || slices.Contains(ghValue["workflow run"], a):
 			i++
 		case strings.HasPrefix(a, "-"):
 		case !run:
@@ -1146,7 +1158,7 @@ func (p Policy) publishDeny(name, what string) Decision {
 // ssh asks before reaching an untouchable host, and checks the remote command, or what
 // it sends to the remote shell through stdin.
 func (p Policy) ssh(args []string, stdin string, env map[string]string, depth int) Decision {
-	host, rest := sshTarget(dropRedirections(args))
+	host, rest := sshTarget(args)
 	host = strings.TrimPrefix(host, "ssh://")
 	p.host = host[strings.LastIndexByte(host, '@')+1:] // the remote command runs there
 	jumps := allow
@@ -1286,23 +1298,6 @@ func (p Policy) sftp(args []string) Decision {
 	host, _, _ := strings.Cut(strings.TrimPrefix(args[i], "sftp://"), ":")
 	host, _, _ = strings.Cut(host, "/")
 	return p.checkHost("sftp", host)
-}
-
-// dropRedirections takes the redirections out of a command's words (< file, >file,
-// 2>&1…): they are not arguments, and the guard does not know what a file holds.
-func dropRedirections(args []string) []string {
-	var out []string
-	for i := 0; i < len(args); i++ {
-		a := strings.TrimLeft(args[i], "0123456789")
-		if strings.HasPrefix(a, "<") || strings.HasPrefix(a, ">") || strings.HasPrefix(a, "&>") {
-			if strings.TrimLeft(a, "<>&") == "" && i+1 < len(args) {
-				i++ // the operator alone: the file is the next word
-			}
-			continue
-		}
-		out = append(out, args[i])
-	}
-	return out
 }
 
 // shell checks the commands a shell would run: the string after -c (also -lc, -ec…),
@@ -1617,35 +1612,16 @@ func repoListed(list []string, dir string) bool {
 // when dir is not a linked worktree. A submodule has a .git file too, but its folder
 // is not a worktree's, so it never counts as its parent repository.
 func mainRepo(dir string) string {
-	data, err := os.ReadFile(filepath.Join(dir, ".git"))
-	if err != nil {
-		return "" // a folder (a repository of its own) or nothing
+	own, common, ok := gitDirs(dir)
+	if !ok || common == own {
+		return "" // a repository of its own, or nothing
 	}
-	gitdir, ok := strings.CutPrefix(strings.TrimSpace(string(data)), "gitdir:")
-	if !ok {
-		return ""
+	if c := filepath.Clean(common); filepath.Base(c) == ".git" {
+		if r, err := paths.Resolve(filepath.Dir(c)); err == nil {
+			return r
+		}
 	}
-	gitdir = strings.TrimSpace(gitdir)
-	if !filepath.IsAbs(gitdir) {
-		gitdir = filepath.Join(dir, gitdir)
-	}
-	common, err := os.ReadFile(filepath.Join(gitdir, "commondir"))
-	if err != nil {
-		return ""
-	}
-	c := strings.TrimSpace(string(common))
-	if !filepath.IsAbs(c) {
-		c = filepath.Join(gitdir, c)
-	}
-	c = filepath.Clean(c)
-	if filepath.Base(c) != ".git" {
-		return ""
-	}
-	r, err := paths.Resolve(filepath.Dir(c))
-	if err != nil {
-		return ""
-	}
-	return r
+	return ""
 }
 
 // hostAccess says how docker run (or create) gives a container the whole machine:
