@@ -676,13 +676,16 @@ Quita el programa y el plugin de Claude Code. Tus notas se quedan.
 augmented-brain uninstall
 ```
 
-Antes enseña lo que va a quitar y te pregunta.
+Antes enseña lo que va a quitar y te pregunta. Lo primero que quita son los servicios
+del acceso remoto y las sesiones abiertas para tareas; si alguno no se puede parar, no
+quita nada más.
 
 - `--config`: quita también la configuración y el perfil.
 - `--all`: empezar de cero: también la configuración, el perfil y las notas de todos los
   espacios. Enseña cada carpeta de notas con cuántas notas tiene, y avisa de las que no
-  tienen copia de seguridad, que se perderán para siempre. Tus copias de seguridad no se
-  tocan.
+  tienen copia de seguridad, que se perderán para siempre. Solo se va lo que augmented
+  brain guarda en una carpeta de notas; una carpeta que contiene una carpeta de trabajo, o
+  sin notas, se queda entera. Tus copias de seguridad no se tocan.
 - `--yes`: no pregunta.
 
 Lo tienes en [Instalación](install.es.md#desinstalar).

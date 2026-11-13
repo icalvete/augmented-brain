@@ -325,6 +325,58 @@ var commandMessages = map[string]msg{
 		en: "%s (%d notes)",
 		es: "%s (%d notas)",
 	},
+	"uninstall.notes.other": {
+		en: "%s (%d notes; the %d other files or folders in it stay)",
+		es: "%s (%d notas; los otros %d ficheros o carpetas que hay dentro se quedan)",
+	},
+	"uninstall.notes.stay": {
+		en: "⚠ %s stays as it is: %s.",
+		es: "⚠ %s se queda como está: %s.",
+	},
+	"uninstall.why.home": {
+		en: "it is your home folder, or holds it",
+		es: "es tu carpeta personal, o la contiene",
+	},
+	"uninstall.why.work": {
+		en: "it holds the work folder %s, not only notes",
+		es: "contiene la carpeta de trabajo %s, no solo notas",
+	},
+	"uninstall.why.notnotes": {
+		en: "it does not look like a notes folder (it has no MEMORY.md and no .augmented-brain/format)",
+		es: "no parece una carpeta de notas (no tiene MEMORY.md ni .augmented-brain/format)",
+	},
+	"uninstall.why.git": {
+		en: "it is a git repository, and not this space's backup",
+		es: "es un repositorio de git, y no es la copia de seguridad del espacio",
+	},
+	"uninstall.config.stay": {
+		en: "⚠ %s stays as it is: it has no %s, so it may not be augmented brain's configuration folder.",
+		es: "⚠ %s se queda como está: no tiene %s, así que puede que no sea la carpeta de configuración de augmented brain.",
+	},
+	"uninstall.remote": {
+		en: "the remote access, stopped first: %s",
+		es: "el acceso remoto, parado antes que nada: %s",
+	},
+	"uninstall.sessions": {
+		en: "the sessions opened for tasks, closed first: %s",
+		es: "las sesiones abiertas para tareas, cerradas antes que nada: %s",
+	},
+	"uninstall.sessions.unknown": {
+		en: "Could not see whether sessions opened for tasks are running: %v",
+		es: "No he podido ver si siguen abiertas sesiones de tareas: %v",
+	},
+	"uninstall.ownsession": {
+		en: "This session, opened for task %s, stays open: close it yourself when this ends.",
+		es: "Esta sesión, abierta para la tarea %s, sigue abierta: ciérrala tú cuando esto acabe.",
+	},
+	"uninstall.firstfailed": {
+		en: "Nothing else was removed: the remote access or a task's session could not be stopped, and without the plugin it would go on with no guard, and with no program to take it away. Fix the error above and run `augmented-brain uninstall` again.",
+		es: "No he quitado nada más: no he podido parar el acceso remoto o la sesión de una tarea, y sin el plugin seguiría funcionando sin guardia, y sin el programa que sabe quitarlo. Arregla el error de arriba y vuelve a lanzar `augmented-brain uninstall`.",
+	},
+	"uninstall.donekept": {
+		en: "✓ augmented brain removed. The folders above marked ⚠ stay as they were: delete them yourself if you are sure.",
+		es: "✓ augmented brain quitado. Las carpetas marcadas arriba con ⚠ se quedan como estaban: bórralas tú si estás seguro.",
+	},
 	"uninstall.keeptools": {
 		en: "Claude Code, its app and git stay.",
 		es: "Claude Code, su app y git se quedan.",

@@ -12,6 +12,14 @@
   enlace, en vez de que sus notas desaparezcan, y de una fecha de la cabecera que no
   sigue `YYYY-MM-DD`. La página Personas del panel enseña las personas de los demás
   espacios cuando uno no se puede abrir, y dice cuál.
+- **`uninstall` quita solo lo suyo, y todo lo suyo.** Con `--all`, una carpeta de notas
+  que era también la carpeta de trabajo se borraba entera, con los repositorios. Ahora
+  solo se van las notas, y la carpeta solo si no queda nada más; una carpeta de notas que
+  contiene una carpeta de trabajo, tu carpeta personal o una carpeta sin notas se queda
+  entera, y el plan lo dice. `--config` solo borra una carpeta con un `config.toml`. Y
+  `uninstall` para primero el acceso remoto y las sesiones abiertas para tareas: antes
+  seguían funcionando sin guardia y sin el programa que sabe quitarlos. Al crear un
+  espacio, ya no se acepta una carpeta de notas que contenga su carpeta de trabajo.
 
 ## 0.21.0-beta
 

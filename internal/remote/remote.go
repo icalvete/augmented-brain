@@ -677,3 +677,26 @@ func (s System) trustedFolders() func(string) bool {
 		return false
 	}
 }
+
+// Installed are the services Install wrote that are still on disk (found by their
+// marker, as Uninstall finds them), by the name the system knows them by: what
+// `augmented-brain uninstall` says it will take away. Nothing is run.
+func (s System) Installed() []string {
+	var out []string
+	switch s.GOOS {
+	case "linux":
+		out, _ = s.installedUnits()
+		if s.watchInstalled() {
+			out = append(out, WatchName+".timer")
+		}
+	case "darwin":
+		for _, f := range s.installedFiles(launchdPrefix, ".plist", func(b []byte) string { return string(b) }) {
+			out = append(out, strings.TrimSuffix(filepath.Base(f), ".plist"))
+		}
+	case "windows":
+		for _, f := range s.installedFiles(unitPrefix, ".xml", fromUTF16) {
+			out = append(out, taskName(strings.TrimSuffix(strings.TrimPrefix(filepath.Base(f), unitPrefix), ".xml")))
+		}
+	}
+	return out
+}

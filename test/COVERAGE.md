@@ -22,6 +22,8 @@ row here with the test that covers it.
 | Uninstall, and install again | `install-check.sh` step 4, `install-check.ps1` step 4 | CI |
 | `uninstall --config`, and install again | `install-check.sh` step 5, `cmd` `TestUninstallConfig` | CI, Go |
 | `uninstall --all` | `install-check.sh` step 7, `cmd` `TestSaysThereIsNoBackup` | CI, Go |
+| `uninstall --all` takes only notes: a notes folder holding a work folder, the home folder or a folder with no notes stays whole; `--config` needs a `config.toml` | `cmd` `TestUninstallAllKeepsNotesThatHoldTheWork`, `TestUninstallAllTakesOnlyNotes`, `TestUninstallAllRefusesWhatIsNotNotes`, `TestUninstallConfigNeedsAConfiguration`; `internal/setup` `TestAddSpaceErrors` | Go |
+| `uninstall` stops the remote access and the task sessions first, and removes nothing else when it cannot | `cmd` `TestUninstallTakesTheRemoteAccessFirst`, `TestUninstallClosesTaskSessionsAndStopsWhenItCannot` (fakes); `scripts/remote-check.py` for real on macOS and Windows | Go, CI |
 | The desktop app's download stalls (Linux: gives up with its message, the install goes on) | `install-check.sh` step 1b, a local server that trickles | CI: Ubuntu |
 | A home with spaces and accents | `install-check.sh` step 6 | CI |
 | macOS: shells, version, Apple's developer tools | `scripts/install-check-mac.sh` | CI |
