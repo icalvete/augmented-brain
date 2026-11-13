@@ -221,9 +221,18 @@ func backupNote(c *config.Config, s *config.Space, cfgDir string) string {
 // PreToolUse runs the guard on a shell command (Bash, or Monitor, which runs a command
 // in the background and is checked the same way) or on the text of a file write, and
 // blocks PowerShell commands, which the guard cannot read. A Monitor that opens a
-// WebSocket has no command and runs no program, so it goes through.
+// WebSocket has no command and runs no program, so it goes through. A tool that saves
+// what every session answers to (memoryTools) asks first when the user wants that.
 func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	i, ok := readChecked(in)
+	if tool := memoryTool(i.ToolName); ok && tool != "" {
+		decision, reason := trustDecision(cfgDir, language(cfgDir), i, tool)
+		if decision == "" {
+			return nil
+		}
+		return write(out, output{HookSpecificOutput: specific{HookEventName: "PreToolUse",
+			PermissionDecision: decision, PermissionDecisionReason: "augmented brain: " + reason}})
+	}
 	p := policy(cfgDir, i.Cwd)
 	// In bypassPermissions Claude Code may skip the dialog an "ask" opens, so what must
 	// never go without the user's yes is refused there instead.
