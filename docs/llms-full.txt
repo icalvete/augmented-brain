@@ -1747,14 +1747,18 @@ computer; **What is this page?** brings it back.
 
 ## Spaces and pages
 
-At the side, under **Profile**, the **Space** list picks the space you are looking
-at. Some pages show only that space; others show all of them, or this computer as a
-whole. On a phone, the menu folds under the name of the page you are on.
+At the side, under **Profile**, the **Space** list picks the space you are looking at.
+Some pages show only that space; others show all of them, or this computer as a whole.
+The menu has three blocks: **Day to day**, **Notes** and **Upkeep**. When the window is
+too short for it, the side scrolls on its own, so **Stop the panel** is always within
+reach. On a phone, the menu folds under the name of the page you are on; open, it shows
+each block in two columns, and a shadow at its foot says there is more below.
 
 | Page | What it is for | Shows |
 |---|---|---|
 | [Today](https://icalvete.github.io/augmented-brain/guide/panel.html#today) | What is due and what waits on you | every space |
 | [Tasks](https://icalvete.github.io/augmented-brain/guide/panel.html#tasks) | See, change, open and close tasks | one space |
+| [Sessions](https://icalvete.github.io/augmented-brain/guide/panel.html#sessions) | Your Claude sessions, and the ones cut off | this computer |
 | [Reminders](https://icalvete.github.io/augmented-brain/guide/panel.html#reminders) | Watch dates and inbox reminders | one space |
 | [Inbox](https://icalvete.github.io/augmented-brain/guide/panel.html#inbox) | Loose ideas, to deal with later | one space |
 | [Weekly review](https://icalvete.github.io/augmented-brain/guide/panel.html#weekly-review) | Empty the inbox, look at stalled tasks | one space |
@@ -1810,6 +1814,18 @@ journal says it was reopened from the panel.
 When you save a task, only what you changed on the page is saved. If Claude changed
 something else in the meantime, that stays. A step is ticked only if it still says what
 the page showed.
+
+## Sessions
+
+Your Claude sessions on this computer, from the last 30 days. It is in the menu, under
+**Day to day**; **Health** and a cut-off session on **Today** also lead to it.
+
+- Those that did not end (closed by force, or cut off when the computer went down) show
+  what was said after the last journal entry. Keep it in the notes (it goes to
+  `archive/sessions/` with a line in the task's journal) or mark it as reviewed.
+- Those running now, and those that ended, with how much disk their transcripts take
+  (the files where Claude Code keeps each conversation). You can delete the transcript of
+  an ended session; that session can then no longer be resumed.
 
 ## Reminders
 
@@ -1908,18 +1924,6 @@ The space's notes folder and work folders, whether it is the default space, note
 are not valid, repositories that notes point at and that are no longer on this computer,
 the index, the last backup, the last weekly review, and a link to the space's
 [Sessions](https://icalvete.github.io/augmented-brain/guide/panel.html#sessions).
-
-## Sessions
-
-Your Claude sessions on this computer, from the last 30 days. It is not in the menu:
-open it from **Health**, or from a cut-off session on **Today**.
-
-- Those that did not end (closed by force, or cut off when the computer went down) show
-  what was said after the last journal entry. Keep it in the notes (it goes to
-  `archive/sessions/` with a line in the task's journal) or mark it as reviewed.
-- Those running now, and those that ended, with how much disk their transcripts take
-  (the files where Claude Code keeps each conversation). You can delete the transcript of
-  an ended session; that session can then no longer be resumed.
 
 ## Guard
 

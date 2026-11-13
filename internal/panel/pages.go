@@ -92,6 +92,23 @@ func (s *Server) routes() *http.ServeMux {
 
 type link struct{ Path, Label string }
 
+// navGroup is one block of the menu: a heading and its sections.
+type navGroup struct {
+	Label string
+	Links []link
+}
+
+// menu is the panel's menu, in blocks: what a day brings, the notes, and looking after
+// the panel and its copies. Each name is a page's address and its "panel.<name>" label.
+var menu = []struct {
+	key      string
+	sections []string
+}{
+	{"nav.day", []string{"today", "tasks", "sessions", "reminders", "inbox", "review"}},
+	{"nav.notes", []string{"areas", "knowledge", "rules", "people", "repos", "secrets"}},
+	{"nav.care", []string{"backup", "space", "guard", "versions", "help"}},
+}
+
 type option struct {
 	Value, Label string
 	Selected     bool
@@ -101,7 +118,8 @@ type page struct {
 	Lang, Title, Section, Space, CSRF string
 	Base                              string // the start of every address: /s/<session>
 	Spaces                            []string
-	Nav                               []link
+	Nav                               []navGroup
+	Where                             string     // the menu button's text on a phone: this page's name
 	OK                                string     // what the change just made did ("Task updated.")
 	Form                              *formState // a form that could not be saved, shown again
 	Remote                            bool       // also open through the user's Tailscale network
@@ -236,9 +254,15 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, name
 	}
 	p.CSRF, p.Base, p.Remote = s.csrfFor(r), s.base(r), s.remote.Load() != nil
 	p.Hints = loadHints(s.cfgDir)
-	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "backup", "space", "guard", "versions", "help"} {
-		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
+	p.Nav, p.Where = nil, ""
+	for _, g := range menu {
+		group := navGroup{Label: i18n.T(p.Lang, "panel."+g.key)}
+		for _, sec := range g.sections {
+			group.Links = append(group.Links, link{sec, i18n.T(p.Lang, "panel."+sec)})
+		}
+		p.Nav = append(p.Nav, group)
 	}
+	p.Where = whereLabel(p.Lang, p.Section)
 	var buf bytes.Buffer
 	if err := s.pages[p.Lang][name].ExecuteTemplate(&buf, "layout", p); err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -256,6 +280,23 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, name
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 	_, _ = w.Write(buf.Bytes())
+}
+
+// whereLabel is the name of the page a section belongs to, as the menu button shows it
+// on a phone, or "" for a page outside the menu (the button then just says Menu).
+func whereLabel(lang, section string) string {
+	switch section {
+	case "profile", "search":
+		return i18n.T(lang, "panel."+section)
+	}
+	for _, g := range menu {
+		for _, sec := range g.sections {
+			if sec == section {
+				return i18n.T(lang, "panel."+sec)
+			}
+		}
+	}
+	return ""
 }
 
 // view is one space, open under the notes lock for the length of a request.
