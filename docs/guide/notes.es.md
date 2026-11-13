@@ -80,6 +80,9 @@ Hay tres niveles:
 Una regla que vale en todas partes va a las notas compartidas. Dile a Claude "esto vale
 para todo".
 
+Tus reglas se leen al empezar cada sesión, así que cada una ocupa un poco de sitio cada
+vez. `augmented-brain doctor` dice cuánto ocupan y cuáles son las más largas.
+
 ## Tu perfil
 
 Quién eres y cómo te gusta trabajar: tu nombre, a qué te dedicas, tu idioma, lo largas

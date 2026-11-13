@@ -49,7 +49,7 @@ A session that runs outside every work folder (for example, the scratch folder t
 
 A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the session's active task pointing at it.
 
-`MEMORY.md` is the index the session start hands the assistant, a little shorter: each live task goes without its summary, and with its next step (its first 120 characters) only when it waits on you (the assistant reads a task before working on it). It comes in up to three parts of the start (see "Rules"). An index too long for them is cut, and the assistant is told where to read it whole.
+`MEMORY.md` is the index the session start hands the assistant, a little shorter: each live task goes without its summary, and with its next step (its first 120 characters) only when it waits on you (the assistant reads a task before working on it), and without the list of rules, which the start gives whole. It comes in up to three parts of the start (see "Rules"). An index too long for them is cut, and the assistant is told where to read it whole.
 
 **Your profile** (who you are, your language, how you like answers) is the same person in every space, so it lives once, next to the configuration: `profile.md` in the configuration folder. A space's own `profile.md` only adds what applies there.
 
@@ -270,10 +270,10 @@ Rules tell the assistant how to work. There are three levels:
 - **space rules**, in `rules/`, for what only applies to that space (for example, "hosts db01–db03 are never restarted without explicit permission").
 
 All of them are loaded at the start of every session, whole. The start comes in up to
-nine parts, each of about 9,500 characters at most: the heading with the profile and the
-common rules, the index (up to three parts), and the shared and space rules (up to five
-parts). Only the parts that have something are sent, and they are counted that way
-("part 2 of 3"). A
+nine parts, each of about 9,500 characters at most: the heading with the profile, the
+index (up to three parts), the common rules in a part of their own, so nothing else can
+push them out, and the shared and space rules in the parts left. Only the parts that have
+something are sent, and they are counted that way ("part 2 of 3"). A
 rule's section titled `History` (or `Historia`) stays in its file: it tells how the rule
 came to be, not what to do. A rule that does not fit whole goes as one line, its title
 and summary, with the path of its file; so a rule's summary should say what to do.

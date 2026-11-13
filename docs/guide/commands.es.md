@@ -133,6 +133,8 @@ algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Re
 - la configuración, el perfil y en qué espacio está esta carpeta;
 - la carpeta de notas de cada espacio, sus notas, su índice y si tiene copia de seguridad;
 - las tareas demasiado largas para leerlas de una vez, que `check` acorta;
+- cuánto ocupan tus reglas en cada arranque de sesión, con las tres más largas: van
+  enteras a cada sesión, así que una regla más corta cuesta menos cada vez;
 - Claude Code, git y el plugin;
 - el guardia, de verdad, con un comando que tiene que parar;
 - las listas del guardia, las excepciones de root en `root_ask` y las que ya han
