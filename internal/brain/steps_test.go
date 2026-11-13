@@ -302,3 +302,26 @@ func TestInboxDoneOneAndAll(t *testing.T) {
 		t.Errorf("inbox:\n%q", data)
 	}
 }
+
+// The session start shortens a long capture and ends it in "…": capture_done takes it
+// out with that text, but only when it names one capture of the date.
+func TestInboxDoneShortened(t *testing.T) {
+	b := open(t, "en")
+	path := filepath.Join(b.Mem.Dir, "inbox.md")
+	start := "- 2026-10-01 — Call Ana about the long plan\n- 2026-10-02 — Write to Luis about X\n- 2026-10-02 — Write to Luis about Y\n"
+	if err := os.WriteFile(path, []byte(start), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if ok, _ := b.InboxDoneEntry("2026-10-02", "Write to Luis…"); ok {
+		t.Error("a shortened text that fits two captures took one out")
+	}
+	if ok, _ := b.InboxDoneEntry("2026-10-01", "…"); ok {
+		t.Error("an empty start took a capture out")
+	}
+	if ok, err := b.InboxDoneEntry("2026-10-01", "Call Ana about…"); !ok || err != nil {
+		t.Fatal(ok, err)
+	}
+	if data, _ := os.ReadFile(path); string(data) != "- 2026-10-02 — Write to Luis about X\n- 2026-10-02 — Write to Luis about Y\n" {
+		t.Errorf("inbox:\n%s", data)
+	}
+}

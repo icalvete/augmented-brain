@@ -19,6 +19,13 @@
   now stops the remote access and the sessions opened for tasks first: before, they kept
   running with no guard and no program to take them away. Setting up a space now
   refuses a notes folder that holds its work folder.
+- **Claude gets the common rules whole in every session.** They went at the end of the
+  first part of the session start, and in a busy space (long captures from other spaces,
+  many dates due) the end was cut: in one real space only 8 % of them arrived. Now they
+  come in a part of their own, captures and dates due are shortened to one line each,
+  and the start takes less room: the index no longer lists the rules it gives whole, the
+  shared knowledge names its folder once, and the note about `session start` is one line.
+  `doctor` says how much your own rules take of every start, with the longest.
 - **Looking for secrets is about 30 times faster.** `check`, every backup and every
   note written read the text for secrets at about 2.5 MB a second; with notes of a
   dozen MB, `check` took more than a second. Each kind of secret now has a quick test
