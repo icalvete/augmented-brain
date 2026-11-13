@@ -51,7 +51,7 @@ it feels to a newcomer.
 
 ## Build and check
 
-Go 1.25 or later (`go.mod`; an older `go` fetches it by itself).
+Go 1.26 or later (`go.mod`; an older `go` fetches it by itself).
 
 ```bash
 gofmt -l .                 # must print nothing
@@ -75,6 +75,12 @@ how it gets tried. Never push without it.
 What each case is covered by, and what is left for a person on a real Mac, is in
 [test/COVERAGE.md](test/COVERAGE.md): a new command, tool, panel page or missing piece
 adds its row there.
+
+Known vulnerabilities: `vuln.yml` runs `go mod verify` and `govulncheck` (Linux, macOS and
+Windows) on every change and every Monday, and fails on anything the code can reach. The
+fix is usually a newer patch in the `toolchain` line of `go.mod` or a newer module;
+Dependabot (`.github/dependabot.yml`) proposes both weekly. How people report a security
+problem is in `SECURITY.md`.
 
 Heavier checks, before a release or when you touch what they cover:
 

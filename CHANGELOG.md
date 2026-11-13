@@ -28,6 +28,15 @@
   password or a token in it, since it was kept in the configuration and inside the
   backup itself. Let git keep the login (`gh auth setup-git`, or ssh). If you already
   have one, `doctor` tells you how to take it out, and backups no longer carry it.
+- **Built with a Go that still gets security fixes.** Releases were built with Go
+  1.25.0, which carries 46 known vulnerabilities in Go's own library that the program
+  can reach (in its web panel, the network and file handling among them). They are now
+  built with Go 1.26.11, and `golang.org/x/sys` moves to 0.50.0. Building from source
+  needs Go 1.26 or later. Installing the next release closes them for you.
+- **Vulnerabilities are watched.** With every change and every week, the CI checks for
+  known vulnerabilities the program can reach, on Linux, macOS and Windows; Dependabot
+  proposes newer modules and actions. `SECURITY.md` says how to report a security
+  problem privately.
 
 ## 0.20.0-beta
 
