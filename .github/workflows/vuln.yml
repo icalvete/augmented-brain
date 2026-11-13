@@ -44,4 +44,4 @@ jobs:
       - name: No reachable known vulnerability (${{ matrix.goos }})
         env:
           GOOS: ${{ matrix.goos }}
-        run: "$(go env GOPATH)/bin/govulncheck ./..."
+        run: '"$(go env GOPATH)/bin/govulncheck" ./...'
