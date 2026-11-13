@@ -1,6 +1,9 @@
 package guard
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 // command is one simple command: its words, with quotes removed, and the text it
 // reads from a heredoc or a here-string, if any.
@@ -415,6 +418,24 @@ var wrappers = map[string]string{
 	"time": "fo", "flock": "wEc", "busybox": "", "sshpass": "pfdP", "proxychains": "f", "torsocks": "",
 }
 
+// wrapperLong lists, for each wrapper, the long options that take a value. Written
+// apart (--signal KILL), the value is the next word, and must not be taken for the
+// program; written --signal=KILL, it is one word and needs no entry.
+var wrapperLong = map[string][]string{
+	"env":     {"--unset", "--chdir"},
+	"nice":    {"--adjustment"},
+	"timeout": {"--signal", "--kill-after"},
+	"xargs": {"--arg-file", "--delimiter", "--max-args", "--max-procs", "--max-chars",
+		"--process-slot-var"},
+	"watch":  {"--interval", "--equexit"},
+	"stdbuf": {"--input", "--output", "--error"},
+	"ionice": {"--class", "--classdata", "--pid", "--pgid", "--uid"},
+	"chrt":   {"--sched-runtime", "--sched-period", "--sched-deadline"},
+	"npx":    {"--package", "--call"},
+	"time":   {"--format", "--output"},
+	"flock":  {"--wait", "--timeout", "--conflict-exit-code"},
+}
+
 // program strips variable assignments (NAME=value), reserved words and wrappers from
 // the front of a command, and returns the program and its arguments.
 func program(words []string) (env map[string]string, name string, args []string) {
@@ -455,7 +476,8 @@ func program(words []string) (env map[string]string, name string, args []string)
 			if wrapper == "command" && (a == "-v" || a == "-V") {
 				return env, "", nil // a lookup, nothing runs
 			}
-			if !strings.HasPrefix(a, "--") && len(a) == 2 && strings.ContainsRune(opts, rune(a[1])) && i < len(words) {
+			short := !strings.HasPrefix(a, "--") && len(a) == 2 && strings.ContainsRune(opts, rune(a[1]))
+			if (short || slices.Contains(wrapperLong[wrapper], a)) && i < len(words) {
 				i++ // the option's value
 			}
 		}
