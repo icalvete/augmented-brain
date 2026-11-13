@@ -54,9 +54,12 @@ comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
 - **Pushes que reescriben la historia**, incluso donde Claude puede hacer push:
   `--force`, `--delete`, `--mirror`, `--prune`, una refspec que empieza por `+` o por `:`.
 - **Lo que no puede leer.** Un programa dado como variable (`$TOOL deploy`), comandos
-  anidados demasiado hondo, `rm -rf "$DIR/"*` con una variable que puede estar vacía, un
-  `rm -r .` después de un `cd` que no puede seguir, un script que el mismo comando escribe
-  de una forma que no puede leer y luego ejecuta (`curl -o x.sh … && sh x.sh`).
+  anidados demasiado hondo (más de cuatro comandos, uno dentro de otro: `sudo`, `ssh`,
+  `bash -c`, `find -exec`, un alias de git), un comando de más de 256 KB,
+  `rm -rf "$DIR/"*` con una variable que puede estar vacía, un `rm -r .` después de un
+  `cd` que no puede seguir, un script que no puede leer o de más de 64 KB, un script que
+  el mismo comando escribe de una forma que no puede leer y luego ejecuta
+  (`curl -o x.sh … && sh x.sh`).
 - **Los ajustes del propio guardia.** Claude nunca cambia por su cuenta la configuración
   de augmented brain ni los ajustes de Claude Code, porque una línea ahí podría apagar una
   comprobación.
@@ -207,7 +210,13 @@ trabajo).
   `augmented-brain config history` y después `augmented-brain config restore <número>`
   ([Versiones de la configuración](config-history.es.md)).
 - **Falta el programa o está roto.** Claude Code para cada comando y cada cambio de
-  fichero en vez de dejarlos pasar (Claude Code 2.1.295 o posterior).
+  fichero en vez de dejarlos pasar (Claude Code 2.1.295 o posterior; `doctor` avisa si
+  es anterior). Si el propio guardia falla al revisar, rechaza esa acción y Claude te lo
+  dice: es un error de augmented brain, del que puedes informar desde la página Ayuda del
+  panel.
+- **No se sabe cuál es la carpeta de configuración** (sin `HOME`, como en algunos
+  servicios y contenedores), **o falta `config.toml` pero queda lo demás.** El guardia
+  pregunta, como cuando no se puede leer la configuración.
 - **`guard.toml` no se puede leer.** El guardia pregunta antes de cada commit y push
   hasta que se arregle o se quite.
 - `augmented-brain doctor` prueba el guardia de verdad y te dice si no está funcionando.

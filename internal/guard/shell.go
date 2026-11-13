@@ -10,7 +10,14 @@ type command struct {
 	piped     bool     // reads the output of the command before it (a | b)
 	redirects []string // the files of its redirections (> f, 2>>f, < f), not arguments
 	outputs   []string // those of them it writes to (> f, >> f, <> f)
+	// tooDeep stands for substitutions nested deeper than maxNest, never read: the
+	// guard asks the user about them.
+	tooDeep bool
 }
+
+// maxNest is how many $(…) inside one another parse reads; deeper ones become a
+// command marked tooDeep. It keeps a line of thousands of $( from taking seconds.
+const maxNest = 8
 
 // parse splits a shell command line into simple commands. It understands quotes,
 // backslashes, comments, the separators ; & | ( ) { } and newlines, heredocs and
@@ -19,23 +26,32 @@ type command struct {
 // quotes. It is not a full shell parser: it only has to find every program that would
 // run and its arguments, which is all the guard needs.
 func parse(line string) []command {
-	p := &parser{rs: []rune(line)}
+	return parseAt(line, 0)
+}
+
+// parseAt is parse of a line found inside level substitutions.
+func parseAt(line string, level int) []command {
+	p := &parser{rs: []rune(line), level: level}
 	for ; p.i < len(p.rs); p.i++ {
 		p.step()
 	}
 	p.endCommand()
 	out := p.out
 	for _, s := range p.subs {
-		out = append(out, parse(s)...)
+		if level >= maxNest {
+			return append(out, command{tooDeep: true})
+		}
+		out = append(out, parseAt(s, level+1)...)
 	}
 	return out
 }
 
 // parser is what parse knows while it reads a line, one rune at a time.
 type parser struct {
-	rs  []rune
-	i   int // the rune being read
-	out []command
+	rs    []rune
+	i     int // the rune being read
+	out   []command
+	level int // how many substitutions the line is inside
 
 	words      []string // of the command being read
 	stdin      string
@@ -198,7 +214,7 @@ func (p *parser) substitution(i int) {
 // in "$(( $(date +%s)-1 ))" would be a program the guard cannot know. It says false,
 // and reads nothing, when the text at i is not one: $( (cmd) ), or a $(( never closed.
 func (p *parser) arithmetic(i int) bool {
-	subs, end, ok := arithmeticAt(p.rs, i)
+	subs, end, ok := arithmeticAt(p.rs, i, p.level)
 	if !ok {
 		return false
 	}
@@ -210,8 +226,10 @@ func (p *parser) arithmetic(i int) bool {
 // arithmeticAt is arithmetic's reading of rs: the substitutions in the $((…)) at i and
 // the index of its last parenthesis. Like bash, it is one only when the parenthesis that
 // closes the inner one is the outer's closing too: "$((a) )" is a subshell.
-func arithmeticAt(rs []rune, i int) (subs []string, end int, ok bool) {
-	if i+2 >= len(rs) || rs[i] != '$' || rs[i+1] != '(' || rs[i+2] != '(' {
+// level is how deep it is already: past maxNest it says false, and the text is read
+// as a substitution, which parse does not follow that deep either.
+func arithmeticAt(rs []rune, i, level int) (subs []string, end int, ok bool) {
+	if level > maxNest || i+2 >= len(rs) || rs[i] != '$' || rs[i+1] != '(' || rs[i+2] != '(' {
 		return nil, 0, false
 	}
 	_, inner := balanced(rs, i+3)
@@ -221,7 +239,7 @@ func arithmeticAt(rs []rune, i int) (subs []string, end int, ok bool) {
 	for j := i + 3; j < inner; j++ {
 		switch {
 		case rs[j] == '$' && j+1 < inner && rs[j+1] == '(':
-			if more, e, ok := arithmeticAt(rs, j); ok {
+			if more, e, ok := arithmeticAt(rs, j, level+1); ok {
 				subs, j = append(subs, more...), e
 				continue
 			}

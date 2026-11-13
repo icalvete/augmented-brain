@@ -31,6 +31,10 @@ var guardMessages = map[string]msg{
 		en: "the command runs commands nested too deep for augmented brain to check; the user confirms it.",
 		es: "el comando ejecuta comandos anidados demasiado hondo para que augmented brain los revise; el usuario lo confirma.",
 	},
+	"guard.toolong": {
+		en: "the command is %d KB long, too long for augmented brain to check; the user confirms it.",
+		es: "el comando mide %d KB, demasiado para que augmented brain lo revise; el usuario lo confirma.",
+	},
 	"guard.unknownprogram": {
 		en: "the program this runs is only known when it runs (`%s`), so augmented brain cannot check it; the user confirms it.",
 		es: "el programa que esto ejecuta solo se sabe al ejecutarlo (`%s`), así que augmented brain no puede revisarlo; el usuario lo confirma.",
@@ -38,6 +42,14 @@ var guardMessages = map[string]msg{
 	"guard.script": {
 		en: "the script %s runs a command that needs it: %s",
 		es: "el script %s ejecuta un comando que lo necesita: %s",
+	},
+	"guard.script.unread": {
+		en: "augmented brain cannot read the script %s (%s), so it cannot check what it runs; the user confirms it.",
+		es: "augmented brain no puede leer el script %s (%s), así que no puede revisar lo que ejecuta; el usuario lo confirma.",
+	},
+	"guard.script.big": {
+		en: "larger than %d KB",
+		es: "pasa de %d KB",
 	},
 	"guard.script.written": {
 		en: "the script %s is written by this same command, so augmented brain cannot read it before it runs; the user confirms it. Write the script first (with the Write tool), then run it in a command of its own.",

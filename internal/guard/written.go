@@ -17,6 +17,38 @@ type lineFiles struct {
 	// touched are the files some other command writes or changes in ways the guard
 	// cannot follow (cp, curl -o, a program's output): running one of them asks.
 	touched map[string]bool
+	// later are files a program's arguments name, kept as written until the guard needs
+	// to know whether a file was touched (isTouched): most lines never run a script,
+	// and resolving thousands of arguments (prettier --write a.ts b.ts …) is slow.
+	later []laterTouch
+	// resolved keeps what resolve said of each path in this line: every command of a
+	// long line names files, and following links costs a system call per folder (slow
+	// on Windows), so no path is resolved twice.
+	resolved map[string]resolved
+}
+
+type resolved struct {
+	path string
+	err  error
+}
+
+// laterTouch is a file named after a cd the guard followed (or not): resolved there.
+type laterTouch struct {
+	cwd  string
+	lost bool
+	path string
+}
+
+// isTouched says whether the file k (a fileKey) was touched, resolving first the
+// arguments kept for later.
+func (p Policy) isTouched(k string) bool {
+	for _, t := range p.files.later {
+		q := p
+		q.Cwd, q.lost = t.cwd, t.lost
+		p.files.touched[q.fileKey(t.path)] = true
+	}
+	p.files.later = nil
+	return p.files.touched[k]
 }
 
 // readOnly are programs that name a file without changing what it holds.
@@ -61,10 +93,10 @@ func (p Policy) recordWrites(c command) {
 	}
 	for _, a := range args {
 		if a != "" && !strings.HasPrefix(a, "-") {
-			p.files.touched[p.fileKey(strings.TrimPrefix(a, "of="))] = true
+			p.files.later = append(p.files.later, laterTouch{p.Cwd, p.lost, strings.TrimPrefix(a, "of=")})
 		}
 		if _, v, ok := strings.Cut(a, "="); ok && strings.HasPrefix(a, "-") && v != "" {
-			p.files.touched[p.fileKey(v)] = true // --output=x.sh
+			p.files.later = append(p.files.later, laterTouch{p.Cwd, p.lost, v}) // --output=x.sh
 		}
 	}
 }
@@ -74,7 +106,7 @@ func (p Policy) recordWrites(c command) {
 // checked against more than it holds, which only asks more.
 func (p Policy) write(path, text string, known bool) {
 	k := p.fileKey(path)
-	if !known || p.files.touched[k] {
+	if !known || p.isTouched(k) {
 		p.files.touched[k] = true
 		delete(p.files.written, k)
 		return

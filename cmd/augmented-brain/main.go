@@ -4,6 +4,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"slices"
 	"strconv"
 	"strings"
@@ -352,8 +354,15 @@ var hookEvents = []hookEvent{
 }
 
 // cmdHook answers a Claude Code hook. A hook must never break the assistant, so it
-// always exits 0 and reports problems on stderr.
-func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
+// exits 0 and reports problems on stderr, even when it fails inside (a panic). Two
+// exceptions, both in pre-tool-use, where exit code 2 blocks the tool call: a deny or
+// a question it could not write, and a call it cannot run at all.
+func cmdHook(args []string, in io.Reader, out, errOut io.Writer) (code int) {
+	defer func() {
+		if r := recover(); r != nil {
+			code = hookPanic(args, r, out, errOut)
+		}
+	}()
 	part := 0 // session-start N: part N of the session text
 	if len(args) == 2 && args[0] == "session-start" {
 		n, err := strconv.Atoi(args[1])
@@ -377,15 +386,61 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.hook", strings.Join(names, "|")))
 		return 2
 	}
-	dir, _ := config.Dir()
 	i := slices.IndexFunc(hookEvents, func(e hookEvent) bool { return e.name == args[0] })
 	if i < 0 {
 		fmt.Fprintln(errOut, i18n.T(userLanguage(), "usage.hook.unknown", args[0]))
 		return 2
 	}
+	guard := args[0] == "pre-tool-use"
+	dir, err := config.Dir()
+	if err != nil && !guard {
+		// Nowhere to read or write: never a folder relative to where Claude runs.
+		fmt.Fprintln(errOut, "augmented-brain hook:", err)
+		return 0
+	}
+	// The guard runs with dir "": it then asks about everything its lists cover.
 	if err := hookEvents[i].run(in, out, dir, part); err != nil {
 		fmt.Fprintln(errOut, "augmented-brain hook:", err)
+		if guard {
+			return 2 // its answer did not reach Claude Code: block, never "no opinion"
+		}
 	}
+	return 0
+}
+
+// hookPanic answers for a hook that failed inside: the trace goes to a file in the
+// configuration's state folder, never to the assistant. pre-tool-use refuses the call
+// in plain words; the other hooks say one line on stderr. Both exit 0, which Stop needs:
+// its exit code 2 would make the assistant go on, again and again.
+func hookPanic(args []string, r any, out, errOut io.Writer) int {
+	trace := fmt.Sprintf("%s augmented-brain %s hook %s: %v\n\n%s", time.Now().Format(time.RFC3339), version.Version,
+		strings.Join(args, " "), r, debug.Stack())
+	logged := ""
+	if dir, err := config.Dir(); err == nil {
+		f := filepath.Join(dir, "state", "hook-panic.log")
+		if err := os.MkdirAll(filepath.Dir(f), 0o700); err == nil && paths.WriteAtomic(f, []byte(trace), 0o600) == nil {
+			logged = f
+		}
+	}
+	lang := i18n.FromEnv()
+	func() {
+		defer func() { _ = recover() }() // the configuration may be what fails
+		lang = userLanguage()
+	}()
+	if len(args) > 0 && args[0] == "pre-tool-use" {
+		reason := "augmented brain: " + i18n.T(lang, "hook.panic")
+		if logged != "" {
+			reason += " " + i18n.T(lang, "hook.panic.log", paths.Tilde(logged))
+		}
+		b, _ := json.Marshal(map[string]any{"hookSpecificOutput": map[string]string{"hookEventName": "PreToolUse",
+			"permissionDecision": "deny", "permissionDecisionReason": reason}})
+		if _, err := fmt.Fprintln(out, string(b)); err != nil {
+			fmt.Fprintln(errOut, reason)
+			return 2
+		}
+		return 0
+	}
+	fmt.Fprintf(errOut, "augmented-brain hook: %v %s\n", r, paths.Tilde(logged))
 	return 0
 }
 

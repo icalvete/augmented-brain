@@ -35,6 +35,10 @@ var commandMessages = map[string]msg{
 		es: "%s: ajustes desconocidos: %s",
 	},
 	// What is wrong with the configuration file (config.toml).
+	"config.nodir": {
+		en: "the configuration folder is unknown: HOME is not set, nor AB_CONFIG_DIR",
+		es: "no se sabe cuál es la carpeta de configuración: no están puestas ni HOME ni AB_CONFIG_DIR",
+	},
 	"config.notfound": {
 		en: "no configuration found in %s",
 		es: "no hay ninguna configuración en %s",
