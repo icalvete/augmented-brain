@@ -155,11 +155,12 @@ jobs:
         run: scripts/privacy-check.sh --all
       # The maintainer's personal data, by keyed fingerprints (the denylist itself is not
       # in the repo). Without the key it says so and passes, as in a fork; a push to the
-      # project itself must have it.
+      # project itself must have it. Dependabot's pull requests get no secrets either (they
+      # only change go.mod, go.sum and the workflows); main checks them again once merged.
       - name: No personal data in the repository
         env:
           AB_PRIVACY_KEY: ${{ secrets.AB_PRIVACY_KEY }}
-          AB_PRIVACY_REQUIRED: ${{ github.repository == 'icalvete/augmented-brain' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+          AB_PRIVACY_REQUIRED: ${{ github.repository == 'icalvete/augmented-brain' && (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]')) }}
         run: python3 -I scripts/privacy-hashed.py scan
       # The website's pages are generated from the guides' Markdown: a change to a guide
       # that forgot to regenerate them would publish the old text.

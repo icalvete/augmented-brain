@@ -1,0 +1,19 @@
+# Dependabot opens a pull request when a module or a GitHub action has a newer version,
+# once a week and grouped, so it is one pull request per kind, not one per module.
+# Its pull requests get no repository secrets: the privacy job in ci.yml knows that.
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      go-modules:
+        patterns: ['*']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
