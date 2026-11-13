@@ -2,6 +2,82 @@
 
 ## Sin publicar
 
+## 0.23.0-beta
+
+Publicada el 2026-11-13.
+
+- **Se puede comprobar de dónde sale una descarga.** Cada fichero de una versión (los
+  archivos y los dos instaladores) lleva ahora un registro de procedencia firmado por
+  GitHub, que dice qué workflow lo compiló y desde qué commit (`gh attestation verify`),
+  y `checksums.txt` incluye también los instaladores. El mismo commit da los mismos bytes
+  en cualquier sitio. Una versión sale del commit de `main` que fijó su número, nunca de
+  cambios mezclados después, y solo cuando todos sus checks exigidos han pasado ahí; se
+  compila en un trabajo que no puede escribir en el repositorio. La guía de instalación
+  explica cómo comprobar una descarga.
+- **Cerrar la revisión semanal ya no puede perder capturas.** `review_done` sacaba del
+  buzón las capturas procesadas antes de guardar la revisión, así que una revisión que
+  luego rechazaba (un resumen vacío, un token citado en él) las dejaba perdidas sin nada
+  guardado. Ahora primero se guarda la revisión, con las capturas que saca escritas en
+  ella, y solo después salen del buzón. Otras escrituras también son todo o nada: un
+  cambio rechazado ya no deja una copia en `archive/`, aparcar una tarea cerrada o tocar
+  sus pasos se rechaza, una captura tras una última línea sin salto de línea queda en una
+  línea propia, y un nombre de secreto escrito a mano con comillas ya no vacía la lista.
+- **El panel remoto tiene su propia puerta.** Con el panel publicado por Tailscale,
+  otra persona de tu red que tuviera la dirección podía hacerse pasar por este ordenador
+  cambiando una cabecera de la petición, y desde ahí configurar una copia de seguridad
+  de tus notas hacia un repositorio suyo. Ahora lo que llega por Tailscale entra por un
+  puerto propio y siempre se trata como venido de la red. El enlace para el móvil solo
+  abre por la red, y el del navegador de este ordenador solo aquí. Abrir el panel ya no
+  retira algo que publiques tú con `tailscale serve` en el puerto 8443: augmented brain
+  solo retira la dirección que publicó él. `panel stop` ya no termina otro proceso de
+  augmented brain que tenga por casualidad el número de un panel que se cayó.
+  `panel remote` espera a un Tailscale lento en vez de arrancar el panel de nuevo (lo
+  que dejaba sin funcionar las páginas abiertas).
+- **Una copia ya no puede elegir dónde caen sus ficheros, y funciona con tus ajustes de
+  git.** `restore` deja las notas donde estaban solo si es dentro de tu carpeta personal
+  y fuera de sus carpetas ocultas y del sistema (`~/.config`, `~/Library`, `~/AppData`,
+  cualquier `.git`); si no, van a `~/augmented-brain/<espacio>` y te lo dice, para que
+  una copia que alguien ha cambiado no deje ficheros donde el ordenador los ejecuta.
+  Rechaza un nombre de espacio que no vale, y lee la copia de `main` aunque la rama por
+  defecto del repositorio sea otra. La copia no firma, no ejecuta hooks globales ni abre
+  ventanas de contraseña, que la hacían fallar a quien tiene `commit.gpgsign` o
+  `core.hooksPath`. La siguiente sesión y `doctor` avisan de una copia que empezó y no
+  terminó, y de cuando la última buena tiene más de 3 días y las notas han cambiado.
+- **El guardia ya no se cuelga ni falla en silencio.** Unos pocos comandos raros (un
+  `find` dentro de otro muchas veces, miles de `$(`, un alias de git que se llama a sí
+  mismo) lo tenían ocupado más de los 10 segundos del hook; ahora cuenta cada comando
+  anidado en otro y, pasados cuatro niveles o 256 KB, te pregunta. Si el guardia falla por
+  dentro, rechaza esa acción con palabras llanas en vez de enseñar la traza de Go. Una
+  llamada con una forma inesperada, una carpeta de configuración que no encuentra, un
+  `config.toml` que falta, un script de shell que no puede leer o una respuesta que no
+  pudo escribir ya no dejan pasar un comando sin revisar. `doctor` avisa cuando Claude
+  Code es anterior a la 2.1.295, que lo deja pasar todo cuando el guardia falla.
+- **Los campos de una línea son de una línea, siempre.** Un título, resumen, siguiente
+  paso o `waiting_on` con saltos de línea (un texto copiado de un issue o de un correo,
+  por ejemplo) podía escribir algo con aspecto de sección del programa, como `## Rules`,
+  en el índice y en lo que lee cada sesión al empezar. Ahora esos campos quedan en una
+  línea al entrar, y otra vez cada vez que se lee una nota, así que tampoco puede hacerlo
+  una nota editada a mano. Cada campo tiene un límite holgado (un siguiente paso, 2.000
+  caracteres; una entrada del diario, 32.000), y el error dice dónde va el texto largo.
+  Una captura o una entrada del diario que acaba en `(from <espacio>)` escrito a mano ya
+  no pasa por una enviada desde otro espacio. Un perfil con un nombre de varias líneas
+  se puede volver a guardar. `watch pr` escribe una frase propia como siguiente paso de
+  la tarea, y los nombres de los checks, que elige la pull request, solo en su diario,
+  entre comillas y recortados; `--every` es de 10s como mínimo.
+- **El panel ya no es un rodeo al guardia.** `augmented-brain panel` escribía la dirección
+  del panel con su llave, y `/brain:panel` hace que la lance Claude: con esa dirección y
+  dos comandos que el guardia dejaba pasar (`127.1` en vez de `127.0.0.1`), Claude podía
+  añadir un repositorio a los que puede subir, y el panel sellaba el cambio para que el
+  guardia no notara nada. Ahora el comando escribe un enlace que abre el panel una vez,
+  en los próximos 2 minutos (10 con `panel remote`), y lanzado por Claude con el
+  navegador abierto no escribe ninguno; si otra cosa usó tu enlace antes, el navegador lo
+  dice. Un cambio de las listas del guardia hecho en el panel, o unas listas aceptadas
+  allí, te llega como una línea del propio Claude Code, no de Claude. El guardia deniega
+  una dirección del panel se escriba como se escriba el host. Compactar una
+  conversación, `/clear` o retomarla ya no toma como vistas unas listas cambiadas (solo
+  una sesión que empiezas tú), y un sello que no se puede leer pregunta en vez de dejar
+  pasar un push. Un `*` suelto en un comando que solo nombra la carpeta de configuración
+  ya no se deniega.
 - **El plugin viene dentro del programa.** Claude Code tomaba el plugin (sus hooks, entre
   ellos el guardia) de `main` del repositorio en GitHub, tal como estuviera ese día: un
   cambio ahí llegaba a todos antes de ninguna versión, y durante un rato el plugin podía
