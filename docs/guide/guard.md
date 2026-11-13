@@ -187,6 +187,30 @@ still edit the files, as it can anything your account can. The guard then notice
 change and asks before a push, but it did not prevent it. It is a safety net, not a
 security boundary.
 
+## Asking before Claude saves a rule
+
+Some of what Claude saves changes how every session works from then on: a rule, your
+profile, and what it adds to the guard's lists. You choose how much it does on its own:
+
+- **Save and tell you.** Claude saves it, and Claude Code tells you in a line of its own
+  what was saved. If you did not ask for it, tell Claude to undo it. This is how it works
+  unless you choose otherwise.
+- **Ask you first.** Before a rule is saved, changed or retired, before your profile
+  changes and before anything is added to the guard's lists, Claude Code shows you what
+  would be saved and you say yes or no. If you say no, nothing is written.
+
+You choose on the panel's Guard page, under "What the assistant saves on its own"
+(`memory_trust` in [`session.toml`](configuration.md#sessiontoml)). Claude cannot change
+it on its own: the guard asks before a write to that file. Sessions already open follow
+the new choice from their next save.
+
+Tasks, the inbox, references and lessons are always saved without asking: they are the
+work itself, and they do not tell Claude how to behave.
+
+A session that skips permission questions (`bypassPermissions`) cannot ask you. With
+"ask first", the guard refuses the save there, and Claude tells you what it wanted to
+save so you can save it from another session.
+
 ## Production profiles and untouchable machines
 
 You give them in the first-session interview, or any time: "the AWS profile `shop-prod`

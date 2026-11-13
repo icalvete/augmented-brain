@@ -198,6 +198,19 @@ try:
     report("another model answering is told", "claude-sonnet-5-5" in text, text[:80])
     _, text = hook("stop", {"hook_event_name": "Stop", "session_id": "m" + RUN, "cwd": work, "transcript_path": transcript("claude-sonnet-5-5")}, cwd=work)
     report("only once per session and model", "claude-sonnet-5-5" not in text, "")
+    # What the assistant saves on its own: nothing set lets a rule through, "ask" asks.
+    rule_call = {"hook_event_name": "PreToolUse", "session_id": "t" + RUN, "cwd": work, "permission_mode": "default",
+                 "tool_name": "mcp__plugin_brain_augmented-brain__rule_new", "tool_input": {"title": "Rehearsal", "body": "x"}}
+    decision, _ = hook("pre-tool-use", rule_call, cwd=work)
+    report("memory_trust not set: saving a rule is not asked about", decision == "allow", decision)
+    with open(session_toml, "a", encoding="utf-8", newline="\n") as f:
+        f.write('memory_trust = "ask"\n')
+    decision, text = hook("pre-tool-use", rule_call, cwd=work)
+    report("memory_trust = ask: saving a rule asks first", decision == "ask" and "memory_trust" in text, text[:80])
+    decision, _ = hook("pre-tool-use", dict(rule_call, tool_name="mcp__plugin_brain_augmented-brain__task_journal"), cwd=work)
+    report("memory_trust = ask: the journal is not asked about", decision == "allow", decision)
+    decision, _ = hook("pre-tool-use", dict(rule_call, permission_mode="bypassPermissions"), cwd=work)
+    report("memory_trust = ask: refused where questions are skipped", decision == "deny", decision)
 finally:
     if old_session is None:
         os.remove(session_toml)

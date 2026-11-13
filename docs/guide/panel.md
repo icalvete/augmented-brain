@@ -163,6 +163,9 @@ Every list the guard answers to, in one page, to read and change:
 - **The model of your sessions** (`preferred_model` in `session.toml`): when a session
   answers with another one, Claude tells you. Below it, what Claude Code said about its
   model at the last session start.
+- **What the assistant saves on its own** (`memory_trust` in `session.toml`): whether
+  Claude saves a rule, your profile and additions to the guard's lists and you are told,
+  or asks you first. [The guard](guard.md#asking-before-claude-saves-a-rule) tells it.
 - The files Claude cannot change on its own.
 
 Your comments in `config.toml` stay where they are. If the lists are not the ones you last
