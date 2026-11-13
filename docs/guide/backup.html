@@ -99,9 +99,9 @@
   <h2 id="set-it-up-ask-claude">Set it up: ask Claude</h2>
   <p>Say “set up the backup”. Claude offers it at the end of the first-session interview too.</p>
   <p>It creates a private repository in your GitHub account, <code>augmented-brain-&lt;space&gt;</code>, connects it and makes the first copy. For that it uses <code>gh</code>, GitHub's official command line. If you do not have it, Claude tells you how to install it, and walks you through the one step that needs your browser: logging in.</p>
-  <p>Rather somewhere else (GitLab, your company's git)? Give Claude the repository's address, or do it yourself, in a folder of the space:</p>
+  <p>Rather somewhere else (GitLab, your company's git)? Do it yourself, in a folder of the space:</p>
   <pre><code>augmented-brain backup setup git@gitlab.com:lucia/brain-work.git</code></pre>
-  <p>Use a <strong>private</strong> repository: your notes are in it.</p>
+  <p>Claude does not take an address for this: one it was handed by a page or a message it read would send all your notes there. Use a <strong>private</strong> repository: your notes are in it. And an address without a password: it is kept in the configuration and inside the backup itself, so <code>backup setup</code> refuses one. Let git keep the login instead (for GitHub, <code>gh auth setup-git</code>; or an ssh address like the one above). If an earlier version kept one, <code>augmented-brain doctor</code> tells you how to take it out.</p>
   <p>The panel's <a href="panel.html#backup">Backup</a> page does the same with two buttons, and shows each space's last copies and a <strong>Back up now</strong>.</p>
   <p>Until a space has a backup, augmented brain says so: <code>augmented-brain doctor</code> names each space with none, <code>update</code> warns when it goes ahead with no copy to go back to, and <code>uninstall --all</code> warns that those notes will be gone for good.</p>
   <h2 id="it-runs-by-itself">It runs by itself</h2>

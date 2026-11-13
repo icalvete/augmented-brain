@@ -99,9 +99,9 @@
   <h2 id="configurarla-pídeselo-a-claude">Configurarla: pídeselo a Claude</h2>
   <p>Dile “configura la copia de seguridad”. Al final de la entrevista de la primera sesión, Claude también te la ofrece.</p>
   <p>Crea en tu cuenta de GitHub un repositorio privado, <code>augmented-brain-&lt;espacio&gt;</code>, lo conecta y hace la primera copia. Para eso usa <code>gh</code>, la herramienta oficial de GitHub para la terminal. Si no la tienes, Claude te dice cómo instalarla, y te guía en el único paso que necesita tu navegador: entrar con tu cuenta.</p>
-  <p>¿Prefieres otro sitio (GitLab, el git de tu empresa)? Dale a Claude la dirección del repositorio, o hazlo tú, en una carpeta del espacio:</p>
+  <p>¿Prefieres otro sitio (GitLab, el git de tu empresa)? Hazlo tú, en una carpeta del espacio:</p>
   <pre><code>augmented-brain backup setup git@gitlab.com:lucia/cerebro-trabajo.git</code></pre>
-  <p>Usa un repositorio <strong>privado</strong>: dentro van tus notas.</p>
+  <p>Claude no acepta una dirección para esto: una que le hubiera pasado una página o un mensaje que leyó mandaría allí todas tus notas. Usa un repositorio <strong>privado</strong>: dentro van tus notas. Y una dirección sin contraseña: queda guardada en la configuración y dentro de la propia copia, así que <code>backup setup</code> la rechaza. Deja que git guarde el acceso (en GitHub, <code>gh auth setup-git</code>; o una dirección ssh como la de arriba). Si una versión anterior guardó una, <code>augmented-brain doctor</code> te dice cómo quitarla.</p>
   <p>La página <a href="panel.es.html#copia-de-seguridad">Copia de seguridad</a> del panel hace lo mismo con dos botones, y enseña las últimas copias de cada espacio y un <strong>Hacer una copia ahora</strong>.</p>
   <p>Mientras un espacio no tenga copia, augmented brain lo dice: <code>augmented-brain doctor</code> nombra cada espacio sin copia, <code>update</code> avisa cuando sigue sin una copia a la que volver, y <code>uninstall --all</code> avisa de que esas notas se perderán para siempre.</p>
   <h2 id="se-hace-sola">Se hace sola</h2>

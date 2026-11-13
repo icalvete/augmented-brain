@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -185,6 +186,11 @@ func space(c *config.Config, s *config.Space) []Check {
 	// this computer loses the space's notes.
 	if s.Backup == "" {
 		checks = append(checks, Check{Info, i18n.T(l, "doctor.nobackup", s.Name), i18n.T(l, "doctor.nobackup.fix")})
+	} else if backup.HasPassword(s.Backup) {
+		// Earlier versions kept such an address as it came, in config.toml and inside the
+		// backup itself: the password is in the backup's history.
+		checks = append(checks, Check{Warning, i18n.T(l, "doctor.backuppassword", s.Name),
+			i18n.T(l, "doctor.backuppassword.fix", backup.WithoutPassword(s.Backup))})
 	}
 	return append(checks, private...)
 }

@@ -7,6 +7,16 @@
   repositorio de git, como tu carpeta de trabajo, la copia hacía commit y push en ese
   otro. Ahora se para, no toca nada y te dice que vuelvas a lanzar `augmented-brain
   backup setup`. Volver a una copia anterior hace lo mismo.
+- **Claude ya no configura una copia en una dirección que le han dado.** En un espacio
+  sin copia, una sola llamada a `backup_setup` con una dirección mandaba allí todas las
+  notas, y otra vez al acabar cada sesión; la dirección podía venir de una página o un
+  mensaje que Claude había leído. Ahora la herramienta solo crea el repositorio privado
+  en tu cuenta de GitHub. Una copia en otro sitio la configuras tú, con
+  `augmented-brain backup setup <url>` o en la página Copia de seguridad del panel.
+- **Sin contraseñas en la dirección de una copia.** `backup setup` rechaza una dirección
+  con una contraseña o un token, porque quedaba guardada en la configuración y dentro de
+  la propia copia. Deja que git guarde el acceso (`gh auth setup-git`, o ssh). Si ya
+  tienes una, `doctor` te dice cómo quitarla, y las copias ya no la llevan.
 
 ## 0.20.0-beta
 

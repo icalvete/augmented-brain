@@ -116,9 +116,9 @@ func backupSpaces(c *config.Config, spaces []*config.Space, out, errOut io.Write
 			fmt.Fprintln(errOut, i18n.T(c.Language, "backup.failed", s.Name, err))
 			code = 1
 		case res.Committed:
-			fmt.Fprintln(out, i18n.T(c.Language, "backup.saved", s.Name, s.Backup))
+			fmt.Fprintln(out, i18n.T(c.Language, "backup.saved", s.Name, backup.WithoutPassword(s.Backup)))
 		default:
-			fmt.Fprintln(out, i18n.T(c.Language, "backup.same", s.Name, s.Backup))
+			fmt.Fprintln(out, i18n.T(c.Language, "backup.same", s.Name, backup.WithoutPassword(s.Backup)))
 		}
 	}
 	return code

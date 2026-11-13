@@ -71,7 +71,7 @@ func (s *Server) backupPage(v *view, r *http.Request) (string, page, error) {
 	var spaces []where
 	for _, name := range v.c.SpaceNames() {
 		sp := v.c.Spaces[name]
-		bs := backupSpace{Name: name, URL: sp.Backup, Started: started == name, Profile: name == profile && sp.Backup != ""}
+		bs := backupSpace{Name: name, URL: backup.WithoutPassword(sp.Backup), Started: started == name, Profile: name == profile && sp.Backup != ""}
 		if started == name {
 			bs.WentBack = r.URL.Query().Get("back")
 		}
@@ -172,7 +172,7 @@ func (s *Server) backupSetup(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if sp.Backup != "" {
-			s.fail(w, r, nil, http.StatusBadRequest, errors.New(i18n.T(lang, "panel.backup.err.has", sp.Backup)))
+			s.fail(w, r, nil, http.StatusBadRequest, errors.New(i18n.T(lang, "panel.backup.err.has", backup.WithoutPassword(sp.Backup))))
 			return
 		}
 		made, err := s.gitHubRepo(name)
@@ -189,7 +189,7 @@ func (s *Server) backupSetup(w http.ResponseWriter, r *http.Request) {
 	s.write(func(v *view, r *http.Request) (string, error) {
 		sp := v.b.Space
 		if sp.Backup != "" {
-			return "", errors.New(v.t("backup.err.has", sp.Backup))
+			return "", errors.New(v.t("backup.err.has", backup.WithoutPassword(sp.Backup)))
 		}
 		if err := backup.Setup(v.c, sp, field(r, "url")); err != nil {
 			return "", err

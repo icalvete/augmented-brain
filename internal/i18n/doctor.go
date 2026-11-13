@@ -14,6 +14,14 @@ var doctorMessages = map[string]msg{
 		en: "space %s has no backup: if this computer is lost, so are its notes",
 		es: "el espacio %s no tiene copia de seguridad: si pierdes este ordenador, pierdes sus notas",
 	},
+	"doctor.backuppassword": {
+		en: "the address of space %s's backup holds a password or a token: it is kept in the configuration and in the backup itself",
+		es: "la dirección de la copia del espacio %s lleva una contraseña o un token: queda guardada en la configuración y dentro de la propia copia",
+	},
+	"doctor.backuppassword.fix": {
+		en: "let git keep the login instead (for GitHub, `gh auth setup-git`; or an ssh address), then run `augmented-brain backup setup %s` in a folder of the space. Change that password or token too: earlier copies still hold it",
+		es: "deja que git guarde el acceso (en GitHub, `gh auth setup-git`; o usa una dirección ssh) y después lanza `augmented-brain backup setup %s` en una carpeta del espacio. Cambia también esa contraseña o token: las copias anteriores la siguen teniendo",
+	},
 	"doctor.nobackup.fix": {
 		en: "ask Claude \"set up the backup\" in a folder of the space: it guides you step by step (you need a private repository, a place for your files on GitHub or similar, which it helps you create). Or, if you have one, run `augmented-brain backup setup <its address>` there",
 		es: "pide a Claude «configura la copia de seguridad» en una carpeta del espacio: te guía paso a paso (hace falta un repositorio privado, un sitio para tus ficheros en GitHub o parecido, y te ayuda a crearlo). O, si ya tienes uno, lanza allí `augmented-brain backup setup <su dirección>`",

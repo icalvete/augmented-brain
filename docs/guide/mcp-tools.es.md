@@ -351,13 +351,17 @@ la enseña. Guardar un nombre que ya está en la lista cambia para qué es.
 Configura la copia de seguridad de este espacio: un repositorio git privado que guarda sus
 notas, y al que se suben solas cada vez que acaba una sesión.
 
-- `repo_url` (opcional): un repositorio git privado al que puedas subir. Sin él, la
-  herramienta crea `augmented-brain-<espacio>` en tu cuenta de GitHub con la línea de
-  comandos `gh`. Si falta `gh` o no has entrado con él, devuelve los pasos para guiarte.
+Crea `augmented-brain-<espacio>`, un repositorio privado en tu cuenta de GitHub, con la
+línea de comandos `gh`, y hace la primera copia en el momento. Si falta `gh` o no has
+entrado con él, devuelve los pasos para guiarte.
 
-Hace la primera copia en el momento. Si el espacio ya tiene copia, dice adónde va y cómo
-fue la última; nunca la lleva a otro sitio: eso solo lo haces tú, con
-`augmented-brain backup setup <url>`.
+- `repo_url`: se rechaza. Una copia en otro sitio (GitLab, el git de tu empresa) la
+  configuras tú, con `augmented-brain backup setup <url>` o en la página Copia de
+  seguridad del panel: una dirección que pasa Claude puede venir de cualquier cosa que
+  haya leído, y una sola llamada mandaría allí todas las notas.
+
+Si el espacio ya tiene copia, dice adónde va y cómo fue la última; nunca la lleva a otro
+sitio: eso solo lo haces tú, con `augmented-brain backup setup <url>`.
 
 ## `session_recover`
 
