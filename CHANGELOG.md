@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **The backup only works in its own repository.** If your notes folder lost its `.git`
+  (copied or restored by hand, or removed) and sits inside another git repository, such
+  as your work folder, a backup used to commit and push in that other repository. Now it
+  stops, touches nothing, and tells you to run `augmented-brain backup setup` again.
+  Going back to an earlier copy does the same.
+
 ## 0.20.0-beta
 
 Released 2026-11-12.
