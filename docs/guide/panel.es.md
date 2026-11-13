@@ -83,6 +83,10 @@ apárcala o ciérrala. También puedes abrir tareas nuevas. Si un estado se salt
 diario las nombra. Si una tarea espera a una persona de la que tienes nota, «espera a» te
 lleva a ella.
 
+Cerrar una tarea aquí hace lo mismo que cerrarla en una sesión: si la tarea tiene una
+sesión propia, esa sesión acaba cuando termina su respuesta, y su worktree se quita cuando
+no tiene nada suyo.
+
 Para reabrir una tarea cerrada, búscala en **Cerradas** y elígele un estado nuevo; su
 diario dice que se reabrió desde el panel.
 
