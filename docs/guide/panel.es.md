@@ -183,7 +183,9 @@ merge que las listas permiten pregunta antes. Lo que cambies o aceptes aquí te 
 el propio Claude Code en tus sesiones abiertas, después de la siguiente respuesta o
 mensaje, en una línea que empieza por «augmented brain · las listas del guardia». Si no
 has sido tú, mira aquí. Claude no puede abrir esta página: nunca ve la dirección del
-panel, y el guardia le niega la llave del panel. Mira [El guardia](guard.es.md).
+panel, y el guardia le niega la llave del panel. Desde otro dispositivo la página solo
+enseña: las listas deciden lo que Claude puede hacer en este ordenador, así que solo se
+cambian desde el panel de este ordenador. Mira [El guardia](guard.es.md).
 
 ## Versiones
 

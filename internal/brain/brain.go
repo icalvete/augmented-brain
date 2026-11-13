@@ -140,6 +140,12 @@ func ProblemsNote(problems []memory.Problem, max int) string {
 		fmt.Fprintf(&out, "- %s\n", p.Error())
 	}
 	out.WriteString("Tell the user, in their language, and offer to fix each file (its header, between the --- lines at the top); `augmented-brain check` in the space's folder lists them all.\n")
+	for _, p := range problems {
+		if _, ok := p.Newer(); ok {
+			out.WriteString("A field this version does not know most likely comes from a newer augmented brain (another computer, or a session started after an update): unless it is plainly a typo of a known field, do not remove it or rewrite the note; tell the user to update with `augmented-brain update`.\n")
+			break
+		}
+	}
 	return out.String()
 }
 
