@@ -121,7 +121,7 @@ func Update(cfgDir, space string, now time.Time, change func(*Space)) error {
 	if err != nil {
 		return err
 	}
-	return paths.WriteAtomic(file(cfgDir, space), data, 0o600)
+	return paths.WriteAtomicQuick(file(cfgDir, space), data, 0o600)
 }
 
 // Touched records that the session w opened, read or wrote a task: it becomes that

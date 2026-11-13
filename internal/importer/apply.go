@@ -77,7 +77,7 @@ func Apply(p *Plan, c *config.Config, lang string) (Applied, error) {
 			if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 				return done, err
 			}
-			if err := paths.WriteAtomic(dst, data, 0o600); err != nil {
+			if err := paths.WriteAtomicNoLink(dst, data, 0o600); err != nil {
 				return done, err
 			}
 			done.Copies[it.Space]++
@@ -163,5 +163,5 @@ func addCaptures(path string, lines []string) (int, error) {
 	if n == 0 {
 		return 0, nil
 	}
-	return n, paths.WriteAtomic(path, []byte(text), 0o600)
+	return n, paths.WriteAtomicNoLink(path, []byte(text), 0o600)
 }

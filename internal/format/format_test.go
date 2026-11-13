@@ -168,3 +168,87 @@ func TestEnsureConfigCopy(t *testing.T) {
 		}
 	}
 }
+
+// A migration that stops half way, run again and again (twice in the same second),
+// keeps the one copy made before it started: the notes as they were, links included.
+// No other whole copy is made, and none holds the notes half migrated.
+func TestInterruptedMigrationKeepsOneCopy(t *testing.T) {
+	mem, cfg := t.TempDir(), t.TempDir()
+	note := filepath.Join(mem, "tasks", "task-a.md")
+	if err := os.MkdirAll(filepath.Dir(note), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(note, []byte("original"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	links := os.Symlink("task-a.md", filepath.Join(mem, "tasks", "link.md")) == nil
+	t.Cleanup(func() { NotesMigrations = nil })
+	NotesMigrations = []Migration{{From: 1, What: "half", Run: func(dir string) error {
+		if err := os.WriteFile(filepath.Join(dir, "tasks", "task-a.md"), []byte("MIGRATED HALF"), 0o644); err != nil {
+			return err
+		}
+		return errors.New("cut short")
+	}}}
+	now := time.Date(2026, 1, 1, 10, 0, 0, 0, time.UTC)
+	var copies []string
+	for _, at := range []time.Time{now, now.Add(time.Minute), now.Add(time.Minute)} {
+		r, err := EnsureNotes(mem, cfg, "work", "", at)
+		if err == nil || !strings.Contains(err.Error(), "cut short") {
+			t.Fatalf("a failing step: %v", err)
+		}
+		copies = append(copies, r.Copy)
+	}
+	entries, _ := os.ReadDir(filepath.Join(cfg, CopiesDir))
+	if len(entries) != 1 {
+		t.Fatalf("%d copies, want 1: %v", len(entries), entries)
+	}
+	for _, c := range copies[1:] {
+		if c != copies[0] {
+			t.Errorf("a run again pointed at %s, not the first copy %s", c, copies[0])
+		}
+	}
+	if data, _ := os.ReadFile(filepath.Join(copies[0], "tasks", "task-a.md")); string(data) != "original" {
+		t.Errorf("the copy holds %q, want the notes from before", data)
+	}
+	if _, err := os.Stat(filepath.Join(copies[0], CompleteFile)); err != nil {
+		t.Errorf("the copy is not marked finished: %v", err)
+	}
+	if links {
+		if to, err := os.Readlink(filepath.Join(copies[0], "tasks", "link.md")); err != nil || to != "task-a.md" {
+			t.Errorf("the link in the copy: %q %v", to, err)
+		}
+	}
+}
+
+// A copy cut short (no mark that it was finished) is never written into, nor taken as
+// the copy from before: the next run makes its own, in a folder of its own, even when
+// the time gives it the same name.
+func TestUnfinishedCopyIsLeftAlone(t *testing.T) {
+	mem, cfg := t.TempDir(), t.TempDir()
+	if err := os.WriteFile(filepath.Join(mem, "note.md"), []byte("original"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Date(2026, 1, 1, 10, 0, 0, 0, time.UTC)
+	unfinished := filepath.Join(cfg, CopiesDir, "notes-work-1-"+now.Format("20060102-150405"))
+	if err := os.MkdirAll(unfinished, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(unfinished, "half.md"), []byte("half"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { NotesMigrations = nil })
+	NotesMigrations = []Migration{{From: 1, What: "x", Run: func(string) error { return nil }}}
+	r, err := EnsureNotes(mem, cfg, "work", "", now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.Copy != unfinished+"-2" {
+		t.Errorf("the copy went to %s, want %s-2", r.Copy, unfinished)
+	}
+	if _, err := os.Stat(filepath.Join(unfinished, "note.md")); err == nil {
+		t.Error("the copy was made over the unfinished one")
+	}
+	if data, _ := os.ReadFile(filepath.Join(r.Copy, "note.md")); string(data) != "original" {
+		t.Errorf("the copy holds %q", data)
+	}
+}

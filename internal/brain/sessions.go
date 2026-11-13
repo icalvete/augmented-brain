@@ -126,7 +126,7 @@ func (b *Brain) SaveSession(kind, sessionID, heading, text string) (string, erro
 		return "", err
 	}
 	body := strings.TrimRight(heading, "\n") + "\n\n" + guard.RedactSecrets(strings.TrimSpace(text)) + "\n"
-	if err := paths.WriteAtomic(path, []byte(body), 0o600); err != nil {
+	if err := paths.WriteAtomicNoLink(path, []byte(body), 0o600); err != nil {
 		return "", err
 	}
 	return rel, nil

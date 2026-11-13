@@ -146,7 +146,7 @@ func save(cfgDir, key string, s Seen) error {
 	if err := os.MkdirAll(filepath.Dir(file(cfgDir, key)), 0o700); err != nil {
 		return err
 	}
-	return paths.WriteAtomic(file(cfgDir, key), data, 0o600)
+	return paths.WriteAtomicQuick(file(cfgDir, key), data, 0o600)
 }
 
 // Remove deletes a process's seen file (SessionEnd). Nothing there is fine.

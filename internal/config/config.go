@@ -130,11 +130,22 @@ func Load(dir string) (*Config, error) {
 		return nil, noDir{}
 	}
 	path := filepath.Join(dir, FileName)
-	var c Config
-	md, err := toml.DecodeFile(path, &c)
+	data, err := os.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, notFound{dir}
 	}
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", path, err)
+	}
+	return parse(string(data), dir)
+}
+
+// parse reads and checks text as the configuration file of dir, as Load does, without
+// reading the file: an edit checks its result before writing it.
+func parse(text, dir string) (*Config, error) {
+	path := filepath.Join(dir, FileName)
+	var c Config
+	md, err := toml.Decode(text, &c)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}
