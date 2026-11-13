@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **The plugin comes inside the program.** Claude Code took the plugin (its hooks, the
+  guard among them) from the repository's `main` on GitHub, as it was that day: a change
+  there reached everyone before any release, and for a while the plugin could ask for
+  things the installed program did not know yet. Now the program carries its own plugin,
+  writes it to the configuration folder (`marketplace/`) and has Claude Code read it
+  from there, so the plugin is always the one of the version you installed. Updating
+  moves an installation that still follows GitHub, keeping the plugin and its data;
+  uninstalling removes the folder. The plugin no longer needs git, the hooks look for the
+  program in `~/.local/bin` before anywhere else, and on Windows the MCP server keeps
+  your PATH as it is.
+
 ## 0.22.0-beta
 
 Released 2026-11-13.

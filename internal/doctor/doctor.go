@@ -228,7 +228,7 @@ func plugin(e Env) []Check {
 		return []Check{{Warning, i18n.T(e.Lang, "doctor.plugin.unknown", err), ""}}
 	case !ok:
 		return []Check{{Failed, i18n.T(e.Lang, "doctor.plugin.missing", claudecode.Plugin),
-			"claude plugin marketplace add " + claudecode.Marketplace() + " && claude plugin install " + claudecode.Plugin + " --scope user"}}
+			claudecode.Manual}}
 	}
 	return []Check{{OK, i18n.T(e.Lang, "doctor.plugin.ok", claudecode.Plugin), ""}, guardWorks(e)}
 }

@@ -2,6 +2,17 @@
 
 ## Sin publicar
 
+- **El plugin viene dentro del programa.** Claude Code tomaba el plugin (sus hooks, entre
+  ellos el guardia) de `main` del repositorio en GitHub, tal como estuviera ese día: un
+  cambio ahí llegaba a todos antes de ninguna versión, y durante un rato el plugin podía
+  pedir cosas que el programa instalado aún no conocía. Ahora el programa lleva su propio
+  plugin, lo escribe en la carpeta de configuración (`marketplace/`) y Claude Code lo lee
+  de ahí, así que el plugin es siempre el de la versión que instalaste. Al actualizar, una
+  instalación que aún sigue a GitHub pasa a esa carpeta, conservando el plugin y sus
+  datos; al desinstalar, la carpeta se va. El plugin ya no necesita git, los hooks buscan
+  el programa en `~/.local/bin` antes que en ningún otro sitio, y en Windows el servidor
+  MCP deja tu PATH como está.
+
 ## 0.22.0-beta
 
 Publicada el 2026-11-13.

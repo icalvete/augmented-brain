@@ -56,7 +56,8 @@ try {
   $env:AB_YES = '1'; $env:AB_LANGUAGE = 'es'
   $env:AB_NO_DESKTOP = if ($env:AB_CHECK_DESKTOP -eq '1') { '' } else { '1' }
   $env:AB_RELEASE_URL = ([Uri]$rel).AbsoluteUri
-  $env:AB_MARKETPLACE = $Root
+  # No AB_MARKETPLACE: the plugin must come from the program itself.
+  $env:AB_MARKETPLACE = $null
   # Other programs write to stderr even when all goes well; only what they say counts.
   $ErrorActionPreference = 'Continue'
   $log = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
@@ -76,6 +77,16 @@ try {
   Check "space trabajo, notes inside" { Test-Path "$env:USERPROFILE\augmented-brain\trabajo\notas\MEMORY.md" }
   Check "space personal, notes inside" { Test-Path "$env:USERPROFILE\augmented-brain\personal\notas\MEMORY.md" }
   Check "plugin installed" { (claude plugin list 2>&1 | Out-String) -match 'brain@augmented-brain' }
+  # The plugin travels with the program: Claude Code reads it from the configuration
+  # folder, and it is this checkout's, never what is on GitHub's main.
+  $market = Join-Path $env:APPDATA 'augmented-brain\marketplace'
+  function LocalPlugin {
+    $m = (claude plugin marketplace list --json 2>$null | Out-String | ConvertFrom-Json) | Where-Object { $_.name -eq 'augmented-brain' }
+    $theirs = (Get-Content -Raw (Join-Path $market 'plugin\hooks\hooks.json')) -replace "`r", ''
+    $ours = (Get-Content -Raw (Join-Path $Root 'plugin\hooks\hooks.json')) -replace "`r", ''
+    $m -and $m.path.TrimEnd('\') -ieq $market -and $theirs -eq $ours
+  }
+  Check "the plugin comes from the program's folder" { LocalPlugin }
   Push-Location "$env:USERPROFILE\augmented-brain\trabajo"
   try { Check "its MCP server connects" { (claude mcp list 2>&1 | Out-String) -match 'plugin:brain:augmented-brain: .*Connected' } } finally { Pop-Location }
   $scratch = Join-Path $Tmp 'scratch'
@@ -163,6 +174,7 @@ try {
       $upd = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
       if ($upd -match 'augmented brain: ') { $upd -split "`n" | ForEach-Object { "    | $_" } }
       Check "updated to this checkout" { ((& $ab version) | Out-String).Trim() -eq $version }
+      Check "the plugin moved to the program's folder" { LocalPlugin }
       Check "every note stays" { (& $notes) -eq $before }
       Push-Location "$env:USERPROFILE\augmented-brain\trabajo"
       try {

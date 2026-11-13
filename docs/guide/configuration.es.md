@@ -252,8 +252,9 @@ El instalador lee alguna más:
 - `AB_NO_INIT=1`: solo instala el programa, sin preparar nada.
 - `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY`, `AB_MARKETPLACE` y
   `AB_DESKTOP_URL`: para pruebas: qué versión, dónde están los ficheros de la versión
-  publicada, la API de GitHub a la que recurrir, la espera entre intentos, de dónde sale
-  el plugin y dónde está el repositorio apt de la app de escritorio.
+  publicada, la API de GitHub a la que recurrir, la espera entre intentos, una carpeta o un
+  repositorio del que tomar el plugin en vez del que lleva el programa, y dónde está el
+  repositorio apt de la app de escritorio.
 
 ## Los ajustes de Claude Code
 

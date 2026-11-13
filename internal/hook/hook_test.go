@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
+	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/hostmem"
 	"github.com/icalvete/augmented-brain/internal/setup"
@@ -617,5 +618,21 @@ func TestSessionEndBacksUpWrittenFromOutside(t *testing.T) {
 	end(work)
 	if strings.Join(started, ",") != "personal" {
 		t.Errorf("started: %v", started)
+	}
+}
+
+// The plugin Claude Code reads from the configuration folder holds the hooks, the
+// guard among them: changing it asks, as changing the guard's lists does.
+func TestPreToolUseLocalPluginAsks(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	old := Getenv
+	t.Cleanup(func() { Getenv = old })
+	Getenv = func(string) string { return "" }
+	pre := func(in *bytes.Reader, out *bytes.Buffer) error { return PreToolUse(in, out, cfgDir) }
+	hooks := filepath.Join(claudecode.LocalDir(cfgDir), "plugin", "hooks", "hooks.json")
+	o := run(t, pre, map[string]any{"cwd": work, "tool_name": "Write",
+		"tool_input": map[string]any{"file_path": hooks, "content": "{}"}})
+	if o == nil || o["permissionDecision"] != "ask" {
+		t.Errorf("writing the local plugin's hooks: %v", o)
 	}
 }

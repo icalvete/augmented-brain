@@ -18,9 +18,9 @@
 # how long its download may take on Linux, in seconds (default 480). For testing:
 # AB_DESKTOP_URL (where Anthropic's apt repository of the desktop app is),
 # AB_VERSION (a version, default: latest), AB_RELEASE_URL (where the release files are,
-# default: the GitHub release), AB_MARKETPLACE (where the plugin comes from, default:
-# this repository on GitHub), AB_NO_INIT=1 (only install the program: no checks, no
-# init), AB_API_URL (stands in for GitHub's API of the repository, the second way to
+# default: the GitHub release), AB_MARKETPLACE (a folder or repository to take the plugin
+# from, instead of the one the program carries), AB_NO_INIT=1 (only install the program:
+# no checks, no init), AB_API_URL (stands in for GitHub's API of the repository, the second way to
 # download) and AB_RETRY_DELAY (seconds between two tries of a download, default 5).
 set -eu
 
