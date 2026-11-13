@@ -2,6 +2,61 @@
 
 ## Unreleased
 
+## 0.24.0-beta
+
+Released 2026-11-13.
+
+- **The guard reads programs' options as the programs do.** Root over ssh, an untouchable
+  host reached through another one, and a container given the whole machine are now
+  stopped however their options are written. `sshfs`, `autossh`, `nerdctl` and
+  `kubectl debug node/…` have the same rules as `ssh` and `docker`, and mounting the
+  Docker socket or one of the machine's disks in a container counts as becoming root.
+- **The guard is harder to switch off or soften.** It now asks before a change to the
+  plugin as Claude Code keeps it and to the `augmented-brain` program, and before a
+  command that copies or unpacks into a folder holding the guard's files. `sudo-rs` and
+  `su-rs`, which come with newer Ubuntu, count as becoming root. And while the guard's
+  lists differ from the ones you last saw, they cannot let more through: a root
+  exception for this machine waits until you accept them, and `aws`, `ssh`, `scp` and
+  `rsync` ask first.
+- **A new page, "What stays stable", says what every 1.x keeps working.** Your notes,
+  your configuration, the commands, the assistant's tools, backups and installing; what
+  is not promised (the program's words, the panel, the guard's verdicts); and the one
+  exception, security. Tests now freeze the tools, commands and settings it promises, so
+  a change that breaks them fails before it ships.
+- **A power cut no longer leaves a note empty.** Each note is now on the disk before the
+  program goes on (it used to stay a while in memory only), and the temporary files a
+  write cut short leaves are tidied at the next session. A note that is a symbolic link
+  is never written through: augmented brain says so instead of writing somewhere else.
+  A migration that stops half way keeps the one copy made before it started, with links
+  copied as links, instead of making another, and changes to `config.toml` are checked
+  before they reach the file, not after.
+- **You hear of every rule, profile change or guard host Claude saves.** Claude saves
+  them without asking, and every later session loads them, so a text it read could talk
+  it into one. Now Claude Code itself tells you, once, at the end of the answer, what was
+  saved: the rule's title and where it applies, the parts of the profile that changed,
+  the hosts added. If you did not ask for it, tell Claude to undo it.
+- **The list of secrets refuses more values.** Besides the tokens of known services, a
+  secret's name or description is now refused when it holds a long run of letters and
+  digits, a password said with its label, an address with a password, a JWT or a PIN with
+  its number. The description has 160 characters at most.
+- **Starting a release workflow asks you instead of being stopped.** When an assistant
+  runs `gh workflow run release`, the guard now shows you the permission dialog. Say yes
+  and the release starts, with no terminal; say no, or do not answer, and nothing starts.
+  In `bypassPermissions` mode, where that dialog may not show, it is still stopped.
+- **`update` takes its release only from GitHub, and a new program that does not start
+  never replaces the one that works.** A setting such as `AB_RELEASE_URL` in the
+  environment of a Claude session could send the update somewhere else; now `update`
+  ignores it and says so (`--from` is for tests). The installer tries the new program
+  before it replaces the old one and puts the old one back if it fails, and it refuses to
+  run as root (`sudo`), which left everything belonging to root.
+- **A production AWS profile set in a command asks, whatever the program.**
+  `AWS_PROFILE=prod bash deploy.sh` used to go through while `./deploy.sh` asked: a few
+  programs with a rule of their own skipped the general one. Now every program gets it.
+  Asking for help no longer stops: `git commit --help`, `gh pr merge --help`,
+  `su --version` and `git -c core.pager=cat log` go through. And a few reasons say what
+  really happened: `cmd` started from Bash, a script downloaded and run in the same
+  command, a tool call that could not be read.
+
 ## 0.23.0-beta
 
 Released 2026-11-13.

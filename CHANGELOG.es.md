@@ -2,6 +2,66 @@
 
 ## Sin publicar
 
+## 0.24.0-beta
+
+Publicada el 2026-11-13.
+
+- **El guardia lee las opciones de los programas como los propios programas.** Entrar
+  como root por ssh, llegar a una máquina intocable a través de otra y darle a un
+  contenedor la máquina entera se paran ahora se escriban como se escriban sus opciones.
+  `sshfs`, `autossh`, `nerdctl` y `kubectl debug node/…` tienen las mismas reglas que
+  `ssh` y `docker`, y montar en un contenedor el socket de Docker o uno de los discos de
+  la máquina cuenta como hacerse root.
+- **El guardia es más difícil de apagar o de ablandar.** Ahora pregunta antes de cambiar
+  el plugin tal como lo guarda Claude Code y el programa `augmented-brain`, y antes de un
+  comando que copia o desempaqueta en una carpeta con ficheros del guardia. `sudo-rs` y
+  `su-rs`, que traen las versiones nuevas de Ubuntu, cuentan como hacerse root. Y
+  mientras las listas del guardia no sean las que viste por última vez, no pueden dejar
+  pasar más: la excepción de root de esta máquina espera a que las aceptes, y `aws`,
+  `ssh`, `scp` y `rsync` preguntan antes.
+- **Una página nueva, «Lo que no cambia», dice lo que toda 1.x sigue haciendo.** Tus
+  notas, tu configuración, los comandos, las herramientas del asistente, las copias e
+  instalar; lo que no se promete (las palabras del programa, el panel, lo que decide el
+  guardia); y la única excepción, la seguridad. Las pruebas congelan ahora las
+  herramientas, los comandos y los ajustes que promete, así que un cambio que los rompa
+  falla antes de publicarse.
+- **Un corte de luz ya no deja una nota vacía.** Cada nota queda en el disco antes de que
+  el programa siga (antes se quedaba un rato solo en memoria), y los ficheros temporales
+  que deja una escritura cortada se limpian en la sesión siguiente. Una nota que es un
+  enlace simbólico nunca se escribe a través de él: augmented brain lo dice en vez de
+  escribir en otro sitio. Una migración que se para a medias conserva la única copia
+  hecha antes de empezar, con los enlaces copiados como enlaces, en vez de hacer otra, y
+  los cambios en `config.toml` se comprueban antes de llegar al fichero, no después.
+- **Te enteras de cada regla, cambio de perfil o máquina del guardia que guarda Claude.**
+  Claude los guarda sin preguntar, y todas las sesiones siguientes los cargan, así que un
+  texto que haya leído podría convencerle de guardar uno. Ahora Claude Code te dice, una
+  vez y al acabar la respuesta, qué se ha guardado: el título de la regla y dónde vale,
+  las partes del perfil que cambian, las máquinas añadidas. Si no se lo has pedido, dile
+  a Claude que lo deshaga.
+- **La lista de secretos rechaza más valores.** Además de los tokens de servicios
+  conocidos, ahora se rechaza un nombre o una descripción de secreto que lleve una tira
+  larga de letras y números, una contraseña dicha con su etiqueta, una dirección con
+  contraseña, un JWT o un PIN con su número. La descripción tiene 160 caracteres como
+  mucho.
+- **Lanzar un flujo de publicación te pregunta en vez de pararse.** Cuando un asistente
+  lanza `gh workflow run release`, el guardia ahora te enseña el diálogo de permiso. Di
+  que sí y la versión sale, sin ir a un terminal; di que no, o no contestes, y no se lanza
+  nada. En el modo `bypassPermissions`, donde ese diálogo puede no salir, se sigue
+  parando.
+- **`update` solo toma la versión de GitHub, y un programa nuevo que no arranca nunca
+  sustituye al que funciona.** Una variable como `AB_RELEASE_URL` en el entorno de una
+  sesión de Claude podía mandar la actualización a otro sitio; ahora `update` no le hace
+  caso y lo dice (`--from` es para pruebas). El instalador prueba el programa nuevo antes
+  de cambiar el viejo y devuelve el viejo si falla, y se niega a correr como root
+  (`sudo`), que dejaba todo a nombre de root.
+- **Un perfil de producción de AWS puesto en un comando pregunta, sea cual sea el
+  programa.** `AWS_PROFILE=prod bash deploy.sh` pasaba y `./deploy.sh` preguntaba: unos
+  pocos programas con una regla propia se saltaban la general. Ahora la tienen todos.
+  Pedir ayuda ya no se para: `git commit --help`, `gh pr merge --help`, `su --version` y
+  `git -c core.pager=cat log` pasan. Y algunos motivos dicen lo que pasó de verdad: `cmd`
+  lanzado desde Bash, un script descargado y ejecutado en el mismo comando, una llamada a
+  una herramienta que no se pudo leer.
+
 ## 0.23.0-beta
 
 Publicada el 2026-11-13.
