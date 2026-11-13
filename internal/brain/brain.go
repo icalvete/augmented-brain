@@ -22,6 +22,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/templates"
 )
@@ -56,6 +57,10 @@ type Brain struct {
 	// origin is the space of the session that opened this brain through Other: its
 	// journal lines say so. Empty for the session's own space.
 	origin string
+	// IndexProblem is why the index (MEMORY.md) could not be written after a note was
+	// saved: the note stands, and the next write tries the index again. The MCP server
+	// adds it to the tool's answer, so a retry does not write the note twice.
+	IndexProblem error
 }
 
 // KnowSpaces tells a brain built by hand (not by Open) the spaces of the
@@ -141,15 +146,10 @@ func ProblemsNote(problems []memory.Problem, max int) string {
 // today is the date of b.Now (local time), as the notes write dates.
 func (b *Brain) today() string { return b.Now().Format(memory.DateLayout) }
 
-// save writes a note, keeps it in memory and rebuilds the index.
+// save writes a note, keeps it in memory and rebuilds the index. A note it refuses
+// leaves no file written.
 func (b *Brain) save(n *memory.Note) error {
-	if b.broken(n.Path) {
-		return fmt.Errorf("%s is not a valid note, so it is not written over; fix it first (`augmented-brain check` says what is wrong)", n.Path)
-	}
-	if err := checkHeader(n, b.Mem.Notes[n.Header.ID]); err != nil {
-		return err
-	}
-	if err := noNewSecret(n, b.Mem.Notes[n.Header.ID]); err != nil {
+	if err := b.refuse(n); err != nil {
 		return err
 	}
 	if _, err := b.archiveJournal(n); err != nil {
@@ -163,8 +163,29 @@ func (b *Brain) save(n *memory.Note) error {
 	if b.origin != "" && b.ConfigDir != "" {
 		_ = state.MarkOutside(b.ConfigDir, b.Space.Name, time.Now())
 	}
-	_, err := b.Mem.WriteIndex(b.Language)
-	return err
+	// The note is saved: an index that cannot be written is told, not an error, or the
+	// assistant would write the same change again.
+	if _, err := b.Mem.WriteIndex(b.Language); err != nil {
+		b.IndexProblem = err
+	}
+	return nil
+}
+
+// refuse says why save would not write n, before anything is written for it: a file
+// that is not a valid note, a field too long, a new secret, a header that is not right.
+// Everything that can refuse the note is checked here, so a refused change leaves
+// nothing behind, not even its journal's archive or a copy in archive/.
+func (b *Brain) refuse(n *memory.Note) error {
+	if b.broken(n.Path) {
+		return fmt.Errorf("%s is not a valid note, so it is not written over; fix it first (`augmented-brain check` says what is wrong)", n.Path)
+	}
+	if err := checkHeader(n, b.Mem.Notes[n.Header.ID]); err != nil {
+		return err
+	}
+	if err := noNewSecret(n, b.Mem.Notes[n.Header.ID]); err != nil {
+		return err
+	}
+	return n.Validate()
 }
 
 // noNewSecret refuses a note that would hold more secrets than its old version (nil:
@@ -390,7 +411,7 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 	}
 	reopen := strings.TrimSpace(in.Reopen)
 	if old == "closed" && h.Status != "closed" && slices.Contains(memory.Statuses, h.Status) && reopen == "" {
-		return nil, fmt.Errorf("task %s is closed: to open it again, say why with reopen", in.ID)
+		return nil, closedTask(n)
 	}
 	if h.Status != old {
 		// Skipping phases is allowed (a small task may go straight to execution), and
@@ -468,6 +489,9 @@ func (b *Brain) Park(in ParkInput) (*memory.Note, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err := closedTask(n); err != nil {
+		return nil, err
+	}
 	cp := *n
 	cp.Header.Status = "parked"
 	if in.Someday {
@@ -492,6 +516,15 @@ func (b *Brain) Park(in ParkInput) (*memory.Note, error) {
 	}
 	cp.Body = b.journalLine(cp.Body, entry)
 	return &cp, b.save(&cp)
+}
+
+// closedTask refuses a change that would open a closed task again or change what it
+// was closed with (Park, the steps): only Update with reopen opens it.
+func closedTask(n *memory.Note) error {
+	if n.Header.Status != "closed" {
+		return nil
+	}
+	return fmt.Errorf("task %s is closed: to open it again, say why with reopen", n.Header.ID)
 }
 
 // Close marks a task closed with its result. It is never deleted.
@@ -741,13 +774,17 @@ func (b *Brain) capture(text, remind, from string) error {
 	if fi, err := os.Lstat(b.inboxPath()); err == nil && fi.Mode()&os.ModeSymlink != 0 {
 		return fmt.Errorf("%s is a symbolic link, which augmented brain never writes through; replace it with a plain file", b.inboxPath())
 	}
-	f, err := os.OpenFile(b.inboxPath(), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
-	if err != nil {
+	// The inbox is small: it is written whole, so a crash never leaves half a line, and
+	// a last line with no newline (written by hand) keeps the capture on a line of its own.
+	data, err := os.ReadFile(b.inboxPath())
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
-	defer f.Close()
-	_, err = f.WriteString(memory.DatedLine(b.today(), text))
-	return err
+	if len(data) > 0 && data[len(data)-1] != '\n' {
+		data = append(data, '\n')
+	}
+	data = append(data, memory.DatedLine(b.today(), text)...)
+	return paths.WriteAtomic(b.inboxPath(), data, 0o600)
 }
 
 // NewArea creates an area: a responsibility with no end date.

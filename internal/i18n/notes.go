@@ -155,6 +155,10 @@ var noteMessages = map[string]msg{
 		en: "Weekly review %s",
 		es: "Revisión semanal %s",
 	},
+	"review.processed": {
+		en: "Captures taken out of the inbox",
+		es: "Capturas sacadas del buzón",
+	},
 	"index.title": {
 		en: "Memory index",
 		es: "Índice de la memoria",

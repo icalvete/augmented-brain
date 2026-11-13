@@ -3,6 +3,7 @@ package brain
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
@@ -41,12 +42,27 @@ func ParseSecretName(entry string) (SecretName, bool) {
 }
 
 // SecretList returns the entries of the secrets list, as written: those of its file,
-// then any 0.6.0 left in config.toml that the file does not have yet.
+// then any 0.6.0 left in config.toml that the file does not have yet. A file that
+// cannot be read gives what config.toml has; readSecretList says why.
 func SecretList(cfgDir string) []string {
+	out, _ := readSecretList(cfgDir)
+	return out
+}
+
+// readSecretList is SecretList with the reason its file could not be read, if so.
+// What writes the list refuses to go on then: it would write over the names it could
+// not read.
+func readSecretList(cfgDir string) ([]string, error) {
 	var f struct {
 		Secrets []string `toml:"secrets"`
 	}
-	_, _ = toml.DecodeFile(filepath.Join(cfgDir, config.SecretsFile), &f)
+	path := filepath.Join(cfgDir, config.SecretsFile)
+	_, ferr := toml.DecodeFile(path, &f)
+	if errors.Is(ferr, os.ErrNotExist) {
+		ferr = nil
+	} else if ferr != nil {
+		ferr = fmt.Errorf("%s cannot be read, so it is not written over; fix it or remove the line that is wrong: %w", path, ferr)
+	}
 	out := f.Secrets
 	if c, err := config.Load(cfgDir); err == nil {
 		for _, e := range c.Secrets {
@@ -55,7 +71,7 @@ func SecretList(cfgDir string) []string {
 			}
 		}
 	}
-	return out
+	return out, ferr
 }
 
 // SecretNames returns the secrets the list names, in its order, and how many of its
@@ -71,15 +87,34 @@ func SecretNames(cfgDir string) ([]SecretName, int) {
 	return out, len(list) - len(out)
 }
 
-// writeSecrets writes the list to its file. Every entry is plain text (plainLine), so
-// quoting it is enough for TOML.
+// tomlString writes text as a TOML basic string: quotes, backslashes and control
+// characters escaped, so an entry written by hand with any of them reads back the same.
+func tomlString(text string) string {
+	var b strings.Builder
+	b.WriteByte('"')
+	for _, r := range text {
+		switch {
+		case r == '"' || r == '\\':
+			b.WriteByte('\\')
+			b.WriteRune(r)
+		case r < 0x20 || r == 0x7f:
+			fmt.Fprintf(&b, "\\u%04X", r)
+		default:
+			b.WriteRune(r)
+		}
+	}
+	b.WriteByte('"')
+	return b.String()
+}
+
+// writeSecrets writes the list to its file, each entry escaped as TOML wants it.
 func writeSecrets(cfgDir string, list []string) error {
 	var b strings.Builder
 	b.WriteString("# The names of the secrets you keep in the system keychain, and what each is for.\n")
 	b.WriteString("# Never their values. augmented brain writes this file; the panel shows it.\n")
 	b.WriteString("secrets = [\n")
 	for _, e := range list {
-		b.WriteString("  \"" + e + "\",\n")
+		b.WriteString("  " + tomlString(e) + ",\n")
 	}
 	b.WriteString("]\n")
 	return paths.WriteAtomic(filepath.Join(cfgDir, config.SecretsFile), []byte(b.String()), 0o600)
@@ -101,7 +136,11 @@ func MoveSecrets(cfgDir string) error {
 	if err != nil || len(c.Secrets) == 0 {
 		return err
 	}
-	if err := writeSecrets(cfgDir, CleanSecretNames(SecretList(cfgDir))); err != nil {
+	list, err := readSecretList(cfgDir)
+	if err != nil {
+		return err
+	}
+	if err := writeSecrets(cfgDir, CleanSecretNames(list)); err != nil {
 		return err
 	}
 	return config.RemoveTopKey(cfgDir, "secrets")
@@ -131,9 +170,13 @@ func (b *Brain) SaveSecretName(in SecretName) (string, error) {
 	if in.What != "" {
 		entry += ": " + in.What
 	}
+	all, err := readSecretList(b.ConfigDir)
+	if err != nil {
+		return "", err
+	}
 	var list []string
 	found := false
-	for _, e := range CleanSecretNames(SecretList(b.ConfigDir)) {
+	for _, e := range all {
 		if s, ok := ParseSecretName(e); ok && s.Key() == in.Key() {
 			if !found {
 				list = append(list, entry)
@@ -159,7 +202,10 @@ func (b *Brain) ForgetSecretName(service, name string) error {
 		return err
 	}
 	key := service + "/" + name
-	all := SecretList(b.ConfigDir)
+	all, err := readSecretList(b.ConfigDir)
+	if err != nil {
+		return err
+	}
 	var list []string
 	for _, e := range all {
 		if s, ok := ParseSecretName(e); ok && s.Key() == key {
