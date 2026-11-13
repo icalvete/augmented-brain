@@ -360,7 +360,7 @@ wrong. The watch notices a service with no session at two looks in a row and res
 If it still has none after that, Claude was trying to reopen the archived session: the
 watch renames Claude's record of it (`bridge-pointer.json` becomes
 `bridge-pointer.json.archived`, in the folder's project in `~/.claude/projects`) and
-restarts it again, so a new session starts, in about three minutes. The conversation of
+restarts it again, so a new session starts: about ten minutes in all. The conversation of
 the archived session does not come back. What it does goes to the system journal
 (`journalctl --user -u augmented-brain-watch-remote`). It takes no options.
 
@@ -379,9 +379,10 @@ that service.
 Opens a remote session of its own for one task, so that from another computer you can
 work on several tasks at once, each in its own session. It is four commands, `start`,
 `stop`, `restart` and `list`, each with its own section below; `restart` also restarts
-the other Claude sessions on this computer. Linux only for now: it has
-been tried only there. Without a subcommand, or with another, `session` prints its usage. See
-[Remote access](remote.md#a-session-per-task).
+the other Claude sessions on this computer. `start`, `stop` and `list` are Linux only
+for now: they have been tried only there; `restart` also works on macOS. Without a
+subcommand, or with another, `session` prints its usage. See
+[A session per task](task-sessions.md).
 
 ## augmented-brain session start
 
