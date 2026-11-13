@@ -221,3 +221,48 @@ func readSeal(t *testing.T, cfg string) string {
 	}
 	return s
 }
+
+// The Guard page saves memory_trust in session.toml, keeps the preferred model next to
+// it (and the other way round), and leaves a notice for the next hook.
+func TestGuardPageTrust(t *testing.T) {
+	s, cfg := fixture(t, "es")
+	body := s.get(t, "/guard?s=work").Body.String()
+	if !strings.Contains(body, "Lo que el asistente guarda solo") || !strings.Contains(body, `value="tell" checked`) {
+		t.Fatalf("no trust section, or not on tell: %.300s", body)
+	}
+	if w := s.post(t, "/guard/model", url.Values{"s": {"work"}, "value": {"opus"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("model: %d", w.Code)
+	}
+	if w := s.post(t, "/guard/trust", url.Values{"s": {"work"}, "value": {"ask"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("save: %d %s", w.Code, w.Body.String())
+	}
+	if ss, err := config.LoadSession(cfg); err != nil || ss.Trust() != config.TrustAsk || ss.PreferredModel != "opus" {
+		t.Fatalf("saved: %+v %v", ss, err)
+	}
+	if n := state.TakeGuardNotice(cfg); !strings.Contains(n, "te pregunta antes") {
+		t.Errorf("notice: %q", n)
+	}
+	if body := s.get(t, "/guard?s=work").Body.String(); !strings.Contains(body, `value="ask" checked`) {
+		t.Error("the page does not show the saved level")
+	}
+	// Saving the model keeps the level.
+	if w := s.post(t, "/guard/model", url.Values{"s": {"work"}, "value": {"sonnet"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("model again: %d", w.Code)
+	}
+	if ss, _ := config.LoadSession(cfg); ss.Trust() != config.TrustAsk || ss.PreferredModel != "sonnet" {
+		t.Errorf("the model's form lost the level: %+v", ss)
+	}
+	// The same level again says nothing; a value that is not a level is refused.
+	if w := s.post(t, "/guard/trust", url.Values{"s": {"work"}, "value": {"ask"}}); w.Code != http.StatusSeeOther || state.TakeGuardNotice(cfg) != "" {
+		t.Errorf("same level: %d, or a notice", w.Code)
+	}
+	if w := s.post(t, "/guard/trust", url.Values{"s": {"work"}, "value": {"silent"}}); w.Code != http.StatusBadRequest {
+		t.Errorf("a bad value: %d", w.Code)
+	}
+	if w := s.post(t, "/guard/trust", url.Values{"s": {"work"}, "value": {"tell"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("back to tell: %d", w.Code)
+	}
+	if ss, _ := config.LoadSession(cfg); ss.Trust() != config.TrustTell {
+		t.Errorf("not back on tell: %+v", ss)
+	}
+}

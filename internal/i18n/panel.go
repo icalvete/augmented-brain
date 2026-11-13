@@ -450,6 +450,31 @@ var panelMessages = map[string]msg{
 		en: "Machines that need your confirmation for ssh, scp and rsync.",
 		es: "Máquinas que necesitan tu confirmación para ssh, scp y rsync.",
 	},
+	"panel.guard.trust": {
+		en: "What the assistant saves on its own",
+		es: "Lo que el asistente guarda solo",
+	},
+	"panel.guard.trust.hint": {
+		en: "A rule, your profile and the guard's lists change how every session works. Choose whether the assistant saves them and you are told, or asks you first. Tasks, the inbox and what it learns are always saved without asking.",
+		es: "Una regla, tu perfil y las listas del guardia cambian cómo trabajan todas las sesiones. Elige si el asistente los guarda y se te avisa, o si te pregunta antes. Las tareas, el buzón y lo que aprende se guardan siempre sin preguntar.",
+	},
+	"panel.guard.trust.tell": {
+		en: "Save and tell me (a line with what was saved)",
+		es: "Guardar y avisarme (una línea con lo guardado)",
+	},
+	"panel.guard.trust.ask": {
+		en: "Ask me first (Claude Code shows what would be saved, and you say yes or no)",
+		es: "Preguntarme antes (Claude Code enseña lo que se guardaría, y dices sí o no)",
+	},
+	// Shown under "the guard's lists:" (hook.guardnotice).
+	"panel.guard.trust.notice.tell": {
+		en: "changed in the panel, what the assistant saves on its own: it now saves rules, your profile and the guard's lists without asking, and you are told.",
+		es: "cambiado en el panel, lo que el asistente guarda solo: ahora guarda reglas, tu perfil y las listas del guardia sin preguntar, y se te avisa.",
+	},
+	"panel.guard.trust.notice.ask": {
+		en: "changed in the panel, what the assistant saves on its own: it now asks you before it saves a rule, your profile or the guard's lists.",
+		es: "cambiado en el panel, lo que el asistente guarda solo: ahora te pregunta antes de guardar una regla, tu perfil o las listas del guardia.",
+	},
 	"panel.guard.model": {
 		en: "Model of your sessions",
 		es: "Modelo de tus sesiones",
