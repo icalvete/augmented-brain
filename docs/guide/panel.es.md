@@ -28,14 +28,18 @@ y **Ocultarla en todas las páginas**, en todas. El panel lo recuerda en este or
 
 ## Espacios y páginas
 
-A un lado, bajo **Perfil**, la lista **Espacio** elige el espacio que estás mirando.
-Unas páginas enseñan solo ese espacio; otras, todos, o este ordenador entero. En un
-móvil, el menú se pliega bajo el nombre de la página en la que estás.
+A un lado, bajo **Perfil**, la lista **Espacio** elige el espacio que estás mirando. Unas
+páginas enseñan solo ese espacio; otras, todos, o este ordenador entero. El menú tiene
+tres bloques: **Día a día**, **Notas** y **Mantenimiento**. Cuando la ventana se queda
+corta, el lateral se desplaza por su cuenta, así que **Parar el panel** siempre está a
+mano. En un móvil, el menú se pliega bajo el nombre de la página en la que estás;
+abierto, enseña cada bloque en dos columnas, y una sombra al pie dice que sigue.
 
 | Página | Para qué sirve | Enseña |
 |---|---|---|
 | [Hoy](#hoy) | Lo que vence y lo que te espera | todos los espacios |
 | [Tareas](#tareas) | Ver, cambiar, abrir y cerrar tareas | un espacio |
+| [Sesiones](#sesiones) | Tus sesiones de Claude, y las que se cortaron | este ordenador |
 | [Recordatorios](#recordatorios) | Fechas para revisar y recordatorios del buzón | un espacio |
 | [Buzón](#buzón) | Ideas sueltas, para más tarde | un espacio |
 | [Revisión semanal](#revisión-semanal) | Vaciar el buzón, mirar las tareas paradas | un espacio |
@@ -93,6 +97,18 @@ diario dice que se reabrió desde el panel.
 Al guardar una tarea, solo se guarda lo que cambiaste en la página. Si Claude cambió otra
 cosa mientras tanto, se queda. Un paso solo se marca si sigue diciendo lo que mostraba la
 página.
+
+## Sesiones
+
+Tus sesiones de Claude en este ordenador, de los últimos 30 días. Está en el menú, en
+**Día a día**; también se llega desde **Salud** y desde una sesión cortada en **Hoy**.
+
+- Las que no terminaron (cerradas a la fuerza, o cortadas al apagarse el ordenador)
+  muestran lo dicho después de la última entrada del diario. Guárdalo en las notas (va a
+  `archive/sessions/` con una línea en el diario de la tarea) o dalas por revisadas.
+- Las que están en marcha y las terminadas, con lo que ocupan en disco sus
+  transcripciones (los ficheros donde Claude Code guarda cada conversación). Puedes borrar
+  la transcripción de una sesión terminada; esa sesión ya no se podrá retomar.
 
 ## Recordatorios
 
@@ -193,18 +209,6 @@ La carpeta de notas y las carpetas de trabajo del espacio, si es el espacio por 
 notas que no son válidas, repositorios a los que apuntan las notas y que ya no están en
 este ordenador, el índice, la última copia de seguridad, la última revisión semanal y un
 enlace a las [Sesiones](#sesiones) del espacio.
-
-## Sesiones
-
-Tus sesiones de Claude en este ordenador, de los últimos 30 días. No está en el menú:
-ábrela desde **Salud**, o desde una sesión cortada en **Hoy**.
-
-- Las que no terminaron (cerradas a la fuerza, o cortadas al apagarse el ordenador)
-  muestran lo dicho después de la última entrada del diario. Guárdalo en las notas (va a
-  `archive/sessions/` con una línea en el diario de la tarea) o dalas por revisadas.
-- Las que están en marcha y las terminadas, con lo que ocupan en disco sus
-  transcripciones (los ficheros donde Claude Code guarda cada conversación). Puedes borrar
-  la transcripción de una sesión terminada; esa sesión ya no se podrá retomar.
 
 ## Guardia
 

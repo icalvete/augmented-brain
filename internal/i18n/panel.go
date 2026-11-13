@@ -539,6 +539,18 @@ var panelMessages = map[string]msg{
 		en: "Value",
 		es: "Valor",
 	},
+	"panel.nav.day": {
+		en: "Day to day",
+		es: "Día a día",
+	},
+	"panel.nav.notes": {
+		en: "Notes",
+		es: "Notas",
+	},
+	"panel.nav.care": {
+		en: "Upkeep",
+		es: "Mantenimiento",
+	},
 	"panel.today": {
 		en: "Today",
 		es: "Hoy",
