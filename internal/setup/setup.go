@@ -28,6 +28,12 @@ var spaceFolders = []string{"areas", "tasks", "knowledge", "people", "rules", "r
 
 var validName = regexp.MustCompile(`^[a-z][a-z0-9-]{0,30}$`)
 
+// ValidName reports whether name may be a space's name: lowercase letters, digits and
+// dashes, starting with a letter, and not the folder of the shared notes.
+func ValidName(name string) bool {
+	return validName.MatchString(name) && name != config.SharedFolder
+}
+
 // Options describe one space to create.
 type Options struct {
 	Language   string // en | es; only used by Init

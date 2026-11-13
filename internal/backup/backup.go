@@ -44,10 +44,30 @@ func runGit(args ...string) (string, error) { return runGitEnv(nil, args...) }
 
 // runGitEnv is runGit with more variables in git's environment.
 func runGitEnv(env []string, args ...string) (string, error) {
+	return runGitAs(true, env, args...)
+}
+
+// notesSettings are the user's git settings a backup or restore never follows. The
+// notes are not the user's code: a commit signed with a key that asks for a passphrase,
+// a hook of every repository (core.hooksPath: a linter, a secret scanner) or a file
+// monitor would make the automatic backup fail, or open a window nobody expects when a
+// session ends. Nor does git ask for a password through a program (askpass): a helper
+// that already has it (gh's, a keychain's) still gives it.
+var notesSettings = []string{
+	"-c", "commit.gpgsign=false", "-c", "tag.gpgsign=false",
+	"-c", "core.hooksPath=" + os.DevNull, "-c", "core.fsmonitor=false",
+	"-c", "credential.interactive=false", "-c", "core.askPass=",
+}
+
+// runGitAs runs git; notes adds notesSettings and leaves out every askpass program.
+func runGitAs(notes bool, env []string, args ...string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), GitTimeout)
 	defer cancel()
-	args = append([]string{"-c", "http.lowSpeedLimit=1000", "-c", "http.lowSpeedTime=60"}, args...)
-	cmd := exec.CommandContext(ctx, "git", args...)
+	pre := []string{"-c", "http.lowSpeedLimit=1000", "-c", "http.lowSpeedTime=60"}
+	if notes {
+		pre = append(pre, notesSettings...)
+	}
+	cmd := exec.CommandContext(ctx, "git", append(pre, args...)...)
 	// A program git started (ssh) may keep its output open after git is stopped: stop
 	// waiting for it shortly after.
 	cmd.WaitDelay = 5 * time.Second
@@ -55,6 +75,11 @@ func runGitEnv(env []string, args ...string) (string, error) {
 	// never take a folder above the temporary one for a repository.
 	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0", "GIT_ALLOW_PROTOCOL=file:git:https:ssh",
 		"GIT_CEILING_DIRECTORIES="+os.TempDir())
+	if notes {
+		// An empty GIT_ASKPASS stops git looking further (core.askPass, SSH_ASKPASS);
+		// ssh never runs one either.
+		cmd.Env = append(cmd.Env, "GIT_ASKPASS=", "SSH_ASKPASS=", "SSH_ASKPASS_REQUIRE=never")
+	}
 	cmd.Env = append(cmd.Env, env...)
 	out, err := cmd.CombinedOutput()
 	if ctx.Err() == context.DeadlineExceeded {
@@ -63,9 +88,11 @@ func runGitEnv(env []string, args ...string) (string, error) {
 	return string(out), err
 }
 
-// Git runs git in dir the way this package does (no password prompt, a time limit),
-// for other commands that need git: session start makes a task's worktree with it.
-func Git(dir string, args ...string) (string, error) { return git(dir, args...) }
+// Git runs git in dir with the package's limits (no password prompt, a time limit),
+// for other commands that need git: session start makes a task's worktree with it. It
+// is a repository of the user's, so their settings apply: hooks run (Git LFS fills a
+// new worktree through one), commits are signed as they set.
+func Git(dir string, args ...string) (string, error) { return gitAs(false, dir, args...) }
 
 // GitTimeout is the longest a single git call of a backup or restore may take.
 var GitTimeout = 3 * time.Minute
@@ -78,8 +105,11 @@ var LockWait = 10 * time.Minute
 // git said. Git never looks above dir for a repository (GIT_CEILING_DIRECTORIES on its
 // parent): a memory folder that lost its .git must not make a backup commit and push in
 // whatever repository holds it, such as the work folder around the notes.
-func git(dir string, args ...string) (string, error) {
-	out, err := runGitEnv([]string{ceiling(dir)}, append([]string{"-C", dir}, args...)...)
+func git(dir string, args ...string) (string, error) { return gitAs(true, dir, args...) }
+
+// gitAs is git, with notesSettings or without them.
+func gitAs(notes bool, dir string, args ...string) (string, error) {
+	out, err := runGitAs(notes, []string{ceiling(dir)}, append([]string{"-C", dir}, args...)...)
 	if err != nil {
 		return out, fmt.Errorf("git %s: %v: %s", strings.Join(args, " "), err, strings.TrimSpace(out))
 	}
@@ -462,6 +492,7 @@ func Restore(cfgDir string, o RestoreOptions) (*config.Space, error) {
 	if err != nil {
 		return nil, err
 	}
+	keepSafe(s, o)
 	mem, replacing, err := chooseMemory(s, o, old)
 	if err != nil {
 		return nil, err
@@ -536,7 +567,12 @@ func cloneBackup(url, dir string) (string, *config.Space, bool, error) {
 	if err := checkURL(url); err != nil {
 		return "", nil, false, err
 	}
-	if out, err := runGit("-c", "core.symlinks=false", "clone", "-q", "--", url, dir); err != nil {
+	// Backups go to main, whatever branch the repository's HEAD names (a repository
+	// made with `git init --bare` on a server may name master).
+	if out, err := runGit("-c", "core.symlinks=false", "clone", "-q", "--branch", "main", "--", url, dir); err != nil {
+		if heads, lerr := runGit("ls-remote", "--heads", "--", url); lerr == nil && !strings.Contains(heads, "refs/heads/main") {
+			return "", nil, false, fmt.Errorf("the repository %s has no branch main, where augmented brain keeps its backups: it is not a backup, or it is empty", url)
+		}
 		return "", nil, false, fmt.Errorf("cloning %s: %v: %s", url, err, strings.TrimSpace(out))
 	}
 	if found, err := links(dir, "HEAD"); err != nil {
@@ -555,6 +591,10 @@ func cloneBackup(url, dir string) (string, *config.Space, bool, error) {
 	for name, sp := range saved.Spaces {
 		s = sp
 		s.Name = name
+	}
+	// The name becomes a folder and a line of config.toml: the rule of space add.
+	if !setup.ValidName(s.Name) {
+		return "", nil, false, fmt.Errorf("the backup in %s holds a space called %q, which is not a valid name: it is not restored", url, s.Name)
 	}
 	return saved.Language, s, saved.DefaultSpace == s.Name, nil
 }
@@ -803,6 +843,68 @@ func updateSpace(cfgDir string, s *config.Space) error {
 		}
 	}
 	return nil
+}
+
+// keepSafe replaces, in the space a backup holds, each folder it names that a backup
+// may not choose, by the usual one, and lists the replaced ones in s.Unsafe. Someone
+// who can change the backup could otherwise have the notes land, say, in
+// ~/.config/autostart, whose files the desktop runs at login. Folders the user gives
+// (o) are theirs to choose and are not looked at.
+func keepSafe(s *config.Space, o RestoreOptions) {
+	usual := "~/augmented-brain/" + s.Name
+	if o.WorkFolder == "" {
+		var work []string
+		for _, f := range s.WorkFolders {
+			if safePlace(f) {
+				work = append(work, f)
+			} else {
+				s.Unsafe = append(s.Unsafe, f)
+			}
+		}
+		if len(work) == 0 && len(s.WorkFolders) > 0 {
+			work = []string{usual}
+		}
+		s.WorkFolders = work
+	}
+	if o.Memory == "" && !safePlace(s.Memory) {
+		s.Unsafe = append(s.Unsafe, s.Memory)
+		s.Memory = usual + "/notes"
+	}
+}
+
+// safePlace reports whether a folder a backup names may be used as it is on this
+// machine: inside the home but not the home itself, not in a hidden folder at its top
+// (~/.config, ~/.local, ~/.ssh), in the system's (~/Library, ~/AppData) or in any .git.
+// A hidden folder further down (~/projects/.notes) is a place people keep notes.
+func safePlace(p string) bool {
+	if p == "" {
+		return false
+	}
+	home, err := paths.Home()
+	if err != nil {
+		return false
+	}
+	if home, err = paths.Resolve(home); err != nil {
+		return false
+	}
+	dir, err := paths.Resolve(p)
+	if err != nil || !paths.Within(dir, home) || paths.Same(dir, home) {
+		return false
+	}
+	rel, err := filepath.Rel(home, dir)
+	if err != nil {
+		return false
+	}
+	parts := strings.Split(rel, string(filepath.Separator))
+	if top := parts[0]; strings.HasPrefix(top, ".") || strings.EqualFold(top, "Library") || strings.EqualFold(top, "AppData") {
+		return false
+	}
+	for _, part := range parts {
+		if strings.EqualFold(part, ".git") {
+			return false
+		}
+	}
+	return true
 }
 
 // defaultMemory says where a restored space's notes go when the user does not say: in

@@ -260,6 +260,26 @@ func TestSessionStartBackupFailed(t *testing.T) {
 	}
 }
 
+// A backup that began and never ended (the computer went off half way) is told too.
+func TestSessionStartBackupCutShort(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	if err := config.SetSpaceKey(cfgDir, "work", "backup", "git@example.com:me/brain.git"); err != nil {
+		t.Fatal(err)
+	}
+	backup.RecordStatusWarning(cfgDir, "work", nil, "", time.Now().Add(-48*time.Hour))
+	backup.RecordStarted(cfgDir, "work", time.Date(2026, 10, 16, 18, 0, 0, 0, time.Local))
+	ss := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, cfgDir) }
+	o := run(t, ss, map[string]any{"cwd": work})
+	if text := o["additionalContext"].(string); !strings.Contains(text, "A backup of space work began at 2026-10-16 18:00 and never ended") {
+		t.Errorf("no warning about the backup cut short:\n%s", text)
+	}
+	backup.RecordStatusWarning(cfgDir, "work", nil, "", time.Now())
+	o = run(t, ss, map[string]any{"cwd": work})
+	if strings.Contains(o["additionalContext"].(string), "never ended") {
+		t.Error("a backup that ended must not be reported")
+	}
+}
+
 // The production profiles and untouchable hosts apply in every space, whichever space
 // saved them; the AWS profile a command inherits counts; and a configuration that
 // cannot be read makes those commands ask.
