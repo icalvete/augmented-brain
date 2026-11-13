@@ -730,8 +730,8 @@ func (p Policy) sudo(name string, args []string, stdin string, env map[string]st
 		// a cluster of short options, the last one may take a value: -iu app, -uapp
 		for j := 1; j < len(a); j++ {
 			o := a[j]
-			if strings.ContainsRune("lvkKV", rune(o)) {
-				listOnly = true
+			if strings.ContainsRune("lvkKV", rune(o)) || name == "doas" && o == 'L' {
+				listOnly = true // doas -L only forgets the remembered password
 			}
 			if strings.ContainsRune(withValue, rune(o)) {
 				val := a[j+1:]

@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+- **El guardia vuelve a tratar `doas` como root, como dice su guía.** `doas id` pasaba
+  como si fuera solo `id`. Ahora `doas`, como `sudo`, se para salvo que ejecute el
+  comando como otro usuario (`doas -u deploy …`), y una prueba vigila que ningún otro
+  comando con regla propia pueda saltarse igual.
 - **La copia de seguridad solo actúa en su propio repositorio.** Si la carpeta de notas
   perdía su `.git` (copiada o restaurada a mano, o borrado) y estaba dentro de otro
   repositorio de git, como tu carpeta de trabajo, la copia hacía commit y push en ese
