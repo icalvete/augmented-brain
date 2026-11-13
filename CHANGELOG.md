@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- **Claude no longer sets up a backup at an address it was given.** In a space with no
+  backup, one call to `backup_setup` with an address sent every note there, and again at
+  the end of each session; the address could come from a page or a message Claude read.
+  Now the tool only creates the private repository in your GitHub account. A backup
+  somewhere else you set up yourself, with `augmented-brain backup setup <url>` or the
+  panel's Backup page.
+- **No passwords in a backup's address.** `backup setup` refuses an address with a
+  password or a token in it, since it was kept in the configuration and inside the
+  backup itself. Let git keep the login (`gh auth setup-git`, or ssh). If you already
+  have one, `doctor` tells you how to take it out, and backups no longer carry it.
+
 ## 0.20.0-beta
 
 Released 2026-11-12.

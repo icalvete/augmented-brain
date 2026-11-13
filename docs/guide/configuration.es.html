@@ -128,7 +128,7 @@ backup = "https://github.com/lucia/augmented-brain-personal.git"</code></pre>
   <p>Las listas de repositorios de todos los espacios cuentan juntas: un repositorio de la lista de un espacio pasa desde una sesión de cualquiera de ellos.</p>
   <h2 id="lo-que-puede-cambiar-claude">Lo que puede cambiar Claude</h2>
   <p>Claude nunca edita este fichero por su cuenta: el guardia te pregunta antes. Dos herramientas le añaden cosas, y solo añaden:</p>
-  <ul><li><code>safety_save</code> añade perfiles de producción y máquinas intocables.</li><li><code>backup_setup</code> escribe el <code>backup</code> de un espacio, y nunca lleva a otro sitio una copia que ya existe.</li></ul>
+  <ul><li><code>safety_save</code> añade perfiles de producción y máquinas intocables.</li><li><code>backup_setup</code> escribe el <code>backup</code> de un espacio, solo para el repositorio que crea en tu cuenta de GitHub, y nunca lleva a otro sitio una copia que ya existe.</li></ul>
   <p>Para quitar cualquier cosa, edita tú el fichero.</p>
   <h2 id="cuando-no-se-puede-leer">Cuando no se puede leer</h2>
   <p>Si el fichero tiene un error, el programa dice en qué línea. Un ajuste que no conoce también es un error, y el mensaje lo nombra. Si el fichero lo escribió una versión más nueva, el programa te dice que actualices. Un fichero con un error se cuenta en el idioma del sistema (o en el de <code>AB_LANGUAGE</code>), porque su propio <code>language</code> no se puede leer. Todo lo demás se cuenta en el <code>language</code> del fichero: un ajuste que no conoce, una versión más nueva, un espacio sin <code>memory</code>, un <code>default_space</code> que no es un espacio. Si el propio <code>language</code> está mal, en el del sistema.</p>

@@ -93,7 +93,8 @@ Claude never edits this file on its own: the guard asks you first. Two tools add
 and only add:
 
 - `safety_save` adds production profiles and untouchable machines.
-- `backup_setup` writes a space's `backup`, and never moves an existing backup elsewhere.
+- `backup_setup` writes a space's `backup`, only for the repository it creates in your
+  GitHub account, and never moves an existing backup elsewhere.
 
 To take anything out, edit the file yourself.
 
