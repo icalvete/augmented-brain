@@ -6,6 +6,11 @@
   as if it were just `id`. Now `doas`, like `sudo`, is stopped unless it runs the
   command as another user (`doas -u deploy …`), and a test makes sure no other command
   with a rule of its own can be skipped the same way.
+- **The backup only works in its own repository.** If your notes folder lost its `.git`
+  (copied or restored by hand, or removed) and sits inside another git repository, such
+  as your work folder, a backup used to commit and push in that other repository. Now it
+  stops, touches nothing, and tells you to run `augmented-brain backup setup` again.
+  Going back to an earlier copy does the same.
 
 ## 0.20.0-beta
 
