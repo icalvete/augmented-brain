@@ -143,6 +143,35 @@ configuración en `%APPDATA%\augmented-brain`; tus notas en
 - Para trabajar sin la app: `cd ~\augmented-brain\trabajo; claude` (el PowerShell de
   Windows no tiene `&&`).
 
+## Comprobar una descarga
+
+Para instalar no hace falta. Es para quien quiera estar seguro de que lo que ha bajado es
+lo que publicó el proyecto, hecho a partir de su código público.
+
+Cada versión la compila GitHub a partir de un commit de `main`, nunca en el ordenador de
+nadie, y GitHub firma un registro de ello: qué workflow hizo cada fichero y desde qué
+commit. Con la [CLI de GitHub](https://cli.github.com/) (`gh`) se comprueba cualquier
+fichero de una versión, también el instalador:
+
+```bash
+gh attestation verify augmented-brain_0.23.0-beta_linux_amd64.tar.gz -R icalvete/augmented-brain
+```
+
+Termina con `Verification succeeded!` y nombra el workflow y el commit. Un fichero
+cambiado después de compilarse no pasa.
+
+`checksums.txt`, en cada versión, tiene el SHA-256 de cada archivo y de los dos
+instaladores. Los instaladores comprueban el archivo con él; tú puedes comprobar
+cualquier fichero también:
+
+```bash
+sha256sum --ignore-missing -c checksums.txt
+```
+
+La compilación es reproducible: el mismo commit, compilado con la versión de Go de
+`go.mod`, da los mismos bytes. `scripts/release-build.sh <versión>` desde un clon de esa
+etiqueta escribe el mismo `checksums.txt` que la versión publicada.
+
 ## Actualizar
 
 Cuando hay versión nueva, Claude te lo dice al empezar una sesión y se ofrece a
