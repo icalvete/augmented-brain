@@ -99,6 +99,10 @@ func mac(token, msg string) string {
 // port.
 func sessionOf(token string) string { return mac(token, "session")[:32] }
 
+// netSessionOf is sessionOf for the network's socket (panel remote): another label,
+// so neither socket takes the other's session.
+func netSessionOf(token string) string { return mac(token, "net session")[:32] }
+
 // proof is what the server answers to a ping with challenge c: only a server that
 // knows the token can give it. The "ping" prefix keeps it apart from sessionOf.
 func proof(token, c string) string { return mac(token, "ping\x00"+c) }
@@ -158,7 +162,7 @@ func (i Info) RemoteURL() string {
 	if i.Remote == nil || i.Remote.Host == "" {
 		return ""
 	}
-	return fmt.Sprintf("https://%s/s/%s/", i.Remote.Host, sessionOf(i.Token))
+	return fmt.Sprintf("https://%s/s/%s/", i.Remote.Host, netSessionOf(i.Token))
 }
 
 // ReadInfo returns the panel the configuration folder knows about, if any. It may have

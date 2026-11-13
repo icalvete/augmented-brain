@@ -131,7 +131,7 @@ func (s *Server) redeem(w http.ResponseWriter, r *http.Request, remote bool) {
 	page, why := s.tickets.spend(id, remote, time.Now())
 	if why == "" {
 		s.last.Store(time.Now().UnixNano())
-		http.Redirect(w, r, s.base()+"/"+page, http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+"/"+page, http.StatusSeeOther)
 		return
 	}
 	if why == "unknown" {

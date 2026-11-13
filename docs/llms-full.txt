@@ -2759,6 +2759,10 @@ folder.
   conversation.
 - **failed**: its last answer was an error, such as an expired login. The line says what
   to do.
+- **waiting**: Claude's usage limit stopped it. The line says when the limit resets.
+  With remote access installed (`augmented-brain remote install`), the session is woken
+  then, by itself, and goes on with its task; you are told when the wait begins and
+  when the sessions are back. Without it, write to the session once the limit resets.
 
 ```bash
 augmented-brain session stop task-new-website
@@ -2873,8 +2877,12 @@ Four things keep it yours:
   entrance, not by what the visit says about itself. So a visit cannot pretend to come
   from this computer, and what only this computer may do stays here (see below).
 - **The address works once**, and the pages it opens hold a key that changes every
-  time the panel starts. It is for you, not for Claude: run by Claude, the command
-  publishes nothing and asks you to run it in a terminal of your own.
+  time the panel starts. That key is the other device's own: it does not open the
+  panel on this computer, and the key of this computer's pages does not open it from
+  another device. So whoever got hold of the address from another device still could
+  not do here what only this computer may.
+  The address is for you, not for Claude: run by Claude, the command publishes nothing
+  and asks you to run it in a terminal of your own.
 
 There is no extra password to type: your Tailscale account is the login.
 
@@ -3488,6 +3496,19 @@ What it does on each look:
 What it does goes to the system journal
 (`journalctl --user -u augmented-brain-watch-remote`).
 
+It also wakes the task sessions that Claude's usage limit stopped. When your plan's
+usage runs out, Claude Code refuses the turn and says when the limit resets. A session
+you have open in a terminal goes on by itself at that hour; a task session runs in the
+background and does not: it stays there, doing nothing, until someone writes to it. The
+watch reads that hour from the session's last answer and, once it has passed, stops the
+session and resumes it with a message that tells it to read its task and go on. It
+comes back as the same session, with its conversation, in Claude Desktop and claude.ai.
+It wakes one session on each look, so they come back two minutes apart and do not spend
+the new usage all at once. Only sessions opened with `augmented-brain session start`
+are woken, never any other. You are told twice, in the next session you use: when the
+wait begins, with the hour, and when the last one is back. Each woken task gets a line
+in its journal.
+
 ## augmented-brain session
 
 Opens a session of its own for one task, so that from another computer you can work on
@@ -3654,6 +3675,8 @@ augmented-brain session list
   brings it back with its whole conversation.
 - **failed** means its last answer was an error, such as an expired login: it does
   nothing until someone writes to it. The line gives the error and what to do.
+- **waiting** means Claude's usage limit stopped it. The line gives the hour the limit
+  resets, which is when the watch wakes it (see `remote watch` above).
 
 ## augmented-brain watch
 

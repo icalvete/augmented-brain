@@ -19,7 +19,7 @@ import (
 func (s *Server) routes() *http.ServeMux {
 	m := http.NewServeMux()
 	m.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, s.base()+"/today", http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+"/today", http.StatusSeeOther)
 	})
 	m.Handle("GET /static/", s.static)
 	m.HandleFunc("GET /today", s.read("today", s.today))
@@ -151,11 +151,11 @@ func (s *Server) lang() string {
 	return i18n.FromEnv()
 }
 
-func (s *Server) render(w http.ResponseWriter, status int, name string, p page) {
+func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, name string, p page) {
 	if _, ok := s.pages[p.Lang]; !ok {
 		p.Lang = "en"
 	}
-	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote.Load() != nil
+	p.CSRF, p.Base, p.Remote = s.csrfFor(r), s.base(r), s.remote.Load() != nil
 	p.Hints = loadHints(s.cfgDir)
 	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "backup", "space", "guard", "versions", "help"} {
 		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
@@ -254,7 +254,7 @@ func (s *Server) fail(w http.ResponseWriter, r *http.Request, v *view, status in
 		back = strings.TrimPrefix(ref, own)
 	}
 	p.D = message{Heading: p.Title, Text: text, Back: back}
-	s.render(w, status, "message", p)
+	s.render(w, r, status, "message", p)
 }
 
 // read serves a page: the handler fills it in from the open space.
@@ -282,7 +282,7 @@ func (s *Server) read(section string, h func(*view, *http.Request) (string, page
 		q := r.URL.Query()
 		q.Del("ok")
 		p.Here = (&url.URL{Path: r.URL.Path, RawQuery: q.Encode()}).String()
-		s.render(w, http.StatusOK, name, p)
+		s.render(w, r, http.StatusOK, name, p)
 	}
 }
 
@@ -316,7 +316,7 @@ func (s *Server) write(h func(*view, *http.Request) (string, error)) http.Handle
 		q.Set("s", v.b.Space.Name)
 		q.Set("ok", "1")
 		u.RawQuery = q.Encode()
-		http.Redirect(w, r, s.base()+u.String(), http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+u.String(), http.StatusSeeOther)
 	}
 }
 
