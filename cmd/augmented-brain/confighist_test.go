@@ -78,7 +78,7 @@ func TestConfigHistoryAndRestore(t *testing.T) {
 	}
 	c, _ = config.Load(cfg)
 	g, _ = config.LoadGuard(cfg)
-	if len(g.UntouchableRepos) != 1 || state.ReadSeal(cfg) == c.GuardFingerprint(g) {
+	if len(g.UntouchableRepos) != 1 || readSeal(t, cfg) == c.GuardFingerprint(g) {
 		t.Error("a command sealed the lists: the assistant could change the guard unseen")
 	}
 	out.Reset()
@@ -130,4 +130,14 @@ func TestConfigRestoreFixesABrokenConfig(t *testing.T) {
 	if _, err := config.Load(cfg); err != nil {
 		t.Errorf("still broken after restore: %v", err)
 	}
+}
+
+// readSeal is state.ReadSeal for a test: a seal that cannot be read fails it.
+func readSeal(t *testing.T, cfg string) string {
+	t.Helper()
+	s, err := state.ReadSeal(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return s
 }

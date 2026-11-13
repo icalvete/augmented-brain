@@ -234,11 +234,10 @@ func TestPanelAddress(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	base := "http://127.0.0.1:1/s/x/"
-	if got := panelAddress(c, base, filepath.Join(h, "augmented-brain", "trabajo", "web")); got != base+"today?s=trabajo" {
+	if got := panelPage(c, filepath.Join(h, "augmented-brain", "trabajo", "web")); got != "today?s=trabajo" {
 		t.Errorf("in trabajo: %s", got)
 	}
-	if got := panelAddress(c, base, t.TempDir()); got != base {
+	if got := panelPage(c, t.TempDir()); got != "" {
 		t.Errorf("outside every space: %s", got)
 	}
 }

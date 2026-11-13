@@ -55,7 +55,7 @@ func TestGuardPageEditsTheLists(t *testing.T) {
 	}
 	// saved from the panel: sealed, so the guard sees no outside change
 	c, _ := config.Load(cfg)
-	if state.ReadSeal(cfg) != c.GuardFingerprint(g) {
+	if readSeal(t, cfg) != c.GuardFingerprint(g) {
 		t.Error("a change made in the panel was not sealed")
 	}
 	// removing needs the folder's name
@@ -108,11 +108,11 @@ func TestGuardPageSaysOutsideChangesAndAccepts(t *testing.T) {
 	if body := s.get(t, "/guard?s=work").Body.String(); !strings.Contains(body, "not the ones you last saw") {
 		t.Fatalf("no warning: %.300s", body)
 	}
-	before := state.ReadSeal(cfg)
+	before := readSeal(t, cfg)
 	if w := s.post(t, "/guard/list", url.Values{"s": {"work"}, "list": {"profiles"}, "op": {"add"}, "value": {"prod"}}); w.Code != http.StatusSeeOther {
 		t.Fatalf("save: %d", w.Code)
 	}
-	if state.ReadSeal(cfg) != before {
+	if readSeal(t, cfg) != before {
 		t.Error("a save sealed lists that something else had changed")
 	}
 	if w := s.post(t, "/guard/accept", url.Values{"s": {"work"}}); w.Code != http.StatusSeeOther {
@@ -210,4 +210,14 @@ func TestGuardPageWarnsOnDangerousLists(t *testing.T) {
 	if c, _ := config.Load(cfg); len(c.Spaces["work"].GitAllowedRepos) != 1 {
 		t.Error("not added after confirming")
 	}
+}
+
+// readSeal is state.ReadSeal for a test: a seal that cannot be read fails it.
+func readSeal(t *testing.T, cfg string) string {
+	t.Helper()
+	s, err := state.ReadSeal(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return s
 }

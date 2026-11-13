@@ -233,7 +233,8 @@ augmented-brain panel
 
 It starts the panel in the background, or finds the one running, and opens the browser
 on Today, with the space of this folder. It returns at once. The panel stops by itself
-after 30 minutes without use.
+after 30 minutes without use. The address it prints opens the panel once, within 2
+minutes; run by Claude, with the browser open, it prints none.
 
 - `--no-browser`: only print the address, do not open the browser. `AB_NO_BROWSER=1` does
   the same.
@@ -253,8 +254,8 @@ augmented-brain panel remote
 It starts the panel and publishes it in your Tailscale network only. If the panel is
 already open, that same panel answers through the network too, so the pages you have
 open keep working. It prints the address and a QR code to open it from the phone. Only
-your own devices, signed in with the account this computer belongs to, can open it; the address stops working when the
-panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your
+your own devices, signed in with the account this computer belongs to, can open it; the address opens it once,
+within 10 minutes, and the pages stop working when the panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your
 user publish) it explains, with the step to take: it never installs or changes anything
 of Tailscale's for you. See [The panel from another device](panel-remote.md).
 

@@ -83,6 +83,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /stop", s.handleStop)
 	m.HandleFunc("POST /remote", s.handleRemote)
 	m.HandleFunc("POST /local", s.handleLocal)
+	m.HandleFunc("POST /ticket", s.handleTicket)
 	return m
 }
 

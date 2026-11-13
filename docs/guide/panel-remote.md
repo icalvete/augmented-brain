@@ -13,8 +13,9 @@ augmented-brain panel remote
 ```
 
 It starts the panel, publishes it in your Tailscale network, and prints its address,
-such as `https://my-laptop.example.ts.net:8443/s/…/today`, and a QR code. Point the
-phone's camera at the code, or open the address on the other computer.
+such as `https://my-laptop.example.ts.net:8443/t/…`, and a QR code. Point the
+phone's camera at the code, or open the address on the other computer. The address
+opens the panel once, within 10 minutes: run the command again for another.
 
 If the panel is already open on this computer, it is not stopped: the same panel starts
 answering through the network too, and the pages you have open go on working. If that
@@ -55,7 +56,8 @@ Three things keep it yours:
   account you signed in with, with its own password and second factor), and the panel
   lets in only the owner of the computer. Someone else in your network, or someone you
   share a device with, gets "forbidden" even with the address.
-- **The address holds a key** that changes every time the panel starts.
+- **The address works once**, and the pages it opens hold a key that changes every
+  time the panel starts.
 
 There is no extra password to type: your Tailscale account is the login.
 

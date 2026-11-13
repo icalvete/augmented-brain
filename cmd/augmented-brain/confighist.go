@@ -150,7 +150,8 @@ func cmdConfigRestore(args []string, out, errOut io.Writer) int {
 	}
 	fmt.Fprintln(out, "\n"+i18n.T(l, "history.restored"))
 	if c2, err := config.Load(dir); err == nil {
-		if seal, now := state.ReadSeal(dir), guardPrint(c2); seal != "" && now != before && now != seal {
+		seal, _ := state.ReadSeal(dir)
+		if now := guardPrint(c2); seal != "" && now != before && now != seal {
 			fmt.Fprintln(out, i18n.T(l, "history.guardasks"))
 		}
 	}

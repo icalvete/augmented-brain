@@ -1,6 +1,8 @@
 package state
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,13 +15,18 @@ import (
 // changed some other way, which the guard notices (see config.GuardFingerprint).
 const sealFile = "guard.seal"
 
-// ReadSeal returns the saved fingerprint, or "" when there is none.
-func ReadSeal(cfgDir string) string {
+// ReadSeal returns the saved fingerprint, or "" when there is none. Any other problem
+// (the file or the state folder cannot be read) is an error: the guard cannot tell then
+// whether the lists changed, and must not take that as "no seal".
+func ReadSeal(cfgDir string) (string, error) {
 	data, err := os.ReadFile(filepath.Join(cfgDir, Dir, sealFile))
-	if err != nil {
-		return ""
+	if errors.Is(err, fs.ErrNotExist) {
+		return "", nil
 	}
-	return strings.TrimSpace(string(data))
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(data)), nil
 }
 
 // WriteSeal saves the fingerprint the user has accepted.

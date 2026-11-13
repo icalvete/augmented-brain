@@ -155,13 +155,13 @@ augmented-brain check</code></pre>
   <h2 id="augmented-brain-panel">augmented-brain panel</h2>
   <p>Opens the panel in your browser: today at a glance, and every page of your spaces to see and edit.</p>
   <pre><code>augmented-brain panel</code></pre>
-  <p>It starts the panel in the background, or finds the one running, and opens the browser on Today, with the space of this folder. It returns at once. The panel stops by itself after 30 minutes without use.</p>
+  <p>It starts the panel in the background, or finds the one running, and opens the browser on Today, with the space of this folder. It returns at once. The panel stops by itself after 30 minutes without use. The address it prints opens the panel once, within 2 minutes; run by Claude, with the browser open, it prints none.</p>
   <ul><li><code>--no-browser</code>: only print the address, do not open the browser. <code>AB_NO_BROWSER=1</code> does the same.</li></ul>
   <p>See <a href="panel.html">The panel</a>.</p>
   <h2 id="augmented-brain-panel-remote">augmented-brain panel remote</h2>
   <p>Opens the panel for your other devices (another computer, your phone), through <a href="https://tailscale.com">Tailscale</a>, a free app that joins your devices in a private network of their own.</p>
   <pre><code>augmented-brain panel remote</code></pre>
-  <p>It starts the panel and publishes it in your Tailscale network only. If the panel is already open, that same panel answers through the network too, so the pages you have open keep working. It prints the address and a QR code to open it from the phone. Only your own devices, signed in with the account this computer belongs to, can open it; the address stops working when the panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your user publish) it explains, with the step to take: it never installs or changes anything of Tailscale's for you. See <a href="panel-remote.html">The panel from another device</a>.</p>
+  <p>It starts the panel and publishes it in your Tailscale network only. If the panel is already open, that same panel answers through the network too, so the pages you have open keep working. It prints the address and a QR code to open it from the phone. Only your own devices, signed in with the account this computer belongs to, can open it; the address opens it once, within 10 minutes, and the pages stop working when the panel stops. Whatever is missing (Tailscale itself, HTTPS in your network, letting your user publish) it explains, with the step to take: it never installs or changes anything of Tailscale's for you. See <a href="panel-remote.html">The panel from another device</a>.</p>
   <h2 id="augmented-brain-panel-stop">augmented-brain panel stop</h2>
   <p>Stops the panel now.</p>
   <pre><code>augmented-brain panel stop</code></pre>
