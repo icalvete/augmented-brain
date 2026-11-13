@@ -9,11 +9,11 @@ through Claude. Open it with `/brain:panel` in Claude, or from a terminal:
 augmented-brain panel
 ```
 
-It opens your browser on **Today**, with the space of the folder you ran it in. If it
-cannot (on a computer with no screen, say), it prints an address to open yourself. That
-address opens the panel **once**, within 2 minutes; run the command again for another.
-When Claude runs it for you, it opens the browser and Claude never sees an address that
-opens the panel.
+It opens your browser on **Today**, with the space of the folder you ran it in. From a
+terminal it also prints an address, in case the browser did not open (on a computer with
+no screen, say). That address opens the panel **once**, within 2 minutes; run the command
+again for another. When Claude runs it for you, it only opens the browser: Claude never
+sees an address that opens the panel.
 
 The panel changes your notes the same way Claude does, with the same program, and they
 wait for each other: you can have both open at once.
@@ -22,6 +22,30 @@ Every page starts with a few words on what it is and what it is for, and a link 
 part of this guide. Once you know your way around, **Hide this help** hides it on that
 page, and **Hide it on every page** on all of them. The panel remembers it on this
 computer; **What is this page?** brings it back.
+
+## Spaces and pages
+
+At the side, under **Profile**, the **Space** list picks the space you are looking
+at. Some pages show only that space; others show all of them, or this computer as a
+whole. On a phone, the menu folds under the name of the page you are on.
+
+| Page | What it is for | Shows |
+|---|---|---|
+| [Today](#today) | What is due and what waits on you | every space |
+| [Tasks](#tasks) | See, change, open and close tasks | one space |
+| [Reminders](#reminders) | Watch dates and inbox reminders | one space |
+| [Inbox](#inbox) | Loose ideas, to deal with later | one space |
+| [Weekly review](#weekly-review) | Empty the inbox, look at stalled tasks | one space |
+| [Areas, knowledge, rules](#areas-knowledge-rules-and-people) | Read them; create areas | one space, plus the shared notes |
+| [People](#areas-knowledge-rules-and-people) | Who is who | every space |
+| [Repositories](#repositories) | Work only on this computer | every space |
+| [Secrets](#secrets) | The names of your secrets | the same list in every space |
+| [Backup](#backup) | Copies of your notes | every space |
+| [Health](#health) | Whether the space is in order | one space |
+| [Guard](#guard) | What Claude may do | this computer |
+| [Versions](#versions) | Earlier configurations | this computer |
+| [Help](#help) | Answers, and reporting a problem | — |
+| [Profile](#profile) | Who you are, your assistant | every space |
 
 ## Today
 
@@ -38,23 +62,24 @@ The first page: every space at once. For each one:
 Below, **Repositories**: those your open tasks name in `repos:` that hold changes not
 committed or commits not pushed. That is work that is only on this computer. One whose
 tasks are all parked (or left for some day) is marked "forgotten?", here and on the
-whole map; a clean one never is. A branch never
-pushed counts only if the repository has a remote (a copy on a server,
-such as GitHub) to push it to. **See all
-repositories** leads to the whole map.
+whole map; a clean one never is. A branch never pushed counts only if the repository has
+a remote (a copy on a server, such as GitHub) to push it to. **See all repositories**
+leads to the whole map.
 
 ## Tasks
 
 Grouped by area, those waiting on you first, with their status and next step. Filters
 show only those waiting on you, under way, parked, untouched, or waiting on one person.
-A task nobody has changed for 14 days is marked "untouched N days".
+A task nobody has changed for 14 days is marked "untouched N days". At the end, folded,
+the tasks left for **Someday** and the **Closed** ones.
 
 Open one. Its essentials come first, the other sections folded, and the journal newest
 first. Write in its journal, change its status or next step, tick its steps, park it or
-close it. You can open new tasks too. A closed task opens again only if you choose a new
-status for it; its journal says it was reopened from the panel. If a status skips
-phases, the journal names them. When a task waits on a person you have a note of,
-"waits on" leads to them.
+close it. You can open new tasks too. If a status skips phases, the journal names them.
+When a task waits on a person you have a note of, "waits on" leads to them.
+
+To open a closed task again, find it under **Closed** and choose a new status for it; its
+journal says it was reopened from the panel.
 
 When you save a task, only what you changed on the page is saved. If Claude changed
 something else in the meantime, that stays. A step is ticked only if it still says what
@@ -63,11 +88,13 @@ the page showed.
 ## Reminders
 
 The watch dates of your tasks (closed ones too) and the inbox reminders: overdue first,
-then the next 30 days. Add one, or mark it done.
+then the next 30 days. Mark one done, or add a watch date to a task. A reminder that
+belongs to no task is a capture with a date: make it in the [Inbox](#inbox).
 
 ## Inbox
 
-Capture an idea, mark one as dealt with, or make it a task.
+Capture an idea, with a date to be reminded if you want one. Mark one as dealt with, or
+make it a task.
 
 ## Weekly review
 
@@ -78,8 +105,10 @@ and kept in the review's record when you finish.
 
 ## Areas, knowledge, rules and people
 
-Knowledge and rules show the space's own and the shared ones, marked "shared". You can
-create areas and change an area's title and summary.
+Knowledge and rules show the space's own and the shared ones, marked "shared". Here you
+read them; you do not write them. A reference or a lesson comes from Claude, or from a
+capture in the [weekly review](#weekly-review); a rule, from Claude. You can create areas
+and change an area's title and summary.
 
 People are listed once, with a badge for each space they are in. A new person starts in
 the space you are in. A person's page is one form: the name stays (a new name would be a
@@ -124,74 +153,6 @@ You can add a name, or take one off the list (the secret stays in the keychain).
 that looks like a value is refused. The list is the same in every space, and lives in
 `secrets.toml` (see [Configuration](configuration.md#secretstoml)).
 
-## Sessions
-
-Your Claude sessions on this computer, from the last 30 days. It is not in the menu:
-open it from **Health**, or from a cut-off session on **Today**.
-
-- Those that did not end (closed by force, or cut off when the computer went down) show
-  what was said after the last journal entry. Keep it in the notes (it goes to
-  `archive/sessions/` with a line in the task's journal) or mark it as reviewed.
-- Those running now, and those that ended, with how much disk their transcripts take
-  (the files where Claude Code keeps each conversation). You can delete the transcript of
-  an ended session; that session can then no longer be resumed.
-
-## Profile
-
-Who you are and how you like to work: the same profile every space uses.
-
-Under **Your assistant** you can give Claude a name and a personality. Every session
-starts with them. They change how it talks, never the rules, the guard or its honesty.
-With a name, the emails Claude writes in your name end with that name and, under it, a
-line the program adds and you cannot remove, such as "Ana's assistant (AI, Claude)": whoever
-reads it knows no person wrote it. The page shows that signature. Leave both fields
-empty for no name and no personality.
-
-## Guard
-
-Every list the guard answers to, in one page, to read and change:
-
-- **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
-  warns that the other lists decide again for it (if one lets Claude commit and push
-  there, it will), and asks you to type the folder's name.
-- **Repositories** each space lets Claude commit in, or ask you about, with a form to add
-  or remove. The list where Claude commits and pushes without asking carries a warning,
-  and adding to it asks you to tick that you understand.
-- **Root exceptions**, with the date each ends (the ones that ended are marked). Adding
-  one warns what it allows and asks you to type the machine's name again.
-- **Production profiles** and **untouchable machines**.
-- **The model of your sessions** (`preferred_model` in `session.toml`): when a session
-  answers with another one, Claude tells you. Below it, what Claude Code said about its
-  model at the last session start.
-- **What the assistant saves on its own** (`memory_trust` in `session.toml`): whether
-  Claude saves a rule, your profile and additions to the guard's lists and you are told,
-  or asks you first. [The guard](guard.md#asking-before-claude-saves-a-rule) tells it.
-- The files Claude cannot change on its own.
-
-Your comments in `config.toml` stay where they are. If the lists are not the ones you last
-saw (something changed them outside this page), a notice says so and shows what changed:
-what was added and what was removed, list by list, compared with the lists you last
-accepted (when those are no longer among the kept versions, it says so). Then an accept
-button;
-until then (or until you start a new session) a commit, push or merge that the lists allow
-asks first. Whatever you change or accept here, Claude Code itself tells you in your
-open sessions, after the next answer or message, in a line that starts with
-"augmented brain · the guard's lists". If you did not do it, look here. Claude cannot
-open this page: it never sees the panel's address, and the guard denies it the panel's
-key. From another device the page only shows: the lists decide what Claude may do on
-this computer, so they change only from this computer's panel. See [The guard](guard.md).
-
-## Versions
-
-The last 10 versions of your configuration (spaces, guard, remote access,
-session settings, profile and your secrets' names),
-kept only on this computer, newest first, with when and who changed it. **What it
-changed** shows the lines of each one; **Go back to this one** makes it the
-configuration again, keeping the one you had as a version first. It asks you to tick a
-box, and warns first when the guard's lists would change, with what. They are never in
-the backup: your notes are, with their own history. From another device
-the page only shows. See [Configuration versions](config-history.md).
-
 ## Backup
 
 Whether the notes of each space have a copy elsewhere, in a private repository, so they
@@ -222,6 +183,68 @@ are not valid, repositories that notes point at and that are no longer on this c
 the index, the last backup, the last weekly review, and a link to the space's
 [Sessions](#sessions).
 
+## Sessions
+
+Your Claude sessions on this computer, from the last 30 days. It is not in the menu:
+open it from **Health**, or from a cut-off session on **Today**.
+
+- Those that did not end (closed by force, or cut off when the computer went down) show
+  what was said after the last journal entry. Keep it in the notes (it goes to
+  `archive/sessions/` with a line in the task's journal) or mark it as reviewed.
+- Those running now, and those that ended, with how much disk their transcripts take
+  (the files where Claude Code keeps each conversation). You can delete the transcript of
+  an ended session; that session can then no longer be resumed.
+
+## Guard
+
+Every list the guard answers to, in one page, to read and change:
+
+- **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
+  warns that the other lists decide again for it (if one lets Claude commit and push
+  there, it will), and asks you to type the folder's name.
+- **Repositories** each space lets Claude commit in, or ask you about, with a form to add
+  or remove. The list where Claude commits and pushes without asking carries a warning,
+  and adding to it asks you to tick that you understand.
+- **Root exceptions**, with the date each ends (the ones that ended are marked). Adding
+  one warns what it allows and asks you to type the machine's name again.
+- **Production profiles** and **untouchable machines**.
+- **The model of your sessions** (`preferred_model` in `session.toml`): when a session
+  answers with another one, Claude tells you. Below it, what Claude Code said about its
+  model at the last session start.
+- **What the assistant saves on its own** (`memory_trust` in `session.toml`): whether
+  Claude saves a rule, your profile and additions to the guard's lists and you are told,
+  or asks you first. [The guard](guard.md#asking-before-claude-saves-a-rule) tells it.
+- The files Claude cannot change on its own.
+
+How it behaves:
+
+- Your comments in `config.toml` stay where they are.
+- If the lists are not the ones you last saw (something changed them outside this page),
+  a notice says what was added and what was removed, list by list, compared with the
+  lists you last accepted. When those are no longer among the kept versions, it says so.
+- Then a button, **I have seen them, accept**. Until you press it, or start a new session, a commit, push
+  or merge that the lists allow asks you first.
+- Whatever you change or accept here, Claude Code tells you in your open sessions, after
+  the next answer or message, in a line that starts with "augmented brain · the guard's
+  lists". If you did not do it, look here.
+- Claude cannot open this page: it never sees the panel's address, and the guard denies
+  it the panel's key.
+- From another device the page only shows. The lists decide what Claude may do on this
+  computer, so they change only from this computer's panel.
+
+How each list works is in [The guard](guard.md).
+
+## Versions
+
+The last 10 versions of your configuration (spaces, guard, remote access,
+session settings, profile and your secrets' names),
+kept only on this computer, newest first, with when and who changed it. **What it
+changed** shows the lines of each one; **Go back to this one** makes it the
+configuration again, keeping the one you had as a version first. It asks you to tick a
+box, and warns first when the guard's lists would change, with what. They are never in
+the backup: your notes are, with their own history. From another device
+the page only shows. See [Configuration versions](config-history.md).
+
 ## Help
 
 Links to the answers on this website, in your language. And a way to tell us about a
@@ -239,6 +262,19 @@ You write what happened, and read the rest: change or delete what you prefer not
 share. Nothing is sent until you press GitHub's submit button. To be honest about it:
 the text travels to GitHub inside the page's address as soon as it opens, so GitHub can
 see it then, even if you never submit.
+
+## Profile
+
+At the top of the side, above the space list (on a phone, last in the menu). Who you are
+and how you like to work: the same profile every space uses.
+
+Under **Your assistant** you can give Claude a name and a personality. Every session
+starts with them. They change how it talks, never the rules, the guard or its honesty.
+With a name, every session asks Claude to sign the emails it writes in your name with
+that name and, under it, a line such as "Ana's assistant (AI, Claude)", so whoever reads
+it knows no person wrote it. The program writes that line, not you, so you cannot leave
+it out; Claude is the one who adds it to the email. The page shows the signature. Leave
+both fields empty for no name and no personality.
 
 ## Search and reading notes
 
