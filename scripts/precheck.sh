@@ -7,7 +7,8 @@
 #
 # The quick part: format; vet compiled for Linux, Windows and macOS; the tests compiled
 # for Windows and macOS too (a test that does not build there fails CI); the tests with
-# -race; the privacy check of what is committed; and the generated guides up to date.
+# -race; the privacy check of what is committed; the generated guides up to date; and
+# the branch's changelog entry in changelog.d/ (scripts/changelog.py).
 # Windows and macOS are only compiled here, not run: CI runs them. --windows runs the
 # tests on Windows too (scripts/test-windows.sh, in the VM of test/vm/windows-11): for
 # a change to paths, files, permissions, hooks or commands, the kind that passed on
@@ -58,6 +59,12 @@ docs_sum() { find docs -type f | LC_ALL=C sort | xargs cat | cksum; }
 before=$(docs_sum)
 python3 -I scripts/build-guides.py >/dev/null
 if [ "$before" = "$(docs_sum)" ]; then ok; else bad "scripts/build-guides.py changed the generated pages: commit them"; fi
+
+# Each pull request leaves its changelog entry in changelog.d/ (scripts/changelog.py).
+step "changelog entries"
+base=origin/main
+git rev-parse -q --verify "$base" >/dev/null || base=
+if out=$(python3 -I scripts/changelog.py check ${base:+--base "$base"} 2>&1); then ok; else bad "$out"; fi
 
 step "third-party notices"
 if out=$(python3 -I scripts/third-party-notices.py --check 2>&1); then ok; else bad "$out"; fi
