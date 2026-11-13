@@ -259,7 +259,7 @@ that one or choose another title. Nothing is ever saved twice without anyone kno
 Saves a rule you give on how to work. Every session loads it. A title that already exists
 creates nothing: Claude is told its id. Claude Code tells you, once, which rule was saved
 or changed, in a message of its own at the end of the answer: if you did not ask for it,
-tell Claude to undo it.
+tell Claude to undo it. If you chose to be asked first ([`memory_trust`](configuration.md#sessiontoml)), Claude Code asks you before it is saved.
 
 - `id` (optional): to change a rule that exists. What is sent replaces what it had, what
   is left out stays, and the version it replaces is kept in `archive/`.
@@ -273,7 +273,7 @@ tell Claude to undo it.
 Retires a rule, reference or lesson that no longer holds, without deleting it. It moves
 to `archive/`, which is never loaded, so a retired rule stops reaching the session start.
 A line at its end says when, why and what replaces it. For a duplicate or an old
-version; Claude asks you first. When it retires a rule, Claude Code tells you, once.
+version; Claude asks you first. When it retires a rule, Claude Code tells you, once; or asks you first, if you chose that.
 
 - `id`: the rule, reference or lesson.
 - `reason`: why, in a few words. It stays with the note.
@@ -314,7 +314,7 @@ the reference `ref-repositories`, one line per repository; a new one replaces th
 Saves who you are, how you like to work, and the name and personality you give Claude.
 Every space shares it, and every session starts by reading it. Claude sends only the
 parts that change: a part left out keeps what it has, and an empty one is cleared.
-Claude Code tells you, once, which parts changed.
+Claude Code tells you, once, which parts changed; or asks you first, if you chose that.
 
 - `name` (needed the first time): what you want to be called.
 - `about` (optional): what you do and work on, in short lines starting with `- `.
@@ -330,7 +330,7 @@ Claude Code tells you, once, which parts changed.
 
 Adds to what the guard asks you about. The lists hold on this whole machine, in every
 space. It only adds: to take one out, you edit the configuration yourself, and the
-answer says where. Claude Code tells you, once, what was added.
+answer says where. Claude Code tells you, once, what was added; or asks you first, if you chose that.
 
 - `production_aws_profiles` (optional): AWS CLI profiles that reach production. The guard
   asks before commands that use them.

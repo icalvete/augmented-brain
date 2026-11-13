@@ -267,7 +267,7 @@ id, para cambiar esa o elegir otro título. Nada se guarda dos veces sin que nad
 Guarda una regla que das sobre cómo trabajar. Cada sesión la carga. Un título que ya
 existe no crea nada: Claude recibe su id. Claude Code te dice, una vez, qué regla se ha
 guardado o cambiado, en un mensaje propio al acabar la respuesta: si no se lo has pedido,
-dile a Claude que lo deshaga.
+dile a Claude que lo deshaga. Si elegiste que se te pregunte antes ([`memory_trust`](configuration.es.md#sessiontoml)), Claude Code te pregunta antes de guardarlo.
 
 - `id` (opcional): para cambiar una regla que existe. Lo que se manda sustituye a lo que
   tenía, lo que no se manda se queda, y la versión sustituida se guarda en `archive/`.
@@ -282,7 +282,7 @@ Retira una regla, referencia o lección que ya no vale, sin borrarla. Pasa a `ar
 que nunca se carga, así que una regla retirada deja de llegar al inicio de la sesión.
 Una línea al final dice cuándo, por qué y qué la sustituye. Para un duplicado o una
 versión vieja; Claude te pregunta antes. Cuando retira una regla, Claude Code te lo dice,
-una vez.
+una vez; o te pregunta antes, si lo elegiste.
 
 - `id`: la regla, referencia o lección.
 - `reason`: por qué, en pocas palabras. Se queda con la nota.
@@ -325,7 +325,7 @@ anterior.
 Guarda quién eres, cómo te gusta trabajar, y el nombre y la personalidad que le das a
 Claude. Lo comparten todos los espacios, y cada sesión empieza leyéndolo. Claude manda
 solo las partes que cambian: una parte que no se manda conserva lo que tiene, y una
-vacía se borra. Claude Code te dice, una vez, qué partes han cambiado.
+vacía se borra. Claude Code te dice, una vez, qué partes han cambiado; o te pregunta antes, si lo elegiste.
 
 - `name` (hace falta la primera vez): cómo quieres que te llamen.
 - `about` (opcional): a qué te dedicas y en qué trabajas, en líneas cortas que empiezan
@@ -342,7 +342,7 @@ vacía se borra. Claude Code te dice, una vez, qué partes han cambiado.
 
 Añade cosas a lo que el guardia te pregunta. Las listas valen en toda esta máquina, en
 todos los espacios. Solo añade: para quitar algo, editas tú la configuración, y la
-respuesta dice dónde. Claude Code te dice, una vez, qué se ha añadido.
+respuesta dice dónde. Claude Code te dice, una vez, qué se ha añadido; o te pregunta antes, si lo elegiste.
 
 - `production_aws_profiles` (opcional): perfiles de AWS CLI que llegan a producción. El
   guardia pregunta antes de los comandos que los usan.

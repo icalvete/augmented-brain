@@ -193,6 +193,31 @@ todavía puede editar los ficheros, como puede hacer cualquier cosa que tu cuent
 El guardia nota entonces el cambio y pregunta antes de un push, pero no lo impidió. Es
 una red contra despistes, no un muro de seguridad.
 
+## Preguntar antes de que Claude guarde una regla
+
+Parte de lo que Claude guarda cambia cómo trabajan todas las sesiones desde entonces: una
+regla, tu perfil y lo que añade a las listas del guardia. Tú eliges cuánto hace por su
+cuenta:
+
+- **Guardar y avisarte.** Claude lo guarda, y Claude Code te dice en una línea propia qué
+  se ha guardado. Si no se lo has pedido, dile a Claude que lo deshaga. Así funciona si no
+  eliges otra cosa.
+- **Preguntarte antes.** Antes de guardar, cambiar o retirar una regla, antes de cambiar
+  tu perfil y antes de añadir nada a las listas del guardia, Claude Code te enseña lo que
+  se guardaría y dices sí o no. Si dices que no, no se escribe nada.
+
+Lo eliges en la página Guardia del panel, en «Lo que el asistente guarda solo»
+(`memory_trust` en [`session.toml`](configuration.es.md#sessiontoml)). Claude no puede
+cambiarlo por su cuenta: el guardia pregunta antes de escribir en ese fichero. Las
+sesiones ya abiertas siguen la nueva elección desde lo siguiente que guarden.
+
+Las tareas, el buzón, las referencias y las lecciones se guardan siempre sin preguntar:
+son el trabajo en sí, y no le dicen a Claude cómo comportarse.
+
+Una sesión que se salta las preguntas de permiso (`bypassPermissions`) no puede
+preguntarte. Con «preguntarte antes», el guardia deniega ahí el guardado, y Claude te
+dice lo que quería guardar para que lo guardes desde otra sesión.
+
 ## Perfiles de producción y máquinas intocables
 
 Se los das en la entrevista de la primera sesión, o cuando quieras: "el perfil de AWS

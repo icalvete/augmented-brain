@@ -160,6 +160,7 @@ Junto a `config.toml`, `session.toml` guarda cómo quieres tus sesiones:
 
 ```toml
 preferred_model = "opus"
+memory_trust = "ask"
 ```
 
 - `preferred_model`: el modelo que esperas que responda (`opus`, `sonnet`, `haiku` o un
@@ -168,9 +169,18 @@ preferred_model = "opus"
   mira después de una respuesta: en una sesión nueva, como tarde la segunda. Y otra vez si
   el modelo cambia. Una vez por sesión y modelo. Nunca cambia el modelo por su cuenta: lo cambias tú, con `/model` o con el
   selector de modelo.
+- `memory_trust`: qué hace Claude antes de guardar algo que siguen todas las sesiones: una
+  regla (nueva, cambiada o retirada), tu perfil, o algo que se añade a las listas del
+  guardia. `"tell"`: Claude lo guarda y Claude Code te dice qué se ha guardado. Es lo que
+  pasa si el ajuste falta. `"ask"`: Claude Code te pregunta antes, enseñando lo que se
+  guardaría, y si dices que no, no se escribe nada. Un valor que el programa no conoce
+  cuenta como `"ask"`. Las tareas, el buzón, las referencias y las lecciones se guardan
+  siempre sin preguntar. En una sesión que se salta las preguntas de permiso
+  (`bypassPermissions`), `"ask"` deniega en vez de preguntar: Claude te dice lo que quería
+  guardar. Más en [el guardia](guard.es.md#preguntar-antes-de-que-claude-guarde-una-regla).
 
 La página Guardia del panel lo escribe, y el guardia pregunta antes de que Claude lo
-escriba. Si el fichero falta o el ajuste está vacío, no se comprueba nada. Es un fichero
+escriba. Si el fichero falta o `preferred_model` está vacío, el modelo no se comprueba. Es un fichero
 aparte por la misma razón que `guard.toml`. Las copias de seguridad no lo llevan.
 
 ## `remote.toml`

@@ -1074,6 +1074,30 @@ still edit the files, as it can anything your account can. The guard then notice
 change and asks before a push, but it did not prevent it. It is a safety net, not a
 security boundary.
 
+## Asking before Claude saves a rule
+
+Some of what Claude saves changes how every session works from then on: a rule, your
+profile, and what it adds to the guard's lists. You choose how much it does on its own:
+
+- **Save and tell you.** Claude saves it, and Claude Code tells you in a line of its own
+  what was saved. If you did not ask for it, tell Claude to undo it. This is how it works
+  unless you choose otherwise.
+- **Ask you first.** Before a rule is saved, changed or retired, before your profile
+  changes and before anything is added to the guard's lists, Claude Code shows you what
+  would be saved and you say yes or no. If you say no, nothing is written.
+
+You choose on the panel's Guard page, under "What the assistant saves on its own"
+(`memory_trust` in [`session.toml`](https://icalvete.github.io/augmented-brain/guide/configuration.html#sessiontoml)). Claude cannot change
+it on its own: the guard asks before a write to that file. Sessions already open follow
+the new choice from their next save.
+
+Tasks, the inbox, references and lessons are always saved without asking: they are the
+work itself, and they do not tell Claude how to behave.
+
+A session that skips permission questions (`bypassPermissions`) cannot ask you. With
+"ask first", the guard refuses the save there, and Claude tells you what it wanted to
+save so you can save it from another session.
+
 ## Production profiles and untouchable machines
 
 You give them in the first-session interview, or any time: "the AWS profile `shop-prod`
@@ -1728,6 +1752,9 @@ Every list the guard answers to, in one page, to read and change:
 - **The model of your sessions** (`preferred_model` in `session.toml`): when a session
   answers with another one, Claude tells you. Below it, what Claude Code said about its
   model at the last session start.
+- **What the assistant saves on its own** (`memory_trust` in `session.toml`): whether
+  Claude saves a rule, your profile and additions to the guard's lists and you are told,
+  or asks you first. [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html#asking-before-claude-saves-a-rule) tells it.
 - The files Claude cannot change on its own.
 
 Your comments in `config.toml` stay where they are. If the lists are not the ones you last
@@ -3784,7 +3811,7 @@ that one or choose another title. Nothing is ever saved twice without anyone kno
 Saves a rule you give on how to work. Every session loads it. A title that already exists
 creates nothing: Claude is told its id. Claude Code tells you, once, which rule was saved
 or changed, in a message of its own at the end of the answer: if you did not ask for it,
-tell Claude to undo it.
+tell Claude to undo it. If you chose to be asked first ([`memory_trust`](https://icalvete.github.io/augmented-brain/guide/configuration.html#sessiontoml)), Claude Code asks you before it is saved.
 
 - `id` (optional): to change a rule that exists. What is sent replaces what it had, what
   is left out stays, and the version it replaces is kept in `archive/`.
@@ -3798,7 +3825,7 @@ tell Claude to undo it.
 Retires a rule, reference or lesson that no longer holds, without deleting it. It moves
 to `archive/`, which is never loaded, so a retired rule stops reaching the session start.
 A line at its end says when, why and what replaces it. For a duplicate or an old
-version; Claude asks you first. When it retires a rule, Claude Code tells you, once.
+version; Claude asks you first. When it retires a rule, Claude Code tells you, once; or asks you first, if you chose that.
 
 - `id`: the rule, reference or lesson.
 - `reason`: why, in a few words. It stays with the note.
@@ -3839,7 +3866,7 @@ the reference `ref-repositories`, one line per repository; a new one replaces th
 Saves who you are, how you like to work, and the name and personality you give Claude.
 Every space shares it, and every session starts by reading it. Claude sends only the
 parts that change: a part left out keeps what it has, and an empty one is cleared.
-Claude Code tells you, once, which parts changed.
+Claude Code tells you, once, which parts changed; or asks you first, if you chose that.
 
 - `name` (needed the first time): what you want to be called.
 - `about` (optional): what you do and work on, in short lines starting with `- `.
@@ -3855,7 +3882,7 @@ Claude Code tells you, once, which parts changed.
 
 Adds to what the guard asks you about. The lists hold on this whole machine, in every
 space. It only adds: to take one out, you edit the configuration yourself, and the
-answer says where. Claude Code tells you, once, what was added.
+answer says where. Claude Code tells you, once, what was added; or asks you first, if you chose that.
 
 - `production_aws_profiles` (optional): AWS CLI profiles that reach production. The guard
   asks before commands that use them.
@@ -4062,6 +4089,7 @@ Next to `config.toml`, `session.toml` holds how you want your sessions:
 
 ```toml
 preferred_model = "opus"
+memory_trust = "ask"
 ```
 
 - `preferred_model`: the model you expect to answer (`opus`, `sonnet`, `haiku` or a full
@@ -4070,9 +4098,18 @@ preferred_model = "opus"
   not, it checks after an answer: in a new session, the second one at the latest. It
   checks again if the model changes. Once per session and model. It never changes the
   model itself: you do, with `/model` or the model picker.
+- `memory_trust`: what Claude does before it saves something every session follows: a
+  rule (new, changed or retired), your profile, or an addition to the guard's lists.
+  `"tell"`: Claude saves it and Claude Code tells you what was saved. This is what happens
+  when the setting is missing. `"ask"`: Claude Code asks you first, showing what would be
+  saved, and nothing is written if you say no. A value the program does not know counts
+  as `"ask"`. Tasks, the inbox, references and lessons are always saved without asking.
+  In a session that skips permission questions (`bypassPermissions`), `"ask"` refuses
+  instead: Claude tells you what it wanted to save. More in
+  [the guard](https://icalvete.github.io/augmented-brain/guide/guard.html#asking-before-claude-saves-a-rule).
 
 The panel's Guard page writes it, and the guard asks before Claude writes it. If the file
-is missing or the setting is empty, nothing is checked. It is a file of its own for the
+is missing or `preferred_model` is empty, the model is not checked. It is a file of its own for the
 same reason as `guard.toml`. It is not carried by backups.
 
 ## `remote.toml`

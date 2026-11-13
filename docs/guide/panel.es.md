@@ -167,6 +167,9 @@ Todas las listas a las que responde el guardia, en una página, para leerlas y c
 - **El modelo de tus sesiones** (`preferred_model` en `session.toml`): si una sesión
   responde con otro, Claude te lo dice. Debajo, lo que Claude Code dijo de su modelo en el
   último inicio de sesión.
+- **Lo que el asistente guarda solo** (`memory_trust` en `session.toml`): si Claude guarda
+  una regla, tu perfil y lo que añade a las listas del guardia y se te avisa, o si te
+  pregunta antes. Lo cuenta [el guardia](guard.es.md#preguntar-antes-de-que-claude-guarde-una-regla).
 - Los ficheros que Claude no puede cambiar por su cuenta.
 
 Tus comentarios de `config.toml` se quedan donde están. Si las listas no son las que viste

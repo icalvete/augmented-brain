@@ -154,6 +154,7 @@ Next to `config.toml`, `session.toml` holds how you want your sessions:
 
 ```toml
 preferred_model = "opus"
+memory_trust = "ask"
 ```
 
 - `preferred_model`: the model you expect to answer (`opus`, `sonnet`, `haiku` or a full
@@ -162,9 +163,18 @@ preferred_model = "opus"
   not, it checks after an answer: in a new session, the second one at the latest. It
   checks again if the model changes. Once per session and model. It never changes the
   model itself: you do, with `/model` or the model picker.
+- `memory_trust`: what Claude does before it saves something every session follows: a
+  rule (new, changed or retired), your profile, or an addition to the guard's lists.
+  `"tell"`: Claude saves it and Claude Code tells you what was saved. This is what happens
+  when the setting is missing. `"ask"`: Claude Code asks you first, showing what would be
+  saved, and nothing is written if you say no. A value the program does not know counts
+  as `"ask"`. Tasks, the inbox, references and lessons are always saved without asking.
+  In a session that skips permission questions (`bypassPermissions`), `"ask"` refuses
+  instead: Claude tells you what it wanted to save. More in
+  [the guard](guard.md#asking-before-claude-saves-a-rule).
 
 The panel's Guard page writes it, and the guard asks before Claude writes it. If the file
-is missing or the setting is empty, nothing is checked. It is a file of its own for the
+is missing or `preferred_model` is empty, the model is not checked. It is a file of its own for the
 same reason as `guard.toml`. It is not carried by backups.
 
 ## `remote.toml`
