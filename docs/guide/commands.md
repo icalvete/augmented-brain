@@ -374,6 +374,19 @@ else a session left running) into a group of its own, `augmented-brain-kept-<num
 service; when it cannot be done, they stop and say so, and the watch does not restart
 that service.
 
+It also wakes the task sessions that Claude's usage limit stopped. When your plan's
+usage runs out, Claude Code refuses the turn and says when the limit resets. A session
+you have open in a terminal goes on by itself at that hour; a task session runs in the
+background and does not: it stays there, doing nothing, until someone writes to it. The
+watch reads that hour from the session's last answer and, once it has passed, stops the
+session and resumes it with a message that tells it to read its task and go on. It
+comes back as the same session, with its conversation, in Claude Desktop and claude.ai.
+It wakes one session on each look, so they come back two minutes apart and do not spend
+the new usage all at once. Only sessions opened with `augmented-brain session start`
+are woken, never any other. You are told twice, in the next session you use: when the
+wait begins, with the hour, and when the last one is back. Each woken task gets a line
+in its journal.
+
 ## augmented-brain session
 
 Opens a remote session of its own for one task, so that from another computer you can
@@ -532,7 +545,9 @@ folder. **retired** means Claude stopped it, after hours unused or when its back
 service restarted: claude.ai shows it as disconnected, and `session start` with its task
 brings it back with its whole conversation. **failed** means its last
 answer was an error, such as an expired login: it does nothing until someone writes to
-it. The line gives the error and what to do.
+it. The line gives the error and what to do. **waiting** means Claude's usage limit
+stopped it: the line gives the hour the limit resets, when the watch wakes it (see
+`remote watch` above).
 
 ```bash
 augmented-brain session list
