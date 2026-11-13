@@ -11,6 +11,10 @@
   seguían funcionando sin guardia y sin el programa que sabe quitarlos. Al crear un
   espacio, ya no se acepta una carpeta de notas que contenga su carpeta de trabajo.
 
+## 0.21.0-beta
+
+Publicada el 2026-11-13.
+
 - **El guardia vuelve a tratar `doas` como root, como dice su guía.** `doas id` pasaba
   como si fuera solo `id`. Ahora `doas`, como `sudo`, se para salvo que ejecute el
   comando como otro usuario (`doas -u deploy …`), y una prueba vigila que ningún otro

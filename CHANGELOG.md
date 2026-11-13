@@ -11,6 +11,10 @@
   running with no guard and no program to take them away. Setting up a space now
   refuses a notes folder that holds its work folder.
 
+## 0.21.0-beta
+
+Released 2026-11-13.
+
 - **The guard treats `doas` as root again, as its guide says.** `doas id` went through
   as if it were just `id`. Now `doas`, like `sudo`, is stopped unless it runs the
   command as another user (`doas -u deploy …`), and a test makes sure no other command
