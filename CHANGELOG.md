@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **The backup only works in its own repository.** If your notes folder lost its `.git`
+  (copied or restored by hand, or removed) and sits inside another git repository, such
+  as your work folder, a backup used to commit and push in that other repository. Now it
+  stops, touches nothing, and tells you to run `augmented-brain backup setup` again.
+  Going back to an earlier copy does the same.
 - **Claude no longer sets up a backup at an address it was given.** In a space with no
   backup, one call to `backup_setup` with an address sent every note there, and again at
   the end of each session; the address could come from a page or a message Claude read.

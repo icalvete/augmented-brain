@@ -293,6 +293,9 @@ func GoBack(c *config.Config, s *config.Space, rev, host string) (*Result, error
 		return nil, err
 	}
 	defer unlock()
+	if err := ownRepo(s); err != nil {
+		return nil, err
+	}
 	to, err := copyOf(s.Memory, rev)
 	if err != nil {
 		return nil, err

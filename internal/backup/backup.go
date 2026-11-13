@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"time"
@@ -74,13 +75,69 @@ var GitTimeout = 3 * time.Minute
 var LockWait = 10 * time.Minute
 
 // git runs git in dir and returns its output; an error carries the command and what
-// git said.
+// git said. Git never looks above dir for a repository (GIT_CEILING_DIRECTORIES on its
+// parent): a memory folder that lost its .git must not make a backup commit and push in
+// whatever repository holds it, such as the work folder around the notes.
 func git(dir string, args ...string) (string, error) {
-	out, err := runGit(append([]string{"-C", dir}, args...)...)
+	out, err := runGitEnv([]string{ceiling(dir)}, append([]string{"-C", dir}, args...)...)
 	if err != nil {
 		return out, fmt.Errorf("git %s: %v: %s", strings.Join(args, " "), err, strings.TrimSpace(out))
 	}
 	return out, nil
+}
+
+// ceiling is the GIT_CEILING_DIRECTORIES that keeps git inside dir: the temporary
+// folder, as for every call, and dir's parent.
+func ceiling(dir string) string {
+	v := "GIT_CEILING_DIRECTORIES=" + os.TempDir()
+	if abs, err := filepath.Abs(dir); err == nil {
+		v += string(filepath.ListSeparator) + filepath.Dir(abs)
+	}
+	return v
+}
+
+// ownRepo refuses a memory folder that is not the top of a git repository of its own.
+// Without it, git would act on a repository around the notes: their .git restored or
+// copied without, or removed, inside a work folder that is a repository.
+func ownRepo(s *config.Space) error {
+	refuse := fmt.Errorf("the notes of space %s (%s) are not a git repository of their own, so nothing was backed up: run `augmented-brain backup setup <url of a private repository>` again", s.Name, s.Memory)
+	if _, err := os.Stat(filepath.Join(s.Memory, ".git")); err != nil {
+		return refuse
+	}
+	out, err := git(s.Memory, "rev-parse", "--show-toplevel", "--absolute-git-dir", "--git-common-dir")
+	lines := strings.Split(strings.TrimSpace(out), "\n")
+	if err != nil || len(lines) != 3 {
+		return refuse
+	}
+	real := func(p string) string {
+		p = strings.TrimSpace(p)
+		if !filepath.IsAbs(p) { // --git-common-dir may be relative to the notes
+			p = filepath.Join(s.Memory, p)
+		}
+		if r, err := filepath.EvalSymlinks(p); err == nil {
+			return r
+		}
+		return ""
+	}
+	mem, top, gitDir, common := real(s.Memory), real(lines[0]), real(lines[1]), real(lines[2])
+	if mem == "" || !sameDir(top, mem) {
+		return refuse
+	}
+	// Its own .git folder, or a worktree of its own; never a .git file that points into
+	// another repository's .git folder.
+	if !sameDir(gitDir, filepath.Join(mem, ".git")) && sameDir(gitDir, common) {
+		return refuse
+	}
+	return nil
+}
+
+// sameDir compares two cleaned paths, ignoring case where the system does.
+func sameDir(a, b string) bool {
+	a, b = filepath.Clean(a), filepath.Clean(b)
+	if runtime.GOOS == "windows" || runtime.GOOS == "darwin" {
+		return strings.EqualFold(a, b)
+	}
+	return a == b
 }
 
 // links returns the symbolic links in the tree of rev in the repository at dir. A
@@ -164,6 +221,9 @@ func Run(c *config.Config, s *config.Space, host string) (*Result, error) {
 		return nil, err
 	}
 	defer unlock()
+	if err := ownRepo(s); err != nil {
+		return nil, err
+	}
 	res := &Result{}
 	if err := commit(c, s, host, res); err != nil {
 		return nil, err

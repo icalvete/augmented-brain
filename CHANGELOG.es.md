@@ -2,6 +2,11 @@
 
 ## Sin publicar
 
+- **La copia de seguridad solo actúa en su propio repositorio.** Si la carpeta de notas
+  perdía su `.git` (copiada o restaurada a mano, o borrado) y estaba dentro de otro
+  repositorio de git, como tu carpeta de trabajo, la copia hacía commit y push en ese
+  otro. Ahora se para, no toca nada y te dice que vuelvas a lanzar `augmented-brain
+  backup setup`. Volver a una copia anterior hace lo mismo.
 - **Claude ya no configura una copia en una dirección que le han dado.** En un espacio
   sin copia, una sola llamada a `backup_setup` con una dirección mandaba allí todas las
   notas, y otra vez al acabar cada sesión; la dirección podía venir de una página o un
