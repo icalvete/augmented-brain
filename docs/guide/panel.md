@@ -178,7 +178,8 @@ asks first. Whatever you change or accept here, Claude Code itself tells you in 
 open sessions, after the next answer or message, in a line that starts with
 "augmented brain · the guard's lists". If you did not do it, look here. Claude cannot
 open this page: it never sees the panel's address, and the guard denies it the panel's
-key. See [The guard](guard.md).
+key. From another device the page only shows: the lists decide what Claude may do on
+this computer, so they change only from this computer's panel. See [The guard](guard.md).
 
 ## Versions
 
