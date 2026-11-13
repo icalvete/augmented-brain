@@ -164,6 +164,9 @@ jobs:
         run: python3 -I scripts/privacy-hashed.py scan
       # The website's pages are generated from the guides' Markdown: a change to a guide
       # that forgot to regenerate them would publish the old text.
+      # Each pull request leaves its changelog entry in changelog.d/, in both languages.
+      - name: Changelog entries come in both languages
+        run: python3 -I scripts/changelog.py check
       - name: The website's pages match the guides
         run: |
           python3 scripts/build-guides.py >/dev/null
