@@ -3370,7 +3370,9 @@ If there is a newer version, it runs the published installer, which replaces the
 and then updates the plugin. If not, it only updates the plugin. It first asks GitHub
 for the latest version, once: if GitHub does not answer, it says so and stops. If the
 download of the installer fails (three tries, also through GitHub's API) or the program is not the new version
-afterwards, it says so, ends with an error and changes nothing. Around a new version it
+afterwards, it says so, ends with an error and changes nothing. The installer tries the
+new program before it replaces the old one: if it does not start, the old one stays and
+`update` ends with an error. Around a new version it
 does what you would otherwise do by hand:
 
 - **Before:** the health check of `doctor` (what fails is shown, so it is not taken
@@ -3387,6 +3389,13 @@ does what you would otherwise do by hand:
 - `--force`: update even when the backup before it fails.
 - `--no-restart`: restart no session after updating; it only says which still run the
   old version.
+- `--from <address>`: for tests: install the release at this address instead of
+  GitHub's latest. It must be `https://`, `file://`, or `http://` to this computer or to
+  the host of a test VM (`10.0.2.2`).
+
+`update` ignores `AB_RELEASE_URL` and `AB_MARKETPLACE`, and says so: a program could set
+them so that the update comes from somewhere else. Of the other `AB_` variables, it only
+passes `AB_CONFIG_DIR` and `AB_INSTALL_DIR` on to the installer.
 
 ## augmented-brain uninstall
 
@@ -3592,7 +3601,7 @@ At least one field besides `id` and `space` is needed.
 
 Steps are the small parts of a task: checkboxes (`- [ ] text`) in its Plan. This tool adds
 one, or ticks or unticks one. Each change writes a short journal line, and the answer
-lists the steps.
+lists the steps. A closed task's steps stay as they were closed.
 
 - `id`: the task's id.
 - `add` (optional): add this step, unticked, at the end of the Plan, instead of ticking
@@ -3619,7 +3628,8 @@ done or decided.
 
 ## `task_park`
 
-Pauses a task without losing anything, before switching to other work.
+Pauses a task without losing anything, before switching to other work. A closed task is
+refused: it opens again only with `task_update` and `reopen`, so its result stays.
 
 - `id`: the task's id.
 - `next`: exactly how to resume: a command, a file or a decision.
@@ -3698,8 +3708,10 @@ item at a time. It takes no parameters.
 
 ## `review_done`
 
-Finishes the weekly review. It saves what was decided in `reviews/`, and takes the
-processed captures out of the inbox.
+Finishes the weekly review. It saves what was decided in `reviews/`, with the captures
+it takes out of the inbox (each with its date), and only then takes them out. A review
+that cannot be saved (an empty summary, something that looks like a secret) leaves the
+inbox as it was, so no capture is lost.
 
 - `summary`: what was decided, in a few lines.
 - `processed` (optional): the text of each capture dealt with, exactly as `weekly_review`
@@ -4091,7 +4103,10 @@ The installer reads a few more:
   `AB_DESKTOP_URL`: for testing: which version, where the release files are, the GitHub
   API to fall back on, the wait between tries, a folder or repository to take the plugin
   from instead of the one inside the program, and where the desktop app's apt repository
-  is.
+  is. `augmented-brain update` ignores them all: for its tests it takes `--from`.
+- `AB_ALLOW_ROOT=1`: on Linux and macOS, install even as root (`sudo`). Without it the
+  installer refuses: it needs no root, and as root the program and its settings would
+  end up belonging to root, or in root's home, not yours.
 
 ## Claude Code's own settings
 
@@ -4383,7 +4398,9 @@ The weekly review goes through the inbox (each capture becomes a task, goes to a
 knowledge, or is dropped), the live tasks untouched for 14 days or more, and the dates due
 in the coming week. Processed captures leave the inbox, and the review is kept as
 `reviews/review-<date>.md` (`type: review`), with what was decided as its body and the
-first line as its summary. When the last review is 7 days old or more and there is
+first line as its summary; the captures it took out of the inbox follow, as dated lines
+under a heading of their own. The review is saved first: one that cannot be saved takes
+nothing out of the inbox. When the last review is 7 days old or more and there is
 something to go through, the session start offers a new one. A review done in the
 panel keeps one line per decision while it goes on in a draft on this machine
 (`review-<space>.draft` in the configuration folder, never in the notes), and writes

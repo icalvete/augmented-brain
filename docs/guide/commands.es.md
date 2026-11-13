@@ -667,7 +667,8 @@ Si hay una versión más nueva, lanza el instalador publicado, que cambia el pro
 después actualiza el plugin. Si no, solo actualiza el plugin. Primero pregunta a GitHub
 cuál es la última versión, una sola vez: si GitHub no responde, lo dice y se para. Si la
 descarga del instalador falla (tres intentos, también por la API de GitHub) o el programa no queda en la versión nueva, lo
-dice, acaba con error y no cambia nada. Alrededor de una versión nueva hace lo que de
+dice, acaba con error y no cambia nada. El instalador prueba el programa nuevo antes de
+cambiar el viejo: si no arranca, el viejo se queda y `update` acaba con error. Alrededor de una versión nueva hace lo que de
 otro modo harías a mano:
 
 - **Antes:** la revisión de `doctor` (lo que falla se enseña, para no tomarlo por un
@@ -685,6 +686,13 @@ otro modo harías a mano:
 - `--force`: actualiza aunque falle la copia de antes.
 - `--no-restart`: no reinicia ninguna sesión después de actualizar; solo dice cuáles
   siguen con la versión vieja.
+- `--from <dirección>`: para pruebas: instala la versión de esa dirección en vez de la
+  última de GitHub. Tiene que ser `https://`, `file://`, o `http://` a este ordenador o al
+  anfitrión de una máquina virtual de pruebas (`10.0.2.2`).
+
+`update` no hace caso de `AB_RELEASE_URL` ni de `AB_MARKETPLACE`, y lo dice: un programa
+podría ponerlas para que la actualización viniera de otro sitio. De las demás variables
+`AB_`, solo pasa al instalador `AB_CONFIG_DIR` y `AB_INSTALL_DIR`.
 
 ## augmented-brain uninstall
 

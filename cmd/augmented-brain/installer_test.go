@@ -19,9 +19,13 @@ import (
 // fakeRelease is a release of a program that only says its version: the archive for
 // this system and its checksums.txt.
 func fakeRelease(t *testing.T) (archive string, files map[string][]byte) {
+	return fakeReleaseOf(t, []byte("#!/bin/sh\necho 9.9.9\n"))
+}
+
+// fakeReleaseOf is a release whose program is prog.
+func fakeReleaseOf(t *testing.T, prog []byte) (archive string, files map[string][]byte) {
 	t.Helper()
 	dir := fmt.Sprintf("augmented-brain_9.9.9_%s_%s", runtime.GOOS, runtime.GOARCH)
-	prog := []byte("#!/bin/sh\necho 9.9.9\n")
 	var buf bytes.Buffer
 	gz := gzip.NewWriter(&buf)
 	tw := tar.NewWriter(gz)
@@ -153,5 +157,83 @@ func TestInstallerPublic(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(bin, "augmented-brain")); err != nil {
 		t.Errorf("not installed: %v\n%s", err, out)
+	}
+}
+
+// installSh runs install.sh, only its download and install (AB_NO_INIT), from a release
+// in a folder (file://) whose program is prog, into bin; extra goes into its
+// environment, after the rest.
+func installSh(t *testing.T, prog []byte, bin string, extra ...string) (string, error) {
+	t.Helper()
+	if runtime.GOOS == "windows" {
+		t.Skip("install.sh is the installer for Linux and macOS")
+	}
+	_, files := fakeReleaseOf(t, prog)
+	rel := t.TempDir()
+	for name, data := range files {
+		if err := os.WriteFile(filepath.Join(rel, name), data, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	cmd := exec.Command("sh", filepath.Join("..", "..", "install.sh"))
+	cmd.Env = append(os.Environ(), "HOME="+t.TempDir(), "SHELL=/bin/sh", "AB_NO_INIT=1", "AB_NO_DESKTOP=1",
+		"AB_LANGUAGE=en", "AB_INSTALL_DIR="+bin, "AB_RELEASE_URL=file://"+rel, "AB_RETRY_DELAY=0",
+		"AB_ALLOW_ROOT=")
+	cmd.Env = append(cmd.Env, extra...)
+	o, err := cmd.CombinedOutput()
+	return string(o), err
+}
+
+// A new program that does not start never replaces the one that works: the installer
+// ends with an error that says so, and the old program is there and answers.
+func TestInstallerKeepsWorkingProgram(t *testing.T) {
+	bin := t.TempDir()
+	old := filepath.Join(bin, "augmented-brain")
+	if err := os.WriteFile(old, []byte("#!/bin/sh\necho 1.0.0\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	out, err := installSh(t, []byte("#!/bin/sh\nexit 1\n"), bin)
+	if err == nil || !strings.Contains(out, "does not start") || !strings.Contains(out, "still there") {
+		t.Fatalf("a program that does not start was installed: %v\n%s", err, out)
+	}
+	if v, err := exec.Command(old).Output(); err != nil || strings.TrimSpace(string(v)) != "1.0.0" {
+		t.Errorf("the old program is gone: %q %v", v, err)
+	}
+	for _, left := range []string{"augmented-brain.new", "augmented-brain.old"} {
+		if _, err := os.Stat(filepath.Join(bin, left)); !os.IsNotExist(err) {
+			t.Errorf("%s left behind: %v", left, err)
+		}
+	}
+
+	// One that works replaces it, and nothing is left beside it.
+	if out, err := installSh(t, []byte("#!/bin/sh\necho 9.9.9\n"), bin); err != nil || !strings.Contains(out, "9.9.9 installed") {
+		t.Fatalf("%v\n%s", err, out)
+	}
+	if _, err := os.Stat(filepath.Join(bin, "augmented-brain.old")); !os.IsNotExist(err) {
+		t.Errorf("the old program left behind: %v", err)
+	}
+}
+
+// As root the installer stops before downloading anything, unless AB_ALLOW_ROOT=1.
+func TestInstallerRefusesRoot(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("install.sh is the installer for Linux and macOS")
+	}
+	// An id that says root, first in the PATH: nothing here runs as root.
+	fake := t.TempDir()
+	if err := os.WriteFile(filepath.Join(fake, "id"), []byte("#!/bin/sh\necho 0\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	path := "PATH=" + fake + string(os.PathListSeparator) + os.Getenv("PATH")
+	bin := filepath.Join(t.TempDir(), "bin")
+	out, err := installSh(t, []byte("#!/bin/sh\necho 9.9.9\n"), bin, path)
+	if err == nil || !strings.Contains(out, "as root") || !strings.Contains(out, "Nothing was installed") {
+		t.Fatalf("it ran as root: %v\n%s", err, out)
+	}
+	if _, err := os.Stat(bin); !os.IsNotExist(err) {
+		t.Errorf("something was installed: %v", err)
+	}
+	if out, err := installSh(t, []byte("#!/bin/sh\necho 9.9.9\n"), bin, path, "AB_ALLOW_ROOT=1"); err != nil {
+		t.Errorf("AB_ALLOW_ROOT=1: %v\n%s", err, out)
 	}
 }

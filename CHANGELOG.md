@@ -2,6 +2,81 @@
 
 ## Unreleased
 
+## 0.23.0-beta
+
+Released 2026-11-13.
+
+- **You can check where a download comes from.** Every file of a release (the archives
+  and both installers) now carries a provenance record signed by GitHub, saying which
+  workflow built it from which commit (`gh attestation verify`), and `checksums.txt`
+  lists the installers too. The same commit builds the same bytes anywhere. A release
+  is made from the commit of `main` that set its version, never from changes merged
+  after it, and only once every required check has passed there; it is built in a job
+  that cannot write to the repository. The guide to installing says how to check a
+  download.
+- **Finishing the weekly review can no longer lose captures.** `review_done` used to take
+  the processed captures out of the inbox before saving the review, so a review it then
+  refused (an empty summary, a token quoted in it) left them gone with nothing saved.
+  Now the review is saved first, with the captures it takes out written in it, and only
+  then do they leave the inbox. Other writes are all or nothing too: a refused change no
+  longer leaves a copy in `archive/`, parking a closed task or changing its steps is
+  refused, a capture after a last line with no newline keeps a line of its own, and a
+  secret's name written by hand with quotes no longer empties the list.
+- **The remote panel has a door of its own.** With the panel published through
+  Tailscale, someone else in your network who had the address could pass for this
+  computer by changing one header of the request, and then set up a backup of your
+  notes to a repository of theirs. Now what comes through Tailscale arrives at a port of
+  its own and is always taken as coming from the network. The link for the phone opens
+  only through the network, and the one for this computer's browser only here. Opening
+  the panel no longer takes away something you publish yourself with `tailscale serve`
+  on port 8443: augmented brain only takes back the address it published.
+  `panel stop` no longer ends another process of augmented brain that happens to have
+  the process number of a panel that crashed. `panel remote` waits for a slow
+  Tailscale instead of starting the panel again (which made the open pages stop
+  working).
+- **A backup can no longer choose where its files land, and works with your git
+  settings.** `restore` puts the notes where they were only inside your home folder and
+  outside its hidden and system folders (`~/.config`, `~/Library`, `~/AppData`, any
+  `.git`); otherwise they go to `~/augmented-brain/<space>` and it tells you, so a
+  backup someone changed cannot drop files where your computer runs them. It refuses a
+  space name that is not valid, and reads the backup from `main` even when the
+  repository's default branch is another. The backup ignores signing, global hooks and
+  password windows, which made it fail for anyone with `commit.gpgsign` or
+  `core.hooksPath` set. The next session and `doctor` say when a backup began and never
+  ended, and when the last good one is over 3 days old with notes changed since.
+- **The guard never hangs, and never fails silently.** A few rare commands (a `find`
+  inside a `find` many times, thousands of `$(`, a git alias that calls itself) kept it
+  busy past the hook's 10 seconds; now every command nested in another one counts, and
+  past four levels, or past 256 KB, it asks you. If the guard fails inside, it refuses
+  that one action in plain words instead of showing Go's trace. A tool call in an
+  unexpected shape, a configuration folder it cannot find, `config.toml` gone, a shell
+  script it cannot read, or an answer it could not write no longer let a command through
+  unchecked. `doctor` warns when Claude Code is older than 2.1.295, which lets
+  everything through when the guard fails.
+- **One-line fields are one line, always.** A title, summary, next step or `waiting_on`
+  with line breaks in it (text copied from an issue or an email, say) could write what
+  looked like a section of the program, such as `## Rules`, into the index and into what
+  every session reads at the start. Now those fields become one line on the way in, and
+  again whenever a note is read, so a note edited by hand cannot do it either. Each field
+  has a generous limit (a next step, 2,000 characters; a journal entry, 32,000), and the
+  error says where the long text goes. A capture or journal entry that ends in
+  `(from <space>)` typed by hand no longer passes for one another space sent. A profile
+  whose name had several lines can be saved again. `watch pr` writes a sentence of its
+  own as the task's next step, and the names of the checks, which the pull request
+  chooses, only in its journal, quoted and cut short; `--every` is 10s at least.
+- **The panel is no longer a way around the guard.** `augmented-brain panel` printed the
+  panel's address with its key, and `/brain:panel` has Claude run it: with that address
+  and two commands the guard let through (`127.1` instead of `127.0.0.1`), Claude could
+  add a repository to the ones it may push to, and the panel sealed the change so the
+  guard noticed nothing. Now the command prints a link that opens the panel once, within
+  2 minutes (10 for `panel remote`), and run by Claude with the browser open it prints
+  none; if something used your link first, the browser says so. A change to the guard's
+  lists made in the panel, or lists accepted there, reaches you as a line from Claude
+  Code itself, not from Claude. The guard denies a panel address however the host is
+  written. Compacting a conversation, `/clear` or resuming no longer takes changed lists
+  as seen (only a session you start does), and a seal that cannot be read asks instead
+  of letting a push through. A plain `*` in a command that only names the configuration
+  folder is no longer denied.
 - **The plugin comes inside the program.** Claude Code took the plugin (its hooks, the
   guard among them) from the repository's `main` on GitHub, as it was that day: a change
   there reached everyone before any release, and for a while the plugin could ask for

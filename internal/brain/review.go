@@ -116,15 +116,47 @@ func (b *Brain) Arrived() []InboxEntry {
 // capture, as Inbox returns it (spaces around it do not count); every capture with
 // that text goes. It returns the items it could not find.
 func (b *Brain) InboxDone(items []string) ([]string, error) {
-	data, err := os.ReadFile(b.inboxPath())
+	p, err := b.planInboxDone(items)
 	if err != nil {
 		return nil, err
 	}
+	return p.missing, p.write()
+}
+
+// inboxDone is what InboxDone would do, worked out before anything is written.
+type inboxDone struct {
+	path    string
+	keep    []string     // the lines that stay
+	gone    []InboxEntry // the captures that go, in the inbox's order
+	missing []string     // the items no capture matched
+}
+
+// write takes the captures out of the inbox, when there are any to take.
+func (p inboxDone) write() error {
+	if len(p.gone) == 0 {
+		return nil
+	}
+	return paths.WriteAtomic(p.path, []byte(strings.Join(p.keep, "\n")), 0o600)
+}
+
+func (b *Brain) planInboxDone(items []string) (inboxDone, error) {
+	p := inboxDone{path: b.inboxPath()}
 	want := map[string]bool{}
 	for _, it := range items {
 		if it = memory.OneLine(it); it != "" {
 			want[it] = true
 		}
+	}
+	data, err := os.ReadFile(p.path)
+	if errors.Is(err, os.ErrNotExist) {
+		for it := range want {
+			p.missing = append(p.missing, it) // no inbox: nothing to take out
+		}
+		sort.Strings(p.missing)
+		return p, nil
+	}
+	if err != nil {
+		return p, err
 	}
 	lines := strings.Split(string(data), "\n")
 	// A capture sent from another space is found by its text with or without the
@@ -138,32 +170,33 @@ func (b *Brain) InboxDone(items []string) ([]string, error) {
 		}
 	}
 	found := map[string]bool{}
-	var keep []string
 	for _, l := range lines {
 		if e, ok := parseInboxLine(l, b.spaceSet()); ok {
 			text, full := strings.TrimSpace(e.Text), strings.TrimSpace(e.full())
+			key := ""
 			switch {
 			case e.From == "" && want[text]:
-				found[text] = true
-				continue
+				key = text
 			case e.From != "" && want[full]:
-				found[full] = true
-				continue
+				key = full
 			case e.From != "" && want[text] && !plain[text]:
-				found[text] = true
+				key = text
+			}
+			if key != "" {
+				found[key] = true
+				p.gone = append(p.gone, e)
 				continue
 			}
 		}
-		keep = append(keep, l)
+		p.keep = append(p.keep, l)
 	}
-	var missing []string
 	for it := range want {
 		if !found[it] {
-			missing = append(missing, it)
+			p.missing = append(p.missing, it)
 		}
 	}
-	sort.Strings(missing)
-	return missing, paths.WriteAtomic(b.inboxPath(), []byte(strings.Join(keep, "\n")), 0o600)
+	sort.Strings(p.missing)
+	return p, nil
 }
 
 // InboxDoneEntry takes one capture out of the inbox: the first with that date and
@@ -331,9 +364,23 @@ func (b *Brain) Review() Review {
 
 // SaveReview keeps a record of a finished review in reviews/.
 func (b *Brain) SaveReview(summary string) (*memory.Note, error) {
+	n, _, err := b.FinishReview(summary, nil)
+	return n, err
+}
+
+// FinishReview ends the weekly review, all of it or nothing that is lost: it checks the
+// review, saves it with the captures it takes out of the inbox (each with its date, so
+// none goes without a trace), and only then takes them out. A review that cannot be
+// saved leaves the inbox as it was. It returns the review and the processed items no
+// capture matched, which stay where they were.
+func (b *Brain) FinishReview(summary string, processed []string) (*memory.Note, []string, error) {
 	summary = strings.TrimSpace(summary)
 	if summary == "" {
-		return nil, errors.New("a review needs a summary: what was decided")
+		return nil, nil, errors.New("a review needs a summary: what was decided. Nothing was saved, and the inbox is as it was")
+	}
+	p, err := b.planInboxDone(processed)
+	if err != nil {
+		return nil, nil, err
 	}
 	title := i18n.T(b.Language, "review.title")
 	title = fmt.Sprintf(title, b.today())
@@ -341,11 +388,26 @@ func (b *Brain) SaveReview(summary string) (*memory.Note, error) {
 	if len([]rune(first)) > 120 {
 		first = string([]rune(first)[:117]) + "…"
 	}
+	body := summary + "\n"
+	if len(p.gone) > 0 {
+		var out strings.Builder
+		fmt.Fprintf(&out, "%s\n\n## %s\n\n", summary, i18n.T(b.Language, "review.processed"))
+		for _, e := range p.gone {
+			out.WriteString(memory.DatedLine(e.Date, e.full()))
+		}
+		body = out.String()
+	}
 	id := b.newID("review", b.today())
 	n := &memory.Note{
 		Path:   memory.PathFor("review", id),
 		Header: memory.Header{ID: id, Type: "review", Title: title, Summary: first, Created: b.today()},
-		Body:   summary + "\n",
+		Body:   body,
 	}
-	return n, b.save(n)
+	if err := b.save(n); err != nil {
+		return nil, nil, fmt.Errorf("%w\n(the inbox is as it was: no capture was taken out)", err)
+	}
+	if err := p.write(); err != nil {
+		return n, nil, fmt.Errorf("the review was saved in %s, but the captures could not be taken out of the inbox, so they are still there (take them out again with capture_done): %w", n.Path, err)
+	}
+	return n, p.missing, nil
 }

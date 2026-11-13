@@ -465,13 +465,9 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Summary   string   `json:"summary" jsonschema:"what was decided in the review, a few lines"`
 		Processed []string `json:"processed,omitempty" jsonschema:"the text of each inbox capture dealt with, exactly as weekly_review listed it; they leave the inbox"`
 	}
-	tool(s, locked, "review_done", "Finish the weekly review: save what was decided in reviews/ and take the processed captures out of the inbox.",
+	tool(s, locked, "review_done", "Finish the weekly review: save what was decided in reviews/, with the processed captures, and only then take them out of the inbox. A review that cannot be saved leaves the inbox as it was.",
 		func(b *brain.Brain, in reviewDoneIn) (string, error) {
-			missing, err := b.InboxDone(in.Processed)
-			if err != nil && len(in.Processed) > 0 {
-				return "", err
-			}
-			n, err := b.SaveReview(in.Summary)
+			n, missing, err := b.FinishReview(in.Summary, in.Processed)
 			if err != nil {
 				return "", err
 			}
@@ -710,6 +706,10 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 				} else {
 					text = strings.TrimRight(text, "\n") + "\n\n" + strings.TrimRight(b.Fresh, "\n")
 				}
+			}
+			if err == nil && b.IndexProblem != nil {
+				// The note is saved; only the index is behind. Said, so it is not written again.
+				text = strings.TrimRight(text, "\n") + "\n\nSaved, but the index (MEMORY.md) could not be written: " + b.IndexProblem.Error() + ". Do not repeat the change; the next one writes the index again, and `augmented-brain doctor` says what is wrong."
 			}
 			if note := brain.ProblemsNote(b.Problems, 3); note != "" {
 				// Files that are not valid notes do not stop the tools; the user hears about them.
