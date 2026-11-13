@@ -16,6 +16,7 @@ space's `tasks/` folder.
 id: task-move-the-blog
 type: task
 title: Move the blog
+summary: The blog moves to a cheaper host
 area: area-blog
 status: parked
 waiting_on: me
@@ -58,6 +59,11 @@ Claude works without asking at every step.
 5. **Validation**: proving the "done" criterion.
 6. **Closed**: finished. It is kept, never deleted.
 
+The task's file has a numbered section for each phase where there is something to write
+down (1. Definition, 2. Analysis, 3. Plan, 4. Validation, 5. Closing). Execution has no
+section of its own: what is done goes to the journal. That is why the numbers of the
+sections and of the phases do not match from validation on.
+
 The phase is the task's `status`. Two more statuses pause a task without losing anything:
 
 - **parked**: paused, to resume soon. `next` says exactly how.
@@ -96,13 +102,16 @@ Each decision or finished step goes to the journal at the moment, not only when 
 it. A session can end at any time, and what is not in the note is lost.
 
 If the session has a task open and nothing has been written in it for 20 minutes, Claude
-gets a reminder at the end of its answer, once. Each session has its own task: with two
-windows on different tasks, each is reminded of its own. When a long conversation is compacted (Claude
-Code replaces the details with a summary), the summary is kept in `archive/sessions/`,
-and the journal points at it. The summary can be wrong, so Claude is asked not to take it
-as fact, to check before stating anything from before, and to tell you the session was
-compacted and suggest parking the task and going on in a new session, which starts from
-the notes.
+gets a reminder at the end of its answer, once.
+
+Each session keeps track of its own task. With two windows on different tasks, each one
+is reminded of its own.
+
+A long conversation can be compacted: Claude Code replaces the details with a summary.
+That summary is kept in `archive/sessions/`, and the journal points at it. The summary
+can be wrong, so Claude is asked three things: not to take it as fact, to check before
+stating anything from before, and to tell you the session was compacted. It also
+suggests parking the task and going on in a new session, which starts from the notes.
 
 ### A long journal
 
@@ -133,6 +142,13 @@ you go on with the rest. A subtask is a whole task, with one more line in its he
 Rule of thumb: if it waits on someone or has its own pace, it is a subtask. Otherwise, it
 is a step.
 
+## A session of its own
+
+A task can have a Claude session of its own, started in the background in the task's
+folder: you say "start a session for the blog task" and go on with something else. The
+session reads the task and gets going. On Linux, `augmented-brain session start` does it;
+see [A session per task](remote.md#a-session-per-task).
+
 ## Dates to look at something again
 
 Some checks belong to a day: "on the 16th, is the certificate renewed?". Tell Claude and
@@ -150,6 +166,13 @@ uses the inbox instead: see [Areas, knowledge and the rest](notes.md#inbox).
 
 Say "close the task". Claude writes the result, and the task stays in its folder, marked
 closed. Nothing is ever deleted.
+
+- A task with subtasks still open cannot be closed: close them first.
+- If the task has a session of its own, closing the task also ends that session, once it
+  has finished its answer.
+- If a git worktree was made for the task (a second working folder of the same
+  repository), closing removes it, but only when it holds nothing that is not saved
+  elsewhere. Otherwise it stays, and Claude tells you why.
 
 A task that nobody has changed for 14 days comes up in the
 [weekly review](weekly-review.md), so nothing stalls in silence.

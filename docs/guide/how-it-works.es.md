@@ -60,9 +60,9 @@ te pregunta o lo para. Mira [El guardia](guard.es.md).
 **4. Claude termina una respuesta.** Si la sesión tiene una tarea abierta y en 20 minutos
 no se ha escrito nada en ella, un hook le recuerda a Claude que escriba en su diario, una
 vez. Cada sesión tiene su propia tarea, así que dos ventanas nunca reciben el aviso de la
-otra. El
-mismo hook mira la memoria de la ventana: si ha crecido mucho más de lo normal, Claude te
-lo dice, para que aparques la tarea antes de que el sistema cierre la ventana. Mira
+otra. En Linux y macOS, el mismo hook mira también la memoria de la ventana: si ha
+crecido mucho más de lo normal, Claude te lo dice, para que aparques la tarea antes de
+que el sistema cierre la ventana. Mira
 [Si algo falla](troubleshooting.es.md#la-ventana-usa-mucha-memoria).
 
 **5. Cierras la sesión.** El hook de cierre apunta que la sesión acabó bien. Lanza la
@@ -75,9 +75,9 @@ siguiente te ofrece recuperarla. Claude lee lo que os dijisteis después de la �
 entrada del diario de la tarea, en el registro de la conversación que guarda Claude Code
 en este ordenador (lo guarda 30 días), y apunta lo que falte.
 
-## Dónde viven los ficheros
+## Dónde viven tus notas
 
-Tus notas, una carpeta por espacio:
+<a id="dónde-viven-los-ficheros"></a>Tus notas, una carpeta por espacio:
 
 ```
 ~/augmented-brain/
@@ -97,32 +97,20 @@ Tus notas, una carpeta por espacio:
 └── personal/             lo mismo, para lo personal
 ```
 
-La carpeta de configuración, `~/.config/augmented-brain/` (en Windows,
-`%APPDATA%\augmented-brain`):
-
-```
-config.toml       los espacios y las listas del guardia
-guard.toml        los repositorios que Claude no debe tocar nunca
-remote.toml       el acceso remoto, si lo configuras
-session.toml      ajustes de las sesiones (el modelo preferido)
-secrets.toml      los nombres de tus secretos, nunca su valor
-profile.md        quién eres, para todos los espacios
-shared/           reglas, referencias y lecciones para todos los espacios
-state/            lo que este ordenador sabe de las sesiones de cada espacio; sin copia
-migrations/       una copia completa de las notas antes de que una versión nueva las mueva
-panel.json        dónde escucha el panel, mientras funciona
-history/          las 10 últimas versiones de estos ficheros; solo en este ordenador
-```
-
-Cada fichero está explicado en [Configuración](configuration.es.md) y en el
-[formato de la memoria](../spec/memory-format.md) (en inglés).
+Todo lo demás (la carpeta de configuración, lo que este ordenador guarda para sí, el
+programa) y lo que viaja en la copia está en [Dónde vive cada cosa](where-things-live.es.md).
 
 ## Lo que no hace
 
-- **No hay servidor ni cuenta.** Si Claude no está abierto, no funciona nada, salvo el
-  panel mientras lo usas, la copia de seguridad que lanza el final de una sesión y, si lo
-  configuras, el [acceso remoto](remote.es.md), que sigue en marcha para que llegues a tus
-  sesiones desde otro dispositivo.
+- **No hay servidor ni cuenta.** Si Claude no está abierto, no funciona nada, salvo:
+  - el panel, mientras lo usas;
+  - la copia de seguridad que lanza el final de una sesión;
+  - la sesión propia de una tarea, abierta con `augmented-brain session start`, hasta que
+    se para o se cierra la tarea;
+  - `augmented-brain watch pr`, que espera las comprobaciones de una pull request, tres
+    horas como mucho;
+  - si lo configuras, el [acceso remoto](remote.es.md), que sigue en marcha para que
+    llegues a tus sesiones desde otro dispositivo.
 - **No envía tus datos a nadie.** Solo la copia de seguridad, si la configuras, habla con
   tu repositorio. Aparte, una vez al día, pregunta a GitHub cuál es la última versión,
   sin mandar nada tuyo. `AB_NO_UPDATE_CHECK=1` lo apaga.
@@ -131,12 +119,4 @@ Cada fichero está explicado en [Configuración](configuration.es.md) y en el
 - **Ojo: tu asistente lee tus notas**, como cualquier fichero que abre. Viajan con tus
   conversaciones a su proveedor. No guardes ahí lo que no compartirías.
 
-## Lo que se ha ido de esta página
-
-Esta página tenía más cosas. Ahora cada parte tiene su propia página:
-
-- <a id="tus-ficheros"></a><a id="trabajo-y-personal-separados"></a><a id="notas-compartidas"></a>Tus ficheros, los espacios y las notas compartidas: [Espacios](spaces.es.md) y [Áreas, conocimiento y lo demás](notes.es.md).
-- <a id="la-copia-de-seguridad"></a><a id="en-una-máquina-nueva"></a>La copia de seguridad, y una máquina nueva: [Copia de seguridad y restauración](backup.es.md).
-- <a id="trae-una-memoria-que-ya-tienes"></a>Importar una memoria que ya tienes: [Trae una memoria](import.es.md).
-- <a id="el-panel"></a>El panel y cada una de sus páginas: [El panel](panel.es.md).
-- <a id="actualizarlo"></a><a id="quitarlo"></a>Actualizarlo y quitarlo: [Instalación](install.es.md#actualizar).
+<a id="tus-ficheros"></a><a id="trabajo-y-personal-separados"></a><a id="notas-compartidas"></a><a id="la-copia-de-seguridad"></a><a id="en-una-máquina-nueva"></a><a id="trae-una-memoria-que-ya-tienes"></a><a id="el-panel"></a><a id="actualizarlo"></a><a id="quitarlo"></a>

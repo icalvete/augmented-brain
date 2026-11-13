@@ -54,8 +54,8 @@ La app de escritorio empieza cada sesión nueva en una carpeta temporal suya. Es
 no es de ningún espacio. Entonces se usa el **espacio por defecto**, `personal` salvo que
 lo cambies, y Claude te lo dice en una línea, con cómo pasar al de trabajo.
 
-El espacio por defecto importa para una cosa más: su copia de seguridad lleva tu perfil y
-las notas compartidas. Se elige con `default_space` en la configuración. Si tienes un solo
+El espacio por defecto importa para una cosa más: su copia de seguridad lleva tu perfil,
+las notas compartidas y los nombres de tus secretos (nunca sus valores). Se elige con `default_space` en la configuración. Si tienes un solo
 espacio, es ese.
 
 ## ¿Tus proyectos viven en otro sitio?
@@ -77,6 +77,14 @@ Te pide la carpeta de trabajo y la carpeta de notas, y te propone
 aceptar. Si aún no había espacio por defecto, lo fija. Las opciones están en
 [Comandos](commands.es.md#augmented-brain-space-add).
 
+Después, dos cosas:
+
+- **Dale una copia de seguridad.** Abre Claude en la carpeta de trabajo nueva y di
+  "configura la copia de seguridad"; cada espacio tiene la suya. Mira
+  [Copia de seguridad y restauración](backup.es.md).
+- **Trabaja en él.** Abre Claude en su carpeta de trabajo, o en una carpeta dentro de
+  ella, y la sesión usa el espacio nuevo.
+
 ## Qué tiene cada espacio, y qué comparten
 
 Cada espacio tiene lo suyo:
@@ -93,9 +101,10 @@ Todos los espacios comparten:
   (abajo).
 - **las listas del guardia**: los perfiles de AWS de producción, las máquinas que no se
   tocan, los repositorios donde Claude puede hacer commit y los que no debe tocar nunca, y
-  las excepciones de root. Valen en toda la máquina. Un
-  perfil de producción guardado desde el espacio de trabajo también se vigila en el
-  personal.
+  las excepciones de root. Valen en toda la máquina, las escribas desde el espacio que
+  sea. Un perfil de producción guardado desde el espacio de trabajo también se vigila en
+  el personal, y un repositorio donde Claude puede hacer commit vale desde todos los
+  espacios.
 
 Un espacio nunca lee las notas de otro por su cuenta.
 
@@ -111,7 +120,8 @@ a quién espera.
   espacio sepa dónde se decidió.
 - Nada se copia en las notas de este espacio: lo que Claude lee se queda en la
   conversación.
-- Claude solo lo hace cuando se lo pides, igual que al mandar una captura a otro espacio.
+- Claude solo lo hace cuando se lo pides, igual que al
+  [mandar una captura a otro espacio](notes.es.md#mandar-una-captura-a-otro-espacio).
 - Esa tarea se cierra desde una sesión de su propio espacio, porque cerrarla también
   cierra la sesión de la tarea y su worktree.
 - Ese espacio se copia cuando termina esta sesión, si tiene copia de seguridad: no espera

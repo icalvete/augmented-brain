@@ -59,9 +59,9 @@ through, asks you, or stops it. See [The guard](guard.md).
 
 **4. Claude finishes an answer.** If the session has a task open and nothing was written
 in it for 20 minutes, a hook reminds Claude to write in its journal, once. Each session
-has its own task, so two windows never get each other's reminder. The same hook looks at the
-memory of the window: if it has grown far past normal, Claude tells you, so you can park
-the task before the system closes the window. See
+has its own task, so two windows never get each other's reminder. On Linux and macOS,
+the same hook also looks at the memory of the window: if it has grown far past normal,
+Claude tells you, so you can park the task before the system closes the window. See
 [Troubleshooting](troubleshooting.md#the-window-uses-a-lot-of-memory).
 
 **5. You close the session.** The end hook notes that the session ended well. It starts
@@ -74,9 +74,9 @@ the next one offers to recover it. Claude reads what you both said after the tas
 journal entry, from Claude Code's own record of the conversation on this computer (kept
 30 days), and writes down what is missing.
 
-## Where files live
+## Where your notes live
 
-Your notes, one folder per space:
+<a id="where-files-live"></a>Your notes, one folder per space:
 
 ```
 ~/augmented-brain/
@@ -96,32 +96,21 @@ Your notes, one folder per space:
 └── personal/             the same, for personal things
 ```
 
-The configuration folder, `~/.config/augmented-brain/` (on Windows,
-`%APPDATA%\augmented-brain`):
-
-```
-config.toml       the spaces and the guard's lists
-guard.toml        the repositories Claude must never touch
-remote.toml       remote access, if you set it up
-session.toml      session settings (the preferred model)
-secrets.toml      the names of your secrets, never their values
-profile.md        who you are, for every space
-shared/           rules, references and lessons for every space
-state/            what this computer knows of each space's sessions; never backed up
-migrations/       a full copy of the notes before a new version moves them
-panel.json        where the panel listens, while it runs
-history/          the last 10 versions of these files; only on this computer
-```
-
-Each file is described in [Configuration](configuration.md) and in the
-[memory format](../spec/memory-format.md).
+Everything else (the configuration folder, what this computer keeps for itself, the
+program) and what travels in the backup is in
+[Where everything lives](where-things-live.md).
 
 ## What it does not do
 
-- **No server and no account.** If Claude is not open, nothing runs, except the panel
-  while you use it, the backup that the end of a session starts and, if you set it up,
-  [remote access](remote.md), which keeps running so you can reach your sessions from
-  another device.
+- **No server and no account.** If Claude is not open, nothing runs, except:
+  - the panel, while you use it;
+  - the backup that the end of a session starts;
+  - a task's own session, started with `augmented-brain session start`, until it is
+    stopped or the task is closed;
+  - `augmented-brain watch pr`, which waits for a pull request's checks, three hours at
+    most;
+  - if you set it up, [remote access](remote.md), which keeps running so you can reach
+    your sessions from another device.
 - **It sends your data to no one.** Only the backup, if you set it up, talks to your
   repository. Apart from that, once a day, it asks GitHub which version is the latest,
   sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns that off.
@@ -130,12 +119,4 @@ Each file is described in [Configuration](configuration.md) and in the
 - **Mind this: your assistant reads your notes**, like any file it opens. They travel
   with your conversations to its provider. Do not keep there what you would not share.
 
-## Moved from this page
-
-This page used to hold more. Each part now has a page of its own:
-
-- <a id="your-files"></a><a id="work-and-personal-apart"></a><a id="shared-notes"></a>Your files, spaces and shared notes: [Spaces](spaces.md) and [Areas, knowledge and the rest](notes.md).
-- <a id="the-backup"></a><a id="on-a-new-machine"></a>The backup, and a new machine: [Backup and restore](backup.md).
-- <a id="bring-in-a-memory-you-already-have"></a>Importing an existing memory: [Bring in a memory](import.md).
-- <a id="the-panel"></a>The panel and every page in it: [The panel](panel.md).
-- <a id="update-it"></a><a id="remove-it"></a>Updating and removing it: [Installing](install.md#updating).
+<a id="your-files"></a><a id="work-and-personal-apart"></a><a id="shared-notes"></a><a id="the-backup"></a><a id="on-a-new-machine"></a><a id="bring-in-a-memory-you-already-have"></a><a id="the-panel"></a><a id="update-it"></a><a id="remove-it"></a>

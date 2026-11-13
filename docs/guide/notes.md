@@ -25,8 +25,8 @@ What is worth keeping beyond one task. There are two kinds, in `knowledge/`:
 - A **lesson** says what you learned, with a title that already states the conclusion:
   "Test the backup restore, not only the backup".
 
-You say: "save that as a lesson". Both belong to an area, and Claude opens them when a
-task needs them.
+You say: "save that as a lesson". Either kind can belong to an area, and Claude opens it
+when a task needs it.
 
 ## People
 
@@ -59,8 +59,23 @@ Each line is a **capture**. The [weekly review](weekly-review.md) empties the in
 capture becomes a task, goes to an area or knowledge, or is dropped.
 
 "Remind me on Thursday to call the insurance" is a capture with a date. From a week
-before, and every day after, it comes up at the start of the session, until the weekly
-review deals with it (or you mark it done in the panel).
+before, and every day after, it comes up at the start of the session, until it is dealt
+with.
+
+### Sending a capture to another space
+
+Sometimes you decide something in one space that must be done in another. In your
+`personal` session you say: "note in work: renew the hosting contract". The capture goes
+to the inbox of `work`, ending in `(from personal)`. It comes up at the start of every
+`work` session until it is done.
+
+### Marking a capture done
+
+Three ways, whichever is closest:
+
+- tell Claude: "that capture is done" (or "turn it into a task");
+- mark it done in the panel's Inbox page;
+- let the [weekly review](weekly-review.md) go through it.
 
 ## Rules
 
@@ -81,6 +96,17 @@ everywhere".
 Your rules are read at the start of every session, so each one costs a little room every
 time. `augmented-brain doctor` says how much they take, and which are the longest.
 
+By default Claude saves a rule and tells you. If you prefer, it can ask you first: see
+[Asking before Claude saves a rule](guard.md#asking-before-claude-saves-a-rule).
+
+## Taking out a note that no longer holds
+
+A rule, a reference or a lesson can stop being true. You say: "that rule no longer
+holds" or "retire the old lesson about the backup". Claude asks you to confirm, then
+moves the note to `archive/`, with a line that says when, why and what replaces it.
+Nothing is deleted, but the note is no longer loaded: a retired rule stops reaching your
+sessions.
+
 ## Your profile
 
 Who you are and how you like to work: your name, what you do, your language, how long
@@ -99,11 +125,9 @@ writes it for you.
 
 `MEMORY.md` is the list Claude reads at the start of every session: your profile line,
 the rules, the areas and the live tasks with their status and next step. The shared
-references and lessons are listed by title and file. At the start, Claude gets it
-shorter: tasks go without their summary, and a task shows its next step (its first 120
-characters) only when it waits on you. Claude reads a task before working on it. The
-program writes this file after every change: do not edit it by hand, it would be
-rewritten.
+references and lessons are listed by title and file. Claude reads a task in full before
+working on it. The program writes this file after every change: do not edit it by hand,
+it would be rewritten.
 
 ## Documents and the archive
 
