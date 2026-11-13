@@ -159,7 +159,7 @@ y en inglés:
 - **Empezar**: [Primeros pasos](https://icalvete.github.io/augmented-brain/guide/getting-started.es.html),
   [Instalación](https://icalvete.github.io/augmented-brain/guide/install.es.html).
 - **Conceptos**: [Espacios](https://icalvete.github.io/augmented-brain/guide/spaces.es.html), [Tareas](https://icalvete.github.io/augmented-brain/guide/tasks.es.html),
-  [Áreas, conocimiento y lo demás](https://icalvete.github.io/augmented-brain/guide/notes.es.html), [El guardia](https://icalvete.github.io/augmented-brain/guide/guard.es.html),
+  [Áreas, conocimiento y lo demás](https://icalvete.github.io/augmented-brain/guide/notes.es.html), [Editar las notas a mano](https://icalvete.github.io/augmented-brain/guide/editing-notes.es.html), [El guardia](https://icalvete.github.io/augmented-brain/guide/guard.es.html),
   [Cómo funciona por dentro](https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html),
   [Qué puede hacer Claude sin preguntarte](https://icalvete.github.io/augmented-brain/guide/what-claude-may-do.es.html),
   [Dónde vive cada cosa](https://icalvete.github.io/augmented-brain/guide/where-things-live.es.html).

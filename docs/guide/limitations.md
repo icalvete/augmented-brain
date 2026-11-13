@@ -2,9 +2,10 @@
 
 [Leer en español](limitations.es.md)
 
-What augmented brain cannot do yet, or does only in part. Each line says what to do
-instead. The list grows when something new turns up: if you find one, tell us from the
-panel's Help page.
+What augmented brain cannot do yet, or does only in part, and what to do instead when
+there is something to do. When something goes wrong and you want to fix it, see
+[Troubleshooting](troubleshooting.md). The list grows when something new turns up: if you
+find one, tell us from the panel's Help page.
 
 ## Only Claude Code
 
@@ -26,6 +27,12 @@ and the guard rely on Claude Code's hooks, so they would get neither.
   yes to everything.
 - **Accents can look broken** (`sesiÃ³n`) in Windows PowerShell 5.1. The fix is in
   [Troubleshooting](troubleshooting.md).
+- **No warning about the window's memory.** On Linux and macOS, Claude warns when the
+  window that holds your sessions grows past 2 GB. On Windows it does not look: if
+  Claude gets slow, park the task and open a new window.
+- **The keychain cannot be asked.** After a restore, augmented brain cannot tell which
+  of your secrets the Windows keychain already holds. Look in the panel's Secrets page
+  and store those that are missing.
 
 ## Claude Code's first run
 
@@ -57,18 +64,12 @@ task) works on Linux only for now: on macOS and Windows it says so and changes n
 
 ## macOS
 
-Every pull request runs the tests on a Mac in CI, including the installer, Safari and a
-locked keychain. A few things only a person at a real Mac can see, and nobody checks
-them yet:
-
-1. Opening the program downloaded with a browser from the Finder ("Open Anyway").
-2. A real Claude Code session: the guard stops a push and the session start loads.
-3. Claude Desktop installed by the installer, and Tailscale with `panel remote`.
-4. With no network: `backup`, `update` and `panel remote` say so and leave nothing half
-   done.
-5. The panel in Safari with its console open, free of errors.
-
-If one of them fails for you, no one has seen it yet: please report it.
+It works on a Mac, and every change is tested on Macs in CI: the installer, the guard,
+the panel in Safari and a locked keychain. But no person has used it on a real Mac yet,
+so what only someone at the screen would notice has not been looked at: opening the
+program from the Finder ("Open Anyway"), a real Claude session, Claude Desktop, or
+Tailscale with `panel remote`. If something fails for you, no one has seen it yet:
+please report it.
 
 ## The guard
 
@@ -94,22 +95,36 @@ own review. What it cannot see:
   (`git ci` for `git commit`) when they are in your usual git settings. An alias in a
   file those settings `include` is not seen.
 - **Local commits from merge, revert and cherry-pick.** The guard stops `git commit`
-  where Claude may not commit, but `git merge`, `git revert` and `git cherry-pick` also
-  make commits on your computer. They are not published: a push is still stopped.
-- **Rules Claude saves.** Claude saves a rule, your profile or a host for the guard
-  without asking you first, and every later session loads them. A text Claude read (a
-  web page, an email) could talk it into saving one. Nothing stops that, but you are
-  told: Claude Code itself shows you, once, what was saved. If you did not ask for it,
-  tell Claude to undo it, or look at the panel.
+  where Claude may not commit, but `git merge`, `git pull`, `git revert`,
+  `git cherry-pick` and `git am` also make commits on your computer. In an untouchable
+  repository they are stopped too; elsewhere they go through. They are not published:
+  a push is still stopped.
+- **Rules Claude saves.** By default, Claude saves a rule, your profile or a host for
+  the guard without asking you first, and every later session loads them. A text Claude
+  read (a web page, an email) could talk it into saving one. You are told: Claude Code
+  shows you, once, what was saved. If you did not ask for it, tell Claude to undo it, or
+  look at the panel. To be asked first, choose "Ask me first" in the panel's Guard page
+  (see [The guard](guard.md#asking-before-claude-saves-a-rule)).
+- **No rules in sessions that skip questions.** With "Ask me first", a session that
+  skips Claude Code's permission questions (`bypassPermissions`) has no one to ask, so
+  Claude cannot save rules, your profile or hosts for the guard there. It tells you what
+  it wanted to save.
 - **Questions in automatic modes.** When the guard asks, Claude Code shows you the
   question. What Claude Code does with it in its fully automatic modes is up to Claude
   Code, not augmented brain.
 
 More in [The guard](guard.md).
 
+## Elsewhere
+
+- **`watch pr` follows pull requests on GitHub only.** It uses GitHub's own tool, `gh`.
+  A merge request on GitLab or another forge is not followed: look at it there.
+- **A file over 50 MB is left out of the backup.** The rest is backed up, and the
+  backup says which file. Keep big files outside the notes folder.
+
 ## Tested by few people
 
 augmented brain is beta. One person has used it every day on Ubuntu, and tried it on
-macOS and Windows 11. What you have keeps working from one version to the next (see the
-[disclaimer](https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md)), but
-back up anything important.
+Windows 11; on macOS it is tested in CI only. Every version so far has kept what you
+have working, and from 1.0 on that is a promise (see
+[What stays stable](compatibility.md)). Back up anything important.

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editing notes by hand · augmented brain</title>
+<meta name="description" content="How to edit augmented brain&#x27;s notes by hand without breaking them: before and after, the header&#x27;s rules, the journal line with its long dash, the inbox, and what not to touch.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/editing-notes.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/editing-notes.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/editing-notes.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/editing-notes.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Editing notes by hand · augmented brain">
+<meta property="og:description" content="Change a note with any editor and keep it readable.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/editing-notes.html">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Editing notes by hand · augmented brain">
+<meta name="twitter:description" content="Change a note with any editor and keep it readable.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap top">
+  <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Main">
+    <a href="index.html">Docs</a>
+    <a href="editing-notes.es.html" hreflang="es" data-lang="es">Español</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Docs">
+<details open id="docnav"><summary>Documentation menu</summary>
+<p class="docnav-group">Get started</p>
+<ul>
+  <li><a href="getting-started.html">Getting started</a></li>
+  <li><a href="install.html">Installing</a></li>
+</ul>
+<p class="docnav-group">Concepts</p>
+<ul>
+  <li><a href="spaces.html">Spaces</a></li>
+  <li><a href="tasks.html">Tasks</a></li>
+  <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="editing-notes.html" aria-current="page">Editing notes by hand</a></li>
+  <li><a href="guard.html">The guard</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
+  <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="where-things-live.html">Where everything lives</a></li>
+</ul>
+<p class="docnav-group">Daily use</p>
+<ul>
+  <li><a href="phrases.html">What to say to Claude</a></li>
+  <li><a href="panel.html">The panel</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
+  <li><a href="weekly-review.html">The weekly review</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="connect-services.html">Connect your services</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
+</ul>
+<p class="docnav-group">Reference</p>
+<ul>
+  <li><a href="commands.html">Commands</a></li>
+  <li><a href="mcp-tools.html">MCP tools</a></li>
+  <li><a href="configuration.html">Configuration</a></li>
+  <li><a href="memory-format.html">Memory format</a></li>
+  <li><a href="compatibility.html">What stays stable</a></li>
+</ul>
+<p class="docnav-group">Help</p>
+<ul>
+  <li><a href="troubleshooting.html">Troubleshooting</a></li>
+  <li><a href="limitations.html">Known limitations</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Editing notes by hand</h1>
+  <p>Your notes are plain Markdown files, and they are yours: open any of them with any editor and change it. Most of the time it is easier to ask Claude (“change the next step of the backup task”): its tools check everything before writing. By hand is fine for a typo, a sentence written better, or a note you want to reorganize. This page says what to keep, so the program keeps reading the note.</p>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#before-and-after">Before and after</a></li><li><a href="#what-a-note-looks-like">What a note looks like</a></li><li><a href="#the-header">The header</a></li><li><a href="#tasks">Tasks</a></li><li><a href="#the-inbox">The inbox</a></li><li><a href="#what-not-to-touch">What not to touch</a></li><li><a href="#next">Next</a></li></ul></nav>
+  <h2 id="before-and-after">Before and after</h2>
+  <ul><li><strong>Before</strong>, look at whether a Claude session is working on that same note. If it writes while you edit, one of the two changes is lost. An open session hears of your change before its next answer.</li><li><strong>After</strong>, run <code>augmented-brain check</code> in a folder of the space. It checks every note and rebuilds the index. If it names a problem, fix it: until then, that note is left out, and Claude does not see it.</li></ul>
+  <h2 id="what-a-note-looks-like">What a note looks like</h2>
+  <p>A note has a header between two <code>---</code> lines, then the text:</p>
+  <pre><code>---
+id: task-new-website
+type: task
+title: New website
+summary: Move the website to the new hosting
+area: area-home
+status: execution
+waiting_on: me
+next: Point the domain to the new server
+created: 2026-11-02
+updated: 2026-11-13
+---
+## Essentials
+- …
+
+## Journal
+- 2026-11-02 — Task opened.
+- 2026-11-13 — Hosting chosen: the cheapest one with backups.</code></pre>
+  <p>The text below the header is yours: write what you like there. The header is what the program reads, so it has rules.</p>
+  <h2 id="the-header">The header</h2>
+  <ul><li><strong>Keys in English, always.</strong> <code>title</code>, <code>status</code>, <code>next</code>… whatever language you write in. So are the fixed values: <code>status: parked</code>, never <code>status: aparcada</code>.</li><li><strong>Only the keys the program knows.</strong> A key it does not know makes the note invalid: the program cannot tell a typo from a key of a newer version, so it leaves the note out instead of guessing. Do not add keys of your own; write that in the text.</li><li><strong>One line per field.</strong> A title or a next step written over several lines is read as one line.</li><li>**Dates as <code>YYYY-MM-DD</code>**: <code>2026-11-03</code>, not <code>3-11-2026</code> or <code>2026-11-3</code>.</li><li>**<code>id</code> is the file name** without <code>.md</code>. If you change one, change the other, and every note that names it in <code>related</code> or <code>parent</code>. Easier: ask Claude to rename it.</li><li>**The values of <code>status</code>**: <code>definition</code>, <code>analysis</code>, <code>plan</code>, <code>execution</code>, <code>validation</code>, <code>closed</code>, <code>parked</code> or <code>someday</code>. <code>waiting_on</code> is <code>me</code>, <code>nobody</code>, a person's name or another task's id.</li></ul>
+  <p>Every key and what it means is in the <a href="memory-format.html#file-header">memory format</a>.</p>
+  <h2 id="tasks">Tasks</h2>
+  <ul><li><strong>The first section is the essentials, the last one the journal.</strong> The program relies on that: it adds journal entries at the end of the file, and reads the essentials to resume. Change the headings' words if you like, but not their order.</li><li><strong>A journal entry is one line</strong>: a dash, the date, a long dash <code>—</code> and the text: <code>- 2026-11-13 — What happened</code>. A short dash <code>-</code> in place of the long one is not read as an entry.</li><li><strong>Steps are checkboxes</strong> under the Plan heading: <code>- [ ]</code> to do, <code>- [x]</code> done.</li></ul>
+  <h2 id="the-inbox">The inbox</h2>
+  <p><code>inbox.md</code> has no header: one line per capture, written like a journal entry, <code>- 2026-11-13 — Call the insurance</code>. To have it come up on a day, end it with <code>(remind: 2026-11-20)</code>.</p>
+  <h2 id="what-not-to-touch">What not to touch</h2>
+  <ul><li>**<code>MEMORY.md</code>**, the index: the program writes it after every change, and yours would be lost.</li><li>**The ending <code>(from &lt;space&gt;)</code>** of a capture or a journal entry: it says that another space sent it. Do not write it yourself.</li><li>**The <code>.augmented-brain/</code> folder**: it holds the version of the notes' format.</li><li><strong>Deleting a note.</strong> Nothing is ever deleted: close a task (<code>status: closed</code>), and ask Claude to retire a rule, reference or lesson that no longer holds: it moves to <code>archive/</code>, which is never loaded.</li></ul>
+  <h2 id="next">Next</h2>
+  <ul><li><a href="tasks.html">Tasks</a>: the phases, steps and the journal.</li><li><a href="notes.html">Areas, knowledge and the rest</a>: the other kinds of note.</li><li><a href="troubleshooting.html#a-note-is-not-valid">Troubleshooting</a>: when <code>check</code> says a note is not valid.</li></ul>
+  <nav class="pager" aria-label="Previous / Next">
+    <a class="prev" href="notes.html"><span>← Previous</span>Areas, knowledge and the rest</a>
+    <a class="next" href="guard.html"><span>Next →</span>The guard</a>
+  </nav>
+</main>
+</div>
+
+<footer>
+  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>
