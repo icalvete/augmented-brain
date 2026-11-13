@@ -5,14 +5,37 @@
 If Claude Code has been keeping a memory for you, you do not start from zero. Claude Code
 writes it in `~/.claude/projects/<folder>/memory/`. You can bring it into your spaces.
 
-## First, look
+## Find the folder
+
+Claude Code keeps a folder for each folder you opened it in, inside `~/.claude/projects`.
+Its name is that path with each `/` turned into `-`: for `/home/lucia/code/blog`, it is
+`-home-lucia-code-blog`. To see them all:
 
 ```bash
-augmented-brain import ~/.claude/projects/<folder>/memory
+ls ~/.claude/projects
 ```
 
-With one space, that is all. With more (a usual install has two), it first asks which
-space each note goes to: see [More than one space](#more-than-one-space) and add `--map`.
+The memory is the `memory` folder inside the one you want. In the commands below, put
+that name where it says `<folder>`.
+
+## First, look
+
+A usual install has two spaces, so first say which space the notes go to. A file of one
+line is enough. Make a file `map.txt` with:
+
+```text
+* = personal
+```
+
+It sends everything to your space "personal". To split the notes between spaces, see
+[More than one space](#more-than-one-space). Then:
+
+```bash
+augmented-brain import ~/.claude/projects/<folder>/memory --map map.txt
+```
+
+With only one space, leave out `--map`. With more and no `--map`, it stops and asks for
+the file.
 
 That writes nothing. It shows where each note would go, and what it could not decide:
 
@@ -25,10 +48,11 @@ The folder you import from is only read, now and later.
 
 ## Then, write
 
-When the list looks right, run it again with `--apply`:
+At the end, it prints the exact command that writes it: the same one with `--apply`.
+When the list looks right, run it:
 
 ```bash
-augmented-brain import ~/.claude/projects/<folder>/memory --apply
+augmented-brain import ~/.claude/projects/<folder>/memory --map map.txt --apply
 ```
 
 It never writes over a note that already exists.

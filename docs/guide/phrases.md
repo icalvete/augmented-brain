@@ -23,6 +23,7 @@ wording with the same meaning works too.
 | "Leave it for some day." | Parks it as someday: out of the daily list, kept in its area |
 | "Close the task." | Closes it with its result; it is never deleted. A closed task stays closed: closing it again is refused |
 | "Reopen the blog task: the certificate failed again." | Opens it again; the reason goes to its journal |
+| "Open me a session for the blog task." | Starts a Claude session of its own for that task, in its folder; it shows up in Claude Desktop and claude.ai within a minute. Linux only for now ([how](task-sessions.md)) |
 
 ## Inbox and reminders
 
@@ -30,6 +31,8 @@ wording with the same meaning works too.
 |---|---|
 | "Note this: look at the new hosting prices." | One dated line in the inbox, no task opened |
 | "Remind me on Thursday to call the insurance." | A capture with a date: it comes up at the start of the session |
+| "Note this in work: renew the parking card." | The capture goes to the inbox of your space "work", marked with the space it came from. It comes up there at every session start until it is done |
+| "I called the insurance, that one is done." | Takes that capture out of the inbox without waiting for the weekly review |
 | "Let's do the weekly review." | Goes through the inbox and the stalled tasks with you, one at a time |
 
 ## Knowledge, rules and people
@@ -41,9 +44,11 @@ wording with the same meaning works too.
 | "The newsletter is a new area." | Creates the area |
 | "From now on, answer in short sentences." | A rule, loaded in every session |
 | "This holds everywhere." | Saves the rule or lesson as shared, for every space |
+| "That rule no longer holds." | Retires it: it moves to `archive/`, with when and why, and stops reaching your sessions. Nothing is deleted. Claude asks you first |
 | "Diego runs the hosting company; I call him Dieguito." | Saves Diego as a person, with his nickname |
 | "Why did we pick the cheaper host?" | Finds the decision in your notes, with date and reason |
 | "Change my profile: I prefer the recommendation first." | Rewrites your profile |
+| "Which space am I in?" | Says the space of this session, its notes folder, its areas and how many tasks are live |
 
 ## Safety
 
@@ -52,6 +57,7 @@ wording with the same meaning works too.
 | "The AWS profile shop-prod is production." | The guard asks you before commands that use it |
 | "Never touch db01 without asking me." | The guard asks you before ssh, scp or rsync to it |
 | "I stored a new secret, telegram/alerts-bot, for alerts to my phone." | Writes down its name and what it is for, never its value |
+| "Ask me before you save a rule." | This is not set by talking: you choose "Ask me first" on the panel's Guard page, and Claude tells you where. From then on, Claude Code asks you before a rule, your profile or the guard's lists are saved ([more](guard.md#asking-before-claude-saves-a-rule)) |
 
 ## Backup, sessions and the panel
 
@@ -74,7 +80,17 @@ At the start of a session, Claude may bring things up without being asked:
 - a new version, to update;
 - notes with problems;
 - what another space sent to this one, until it is done;
-- the guard's lists, if something changed them outside the panel.
+- the guard's lists, if something changed them outside the panel;
+- open sessions still running the program from before an update, which need restarting.
+
+And while you work:
+
+- tasks that changed outside this session (another session, the panel or an edit by
+  hand), before it answers your next message;
+- another model answering than the one you chose, once per session, if you set the
+  model of your sessions on the Guard page;
+- the window using a lot of memory: at 2 GB, then 4 and 8 GB, once each (Linux and
+  macOS; [what to do](troubleshooting.md#the-window-uses-a-lot-of-memory)).
 
 ## Next
 
