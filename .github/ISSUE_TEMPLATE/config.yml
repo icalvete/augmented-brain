@@ -6,3 +6,9 @@ contact_links:
   - name: Preguntas frecuentes
     url: https://icalvete.github.io/augmented-brain/es/#faq
     about: Respuestas cortas, antes de escribir. La página Ayuda del panel también enlaza aquí.
+  - name: Report a security problem
+    url: https://github.com/icalvete/augmented-brain/security/advisories/new
+    about: Privately, never in a public issue. See SECURITY.md.
+  - name: Avisar de un problema de seguridad
+    url: https://github.com/icalvete/augmented-brain/security/advisories/new
+    about: En privado, nunca en una incidencia pública. Mira SECURITY.md.
