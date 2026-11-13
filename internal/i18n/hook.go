@@ -31,6 +31,10 @@ var hookMessages = map[string]msg{
 		en: "augmented brain · the assistant saved, for every session from now on:\n%s\nIf you did not ask for it, tell the assistant to undo it, or look at the panel (Rules, Profile, Guard).",
 		es: "augmented brain · el asistente ha guardado, para todas las sesiones a partir de ahora:\n%s\nSi no se lo has pedido, dile que lo deshaga, o míralo en el panel (Reglas, Perfil, Guardia).",
 	},
+	"hook.quotanotice": {
+		en: "augmented brain · Claude's usage limit:\n%s",
+		es: "augmented brain · el límite de uso de Claude:\n%s",
+	},
 	"hook.toolnotice.rule.new": {
 		en: "new rule «%s» (%s)",
 		es: "regla nueva «%s» (%s)",

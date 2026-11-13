@@ -26,6 +26,10 @@ const noticeFile = "guard-notice"
 // not from the assistant, once.
 const toolNoticeFile = "tool-notice"
 
+// quotaNoticeFile is the same for what the watch did about the sessions the usage limit
+// stopped (remote.WakeQuota): it runs from a timer, with no session to speak through.
+const quotaNoticeFile = "quota-notice"
+
 // noticeMax keeps the file small when no session takes it for a long while.
 const noticeMax = 20
 
@@ -39,6 +43,15 @@ func AddGuardNotice(cfgDir, text string, now time.Time) error {
 func AddToolNotice(cfgDir, text string, now time.Time) error {
 	return addNotice(cfgDir, toolNoticeFile, text, now)
 }
+
+// AddQuotaNotice adds a line to what the next hook shows the user about the sessions
+// the usage limit stopped, with the time.
+func AddQuotaNotice(cfgDir, text string, now time.Time) error {
+	return addNotice(cfgDir, quotaNoticeFile, text, now)
+}
+
+// TakeQuotaNotice is TakeGuardNotice for the sessions the usage limit stopped.
+func TakeQuotaNotice(cfgDir string) string { return takeNotice(cfgDir, quotaNoticeFile) }
 
 // TakeGuardNotice returns what there is to show the user about the guard's lists and
 // removes it, so it is shown once. Nothing ("") when there is none.

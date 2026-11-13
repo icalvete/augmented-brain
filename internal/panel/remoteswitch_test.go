@@ -29,8 +29,8 @@ func TestRemoteSwitchInPlace(t *testing.T) {
 		asked.Add(1)
 		return &Remote{Host: switchHost, Owner: switchOwner}, nil
 	}
-	tasks := s.base() + "/tasks"
-	before := s.base()
+	tasks := s.netBase() + "/tasks"
+	before := s.localBase()
 	if w := s.do(t, req{path: tasks, host: switchHost, owner: switchOwner}); w.Code != http.StatusForbidden {
 		t.Fatalf("before the switch, through the network: %d", w.Code)
 	}
@@ -49,7 +49,7 @@ func TestRemoteSwitchInPlace(t *testing.T) {
 	if w := s.do(t, req{method: "POST", path: "/remote", bearer: s.token, origin: "http://" + host}); w.Code != http.StatusOK {
 		t.Fatalf("the command: %d %s", w.Code, w.Body)
 	}
-	if s.base() != before {
+	if s.localBase() != before {
 		t.Fatal("the key changed")
 	}
 	if w := s.do(t, req{path: tasks, host: switchHost, owner: switchOwner}); w.Code != http.StatusOK {
@@ -118,7 +118,7 @@ func TestRemoteSwitchUnderLoad(t *testing.T) {
 					return
 				default:
 					s.get(t, "/tasks")
-					s.do(t, req{path: s.base() + "/tasks", host: switchHost, owner: switchOwner})
+					s.do(t, req{path: s.netBase() + "/tasks", host: switchHost, owner: switchOwner})
 				}
 			}
 		}()

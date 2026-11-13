@@ -1270,7 +1270,8 @@ three things so that the lists stay yours:
   or a command, also by a pattern or by copying, archiving or searching its folder, and
   calling a panel page from a command, are denied, however the address is written: the panel's Guard page is how you change the lists, and it works
   with that key. `augmented-brain panel` never prints the key either: it prints a link
-  that works once, and run by Claude it prints none.
+  that works once, and run by Claude it prints none, nor does `augmented-brain panel
+  remote`: they ask you to run them in a terminal of your own.
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
   when you start a session and when you save in the panel. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
@@ -1836,7 +1837,9 @@ It opens your browser on **Today**, with the space of the folder you ran it in. 
 terminal it also prints an address, in case the browser did not open (on a computer with
 no screen, say). That address opens the panel **once**, within 2 minutes; run the command
 again for another. When Claude runs it for you, it only opens the browser: Claude never
-sees an address that opens the panel.
+sees an address that opens the panel. If the browser cannot open (Claude working in the
+background, a computer with no screen), it prints no address either and asks you to run
+the command in a terminal of your own.
 
 The panel changes your notes the same way Claude does, with the same program, and they
 wait for each other: you can have both open at once.
@@ -1848,14 +1851,18 @@ computer; **What is this page?** brings it back.
 
 ## Spaces and pages
 
-At the side, under **Profile**, the **Space** list picks the space you are looking
-at. Some pages show only that space; others show all of them, or this computer as a
-whole. On a phone, the menu folds under the name of the page you are on.
+At the side, under **Profile**, the **Space** list picks the space you are looking at.
+Some pages show only that space; others show all of them, or this computer as a whole.
+The menu has three blocks: **Day to day**, **Notes** and **Upkeep**. When the window is
+too short for it, the side scrolls on its own, so **Stop the panel** is always within
+reach. On a phone, the menu folds under the name of the page you are on; open, it shows
+each block in two columns, and a shadow at its foot says there is more below.
 
 | Page | What it is for | Shows |
 |---|---|---|
 | [Today](https://icalvete.github.io/augmented-brain/guide/panel.html#today) | What is due and what waits on you | every space |
 | [Tasks](https://icalvete.github.io/augmented-brain/guide/panel.html#tasks) | See, change, open and close tasks | one space |
+| [Sessions](https://icalvete.github.io/augmented-brain/guide/panel.html#sessions) | Your Claude sessions, and the ones cut off | this computer |
 | [Reminders](https://icalvete.github.io/augmented-brain/guide/panel.html#reminders) | Watch dates and inbox reminders | one space |
 | [Inbox](https://icalvete.github.io/augmented-brain/guide/panel.html#inbox) | Loose ideas, to deal with later | one space |
 | [Weekly review](https://icalvete.github.io/augmented-brain/guide/panel.html#weekly-review) | Empty the inbox, look at stalled tasks | one space |
@@ -1901,12 +1908,28 @@ first. Write in its journal, change its status or next step, tick its steps, par
 close it. You can open new tasks too. If a status skips phases, the journal names them.
 When a task waits on a person you have a note of, "waits on" leads to them.
 
+Closing a task here does what closing it in a session does: if the task has a session of
+its own, that session ends once it finishes its answer, and its worktree goes when it
+holds nothing of its own.
+
 To open a closed task again, find it under **Closed** and choose a new status for it; its
 journal says it was reopened from the panel.
 
 When you save a task, only what you changed on the page is saved. If Claude changed
 something else in the meantime, that stays. A step is ticked only if it still says what
 the page showed.
+
+## Sessions
+
+Your Claude sessions on this computer, from the last 30 days. It is in the menu, under
+**Day to day**; **Health** and a cut-off session on **Today** also lead to it.
+
+- Those that did not end (closed by force, or cut off when the computer went down) show
+  what was said after the last journal entry. Keep it in the notes (it goes to
+  `archive/sessions/` with a line in the task's journal) or mark it as reviewed.
+- Those running now, and those that ended, with how much disk their transcripts take
+  (the files where Claude Code keeps each conversation). You can delete the transcript of
+  an ended session; that session can then no longer be resumed.
 
 ## Reminders
 
@@ -2005,18 +2028,6 @@ The space's notes folder and work folders, whether it is the default space, note
 are not valid, repositories that notes point at and that are no longer on this computer,
 the index, the last backup, the last weekly review, and a link to the space's
 [Sessions](https://icalvete.github.io/augmented-brain/guide/panel.html#sessions).
-
-## Sessions
-
-Your Claude sessions on this computer, from the last 30 days. It is not in the menu:
-open it from **Health**, or from a cut-off session on **Today**.
-
-- Those that did not end (closed by force, or cut off when the computer went down) show
-  what was said after the last journal entry. Keep it in the notes (it goes to
-  `archive/sessions/` with a line in the task's journal) or mark it as reviewed.
-- Those running now, and those that ended, with how much disk their transcripts take
-  (the files where Claude Code keeps each conversation). You can delete the transcript of
-  an ended session; that session can then no longer be resumed.
 
 ## Guard
 
@@ -2123,6 +2134,11 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
   use it. Treat the address of the pages like a password: do not share it. It stops
   working when the panel stops. If something else used your link first, your browser
   says "This link was already used" instead of opening: you know.
+- On Linux the browser gets a small file, readable only by you, that takes it to the
+  address, instead of the address itself: what a program is started with can be read by
+  every user of the computer. When your default browser is a snap or a flatpak (the
+  Firefox that comes with Ubuntu is a snap), it cannot read that file, and gets the
+  address as before; so do the browsers of macOS.
 - It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
   note cannot put HTML or scripts of its own in the page. The links of the Help page go to
   the website only when you click them.
@@ -2855,6 +2871,10 @@ folder.
   conversation.
 - **failed**: its last answer was an error, such as an expired login. The line says what
   to do.
+- **waiting**: Claude's usage limit stopped it. The line says when the limit resets.
+  With remote access installed (`augmented-brain remote install`), the session is woken
+  then, by itself, and goes on with its task; you are told when the wait begins and
+  when the sessions are back. Without it, write to the session once the limit resets.
 
 ```bash
 augmented-brain session stop task-new-website
@@ -2969,7 +2989,12 @@ Four things keep it yours:
   entrance, not by what the visit says about itself. So a visit cannot pretend to come
   from this computer, and what only this computer may do stays here (see below).
 - **The address works once**, and the pages it opens hold a key that changes every
-  time the panel starts.
+  time the panel starts. That key is the other device's own: it does not open the
+  panel on this computer, and the key of this computer's pages does not open it from
+  another device. So whoever got hold of the address from another device still could
+  not do here what only this computer may.
+  The address is for you, not for Claude: run by Claude, the command publishes nothing
+  and asks you to run it in a terminal of your own.
 
 There is no extra password to type: your Tailscale account is the login.
 
@@ -3583,6 +3608,19 @@ What it does on each look:
 What it does goes to the system journal
 (`journalctl --user -u augmented-brain-watch-remote`).
 
+It also wakes the task sessions that Claude's usage limit stopped. When your plan's
+usage runs out, Claude Code refuses the turn and says when the limit resets. A session
+you have open in a terminal goes on by itself at that hour; a task session runs in the
+background and does not: it stays there, doing nothing, until someone writes to it. The
+watch reads that hour from the session's last answer and, once it has passed, stops the
+session and resumes it with a message that tells it to read its task and go on. It
+comes back as the same session, with its conversation, in Claude Desktop and claude.ai.
+It wakes one session on each look, so they come back two minutes apart and do not spend
+the new usage all at once. Only sessions opened with `augmented-brain session start`
+are woken, never any other. You are told twice, in the next session you use: when the
+wait begins, with the hour, and when the last one is back. Each woken task gets a line
+in its journal.
+
 ## augmented-brain session
 
 Opens a session of its own for one task, so that from another computer you can work on
@@ -3749,6 +3787,8 @@ augmented-brain session list
   brings it back with its whole conversation.
 - **failed** means its last answer was an error, such as an expired login: it does
   nothing until someone writes to it. The line gives the error and what to do.
+- **waiting** means Claude's usage limit stopped it. The line gives the hour the limit
+  resets, which is when the watch wakes it (see `remote watch` above).
 
 ## augmented-brain watch
 
@@ -4136,6 +4176,12 @@ journal, and when it skips phases (straight from `definition` to `execution`, sa
 line names the ones skipped: skipping is allowed, and it is seen. A closed task opens
 again only with `reopen`.
 
+`status` `closed` closes the task exactly as [`task_close`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_close) does: open
+subtasks keep it from closing, the result goes to the note, open watch dates are named,
+and the task's session and worktrees are dealt with the same way. Without `result` it
+still closes, with a line saying no result was given, and Claude writes the result in
+the journal.
+
 - `id`: the task's id.
 - `status` (optional): `definition`, `analysis`, `plan`, `execution`, `validation`,
   `closed`, `parked` or `someday`.
@@ -4148,6 +4194,8 @@ again only with `reopen`.
 - `watch_done` (optional): mark the watch date of this day as done.
 - `reopen` (optional): only to open a closed task again, with a new `status`: why, in a
   few words. It goes to the journal. Claude asks you first.
+- `result` (optional): with `status` `closed`, what the task achieved, as in
+  `task_close`. With any other status it is refused.
 - `space` (optional): another of your spaces, whose task this is. Claude uses it only
   when you ask to work on a task of that space from here. Closing it is left to a
   session of that space. See

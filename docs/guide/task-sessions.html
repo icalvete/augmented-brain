@@ -121,7 +121,7 @@
   <h2 id="see-them-and-close-them">See them, and close them</h2>
   <pre><code>augmented-brain session list</code></pre>
   <p>lists the task sessions open on this computer: the task, whether it runs, and its folder.</p>
-  <ul><li><strong>retired</strong>: Claude stops a session left unused for hours. claude.ai shows it as disconnected. <code>session start</code> with its task brings it back, with its whole conversation.</li><li><strong>failed</strong>: its last answer was an error, such as an expired login. The line says what to do.</li></ul>
+  <ul><li><strong>retired</strong>: Claude stops a session left unused for hours. claude.ai shows it as disconnected. <code>session start</code> with its task brings it back, with its whole conversation.</li><li><strong>failed</strong>: its last answer was an error, such as an expired login. The line says what to do.</li><li><strong>waiting</strong>: Claude's usage limit stopped it. The line says when the limit resets. With remote access installed (<code>augmented-brain remote install</code>), the session is woken then, by itself, and goes on with its task; you are told when the wait begins and when the sessions are back. Without it, write to the session once the limit resets.</li></ul>
   <pre><code>augmented-brain session stop task-new-website</code></pre>
   <p>closes the session and takes it out of Claude Desktop and claude.ai, worktree and all. Closing the task does the same, once the session has finished its answer. A session also ends when the computer restarts, and does not come back by itself: ask for it again.</p>
   <h2 id="restart-a-session-after-an-update">Restart a session after an update</h2>

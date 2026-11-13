@@ -19,7 +19,7 @@ import (
 func (s *Server) routes() *http.ServeMux {
 	m := http.NewServeMux()
 	m.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, s.base()+"/today", http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+"/today", http.StatusSeeOther)
 	})
 	m.Handle("GET /static/", s.static)
 	m.HandleFunc("GET /today", s.read("today", s.today))
@@ -92,6 +92,23 @@ func (s *Server) routes() *http.ServeMux {
 
 type link struct{ Path, Label string }
 
+// navGroup is one block of the menu: a heading and its sections.
+type navGroup struct {
+	Label string
+	Links []link
+}
+
+// menu is the panel's menu, in blocks: what a day brings, the notes, and looking after
+// the panel and its copies. Each name is a page's address and its "panel.<name>" label.
+var menu = []struct {
+	key      string
+	sections []string
+}{
+	{"nav.day", []string{"today", "tasks", "sessions", "reminders", "inbox", "review"}},
+	{"nav.notes", []string{"areas", "knowledge", "rules", "people", "repos", "secrets"}},
+	{"nav.care", []string{"backup", "space", "guard", "versions", "help"}},
+}
+
 type option struct {
 	Value, Label string
 	Selected     bool
@@ -101,7 +118,8 @@ type page struct {
 	Lang, Title, Section, Space, CSRF string
 	Base                              string // the start of every address: /s/<session>
 	Spaces                            []string
-	Nav                               []link
+	Nav                               []navGroup
+	Where                             string // the menu button's text on a phone: this page's name
 	OK                                bool
 	Remote                            bool // also open through the user's Tailscale network
 	Problems                          int
@@ -151,15 +169,21 @@ func (s *Server) lang() string {
 	return i18n.FromEnv()
 }
 
-func (s *Server) render(w http.ResponseWriter, status int, name string, p page) {
+func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, name string, p page) {
 	if _, ok := s.pages[p.Lang]; !ok {
 		p.Lang = "en"
 	}
-	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote.Load() != nil
+	p.CSRF, p.Base, p.Remote = s.csrfFor(r), s.base(r), s.remote.Load() != nil
 	p.Hints = loadHints(s.cfgDir)
-	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "backup", "space", "guard", "versions", "help"} {
-		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
+	p.Nav, p.Where = nil, ""
+	for _, g := range menu {
+		group := navGroup{Label: i18n.T(p.Lang, "panel."+g.key)}
+		for _, sec := range g.sections {
+			group.Links = append(group.Links, link{sec, i18n.T(p.Lang, "panel."+sec)})
+		}
+		p.Nav = append(p.Nav, group)
 	}
+	p.Where = whereLabel(p.Lang, p.Section)
 	var buf bytes.Buffer
 	if err := s.pages[p.Lang][name].ExecuteTemplate(&buf, "layout", p); err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -168,6 +192,23 @@ func (s *Server) render(w http.ResponseWriter, status int, name string, p page) 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 	_, _ = w.Write(buf.Bytes())
+}
+
+// whereLabel is the name of the page a section belongs to, as the menu button shows it
+// on a phone, or "" for a page outside the menu (the button then just says Menu).
+func whereLabel(lang, section string) string {
+	switch section {
+	case "profile", "search":
+		return i18n.T(lang, "panel."+section)
+	}
+	for _, g := range menu {
+		for _, sec := range g.sections {
+			if sec == section {
+				return i18n.T(lang, "panel."+sec)
+			}
+		}
+	}
+	return ""
 }
 
 // view is one space, open under the notes lock for the length of a request.
@@ -254,7 +295,7 @@ func (s *Server) fail(w http.ResponseWriter, r *http.Request, v *view, status in
 		back = strings.TrimPrefix(ref, own)
 	}
 	p.D = message{Heading: p.Title, Text: text, Back: back}
-	s.render(w, status, "message", p)
+	s.render(w, r, status, "message", p)
 }
 
 // read serves a page: the handler fills it in from the open space.
@@ -282,7 +323,7 @@ func (s *Server) read(section string, h func(*view, *http.Request) (string, page
 		q := r.URL.Query()
 		q.Del("ok")
 		p.Here = (&url.URL{Path: r.URL.Path, RawQuery: q.Encode()}).String()
-		s.render(w, http.StatusOK, name, p)
+		s.render(w, r, http.StatusOK, name, p)
 	}
 }
 
@@ -316,7 +357,7 @@ func (s *Server) write(h func(*view, *http.Request) (string, error)) http.Handle
 		q.Set("s", v.b.Space.Name)
 		q.Set("ok", "1")
 		u.RawQuery = q.Encode()
-		http.Redirect(w, r, s.base()+u.String(), http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+u.String(), http.StatusSeeOther)
 	}
 }
 

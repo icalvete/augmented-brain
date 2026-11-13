@@ -13,7 +13,9 @@ It opens your browser on **Today**, with the space of the folder you ran it in. 
 terminal it also prints an address, in case the browser did not open (on a computer with
 no screen, say). That address opens the panel **once**, within 2 minutes; run the command
 again for another. When Claude runs it for you, it only opens the browser: Claude never
-sees an address that opens the panel.
+sees an address that opens the panel. If the browser cannot open (Claude working in the
+background, a computer with no screen), it prints no address either and asks you to run
+the command in a terminal of your own.
 
 The panel changes your notes the same way Claude does, with the same program, and they
 wait for each other: you can have both open at once.
@@ -25,14 +27,18 @@ computer; **What is this page?** brings it back.
 
 ## Spaces and pages
 
-At the side, under **Profile**, the **Space** list picks the space you are looking
-at. Some pages show only that space; others show all of them, or this computer as a
-whole. On a phone, the menu folds under the name of the page you are on.
+At the side, under **Profile**, the **Space** list picks the space you are looking at.
+Some pages show only that space; others show all of them, or this computer as a whole.
+The menu has three blocks: **Day to day**, **Notes** and **Upkeep**. When the window is
+too short for it, the side scrolls on its own, so **Stop the panel** is always within
+reach. On a phone, the menu folds under the name of the page you are on; open, it shows
+each block in two columns, and a shadow at its foot says there is more below.
 
 | Page | What it is for | Shows |
 |---|---|---|
 | [Today](#today) | What is due and what waits on you | every space |
 | [Tasks](#tasks) | See, change, open and close tasks | one space |
+| [Sessions](#sessions) | Your Claude sessions, and the ones cut off | this computer |
 | [Reminders](#reminders) | Watch dates and inbox reminders | one space |
 | [Inbox](#inbox) | Loose ideas, to deal with later | one space |
 | [Weekly review](#weekly-review) | Empty the inbox, look at stalled tasks | one space |
@@ -78,12 +84,28 @@ first. Write in its journal, change its status or next step, tick its steps, par
 close it. You can open new tasks too. If a status skips phases, the journal names them.
 When a task waits on a person you have a note of, "waits on" leads to them.
 
+Closing a task here does what closing it in a session does: if the task has a session of
+its own, that session ends once it finishes its answer, and its worktree goes when it
+holds nothing of its own.
+
 To open a closed task again, find it under **Closed** and choose a new status for it; its
 journal says it was reopened from the panel.
 
 When you save a task, only what you changed on the page is saved. If Claude changed
 something else in the meantime, that stays. A step is ticked only if it still says what
 the page showed.
+
+## Sessions
+
+Your Claude sessions on this computer, from the last 30 days. It is in the menu, under
+**Day to day**; **Health** and a cut-off session on **Today** also lead to it.
+
+- Those that did not end (closed by force, or cut off when the computer went down) show
+  what was said after the last journal entry. Keep it in the notes (it goes to
+  `archive/sessions/` with a line in the task's journal) or mark it as reviewed.
+- Those running now, and those that ended, with how much disk their transcripts take
+  (the files where Claude Code keeps each conversation). You can delete the transcript of
+  an ended session; that session can then no longer be resumed.
 
 ## Reminders
 
@@ -182,18 +204,6 @@ The space's notes folder and work folders, whether it is the default space, note
 are not valid, repositories that notes point at and that are no longer on this computer,
 the index, the last backup, the last weekly review, and a link to the space's
 [Sessions](#sessions).
-
-## Sessions
-
-Your Claude sessions on this computer, from the last 30 days. It is not in the menu:
-open it from **Health**, or from a cut-off session on **Today**.
-
-- Those that did not end (closed by force, or cut off when the computer went down) show
-  what was said after the last journal entry. Keep it in the notes (it goes to
-  `archive/sessions/` with a line in the task's journal) or mark it as reviewed.
-- Those running now, and those that ended, with how much disk their transcripts take
-  (the files where Claude Code keeps each conversation). You can delete the transcript of
-  an ended session; that session can then no longer be resumed.
 
 ## Guard
 
@@ -300,6 +310,11 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
   use it. Treat the address of the pages like a password: do not share it. It stops
   working when the panel stops. If something else used your link first, your browser
   says "This link was already used" instead of opening: you know.
+- On Linux the browser gets a small file, readable only by you, that takes it to the
+  address, instead of the address itself: what a program is started with can be read by
+  every user of the computer. When your default browser is a snap or a flatpak (the
+  Firefox that comes with Ubuntu is a snap), it cannot read that file, and gets the
+  address as before; so do the browsers of macOS.
 - It loads **nothing from the internet**: no fonts, no statistics. It works offline. A
   note cannot put HTML or scripts of its own in the page. The links of the Help page go to
   the website only when you click them.
