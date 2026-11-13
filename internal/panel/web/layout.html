@@ -45,13 +45,20 @@
   </footer>
 </aside>
 <main>
-{{if .OK}}<p class="flash ok" role="status">{{t "saved"}}</p>{{end}}
+{{with .OK}}<p class="flash ok" role="status">{{.}}</p>{{end}}
+{{with .Form}}{{if .Top}}{{template "ferr" .Text}}{{else}}<p class="flash err">{{t "notsaved"}} <a href="#form-error">{{t "notsaved.see"}}</a></p>{{end}}{{end}}
 {{if .Problems}}<p class="flash warn">{{tf "problems" .Problems}} <a href="{{$.Base}}/space?s={{.Space}}">{{t "see"}}</a></p>{{end}}
 {{template "content" .}}
 </main>
 </div>
 </body>
 </html>{{end}}
+
+{{/* ferr writes the error of a form that could not be saved, where it is called:
+     {{template "ferr" ($.Err "/watch/add" "date")}} next to a field, and
+     {{template "ferr" ($.FormErr "/watch/add")}} at the end of the form, for the rest.
+     The browser takes the person to it (autofocus). */}}
+{{define "ferr"}}{{with .}}<p class="flash err ferr" role="alert" id="form-error" tabindex="-1" autofocus>{{.}}</p>{{end}}{{end}}
 
 {{/* fields writes the hidden inputs of a form: {{template "fields" (fields $ "id" .ID)}}.
      Every form sends the CSRF token and the space; the rest are the form's own. */}}

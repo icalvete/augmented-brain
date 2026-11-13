@@ -319,7 +319,7 @@ func TestPagesAndChanges(t *testing.T) {
 			t.Fatalf("%s: %d %s", what, w.Code, w.Body)
 		}
 		loc := w.Header().Get("Location")
-		if !strings.Contains(loc, "ok=1") || !strings.Contains(loc, "s=work") {
+		if !strings.Contains(loc, "ok=") || !strings.Contains(loc, "s=work") {
 			t.Errorf("%s: redirect %q", what, loc)
 		}
 		return loc

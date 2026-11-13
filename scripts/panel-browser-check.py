@@ -162,6 +162,22 @@ try:
             page.click("form[action$='/inbox/capture'] button[type=submit]")
             page.wait_for_load_state("networkidle")
             report(f"{engine}: a capture from the inbox page", "call the miller" in page.content(), "")
+            said = page.locator(".flash.ok").count() == 1 and "ok=" not in page.url
+            page.reload()
+            page.wait_for_load_state("networkidle")
+            report(f"{engine}: saved is said once, not again on reload", said and page.locator(".flash.ok").count() == 0, page.url)
+            # A form that cannot be saved comes back with what was typed and the error next to it.
+            page.goto(f"{base}/guard?s=work")
+            root = page.locator("form[action$='/guard/root']:has(input[name=host])")
+            root.locator("input[name=host]").fill("lab-pc")
+            root.locator("input[name=until]").fill("next friday")
+            root.locator("input[name=confirm]").fill("lab-pc")
+            root.locator("button[type=submit]").click()
+            page.wait_for_load_state("networkidle")
+            root = page.locator("form[action$='/guard/root']:has(input[name=host])")
+            err = root.locator(".ferr")
+            report(f"{engine}: a form that fails keeps what was typed, with the error next to it",
+                   err.count() == 1 and "next friday" in err.inner_text() and root.locator("input[name=until]").input_value() == "next friday", page.url)
             page.goto(f"{base}/tasks?s=work")
             page.click("text=Bake bread")
             page.wait_for_load_state("networkidle")

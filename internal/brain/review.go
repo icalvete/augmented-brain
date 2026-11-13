@@ -242,6 +242,10 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 
 // ---- watch dates ----
 
+// CheckDate says whether d is a date as the notes write it (YYYY-MM-DD): a form can
+// then put the error next to the field before anything is written.
+func CheckDate(d string) error { return checkDate(d) }
+
 func checkDate(d string) error {
 	if _, err := memory.ParseDate(d); err != nil {
 		return i18n.Errorf("err.date", d)

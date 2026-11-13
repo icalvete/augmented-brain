@@ -37,6 +37,12 @@ func All(key string) []string {
 	return []string{m.en, m.es}
 }
 
+// Has says whether the catalogue has the message key.
+func Has(key string) bool {
+	_, ok := messages[key]
+	return ok
+}
+
 // Known returns lang when there are messages in it, and English otherwise.
 func Known(lang string) string {
 	if lang == "es" {
