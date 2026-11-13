@@ -2,6 +2,45 @@
 
 ## Sin publicar
 
+## 0.26.0-beta
+
+Publicada el 2026-11-14.
+
+- **Las sesiones de tarea siguen solas cuando vuelve el límite de uso de Claude.** Cuando
+  se acababa el uso de tu plan, la sesión de una tarea se paraba y se quedaba así hasta
+  que le escribías, durante horas si no estabas. Ahora el vigilante que instala `remote
+  install` lee a qué hora vuelve el límite y despierta entonces cada sesión, una cada
+  dos minutos, como la misma sesión y con su conversación. Te avisa cuando empieza la
+  espera y cuando han vuelto, y `session list` enseña una sesión parada como **en
+  espera**, con la hora. Solo en Linux, y solo las sesiones abiertas con `session start`.
+- **Una versión espera a las pruebas de macOS, aunque una pull request ya no.** Las pull
+  requests se mezclan sin esperar a macOS, que es lento, y solo lanzan allí las pruebas de
+  Go y compat-check; las del instalador, fallos, Safari y acceso remoto en macOS corren en
+  `main` tras cada mezcla, y no se publica ninguna versión hasta que pasan allí sus pruebas.
+- **Desde otro dispositivo, la página Guardia solo enseña.** Por el panel remoto se podían
+  cambiar y aceptar las listas del guardia, algo que solo debe hacer el panel de este
+  ordenador, como volver a una versión o configurar una copia. Ahora la página enseña
+  todas las listas, el modelo y lo que el asistente guarda solo, y dice que cambiarlos
+  solo se puede desde este ordenador.
+- **Una nota con un campo que solo conoce una versión más nueva pide ahora actualizar.**
+  Antes solo salía «no válida», y Claude podía ofrecerse a quitar el campo. Ahora
+  `check`, `doctor`, el panel y el inicio de sesión dicen que seguramente lo escribió
+  una versión más nueva de augmented brain, y que lances `augmented-brain update`. Las
+  reglas del formato dicen además que todo campo, tipo de nota o estado de tarea nuevo
+  sube su versión, así que un programa anterior rechaza las notas y pide actualizar en
+  lugar de dejar algunas fuera.
+- **`doctor` y el inicio de sesión nombran los ajustes de `guard.toml` y `session.toml`
+  que el programa no conoce.** Se ignoraban sin decir nada, así que un `untouchable_repo`
+  mal escrito no protegía ningún repositorio. Si parece una errata, el mensaje dice el
+  nombre correcto. Los ficheros se siguen leyendo, así que un ajuste de una versión más
+  nueva no rompe a una anterior.
+- **Tú eliges si el asistente pregunta antes de guardar una regla.** Una regla, tu perfil
+  y lo que se añade a las listas del guardia cambian cómo trabajan todas las sesiones.
+  Hasta ahora el asistente los guardaba y Claude Code te avisaba. En la página Guardia del
+  panel ahora puedes elegir «Preguntarme antes»: Claude Code enseña lo que se guardaría y
+  dices sí o no (`memory_trust` en `session.toml`). Nada cambia si no lo eliges. Las
+  tareas, el buzón y lo que aprende se siguen guardando sin preguntar.
+
 ## 0.25.0-beta
 
 Publicada el 2026-11-13.
