@@ -1,5 +1,13 @@
 # Registro de cambios
 
+## Sin publicar
+
+- **La copia de seguridad solo actúa en su propio repositorio.** Si la carpeta de notas
+  perdía su `.git` (copiada o restaurada a mano, o borrado) y estaba dentro de otro
+  repositorio de git, como tu carpeta de trabajo, la copia hacía commit y push en ese
+  otro. Ahora se para, no toca nada y te dice que vuelvas a lanzar `augmented-brain
+  backup setup`. Volver a una copia anterior hace lo mismo.
+
 ## 0.20.0-beta
 
 Publicada el 2026-11-12.
