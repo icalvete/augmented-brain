@@ -51,10 +51,11 @@ func (p Policy) isTouched(k string) bool {
 	return p.files.touched[k]
 }
 
-// readOnly are programs that name a file without changing what it holds.
-var readOnly = []string{"chmod", "chown", "chgrp", "ls", "cat", "head", "tail", "less", "more", "file",
-	"stat", "test", "[", "wc", "grep", "shellcheck", "bash", "sh", "zsh", "dash", "ksh", "source", ".",
-	"echo", "printf", "diff", "cmp", "md5sum", "sha256sum"}
+// readOnly are programs that name a file without changing what it holds (the shells
+// too: they read a script, and what it runs is checked on its own).
+var readOnly = append([]string{"chmod", "chown", "chgrp", "ls", "cat", "head", "tail", "less", "more", "file",
+	"stat", "test", "[", "wc", "grep", "shellcheck", "source", ".",
+	"echo", "printf", "diff", "cmp", "md5sum", "sha256sum"}, shells...)
 
 // fileKey is how a path is kept in lineFiles: resolved when the guard can, as written
 // otherwise (after a cd it could not follow).

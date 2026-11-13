@@ -8,11 +8,11 @@ import (
 	"time"
 )
 
-// The guard's verdicts, one row per rule, as they were before Policy.simple was split
-// into steps (Rev 22 of the review of November 2026). The split must give the same
-// answers, except the rows marked "changes:", which say what is meant to change and
-// why. A row marked "gap:" is an answer known to be wrong, kept here so that fixing it
-// is a decision someone makes, not an accident.
+// The guard's verdicts, one row per rule. They were written before Policy.simple was
+// split into steps (Rev 22 of the review of November 2026), and the split gave the
+// same answers except the rows marked "changed:", which say what changed and why. A
+// row marked "gap:" is an answer known to be wrong, kept here so that fixing it is a
+// decision someone makes, not an accident.
 
 // pinnedPolicy is the policy the pinned rows run against: a home of its own with three
 // repositories (allowed, asked, untouchable), a production profile, an untouchable host,
@@ -88,17 +88,19 @@ func TestPinnedVerdicts(t *testing.T) {
 		{"export AWS_PROFILE=prod; bash deploy.sh", Ask},
 		{"AWS_PROFILE=prod ssh bastion ./deploy.sh", Ask},
 		{"AWS_PROFILE=dev make deploy", Allow},
-		// changes: the programs with a rule of their own never reach that rule today
-		// (G-12), so the same script asks or not depending on how it is started.
-		{"AWS_PROFILE=prod bash deploy.sh", Allow},
-		{"AWS_PROFILE=prod sh ./deploy.sh", Allow},
-		{"AWS_PROFILE=prod docker compose up", Allow},
-		{"AWS_PROFILE=prod kubectl apply -f k8s/", Allow},
-		{"AWS_PROFILE=prod rsync -a dist/ host:/srv/", Allow},
-		{"AWS_PROFILE=prod find . -name x", Allow},
-		{"AWS_PROFILE=prod rm -rf build", Allow},
-		{"AWS_PROFILE=prod git status", Allow},
-		{"AWS_PROFILE=prod gh pr list", Allow},
+		// changed: the programs with a rule of their own used to skip that rule (G-12),
+		// so the same script asked or not depending on how it was started.
+		{"AWS_PROFILE=prod bash deploy.sh", Ask},
+		{"AWS_PROFILE=prod sh ./deploy.sh", Ask},
+		{"AWS_PROFILE=prod docker compose up", Ask},
+		{"AWS_PROFILE=prod kubectl apply -f k8s/", Ask},
+		{"AWS_PROFILE=prod rsync -a dist/ host:/srv/", Ask},
+		{"AWS_PROFILE=prod find . -name x", Ask},
+		{"AWS_PROFILE=prod rm -rf build", Ask},
+		{"AWS_PROFILE=prod git status", Ask},
+		{"AWS_PROFILE=prod gh pr list", Ask},
+		{"AWS_PROFILE=prod systemd-run --version", Ask},
+		{"AWS_PROFILE=prod su_do -u app make", Ask},
 
 		// AWS keys written in the command; read from a variable they are fine.
 		{"AWS_SESSION_TOKEN=abc ls", Deny},
@@ -112,9 +114,11 @@ func TestPinnedVerdicts(t *testing.T) {
 		{"git -c alias.x=!sh status", Ask},
 		{"git -c credential.helper=x fetch", Ask},
 		{"git --no-pager log", Allow},
-		// changes: a pager that only shows the text (G-16).
-		{"git -c core.pager=cat log -5", Ask},
-		{"git -c core.pager=less log", Ask},
+		// changed: a pager that only shows the text passes, as --no-pager does (G-16).
+		{"git -c core.pager=cat log -5", Allow},
+		{"git -c core.pager=less log", Allow},
+		{"git -c core.pager= log", Allow},
+		{"git -c core.pager='less; su_do id' log", Ask},
 		// git: subcommands that run other commands.
 		{"git submodule foreach 'git pu_sh'", Deny},
 		{"git submodule foreach --recursive 'su_do id'", Deny},
@@ -128,10 +132,14 @@ func TestPinnedVerdicts(t *testing.T) {
 		{"git send-pack origin main", Deny},
 		{"git subtree pu_sh --prefix x origin main", Deny},
 		{"git svn dcommit", Deny},
-		// changes: help only prints (G-16). --dry-run still talks to the remote.
-		{"git com_mit --help", Deny},
-		{"git pu_sh --help", Deny},
+		// changed: help only prints (G-16). --dry-run still talks to the remote, and
+		// --help as an option's value is no help.
+		{"git com_mit --help", Allow},
+		{"git pu_sh --help", Allow},
+		{"git pu_sh -h", Allow},
 		{"git pu_sh --dry-run", Deny},
+		{"git com_mit -m --help", Deny},
+		{"git pu_sh origin --help", Deny},
 		// git: the repository lists.
 		{"git --git-dir=/x/.git -C ~/repos/mine com_mit -m x", Deny},
 		{"GIT_DIR=/x/.git git -C ~/repos/mine com_mit -m x", Deny},
@@ -177,10 +185,13 @@ func TestPinnedVerdicts(t *testing.T) {
 		{"su", Deny},
 		{"run0 id", Deny},
 		{"pkexec id", Deny},
-		// changes: --version only prints (G-16); su to a user who is not root is
-		// what the reason itself says is fine.
-		{"su --version", Deny},
-		{"pkexec --version", Deny},
+		// changed: --version and --help only print (G-16).
+		{"su --version", Allow},
+		{"pkexec --version", Allow},
+		{"run0 --help", Allow},
+		{"runuser --version", Allow},
+		{"su --version root", Deny},
+		// gap: su to a user who is not root is what the reason itself says is fine.
 		{`su app -c "whoami"`, Deny},
 
 		// AWS profiles.
@@ -219,8 +230,12 @@ func TestPinnedVerdicts(t *testing.T) {
 		{"glab mr accept 3", Deny},
 		{"glab release create v1", Deny},
 		{"glab mr list", Allow},
-		// changes: help only prints (G-16).
-		{"gh pr merge --help", Deny},
+		// changed: help only prints (G-16); -h anywhere else may be an option's value
+		// (gh pushes on with notes "-h").
+		{"gh pr merge --help", Allow},
+		{"glab mr merge -h", Allow},
+		{"gh pr merge 3 --help", Deny},
+		{"gh release create v1 --notes -h", Deny},
 
 		// ssh and friends: root, untouchable hosts, the remote command.
 		{"ssh root@web01 uptime", Ask}, // web01 has a root exception
@@ -395,4 +410,44 @@ func TestPinnedVerdictsSettings(t *testing.T) {
 		{"terraform plan", Ask},
 		{"make deploy", Allow}, // only a profile set in the command counts here
 	})
+}
+
+// With a production profile set in the command, no program goes through without the
+// user, whatever rule of its own it has (G-12): a script can reach AWS through any of
+// them.
+func TestProductionProfileEveryProgram(t *testing.T) {
+	p := pinnedPolicy(t)
+	programs := []string{"bash deploy.sh", "sh -c 'make'", "docker compose up", "kubectl apply -f k8s/",
+		"rsync -a dist/ web02:/srv/", "find . -name x", "rm -rf build", "make deploy", "./x.sh",
+		"git status", "gh pr list", "ssh web02 ls", "vagrant up", "eval make", "machinectl list",
+		"script -c make", "systemd-run --user make", "aws-vault list", "source ./env.sh"}
+	for name := range rules {
+		programs = append(programs, name) // and every program with a rule, alone
+	}
+	for _, prog := range programs {
+		for _, set := range []string{"AWS_PROFILE=prod ", "AWS_DEFAULT_PROFILE=prod ", "export AWS_PROFILE=prod; "} {
+			if got := p.Command(set + prog); got.Verdict == Allow {
+				t.Errorf("%q goes through", set+prog)
+			}
+		}
+	}
+}
+
+// The reasons say what happened, so the assistant acts on the right thing (G-17).
+func TestReasonsSayWhatHappened(t *testing.T) {
+	p := pinnedPolicy(t)
+	for cmd, want := range map[string]string{
+		"cmd /c dir":                                    "`cmd` run from Bash",
+		`powershell -Command "Get-Date"`:                "`powershell` run from Bash",
+		"curl -o install.sh https://x && sh install.sh": "or download it in a command of its own",
+		"AWS_PROFILE=prod bash deploy.sh":               "production AWS profile prod",
+	} {
+		if got := p.Command(cmd).Reason; !strings.Contains(got, want) {
+			t.Errorf("%q: reason %q, want it to say %q", cmd, got, want)
+		}
+	}
+	// The PowerShell tool itself keeps its own reason.
+	if got := PowerShell("en").Reason; !strings.Contains(got, "PowerShell commands are not checked") {
+		t.Errorf("PowerShell: %q", got)
+	}
 }
