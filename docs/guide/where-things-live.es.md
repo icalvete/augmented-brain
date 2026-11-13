@@ -58,6 +58,7 @@ También en la carpeta de configuración, nunca en la copia:
   puede leerlo.
 - `migrations/`: una copia completa de las notas, guardada antes de que una versión nueva
   las pasara a su formato.
+- `marketplace/`: el plugin de Claude Code, tal como lo lleva el programa (abajo).
 
 ## Tus secretos
 
@@ -82,7 +83,9 @@ vuelves a añadir si los sigues queriendo.
 ## El programa y el plugin
 
 - El programa: `~/.local/bin/augmented-brain` (`augmented-brain.exe` en Windows).
-- El plugin de Claude Code, en la propia carpeta de Claude Code.
+- El plugin de Claude Code viaja dentro del programa: lo escribe en `marketplace/`, en la
+  carpeta de configuración, y Claude Code lo lee de ahí. Así sus hooks son siempre los de
+  la versión que instalaste, y el guardia pregunta antes de que Claude los cambie.
 
 Desinstalar quita estos dos y deja tus notas. Mira [Actualizar y desinstalar sin perder
 nada](update-and-uninstall.es.md).

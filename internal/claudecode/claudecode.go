@@ -7,7 +7,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
+
+	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/version"
 )
 
 // Plugin is the plugin id in Claude Code: plugin name @ marketplace name.
@@ -16,13 +20,46 @@ const Plugin = "brain@augmented-brain"
 // MarketplaceName is the marketplace's name, as .claude-plugin/marketplace.json says.
 const MarketplaceName = "augmented-brain"
 
-// Marketplace returns where the marketplace comes from: the public repository, or
-// $AB_MARKETPLACE (a path or another repository) to test unpublished changes.
-func Marketplace() string {
+// GitHubMarketplace is where the plugin came from before it travelled with the program:
+// main of the public repository, whatever was on it that day. Install and Update move
+// whoever still has it to the program's own folder.
+const GitHubMarketplace = "icalvete/augmented-brain"
+
+// Manual is the command that installs or updates the plugin by hand.
+const Manual = "augmented-brain update --plugin"
+
+// marketplace writes the plugin this program carries to its folder (LocalDir of the
+// configuration folder) and returns that folder, for Claude Code to read the plugin
+// from: so the plugin is always the one of the program installed. $AB_MARKETPLACE (a
+// path or a repository) takes its place, to try unpublished changes.
+var marketplace = func() (string, error) {
 	if m := os.Getenv("AB_MARKETPLACE"); m != "" {
-		return m
+		return m, nil
 	}
-	return "icalvete/augmented-brain"
+	cfg, err := config.Dir()
+	if err != nil {
+		return "", err
+	}
+	dir := LocalDir(cfg)
+	if err := WriteLocal(dir, version.Version, runtime.GOOS); err != nil {
+		return "", fmt.Errorf("writing the plugin to %s: %v", dir, err)
+	}
+	return dir, nil
+}
+
+// addMarketplace adds the marketplace, or points the one already there at it: Claude
+// Code keeps the plugin installed and moves it to the new source. Never remove and add
+// again: removing a marketplace uninstalls its plugin and deletes its data.
+func addMarketplace(run Runner) error {
+	src, err := marketplace()
+	if err != nil {
+		return err
+	}
+	if out, err := run("claude", "plugin", "marketplace", "add", src); err != nil &&
+		!strings.Contains(out, "already") {
+		return fmt.Errorf("adding the marketplace: %v: %s", err, strings.TrimSpace(out))
+	}
+	return nil
 }
 
 // Runner runs a command and returns its combined output. Tests replace it.
@@ -49,9 +86,13 @@ func Installed(run Runner) (bool, error) {
 	return strings.Contains(out, Plugin), nil
 }
 
-// Update brings the marketplace and the plugin to their latest version. Claude Code
-// uses it from the next session on.
+// Update brings the plugin to the one this program carries, moving a marketplace that
+// still follows GitHub to the program's folder. Claude Code uses it from the next
+// session on.
 func Update(run Runner) error {
+	if err := addMarketplace(run); err != nil {
+		return err
+	}
 	if out, err := run("claude", "plugin", "marketplace", "update", MarketplaceName); err != nil {
 		return fmt.Errorf("updating the marketplace: %v: %s", err, strings.TrimSpace(out))
 	}
@@ -61,13 +102,17 @@ func Update(run Runner) error {
 	return nil
 }
 
-// Uninstall removes the plugin and its marketplace. Something already gone is fine.
+// Uninstall removes the plugin and its marketplace, and the files the program wrote for
+// it. Something already gone is fine.
 func Uninstall(run Runner) error {
 	if out, err := run("claude", "plugin", "uninstall", Plugin); err != nil && !gone(out) {
 		return fmt.Errorf("removing the plugin: %v: %s", err, strings.TrimSpace(out))
 	}
 	if out, err := run("claude", "plugin", "marketplace", "remove", MarketplaceName); err != nil && !gone(out) {
 		return fmt.Errorf("removing the marketplace: %v: %s", err, strings.TrimSpace(out))
+	}
+	if cfg, err := config.Dir(); err == nil {
+		return RemoveLocal(LocalDir(cfg))
 	}
 	return nil
 }
@@ -81,9 +126,8 @@ func gone(out string) bool {
 // Install adds the marketplace and installs the plugin for the user. Both steps are
 // safe to repeat.
 func Install(run Runner) error {
-	if out, err := run("claude", "plugin", "marketplace", "add", Marketplace()); err != nil &&
-		!strings.Contains(out, "already") {
-		return fmt.Errorf("adding the marketplace: %v: %s", err, strings.TrimSpace(out))
+	if err := addMarketplace(run); err != nil {
+		return err
 	}
 	if out, err := run("claude", "plugin", "install", Plugin, "--scope", "user"); err != nil &&
 		!strings.Contains(out, "already") {

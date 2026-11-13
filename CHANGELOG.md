@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **The plugin comes inside the program.** Claude Code took the plugin (its hooks, the
+  guard among them) from the repository's `main` on GitHub, as it was that day: a change
+  there reached everyone before any release, and for a while the plugin could ask for
+  things the installed program did not know yet. Now the program carries its own plugin,
+  writes it to the configuration folder (`marketplace/`) and has Claude Code read it
+  from there, so the plugin is always the one of the version you installed. Updating
+  moves an installation that still follows GitHub, keeping the plugin and its data;
+  uninstalling removes the folder. The plugin no longer needs git, the hooks look for the
+  program in `~/.local/bin` before anywhere else, and on Windows the MCP server keeps
+  your PATH as it is.
 - **Cleaning up a task's worktree no longer loses work.** A worktree left on another
   commit (to compare, to review) went with its branch and the commits on it that were on
   no remote. Now the task's branch counts as well as where the worktree is. Files git

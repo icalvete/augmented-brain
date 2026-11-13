@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
+	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/guard"
@@ -320,6 +321,10 @@ func protectedFiles(cfgDir, dir string) []string {
 	list := []string{filepath.Join(cfgDir, config.FileName), filepath.Join(cfgDir, config.GuardFile),
 		filepath.Join(cfgDir, config.SecretsFile), filepath.Join(cfgDir, "remote.toml"),
 		filepath.Join(cfgDir, config.SessionFile)}
+	// The plugin Claude Code reads in place: its hooks are the guard.
+	for _, f := range claudecode.Files() {
+		list = append(list, filepath.Join(claudecode.LocalDir(cfgDir), filepath.FromSlash(f)))
+	}
 	if home, err := paths.Home(); err == nil {
 		for _, f := range []string{"settings.json", "settings.local.json"} {
 			list = append(list, filepath.Join(home, ".claude", f))

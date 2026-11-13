@@ -118,7 +118,7 @@ func TestInitOneSpace(t *testing.T) {
 	}
 	for _, want := range []string{
 		// No claude on the PATH: how to add the plugin later.
-		"No encuentro Claude Code. Instálalo y después añade el plugin con:\n  claude plugin marketplace add ",
+		"No encuentro Claude Code. Instálalo y después añade el plugin con:\n  augmented-brain update --plugin\n",
 		"\naugmented brain está listo. Tus espacios:\n  lab        " + work + "\n",
 		shell("cd " + work + " && claude\n"),
 	} {
@@ -216,7 +216,8 @@ func TestInitWarnsWithoutThePlugin(t *testing.T) {
 	emptyHome(t) // no claude and no git on the PATH
 	t.Setenv("AB_LANGUAGE", "en")
 	code, out, _ := runInit(t, "--yes", "--language", "en")
-	if code != 0 || !strings.Contains(out, "the Claude Code plugin is not installed") || !strings.Contains(out, "It needs git") {
+	// The plugin comes from the program's own folder now: git is no longer needed.
+	if code != 0 || !strings.Contains(out, "the Claude Code plugin is not installed") || strings.Contains(out, "git") {
 		t.Errorf("init without the plugin: %d\n%s", code, out)
 	}
 	emptyHome(t)

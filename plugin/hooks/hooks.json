@@ -6,47 +6,47 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 1",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 1",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 2",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 2",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 3",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 3",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 4",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 4",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 5",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 5",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 6",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 6",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 7",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 7",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 8",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 8",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-start 9",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 9",
             "timeout": 10
           }
         ]
@@ -58,7 +58,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook pre-tool-use",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook pre-tool-use",
             "timeout": 10,
             "onFailure": "block"
           }
@@ -70,7 +70,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook user-prompt-submit 2>/dev/null || true",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook user-prompt-submit 2>/dev/null || true",
             "timeout": 10
           }
         ]
@@ -81,7 +81,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook stop",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook stop",
             "timeout": 10
           }
         ]
@@ -92,7 +92,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook post-compact",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook post-compact",
             "timeout": 10
           }
         ]
@@ -103,7 +103,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PATH=\"$PATH:$HOME/.local/bin\" augmented-brain hook session-end",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-end",
             "timeout": 10
           }
         ]

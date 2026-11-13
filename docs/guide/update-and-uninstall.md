@@ -20,9 +20,9 @@ What it does, in order:
    there is not taken for one of the new version.
 2. **Backs up every space that has a backup.** If one fails, it stops and updates nothing:
    that copy is your way back. With no backup at all, it says it goes ahead without one.
-3. **Downloads and installs** the new version and the Claude Code plugin. If GitHub fails
-   to hand out the files, it tries three times, also through GitHub's API; if all fails,
-   it says so and nothing changes.
+3. **Downloads and installs** the new version, with the Claude Code plugin that comes
+   inside it. If GitHub fails to hand out the files, it tries three times, also through
+   GitHub's API; if all fails, it says so and nothing changes.
 4. **Checks the new version is in place**, and restarts the idle Claude sessions that
    still run the old one, one at a time, with the same conversation: a task's session,
    those of the remote access, and those of Claude Desktop, which stay open while only
