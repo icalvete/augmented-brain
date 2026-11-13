@@ -50,6 +50,7 @@
 <ul>
   <li><a href="getting-started.es.html">Primeros pasos</a></li>
   <li><a href="install.es.html">Instalación</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
 </ul>
 <p class="docnav-group">Conceptos</p>
 <ul>
@@ -65,14 +66,17 @@
 <ul>
   <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
   <li><a href="panel.es.html">El panel</a></li>
-  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
-  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="weekly-review.es.html">La revisión semanal</a></li>
-  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+</ul>
+<p class="docnav-group">Ponlo a tu medida</p>
+<ul>
   <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
-  <li><a href="remote.es.html">Acceso remoto</a></li>
-  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="anywhere.es.html">Desde el móvil u otro ordenador</a></li>
+  <li><a href="remote.es.html">Acceso remoto</a></li>
+  <li><a href="task-sessions.es.html">Una sesión por tarea</a></li>
+  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
   <li><a href="update-and-uninstall.es.html">Actualizar y desinstalar</a></li>
 </ul>
 <p class="docnav-group">Referencia</p>
@@ -150,6 +154,8 @@
   <p><code>doctor</code> dice qué falta: Tailscale parado, HTTPS apagado en tu red, o una dirección que se quedó publicada después de parar el panel (te da el comando para quitarla). Lo tienes en <a href="panel-remote.es.html">El panel desde otro dispositivo</a>.</p>
   <h3 id="el-acceso-remoto-no-funciona">El acceso remoto no funciona</h3>
   <p>Lanza <code>augmented-brain remote status</code>: debajo de cada problema, <code>→</code> dice qué hacer. Lo normal es que Claude aún no confíe en la carpeta (lanza una vez <code>cd &lt;carpeta&gt; &amp;&amp; claude</code>) o que el linger esté apagado. <code>remote install</code> se para, sin cambiar nada, en una máquina sin servicios de usuario de systemd (un contenedor, WSL sin systemd). Lo tienes en <a href="remote.es.html">Acceso remoto</a>.</p>
+  <h3 id="dos-sesiones-remotas-con-el-mismo-nombre">Dos sesiones remotas con el mismo nombre</h3>
+  <p>Cuando la puerta de un espacio se cambia de carpeta (por ejemplo, porque una versión nueva la arranca en tu carpeta de trabajo), el lado de Claude conserva también la sesión vieja, con el mismo nombre, en otro grupo de la lista. En la vieja no contesta nadie: lo que escribas ahí se pierde. Usa la del grupo con el nombre de la carpeta nueva, y archiva la vieja en claude.ai o Claude Desktop.</p>
   <h3 id="una-sesión-se-cortó">Una sesión se cortó</h3>
   <p>La ventana se cerró a la fuerza, o el ordenador se apagó. La siguiente sesión te ofrece recuperarla. Di que sí, o usa el panel: Hoy la enseña. Claude Code guarda cada conversación 30 días.</p>
   <h3 id="la-ventana-usa-mucha-memoria">La ventana usa mucha memoria</h3>
