@@ -35,9 +35,9 @@ Le hablas como siempre. Esto es lo que cambia:
 |---|---|
 | "¿En qué estábamos?" | Te lista tus tareas vivas, cada una con su siguiente paso y quién la bloquea |
 | "Apárcala, mañana seguimos." | Apunta dónde lo dejáis y qué viene después; mañana, en otra sesión, arranca ahí |
-| "Recuérdame el jueves que llame al seguro." | El jueves, nada más abrir Claude, te lo recuerda |
+| "Recuérdame el jueves que llame al seguro." | Desde una semana antes, te sale cada vez que abres Claude |
 | "¿Por qué elegimos el hosting más barato?" | Lo busca en tus notas y te da la decisión, con fecha y porqué |
-| "Borra el bucket viejo de producción." | Antes de ejecutarlo, te pregunta |
+| "Borra el bucket viejo de producción." | Si marcaste ese perfil de AWS como producción, te pregunta antes de ejecutarlo |
 | Abres Claude en `~/augmented-brain/personal` | Solo ve tus notas personales; las del trabajo, no |
 | Se te rompe el portátil | `augmented-brain restore` en el nuevo y lo tienes todo |
 
@@ -45,12 +45,18 @@ Más frases: [Qué decirle a Claude](https://icalvete.github.io/augmented-brain/
 
 ## Empieza en dos pasos
 
-Necesitas Linux, macOS (13 o posterior) o Windows (10 u 11), y una cuenta de Claude de pago
-(Pro o superior), porque Claude Code no entra en el plan gratuito. augmented brain se instala
-en tu propia carpeta, sin root ni administrador. Si falta git (un Ubuntu recién instalado
-no lo trae), el instalador te ofrece instalarlo, y eso pide tu contraseña, o en Windows
-permiso; también la app de escritorio en Linux. Si no tienes esos permisos, pide antes a
-quien cuide tu ordenador que te instale git. ¿Nunca has abierto una terminal? Sigue los
+Necesitas:
+
+- **Linux, macOS (13 o posterior) o Windows (10 u 11).**
+- **Una cuenta de Claude de pago** (Pro o superior): Claude Code no entra en el plan gratuito.
+- **La contraseña de tu ordenador, solo si falta algo.** augmented brain se instala en tu
+  propia carpeta, sin root ni administrador. Si falta git (un Ubuntu recién instalado no lo
+  trae), el instalador te ofrece instalarlo, y eso pide tu contraseña, o en Windows permiso;
+  también la app de escritorio en Linux. Si no tienes esos permisos, pide antes a quien
+  cuide tu ordenador que te instale git.
+
+Para instalar no hace falta cuenta de GitHub. La copia de seguridad sí la usa, u otro
+servidor de git: la preparas después. ¿Nunca has abierto una terminal? Sigue los
 [primeros pasos](https://icalvete.github.io/augmented-brain/guide/getting-started.es.html).
 
 **1. Instálalo** con un solo comando. En Linux o en Mac, en la terminal:
@@ -72,16 +78,21 @@ una terminal nueva**: la que usaste todavía no ve el comando nuevo. Allí,
 `augmented-brain doctor` comprueba que todo está en su sitio. Lo que hace en cada sistema:
 [Instalación](https://icalvete.github.io/augmented-brain/guide/install.es.html).
 
-**2. Abre Claude y salúdalo.** Abre la app de Claude, pulsa **+ New** y escribe cualquier
-cosa, con «hola» basta. O, en una terminal, `cd ~/augmented-brain/personal && claude` (en
-el PowerShell de Windows, `cd ~\augmented-brain\personal; claude`). La primera vez, Claude
-te contesta con seis preguntas rápidas, explicándote para qué sirve cada una: quién eres,
-qué cuidas, cómo quieres las respuestas, qué no se toca, qué herramientas usas y con quién
-trabajas.
+**2. Abre Claude y salúdalo.** Abre la app de Claude, entra con tu cuenta, abre la pestaña
+**Code**, pulsa **+ New** y escribe cualquier cosa, con «hola» basta. Sin elegir carpeta
+estás en tu espacio personal; para el trabajo, elige con **Choose…** la carpeta
+`~/augmented-brain/trabajo`. ¿Sin app? En una terminal, `cd ~/augmented-brain/trabajo &&
+claude` (en el PowerShell de Windows, `cd ~\augmented-brain\trabajo; claude`), o la carpeta
+`personal` para el otro espacio.
 
-Las próximas veces, igual. Para el trabajo, elige con **Choose…** la carpeta
-`~/augmented-brain/trabajo`, o haz `cd` allí antes de `claude`. Si algo no va,
-`augmented-brain doctor` te dice qué falta y cómo arreglarlo.
+Si Claude te pregunta si confías en la carpeta, di que sí: hasta entonces no puede cargar
+tus notas. La primera vez, Claude te contesta con seis preguntas rápidas, explicándote
+para qué sirve cada una: quién eres, qué cuidas, cómo quieres las respuestas, qué no se
+toca, qué herramientas usas y con quién trabajas. Al final te ofrece preparar la copia de
+seguridad.
+
+Las próximas veces, igual. Si algo no va, `augmented-brain doctor` te dice qué falta y
+cómo arreglarlo.
 
 ## Cómo se ve
 
@@ -140,15 +151,17 @@ En el día a día le hablas a Claude. Estos son para preparar y revisar:
 | `augmented-brain import <carpeta>` | Trae una memoria que Claude Code ya escribió |
 | `augmented-brain backup` | Copia este espacio ahora (`backup setup <url>` lo conecta) |
 | `augmented-brain restore <url>` | Recupera un espacio en una máquina nueva |
-| `augmented-brain panel` | Abre el panel en el navegador (`panel stop` lo para) |
+| `augmented-brain panel` | Abre el panel en el navegador (`panel remote` también desde el móvil, `panel stop` lo para) |
+| `augmented-brain remote install` | Deja Claude al alcance del móvil o de otro ordenador |
+| `augmented-brain session start <tarea>` | Abre una sesión propia para una tarea (Linux) |
 | `augmented-brain config history` | Lista las últimas versiones de tu configuración (`config restore <n>` vuelve a una) |
+| `augmented-brain clean` | Limpia lo que deja Claude Code (worktrees viejos y similares) |
 | `augmented-brain update` | Actualiza el programa y el plugin |
 | `augmented-brain uninstall` | Quita el programa y el plugin; tus notas se quedan |
 | `augmented-brain version` | Muestra la versión (`help` lista los comandos) |
-| `augmented-brain mcp` | El servidor MCP: lo arranca el asistente, no tú |
-| `augmented-brain hook <evento>` | Responde a los hooks de Claude Code: lo arranca el asistente, no tú |
 
-Todas las opciones: [Comandos](https://icalvete.github.io/augmented-brain/guide/commands.es.html). Las herramientas que usa Claude:
+Todos los comandos y opciones, y los dos que arranca Claude solo (`mcp` y `hook`):
+[Comandos](https://icalvete.github.io/augmented-brain/guide/commands.es.html). Las herramientas que usa Claude:
 [Herramientas MCP](https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html).
 
 ## Documentación
@@ -193,8 +206,8 @@ las comprobaciones y las reglas de la casa.
 ## Apoya el proyecto
 
 augmented brain es libre y gratis (licencia MIT). Si te ahorra tiempo, puedes
-[patrocinar su desarrollo](https://github.com/sponsors/icalvete): paga el tiempo de responder incidencias y añadir funciones. También hay soporte de pago
-(respuesta por correo en dos días laborables) y una sesión de puesta en marcha de una hora por videollamada.
+[patrocinar su desarrollo](https://github.com/sponsors/icalvete): paga el tiempo de responder incidencias y añadir funciones. También hay [soporte de pago](https://github.com/sponsors/icalvete):
+respuesta por correo en dos días laborables, o una sesión de puesta en marcha de una hora por videollamada.
 
 ## Licencia
 
