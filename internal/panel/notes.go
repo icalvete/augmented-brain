@@ -111,17 +111,22 @@ type notesData struct {
 	Rows                 []noteRow
 	NewPerson            bool   // the people page: a form to add one
 	Unread               string // the people page: the spaces that could not be opened, said
+	New                  string // "rule" or "knowledge": the page has a form to write one
+	Ask                  bool   // memory_trust is "ask": a rule is saved only once the user says yes
+	Areas                []option
 }
 
 func (s *Server) knowledge(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("knowledge", v.t("knowledge"))
-	p.D = notesData{v.t("knowledge"), v.t("knowledge.hint"), v.t("knowledge.none"), v.list("reference", "lesson"), false, ""}
+	p.D = notesData{Heading: v.t("knowledge"), Hint: v.t("knowledge.hint"), Empty: v.t("knowledge.none"),
+		Rows: v.list("reference", "lesson"), New: "knowledge", Areas: v.areaOptions("")}
 	return "notes", p, nil
 }
 
 func (s *Server) rules(v *view, _ *http.Request) (string, page, error) {
 	p := v.frame("rules", v.t("rules"))
-	p.D = notesData{v.t("rules"), v.t("rules.hint"), v.t("rules.none"), v.list("rule"), false, ""}
+	p.D = notesData{Heading: v.t("rules"), Hint: v.t("rules.hint"), Empty: v.t("rules.none"), Rows: v.list("rule"),
+		New: "rule", Ask: v.askTrust()}
 	return "notes", p, nil
 }
 
@@ -146,7 +151,7 @@ func (s *Server) people(v *view, _ *http.Request) (string, page, error) {
 		}
 		rows = append(rows, row)
 	}
-	d := notesData{v.t("people"), v.t("people.hint"), v.t("people.none"), rows, true, ""}
+	d := notesData{Heading: v.t("people"), Hint: v.t("people.hint"), Empty: v.t("people.none"), Rows: rows, NewPerson: true}
 	if len(unread) > 0 {
 		d.Unread = v.t("people.unread", strings.Join(unread, ", "))
 	}
@@ -201,6 +206,10 @@ func (s *Server) note(v *view, r *http.Request) (string, page, error) {
 		d.Card = card
 		person = &d
 	}
+	editStamp := stampIn(v.b.Mem, id)
+	if shared {
+		editStamp = stampIn(v.shared, id)
+	}
 	p := v.frame(section, n.Header.Title)
 	p.D = struct {
 		H                     memory.Header
@@ -210,8 +219,12 @@ func (s *Server) note(v *view, r *http.Request) (string, page, error) {
 		Shared                bool
 		Sections              []bodySection
 		Person                *personData
-		Stamp                 string
+		Stamp, EditStamp      string // EditStamp: when the note was written, for its edit form
+		Changeable, Ask       bool   // a rule, reference or lesson: it can be edited and retired here
+		Areas                 []option
 	}{n.Header, n.Body, v.t("kind." + n.Header.Type), v.areaTitle(n.Header.Area), v.t(section), tasks, shared,
-		v.sections(n.Body, false), person, v.stampOf(id)}
+		v.sections(n.Body, false), person, v.stampOf(id), editStamp,
+		slices.Contains([]string{"rule", "reference", "lesson"}, n.Header.Type), n.Header.Type == "rule" && v.askTrust(),
+		v.areaOptions(n.Header.Area)}
 	return "note", p, nil
 }

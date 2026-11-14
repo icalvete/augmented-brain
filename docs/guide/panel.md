@@ -42,7 +42,7 @@ each block in two columns, and a shadow at its foot says there is more below.
 | [Reminders](#reminders) | Watch dates and inbox reminders | one space |
 | [Inbox](#inbox) | Loose ideas, to deal with later | one space |
 | [Weekly review](#weekly-review) | Empty the inbox, look at stalled tasks | one space |
-| [Areas, knowledge, rules](#areas-knowledge-rules-and-people) | Read them; create areas | one space, plus the shared notes |
+| [Areas, knowledge, rules](#areas-knowledge-rules-and-people) | Read and write them; create areas | one space, plus the shared notes |
 | [People](#areas-knowledge-rules-and-people) | Who is who | every space |
 | [Repositories](#repositories) | Work only on this computer | every space |
 | [Secrets](#secrets) | The names of your secrets | the same list in every space |
@@ -134,10 +134,20 @@ and kept in the review's record when you finish.
 
 ## Areas, knowledge, rules and people
 
-Knowledge and rules show the space's own and the shared ones, marked "shared". Here you
-read them; you do not write them. A reference or a lesson comes from Claude, or from a
-capture in the [weekly review](#weekly-review); a rule, from Claude. You can create areas
-and change an area's title and summary.
+Knowledge and rules show the space's own and the shared ones, marked "shared". You can
+write them here too. **New rule** and **New reference or lesson** create one, in this
+space or shared by every space. On a rule, reference or lesson's page, **Edit** changes
+its title, summary, area and text (Markdown); the version it replaces is kept in
+`archive/`. If the note changed since the page was shown, nothing is overwritten: reload
+and try again. **Retire** moves it to `archive/` with why, so it is never loaded again: a
+retired rule no longer reaches your sessions. Nothing is deleted.
+
+A rule changes what every session follows. If you chose to be asked first
+(`memory_trust = "ask"`, on the [Guard](#guard) page), these forms show a box to tick
+before a rule is saved, changed or retired. This works through the
+[remote panel](panel-remote.md) too, with its own sign-in.
+
+You can create areas and change an area's title and summary.
 
 People are listed once, with a badge for each space they are in. A new person starts in
 the space you are in. A person's page is one form: the name stays (a new name would be a
