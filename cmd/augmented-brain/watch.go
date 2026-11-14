@@ -13,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/runlimit"
+
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -47,7 +49,7 @@ func watchFlags(errOut io.Writer) (*flag.FlagSet, *watchOpts) {
 var watchGh = func(args ...string) (string, string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "gh", args...)
+	cmd := runlimit.Command(ctx, "gh", args...)
 	cmd.Env = append(os.Environ(), "GH_PROMPT_DISABLED=1", "GH_NO_UPDATE_NOTIFIER=1", "NO_COLOR=1")
 	var out, errOut bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &errOut

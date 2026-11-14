@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -12,6 +11,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 
 	"github.com/icalvete/augmented-brain/internal/state"
 )
@@ -470,7 +471,7 @@ func procParent(pid int) int {
 		n, _ := strconv.Atoi(f[1])
 		return n
 	case "darwin":
-		out, err := exec.Command("ps", "-o", "ppid=", "-p", strconv.Itoa(pid)).Output()
+		out, err := runlimit.Output(runlimit.PsLimit, "ps", "-o", "ppid=", "-p", strconv.Itoa(pid))
 		if err != nil {
 			return 0
 		}
@@ -501,7 +502,7 @@ func procMCPServers() []int {
 			}
 		}
 	case "darwin":
-		data, err := exec.Command("ps", "-axo", "pid=,command=").Output()
+		data, err := runlimit.Output(runlimit.PsLimit, "ps", "-axo", "pid=,command=")
 		if err != nil {
 			return nil
 		}
@@ -528,7 +529,7 @@ func isMCPServer(pid int) bool {
 		}
 		args = strings.Split(strings.TrimRight(string(data), "\x00"), "\x00")
 	case "darwin":
-		data, err := exec.Command("ps", "-o", "command=", "-p", strconv.Itoa(pid)).Output()
+		data, err := runlimit.Output(runlimit.PsLimit, "ps", "-o", "command=", "-p", strconv.Itoa(pid))
 		if err != nil {
 			return false
 		}

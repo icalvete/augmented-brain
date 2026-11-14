@@ -30,6 +30,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/runlimit"
+
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -161,7 +163,7 @@ func NewSystem() (System, error) {
 func realRunIn(dir string, name string, args ...string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, name, args...)
+	cmd := runlimit.Command(ctx, name, args...)
 	cmd.Dir = dir
 	for _, e := range os.Environ() {
 		if !strings.HasPrefix(e, TaskEnv+"=") {
@@ -196,7 +198,7 @@ func realStartDaemon(claude string, ownScope bool) error {
 func realRun(name string, args ...string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, name, args...)
+	cmd := runlimit.Command(ctx, name, args...)
 	var out, errOut bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &errOut
 	if err := cmd.Run(); err != nil {

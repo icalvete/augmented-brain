@@ -30,6 +30,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/runlimit"
+
 	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -666,7 +668,7 @@ func redirectFile(cfgDir, url string, now time.Time) (string, error) {
 func xdgQuery(name string, args ...string) string {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	out, err := exec.CommandContext(ctx, name, args...).Output()
+	out, err := runlimit.Command(ctx, name, args...).Output()
 	if err != nil {
 		return ""
 	}

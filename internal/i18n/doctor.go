@@ -150,6 +150,30 @@ var doctorMessages = map[string]msg{
 		en: "install it with: %s",
 		es: "instálalo con: %s",
 	},
+	"doctor.noanswer": {
+		en: "No answer in time from Claude Code or the system: %s not checked",
+		es: "Ni Claude Code ni el sistema han contestado a tiempo: %s sin comprobar",
+	},
+	"doctor.noanswer.fix": {
+		en: "run augmented-brain doctor again in a while; if it happens again, run claude plugin list to see what Claude Code is waiting for",
+		es: "vuelve a lanzar augmented-brain doctor dentro de un rato; si se repite, lanza claude plugin list para ver a qué espera Claude Code",
+	},
+	"doctor.part.plugin": {
+		en: "the plugin and the guard",
+		es: "el plugin y el guardia",
+	},
+	"doctor.part.remote": {
+		en: "remote access",
+		es: "el acceso remoto",
+	},
+	"doctor.part.worktrees": {
+		en: "the tasks' worktrees",
+		es: "los worktrees de las tareas",
+	},
+	"doctor.part.lingering": {
+		en: "the background sessions",
+		es: "las sesiones de fondo",
+	},
 	"doctor.plugin.unknown": {
 		en: "Claude Code plugin: cannot tell (%v)",
 		es: "plugin de Claude Code: no se puede saber (%v)",
