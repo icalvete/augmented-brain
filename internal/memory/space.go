@@ -50,6 +50,9 @@ type Memory struct {
 	// Shared is set for the shared notes, which have no areas, people or tasks: their
 	// index lists rules and knowledge instead.
 	Shared bool
+	// SharedNotes are the shared notes LoadSpace read with the space, for whoever needs
+	// them too without reading them again; nil from Load.
+	SharedNotes *Memory
 }
 
 // Load reads every note of the memory in dir, except archive/ and docs/ (a task's long
@@ -210,7 +213,11 @@ func LoadSpace(dir, sharedDir string) (*Memory, []Problem, error) {
 	if err != nil {
 		shared = &Memory{Dir: sharedDir, Notes: map[string]*Note{}}
 	}
-	return Load(dir, shared)
+	m, problems, err := Load(dir, shared)
+	if m != nil {
+		m.SharedNotes = shared
+	}
+	return m, problems, err
 }
 
 // checkLinks reports areas, parents and related notes that do not exist. These are
