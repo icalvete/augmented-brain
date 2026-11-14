@@ -125,6 +125,10 @@ func memoryNote(lang, cfgDir string) string {
 	return i18n.T(lang, "hook.memory."+h.Kind, hostmem.GB(h.RSS, lang))
 }
 
+// CompactWait is the most PostCompact waits for the notes lock; its hook has ten
+// seconds.
+var CompactWait = 6 * time.Second
+
 // PostCompact keeps the summary Claude Code wrote when it compacted the conversation:
 // in archive/sessions/ of the space (never loaded at the start, backed up like any
 // note, secrets taken out), with a line in the journal of the session's active task
@@ -141,9 +145,10 @@ func PostCompact(in io.Reader, cfgDir string) error {
 	now := Now()
 	head := i18n.T(c.Language, "note.summary.head")
 
-	unlock, err := filelock.Lock(filepath.Join(cfgDir, backup.NotesLock))
+	// Within the hook's ten seconds: a backup or an import may hold the notes longer.
+	unlock, err := filelock.LockWithin(filepath.Join(cfgDir, backup.NotesLock), CompactWait)
 	if err != nil {
-		return err
+		return fmt.Errorf("the summary of the compacted session was not saved: %w", err)
 	}
 	defer unlock()
 	b, err := brain.Open(c, s)
