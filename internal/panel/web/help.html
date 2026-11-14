@@ -2,6 +2,10 @@
 <h1>{{t "help.title"}}</h1>
 {{template "intro" (intro $ "help" (t "help.hint"))}}
 
+<h2 id="ask">{{t "help.ask"}}</h2>
+<p class="hint">{{t "help.ask.hint"}}</p>
+<p class="hint">{{t "help.ask.next"}}</p>
+
 <h2>{{t "help.answers"}}</h2>
 <ul class="cards">
 {{range .Answers}}<li class="card">

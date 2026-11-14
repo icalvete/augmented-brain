@@ -12,6 +12,9 @@ It checks the whole setup and says what is missing and how to fix it. Each line 
 with a mark: `✓` fine, `·` for your information, `!` a warning, `✗` something that
 fails. Under a line that needs work, `→` says what to do.
 
+You can also ask Claude, in your own words: it knows these guides, the ones of the version
+you have installed, and runs `doctor` itself when something fails.
+
 If you have the panel open, its **Help** page has links to these answers and a button to
 report a problem on GitHub, with the health check filled in and what is personal taken
 out. See [The panel](panel.md#help).

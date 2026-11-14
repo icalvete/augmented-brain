@@ -1,6 +1,6 @@
 package i18n
 
-// The panel's Help page: answers on the website, a problem report, an idea.
+// The panel's Help page: asking Claude, answers on the website, a problem report, an idea.
 var helpMessages = map[string]msg{
 	"panel.help": {
 		en: "Help",
@@ -11,8 +11,20 @@ var helpMessages = map[string]msg{
 		es: "Ayuda",
 	},
 	"panel.help.hint": {
-		en: "Find an answer on the website, tell us about a problem, or propose an idea. The links open in a new tab.",
-		es: "Busca una respuesta en la web, cuéntanos un problema o propón una idea. Los enlaces se abren en otra pestaña.",
+		en: "Ask Claude, find an answer on the website, tell us about a problem, or propose an idea. The links open in a new tab.",
+		es: "Pregunta a Claude, busca una respuesta en la web, cuéntanos un problema o propón una idea. Los enlaces se abren en otra pestaña.",
+	},
+	"panel.help.ask": {
+		en: "Ask Claude",
+		es: "Pregunta a Claude",
+	},
+	"panel.help.ask.hint": {
+		en: "Claude knows augmented brain: ask it in a session, in your own words, how to do something (\"how do I see the panel on my phone?\"). It answers with the guides of the version you have installed, with no internet needed.",
+		es: "Claude conoce augmented brain: pregúntale en una sesión, con tus palabras, cómo hacer algo («¿cómo veo el panel en el móvil?»). Responde con las guías de la versión que tienes instalada, sin necesitar internet.",
+	},
+	"panel.help.ask.next": {
+		en: "Not sure what to do next? Type /brain:help in a session: it proposes one step, the one you are missing.",
+		es: "¿No sabes qué hacer ahora? Escribe /brain:help en una sesión: te propone un paso, el que te falta.",
 	},
 	"panel.help.answers": {
 		en: "Answers",

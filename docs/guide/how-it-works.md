@@ -15,7 +15,7 @@ fit. To use it, you do not need any of this.
 | Layer | What it is | Where it lives |
 |---|---|---|
 | **3 · You and your assistant** | You talk to Claude Code as usual. No new commands to learn. | Your terminal or the Claude app |
-| **2 · The plugin** | The doors Claude uses to reach the program: a few hooks and an MCP server. | Inside Claude Code, which installs it |
+| **2 · The plugin** | The doors Claude uses to reach the program: a few hooks, an MCP server, and the guides, so Claude can answer your questions about augmented brain. | Inside Claude Code, which installs it |
 | **1 · The program** | `augmented-brain`, a single file. It guards commands, keeps tasks, rebuilds the index and runs the backup. | `~/.local/bin/augmented-brain` |
 | **0 · Your files** | Plain text: the configuration, your notes and, if you want, their backup. | `~/.config/augmented-brain/`, `~/augmented-brain/` and your git repository |
 

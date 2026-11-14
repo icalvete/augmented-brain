@@ -138,6 +138,9 @@ Talk to it as usual. These phrases pay off from day one:
 
 More phrases, grouped by what you want: [What to say to Claude](phrases.md).
 
+Any doubt about augmented brain itself, ask Claude too ("how do I back up my notes?"): it
+answers with these guides. Not sure what to do next? Type `/brain:help`.
+
 ## Words you will hear
 
 - **Space:** a separate drawer, with its own notes and rules. There are two, `work` and

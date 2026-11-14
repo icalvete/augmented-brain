@@ -275,7 +275,11 @@ página solo enseña. Mira [Versiones de la configuración](config-history.es.md
 
 ## Ayuda
 
-Enlaces a las respuestas de esta web, en tu idioma. Y una forma de contarnos un problema o
+Primero, un recordatorio de que puedes preguntar a Claude: en una sesión, pregúntale con
+tus palabras cómo hacer algo, y responde con las guías de la versión que tienes
+instalada. Con `/brain:help` y sin pregunta, te propone el siguiente paso.
+
+Después, enlaces a las respuestas de esta web, en tu idioma. Y una forma de contarnos un problema o
 proponer una idea en GitHub (la web donde vive el proyecto; necesitas una cuenta gratuita
 allí).
 

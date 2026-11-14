@@ -1,0 +1,625 @@
+# Memory format
+
+**Status: format version 1** (see "Format version" below). This document defines how augmented brain stores what you and your assistant know: what files exist, what goes in each, and which fields the program reads. Everything is plain Markdown that you can open, edit and search with any tool.
+
+Most of this document is the contract: what a note must look like for the program to read
+it, and what the program promises to write. The last sections (Configuration, Backup and
+State of this machine) are **informative**: they say how things work today, so the
+format makes sense, but the guides are where they are kept up to date, and they may
+change without a new format version.
+
+## Principles
+
+1. **Plain files, yours.** One folder of Markdown per space. No database, no hosted service.
+2. **The program reads fields, and a few fixed structures; never other prose.** Anything the program needs (a task's status, who it waits on, its next step) lives in the file's header. The body is free text, in any language, except for the structures this document describes, which the program reads and writes: the checkboxes of a task's Plan, the dated lines of a journal and of the inbox (and the inbox's marks `(remind: …)` and `(from …)`), the line of a journal that names an archived part, the two headings of the profile, a rule's History section, the lines of `ref-repositories`, and the "· also:" of a person's summary.
+3. **Indexes are generated.** You never edit an index by hand; the program rebuilds it after every change. Hand-kept indexes drift.
+4. **Nothing is deleted.** Closed tasks stay, marked closed. What is no longer needed day to day can go to `archive/`, which is never loaded.
+5. **Short at the top, detail below.** The file loaded at the start of every session stays small; detail lives one link away.
+
+## Spaces
+
+A **space** keeps one part of your life apart from the others, for example `work` and `personal`. Each space has:
+
+- its own memory folder (everything below);
+- its own rules, on top of the common ones;
+- its own backup repository.
+
+The space is chosen by **the folder you open the assistant in**. Spaces never read each other's memory. They share the program, the common rules, the shared notes (below), the safety hooks and the risk settings (which cloud profiles are production, which hosts must not be touched): those are for the whole machine, so a production profile saved from one space is guarded in all of them.
+
+Spaces are declared in the configuration file (see "Configuration" below), not inside the memory.
+
+By default, `augmented-brain init` creates two spaces, `work` and `personal` (in Spanish, `trabajo` and `personal`). Each one is a folder in `~/augmented-brain/`, which is its work folder, and its memory folder sits inside it as `notes/` (`notas/`). Any other layout can be set with `init --custom` or by editing the configuration.
+
+A session that runs outside every work folder (for example, the scratch folder the Claude desktop app opens a new session in) uses the **default space**, `default_space` in the configuration; `init` sets it to `personal`, and `space add` sets it when there are two spaces or more and none is set (to `personal` if a space has that name, or else to the first space). Its backup is the one that carries the profile. Without one, no memory is loaded there and the assistant tells the user which folders to open.
+
+## Layout of a space
+
+```
+<memory folder>/
+├── .augmented-brain/  # the format version, and the backup's copy of the configuration
+├── .gitattributes     # written by the backup (see "Backup")
+├── .gitignore         # written by the backup
+├── MEMORY.md          # the index loaded at the start of every session (generated)
+├── profile.md         # optional: what only applies in this space (your role at work…)
+├── inbox.md           # quick captures, processed in the weekly review
+├── areas/             # ongoing responsibilities (one file each)
+├── tasks/             # projects with a beginning and an end (one file each)
+├── knowledge/         # how things work (reference) and what you learned (lesson)
+├── people/            # who the user deals with, so a first name finds the right person
+├── rules/             # this space's own rules (the common rules ship with the program; shared ones live in the configuration folder)
+├── reviews/           # one file per weekly review
+├── docs/              # optional: long documents of a task (plans, analyses, reports); never loaded
+│   └── <task>/
+└── archive/           # never loaded, never deleted
+    ├── journals/      # old journal entries moved out of long tasks
+    ├── sessions/      # summaries Claude Code wrote when it compacted a conversation
+    └── <folder>/      # retired rules and knowledge, and the version a change replaced
+```
+
+Each type of note has its folder, and the program makes its ids with a prefix:
+
+| `type` | Folder | Id prefix |
+|---|---|---|
+| `area` | `areas/` | `area-` |
+| `task` | `tasks/` | `task-` |
+| `reference` | `knowledge/` | `ref-` |
+| `lesson` | `knowledge/` | `lesson-` |
+| `rule` | `rules/` | `rule-` |
+| `person` | `people/` | `person-` |
+| `review` | `reviews/` | `review-` |
+| `profile` | the top of the folder | none: the id is `profile` |
+
+The folder is required: a note in another folder is not valid. The prefix is not: a
+note written by hand as `tasks/backup.md`, with `id: backup`, is read. Anything else
+under the memory folder that is a `.md` file is read as a note too (so it needs a
+header), except `MEMORY.md`, `inbox.md`, hidden files and what is in `docs/` and
+`archive/`.
+
+`.augmented-brain/` holds `format` (see "Format version") and, in a space that has a
+backup, the copy of the configuration that travels with it (see "Backup"). The program
+writes all of it.
+
+In `archive/`, a rule, reference or lesson changed through the program leaves the
+version it replaces as `archive/<folder>/<id>-<date>.md`, and one retired goes there
+whole as `archive/<folder>/<id>.md`, with a last line that says when, why and what
+replaces it (`-2`, `-3`… when the name is taken). An import may also put files there:
+what the old memory kept in its own `archive/`.
+
+`docs/` keeps the long documents a task produces, so they stay with the notes and out of the repositories the work touches (a repository only gets what its team needs). Each one sits under the id of its task, is plain Markdown or any other file, has no header, and is linked from the task. The program does not read it.
+
+A summary in `archive/sessions/` is plain Markdown with no header, named `<date>-<time>-<session>.md`; the program writes it, with any secret taken out, and adds a journal line to the session's active task pointing at it.
+
+**Your profile** (who you are, your language, how you like answers) is the same person in every space, so it lives once, next to the configuration: `profile.md` in the configuration folder. A space's own `profile.md` only adds what applies there.
+
+The shared profile has two sections the program knows by their headings, in English or
+Spanish: the first ("About me" / "Sobre mí", with the name line) and the work style
+("How I like to work" / "Cómo me gusta trabajar"). Other sections a person adds by hand
+are kept: the program reads them as part of the first one.
+
+**Shared notes** are the rules, references and lessons that hold in every space (how git
+behaves, how the person likes answers). They live once, next to the configuration, in
+`shared/` inside the configuration folder, laid out like a space but with only
+`rules/` and `knowledge/` (plus the generated `MEMORY.md` and `.augmented-brain/format`).
+A shared note has no area, since areas belong to one space; a task, area, person or
+review there is a problem, reported and left out. Every space sees them: a note of a
+space may name a shared note in `related`, and the session start loads the shared rules
+like the space's (see Rules) and lists the shared references and lessons, by title and file. A shared note never links into a
+space. They are migrated like a space's notes, and kept in the backup of the default
+space, under `.augmented-brain/shared/`, like the profile.
+
+## File header
+
+Every file except `MEMORY.md`, `inbox.md` and what is in `docs/` and `archive/` starts with a YAML header between `---` lines (a byte order mark before it is fine). Keys and enumerated values are always English, whatever language you write in.
+
+```yaml
+---
+id: task-backup-restore          # unique in the space; also the file name without .md
+type: task                       # profile | area | task | reference | lesson | rule | person | review
+title: Backup and restore        # shown in indexes; any language
+summary: One line on what it is  # shown in indexes; any language
+area: area-platform              # optional: the area it belongs to
+repos: [infra/terraform]         # optional: repositories it touches, relative to the space's work folder
+related: [lesson-git-filters]    # optional: ids of other notes
+created: 2026-10-15
+updated: 2026-10-15
+---
+```
+
+These are every field there is (a task has five more, below):
+
+| Field | Holds | Required | Limit |
+|---|---|---|---|
+| `id` | the file name without `.md` | yes, and equal to it | |
+| `type` | one of the types above | yes | |
+| `title` | one line, any language | yes | 300 |
+| `summary` | one line, any language | no | 1,000 |
+| `area` | the id of an area of the space | no | |
+| `repos` | a list of paths | no | |
+| `related` | a list of ids | no | |
+| `created`, `updated` | a date, `YYYY-MM-DD` | no; the program writes both | |
+
+The header is read strictly. A field not in these tables makes the note not valid: it
+is left out, and the program says a newer version may have written it (see "Format
+version"). So does a missing or unknown `type`, a missing `title`, an `id` that is not
+the file name, a note outside its type's folder, or a task's field on a note that is not
+a task. When two notes have the same id, one of them is left out, and said.
+
+Some problems keep the note, and are only reported (by `augmented-brain check`,
+`doctor` and the panel's Health page) until fixed: an `area` that is not an area of the
+space, a `related` id that is in neither the space nor the shared notes, a `parent` that
+cannot be one (see "Subtasks"), a date written another way. `related` is only checked:
+the program never adds the link back on the other note. In the shared notes, an `area`
+or a type other than rule, reference and lesson leaves the note out.
+
+A repository in `repos:` that is in none of the space's work folders (it was moved,
+renamed or deleted, or this computer never had it) is reported, never fixed by itself:
+`augmented-brain check` and the panel's Health page list them, and reading the task
+tells the assistant to ask the user where it is now. A closed task is not checked. An
+absolute path, or one starting with `~`, is taken as it is.
+
+Every field of the header holds one line. A line break in one, or any other control
+character (tabs, the Unicode line and paragraph separators), is read as a space, and
+spaces in a row as one: a title, summary, status, `waiting_on`, next step or watch
+date written over several lines by hand still makes one line in `MEMORY.md` and at the
+session start, so no field can open a section there. Only `repos` and `related` keep
+their spaces, since they name paths and ids. The program writes them that way too, and
+refuses a field longer than its limit, counted in characters, when it changes: title
+300, summary 1,000, next step 2,000, `waiting_on` 200, a watch date's `what` 1,000. A
+journal entry may be up to 32,000 characters, a capture 4,000, a note 512,000 and the
+profile 64,000; the error says where the longer text goes (a file under `docs/<task>/`,
+which the journal names). A journal entry of several lines keeps them, each one after
+the first indented, so it stays one entry and never starts a heading or a step.
+
+Dates (`created`, `updated`, and each `watch` date of a task) are `YYYY-MM-DD`. One
+written another way (`2026-11-3`) keeps the note, but is reported until fixed, since it
+would never come up.
+
+A file whose name starts with `.` is not a note and is never read (an editor's lock
+file, such as Emacs's `.#task-x.md`). A file or folder that cannot be read (its
+permissions, a broken link) is reported and left out; the rest of the space loads as
+usual. So is a folder of a type of note (`tasks/`, `knowledge/`…) that is a link to
+another place: its notes are not read, so put the folder itself there.
+
+### Task fields
+
+Tasks add the fields that drive the whole workflow:
+
+```yaml
+status: plan                     # see "Task lifecycle"
+waiting_on: me                   # me | nobody | a person's name | another task id
+next: Approve the plan           # the single next action, one line
+watch:                           # optional: dates to look at something again
+  - date: 2026-11-16
+    what: Certificates renewed?
+    done: false
+```
+
+| Field | Holds | Required | Limit |
+|---|---|---|---|
+| `status` | one of the eight in "Task lifecycle" | yes | |
+| `waiting_on` | `me`, `nobody`, a person or a task id | yes, unless `closed` | 200 |
+| `next` | one line | yes, unless `closed` | 2,000 |
+| `watch` | a list of `date` (required), `what`, `done` | no | `what`: 1,000 |
+| `parent` | the id of a task (see "Subtasks") | no | |
+
+`status`, `waiting_on` and `next` on a note that is not a task make it not valid. A
+`watch` entry with a field other than these three makes the note not valid too.
+
+A watch date that is not `done` and falls in the next 7 days, or is already past, is
+brought up at the start of the session. This holds for closed tasks too: closing is when
+the checks for later are written down, so they come up until they are marked `done`.
+
+### Subtasks
+
+A task may be part of a bigger one, with one more field:
+
+```yaml
+parent: task-new-website         # optional: the id of the task this one is a part of
+```
+
+A subtask is a whole task (its own status, waiting_on, next step and journal). Make one
+for a part that waits on someone else or goes at its own pace; anything smaller is a
+step (below). The rules:
+
+- The parent is an existing task that is not itself a subtask: one level only. The
+  program refuses to open a subtask under a missing task, a note that is not a task, a
+  subtask, or a closed task.
+- A parent cannot be closed while any of its subtasks is not closed. Parking the parent
+  leaves its subtasks as they are.
+- The index lists a live subtask under its parent, indented. A subtask whose parent is
+  closed, someday or missing is listed on its own, so it is never hidden. A `parent`
+  that does not exist, is not a task, is the task itself or is itself a subtask is
+  reported as a problem (like an `area` that does not exist), and so is a `parent` on a
+  note that is not a task; the note is still read and can still be written, and is
+  listed on its own, once.
+
+### Steps
+
+A step is a Markdown checkbox in the task's **Plan** section, the level-2 heading
+`## Plan` (numbered or not, `## 3. Plan`, any case):
+
+```markdown
+## 3. Plan
+- [x] Buy the domain
+- [ ] Point it to the server
+```
+
+Steps need no field: the program finds the Plan heading and reads its checkboxes
+(`- [ ]` or `- [x]`, also with `*`), outside code blocks, numbered from 1 in order. The
+index and `pending` show how many are done ("1/2 steps") when there are any. Adding a
+step puts it, unticked, at the end of the Plan; ticking or unticking one changes only its
+`[ ]`, and writes one line in the journal.
+
+## Task lifecycle
+
+A task moves through six phases. You approve each change of phase; inside a phase the assistant works without asking at every step.
+
+| `status` | Meaning |
+|---|---|
+| `definition` | What we want, what is out, and how we will know it worked |
+| `analysis` | How things really are, measured, not assumed |
+| `plan` | Ordered steps, each with how to undo it |
+| `execution` | Doing it, writing a journal entry as we go |
+| `validation` | Proving the "done" criterion |
+| `closed` | Finished; the closing checklist is done |
+
+Two more statuses pause a task without losing anything:
+
+| `status` | Meaning |
+|---|---|
+| `parked` | Paused, resumed soon; `next` says exactly how |
+| `someday` | Not for weeks; leaves the session index, stays in its area |
+
+Skipping phases is allowed, and seen: the journal line of the change names the phases
+skipped (`Status: definition → execution, skipping analysis, plan.`). A closed task is
+never closed again, so its result is not written over. It opens again only with a
+reason, which goes to the journal (`Reopened (now plan): …`).
+
+### Task body
+
+The body uses these sections, in your language (the templates write the headings for you):
+
+1. **Essentials**: three to six lines that are enough to resume the task without reading anything else. Rewritten every time the task is parked.
+2. **Definition**, **Analysis**, **Plan**, **Validation**, **Closing**: one per phase.
+3. **Journal**: dated lines, `- YYYY-MM-DD — what happened`. Always the last section.
+
+A dated line, in a journal or in the inbox, is exactly `- `, the date, a space, an em
+dash `—` and a space. A line written with a plain `-` instead of the em dash is not a
+dated line: it is kept as it is, but the program does not take it for an entry or a
+capture. (The lines of `ref-repositories` are the one place where ` - ` is accepted.)
+
+The program does not search the rest of the prose. It relies on two positions: the essentials are the **first** section, and the journal is the **last**, so a new entry is simply appended at the end of the file. The checkboxes of the Plan section are read too (see "Steps").
+
+### Archived journal
+
+When a task note passes 24 KB, the program moves its oldest entries (a dated line and the lines under it, up to the next dated line), as they were, to `archive/journals/<task id>-<first date>-<last date>.md`, keeping about the last 8 KB of entries in the note, and never fewer than 4 KB moved at once. In their place it writes one dated line, dated as the last entry moved so the journal stays in date order, that names that file; the line is recognized by the path `archive/journals/….md` in it, whatever the language. The file is plain Markdown with no header: a title, a line on where the entries came from, then the entries. It is written before the note, so a failure leaves a copy too many, never one too few. Anything above the first dated line of the journal stays.
+
+## Areas
+
+An area is something you look after with no end date (your platform, your observability, your side project). Its body says what you look after, how it is going and what to watch. The program never writes in an area's note: what belongs to it is found from the `area` field of the other notes, and `MEMORY.md` groups the live tasks under it.
+
+## Knowledge
+
+- **reference**: how something works (a system, a deployment, a tool).
+- **lesson**: something learned, with a title that already states the conclusion.
+
+Either may belong to an area (`area`) and name other notes (`related`); neither is required.
+
+## People
+
+A person is someone the user deals with: `people/person-<name>.md`. The title is the name,
+and the summary says who they are to the user and the other names the user calls them
+("my manager · also: Marcos"), so the index alone tells the assistant who "Marcos" is. The
+body keeps anything else worth remembering. People belong to a space: work contacts stay
+in the work space. The panel reads the role and the other names back from the summary
+when it changes a person; the name (title and id) stays.
+
+## Repositories
+
+What each of the user's git repositories is lives in one reference of the space,
+`knowledge/ref-repositories.md` (`type: reference`, no area), so it is backed up with
+the notes. It is an ordinary reference: releases that know nothing of it read it as
+one, and it needs no new field. Its body has one line per repository:
+
+```
+- `~/code/website` — The public website, built with Hugo
+```
+
+The path is written with `~` when it is under the home folder (otherwise absolute), or,
+by hand, relative to a work folder of the space, as `repos:` writes it. The text after
+the dash (` — `, or ` - ` by hand) is one line of plain text, at most 300 characters,
+and may not hold a secret. Any other line (a paragraph of your own, a heading) is left
+alone. The panel's Repositories page and the MCP tool `repo_describe` write it, only for
+folders inside the space's work folders: a new description replaces the line of that
+repository, and an empty one takes it out. The note is made the first time.
+
+## Inbox
+
+`inbox.md` has no header. Each capture is one line, with the date it was captured:
+
+```
+- 2026-10-17 — Look at the new CI runner
+- 2026-10-17 — Call the insurance (remind: 2026-10-22)
+```
+
+A capture ending in `(remind: YYYY-MM-DD)` is brought up at the start of the session from
+7 days before that date, and every day after it, until the capture is processed (in the
+weekly review, or marked as dealt with). Any other line (the heading, a paragraph) is left alone.
+
+The text of a capture is one line, read as a header field is (above). Its endings
+`(remind: YYYY-MM-DD)` and `(from <space>)` are marks only the program writes: typed
+as part of the text, they are kept between square brackets instead
+(`[from personal]`), so a capture made here never passes for one another space sent.
+The same holds for `(from <space>)` at the end of a journal entry.
+
+## Reviews
+
+The weekly review goes through the inbox (each capture becomes a task, goes to an area or
+knowledge, or is dropped), the live tasks untouched for 14 days or more, and the dates due
+in the coming week. Processed captures leave the inbox, and the review is kept as
+`reviews/review-<date>.md` (`type: review`), with what was decided as its body and the
+first line as its summary; the captures it took out of the inbox follow, as dated lines
+under a heading of their own. The review is saved first: one that cannot be saved takes
+nothing out of the inbox. When the last review is 7 days old or more and there is
+something to go through, the session start offers a new one. A review done in the
+panel keeps one line per decision while it goes on in a draft on this machine
+(`review-<space>.draft` in the configuration folder, never in the notes), and writes
+those lines into the review's body when it is finished.
+
+## Rules
+
+Rules tell the assistant how to work. There are three levels:
+
+- **common rules**, shipped with the program (answer style, verify before advising, never commit or push unless asked, never escalate to root, never write secrets…);
+- **shared rules**, the person's own for every space, in the shared notes (for example, "answer in short sentences, one idea each");
+- **space rules**, in `rules/`, for what only applies to that space (for example, "hosts db01–db03 are never restarted without explicit permission").
+
+All of them are loaded at the start of every session, whole. The start comes in up to
+nine parts, each of 9,500 UTF-16 units at most (Claude Code counts that way; a character outside the basic plane counts as two): the heading with the profile, the
+index (up to three parts), the common rules in a part of their own, so nothing else can
+push them out, and the shared and space rules in the parts left. Only the parts that have
+something are sent, and they are counted that way ("part 2 of 3"). A
+rule's section titled `History` (or `Historia`) stays in its file: it tells how the rule
+came to be, not what to do. A rule that does not fit whole goes as one line, its title
+and summary, with the path of its file; so a rule's summary should say what to do.
+
+## Format version
+
+The notes of each space say which version of this format they follow, in
+`.augmented-brain/format` inside the memory folder: one line with a number. The
+configuration folder says its own, for the configuration and the profile, as
+`format = N` at the top of `config.toml`. Neither saying it means version 1, which is
+also never written to `config.toml`, because releases from before versions were
+written refuse settings they do not know. This document describes version 1.
+
+When a release writes something in a new way, it raises the version and brings a step
+that moves version N to N+1. At the start of a session (and in `augmented-brain check`)
+the program copies the whole folder to `migrations/` in the configuration folder, runs
+the missing steps one at a time and writes the new version after each, so a step that
+stops half way runs again from there. The copy goes in a folder of its own, symbolic
+links copied as links, and holds a file `.copy-complete` once all of it is on the disk;
+a run again from the same version keeps that copy and makes no other, so it never holds
+notes half moved. Notes of a newer version than the program knows are never written: the
+program asks to be updated.
+
+Anything an earlier program would refuse raises the version, even when the step that
+moves notes to it has nothing to change: a new header field, a new note type, a new
+task status. The program reads a header strictly (a field it does not know makes the
+file not valid), so without the new version an earlier program would only leave those
+notes out. With it, the earlier program refuses the whole folder and asks to be
+updated, and nothing is lost. A header field the program does not know is still said
+as one a newer version may have written: the note is left out, nothing writes over it,
+and `check`, `doctor`, the panel and the session start say to update (or to fix the
+field, if it is a typo). A field added before this rule (`parent`, in 0.3.0) is read
+by every release still covered by the promise of compatibility.
+
+Every note is replaced in one step: written to a temporary file next to it
+(`<name>.<digits>.tmp`), synced to the disk, renamed over the note, and its folder
+synced, so a power cut leaves the old note or the new one, never an empty one. A
+temporary file left by a write cut short is removed at the start of a session once it
+is an hour old. A note that is a symbolic link is never written through: the write is
+refused (the configuration folder may hold links, for people who keep it in a
+repository of their own).
+
+## Generated files
+
+`MEMORY.md` is the only generated file. The program rebuilds it after every change,
+and at the start of a session; editing it by hand is pointless. It has a title, a line
+that says it is generated, and these sections, in the configuration's language:
+
+- **Profile**: the space's own `profile.md`, when there is one.
+- **Rules**: the space's rules.
+- **Areas**.
+- **People**, when there are any.
+- **Live tasks**, grouped under the title of their area ("No area" for a task with none,
+  or with an area that does not exist). One line each: title and link,
+  summary, status, steps done when the Plan has any ("1/2 steps"), who it waits on, and
+  the next step. A live subtask goes indented under its parent when the parent is live;
+  otherwise on its own.
+- A last line with how many tasks are `someday`, which are not listed. Closed tasks are
+  not listed.
+
+The space's references and lessons are not in it: the assistant finds them by searching
+`knowledge/`. The shared notes' own `MEMORY.md` lists their rules and their knowledge.
+
+The session start hands the assistant this index a little shorter: each live task goes
+without its summary, and with its next step (its first 120 characters) only when it
+waits on you (the assistant reads a task before working on it), and without the rules,
+which the start gives whole. It comes in up to three parts of the start (see "Rules"),
+followed by the shared references and lessons by title and file. An index too long for
+them is cut, and the assistant is told where to read it whole.
+
+## Configuration
+
+*Informative.* The guide that keeps it up to date is
+[Configuration](configuration.md).
+
+`~/.config/augmented-brain/config.toml` (or the platform equivalent) declares the spaces:
+
+```toml
+language = "en"                  # en | es: the language the program speaks to you
+default_space = "personal"       # used outside every work folder (optional)
+production_aws_profiles = ["prod", "prod-eu"]   # every space: the user confirms first
+untouchable_hosts = ["db01", "db02", "db03"]    # ssh, scp, rsync, sftp, mosh to them: the user confirms first
+root_ask = ["db01 until 2026-10-31"]            # root there asks instead of being refused, until then
+
+[spaces.work]
+memory = "~/augmented-brain/work/notes"
+work_folders = ["~/augmented-brain/work", "~/code"]   # opening the assistant here selects this space
+backup = "git@github.com:me/brain-work-private.git"
+git_allowed_repos = ["~/code/website", "~/code/website-*"]   # the assistant may commit and push here, with git -C
+git_ask_repos = ["~/code/infra"]                # the same, once the user confirms each time
+
+[spaces.personal]
+memory = "~/augmented-brain/personal/notes"
+work_folders = ["~/augmented-brain/personal"]
+backup = "git@github.com:me/brain-personal-private.git"
+```
+
+In `git_allowed_repos` and `git_ask_repos` the last part of a path may hold a `*`, which
+matches one folder (`~/code/website-*` is every `website-<name>` next to `website`), and a
+git worktree of a listed repository counts as that repository, wherever it is. The guard
+joins the lists of every space, as it does with the production profiles: a repository
+belongs to the person, not to the space a session runs in. A repository in both lists
+asks. Even in an allowed one, a push that rewrites or deletes on the remote (a force, a
+delete, a mirror, or a refspec starting with `+` or `:`) asks.
+
+The same lists decide on merging a pull request (`gh pr merge`, `glab mr merge`, `glab mr
+accept`), which pushes to the branch it goes into. As a push counts only a repository
+written with `git -C`, a merge counts only a repository the command names. One way is a
+`cd` before it (`cd <repo> && gh pr merge 12`). The other, in the session's own folder,
+is `-R`/`--repo` or the pull request's address, when that is one of the folder's
+remotes: Claude Code drops a `cd` to the folder the session is already in. Never the
+session's folder alone, nor `GH_REPO`, which a command may inherit unseen. The folder
+must be the listed folder itself or a worktree of it, not a folder inside it. A
+repository the command
+names (`-R`/`--repo`, `GH_REPO`, `GITLAB_REPO`, the pull request's address) must be one
+of that repository's remotes, read from its `.git/config` (includes are not followed); a
+name with no host is on `github.com` or `gitlab.com` (or `GH_HOST`, `GITLAB_HOST`).
+`gh pr merge --admin` always asks. Publishing a release stays for the user.
+
+`production_aws_profiles` and `untouchable_hosts` may also appear inside a space, as older
+versions wrote them: the guard applies the top-level lists and every space's together.
+Host names match ignoring case, and a short name matches the full one either way (`db01`
+and `db01.example.com`).
+
+`root_ask` holds temporary exceptions for root, one machine each: `"<host> until <date>"`.
+The date is a day (the exception lasts to its end, in UTC) or a time
+(`2026-10-31T23:59Z`), and it is required, so no exception is left behind. While it
+lasts, a command that would run as root on that machine (`sudo`, `su`, also inside
+`ssh <host> '…'`) asks the user instead of being refused; the command it runs is still
+checked. The host is matched as ssh names it, or against this machine's name. After the
+date the entry does nothing, and `augmented-brain doctor` says it can be removed. The
+session start tells the assistant which exceptions are in force, and names those that
+cannot be read (they grant nothing); `doctor` names those too.
+
+`secrets.toml`, next to `config.toml`, names the secrets the user keeps in the system
+keychain: `secrets = ["<service>/<name>: what it is for", …]`. It is a file of its own,
+not a setting of `config.toml`, because programs before 0.6.0 refuse a setting they do
+not know; 0.6.0 kept the list in `config.toml`, and 0.6.1 moves it here at the start of
+a session or with `check`. The service and the name are single words (letters, digits,
+`. _ @ + -`, not starting with `-`), and what it is for is one line of plain text (no
+quotes, backslashes or control characters), as the keychain knows them (`secret-tool` attributes `service` and
+`name` on Linux; a generic password's service and account on macOS). It never holds a
+value: anything that looks like one is refused. It is the same list in every space. The
+assistant adds to it with the MCP tool `secret_name_save` (saving a listed name changes
+what it is for); the panel lists it, adds and removes names, says which tasks name each
+one, and, only when asked, whether this computer's keychain has it. An entry that cannot
+be read is left out and counted on the panel's page.
+
+Three more files sit next to `config.toml`. None of them goes into a backup.
+
+- `guard.toml` holds `untouchable_repos`: repositories where the assistant never commits,
+  pushes or merges, whatever the other lists say, for the whole machine. Same form as
+  `git_allowed_repos`. A missing file means nothing is untouchable.
+- `session.toml` holds `preferred_model`: the model the user expects to answer (`opus`,
+  or a full name). When a session answers with another one, the assistant tells the
+  user. Empty or missing: nothing is checked.
+- `remote.toml` holds the settings of remote access: `enabled`, `spaces`, `name_prefix`,
+  `permission_mode` and `folders`.
+
+They are files of their own because earlier programs refuse a setting of `config.toml`
+they do not know. Every change of `config.toml`, `guard.toml`, `remote.toml`,
+`session.toml`, `profile.md` or `secrets.toml` is kept as a version in `history/` in the
+configuration folder, with who made it. The last 10 are kept, only on this machine, never
+in a backup. The user's guide has every setting:
+[Configuration](configuration.md) and
+[Configuration versions](config-history.md).
+
+## Backup
+
+*Informative.* The guide that keeps it up to date is [Backup](backup.md).
+
+Each space backs up to its own private git repository: the memory folder itself is the
+repository. Every backup also copies this space's part of the configuration into
+`.augmented-brain/` inside the memory folder, so restoring on a new machine needs nothing
+else. The default space's backup (or the only space's) also carries the profile and
+`secrets.toml`, and says `default_space` in its copy of the configuration, so a restore
+makes it the default space again when the machine has none, and brings the secrets'
+names when the machine has none (also from a 0.6.0 backup, which kept them in its copy
+of the configuration), then names those this machine's keychain lacks; no other backup does, so the personal profile
+never reaches a work repository. The
+machine-wide guard lists are in no backup (they may name work machines): after a restore
+that leaves them empty, `restore` and `doctor` say so, and the next session offers to ask for them
+again. A restore never brings `git_allowed_repos` or `git_ask_repos` either, since someone
+else may have changed the backup: they are given again on the new machine. A backup that
+holds a symbolic link is never restored, nor merged with another machine's, since
+augmented brain never writes one. Notes are written readable by their owner only (files
+0600, folders 0700); a restore makes the restored notes so, `augmented-brain check` fixes
+a space whose notes others could read, and `augmented-brain doctor` warns about it. Paths are kept with `~`, so they point to the new machine's home, and
+the notes go back to the same place inside the work folder. A restore also installs the
+Claude Code plugin when it is missing.
+
+A backup is refused while any file of the memory holds a secret (the made-up keys of
+AWS's documentation are not secrets). The tools refuse to write one in the first place:
+a note may not hold more secrets than its old version did, so a note that already holds
+one (as an import may leave it) can still be changed to take it out. Files over 50 MB are left out, and the user is told.
+The repository gets a `.gitattributes` (`inbox.md merge=union`: captures from two machines
+are both kept, so one processed on one machine may come back if the other captured at the
+same time) and a `.gitignore` (`*.tmp`, `.DS_Store`, `Thumbs.db`, `desktop.ini`); lines
+the user adds to them stay. The generated index is rebuilt after a restore.
+
+When another machine changed the same notes, the backup merges before pushing. A note
+that each machine changed only by adding journal entries (dated lines) and moving its
+`updated` date is joined by itself: every entry either added, in date order, and the
+later date. So is a task where one machine moved old entries to `archive/journals/`:
+each line that names such a file is replaced by the file's entries to compare, and put
+back once joined. An earlier program, which does not do this, stops there as with any
+other conflict. Any other conflict stops the backup without pushing, naming the notes to
+merge by hand.
+
+Each git call of a backup or restore stops after 3 minutes without an answer (over
+https, also on a transfer slower than 1 KB a second for a minute), and a backup waits at
+most 10 minutes for another one to finish; both say why.
+
+## State of this machine
+
+*Informative.* None of this is part of the format, nor covered by the promise of
+[compatibility](compatibility.md): see
+[Where things live](where-things-live.md).
+
+`state/<space>.json` in the configuration folder keeps, for this machine only (never
+backed up, no text of the conversation): the sessions that started and ended, with the
+path of Claude Code's transcript of each, the Claude process each runs in, and each
+one's active task, when it was last written and when the assistant was last reminded to
+write. Earlier versions kept a single active task for the whole space; it is no longer
+read. The Stop reminder, the request after a
+compaction and the offer to recover a session that did not end come from it.
+
+`state/guard.seal` keeps a fingerprint of the guard's lists as the user last accepted
+them: at a session start, or when the panel saved them. While the lists differ from it, a
+commit, push or merge they allow asks first. `history/` keeps the last 10 versions of the
+configuration (see Configuration).
+
+`panel.json`, also in the configuration folder and readable only by the user, says where
+the panel listens while it runs (its process, port and key); it goes away when the panel
+stops. `panel.lock`, next to it, lets one `augmented-brain panel` (or `panel stop`) at a
+time start or stop the panel, so several at once start only one. The panel changes notes
+only through the same code as the MCP tools.
+
+## Decisions
+
+- **A folder per type**, not one flat folder with prefixes: a newcomer sees at a glance what there is and where each thing goes.
+- **One profile for the person**, next to the configuration; each space may add its own `profile.md`.
+- **Shared notes, not spaces that read each other.** What holds everywhere lives once, in the shared notes, rather than copied into each space (copies drift) or by letting a space read another's memory (which would mix work and personal). Only rules and knowledge can be shared; tasks, areas and people stay in their space.
+- **Importing an existing memory** of Claude Code (`augmented-brain import`) reads the header only: a field this format has is kept, at the top or under `metadata`; a person's own conventions are turned into those fields by a step of their own before importing, not by the program. It plans first and writes only with `--apply`, never over an existing note, and never changes the source.
