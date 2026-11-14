@@ -120,7 +120,8 @@ journalctl --user -u augmented-brain-remote-personal -n 20
 
 On macOS, in `~/Library/Logs/augmented-brain/augmented-brain-remote-<space>.log`; on
 Windows, in `augmented-brain-remote-<space>.log` inside
-`%LOCALAPPDATA%\augmented-brain\remote`. `status` names the file.
+`%LOCALAPPDATA%\augmented-brain\remote`. `status` names the file. On macOS, when it
+passes 1 MB, `status`, `doctor` and `install` cut it down to its last 64 KB.
 
 A service installed by an earlier version sent its errors nowhere; `status` and `doctor`
 tell you to run `augmented-brain remote install` again, which brings it up to date.
