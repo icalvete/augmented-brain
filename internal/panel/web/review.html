@@ -1,13 +1,13 @@
 {{define "content"}}{{with .D}}
 <h1>{{t "review"}}</h1>
 {{template "intro" (intro $ "review" (t "review.hint"))}}
-<p class="hint">{{if .Last}}{{tf "review.last" .Last}}{{else}}{{t "review.never"}}{{end}}{{if .Due}} · {{tf "today.review" .Days}}{{end}}</p>
+<p class="hint">{{if .Last}}{{tf "review.last" (day .Last)}}{{else}}{{t "review.never"}}{{end}}{{if .Due}} · {{tf "today.review" .Days}}{{end}}</p>
 
 <h2>{{t "inbox"}} <span class="hint">· {{len .Inbox}}</span></h2>
 {{if .Inbox}}<ul class="cards">
 {{range .Inbox}}{{$f := print "/review/capture#" .Date " " .Text}}<li class="card">
   <div class="title">{{inline .Text}}</div>
-  <div class="meta"><span>{{.Date}}</span>{{if .Remind}}<span class="badge">{{t "f.remind"}}: {{.Remind}}</span>{{end}}{{if .From}}<span class="badge">{{t "f.from"}} {{.From}}</span>{{end}}</div>
+  <div class="meta"><span><time datetime="{{.Date}}" title="{{.Date}}">{{day .Date}}</time></span>{{if .Remind}}<span class="badge">{{t "f.remind"}}: <time datetime="{{.Remind}}" title="{{.Remind}}">{{day .Remind}}</time></span>{{end}}{{if .From}}<span class="badge">{{t "f.from"}} {{.From}}</span>{{end}}</div>
   <form method="post" action="{{$.Base}}/review/capture" class="row wrap">
     {{template "fields" (fields $ "date" .Date "text" .Text "form" (print .Date " " .Text))}}
     <select name="as" aria-label="{{t "f.as"}}">
@@ -28,7 +28,7 @@
 {{if .Stale}}<ul class="cards">
 {{range .Stale}}<li class="card">
   <a class="title" href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
-  <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span><span>{{tf "review.updated" .Updated}}</span>
+  <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span><span>{{tf "review.updated" (day .Updated)}}</span>
     {{if .WaitingOn}}<span>{{t "waits"}}: {{if eq .WaitingOn "me"}}{{t "you"}}{{else if eq .WaitingOn "nobody"}}{{t "nobody"}}{{else}}{{.WaitingOn}}{{end}}</span>{{end}}</div>
   {{if .Next}}<div class="next">{{t "next"}}: {{inline .Next}}</div>{{end}}
   <div class="actions">
