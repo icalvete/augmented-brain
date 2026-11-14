@@ -4251,7 +4251,7 @@ refused: it opens again only with `task_update` and `reopen`, so its result stay
 Closes a finished task with its result. It is kept, never deleted. A task with open
 subtasks cannot close, and a task already closed is refused, so its result is never
 written over. If the task has watch dates not marked done, it says so: they
-still come up at the start of the session on their day, since closing is often when you
+still come up at the start of the session from a week before their day, since closing is often when you
 write down what to check later. When `session start` made a git worktree for the task and
 its session no longer runs, closing removes it with its branch if it holds nothing that
 is not on the remote (nor a file git ignores that no build makes again, such as a
