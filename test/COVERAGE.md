@@ -32,6 +32,7 @@ row here with the test that covers it.
 | `uninstall --all` takes only notes: a notes folder holding a work folder, the home folder or a folder with no notes stays whole; `--config` needs a `config.toml` | `cmd` `TestUninstallAllKeepsNotesThatHoldTheWork`, `TestUninstallAllTakesOnlyNotes`, `TestUninstallAllRefusesWhatIsNotNotes`, `TestUninstallConfigNeedsAConfiguration`; `internal/setup` `TestAddSpaceErrors` | Go |
 | `uninstall` stops the remote access and the task sessions first, and removes nothing else when it cannot | `cmd` `TestUninstallTakesTheRemoteAccessFirst`, `TestUninstallClosesTaskSessionsAndStopsWhenItCannot` (fakes); `scripts/remote-check.py` for real on macOS and Windows | Go, CI |
 | The desktop app's download stalls (Linux: gives up with its message, the install goes on) | `install-check.sh` step 1b, a local server that trickles | CI: Ubuntu |
+| The installers offer gh: GitHub's release, checked, next to the program, no password (Homebrew's on a Mac with it) | `install-check.sh` step 2 and `install-check.ps1` step 2 (`AB_GH_ABSENT=1`: CI runners have gh) | CI: Ubuntu, macOS, Windows |
 | A home with spaces and accents | `install-check.sh` step 6 | CI |
 | macOS: shells, version, Apple's developer tools | `scripts/install-check-mac.sh` | CI |
 | macOS: downloaded with a browser (Gatekeeper) | `scripts/mac-check.py` (what macOS says of it, and that it still runs from Terminal); the Finder's dialog by hand | CI: macOS; Mac pass |
@@ -135,7 +136,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Case | Covered by | Where |
 |---|---|---|
 | No backup set up | `scripts/faults-check.py`, `cmd` `TestSaysThereIsNoBackup` | CI: Linux, macOS, Windows |
-| No gh, gh not logged in | `faults-check.py`, `internal/backup` `TestGitHubRepo` | CI |
+| No gh, gh not logged in: the login started for the person, its code from Claude (online and offline) and on the Backup page | `faults-check.py` (a pretend gh), `internal/backup` `TestGitHubRepo`, `TestGitHubRepoStartsLogin`, `TestStartLogin`, `TestStartLoginFails`, panel `TestBackupSetupGitHubLogin`; against the real GitHub only by hand (the code shows up; accepting it needs an account) | CI, Go |
 | No GitHub account (GitLab, a server) | `internal/backup` (bare repositories as remotes) | Go |
 | No git | `faults-check.py` | CI |
 | No network, a remote that is gone or hangs | `faults-check.py`, `internal/backup` `TestBackupGivesUpOnAHangingRemote`, `TestBackupDoesNotWaitForeverForAnother` | CI, Go |

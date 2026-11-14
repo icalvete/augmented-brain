@@ -369,14 +369,14 @@ try {
   if ($env:AB_NO_INIT -ne '1' -and $env:AB_NO_GH -ne '1' -and -not (HasGh) -and ($interactive -or $env:AB_YES -eq '1')) {
     Write-Host ''
     Say "The backup of your notes goes to a private repository in your GitHub account, made with GitHub's program, gh. It is not on this computer yet." `
-        "La copia de seguridad de tus notas va a un repositorio privado de tu cuenta de GitHub, que se crea con el programa de GitHub, gh. Aún no está en este ordenador."
-    if (Ask (Text 'Install gh too? No administrator needed; you sign in to GitHub later, only if you want the backup.' '¿Instalo gh también? No hace falta ser administrador; entras en GitHub más tarde, solo si quieres la copia.')) {
+        "La copia de seguridad de tus notas va a un repositorio privado de tu cuenta de GitHub, que se crea con el programa de GitHub, gh. A\u00fan no est\u00e1 en este ordenador."
+    if (Ask (Text 'Install gh too? No administrator needed; you sign in to GitHub later, only if you want the backup.' '\u00bfInstalo gh tambi\u00e9n? No hace falta ser administrador; entras en GitHub m\u00e1s tarde, solo si quieres la copia.')) {
       Say "Installing gh..." "Instalando gh..."
       if ((GhInstall) -and (HasGh)) {
         Say "+ gh installed" "+ gh instalado"
       } else {
         Say "gh was not installed. The backup can wait: when you ask Claude for it, Claude tells you how." `
-            "gh no se ha instalado. La copia puede esperar: cuando se la pidas a Claude, te dirá cómo."
+            "gh no se ha instalado. La copia puede esperar: cuando se la pidas a Claude, te dir\u00e1 c\u00f3mo."
       }
     }
   }

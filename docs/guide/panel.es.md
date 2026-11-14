@@ -195,8 +195,9 @@ para que sobrevivan si este ordenador se rompe. Un espacio sin copia lo dice en 
   [Volver a una copia](backup.es.md#volver-a-una-copia).
 - En un espacio sin copia: **Configurarla en mi GitHub** crea un repositorio privado
   llamado `augmented-brain-<espacio>` en tu cuenta de GitHub y hace la primera copia.
-  Necesita la línea de comandos de GitHub, `gh`, instalada y conectada; si no lo está, la
-  página dice cómo. **Ya tengo un repositorio privado** toma su dirección en su lugar.
+  Necesita la línea de comandos de GitHub, `gh`, que te ofrece el instalador. Si `gh` aún
+  no ha entrado en tu cuenta, la página te da un código corto para escribir en
+  github.com/login/device; después pulsa otra vez el botón. **Ya tengo un repositorio privado** toma su dirección en su lugar.
 - **Recuperar las notas en otro ordenador** enseña el comando que hay que ejecutar allí.
   Recuperar nunca se hace desde el panel: es para un ordenador que aún no tiene las notas.
 

@@ -449,8 +449,10 @@ Configura la copia de seguridad de este espacio: un repositorio git privado que 
 notas, y al que se suben solas cada vez que acaba una sesión.
 
 Crea `augmented-brain-<espacio>`, un repositorio privado en tu cuenta de GitHub, con la
-línea de comandos `gh`, y hace la primera copia en el momento. Si falta `gh` o no has
-entrado con él, devuelve los pasos para guiarte.
+línea de comandos `gh`, y hace la primera copia en el momento. Si `gh` aún no ha entrado
+en tu cuenta de GitHub, lo empieza y devuelve un código corto para que lo escribas en
+github.com/login/device; se vuelve a llamar cuando aceptas. Si falta `gh`, devuelve los
+pasos para guiarte.
 
 - `repo_url` (opcional): no lo pases. Se conserva para que sigan funcionando las
   llamadas de versiones anteriores, y una dirección en él se rechaza siempre. Una copia en otro sitio (GitLab, el git de tu empresa) la

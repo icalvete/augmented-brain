@@ -434,8 +434,10 @@ Sets up the backup of this space: a private git repository that keeps its notes,
 by itself every time a session ends.
 
 It creates `augmented-brain-<space>`, a private repository in your GitHub account, with
-the `gh` command line, and makes the first copy right away. When `gh` is missing or not
-logged in, it returns the steps to guide you through.
+the `gh` command line, and makes the first copy right away. When `gh` has not entered
+your GitHub account yet, it starts that and returns a short code for you to type at
+github.com/login/device; call it again once you accept. When `gh` is missing, it
+returns the steps to guide you through.
 
 - `repo_url` (optional): leave it out. It is kept so that calls from earlier versions
   still work, and an address in it is always refused. A backup somewhere else (GitLab, your company's git) is yours to

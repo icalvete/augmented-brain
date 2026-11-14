@@ -136,7 +136,7 @@ exec sleep 30`)
 	if cur := CurrentLogin(cfg); cur == nil || cur.Code != l.Code {
 		t.Errorf("current: %+v", cur)
 	}
-	if st, err := os.Stat(filepath.Join(cfg, "state", loginFile)); err != nil || st.Mode().Perm() != 0o600 {
+	if st, err := os.Stat(filepath.Join(cfg, "state", loginFile)); err != nil || st.Mode().Perm() != 0o600 { // windows-ok: fakeGH skips on Windows
 		t.Errorf("state file: %v %v", st, err)
 	}
 	// Once gh is gone, the code is too.
