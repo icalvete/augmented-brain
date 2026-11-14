@@ -22,6 +22,13 @@ as text. It catches the mistakes an assistant makes, also hidden inside other co
 A program determined to get around it could. Read the
 [disclaimer](../../DISCLAIMER.md).
 
+## Where it watches
+
+Everywhere. The guard reads every command in every Claude Code session on this computer,
+inside your spaces or not, and its lists hold for the whole computer. A repository that is
+not in them is closed to commits and pushes, in any project. What else changes outside
+your spaces is in [Spaces](spaces.md#outside-every-space).
+
 ## What it stops
 
 - **Commits and pushes.** `git commit`, `git push`, and what publishes like a push:
@@ -165,9 +172,12 @@ three things so that the lists stay yours:
   or a command, also by a pattern or by copying, archiving or searching its folder, and
   calling a panel page from a command, are denied, however the address is written: the panel's Guard page is how you change the lists, and it works
   with that key. `augmented-brain panel` never prints the key either: it prints a link
-  that works once, and run by Claude it prints none.
+  that works once, and run by Claude it prints none, nor does `augmented-brain panel
+  remote`: they ask you to run them in a terminal of your own.
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
-  when you start a session and when you save in the panel. If the lists differ from the
+  when you start a session and when you save in the panel. When Claude only adds a
+  production profile or a machine to lists you had accepted, the seal follows: adding
+  only makes the guard ask more. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
   let through asks first, and the Guard page and `doctor` say so, until you accept them
   in the Guard page or you start a new session. Meanwhile the lists cannot soften the
@@ -219,7 +229,9 @@ is production", "never touch `db01` without asking me". Claude saves them with t
 
 Claude can only add to these lists. To take one out, use the panel's **Guard** page, or
 edit `production_aws_profiles` and `untouchable_hosts` yourself
-([Configuration](configuration.md)).
+([Configuration](configuration.md)). An addition does not leave the lists waiting for you
+to accept them: if you had accepted them, they stay accepted, and commits and pushes do
+not start asking. If something else had changed them first, they still wait for you.
 
 These lists are in no backup, because they may name your work's machines. After a
 restore on a new machine, the next session offers to ask you for them again.

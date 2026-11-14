@@ -13,8 +13,9 @@ say (`notas` in Spanish). Tasks, areas, knowledge, people, the inbox, the index
 
 **How they are kept safe:**
 
-- **Only you can read them.** The folder is private to your user; `augmented-brain check`
-  closes it again if it was opened.
+- **Only you can read them**, on Linux and macOS. The folder is private to your user;
+  `augmented-brain check` closes it again if it was opened. On Windows the program does
+  not change it: it keeps the permissions of the folder it is in.
 - **No secrets inside.** Claude's tools refuse to write a password, a token or a key into a
   note.
 - **Never half written.** Every change is checked first and written in one go, so a crash
@@ -33,9 +34,10 @@ say (`notas` in Spanish). Tasks, areas, knowledge, people, the inbox, the index
 | `config.toml` | The spaces and the guard's lists for the whole computer. |
 | `guard.toml` | The repositories nothing may touch. |
 | `secrets.toml` | The **names** of your secrets and what each is for. Never a value. |
-| `session.toml` | The model your sessions should use. |
+| `session.toml` | Two choices of yours: the model your sessions should use, and whether Claude [asks before it saves a rule](guard.md#asking-before-claude-saves-a-rule), your profile or the guard's lists. |
 | `remote.toml` | Remote access: which spaces have a door. |
 | `profile.md` | Who you are and how you like to work. |
+| `shared/` | The rules, references and lessons for every space. |
 
 **How it is kept safe:**
 
@@ -72,7 +74,7 @@ computer's keychain has.
 |---|---|
 | Every note of the space | The values of your secrets |
 | The space's own settings: its folders and its lists | The lists for the whole computer: production profiles, untouchable machines and repositories, root exceptions |
-| In the default space only: your profile, the shared notes and the names of your secrets | The configuration's versions, `state/` and `panel.json` |
+| In the default space only: your profile, the shared notes and the names of your secrets | `guard.toml`, `session.toml` and `remote.toml`; the configuration's versions, `state/` and `panel.json` |
 
 The lists for the whole computer stay out because they may name your work's machines.
 The repositories where Claude may commit or push travel with the space, but a restore

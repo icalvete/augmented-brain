@@ -12,12 +12,14 @@
 package panel
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html"
 	"io"
 	"net/http"
 	"net/url"
@@ -591,7 +593,10 @@ func stopRunning(cfgDir string, i Info) error {
 
 // OpenBrowser opens url in the person's browser, without waiting for it. It fails
 // where there is no desktop to open it on (an SSH session): then the URL is printed.
-func OpenBrowser(url string) error {
+// On Linux the browser gets, when it can read it, a file of cfgDir that sends it on to
+// url (redirectFile), not url itself: the arguments of a process are there for every
+// user of the machine to read, and url holds a ticket that opens the panel.
+func OpenBrowser(cfgDir, url string) error {
 	var cmd *exec.Cmd
 	switch runtime.GOOS {
 	case "darwin":
@@ -606,7 +611,13 @@ func OpenBrowser(url string) error {
 		if _, err := exec.LookPath("xdg-open"); err != nil {
 			return err
 		}
-		cmd = exec.Command("xdg-open", url)
+		target := url
+		if browserReadsFiles(xdgQuery) {
+			if f, err := redirectFile(cfgDir, url, time.Now()); err == nil {
+				target = f
+			}
+		}
+		cmd = exec.Command("xdg-open", target)
 	}
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
 	detach.Cmd(cmd)
@@ -616,6 +627,107 @@ func OpenBrowser(url string) error {
 	}
 	go func() { _ = cmd.Wait() }()
 	return nil
+}
+
+// openDir is the folder of the redirect files, in the configuration folder.
+const openDir = "state/panel-open"
+
+// redirectFile writes a page, readable only by its owner, that sends the browser on to
+// url, and returns its path. Files left by earlier runs are removed once their ticket
+// has expired: by then the browser has read them, or never will.
+func redirectFile(cfgDir, url string, now time.Time) (string, error) {
+	dir := filepath.Join(cfgDir, filepath.FromSlash(openDir))
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		return "", err
+	}
+	if old, err := os.ReadDir(dir); err == nil {
+		for _, e := range old {
+			if fi, err := e.Info(); err == nil && now.Sub(fi.ModTime()) > TicketTTL {
+				_ = os.Remove(filepath.Join(dir, e.Name()))
+			}
+		}
+	}
+	r, err := random()
+	if err != nil {
+		return "", err
+	}
+	f := filepath.Join(dir, "open-"+r[:16]+".html")
+	u := html.EscapeString(url)
+	page := `<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=` + u +
+		`"><title>augmented brain</title><a href="` + u + `">augmented brain</a>` + "\n"
+	if err := paths.WriteAtomicQuick(f, []byte(page), 0o600); err != nil {
+		return "", err
+	}
+	return f, nil
+}
+
+// xdgQuery runs one of the desktop's queries (xdg-settings, xdg-mime) and returns its
+// answer, "" when it fails or takes over 2 seconds.
+func xdgQuery(name string, args ...string) string {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	out, err := exec.CommandContext(ctx, name, args...).Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(out))
+}
+
+// browserReadsFiles says whether xdg-open of a redirect file reaches the default
+// browser and the browser can read it: HTML files open in the default browser, and it
+// is not a snap or a flatpak, whose sandbox keeps them from the configuration folder
+// (hidden in the home folder). When in doubt, no: the browser then gets the address.
+func browserReadsFiles(query func(string, ...string) string) bool {
+	browser := query("xdg-settings", "get", "default-web-browser")
+	if !strings.HasSuffix(browser, ".desktop") || query("xdg-mime", "query", "default", "text/html") != browser {
+		return false
+	}
+	f := desktopFile(browser)
+	if f == "" || strings.Contains(f, "/snapd/") || strings.Contains(f, "/flatpak/") {
+		return false
+	}
+	b, err := os.ReadFile(f)
+	if err != nil {
+		return false
+	}
+	for _, l := range strings.Split(string(b), "\n") {
+		if strings.HasPrefix(l, "Exec=") && (strings.Contains(l, "/snap/") || strings.Contains(l, "flatpak")) {
+			return false
+		}
+	}
+	return true
+}
+
+// desktopFile finds the .desktop file name in the folders the desktop reads them from.
+func desktopFile(name string) string {
+	if strings.ContainsAny(name, `/\`) {
+		return ""
+	}
+	data := os.Getenv("XDG_DATA_HOME")
+	if data == "" {
+		if h, err := os.UserHomeDir(); err == nil {
+			data = filepath.Join(h, ".local", "share")
+		}
+	}
+	dirs := []string{data}
+	sys := os.Getenv("XDG_DATA_DIRS")
+	if sys == "" {
+		sys = "/usr/local/share:/usr/share"
+	}
+	dirs = append(dirs, filepath.SplitList(sys)...)
+	for _, d := range dirs {
+		if d == "" {
+			continue
+		}
+		f := filepath.Join(d, "applications", name)
+		if _, err := os.Stat(f); err == nil {
+			if r, err := filepath.EvalSymlinks(f); err == nil {
+				return r
+			}
+			return f
+		}
+	}
+	return ""
 }
 
 // sameHost reports whether host is the panel's own: 127.0.0.1 or localhost on its port.

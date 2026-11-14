@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Main">
     <a href="index.html">Docs</a>
@@ -57,10 +57,11 @@
   <li><a href="spaces.html">Spaces</a></li>
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html" aria-current="page">Areas, knowledge and the rest</a></li>
-  <li><a href="guard.html">The guard</a></li>
-  <li><a href="how-it-works.html">How it works inside</a></li>
+  <li><a href="editing-notes.html">Editing notes by hand</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
 </ul>
 <p class="docnav-group">Daily use</p>
 <ul>
@@ -99,7 +100,7 @@
 <main class="prose" id="main">
   <h1>Areas, knowledge and the rest</h1>
   <p>Tasks come and go. Around them, a space keeps a few other kinds of notes. Each one is a Markdown file in its own folder, and you never have to create them by hand: you say it, and Claude writes it.</p>
-  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#areas">Areas</a></li><li><a href="#knowledge">Knowledge</a></li><li><a href="#people">People</a></li><li><a href="#inbox">Inbox</a></li><li><a href="#rules">Rules</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#repositories">Repositories</a></li><li><a href="#the-index">The index</a></li><li><a href="#documents-and-the-archive">Documents and the archive</a></li><li><a href="#editing-by-hand">Editing by hand</a></li><li><a href="#next">Next</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#areas">Areas</a></li><li><a href="#knowledge">Knowledge</a></li><li><a href="#people">People</a></li><li><a href="#inbox">Inbox</a></li><li><a href="#rules">Rules</a></li><li><a href="#taking-out-a-note-that-no-longer-holds">Taking out a note that no longer holds</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#repositories">Repositories</a></li><li><a href="#the-index">The index</a></li><li><a href="#documents-and-the-archive">Documents and the archive</a></li><li><a href="#editing-by-hand">Editing by hand</a></li><li><a href="#next">Next</a></li></ul></nav>
   <h2 id="areas">Areas</h2>
   <p>“The blog”, “the servers”, “the house”. An <strong>area</strong> is something you look after with no end date. It groups the tasks and the knowledge that belong to it.</p>
   <p>You say: “the newsletter is a new area”. Claude creates <code>areas/area-newsletter.md</code>. Its body says what you look after, how it is going and what to watch. The program lists the area's tasks and knowledge inside it by itself.</p>
@@ -107,7 +108,7 @@
   <h2 id="knowledge">Knowledge</h2>
   <p>What is worth keeping beyond one task. There are two kinds, in <code>knowledge/</code>:</p>
   <ul><li>A <strong>reference</strong> says how something works: “how the blog is deployed”.</li><li>A <strong>lesson</strong> says what you learned, with a title that already states the conclusion: “Test the backup restore, not only the backup”.</li></ul>
-  <p>You say: “save that as a lesson”. Both belong to an area, and Claude opens them when a task needs them.</p>
+  <p>You say: “save that as a lesson”. Either kind can belong to an area, and Claude opens it when a task needs it.</p>
   <h2 id="people">People</h2>
   <p>You say: “Diego runs the hosting company; I call him Dieguito”. Claude saves <code>people/person-diego.md</code>. The next time you say “tell Dieguito it is done”, it knows who he is.</p>
   <p>A <strong>person</strong> has a name, who they are to you, the other names you use for them, and anything worth remembering. A task can wait on a person (<code>waiting_on: Diego</code>).</p>
@@ -117,35 +118,44 @@
   <pre><code>- 2026-10-17 — Look at the new hosting prices
 - 2026-10-17 — Call the insurance (remind: 2026-10-22)</code></pre>
   <p>Each line is a <strong>capture</strong>. The <a href="weekly-review.html">weekly review</a> empties the inbox: each capture becomes a task, goes to an area or knowledge, or is dropped.</p>
-  <p>“Remind me on Thursday to call the insurance” is a capture with a date. From a week before, and every day after, it comes up at the start of the session, until the weekly review deals with it (or you mark it done in the panel).</p>
+  <p>“Remind me on Thursday to call the insurance” is a capture with a date. From a week before, and every day after, it comes up at the start of the session, until it is dealt with.</p>
+  <h3 id="sending-a-capture-to-another-space">Sending a capture to another space</h3>
+  <p>Sometimes you decide something in one space that must be done in another. In your <code>personal</code> session you say: “note in work: renew the hosting contract”. The capture goes to the inbox of <code>work</code>, ending in <code>(from personal)</code>. It comes up at the start of every <code>work</code> session until it is done.</p>
+  <h3 id="marking-a-capture-done">Marking a capture done</h3>
+  <p>Three ways, whichever is closest:</p>
+  <ul><li>tell Claude: “that capture is done” (or “turn it into a task”);</li><li>mark it done in the panel's Inbox page;</li><li>let the <a href="weekly-review.html">weekly review</a> go through it.</li></ul>
   <h2 id="rules">Rules</h2>
   <p>How you want Claude to work. You say: “from now on, answer in short sentences”. Claude saves it as a <strong>rule</strong>. Every session loads every rule, whole.</p>
   <p>There are three levels:</p>
   <ul><li><strong>common rules</strong>, which come with the program: verify before advising, never push unless asked, never become root, never write secrets…</li><li><strong>shared rules</strong>, yours, for every space (“answer in short sentences”);</li><li><strong>space rules</strong>, in the space's <code>rules/</code>, for what only applies there (“the database of the shop is never restarted on a Friday”).</li></ul>
   <p>A rule that holds everywhere goes to the shared notes. Tell Claude “this holds everywhere”.</p>
   <p>Your rules are read at the start of every session, so each one costs a little room every time. <code>augmented-brain doctor</code> says how much they take, and which are the longest.</p>
+  <p>By default Claude saves a rule and tells you. If you prefer, it can ask you first: see <a href="guard.html#asking-before-claude-saves-a-rule">Asking before Claude saves a rule</a>.</p>
+  <h2 id="taking-out-a-note-that-no-longer-holds">Taking out a note that no longer holds</h2>
+  <p>A rule, a reference or a lesson can stop being true. You say: “that rule no longer holds” or “retire the old lesson about the backup”. Claude asks you to confirm, then moves the note to <code>archive/</code>, with a line that says when, why and what replaces it. Nothing is deleted, but the note is no longer loaded: a retired rule stops reaching your sessions.</p>
   <h2 id="your-profile">Your profile</h2>
   <p>Who you are and how you like to work: your name, what you do, your language, how long you like answers, how much Claude may do without asking. It is one file for every space, <code>profile.md</code> in the configuration folder. The first-session interview writes it. To change it, tell Claude.</p>
   <h2 id="repositories">Repositories</h2>
   <p>What each of your git repositories is, one line each: "<code>~/code/blog</code> — The blog, built with Hugo". It lives in one reference of the space, <code>knowledge/ref-repositories.md</code>, so the backup keeps it. You write the line in the panel's Repositories page, or Claude writes it for you.</p>
   <h2 id="the-index">The index</h2>
-  <p><code>MEMORY.md</code> is the list Claude reads at the start of every session: your profile line, the rules, the areas and the live tasks with their status and next step. The shared references and lessons are listed by title and file. At the start, Claude gets it shorter: tasks go without their summary, and a task shows its next step (its first 120 characters) only when it waits on you. Claude reads a task before working on it. The program writes this file after every change: do not edit it by hand, it would be rewritten.</p>
+  <p><code>MEMORY.md</code> is the list Claude reads at the start of every session: your profile line, the rules, the areas and the live tasks with their status and next step. The shared references and lessons are listed by title and file. Claude reads a task in full before working on it. The program writes this file after every change: do not edit it by hand, it would be rewritten.</p>
   <h2 id="documents-and-the-archive">Documents and the archive</h2>
   <p>Two folders are never loaded:</p>
   <ul><li><code>docs/&lt;task&gt;/</code> keeps the long documents a task produces (a plan, an analysis), next to the notes and out of the project's repository.</li><li><code>archive/</code> keeps old things: long journals moved out, summaries of compacted conversations. Nothing there is ever deleted.</li></ul>
   <h2 id="editing-by-hand">Editing by hand</h2>
-  <p>Every note is plain Markdown. Open it with any editor and change it. Afterwards, run <code>augmented-brain check</code> in a folder of the space: it checks every note and rebuilds the index.</p>
+  <p>Every note is plain Markdown. Open it with any editor and change it. Afterwards, run <code>augmented-brain check</code> in a folder of the space: it checks every note and rebuilds the index. <a href="editing-notes.html">Editing notes by hand</a> says what to keep so the note stays readable.</p>
   <h2 id="next">Next</h2>
   <ul><li><a href="phrases.html">What to say to Claude</a>: the phrases for each kind of note.</li><li><a href="memory-format.html">Memory format</a>: every folder and header field.</li></ul>
   <nav class="pager" aria-label="Previous / Next">
     <a class="prev" href="tasks.html"><span>← Previous</span>Tasks</a>
-    <a class="next" href="guard.html"><span>Next →</span>The guard</a>
+    <a class="next" href="editing-notes.html"><span>Next →</span>Editing notes by hand</a>
   </nav>
 </main>
+<aside class="pagetoc"><p>On this page</p><ul><li><a href="#areas">Areas</a></li><li><a href="#knowledge">Knowledge</a></li><li><a href="#people">People</a></li><li><a href="#inbox">Inbox</a></li><li><a href="#rules">Rules</a></li><li><a href="#taking-out-a-note-that-no-longer-holds">Taking out a note that no longer holds</a></li><li><a href="#your-profile">Your profile</a></li><li><a href="#repositories">Repositories</a></li><li><a href="#the-index">The index</a></li><li><a href="#documents-and-the-archive">Documents and the archive</a></li><li><a href="#editing-by-hand">Editing by hand</a></li><li><a href="#next">Next</a></li></ul></aside>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+  <div class="wrap wide"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

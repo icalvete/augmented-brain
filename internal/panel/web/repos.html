@@ -20,10 +20,11 @@
     </div>
     {{if .Tasks}}<div class="next">{{range $i, $t := .Tasks}}{{if $i}} · {{end}}<a href="{{$.Base}}/task?s={{$t.Space}}&amp;id={{$t.ID}}">{{$t.Title}}</a>{{end}}</div>{{end}}
     <form method="post" action="{{$.Base}}/repo/describe" class="row">
-      <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}"><input type="hidden" name="repo" value="{{.Shown}}">
-      <input name="text" value="{{.Description}}" maxlength="300" aria-label="{{t "repos.describe.what"}}: {{.Name}}" placeholder="{{if .Description}}{{t "repos.describe.what"}}{{else}}{{t "repos.describe"}}{{end}}">
+      <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}"><input type="hidden" name="repo" value="{{.Shown}}"><input type="hidden" name="form" value="{{.Shown}}">
+      <input name="text" value="{{$.Val (print "/repo/describe#" .Shown) "text" .Description}}" maxlength="300" aria-label="{{t "repos.describe.what"}}: {{.Name}}" placeholder="{{if .Description}}{{t "repos.describe.what"}}{{else}}{{t "repos.describe"}}{{end}}">
       <button type="submit" class="small">{{t "save"}}</button>
     </form>
+    {{template "ferr" ($.FormErr (print "/repo/describe#" .Shown))}}
   </li>{{end}}
   </ul>{{end}}
   {{if .More}}<p class="hint">{{t "repos.more"}}</p>{{end}}

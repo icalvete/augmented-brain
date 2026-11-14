@@ -21,6 +21,11 @@ func (s *Server) capture(v *view, r *http.Request) (string, error) {
 	if err := required(v, r, "text"); err != nil {
 		return "", err
 	}
+	if d := field(r, "remind_on"); d != "" {
+		if err := brain.CheckDate(d); err != nil {
+			return "", onField("remind_on", err)
+		}
+	}
 	return "/inbox", v.b.Capture(field(r, "text"), field(r, "remind_on"))
 }
 

@@ -11,6 +11,9 @@ asistente. El programa las ofrece con `augmented-brain mcp`, que Claude Code arr
 través del plugin. En Claude Code aparecen como
 `mcp__plugin_brain_augmented-brain__<herramienta>`.
 
+Cada herramienta de abajo empieza con lo que podrías decir para que Claude la llame. No
+hace falta decirlo así: Claude elige la herramienta por lo que quieres decir.
+
 Hay cosas que valen para todas:
 
 - Trabajan con **el espacio de la carpeta en la que está Claude**, que buscan de nuevo en
@@ -46,10 +49,14 @@ Hay cosas que valen para todas:
 
 ## `where_am_i`
 
+**Dices:** "¿en qué espacio estoy?" Claude también la llama por su cuenta cuando necesita las carpetas del espacio.
+
 En qué espacio trabaja esta sesión, su carpeta de notas, sus áreas y cuántas tareas
 están vivas. No tiene parámetros.
 
 ## `pending`
+
+**Dices:** "¿por dónde íbamos?"
 
 Las tareas vivas, primero las que esperan por ti, cada una con su estado, los pasos
 hechos, a quién espera y su siguiente paso (cortado a 300 caracteres: `task_get` lo da
@@ -62,13 +69,15 @@ entero). Después, las fechas para revisar que han llegado. Claude la usa para "
 
 ## `task_new`
 
+**Dices:** "vamos a mover el blog a otro servidor".
+
 Abre una tarea nueva, en la fase de definición y esperando por ti. Con una tarea madre,
 es una subtarea.
 
 - `title`: un nombre corto para la tarea.
 - `summary` (opcional): una línea sobre qué es.
 - `area` (opcional): el id de su área. Por defecto, el área de la tarea madre, o
-  `area-general`.
+  `area-general` si esa área existe.
 - `parent` (opcional): el id de la tarea de la que esta es una parte. Un solo nivel: la
   tarea madre no puede ser una subtarea, ni estar cerrada.
 - `goal` (opcional): una línea sobre para qué es la tarea. Va a la Definición.
@@ -76,6 +85,8 @@ es una subtarea.
   Definición.
 
 ## `task_get`
+
+**Dices:** "sigamos con lo del blog". Claude también la llama antes de retomar cualquier tarea.
 
 Lee una tarea: su cabecera, todo su cuerpo con el diario, y sus subtareas. También dice
 de qué tarea es parte, y si falta en este ordenador un repositorio que nombra. Claude lee
@@ -91,6 +102,8 @@ y una línea dice dónde están.
   [Una tarea de otro espacio](spaces.es.md#una-tarea-de-otro-espacio).
 
 ## `task_update`
+
+**Dices:** "la definición está bien, adelante", o "esto espera ahora a Ana".
 
 Cambia una tarea. Solo cambian los campos que se le dan. Un cambio de estado se apunta en
 el diario, y si se salta fases (de `definition` directa a `execution`, por ejemplo), la
@@ -127,6 +140,8 @@ Hace falta al menos un campo además de `id` y `space`.
 
 ## `task_step`
 
+**Dices:** "ese paso ya está".
+
 Los pasos son las partes pequeñas de una tarea: casillas (`- [ ] texto`) en su Plan. Esta
 herramienta añade una, o la marca o la desmarca. Cada cambio escribe una línea corta en
 el diario, y la respuesta lista los pasos. Los pasos de una tarea cerrada se quedan como
@@ -146,6 +161,8 @@ se cerró.
 
 ## `task_journal`
 
+**Claude la llama** por su cuenta, en el momento en que algo se hace o se decide.
+
 Añade una entrada con fecha al diario de una tarea. Claude escribe una en el momento en
 que se hace o se decide algo.
 
@@ -157,6 +174,8 @@ que se hace o se decide algo.
   [Una tarea de otro espacio](spaces.es.md#una-tarea-de-otro-espacio).
 
 ## `task_park`
+
+**Dices:** "apárcala, sigo mañana".
 
 Deja una tarea en pausa sin perder nada, antes de pasar a otra cosa. Una tarea cerrada
 se rechaza: solo se vuelve a abrir con `task_update` y `reopen`, así su resultado se queda.
@@ -172,33 +191,44 @@ se rechaza: solo se vuelve a abrir con `task_update` y `reopen`, así su resulta
 
 ## `task_close`
 
-Cierra una tarea terminada con su resultado. Se guarda, nunca se borra. Una tarea con
-subtareas abiertas no se puede cerrar, y una ya cerrada se rechaza, para que su resultado
-nunca se pise. Si la tarea tiene fechas para revisar sin marcar
-como hechas, lo dice: siguen saliendo al empezar la sesión en su día, porque cerrar suele
-ser cuando se apunta lo que hay que mirar más adelante. Si `session start` creó un
-worktree de git para la tarea y su sesión ya no corre, al cerrarla lo quita con su rama
-cuando no tiene nada que no esté en el remoto (ni un fichero que git ignora y que ningún
-build vuelve a hacer, como un `.env`), y lo dice; si no, dice por qué se queda.
-Si la sesión propia de la tarea sigue en marcha (a menudo la que la cierra), un proceso
-aparte cierra esa sesión cuando termina su respuesta, la quita de Claude Desktop y
-claude.ai y quita su worktree de la misma forma. Una sesión que Claude retiró tras horas
-sin uso no responde nada: se cierra en el acto.
+**Dices:** "hecho, ciérrala".
+
+Cierra una tarea terminada con su resultado. Se guarda, nunca se borra.
+
+- Una tarea con subtareas abiertas no se puede cerrar. Una ya cerrada se rechaza, para
+  que su resultado nunca se pise.
+- Nombra las fechas para revisar sin marcar como hechas. Siguen saliendo al empezar la
+  sesión desde una semana antes de su día: cerrar suele ser cuando se apunta lo que hay
+  que mirar más adelante.
+- Quita los worktrees de git de la tarea (creados por `session start` o apuntados con
+  [`task_worktree`](#task_worktree)), con la rama creada para ellos, cuando no tienen
+  nada que no esté en el remoto, ni un fichero que git ignora y que ningún build vuelve
+  a hacer (un `.env`). Si no, la respuesta dice por qué se queda.
+- Si la sesión propia de la tarea sigue en marcha (a menudo la que la cierra), un
+  proceso aparte cierra esa sesión cuando termina su respuesta, la quita de Claude
+  Desktop y claude.ai, y después quita su worktree de la misma forma. Una sesión que
+  Claude retiró tras horas sin uso se cierra en el acto.
 
 - `id`: el id de la tarea.
 - `result`: lo que se ha conseguido, en una o dos líneas.
 
 ## `task_worktree`
 
+**Dices:** "trabaja en esto en un worktree aparte". `session start` también crea uno para un repositorio bare.
+
 Crea un worktree de git para una tarea, o apunta uno ya hecho, para que cerrar la tarea
 lo quite. Un worktree es una segunda carpeta de un repositorio, en una rama propia, para
-que una tarea cambie código sin tocar la carpeta principal. Creado aquí, es
-`<repo>-<tarea>`, al lado del repositorio, en una rama nueva con el nombre de la tarea,
-desde la rama por defecto de origin tal como está ahora; si se pide otra vez, devuelve
-el mismo. Al cerrar la tarea se quita cada worktree apuntado que no tenga nada sin
-commitear ni sin subir ni ficheros ignorados propios (un `.env`), con la rama creada para él (uno apuntado conserva su rama); uno
-con trabajo propio se queda, y también el de la sesión que cierra, y la respuesta dice
-por qué. Las dos rutas tienen que estar dentro de las carpetas de trabajo del espacio.
+que una tarea cambie código sin tocar la carpeta principal.
+
+- Creado aquí, es `<repo>-<tarea>`, al lado del repositorio, en una rama nueva con el
+  nombre de la tarea, desde la rama por defecto de origin tal como está ahora. Si se
+  pide otra vez, devuelve el mismo.
+- Al cerrar la tarea se quita cada worktree que no tenga nada sin commitear ni sin subir
+  ni ficheros ignorados propios (un `.env`). Uno creado aquí se va con su rama; uno
+  apuntado conserva su rama. Uno con trabajo propio se queda, y también el de la sesión
+  que cierra; la respuesta dice por qué.
+- Las dos rutas tienen que estar dentro de las carpetas de trabajo del espacio. Una
+  tarea cerrada se rechaza.
 
 - `id`: el id de la tarea.
 - `repo` (opcional): un repositorio de git: crea el worktree de la tarea en él.
@@ -206,6 +236,8 @@ por qué. Las dos rutas tienen que estar dentro de las carpetas de trabajo del e
   `folder`, uno de los dos.
 
 ## `capture`
+
+**Dices:** "recuérdame el jueves llamar al banco" → `capture` con `remind_on`.
 
 Apunta algo en el buzón sin abrir una tarea, si quieres con un día para recordártelo. La
 revisión semanal lo procesa.
@@ -221,6 +253,8 @@ revisión semanal lo procesa.
 
 ## `capture_done`
 
+**Dices:** "eso del buzón ya está".
+
 Quita una captura del buzón cuando ya está hecha o se ha convertido en tarea, sin
 esperar a la revisión semanal. Sobre todo para lo que ha mandado otro espacio, que si no
 sale al empezar cada sesión.
@@ -231,11 +265,15 @@ sale al empezar cada sesión.
 
 ## `weekly_review`
 
+**Dices:** "hagamos la revisión semanal".
+
 Lista lo que repasa la revisión semanal: el buzón, las tareas vivas que nadie ha tocado
 en 14 días o más, y las fechas que llegan en los próximos 7 días. Después Claude lo
 repasa contigo, una cosa cada vez. No tiene parámetros.
 
 ## `review_done`
+
+**Claude la llama** al terminar la revisión semanal.
 
 Termina la revisión semanal. Guarda lo decidido en `reviews/`, con las capturas que
 saca del buzón (cada una con su fecha), y solo después las saca. Una revisión que no se
@@ -249,12 +287,16 @@ así que no se pierde ninguna captura.
 
 ## `area_new`
 
+**Dices:** "abre un área para la casa".
+
 Crea un área: una responsabilidad sin fecha de fin que agrupa tareas y conocimiento.
 
 - `title`: el nombre del área.
 - `summary` (opcional): una línea sobre qué cuida.
 
 ## `knowledge_new`
+
+**Dices:** "apunta cómo lo hemos arreglado".
 
 Guarda una referencia o una lección que merece la pena más allá de una tarea: en este
 espacio, o compartida por todos. Un título que ya existe no crea nada: Claude recibe su
@@ -264,7 +306,8 @@ id, para cambiar esa o elegir otro título. Nada se guarda dos veces sin que nad
   sustituye a lo que tenía, lo que no se manda se queda, y la versión sustituida se
   guarda en `archive/`.
 - `kind`: `reference` (cómo funciona algo) o `lesson` (lo aprendido).
-- `title`: en una lección, un título que ya diga la conclusión.
+- `title`: en una lección, un título que ya diga la conclusión. Hace falta también con
+  `id`; vacío ahí, el título se queda como estaba.
 - `summary` (opcional): una línea.
 - `area` (opcional): el id de su área.
 - `body` (opcional): el texto, en Markdown.
@@ -272,10 +315,14 @@ id, para cambiar esa o elegir otro título. Nada se guarda dos veces sin que nad
 
 ## `rule_new`
 
+**Dices:** "a partir de ahora, contesta siempre con frases cortas".
+
 Guarda una regla que das sobre cómo trabajar. Cada sesión la carga. Un título que ya
 existe no crea nada: Claude recibe su id. Claude Code te dice, una vez, qué regla se ha
 guardado o cambiado, en un mensaje propio al acabar la respuesta: si no se lo has pedido,
-dile a Claude que lo deshaga. Si elegiste que se te pregunte antes ([`memory_trust`](configuration.es.md#sessiontoml)), Claude Code te pregunta antes de guardarlo.
+dile a Claude que lo deshaga. Si elegiste que se te pregunte antes
+([`memory_trust`](configuration.es.md#sessiontoml)), Claude Code te pregunta antes de
+guardarlo.
 
 - `id` (opcional): para cambiar una regla que existe. Lo que se manda sustituye a lo que
   tenía, lo que no se manda se queda, y la versión sustituida se guarda en `archive/`.
@@ -284,13 +331,18 @@ dile a Claude que lo deshaga. Si elegiste que se te pregunte antes ([`memory_tru
 - `body`: qué hacer, y por qué, en Markdown.
 - `shared` (opcional): `true` cuando vale en todos los espacios, no solo en este.
 
+`title` y `body` hacen falta también con `id`; vacíos ahí, se quedan como estaban.
+
 ## `note_retire`
+
+**Dices:** "esa regla ya no vale".
 
 Retira una regla, referencia o lección que ya no vale, sin borrarla. Pasa a `archive/`,
 que nunca se carga, así que una regla retirada deja de llegar al inicio de la sesión.
 Una línea al final dice cuándo, por qué y qué la sustituye. Para un duplicado o una
 versión vieja; Claude te pregunta antes. Cuando retira una regla, Claude Code te lo dice,
-una vez; o te pregunta antes, si lo elegiste.
+una vez; o te pregunta antes, si lo elegiste
+([`memory_trust`](configuration.es.md#sessiontoml)).
 
 - `id`: la regla, referencia o lección.
 - `reason`: por qué, en pocas palabras. Se queda con la nota.
@@ -298,6 +350,8 @@ una vez; o te pregunta antes, si lo elegiste.
 - `shared` (opcional): `true` cuando la nota está en la capa compartida.
 
 ## `person_save`
+
+**Dices:** "Ana es mi jefa".
 
 Recuerda a alguien con quien trabajas o tratas, para que un nombre de pila lleve a la
 persona correcta. Guardar un nombre que ya existe actualiza a esa persona.
@@ -319,6 +373,8 @@ ve en ese espacio.
 
 ## `repo_describe`
 
+**Dices:** "el repositorio `tienda` es la tienda online".
+
 Apunta, en una línea, qué es uno de tus repositorios git, para la página Repositorios del
 panel. Solo repositorios dentro de las carpetas de trabajo de este espacio. La línea va a
 la referencia `ref-repositories`, una línea por repositorio; una nueva sustituye a la
@@ -330,10 +386,13 @@ anterior.
 
 ## `profile_save`
 
+**Dices:** "llámame Lucía", o contestas la entrevista de la primera sesión.
+
 Guarda quién eres, cómo te gusta trabajar, y el nombre y la personalidad que le das a
 Claude. Lo comparten todos los espacios, y cada sesión empieza leyéndolo. Claude manda
 solo las partes que cambian: una parte que no se manda conserva lo que tiene, y una
-vacía se borra. Claude Code te dice, una vez, qué partes han cambiado; o te pregunta antes, si lo elegiste.
+vacía se borra. Claude Code te dice, una vez, qué partes han cambiado; o te pregunta
+antes, si lo elegiste ([`memory_trust`](configuration.es.md#sessiontoml)).
 
 - `name` (hace falta la primera vez): cómo quieres que te llamen.
 - `about` (opcional): a qué te dedicas y en qué trabajas, en líneas cortas que empiezan
@@ -348,9 +407,18 @@ vacía se borra. Claude Code te dice, una vez, qué partes han cambiado; o te pr
 
 ## `safety_save`
 
+**Dices:** "el perfil de AWS `tienda-prod` es producción".
+
 Añade cosas a lo que el guardia te pregunta. Las listas valen en toda esta máquina, en
-todos los espacios. Solo añade: para quitar algo, editas tú la configuración, y la
-respuesta dice dónde. Claude Code te dice, una vez, qué se ha añadido; o te pregunta antes, si lo elegiste.
+todos los espacios. Solo añade: para quitar algo, usa la página Guardia del panel (la
+respuesta también nombra el fichero de configuración). Claude Code te dice, una vez, qué
+se ha añadido; o te pregunta antes, si lo elegiste
+([`memory_trust`](configuration.es.md#sessiontoml)).
+
+Añadir solo hace que el guardia pregunte más, así que unas listas que habías aceptado
+siguen aceptadas: los commits, los push y las otras máquinas no empiezan a preguntar por
+ello. Si otra cosa había cambiado las listas antes, siguen esperando a que las aceptes
+(lo tienes en [el guardia](guard.es.md#solo-tú-cambias-las-listas-del-guardia)).
 
 - `production_aws_profiles` (opcional): perfiles de AWS CLI que llegan a producción. El
   guardia pregunta antes de los comandos que los usan.
@@ -358,6 +426,8 @@ respuesta dice dónde. Claude Code te dice, una vez, qué se ha añadido; o te p
   escribes para ssh.
 
 ## `secret_name_save`
+
+**Dices:** "el token del bot de avisos está en el llavero como `telegram/alerts-bot`".
 
 Apunta el nombre de un secreto que guardas en el llavero del sistema, y para qué es.
 Nunca su valor: un valor se rechaza. Eso incluye los tokens de servicios conocidos, una
@@ -373,6 +443,8 @@ está en la lista cambia para qué es.
 
 ## `backup_setup`
 
+**Dices:** "haz una copia de seguridad de mis notas".
+
 Configura la copia de seguridad de este espacio: un repositorio git privado que guarda sus
 notas, y al que se suben solas cada vez que acaba una sesión.
 
@@ -380,7 +452,8 @@ Crea `augmented-brain-<espacio>`, un repositorio privado en tu cuenta de GitHub,
 línea de comandos `gh`, y hace la primera copia en el momento. Si falta `gh` o no has
 entrado con él, devuelve los pasos para guiarte.
 
-- `repo_url`: se rechaza. Una copia en otro sitio (GitLab, el git de tu empresa) la
+- `repo_url` (opcional): no lo pases. Se conserva para que sigan funcionando las
+  llamadas de versiones anteriores, y una dirección en él se rechaza siempre. Una copia en otro sitio (GitLab, el git de tu empresa) la
   configuras tú, con `augmented-brain backup setup <url>` o en la página Copia de
   seguridad del panel: una dirección que pasa Claude puede venir de cualquier cosa que
   haya leído, y una sola llamada mandaría allí todas las notas.
@@ -389,6 +462,8 @@ Si el espacio ya tiene copia, dice adónde va y cómo fue la última; nunca la l
 sitio: eso solo lo haces tú, con `augmented-brain backup setup <url>`.
 
 ## `session_recover`
+
+**Dices:** "sí, recupérala", cuando el inicio de la sesión lo ofrece.
 
 Lee lo que tú y Claude os dijisteis en una sesión anterior de este espacio que no acabó
 bien, después de la última entrada del diario de su tarea. Solo los mensajes, sin la

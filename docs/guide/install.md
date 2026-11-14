@@ -14,8 +14,9 @@ walks you through it.
   Code. The installer says so before installing it. Plans: [claude.com/pricing](https://claude.com/pricing).
 - **No administrator or root.** The program goes in your own folder. Only installing
   something that is missing, like git, may ask for your password.
-- **The installer asks first.** The language, then each missing piece, with what it is for.
-  Press Enter to accept what it suggests.
+- **The installer asks first.** The language (your system's is suggested), then each
+  missing piece, with what it is for. Press Enter to accept what it suggests. To change the
+  language later, set `language` in your [configuration](configuration.md#settings-for-the-whole-computer).
 - **It always ends the same way:** two spaces, `work` and `personal` (in Spanish, `trabajo`
   and `personal`), in `~/augmented-brain`, the Claude Code plugin installed, and the offer to
   open Claude.

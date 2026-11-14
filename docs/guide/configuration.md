@@ -3,8 +3,10 @@
 [Leer en español](configuration.es.md)
 
 The installer writes the configuration for you, and Claude adds to it when you ask
-("`shop-prod` is production"). You only open it to change something by hand: a new work
-folder, a repository where Claude may commit, a root exception.
+("`shop-prod` is production"). To change what the guard lets through (a repository where
+Claude may commit, a root exception, a machine not to touch), use the panel's **Guard**
+page: it explains each list and keeps the guard in step. Open the files by hand only for
+the rest, such as a new work folder. See [What Claude may change](#what-claude-may-change).
 
 ## Where it is
 
@@ -17,6 +19,25 @@ One folder per computer, the **configuration folder**:
 Inside it, `config.toml` holds the settings. It is a **TOML** file: `name = value` lines,
 and a `[section]` heading for each space. Lines starting with `#` are comments; the
 program keeps them when it changes the file.
+
+## The files
+
+| File | What it holds | Who writes it | In the backup |
+|---|---|---|---|
+| `config.toml` | Your spaces, the language and the guard's lists | The installer, `space add`, `backup setup`, the Guard page, `safety_save` (only adds) | Each space's own section, in that space's backup. The lists for the whole computer, never |
+| `guard.toml` | Repositories Claude never touches | The Guard page | No |
+| `session.toml` | The model you expect and whether Claude asks before saving a rule | The Guard page | No |
+| `secrets.toml` | The names of your secrets, never their values | `secret_name_save`, the Secrets page | Yes, in the default space's backup |
+| `remote.toml` | Remote access | `remote install` and `remote uninstall` | No |
+| `profile.md` | Your profile | `profile_save`, the Profile page | Yes, in the default space's backup |
+
+Why so many files: a program before the one that added a setting refuses a setting of
+`config.toml` it does not know, but ignores a file it does not know. So each new kind of
+setting got its own file, and an earlier version still reads your configuration.
+
+The lists for the whole computer (production profiles, untouchable machines, root
+exceptions) stay out of backups, because they may name your work's machines. After a
+restore on a new machine, the next session offers to ask you for them again.
 
 ## An example
 
@@ -49,37 +70,45 @@ runs, so a change counts at once.
 These go at the top, before any `[spaces.…]` heading.
 
 - `language`: the language the program speaks to you, `en` or `es`: its messages and the
-  guard's reasons. Default `en`.
+  guard's reasons. Default `en`. The installer asks it; change it here whenever you like.
+  It counts at once. Folders and notes already made keep their names and language.
 - `default_space`: the space used outside every work folder, such as the scratch folder
   the desktop app opens a new session in. Its backup carries your profile and the shared
   notes. Optional; with two spaces or more, `init` and `space add` set it.
 - `production_aws_profiles`: AWS profiles that reach production. The guard asks you
   before any command that uses one, in every space. See [The guard](guard.md).
 - `untouchable_hosts`: machines not to touch without asking. The guard asks before
-  `ssh`, `scp`, `rsync`, `sftp` and `mosh` to them, in every space. Names match ignoring
-  case, and a short name matches the full one (`db01` and `db01.example.com`).
+  `ssh`, `scp`, `rsync`, `sftp`, `mosh`, `sshfs` and `autossh` to them, in every space.
+  Names match ignoring case, and a short name matches the full one (`db01` and
+  `db01.example.com`).
 - `root_ask`: temporary exceptions for root, one machine each, written `"<host> until
   <date>"`. The date is a day (`2026-12-31`, which lasts to its end, in UTC) or a time
-  (`2026-12-31T23:59Z`). Until then, root on that machine asks you instead of being
-  stopped. The date is required.
+  (`2026-12-31T23:59Z`). Until then, the guard asks you before a command as root on that
+  machine, instead of stopping it. The date is required. See
+  [Root on one machine, for a while](guard.md#root-on-one-machine-for-a-while).
 - `format`: the version of the configuration folder. The program writes it when a new
   version needs it; never change it by hand. Without it, it is 1.
 
 ## Settings of each space
 
 Each space is a section, `[spaces.<name>]`. Together they are the `spaces` of the file.
-The name is lowercase letters, digits and dashes, starting with a letter.
+The name is lowercase letters, digits and dashes, starting with a letter. A file with no
+space at all is an error: there must be one.
 
 - `memory`: the space's notes folder. Required.
 - `work_folders`: the folders that pick this space when you open Claude in them, or in a
-  folder inside them. See [Spaces](spaces.md).
+  folder inside them. When work folders are nested (`~/code` in one space,
+  `~/code/shop` in another), the deepest one wins. See [Spaces](spaces.md).
 - `backup`: the address of the space's private git repository. `backup setup` writes it.
   Without it, the space is not backed up.
-- `git_allowed_repos`: repositories where Claude may commit and push, written with
-  `git -C <repo>`. The last part of a path may hold a `*`, which matches one folder. A git
-  worktree of a listed repository counts as it.
-- `git_ask_repos`: the same, but Claude asks you each time. A repository in both lists
-  asks.
+- `git_allowed_repos`: repositories where Claude may commit, push and merge a pull
+  request without asking. Claude must name the repository in the command
+  (`git -C ~/code/blog push`, `cd ~/code/blog && gh pr merge 12`): the folder the session
+  is in does not count on its own. The last part of a path may hold a `*`, which matches
+  one folder. A git worktree of a listed repository counts as it. See
+  [Let Claude commit in a repository](guard.md#let-claude-commit-in-a-repository).
+- `git_ask_repos`: the same, but the guard asks you each time. A repository in both
+  lists asks.
 - `production_aws_profiles` and `untouchable_hosts`: older versions kept these per space.
   They still work there, and the guard joins them with the top-level lists. New ones go
   at the top.
@@ -89,14 +118,20 @@ let through from a session in any of them.
 
 ## What Claude may change
 
-Claude never edits this file on its own: the guard asks you first. Two tools add to it,
-and only add:
+Claude never edits these files on its own: the guard asks you first. Two tools add to
+`config.toml`, and only add:
 
-- `safety_save` adds production profiles and untouchable machines.
+- `safety_save` adds production profiles and untouchable machines. Adding only makes the
+  guard ask more, so lists you had accepted stay accepted.
 - `backup_setup` writes a space's `backup`, only for the repository it creates in your
   GitHub account, and never moves an existing backup elsewhere.
 
-To take anything out, edit the file yourself.
+To take anything out of the guard's lists, or to let Claude do more, use the panel's
+**Guard** page. You can edit the files by hand too, but then the guard sees lists you
+have not accepted: every commit, push or merge they would let through asks you, and so
+does every `aws` command and every connection to another machine, until you accept them
+in the Guard page or start a new session. See
+[Only you change the guard's lists](guard.md#only-you-change-the-guards-lists).
 
 ## When it cannot be read
 
@@ -108,8 +143,8 @@ file's `language`: an unknown setting, a newer version, a space with no `memory`
 `default_space` that is not a space. If `language` itself is wrong, the system's.
 
 While the file cannot be read, the guard does not know your lists. So it asks you before
-every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`. `augmented-brain doctor` tells you
-what is wrong.
+every `aws` command and every connection to another machine (`ssh`, `scp`, `rsync`,
+`sftp`, `mosh`, `sshfs`, `autossh`). `augmented-brain doctor` tells you what is wrong.
 
 To go back to a version that worked, run `augmented-brain config history` and then
 `augmented-brain config restore <number>`: both work while the file is broken. See
@@ -126,9 +161,8 @@ secrets = ["telegram/alerts-bot: alerts to my phone", "smtp/newsletter: sending 
 
 Each entry is `service/name: what it is for`. The service and the name are single words,
 as the keychain knows them. Claude adds to it with the tool `secret_name_save`, and the
-panel's Secrets page lists it. A value is refused. It is a file of its own because
-versions before 0.6.0 refuse a setting of `config.toml` they do not know. 0.6.0 kept the
-list in `config.toml` as `secrets`; `check` and the session start move it here.
+panel's Secrets page lists it. A value is refused. 0.6.0 kept the list in `config.toml`
+as `secrets`; `check` and the session start move it here.
 
 ## `guard.toml`
 
@@ -142,11 +176,12 @@ untouchable_repos = ["~/work/core", "~/work/cli-*"]
   whatever `git_allowed_repos` and `git_ask_repos` say. For the whole computer. Same form
   as those lists (`~`, a `*` in the last part, worktrees count).
 
-The panel's Guard page writes it. If the file is missing, nothing is untouchable; if it
-cannot be read, the guard asks before every commit and push. It is a file of its own for
-the same reason as `secrets.toml`: versions before this one refuse a setting of
-`config.toml` they do not know, and ignore a file they do not know. A session that still
-runs such a version does not enforce the list. It is not carried by backups.
+The panel's Guard page writes it. If the file is missing, nothing is untouchable. If it
+cannot be read, the guard does not know which repositories are untouchable, nor whether
+the rest is as you left it: every commit, push or merge the other lists would let
+through asks you, and so does every `aws` command and every connection to another
+machine, until the file is fixed. A session that still runs a version from before
+`guard.toml` does not enforce the list.
 
 ## `session.toml`
 
@@ -174,8 +209,7 @@ memory_trust = "ask"
   [the guard](guard.md#asking-before-claude-saves-a-rule).
 
 The panel's Guard page writes it, and the guard asks before Claude writes it. If the file
-is missing or `preferred_model` is empty, the model is not checked. It is a file of its own for the
-same reason as `guard.toml`. It is not carried by backups.
+is missing or `preferred_model` is empty, the model is not checked.
 
 A line of `guard.toml` or `session.toml` the program does not know is ignored, not
 refused: a newer version may add settings there, and an earlier one keeps working.
@@ -186,8 +220,7 @@ typo, because a misspelled setting there does nothing.
 
 Next to `config.toml`, `remote.toml` holds the settings of [remote access](remote.md),
 which keeps Claude reachable from another computer. `augmented-brain remote install`
-creates it. It is a file of its own because versions before this one refuse a setting of
-`config.toml` they do not know, and they must keep reading your configuration.
+creates it.
 
 ```toml
 enabled = true
@@ -223,6 +256,9 @@ Run `augmented-brain remote install` again after changing it, so the services pi
 - `shared/`: the shared notes (rules, references and lessons for every space).
 - `state/`: what this computer knows of each space's sessions. Never backed up.
 - `migrations/`: a full copy of notes before a new version moved them.
+- `marketplace/`: the Claude Code plugin of the installed version, which Claude Code
+  reads from here. The program writes it when it installs or updates the plugin; the
+  guard asks before anything else writes there.
 - `panel.json` and `panel.lock`: where the panel listens while it runs, and its lock.
   The guard never lets Claude read `panel.json`: it holds the panel's key.
 - `remote/<space>/`: the folder where the remote access service of a space starts, only for
@@ -249,13 +285,15 @@ The installer reads a few more:
 - `AB_NO_DESKTOP=1`: do not offer the Claude desktop app.
 - `AB_DESKTOP_TIMEOUT`: on Linux, how many seconds the desktop app's download may take
   before the installer gives up and goes on without it. Default 480 (8 minutes).
-- `AB_INSTALL_DIR`: where to put the program. Default `~/.local/bin`.
+- `AB_INSTALL_DIR`: where to put the program. Default `~/.local/bin`, and on Windows
+  `%USERPROFILE%\.local\bin`.
 - `AB_NO_INIT=1`: only install the program, without setting anything up.
-- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY`, `AB_MARKETPLACE` and
-  `AB_DESKTOP_URL`: for testing: which version, where the release files are, the GitHub
-  API to fall back on, the wait between tries, a folder or repository to take the plugin
-  from instead of the one inside the program, and where the desktop app's apt repository
-  is. `augmented-brain update` ignores them all: for its tests it takes `--from`.
+- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY`, `AB_MARKETPLACE`,
+  `AB_DESKTOP_URL` and `AB_CLAUDE_STABLE_URL`: for testing: which version, where the
+  release files are, the GitHub API to fall back on, the wait between tries, a folder or
+  repository to take the plugin from instead of the one inside the program, where the
+  desktop app's apt repository is, and where to read Claude Code's latest stable version
+  (the installer offers to update an older Claude Code). `augmented-brain update` ignores them all: for its tests it takes `--from`.
 - `AB_ALLOW_ROOT=1`: on Linux and macOS, install even as root (`sudo`). Without it the
   installer refuses: it needs no root, and as root the program and its settings would
   end up belonging to root, or in root's home, not yours.

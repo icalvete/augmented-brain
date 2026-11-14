@@ -25,8 +25,8 @@ Lo que merece la pena guardar más allá de una tarea. Hay dos tipos, en `knowle
 - Una **lección** dice lo que aprendiste, con un título que ya dice la conclusión:
   "Prueba a restaurar la copia, no solo a hacerla".
 
-Dices: "guárdalo como lección". Las dos son de un área, y Claude las abre cuando una tarea
-las necesita.
+Dices: "guárdalo como lección". Cualquiera de las dos puede ser de un área, y Claude la
+abre cuando una tarea la necesita.
 
 ## Personas
 
@@ -61,8 +61,22 @@ Cada línea es una **captura**. La [revisión semanal](weekly-review.es.md) vac�
 cada captura pasa a ser una tarea, va a un área o al conocimiento, o se descarta.
 
 "Recuérdame el jueves que llame al seguro" es una captura con fecha. Desde una semana
-antes, y cada día después, sale al empezar la sesión, hasta que la revisión semanal la
-resuelve (o la marcas como hecha en el panel).
+antes, y cada día después, sale al empezar la sesión, hasta que se resuelve.
+
+### Mandar una captura a otro espacio
+
+A veces decides en un espacio algo que hay que hacer en otro. En tu sesión de `personal`
+dices: "apunta en trabajo: renovar el contrato del hosting". La captura va al buzón de
+`trabajo` y acaba en `(from personal)`. Sale al empezar cada sesión de `trabajo` hasta que
+se resuelve.
+
+### Dar una captura por hecha
+
+Tres formas, la que te pille más a mano:
+
+- díselo a Claude: "esa captura ya está" (o "conviértela en tarea");
+- márcala como hecha en la página Buzón del panel;
+- deja que la [revisión semanal](weekly-review.es.md) la repase.
 
 ## Reglas
 
@@ -83,6 +97,16 @@ para todo".
 Tus reglas se leen al empezar cada sesión, así que cada una ocupa un poco de sitio cada
 vez. `augmented-brain doctor` dice cuánto ocupan y cuáles son las más largas.
 
+Por defecto, Claude guarda la regla y te avisa. Si lo prefieres, puede preguntarte antes:
+mira [Preguntar antes de que Claude guarde una regla](guard.es.md#preguntar-antes-de-que-claude-guarde-una-regla).
+
+## Retirar una nota que ya no vale
+
+Una regla, una referencia o una lección pueden dejar de ser ciertas. Dices: "esa regla ya
+no vale" o "retira la lección vieja de la copia". Claude te pide que lo confirmes y mueve
+la nota a `archive/`, con una línea que dice cuándo, por qué y qué la sustituye. No se
+borra nada, pero la nota deja de cargarse: una regla retirada ya no llega a tus sesiones.
+
 ## Tu perfil
 
 Quién eres y cómo te gusta trabajar: tu nombre, a qué te dedicas, tu idioma, lo largas
@@ -101,11 +125,9 @@ panel, o te la escribe Claude.
 
 `MEMORY.md` es la lista que Claude lee al empezar cada sesión: la línea de tu perfil, las
 reglas, las áreas y las tareas vivas con su estado y su siguiente paso. Las referencias y
-lecciones compartidas salen con su título y su fichero. Al empezar, Claude la recibe más
-corta: las tareas van sin su resumen, y una tarea enseña su siguiente paso (los primeros
-120 caracteres) solo si te espera a ti. Claude lee una tarea antes de trabajar en ella.
-El programa escribe este fichero después de cada cambio: no lo edites a mano, se
-reescribiría.
+lecciones compartidas salen con su título y su fichero. Claude lee una tarea entera antes
+de trabajar en ella. El programa escribe este fichero después de cada cambio: no lo
+edites a mano, se reescribiría.
 
 ## Documentos y el archivo
 
@@ -120,7 +142,8 @@ Hay dos carpetas que no se cargan nunca:
 
 Cada nota es Markdown normal. Ábrela con cualquier editor y cámbiala. Después, lanza
 `augmented-brain check` en una carpeta del espacio: comprueba todas las notas y rehace el
-índice.
+índice. [Editar las notas a mano](editing-notes.es.md) dice qué respetar para que la nota
+se siga leyendo.
 
 ## Por dónde seguir
 

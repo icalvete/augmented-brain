@@ -1,6 +1,8 @@
 package backup
 
 import (
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -81,5 +83,46 @@ func TestBackupDoesNotWaitForeverForAnother(t *testing.T) {
 	defer func() { LockWait = old }()
 	if _, err := Run(c, s, "one"); err == nil || !strings.Contains(err.Error(), "another backup") {
 		t.Errorf("waiting behind a stuck backup: %v", err)
+	}
+}
+
+// The messages of a backup that gave up speak the configuration's language, also when
+// the git call that got no answer is deep inside it.
+func TestBackupMessagesInSpanish(t *testing.T) {
+	c, s := oneSpace(t)
+	c.Language = "es"
+	unlock, err := filelock.Lock(filepath.Join(c.Dir, backupLock))
+	if err != nil {
+		t.Fatal(err)
+	}
+	old := LockWait
+	LockWait = 200 * time.Millisecond
+	defer func() { LockWait = old }()
+	if _, err := Run(c, s, "one"); err == nil || !strings.Contains(err.Error(), "otra copia lleva más de") {
+		t.Errorf("Run, another backup running: %v", err)
+	}
+	if _, err := GoBack(c, s, "HEAD", "one"); err == nil || !strings.Contains(err.Error(), "otra copia lleva más de") {
+		t.Errorf("GoBack, another backup running: %v", err)
+	}
+	unlock()
+
+	none := &config.Space{Name: "casa"}
+	if _, err := Run(c, none, "one"); err == nil || !strings.Contains(err.Error(), "el espacio casa aún no tiene copia") {
+		t.Errorf("Run, no backup: %v", err)
+	}
+	if _, err := GoBack(c, none, "HEAD", "one"); err == nil || !strings.Contains(err.Error(), "el espacio casa no tiene copia") {
+		t.Errorf("GoBack, no backup: %v", err)
+	}
+
+	// A git call that got no answer, wrapped as git's errors are.
+	inner := fmt.Errorf("git push: %w: ", &NoAnswerError{After: 3 * time.Minute, Err: errors.New("signal: killed")})
+	if got := inner.Error(); !strings.Contains(got, "stopped after 3m0s without an answer") {
+		t.Errorf("before Localize, English: %s", got)
+	}
+	if got := Localize(inner, "es").Error(); !strings.Contains(got, "parada tras 3m0s sin respuesta") {
+		t.Errorf("after Localize: %s", got)
+	}
+	if Localize(nil, "es") != nil {
+		t.Error("Localize(nil) is not nil")
 	}
 }
