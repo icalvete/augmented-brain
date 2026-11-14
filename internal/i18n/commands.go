@@ -564,6 +564,22 @@ Uso:
 		en: "language %q: use en or es",
 		es: "idioma %q: usa en o es",
 	},
+	"backup.noanswer": {
+		en: "stopped after %s without an answer: is the network or the repository down? (%v)",
+		es: "parada tras %s sin respuesta: ¿falla la red o el repositorio? (%v)",
+	},
+	"backup.busy": {
+		en: "another backup has been running for over %s and did not finish: try again later",
+		es: "otra copia lleva más de %s en marcha y no ha terminado: vuelve a probar más tarde",
+	},
+	"backup.none": {
+		en: "space %s has no backup",
+		es: "el espacio %s no tiene copia de seguridad",
+	},
+	"backup.none.setup": {
+		en: "space %s has no backup yet: run `augmented-brain backup setup <url of a private repository>`",
+		es: "el espacio %s aún no tiene copia de seguridad: lanza `augmented-brain backup setup <dirección de un repositorio privado>`",
+	},
 	"backup.warning": {
 		en: "these files are bigger than %d MB and were left out of the backup: %s. Move them out of the notes folder (or make them smaller); the rest is backed up",
 		es: "estos ficheros pasan de %d MB y se han quedado fuera de la copia: %s. Sácalos de la carpeta de notas (o hazlos más pequeños); el resto está copiado",

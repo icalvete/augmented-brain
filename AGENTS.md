@@ -97,7 +97,8 @@ Heavier checks, before a release or when you touch what they cover:
 - `scripts/compat-check.sh`: what this version writes (tasks, people, secrets' names, what a repository is,
   captures, rules, a backup), the last two releases must still read: their `doctor`,
   `check`, MCP tools, session start and restore. After an update, open Claude sessions
-  keep the old program, and other machines may not be updated yet. CI runs it in every
+  keep the old program, and other machines may not be updated yet. The other way round,
+  each of them makes a backup and the new program restores it. CI runs it in every
   pull request (`compat` in `ci.yml`). By hand: `COMPAT_DIR=<folder> scripts/compat-check.sh
   <new binary> [versions]`; it leaves the folder for you to delete.
 - `scripts/install-check-mac.sh`: what only a Mac can get wrong in the installer (the PATH

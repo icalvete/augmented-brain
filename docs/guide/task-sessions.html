@@ -58,10 +58,10 @@
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
   <li><a href="editing-notes.html">Editing notes by hand</a></li>
-  <li><a href="guard.html">The guard</a></li>
-  <li><a href="how-it-works.html">How it works inside</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
 </ul>
 <p class="docnav-group">Daily use</p>
 <ul>
@@ -116,7 +116,7 @@
   <ul><li><strong>Claude must trust that folder itself.</strong> Trusting a folder above it is not enough: a repository's own settings and hooks must not run unasked. The first time, the command says what to do: on the computer (or through <code>ssh</code>), go to the folder, run <code>claude</code>, accept the question and close it with <code>/exit</code>. Then ask again.</li><li><strong>One task per folder.</strong> Two tasks in one folder would step on each other's changes, so a folder another task's session uses is refused. Give it another one with <code>--folder</code>, such as a worktree (below).</li></ul>
   <h2 id="worktrees-for-a-bare-repository">Worktrees, for a bare repository</h2>
   <p>A <strong>worktree</strong> is a second working copy of a git repository: another folder, on another branch, sharing the same history. A <strong>bare repository</strong> is one with history but no working copy: some people keep each project that way and make a worktree for each piece of work.</p>
-  <p>When the task's repository is bare, <code>session start</code> makes the task a worktree of its own next to it: <code>site-new-website</code> for the task <code>task-new-website</code> of <code>site</code>, on a new branch named after the task, from the default branch of origin as it is now (it fetches first). So two tasks of one repository never share a folder, and a session never starts on old code. Asked again, it uses the same worktree. Claude keeps the trust of a worktree under its main repository: trusting either one is enough.</p>
+  <p>When the task's repository is bare, <code>session start</code> makes the task a worktree of its own next to it: <code>site-new-website</code> for the task <code>task-new-website</code> of <code>site</code>, on a new branch named after the task, from the default branch of origin. It fetches first, so the branch starts from the code of now; if origin cannot be reached, it starts from what this computer last knew, and says so. If an earlier session of the task left its branch, the worktree takes that branch as it was. So two tasks of one repository never share a folder. Asked again, it uses the same worktree. Claude keeps the trust of a worktree under its main repository: trusting either one is enough.</p>
   <p>The worktree goes away by itself when nothing would be lost: with <code>session stop</code>, when the task is closed, or, for a session that ended some other way (a reboot, closing it from Claude Desktop), at the next <code>session start</code>. One with changes not committed, commits not pushed, or files git ignores that no build makes again (a <code>.env</code>, a key) stays, and <code>augmented-brain doctor</code> names it.</p>
   <h2 id="see-them-and-close-them">See them, and close them</h2>
   <pre><code>augmented-brain session list</code></pre>

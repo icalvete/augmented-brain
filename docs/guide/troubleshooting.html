@@ -58,10 +58,10 @@
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
   <li><a href="editing-notes.html">Editing notes by hand</a></li>
-  <li><a href="guard.html">The guard</a></li>
-  <li><a href="how-it-works.html">How it works inside</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
 </ul>
 <p class="docnav-group">Daily use</p>
 <ul>
@@ -165,7 +165,7 @@
   <h2 id="backup-and-restore">Backup and restore</h2>
   <h3 id="the-backup-failed">The backup failed</h3>
   <p>Claude tells you at the start of the next session. Run <code>augmented-brain backup</code> in a folder of the space to see why:</p>
-  <ul><li><strong>No network, or no access.</strong> Check you can reach the repository. On GitHub, log in with <code>gh auth login</code>.</li><li><strong>“Stopped after 3m0s without an answer”.</strong> The network or the repository did not answer, so the backup gave up instead of waiting for good. Try again when the network works; the next backup does not wait behind this one.</li><li><strong>“Another backup has been running for over 10m0s”.</strong> A backup that no longer answers is in the way. Try again later.</li><li><strong>A secret in a note.</strong> It names the file. Take the secret out, then back up again. <code>augmented-brain check</code> names those files too.</li><li><strong>Two machines changed the same note.</strong> It names the notes, and the folder where to merge them by hand. When each machine only added journal entries, they are joined by themselves.</li><li><strong>A file over 50 MB.</strong> It is left out, and the rest is backed up. Move it out of the notes folder.</li></ul>
+  <ul><li><strong>No network, or no access.</strong> Check you can reach the repository. On GitHub, log in with <code>gh auth login</code>.</li><li><strong>“stopped after 3m0s without an answer”.</strong> The network or the repository did not answer, so the backup gave up instead of waiting for good. Try again when the network works; the next backup does not wait behind this one.</li><li><strong>“another backup has been running for over 10m0s”.</strong> A backup that no longer answers is in the way. Try again later.</li><li><strong>A secret in a note.</strong> It names the file. Take the secret out, then back up again. <code>augmented-brain check</code> names those files too.</li><li><strong>Two machines changed the same note.</strong> It names the notes, and the folder where to merge them by hand. When each machine only added journal entries, they are joined by themselves.</li><li><strong>A file over 50 MB.</strong> It is left out, and the rest is backed up. Move it out of the notes folder.</li></ul>
   <h3 id="doctor-warns-about-a-backup"><code>doctor</code> warns about a backup</h3>
   <ul><li><strong>“Began … and never ended”.</strong> The computer went off, or the backup was stopped half way. Run <code>augmented-brain backup</code> in a folder of the space: it backs up now, or says what stops it.</li><li><strong>“The automatic backup is not running”.</strong> The notes changed after the last backup that went through. Run <code>augmented-brain backup</code> the same way. If <code>AB_NO_AUTO_BACKUP</code> is set in your environment, the automatic backup is off.</li><li><strong>“Holds a password or a token”.</strong> The repository's address has your login written in it, so it is kept in the configuration and inside the backup. Let git keep the login instead (on GitHub, <code>gh auth setup-git</code>, or an ssh address), set the backup up again with the clean address, and change that password or token: earlier copies still hold it.</li></ul>
   <h3 id="doctor-says-a-space-has-no-backup"><code>doctor</code> says a space has no backup</h3>
