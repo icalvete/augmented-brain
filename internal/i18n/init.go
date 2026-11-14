@@ -82,6 +82,14 @@ var initMessages = map[string]msg{
 		en: "From now on, to work: open the Claude app, go to the Code tab and click + New. Without choosing a folder you work in your personal space; for the work one, pick the folder %s with Choose….\n(Or, in a new terminal: cd %[1]s && claude)",
 		es: "A partir de ahora, para trabajar: abre la app de Claude, ve a la pestaña Code y pulsa + New. Sin elegir carpeta trabajas en tu espacio personal; para el de trabajo, elige con Choose… la carpeta %s.\n(O, en una terminal nueva: cd %[1]s && claude)",
 	},
+	"init.reach.value": {
+		en: "reach %q: use machine or spaces.",
+		es: "reach %q: usa machine o spaces.",
+	},
+	"init.reach.set": {
+		en: "--reach is only for the first setup, and this computer already has one. To change where augmented brain acts, open the panel's Guard page (augmented-brain panel).",
+		es: "--reach es solo para la primera configuración, y este ordenador ya tiene una. Para cambiar dónde actúa augmented brain, abre la página Guardia del panel (augmented-brain panel).",
+	},
 	"init.space.work": {
 		en: "work",
 		es: "trabajo",

@@ -62,7 +62,7 @@ Prepara todo: los espacios, la configuración y el plugin de Claude Code. El ins
 lanza por ti la primera vez.
 
 Sintaxis: `augmented-brain init [--custom] [--language en|es] [--space <nombre>]
-[--work <carpeta>] [--memory <carpeta>] [--yes] [--no-plugin]`
+[--work <carpeta>] [--memory <carpeta>] [--reach machine|spaces] [--yes] [--no-plugin]`
 
 ```bash
 augmented-brain init
@@ -84,6 +84,11 @@ Si ya hay configuración, se para y no cambia nada. Para añadir un espacio, usa
 - `--work`: su carpeta de trabajo. Por defecto, `~/augmented-brain/<espacio>`.
 - `--memory`: su carpeta de notas. Por defecto, `~/augmented-brain/<espacio>/notas`,
   también si `--work` dice otra carpeta.
+- `--reach`: dónde actúa augmented brain, `machine` (por defecto) o `spaces`
+  ([Fuera de todos los espacios](spaces.es.md#fuera-de-todos-los-espacios)). El
+  instalador la pasa cuando Claude Code ya estaba en el ordenador. Solo vale la primera
+  vez: si ya hay configuración, se rechaza, y la elección se cambia en la página Guardia
+  del panel.
 - `--yes`: no pregunta; usa las opciones que le des y lo que hay por defecto.
 - `--no-plugin`: no instala el plugin de Claude Code.
 

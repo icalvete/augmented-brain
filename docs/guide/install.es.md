@@ -18,6 +18,10 @@ llevan de la mano.
 - **El instalador pregunta antes.** El idioma (te propone el del sistema) y, después, cada
   pieza que falte, con para qué sirve. Pulsa Enter para aceptar lo que propone. Para cambiar
   el idioma más tarde, pon `language` en tu [configuración](configuration.es.md#ajustes-de-todo-el-ordenador).
+- **Si ya usas Claude Code**, una instalación nueva te pregunta también dónde actúa
+  augmented brain: en todo el ordenador (por defecto) o solo en sus espacios, dejando tus
+  otros proyectos como estaban. Mira [Fuera de todos los espacios](spaces.es.md#fuera-de-todos-los-espacios).
+  Si no tenías Claude Code antes, no pregunta: actúa en todo el ordenador.
 - **Sin cuenta de GitHub.** El programa se descarga de GitHub sin ella. La copia de
   seguridad sí la usa, u otro servidor de git, y se prepara después: mira
   [Copia de seguridad y restauración](backup.es.md).
