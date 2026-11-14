@@ -65,7 +65,8 @@ click on Windows) and press Enter.
 
 It asks a few questions. To accept what it suggests, just press Enter.
 
-1. **The language.** English or Spanish.
+1. **The language.** English or Spanish; it suggests your system's. You can change it
+   later in the [configuration](configuration.md#settings-for-the-whole-computer).
 2. **Whatever is missing**, if anything: git (keeps the history of your notes), Claude
    Code and the Claude desktop app. It tells you what each one is for before installing it.
    If you already had Claude Code but it is behind, it offers to update it. If Claude Code

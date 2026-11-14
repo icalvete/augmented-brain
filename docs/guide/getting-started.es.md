@@ -66,7 +66,8 @@ Windows) y pulsa Enter.
 
 Te hace unas pocas preguntas. Para aceptar lo que te propone, basta con pulsar Enter.
 
-1. **El idioma.** Español o inglés.
+1. **El idioma.** Español o inglés; te propone el del sistema. Puedes cambiarlo más tarde
+   en la [configuración](configuration.es.md#ajustes-de-todo-el-ordenador).
 2. **Lo que falte**, si falta algo: git (guarda el historial de tus notas), Claude Code
    y la app de escritorio de Claude. Te dice para qué es cada cosa antes de instalarla. Si
    ya tenías Claude Code pero está atrasado, te ofrece actualizarlo. Si falta Claude Code,

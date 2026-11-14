@@ -49,7 +49,8 @@ runs, so a change counts at once.
 These go at the top, before any `[spaces.…]` heading.
 
 - `language`: the language the program speaks to you, `en` or `es`: its messages and the
-  guard's reasons. Default `en`.
+  guard's reasons. Default `en`. The installer asks it; change it here whenever you like.
+  It counts at once. Folders and notes already made keep their names and language.
 - `default_space`: the space used outside every work folder, such as the scratch folder
   the desktop app opens a new session in. Its backup carries your profile and the shared
   notes. Optional; with two spaces or more, `init` and `space add` set it.
