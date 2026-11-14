@@ -17,6 +17,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 )
 
 // Status is what one repository holds that is not yet elsewhere.
@@ -49,7 +51,7 @@ func Read(path string) Status {
 	var extra []string // settings that blank the repository's own filters, once known
 	git := func(args ...string) (string, error) {
 		pre := append([]string{"-c", "core.fsmonitor=false"}, extra...)
-		cmd := exec.CommandContext(ctx, "git", append(append(pre, "-C", path), args...)...)
+		cmd := runlimit.Command(ctx, "git", append(append(pre, "-C", path), args...)...)
 		cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0", "GIT_OPTIONAL_LOCKS=0", "LC_ALL=C")
 		out, err := cmd.Output()
 		return string(out), err

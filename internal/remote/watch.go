@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -56,6 +57,43 @@ type watchEntry struct {
 	PID int `json:"pid,omitempty"`
 	// Last is what the watch did last to this service: "restart", "pointer" or "".
 	Last string `json:"last,omitempty"`
+	// Cycles counts the cycles (restart, then pointer set aside) in a row that brought
+	// no session back; a session seen clears it.
+	Cycles int `json:"cycles,omitempty"`
+	// Until is when the watch may act again on this service, after a cycle that did
+	// not work: WatchPause, twice as long after each one.
+	Until time.Time `json:"until,omitzero"`
+	// GaveUp is set after WatchCycles cycles with no session: the watch leaves the
+	// service alone, and remote status and doctor say so.
+	GaveUp bool `json:"gave_up,omitempty"`
+}
+
+// WatchPause is the wait after the first cycle that brought no session back; each
+// later one waits twice as long as the one before. WatchCycles is how many such cycles
+// in a row the watch tries before it gives up. Without them, a server that stays up
+// with no session for a reason a restart does not mend was restarted every 4 minutes,
+// 360 times a day, half of them registering a new session in claude.ai (R-12 of the
+// November 2026 review).
+const (
+	WatchPause  = 4 * time.Minute
+	WatchCycles = 5
+)
+
+// GaveUpUnits are the services the watch stopped acting on (WatchCycles), read from
+// its file in the configuration folder cfgDir.
+func GaveUpUnits(cfgDir string) []string {
+	seen := map[string]watchEntry{}
+	if data, err := os.ReadFile(filepath.Join(cfgDir, "state", watchFile)); err == nil {
+		_ = json.Unmarshal(data, &seen)
+	}
+	var out []string
+	for unit, e := range seen {
+		if e.GaveUp {
+			out = append(out, unit)
+		}
+	}
+	slices.Sort(out)
+	return out
 }
 
 // WatchServiceText is the text of the watch's service: one run of `remote watch`, with
@@ -114,6 +152,8 @@ type WatchStatus struct {
 	// Last is when the timer last ran it; zero when it never did, or this systemd
 	// cannot say (--timestamp=unix came with systemd 251).
 	Last time.Time
+	// GaveUp are the services it stopped acting on (WatchCycles).
+	GaveUp []string
 }
 
 // Healthy is whether the watch is there, waiting for its next look, starts by itself and
@@ -206,15 +246,24 @@ func (s System) Watch(c *config.Config, out io.Writer) error {
 		e := seen[unit]
 		switch {
 		case !active || pid == 0:
-			next[unit] = watchEntry{Last: e.Last}
+			e.PID = 0
+			next[unit] = e
 			continue
 		case len(s.Children(pid)) > 0:
 			continue // healthy: forget what was done before
 		case e.PID != pid:
-			next[unit] = watchEntry{PID: pid, Last: e.Last}
+			e.PID = pid
+			next[unit] = e
 			continue
-		case !kept:
+		case !kept, e.GaveUp, s.now().Before(e.Until):
 			next[unit] = e // looked at again next time, still without a session
+			continue
+		}
+		if e.Last == "pointer" && e.Cycles >= WatchCycles {
+			// Every cycle brought no session back: leave it to the person.
+			fmt.Fprintln(out, i18n.T(l, "remote.watch.gaveup", unit, e.Cycles))
+			e.GaveUp = true
+			next[unit] = e
 			continue
 		}
 		if e.Last == "restart" {
@@ -227,14 +276,17 @@ func (s System) Watch(c *config.Config, out io.Writer) error {
 			if err := s.restartWithout(unit, pointer); err != nil {
 				errs = append(errs, err)
 			}
-			next[unit] = watchEntry{Last: "pointer"}
+			// The cycle is complete: if it brings no session back either, the next one
+			// waits WatchPause, then twice as long each time.
+			e.Cycles++
+			next[unit] = watchEntry{Last: "pointer", Cycles: e.Cycles, Until: s.now().Add(WatchPause << (e.Cycles - 1))}
 			continue
 		}
 		fmt.Fprintln(out, i18n.T(l, "remote.watch.restart", unit))
 		if _, err := s.Run("systemctl", "--user", "restart", unit); err != nil {
 			errs = append(errs, errors.New(i18n.T(l, "remote.systemctl", "restart "+unit, err)))
 		}
-		next[unit] = watchEntry{Last: "restart"}
+		next[unit] = watchEntry{Last: "restart", Cycles: e.Cycles}
 	}
 	data, err := json.MarshalIndent(next, "", "  ")
 	if err != nil {

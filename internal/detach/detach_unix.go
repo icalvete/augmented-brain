@@ -12,6 +12,6 @@ func Cmd(cmd *exec.Cmd) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
 }
 
-// Start starts a command prepared with Cmd and returns the one that runs: here, the
+// start starts a command prepared with Cmd and returns the one that runs: here, the
 // same one.
-func Start(cmd *exec.Cmd) (*exec.Cmd, error) { return cmd, cmd.Start() }
+func start(cmd *exec.Cmd) (*exec.Cmd, error) { return cmd, cmd.Start() }

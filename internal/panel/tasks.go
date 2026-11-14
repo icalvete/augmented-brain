@@ -364,6 +364,8 @@ func (s *Server) taskClose(v *view, r *http.Request) (string, error) {
 		return "", err
 	}
 	v.b.Released(id)
+	// Removing the worktrees runs git: not with the notes locked (N-08).
+	v.unlock()
 	closedTask(v.b.ConfigDir, id)
 	return taskPage(id), nil
 }

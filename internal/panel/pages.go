@@ -337,14 +337,7 @@ func (s *Server) open(r *http.Request) (*view, func(), error) {
 		release()
 		return nil, nil, err
 	}
-	name := r.FormValue("s")
-	if name == "" {
-		name = c.DefaultSpace
-	}
-	if names := c.SpaceNames(); name == "" && len(names) > 0 {
-		name = names[0]
-	}
-	sp, ok := c.Spaces[name]
+	sp, ok := c.Spaces[spaceName(c, r)]
 	if !ok {
 		release()
 		return &view{c: c, lang: c.Language}, nil, errNoSpace
@@ -354,12 +347,25 @@ func (s *Server) open(r *http.Request) (*view, func(), error) {
 		release()
 		return &view{c: c, lang: c.Language}, nil, err
 	}
-	shared, _, err := memory.LoadShared(c.SharedDir())
-	if err != nil {
+	shared := b.Mem.SharedNotes // read with the space
+	if shared == nil {
 		shared = &memory.Memory{Dir: c.SharedDir(), Notes: map[string]*memory.Note{}}
 	}
 	once := sync.OnceFunc(release)
 	return &view{c: c, b: b, shared: shared, lang: c.Language, unlock: once}, once, nil
+}
+
+// spaceName is the space a request asks for: its "s", or the default space, or the
+// first one.
+func spaceName(c *config.Config, r *http.Request) string {
+	name := r.FormValue("s")
+	if name == "" {
+		name = c.DefaultSpace
+	}
+	if names := c.SpaceNames(); name == "" && len(names) > 0 {
+		name = names[0]
+	}
+	return name
 }
 
 func (v *view) t(key string, args ...any) string { return i18n.T(v.lang, "panel."+key, args...) }

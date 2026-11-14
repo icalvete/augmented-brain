@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
@@ -28,6 +29,22 @@ func taskWorktreeRecords(cfgDir string) string {
 }
 
 type noted struct{ folder, branch string }
+
+// changeNoted changes a task's record under a lock of its own: task_worktree and
+// closing a task run git without the notes lock (it may take minutes with the network
+// down), so two of them may meet here.
+func changeNoted(cfgDir, task string, change func([]noted) ([]noted, error)) error {
+	unlock, err := filelock.Lock(taskWorktreeRecords(cfgDir) + ".lock")
+	if err != nil {
+		return err
+	}
+	defer unlock()
+	list, err := change(readNoted(cfgDir, task))
+	if err != nil {
+		return err
+	}
+	return writeNoted(cfgDir, task, list)
+}
 
 // recordName is a task's id as the name of its record files: ids are file names of
 // notes already, and this keeps one that is not from reaching another folder (R-16).
@@ -75,13 +92,14 @@ func addNoted(cfgDir, task string, n noted) error {
 	if strings.ContainsAny(n.folder, "\t\r\n") {
 		return fmt.Errorf("%s: %w", paths.Tilde(n.folder), ErrOddPath)
 	}
-	list := readNoted(cfgDir, task)
-	for _, x := range list {
-		if paths.Same(x.folder, n.folder) {
-			return nil
+	return changeNoted(cfgDir, task, func(list []noted) ([]noted, error) {
+		for _, x := range list {
+			if paths.Same(x.folder, n.folder) {
+				return list, nil
+			}
 		}
-	}
-	return writeNoted(cfgDir, task, append(list, n))
+		return append(list, n), nil
+	})
 }
 
 // ErrNotARepository: what task_worktree was given is not a git repository.
@@ -126,10 +144,8 @@ func NoteTaskWorktree(cfgDir, task, folder string) error {
 // (and the branch made for each), except those in skip (the folder a session still works
 // in). It returns what it removed and what stays, with why.
 func RemoveNotedWorktrees(cfgDir, task string, skip ...string) (removed []string, kept []Leftover) {
-	var left []noted
 	for _, n := range readNoted(cfgDir, task) {
 		if slicesSame(skip, n.folder) {
-			left = append(left, n)
 			kept = append(kept, Leftover{task, n.folder, KeptInUse})
 			continue
 		}
@@ -138,11 +154,23 @@ func RemoveNotedWorktrees(cfgDir, task string, skip ...string) (removed []string
 		case done:
 			removed = append(removed, n.folder)
 		case why != "":
-			left = append(left, n)
 			kept = append(kept, Leftover{task, n.folder, why})
 		}
 	}
-	_ = writeNoted(cfgDir, task, left)
+	// Git ran without the record's lock: what was noted meanwhile stays.
+	_ = changeNoted(cfgDir, task, func(list []noted) ([]noted, error) {
+		var left []noted
+		for _, n := range list {
+			gone := false
+			for _, r := range removed {
+				gone = gone || paths.Same(r, n.folder)
+			}
+			if !gone {
+				left = append(left, n)
+			}
+		}
+		return left, nil
+	})
 	sort.Strings(removed)
 	return removed, kept
 }

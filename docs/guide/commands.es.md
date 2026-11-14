@@ -476,6 +476,11 @@ Lo que hace en cada vuelta:
   `bridge-pointer.json.archived`, en el proyecto de la carpeta en `~/.claude/projects`) y
   reinicia otra vez el servicio, para que empiece una sesión nueva: unos diez minutos en total.
   La conversación de la sesión archivada no vuelve.
+- **Sigue sin nada.** Si los dos pasos no recuperan ninguna sesión, falla algo que
+  reiniciar no arregla. El vigilante espera 4 minutos antes de volver a intentarlo,
+  después 8, 16 y 32. Tras 5 intentos se rinde y deja el servicio en paz: `remote status`
+  y `doctor` lo dicen, con la orden que enseña por qué. En cuanto el servicio vuelve a
+  tener una sesión, el vigilante lo cuida como antes.
 - **Las sesiones de tareas, a salvo.** Parar un servicio para todo lo que se arrancó
   dentro de él. La sesión de una tarea abierta desde una sesión remota puede arrancar
   allí el servicio en segundo plano de Claude, del que dependen todas las sesiones de
@@ -582,7 +587,8 @@ augmented-brain session stop task-new-website
   sesión que espera un permiso cuenta como respondiendo, y una que siga respondiendo
   entonces se queda abierta. Cerrar la tarea lo lanza así solo, para que una sesión pueda
   cerrar su propia tarea sin cortar su respuesta. Lo que hizo queda en
-  `state/session-stop.log`, en la carpeta de la configuración.
+  `state/session-stop.log`, en la carpeta de la configuración, con una línea cada 5
+  minutos mientras espera.
 
 **El worktree de la tarea** (el que creó `session start`, mira arriba) también se va, con
 su rama, siempre que no se pierda nada. Se queda, y el comando lo dice, si tiene:
@@ -786,7 +792,9 @@ Mira en cada carpeta en la que se abrió Claude Code, y en su carpeta temporal:
   olvida. Sus ramas se quedan.
 - **Carpetas temporales de sesiones que acabaron** (`/tmp/claude-<número>` en Linux), sin
   tocar desde hace más de un día. Las de sesiones en marcha se quedan, y todo lo demás
-  que haya ahí también.
+  que haya ahí también. En Linux eso incluye las sesiones de otra carpeta de Claude
+  (`CLAUDE_CONFIG_DIR`); en otros sistemas solo cuentan las de tu carpeta de Claude de
+  siempre, y el comando te lo recuerda.
 
 Antes de quitar cada cosa vuelve a mirar, así que una sesión que haya empezado entretanto
 conserva sus carpetas. `doctor` avisa cuando hay algo que limpiar.

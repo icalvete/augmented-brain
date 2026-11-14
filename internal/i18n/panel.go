@@ -178,6 +178,14 @@ var panelMessages = map[string]msg{
 		en: "The GitHub login could not be started (%s). Check the internet connection and try again.",
 		es: "No se pudo empezar la entrada en GitHub (%s). Mira la conexión a internet y vuelve a probar.",
 	},
+	"panel.backup.err.taken": {
+		en: "Your GitHub account already has these repositories, with notes in them: %s. Most likely they are the backup of another computer, so augmented brain does not use them: it would mix this computer's notes with those. To bring those notes here, run `augmented-brain restore <its address>` in a terminal. To start a new copy, give the address of another private repository below.",
+		es: "Tu cuenta de GitHub ya tiene estos repositorios, con notas dentro: %s. Lo más probable es que sean la copia de otro ordenador, así que augmented brain no los usa: mezclaría las notas de este ordenador con esas. Para traer esas notas aquí, lanza `augmented-brain restore <su dirección>` en una terminal. Para empezar una copia nueva, pon abajo la dirección de otro repositorio privado.",
+	},
+	"panel.backup.taken": {
+		en: "Your GitHub account already had %s, most likely the copy of another computer. It was left alone: this copy went to a repository of its own, named after this computer. To bring that copy's notes here instead, use augmented-brain restore with its address.",
+		es: "Tu cuenta de GitHub ya tenía %s, seguramente la copia de otro ordenador. No se ha tocado: esta copia va a un repositorio propio, con el nombre de este ordenador. Si lo que querías era traer aquí las notas de esa copia, usa augmented-brain restore con su dirección.",
+	},
 	"panel.backup.login.title": {
 		en: "One step in your browser: let augmented brain into your GitHub account.",
 		es: "Un paso en tu navegador: deja entrar a augmented brain en tu cuenta de GitHub.",

@@ -20,10 +20,9 @@ func failHook(t *testing.T, name string) {
 	}
 	old := hookEvents[i].run
 	t.Cleanup(func() { hookEvents[i].run = old })
-	hookEvents[i].run = func(io.Reader, io.Writer, string, int) error {
-		var m map[string]int
-		m["boom"] = 1 // a nil map: the kind of bug a parser could have
-		return nil
+	hookEvents[i].run = func(_ io.Reader, _ io.Writer, _ string, n int) error {
+		var parts []string
+		return errors.New(parts[n]) // an index out of range: the kind of bug a parser could have
 	}
 }
 

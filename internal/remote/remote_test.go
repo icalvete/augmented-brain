@@ -843,3 +843,47 @@ func TestSettingsDocumented(t *testing.T) {
 		}
 	}
 }
+
+// A space's name that config.toml takes but is not one plain ASCII word gets no
+// service: it would go into a unit's name and a line of cmd.exe (R-06).
+func TestSettingsRefuseAnUnusualSpaceName(t *testing.T) {
+	t.Setenv("AB_LANGUAGE", "en")
+	dir := t.TempDir()
+	body := "default_space = \"música\"\n[spaces.\"música\"]\nmemory = \"" + filepath.ToSlash(filepath.Join(dir, "m")) + "\"\n"
+	if err := os.WriteFile(filepath.Join(dir, config.FileName), []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	c, err := config.Load(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := LoadSettings(c, "box"); err == nil || !strings.Contains(err.Error(), "cannot have a service") {
+		t.Errorf("error = %v, want the rename message", err)
+	}
+}
+
+// A path with a line break would add a line to a unit; on Windows a % or a quote breaks
+// the line of cmd.exe. Install refuses them before writing anything (R-06).
+func TestCheckPaths(t *testing.T) {
+	t.Setenv("AB_LANGUAGE", "en")
+	ok := &InstallResult{Claude: "/usr/bin/claude", Services: []Service{{Space: "work", Folder: "/home/a b/100%/work"}}}
+	for _, goos := range []string{"linux", "darwin", "windows"} {
+		s := System{GOOS: goos, Self: "/usr/bin/augmented-brain", LogDir: "/logs"}
+		res := *ok
+		res.Services = []Service{{Space: "work", Folder: "/home/x\nExecStartPre=/bin/sh -c id/work"}}
+		if err := s.checkPaths("en", &res); err == nil || !strings.Contains(err.Error(), "cannot go into a service") {
+			t.Errorf("%s, folder with a line break: %v", goos, err)
+		}
+		err := s.checkPaths("en", ok)
+		if goos == "windows" && err == nil {
+			t.Errorf("windows, folder with %%: accepted")
+		}
+		if goos != "windows" && err != nil {
+			t.Errorf("%s, folder with %% and a space: %v", goos, err)
+		}
+	}
+	s := System{GOOS: "windows", Self: `C:\Users\a"b\augmented-brain.exe`, LogDir: `C:\logs`}
+	if err := s.checkPaths("en", &InstallResult{Claude: `C:\claude.exe`}); err == nil {
+		t.Error("windows, program path with a quote: accepted")
+	}
+}

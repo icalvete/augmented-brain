@@ -54,8 +54,9 @@ nada.
   un corte de luz), nadie puede conectarse hasta que entres una vez. En Linux puede
   arrancar sin que nadie entre.
 - **En Windows solo funciona mientras tienes la sesión abierta.** Si la cierras, se para.
-- **En Windows, una carpeta con `%` en el nombre** puede impedir que el acceso remoto
-  arranque en ella. Elige otra con `folders` en `remote.toml`.
+- **En Windows, una carpeta con `%` o comillas en el nombre** no puede tener acceso
+  remoto: `remote install` lo dice y no escribe nada. Igual con las rutas de claude y del
+  programa. Elige otra carpeta con `folders` en `remote.toml`.
 - **Una conexión real solo se ha probado en Linux.** En un Mac y en Windows, instalar,
   ver el estado y quitarlo se prueban en la CI con un Claude de mentira; conectarse
   desde claude.ai todavía no se ha probado.

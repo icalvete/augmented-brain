@@ -39,7 +39,7 @@ func encodedElasticKeysRegexp(text string) [][]int {
 // findSecretRegexp and redactSecretsRegexp are FindSecret and RedactSecrets with no
 // filter: every expression over the whole text.
 func findSecretRegexp(text string) string {
-	for _, p := range secretPatterns {
+	for _, p := range secretPatterns() {
 		for _, m := range p.re.FindAllString(text, -1) {
 			if !isExample(m) {
 				return p.what
@@ -53,7 +53,7 @@ func findSecretRegexp(text string) string {
 }
 
 func redactSecretsRegexp(text string) string {
-	for _, p := range secretPatterns {
+	for _, p := range secretPatterns() {
 		text = p.re.ReplaceAllStringFunc(text, func(m string) string {
 			if isExample(m) {
 				return m
@@ -176,7 +176,7 @@ func TestFilterAgrees(t *testing.T) {
 		}
 		found[want]++
 	}
-	for _, p := range secretPatterns {
+	for _, p := range secretPatterns() {
 		if found[p.what] == 0 {
 			t.Errorf("the random texts never held %s: the comparison does not cover it", p.what)
 		}
@@ -194,7 +194,7 @@ func TestEachFilterHoldsItsMatches(t *testing.T) {
 	r := rand.New(rand.NewSource(2))
 	for i := 0; i < n; i++ {
 		text := randomText(r)
-		for _, p := range secretPatterns {
+		for _, p := range secretPatterns() {
 			for _, m := range p.re.FindAllStringIndex(text, -1) {
 				// The match itself, with what is just before it (for \b), must pass.
 				from := max(m[0]-1, 0)

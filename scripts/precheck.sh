@@ -5,7 +5,7 @@
 #   scripts/precheck.sh --full   # also compat-check against the last two releases
 #   scripts/precheck.sh --windows  # also the tests run on Windows, in the VM (3 minutes)
 #
-# The quick part: format; vet compiled for Linux, Windows and macOS; the tests compiled
+# The quick part: format; vet compiled for Linux, Windows and macOS; staticcheck; the tests compiled
 # for Windows and macOS too (a test that does not build there fails CI); the tests with
 # -race; the guard's test coverage, not below its floor (Linux); the privacy check of
 # what is committed; the generated guides up to date; and the branch's changelog entry
@@ -48,6 +48,10 @@ for os in linux windows darwin; do
   fi
 done
 
+# The same fixed version as CI: a newer one can warn about code nobody changed.
+step "staticcheck"
+if out=$(go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./... 2>&1); then ok; else bad "$out"; fi
+
 step "tests (-race)"
 if out=$(go test -race -count=1 ./... 2>&1); then ok; else bad "$(printf '%s\n' "$out" | grep -v '^ok\|no test files' | tail -40)"; fi
 
@@ -58,6 +62,9 @@ fi
 
 step "privacy"
 if out=$(scripts/privacy-check.sh --all 2>&1); then ok; else bad "$out"; fi
+
+step "privacy fingerprints (selftest)"
+if out=$(python3 -I scripts/privacy-hashed.py selftest 2>&1); then ok; else bad "$out"; fi
 
 # What regenerating changes, not what you changed by hand and have not committed yet.
 step "guides up to date"
