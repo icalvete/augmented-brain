@@ -23,3 +23,14 @@ updates:
     groups:
       actions:
         patterns: ['*']
+  # The Python tools that rebuild the logo (assets/brand). They never ship, but a
+  # vulnerable pin there still shows as an alert and in the OpenSSF Scorecard.
+  - package-ecosystem: pip
+    directory: /assets/brand
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      brand:
+        patterns: ['*']

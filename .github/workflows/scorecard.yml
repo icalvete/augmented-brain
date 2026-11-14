@@ -1,0 +1,46 @@
+name: scorecard
+
+# OpenSSF Scorecard: how well the repository guards what it ships (pinned actions,
+# token permissions, branch rules, signed releases, known vulnerabilities…). It runs on
+# main and once a week, and publishes the result to api.scorecard.dev, which serves the
+# public score and its badge. The Scorecard API refuses results from a workflow with
+# top-level env, defaults or write permissions, or with other steps that could tamper
+# with them: keep this job to the action and the uploads.
+on:
+  push:
+    branches: [main]
+  branch_protection_rule:
+  schedule:
+    - cron: '23 6 * * 1'   # Mondays, 06:23 UTC
+  workflow_dispatch:
+
+permissions: read-all
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  analysis:
+    timeout-minutes: 10   # a stuck runner fails here instead of waiting six hours
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write   # the results go to the Security tab (code scanning)
+      id-token: write          # proves to api.scorecard.dev that this workflow made them
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: scorecard-sarif
+          path: results.sarif
+          retention-days: 5
+      - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: results.sarif

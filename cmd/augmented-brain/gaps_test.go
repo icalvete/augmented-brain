@@ -168,7 +168,7 @@ func TestUpdateNothingNewer(t *testing.T) {
 // ad x`, a typo of `space add x`, used to just show the space.
 func TestExtraWordsAreRefused(t *testing.T) {
 	home(t)
-	for _, args := range [][]string{{"space", "ad", "x"}, {"check", "now"}, {"doctor", "please"}, {"version", "x"}, {"help", "backup"}, {"mcp", "x"}} {
+	for _, args := range [][]string{{"space", "ad", "x"}, {"check", "now"}, {"doctor", "please"}, {"version", "x"}, {"help", "nope"}, {"mcp", "x"}} {
 		var out, errOut bytes.Buffer
 		if code := run(args, nil, &out, &errOut); code != 2 || !strings.Contains(errOut.String(), args[len(args)-1]) {
 			t.Errorf("%v: %d %q", args, code, errOut.String())

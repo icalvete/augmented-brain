@@ -197,8 +197,8 @@ var guardMessages = map[string]msg{
 		es: "%s es un repositorio intocable: `%s` ahí nunca se permite, digan lo que digan las demás listas. No busques otra vía. Cuenta al usuario qué querías hacer; solo él puede cambiarlo, desde la página Guardia del panel.",
 	},
 	"guard.git.deny": {
-		en: "`git %s` is for the user. Leave the change ready and checked, show what would be committed, and tell the user it is ready. (The user, not the assistant, can let the assistant commit in a repository by adding it to git_allowed_repos, or to git_ask_repos to be asked each time; then use `git -C <repo>`.)",
-		es: "`git %s` es cosa del usuario. Deja el cambio listo y comprobado, enseña lo que entraría en el commit y dile al usuario que está listo. (El usuario, no el asistente, puede dejar que el asistente haga commit en un repositorio añadiéndolo a git_allowed_repos, o a git_ask_repos para que se le pregunte cada vez; entonces usa `git -C <repo>`.)",
+		en: "`git %s` is for the user. Leave the change ready and checked, show what would be committed, and tell the user it is ready. If the user wants you to commit and push in this repository from now on, tell them where: the Guard page of the panel, which they open with /brain:panel. There they add it to the repositories where you commit freely, or to those where they are asked each time. Only the user can do it, not you; afterwards, use `git -C <repo>`.",
+		es: "`git %s` es cosa del usuario. Deja el cambio listo y comprobado, enseña lo que entraría en el commit y dile al usuario que está listo. Si el usuario quiere que hagas commit y push en este repositorio a partir de ahora, dile dónde: la página Guardia del panel, que abre con /brain:panel. Allí lo añade a los repositorios donde haces commit libremente, o a aquellos donde se le pregunta cada vez. Solo puede hacerlo el usuario, no tú; después, usa `git -C <repo>`.",
 	},
 	"guard.api": {
 		en: "`%s api` with this call merges, releases or moves a branch, like a git push, so it is for the user. Give the user the exact command to run themselves.",
