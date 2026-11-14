@@ -34,6 +34,10 @@ takes about ten minutes.
   Claude Code, and Claude Code is not in the free plan. The plans are at
   [claude.com/pricing](https://claude.com/pricing).
 - **Your computer's password**, in case something missing has to be installed.
+- **A GitHub account, only for the backup.** Installing needs none. At the end of the
+  first session Claude offers to back up your notes to a private repository in your
+  GitHub account (a free one is enough). Create it at [github.com](https://github.com/)
+  before you start, or say no then and set the backup up later.
 
 ## 1. Open the terminal
 
@@ -58,8 +62,8 @@ Or this one, on Windows:
 irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
 ```
 
-Paste it into the terminal (`Cmd + V` on a Mac, `Ctrl + Shift + V` on Ubuntu, a right
-click on Windows) and press Enter.
+Paste it into the terminal (`Cmd + V` on a Mac, `Ctrl + Shift + V` on Ubuntu, `Ctrl + V`
+or a right click on Windows) and press Enter.
 
 ## 3. Answer the installer
 
@@ -94,9 +98,13 @@ Without choosing a folder, you work in your personal space. For the work one, pi
 folder `~/augmented-brain/work` with **Choose…**. A **space** is a separate drawer of
 notes: [Spaces](spaces.md) explains them.
 
+**If Claude asks whether you trust the folder, say yes.** Claude Code asks this the first
+time it opens in a folder, before loading anything: until you say yes, augmented brain
+cannot load your notes.
+
 No desktop app (on Linux without `apt`, or if you said no)? The installer offers to open
 Claude in the terminal instead, in your work space. Next times:
-`cd ~/augmented-brain/work && claude`.
+`cd ~/augmented-brain/work && claude`, or the `personal` folder for the other space.
 
 ## 5. Answer the interview
 
@@ -105,7 +113,9 @@ you what each one is for: who you are, what you look after, how you want answers
 must not be touched, which tools you use and who you work with. You can skip any of them.
 
 At the end it shows what it saved and offers to set up the backup. Say yes: your notes go
-to a private repository of yours, and losing the computer loses nothing.
+to a private repository of yours, and losing the computer loses nothing. It needs a
+GitHub account; without one, say no for now and ask "set up the backup" whenever you
+have it. [Backup and restore](backup.md) tells the rest, other git servers included.
 
 ## Your first week
 
@@ -143,8 +153,8 @@ More phrases, grouped by what you want: [What to say to Claude](phrases.md).
 
 ## If something goes wrong
 
-- **Claude does not introduce itself or run the interview.** Start a new session. If
-  nothing changes, open the terminal and type `augmented-brain doctor`: it tells you what
+- **Claude does not introduce itself or run the interview.** Start a new session, and if
+  it asks whether you trust the folder, say yes. If nothing changes, open the terminal and type `augmented-brain doctor`: it tells you what
   is missing and how to fix it.
 - **The terminal cannot find a command** (`command not found`, or "not recognized" on
   Windows). Close the terminal and open another one: the new one finds the programs just
