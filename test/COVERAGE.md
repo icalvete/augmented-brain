@@ -141,6 +141,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Case | Covered by | Where |
 |---|---|---|
 | No backup set up | `scripts/faults-check.py`, `cmd` `TestSaysThereIsNoBackup` | CI: Linux, macOS, Windows |
+| A repository `augmented-brain-<space>` with notes in it (another computer's backup) is never used for a new backup: `-<computer>` instead, or nothing when both are taken | `internal/backup` `TestGitHubRepoLeavesAnotherBackupAlone`, `TestRepoNames`, panel `TestBackupSetupLeavesAnotherBackupAlone`, `faults-check.py` (a pretend gh with both taken) | Go, CI |
 | No gh, gh not logged in: the login started for the person, its code from Claude (online and offline) and on the Backup page | `faults-check.py` (a pretend gh), `internal/backup` `TestGitHubRepo`, `TestGitHubRepoStartsLogin`, `TestStartLogin`, `TestStartLoginFails`, panel `TestBackupSetupGitHubLogin`; against the real GitHub only by hand (the code shows up; accepting it needs an account) | CI, Go |
 | No GitHub account (GitLab, a server) | `internal/backup` (bare repositories as remotes) | Go |
 | No git | `faults-check.py` | CI |

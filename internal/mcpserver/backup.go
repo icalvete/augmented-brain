@@ -49,13 +49,23 @@ func setupBackup(b *brain.Brain, url string, run backup.Runner, login backup.Log
 		}
 		return msg, nil
 	}
-	url, err = backup.GitHubRepo(s.Name, run, login)
+	repo, err := backup.GitHubRepo(s.Name, run, login)
 	var steps *backup.ErrNoGitHub
 	if errors.As(err, &steps) {
 		return steps.Steps, nil
 	}
+	var taken *backup.ErrRepoTaken
+	if errors.As(err, &taken) {
+		return "Nothing was set up. Tell the user, in their language: " + taken.Error() + ".", nil
+	}
 	if err != nil {
 		return "", err
+	}
+	url = repo.URL
+	other := ""
+	if repo.Taken != "" {
+		other = fmt.Sprintf(" Tell the user too: their GitHub account already had %s, most likely the backup of another computer. It was left alone, and this space backs up to its own repository instead. "+
+			"To bring that backup's notes to this computer, the user runs `augmented-brain restore %s`; this tool never does that.", repo.Taken, repo.Taken)
 	}
 	if err := backup.Setup(c, s, url); err != nil {
 		return "", err
@@ -71,5 +81,5 @@ func setupBackup(b *brain.Brain, url string, run backup.Runner, login backup.Log
 		warn = " Tell the user: " + w + "."
 	}
 	return fmt.Sprintf("Backup of space %s set up: %s (private). The first copy is there, and from now on it runs by itself every time a session ends. "+
-		"On a new machine: install augmented brain, then `augmented-brain restore %s`.", s.Name, url, url) + warn, nil
+		"On a new machine: install augmented brain, then `augmented-brain restore %s`.", s.Name, url, url) + other + warn, nil
 }

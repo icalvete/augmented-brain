@@ -53,6 +53,14 @@ FAKE_GH = {
         'echo ! First copy your one-time code: FAKE-1234 1>&2\r\n'
         'echo Open this URL to continue in your web browser: https://github.com/login/device 1>&2\r\n'
         'ping -n 20 127.0.0.1 >nul\r\n'),
+    # Logged in, and both names it may use are already repositories with notes in them.
+    "fake-gh-taken": (
+        '#!/bin/sh\ncase "$1 $2" in\n"auth status") exit 0 ;;\n'
+        '"repo view") echo "{\\"url\\":\\"https://github.com/lucia/$3\\",\\"visibility\\":\\"PRIVATE\\",\\"isEmpty\\":false}" ;;\n'
+        '*) exit 1 ;;\nesac\n',
+        '@echo off\r\nif "%1 %2"=="auth status" exit /b 0\r\n'
+        'if "%1 %2"=="repo view" (echo {"url":"https://github.com/lucia/%3","visibility":"PRIVATE","isEmpty":false}& exit /b 0)\r\n'
+        'exit /b 1\r\n'),
     "fake-gh-offline": (
         '#!/bin/sh\n[ "$1 $2" = "auth login" ] && echo "error connecting to github.com" >&2\nexit 1\n',
         '@echo off\r\nif "%1 %2"=="auth login" echo error connecting to github.com 1>&2\r\nexit /b 1\r\n'),
@@ -184,6 +192,9 @@ try:
     report("backup_setup with no network says the GitHub login could not start", len(r) == 1 and has(r[0][1], "could not be started", "error connecting"), r[0][1][:160] if r else "no answer")
     r = mcp(work, [("backup_setup", {})], tools_=("git", "fake-gh-login"))
     report("backup_setup starts the GitHub login and gives its code", len(r) == 1 and has(r[0][1], "FAKE-1234", "github.com/login/device"), r[0][1][:160] if r else "no answer")
+    r = mcp(work, [("backup_setup", {})], tools_=("git", "fake-gh-taken"))
+    report("backup_setup leaves a repository with notes alone", len(r) == 1 and has(r[0][1], "nothing was set up", "augmented-brain-work", "augmented-brain restore"), r[0][1][:160] if r else "no answer")
+    report("…and sets nothing up", "backup" not in open(os.path.join(CFG, "config.toml"), encoding="utf-8").read().split("[spaces.work]")[1].split("[")[0], "")
 
     print("##### no git")
     remote = os.path.join(TMP, "remote.git")

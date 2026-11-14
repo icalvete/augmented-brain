@@ -40,6 +40,7 @@ type backupSpace struct {
 	Profile              bool          // this space's backup carries the profile
 	NoGit                bool          // set up, but the notes folder is not a repository (yet)
 	Login                *backup.Login // the GitHub login gh waits on, to accept in the browser
+	Taken                string        // the repository with the usual name, left alone: another computer's backup
 }
 
 type backupData struct {
@@ -75,6 +76,9 @@ func (s *Server) backupPage(v *view, r *http.Request) (string, page, error) {
 		bs := backupSpace{Name: name, URL: backup.WithoutPassword(sp.Backup), Started: started == name, Profile: name == profile && sp.Backup != ""}
 		if started == name {
 			bs.WentBack = r.URL.Query().Get("back")
+			if t := r.URL.Query().Get("taken"); strings.HasPrefix(t, "https://github.com/") {
+				bs.Taken = t
+			}
 		}
 		if st, ok := backup.LastStatus(v.c.Dir, name); ok && sp.Backup != "" {
 			bs.Known, bs.OK, bs.Error, bs.Warning = true, st.OK, st.Error, st.Warning
@@ -122,7 +126,7 @@ func (s *Server) startBackup(space string) error {
 }
 
 // gitHubRepo makes (or finds) the space's private repository on GitHub. Tests replace it.
-func (s *Server) gitHubRepo(space string) (string, error) {
+func (s *Server) gitHubRepo(space string) (backup.Repo, error) {
 	if s.github != nil {
 		return s.github(space)
 	}
@@ -163,6 +167,7 @@ func (s *Server) backupSetup(w http.ResponseWriter, r *http.Request) {
 		s.failForm(w, r, nil, errors.New(i18n.T(lang, "panel.backup.localonly")))
 		return
 	}
+	taken := "" // a repository of the usual name, left alone; the page says so
 	if strings.TrimSpace(r.PostForm.Get("url")) == "" {
 		c, err := config.Load(s.cfgDir)
 		if err != nil {
@@ -193,11 +198,16 @@ func (s *Server) backupSetup(w http.ResponseWriter, r *http.Request) {
 				err = errors.New(i18n.T(lang, "panel.backup.err.gh"))
 			}
 		}
+		var used *backup.ErrRepoTaken
+		if errors.As(err, &used) {
+			err = errors.New(i18n.T(lang, "panel.backup.err.taken", strings.Join(used.Taken, ", ")))
+		}
 		if err != nil {
 			s.failForm(w, r, nil, err)
 			return
 		}
-		r.PostForm.Set("url", made)
+		r.PostForm.Set("url", made.URL)
+		taken = made.Taken
 	}
 	s.write(func(v *view, r *http.Request) (string, error) {
 		sp := v.b.Space
@@ -209,6 +219,9 @@ func (s *Server) backupSetup(w http.ResponseWriter, r *http.Request) {
 		}
 		if err := s.startBackup(sp.Name); err != nil {
 			return "", err
+		}
+		if taken != "" {
+			return backupStarted(sp.Name) + "&" + url.Values{"taken": {taken}}.Encode(), nil
 		}
 		return backupStarted(sp.Name), nil
 	})(w, r)
