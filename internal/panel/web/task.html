@@ -20,8 +20,8 @@
   <form method="post" action="{{$.Base}}/watch/done" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "date" .Date)}}<button type="submit" class="small">{{t "done"}}</button></form>{{end}}</li>
 {{end}}</ul>{{end}}
 
-<h2 id="steps">{{t "steps"}}{{if .StepCount}} <span class="hint">· {{.StepCount}}</span>{{end}}</h2>
-<p class="hint">{{t "steps.hint"}}</p>
+{{if or .Live .Steps}}<h2 id="steps">{{t "steps"}}{{if .StepCount}} <span class="hint">· {{.StepCount}}</span>{{end}}</h2>
+<p class="hint">{{t "steps.hint"}}</p>{{end}}
 {{if .Steps}}<ul class="steps">
 {{range .Steps}}<li>{{if $.D.Live}}<form method="post" action="{{$.Base}}/task/step" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "n" .N "text" .Text "done" .Next)}}<button type="submit" class="tick{{if .Done}} on{{end}}" title="{{if .Done}}{{t "step.untick"}}{{else}}{{t "step.tick"}}{{end}}" aria-label="{{if .Done}}{{t "step.untick"}}{{else}}{{t "step.tick"}}{{end}}: {{.Text}}">{{if .Done}}☑{{else}}☐{{end}}</button></form>{{else}}<span class="tick">{{if .Done}}☑{{else}}☐{{end}}</span>{{end}}
   {{if .Done}}<s>{{inline .Text}}</s>{{else}}{{inline .Text}}{{end}}</li>
@@ -106,6 +106,19 @@
     <label>{{t "f.result"}} <textarea name="result" rows="2" required maxlength="2000"></textarea></label>
     <p class="hint">{{t "task.close.hint"}}</p>
     <button type="submit">{{t "close"}}</button>
+  </form>
+</details>
+{{else}}
+<details class="box" open>
+  <summary>{{t "task.reopen"}}</summary>
+  <form method="post" action="{{$.Base}}/task/update" class="stack">
+    {{template "fields" (fields $ "id" .H.ID "orig_status" .H.Status)}}
+    <label>{{t "f.status"}} <select name="status">{{range .Phases}}{{if ne .Value "closed"}}<option value="{{.Value}}">{{.Label}}</option>{{end}}{{end}}</select></label>
+    <label>{{t "next"}} <input name="next" value="{{.H.Next}}" required maxlength="500"></label>
+    <label>{{t "waits"}} <input name="waiting_on" value="{{or .H.WaitingOn "me"}}" required maxlength="200"></label>
+    <label>{{t "f.why"}} <input name="why" maxlength="300"></label>
+    <p class="hint">{{t "task.reopen.hint"}}</p>
+    <button type="submit">{{t "reopen"}}</button>
   </form>
 </details>
 {{end}}

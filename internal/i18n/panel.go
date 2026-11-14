@@ -1267,6 +1267,26 @@ var panelMessages = map[string]msg{
 		en: "What was achieved",
 		es: "Qué se consiguió",
 	},
+	"panel.task.reopen": {
+		en: "Open it again",
+		es: "Reabrirla",
+	},
+	"panel.f.why": {
+		en: "Why (optional)",
+		es: "Por qué (opcional)",
+	},
+	"panel.task.reopen.hint": {
+		en: "It goes back to the phase you choose, and its journal says it was reopened from the panel, with your reason.",
+		es: "Vuelve a la fase que elijas, y su diario dice que se reabrió desde el panel, con tu motivo.",
+	},
+	"panel.reopen": {
+		en: "Reopen",
+		es: "Reabrir",
+	},
+	"panel.today.space.empty": {
+		en: "Nothing here asks for you today.",
+		es: "Aquí no hay nada que te espere hoy.",
+	},
 	"panel.task.close.hint": {
 		en: "A closed task is kept, never deleted.",
 		es: "Una tarea cerrada se guarda, nunca se borra.",

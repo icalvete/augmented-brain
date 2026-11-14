@@ -1801,8 +1801,9 @@ Closing a task here does what closing it in a session does: if the task has a se
 its own, that session ends once it finishes its answer, and its worktree goes when it
 holds nothing of its own.
 
-To open a closed task again, find it under **Closed** and choose a new status for it; its
-journal says it was reopened from the panel.
+To open a closed task again, find it under **Closed**, open it and use **Open it again**:
+choose its phase, say what comes next and, if you like, why. Its journal says it was
+reopened from the panel, with your reason.
 
 When you save a task, only what you changed on the page is saved. If Claude changed
 something else in the meantime, that stays. A step is ticked only if it still says what

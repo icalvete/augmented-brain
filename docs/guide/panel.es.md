@@ -84,8 +84,9 @@ Cerrar una tarea aquí hace lo mismo que cerrarla en una sesión: si la tarea ti
 sesión propia, esa sesión acaba cuando termina su respuesta, y su worktree se quita cuando
 no tiene nada suyo.
 
-Para reabrir una tarea cerrada, búscala en **Cerradas** y elígele un estado nuevo; su
-diario dice que se reabrió desde el panel.
+Para reabrir una tarea cerrada, búscala en **Cerradas**, ábrela y usa **Reabrirla**:
+elige su fase, di qué viene ahora y, si quieres, por qué. Su diario dice que se reabrió
+desde el panel, con tu motivo.
 
 Al guardar una tarea, solo se guarda lo que cambiaste en la página. Si Claude cambió otra
 cosa mientras tanto, se queda. Un paso solo se marca si sigue diciendo lo que mostraba la
