@@ -119,11 +119,12 @@
   <summary>{{t "task.reopen"}}</summary>
   <form method="post" action="{{$.Base}}/task/update" class="stack">
     {{template "fields" (fields $ "id" .H.ID "orig_status" .H.Status)}}
-    <label>{{t "f.status"}} <select name="status">{{range .Phases}}{{if ne .Value "closed"}}<option value="{{.Value}}">{{.Label}}</option>{{end}}{{end}}</select></label>
-    <label>{{t "next"}} <input name="next" value="{{.H.Next}}" required maxlength="500"></label>
-    <label>{{t "waits"}} <input name="waiting_on" value="{{or .H.WaitingOn "me"}}" required maxlength="200"></label>
-    <label>{{t "f.why"}} <input name="why" maxlength="300"></label>
+    <label>{{t "f.status"}} <select name="status">{{range .Phases}}{{if ne .Value "closed"}}<option value="{{.Value}}"{{if $.On "/task/update" "status" .Value false}} selected{{end}}>{{.Label}}</option>{{end}}{{end}}</select></label>
+    <label>{{t "next"}} <input name="next" value="{{$.Val "/task/update" "next" .H.Next}}" required maxlength="500"></label>
+    <label>{{t "waits"}} <input name="waiting_on" value="{{$.Val "/task/update" "waiting_on" (or .H.WaitingOn "me")}}" required maxlength="200"></label>
+    <label>{{t "f.why"}} <input name="why" value="{{$.Val "/task/update" "why" ""}}" maxlength="300"></label>
     <p class="hint">{{t "task.reopen.hint"}}</p>
+    {{template "ferr" ($.FormErr "/task/update")}}
     <button type="submit">{{t "reopen"}}</button>
   </form>
 </details>

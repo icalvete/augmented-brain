@@ -2,6 +2,7 @@ package panel
 
 import (
 	"errors"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
@@ -46,6 +47,12 @@ func TestReopenFromTheTaskPage(t *testing.T) {
 	form.Set("waiting_on", w[1])
 	form.Set("status", "execution")
 	form.Set("why", "the paint peeled")
+	// Without what comes next it cannot open: the page comes back with the error in
+	// the form and what was typed kept.
+	code, body, _ := s.postFrom(t, "/task/update", "/task?s=work&id="+id, form)
+	if code != http.StatusBadRequest || len(ferr.FindAllString(body, -1)) != 1 || !strings.Contains(body, `value="the paint peeled"`) {
+		t.Fatalf("reopen with no next: %d\n%s", code, body)
+	}
 	form.Set("next", "Sand it first")
 	saved(t, s.post(t, "/task/update", form), "reopen")
 
