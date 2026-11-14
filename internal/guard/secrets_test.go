@@ -58,7 +58,7 @@ func TestSecretsEndingInSymbols(t *testing.T) {
 
 // Every kind of secret has its words in the catalogue, for the messages people read.
 func TestSecretKindsAreTranslated(t *testing.T) {
-	for _, p := range secretPatterns {
+	for _, p := range secretPatterns() {
 		for _, lang := range []string{"en", "es"} {
 			if got := i18n.T(lang, "secret."+p.what); got == "" || strings.HasPrefix(got, "secret.") || (lang == "es" && got == p.what) {
 				t.Errorf("%s in %s: %q", p.what, lang, got)

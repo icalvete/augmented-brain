@@ -3,7 +3,6 @@ package backup
 import (
 	"errors"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -22,21 +21,31 @@ type ghFake struct {
 func (f *ghFake) run(name string, args ...string) (string, error) {
 	cmd := name + " " + strings.Join(args, " ")
 	f.calls = append(f.calls, cmd)
-	for prefix, out := range f.out {
-		if strings.HasPrefix(cmd, prefix) {
-			if f.fail[prefix] {
-				return out, errors.New("exit status 1")
-			}
-			return out, nil
+	best := "" // the longest prefix that matches: one command may start another's
+	for prefix := range f.out {
+		if strings.HasPrefix(cmd+" ", prefix) && len(prefix) > len(best) {
+			best = prefix
 		}
 	}
-	return "", nil
+	if best == "" {
+		return "", nil
+	}
+	if f.fail[best] {
+		return f.out[best], errors.New("exit status 1")
+	}
+	return f.out[best], nil
+}
+
+// fakeMachine makes gh "gh" and this computer "Lucia-PC.local" for one test.
+func fakeMachine(t *testing.T) {
+	oldGH, oldHost := ghCommand, hostname
+	ghCommand = func() string { return "gh" }
+	hostname = func() (string, error) { return "Lucia-PC.local", nil }
+	t.Cleanup(func() { ghCommand, hostname = oldGH, oldHost })
 }
 
 func TestGitHubRepo(t *testing.T) {
-	if _, err := exec.LookPath("gh"); err != nil {
-		t.Skip("gh not installed: GitHubRepo answers with the steps before calling it")
-	}
+	fakeMachine(t)
 	// Not logged in: the steps, not an error to show as such.
 	f := &ghFake{out: map[string]string{"gh auth status": "not logged in"}, fail: map[string]bool{"gh auth status": true}}
 	_, err := GitHubRepo("trabajo", f.run, nil)
@@ -49,22 +58,79 @@ func TestGitHubRepo(t *testing.T) {
 		"gh repo view":   "no such repo",
 		"gh repo create": "https://github.com/someone/augmented-brain-trabajo\n",
 	}, fail: map[string]bool{"gh repo view": true}}
-	url, err := GitHubRepo("trabajo", f.run, nil)
-	if err != nil || url != "https://github.com/someone/augmented-brain-trabajo.git" {
-		t.Fatalf("create: %q %v", url, err)
+	repo, err := GitHubRepo("trabajo", f.run, nil)
+	if err != nil || repo.URL != "https://github.com/someone/augmented-brain-trabajo.git" || repo.Taken != "" {
+		t.Fatalf("create: %+v %v", repo, err)
 	}
 	if got := strings.Join(f.calls, "\n"); !strings.Contains(got, "gh repo create augmented-brain-trabajo --private") || !strings.Contains(got, "gh auth setup-git") {
 		t.Errorf("calls:\n%s", got)
 	}
-	// It exists and is public: refused.
-	f = &ghFake{out: map[string]string{"gh repo view": `{"url":"https://github.com/someone/augmented-brain-trabajo","visibility":"PUBLIC"}`}}
-	if _, err := GitHubRepo("trabajo", f.run, nil); err == nil || !strings.Contains(err.Error(), "not private") {
-		t.Errorf("a public repository was accepted: %v", err)
+	// It exists, private and empty (made by hand for this, never used): used.
+	f = &ghFake{out: map[string]string{"gh repo view": `{"url":"https://github.com/someone/augmented-brain-trabajo","visibility":"PRIVATE","isEmpty":true}`}}
+	if repo, err := GitHubRepo("trabajo", f.run, nil); err != nil || repo.URL != "https://github.com/someone/augmented-brain-trabajo.git" || repo.Taken != "" {
+		t.Errorf("an empty one: %+v %v", repo, err)
 	}
-	// It exists and is private: reused.
-	f = &ghFake{out: map[string]string{"gh repo view": `{"url":"https://github.com/someone/augmented-brain-trabajo","visibility":"PRIVATE"}`}}
-	if url, err := GitHubRepo("trabajo", f.run, nil); err != nil || !strings.HasSuffix(url, "augmented-brain-trabajo.git") {
-		t.Errorf("reuse: %q %v", url, err)
+}
+
+// A repository with the usual name and something in it is most likely another
+// computer's backup: never used for a new one. The backup goes to a name with this
+// computer's, and the answer says which one was left alone.
+func TestGitHubRepoLeavesAnotherBackupAlone(t *testing.T) {
+	fakeMachine(t)
+	for _, vis := range []string{"PRIVATE", "PUBLIC"} {
+		f := &ghFake{out: map[string]string{
+			"gh repo view augmented-brain-personal ":                `{"url":"https://github.com/someone/augmented-brain-personal","visibility":"` + vis + `","isEmpty":false}`,
+			"gh repo view augmented-brain-personal-lucia-pc-local ": "no such repo",
+			"gh repo create": "https://github.com/someone/augmented-brain-personal-lucia-pc-local\n",
+		}, fail: map[string]bool{"gh repo view augmented-brain-personal-lucia-pc-local ": true}}
+		repo, err := GitHubRepo("personal", f.run, nil)
+		if err != nil || repo.URL != "https://github.com/someone/augmented-brain-personal-lucia-pc-local.git" || repo.Taken != "https://github.com/someone/augmented-brain-personal" {
+			t.Fatalf("%s: %+v %v", vis, repo, err)
+		}
+		if got := strings.Join(f.calls, "\n"); strings.Contains(got, "gh repo create augmented-brain-personal --") {
+			t.Errorf("%s: the taken name was created again:\n%s", vis, got)
+		}
+	}
+	// An earlier gh that does not know isEmpty: the repository counts as not empty.
+	f := &ghFake{out: map[string]string{
+		"gh repo view augmented-brain-personal --json url,visibility,isEmpty": `Unknown JSON field: "isEmpty"`,
+		"gh repo view augmented-brain-personal --json url,visibility ":        `{"url":"https://github.com/someone/augmented-brain-personal","visibility":"PRIVATE"}`,
+		"gh repo view augmented-brain-personal-lucia-pc-local ":               "no such repo",
+		"gh repo create": "https://github.com/someone/augmented-brain-personal-lucia-pc-local\n",
+	}, fail: map[string]bool{
+		"gh repo view augmented-brain-personal --json url,visibility,isEmpty": true,
+		"gh repo view augmented-brain-personal-lucia-pc-local ":               true,
+	}}
+	if repo, err := GitHubRepo("personal", f.run, nil); err != nil || repo.Taken == "" || !strings.HasSuffix(repo.URL, "-lucia-pc-local.git") {
+		t.Errorf("an earlier gh: %+v %v", repo, err)
+	}
+	// Both names taken: nothing is used, and the answer says restore is for bringing
+	// one of them here.
+	f = &ghFake{out: map[string]string{"gh repo view": `{"url":"https://github.com/someone/x","visibility":"PRIVATE","isEmpty":false}`}}
+	_, err := GitHubRepo("personal", f.run, nil)
+	var taken *ErrRepoTaken
+	if !errors.As(err, &taken) || len(taken.Taken) != 2 || !strings.Contains(err.Error(), "augmented-brain restore") {
+		t.Errorf("both taken: %v", err)
+	}
+	if got := strings.Join(f.calls, "\n"); strings.Contains(got, "repo create") || strings.Contains(got, "setup-git") {
+		t.Errorf("both taken, yet:\n%s", got)
+	}
+}
+
+func TestRepoNames(t *testing.T) {
+	old := hostname
+	t.Cleanup(func() { hostname = old })
+	for host, want := range map[string]string{
+		"Lucia-PC.local":        "augmented-brain-w-lucia-pc-local",
+		"ÑAndú_42":              "augmented-brain-w-and-42",
+		"---":                   "",
+		strings.Repeat("a", 40): "augmented-brain-w-" + strings.Repeat("a", 30),
+	} {
+		hostname = func() (string, error) { return host, nil }
+		names := repoNames("w")
+		if names[0] != "augmented-brain-w" || (want == "" && len(names) != 1) || (want != "" && (len(names) != 2 || names[1] != want)) {
+			t.Errorf("%q: %v", host, names)
+		}
 	}
 }
 

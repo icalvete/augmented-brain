@@ -69,7 +69,10 @@ var (
 // Parse uses it, and so does whatever reads files that are not notes yet.
 func SplitHeader(data []byte) (header, body []byte, err error) {
 	data = bytes.TrimPrefix(data, []byte("\xef\xbb\xbf")) // a BOM some Windows editors add
-	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
+	// ReplaceAll copies the file even when there is nothing to replace.
+	if bytes.Contains(data, []byte("\r\n")) {
+		data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
+	}
 	if !bytes.HasPrefix(data, append(delim, '\n')) {
 		return nil, nil, ErrNoHeader
 	}
@@ -92,13 +95,24 @@ func Parse(path string, data []byte) (*Note, error) {
 		return nil, err
 	}
 	n := &Note{Path: filepath.ToSlash(path), Body: string(body)}
-	if field := unknownField(header); field != "" {
-		return nil, &UnknownFieldError{Field: field}
-	}
-	dec := yaml.NewDecoder(bytes.NewReader(header))
-	dec.KnownFields(true)
-	if err := dec.Decode(&n.Header); err != nil {
-		return nil, fmt.Errorf("header: %w", err)
+	// The header is parsed once, into a node that both finds fields Header does not
+	// have and fills Header: the YAML is most of the time of loading a space. What the
+	// node cannot hold (not YAML, nothing at all) goes through the strict decoder, whose
+	// error says what is wrong.
+	var doc yaml.Node
+	if yaml.Unmarshal(header, &doc) == nil && len(doc.Content) > 0 {
+		if field := unknownIn(doc.Content[0], reflect.TypeFor[Header](), ""); field != "" {
+			return nil, &UnknownFieldError{Field: field}
+		}
+		if err := doc.Content[0].Decode(&n.Header); err != nil {
+			return nil, fmt.Errorf("header: %w", err)
+		}
+	} else {
+		dec := yaml.NewDecoder(bytes.NewReader(header))
+		dec.KnownFields(true)
+		if err := dec.Decode(&n.Header); err != nil {
+			return nil, fmt.Errorf("header: %w", err)
+		}
 	}
 	n.Header.OneLine()
 	if err := n.check(); err != nil {
@@ -119,16 +133,9 @@ func (e *UnknownFieldError) Error() string {
 	return fmt.Sprintf("header: field %q is not one this version knows: a newer augmented brain wrote it (update it), or it is mistyped", e.Field)
 }
 
-// unknownField is the first field of the header that Header does not have, or "" when
-// there is none, or when the header is not a YAML map (the decoder says what is wrong).
-func unknownField(header []byte) string {
-	var doc yaml.Node
-	if yaml.Unmarshal(header, &doc) != nil || len(doc.Content) == 0 {
-		return ""
-	}
-	return unknownIn(doc.Content[0], reflect.TypeFor[Header](), "")
-}
-
+// unknownIn is the first field of the map m that the struct t does not have, also
+// inside a list of structs, or "" when there is none or m is not a map (the decoder
+// says what is wrong then).
 func unknownIn(m *yaml.Node, t reflect.Type, prefix string) string {
 	if m.Kind != yaml.MappingNode {
 		return ""

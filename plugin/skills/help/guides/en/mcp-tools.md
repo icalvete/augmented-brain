@@ -447,7 +447,9 @@ It creates `augmented-brain-<space>`, a private repository in your GitHub accoun
 the `gh` command line, and makes the first copy right away. When `gh` has not entered
 your GitHub account yet, it starts that and returns a short code for you to type at
 github.com/login/device; call it again once you accept. When `gh` is missing, it
-returns the steps to guide you through.
+returns the steps to guide you through. A repository of that name with something in it
+(most likely another computer's backup) is never used: the backup goes to
+`augmented-brain-<space>-<computer>`, and when that is taken too, nothing is set up.
 
 - `repo_url` (optional): leave it out. It is kept so that calls from earlier versions
   still work, and an address in it is always refused. A backup somewhere else (GitLab, your company's git) is yours to

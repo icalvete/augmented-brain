@@ -25,6 +25,12 @@ después di "ya está", o pulsa otra vez el botón. El código vale unos 15 minu
 ¿No tienes cuenta de GitHub? Crea una gratis en [github.com/signup](https://github.com/signup),
 o guarda la copia en otro sitio, como se cuenta abajo.
 
+¿Tu cuenta ya tiene un repositorio llamado `augmented-brain-<espacio>`, con notas dentro?
+Lo más probable es que sea la copia de otro ordenador, así que no se toca: usarlo mezclaría
+las notas de este ordenador con esas. Esta copia va a `augmented-brain-<espacio>-<ordenador>`,
+y Claude o la página te lo dicen. Si lo que quieres es traer a este ordenador las notas de
+esa copia, eso es [recuperar](#en-una-máquina-nueva), no una copia nueva.
+
 ¿Prefieres otro sitio (GitLab, el git de tu empresa)? Hazlo tú, en una carpeta del
 espacio:
 
