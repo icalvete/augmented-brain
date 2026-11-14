@@ -48,7 +48,8 @@ type Server struct {
 	pages      map[string]map[string]*template.Template // language → page → template
 	static     http.Handler
 	mux        *http.ServeMux
-	last       atomic.Int64 // when the last authorized request came, in Unix nanoseconds
+	reads      map[string]readRoute // the pages, by path: a form that fails shows its page again
+	last       atomic.Int64         // when the last authorized request came, in Unix nanoseconds
 	stopped    chan struct{}
 	stop       sync.Once
 
