@@ -283,6 +283,7 @@ type textField struct {
 
 // textFields are the task form's text fields, in the order they are saved.
 var textFields = []textField{
+	{"title", "f.title", func(in *brain.UpdateInput, v string) { in.Title = v }},
 	{"waiting_on", "waits", func(in *brain.UpdateInput, v string) { in.WaitingOn = v }},
 	{"next", "next", func(in *brain.UpdateInput, v string) { in.Next = v }},
 	{"summary", "", func(in *brain.UpdateInput, v string) { in.Summary = v }},
@@ -389,6 +390,9 @@ func closedTask(cfgDir, id string) {
 // never ticks another step.
 func (s *Server) taskStep(v *view, r *http.Request) (string, error) {
 	id := field(r, "id")
+	if op := field(r, "op"); op != "" {
+		return taskPage(id) + "#steps", changeStep(v, r, id, op)
+	}
 	if r.PostForm.Has("step") {
 		if err := required(v, r, "step"); err != nil {
 			return "", err
@@ -405,4 +409,35 @@ func (s *Server) taskStep(v *view, r *http.Request) (string, error) {
 	}
 	_, err = v.b.Step(brain.StepInput{ID: id, Number: n, Expect: field(r, "text"), Done: field(r, "done") == "1"})
 	return taskPage(id) + "#steps", err
+}
+
+// changeStep corrects (op "edit", field "edit"), moves (op "up" or "down") or removes
+// (op "remove") step n, which must still say "text": a page shown before the plan
+// changed never touches another step.
+func changeStep(v *view, r *http.Request, id, op string) error {
+	n, err := strconv.Atoi(field(r, "n"))
+	if err != nil || n < 1 || field(r, "text") == "" {
+		return errors.New(v.t("err.required", v.t("f.step")))
+	}
+	in := brain.StepChange{ID: id, Number: n, Expect: field(r, "text")}
+	switch op {
+	case "edit":
+		if field(r, "edit") == "" {
+			return errors.New(v.t("err.required", v.t("f.step")))
+		}
+		in.Edit = field(r, "edit")
+	case "up":
+		in.MoveTo = n - 1
+	case "down":
+		in.MoveTo = n + 1
+	case "remove":
+		in.Remove = true
+	default:
+		return errors.New(v.t("err.required", v.t("f.step")))
+	}
+	if in.MoveTo == 0 && (op == "up" || op == "down") {
+		return nil // the first step cannot go higher
+	}
+	_, err = v.b.ChangeStep(in)
+	return err
 }

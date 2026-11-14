@@ -102,6 +102,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Closing a task whose own session runs | `TestCloseStopsTheTaskSession`; `internal/remote` `TestStopWhenIdle`; tried by hand on 10-nov |
 | A session Claude retired (no pid), Claude's daemon stopped, a session waiting for a permission, `stop` with nothing to close | `TestCloseStopsTheTaskSession`; `internal/remote` `TestRetiredSession`, `TestWakeRetiredSession` (`session start` brings it back with `claude respawn`), `TestAgentsWithoutAll`, `TestStopWakesDaemon`, `TestWaitingForPermissionIsBusy`, `TestStopEarlierUnit`; `cmd` `TestSessionStopSaysWhatHappened`; `claude agents` outputs and the daemon measured by hand on 11-nov (2.1.322) |
 | A session that cannot work: no login or an expired one, a first answer that is an API error (as Claude Code writes it when the login ran out, measured on 11-nov, 2.1.322), a slow first answer, a session whose last answer failed (`list` says failed) | `internal/state` `TestLastAnswer`; `internal/remote` `TestStartNeedsLogin`, `TestStartFirstTurnFails`, `TestStartWaitsForFirstAnswer`, `TestLaunchesFailed`; `cmd` `TestSessionListFailed` |
+| Correcting, moving and removing steps (`task_step` `edit`, `remove`, `move_to`); a task's title; taking out or moving a watch date (`task_update` `title`, `watch_drop`) | `internal/brain` `TestChangeStep`, `TestMoveStepKeepsOtherLines`, `TestUpdateTitleAndWatchDrop`; `TestFixThroughTools` |
 | Every tool and parameter documented | `TestToolsDocumented` |
 
 ## The panel
@@ -111,6 +112,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Every page loads, no console error, fits a phone | `scripts/panel-browser-check.py` | CI: Chromium and WebKit |
 | Every edit saves | `internal/panel` (one test per page) | Go |
 | A form that cannot be saved comes back with what was typed and the error next to it, in the panel's language; "Saved" says what, once | `internal/panel` `TestFormErrorNextToField`, `TestFormErrorRootUntil`, `TestFormErrorRepeatedForm`, `TestFormErrorAtTop`, `TestEveryFormHasItsError`, `TestSavedSaysWhat`, `internal/i18n` `TestError`; the browser check | Go, CI |
+| Steps corrected, moved and removed, a task's title, watch dates moved or taken out, from the task's page (a stale page touches no other step) | `internal/panel` `TestFixStepsAndTitle`, `TestMoveAndDropWatch` | Go |
 | Configuration edits leave a version | `internal/panel` `TestPanelChangesLeaveVersions` | Go |
 | `memory_trust`: with "ask", saving a rule, the profile or the guard's lists asks first (refused where questions are skipped); the Guard page saves it | `internal/hook` `TestPreToolUseMemoryTrust`, `TestMatcherNamesTheMemoryTools`, `internal/config` `TestMemoryTrust`, `internal/panel` `TestGuardPageTrust`, the browser check, the rehearsal. The question itself, in a real session: by hand | Go, CI, VMs |
 | The Guard page: what changed, the box, the warnings | `TestGuardPageShowsWhatChanged`, `TestGuardPageWarnsOnDangerousLists`, the browser check | Go, CI |
