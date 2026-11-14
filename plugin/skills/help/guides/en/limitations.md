@@ -51,8 +51,9 @@ task) works on Linux only for now: on macOS and Windows it says so and changes n
   restart, including one the computer does by itself (an update, a power cut), nobody
   can connect until you log in once. On Linux it can start with nobody logged in.
 - **On Windows it runs only while you are logged in.** If you sign out, it stops.
-- **On Windows, a folder with `%` in its name** may keep remote access from starting
-  there. Pick another folder with `folders` in `remote.toml`.
+- **On Windows, a folder with `%` or a quote in its name** cannot hold remote access:
+  `remote install` says so and writes nothing. The same goes for the paths of claude and
+  of the program. Pick another folder with `folders` in `remote.toml`.
 - **A real connection has been tried on Linux only.** On a Mac and on Windows, install,
   status and uninstall are tested in CI with a pretend Claude; connecting from claude.ai
   has not been tried yet.

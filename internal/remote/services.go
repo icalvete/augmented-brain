@@ -25,7 +25,35 @@ func (s System) prepare(c *config.Config, set Settings) (*InstallResult, error) 
 	if err != nil {
 		return nil, errors.New(i18n.T(c.Language, "remote.noclaude"))
 	}
-	return &InstallResult{Services: s.services(c, set), Claude: claude, Linger: LingerNone}, nil
+	res := &InstallResult{Services: s.services(c, set), Claude: claude, Linger: LingerNone}
+	if err := s.checkPaths(c.Language, res); err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+// checkPaths refuses a path a service could not carry as it is: a line break would
+// start a new line of a unit (WorkingDirectory=, ExecStart=), and on Windows cmd.exe
+// expands %VAR% and ends a quoted path at a quote, even inside quotes (R-06). The
+// services' folders, claude, this program and the logs go into the service.
+func (s System) checkPaths(lang string, res *InstallResult) error {
+	bad := "\n\r"
+	if s.GOOS == "windows" {
+		bad += `%"`
+	}
+	check := []string{res.Claude, s.Self}
+	for _, svc := range res.Services {
+		check = append(check, svc.Folder)
+		if s.GOOS != "linux" {
+			check = append(check, s.logFile(svc.Space))
+		}
+	}
+	for _, p := range check {
+		if strings.ContainsAny(p, bad) {
+			return errors.New(i18n.T(lang, "remote.badpath", p))
+		}
+	}
+	return nil
 }
 
 // folders makes or checks each service's folder, once the system is known to be able
