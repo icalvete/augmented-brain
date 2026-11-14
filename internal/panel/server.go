@@ -219,6 +219,8 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 					return i18n.T(l, "panel.days.in", d)
 				}
 			},
+			// day says a date (or a date and time) as a person reads it: "13 Nov", "today, 10:04".
+			"day":    func(s string) string { return humanDate(l, s, time.Now()) },
 			"fields": fields,
 			"intro":  intro,
 		}
