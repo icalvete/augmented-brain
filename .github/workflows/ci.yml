@@ -37,6 +37,11 @@ jobs:
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
       - name: Vet
         run: go vet ./...
+      # The version is fixed, as for actionlint: a new staticcheck can bring new warnings
+      # on its own, and a check that changes by itself is not one to trust.
+      - name: staticcheck
+        if: matrix.os == 'ubuntu-latest'
+        run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
       - name: Test
         run: go test -race ./...
       - name: The guard's tests cover no less than before
@@ -169,19 +174,31 @@ jobs:
     steps:
       # In a pull request, the branch's own last commit, not the merge commit GitHub makes
       # up to test it: that one carries the GitHub profile's name, and is never pushed.
+      # The whole history, so the fingerprint check below can read every commit of the
+      # pull request (or of the push), not only the last one.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
       - name: No secrets in the repository
         run: scripts/privacy-check.sh --all
+      - name: The fingerprint check catches what it should (made-up data, no key)
+        run: python3 -I scripts/privacy-hashed.py selftest
       # The maintainer's personal data, by keyed fingerprints (the denylist itself is not
       # in the repo). Without the key it says so and passes, as in a fork; a push to the
       # project itself must have it. Dependabot's pull requests get no secrets either (they
       # only change go.mod, go.sum and the workflows); main checks them again once merged.
+      # Besides the files, it reads the author, committer and message of each commit of
+      # the pull request (or of the push to main), the branch name and the title. They go
+      # in through env, never written into the script, where a title could run as code.
       - name: No personal data in the repository
         env:
           AB_PRIVACY_KEY: ${{ secrets.AB_PRIVACY_KEY }}
+          AB_PRIVACY_COMMITS: ${{ github.event_name == 'pull_request' && format('{0}..{1}', github.event.pull_request.base.sha, github.event.pull_request.head.sha) || (github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000' && format('{0}..{1}', github.event.before, github.sha)) || '' }}
+          AB_PRIVACY_TEXT: |
+            ${{ github.head_ref }}
+            ${{ github.event.pull_request.title }}
           AB_PRIVACY_REQUIRED: ${{ github.repository == 'icalvete/augmented-brain' && (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]')) }}
         run: python3 -I scripts/privacy-hashed.py scan
       # The website's pages are generated from the guides' Markdown: a change to a guide

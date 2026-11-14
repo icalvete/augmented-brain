@@ -26,6 +26,14 @@ var remoteMessages = map[string]msg{
 		en: "%s: name_prefix %q must be one plain word (letters, digits, dot, dash, underscore)",
 		es: "%s: name_prefix %q debe ser una palabra sencilla (letras, cifras, punto, guion, guion bajo)",
 	},
+	"remote.badspacename": {
+		en: "the space %q cannot have a service: for remote access a space's name holds only ASCII letters, digits, dots, dashes and underscores. Rename it in %s (its line [spaces.…], and default_space and remote.toml if they name it); its notes stay where they are",
+		es: "el espacio %q no puede tener servicio: para el acceso remoto, el nombre de un espacio solo lleva letras sin acentos, cifras, puntos, guiones y guiones bajos. Cámbialo en %s (su línea [spaces.…], y default_space y remote.toml si lo nombran); sus notas siguen donde están",
+	},
+	"remote.badpath": {
+		en: "the path %q cannot go into a service: it holds a line break, or on Windows a %% or a quote. Move it to a folder whose name does not",
+		es: "la ruta %q no puede ir en un servicio: lleva un salto de línea o, en Windows, un %% o unas comillas. Llévala a una carpeta cuyo nombre no los tenga",
+	},
 	"remote.badspace": {
 		en: "%s: the space %q is not one of your spaces (%s)",
 		es: "%s: el espacio %q no es ninguno de tus espacios (%s)",

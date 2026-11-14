@@ -46,7 +46,7 @@ func fakeReleaseOf(t *testing.T, prog []byte) (archive string, files map[string]
 // server that stands in for GitHub: the public address under /rel, the API under /api.
 // public says whether the public address serves the files (otherwise it answers 504);
 // api, whether the API does.
-func runInstall(t *testing.T, public, api bool) (out string, err error, bin string) {
+func runInstall(t *testing.T, public, api bool) (out, bin string, err error) {
 	t.Helper()
 	if runtime.GOOS == "windows" {
 		t.Skip("install.sh is the installer for Linux and macOS")
@@ -59,7 +59,7 @@ func runInstall(t *testing.T, public, api bool) (out string, err error, bin stri
 		"AB_LANGUAGE=en", "AB_INSTALL_DIR="+bin, "AB_RELEASE_URL="+srv.URL+"/rel",
 		"AB_API_URL="+srv.URL+"/api", "AB_RETRY_DELAY=0")
 	o, err := cmd.CombinedOutput()
-	return string(o), err, bin
+	return string(o), bin, err
 }
 
 // fakeGitHub stands in for GitHub: the public address of the release's files under
@@ -125,7 +125,7 @@ func TestInstallPs1DownloadFails(t *testing.T) {
 // The public address answers 504 (as on 8-nov): the installer gets the same files
 // through GitHub's API and installs.
 func TestInstallerFallsBackToAPI(t *testing.T) {
-	out, err, bin := runInstall(t, false, true)
+	out, bin, err := runInstall(t, false, true)
 	if err != nil {
 		t.Fatalf("%v\n%s", err, out)
 	}
@@ -137,7 +137,7 @@ func TestInstallerFallsBackToAPI(t *testing.T) {
 // Both ways down: the installer stops with an error that says what happened and that
 // nothing was installed, and nothing is.
 func TestInstallerDownloadFails(t *testing.T) {
-	out, err, bin := runInstall(t, false, false)
+	out, bin, err := runInstall(t, false, false)
 	if err == nil {
 		t.Fatalf("a failed download was taken for an install:\n%s", out)
 	}
@@ -151,7 +151,7 @@ func TestInstallerDownloadFails(t *testing.T) {
 
 // The public address works: nothing else is asked.
 func TestInstallerPublic(t *testing.T) {
-	out, err, bin := runInstall(t, true, false)
+	out, bin, err := runInstall(t, true, false)
 	if err != nil {
 		t.Fatalf("%v\n%s", err, out)
 	}

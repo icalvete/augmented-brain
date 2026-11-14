@@ -146,7 +146,23 @@ func EnsureNotes(memDir, cfgDir, name, lang string, now time.Time) (Result, erro
 		return Result{}, err
 	}
 	return ensure(memDir, cfgDir, "notes-"+name, lang, v, Notes(), NotesMigrations, now,
-		func(n int) error { return Write(memDir, n) })
+		func(n int) error {
+			if recorded(memDir, n) {
+				return nil // already there: every session start would rewrite it
+			}
+			return Write(memDir, n)
+		})
+}
+
+// recorded reports whether the version file of a memory folder is a plain file that
+// already says v.
+func recorded(memDir string, v int) bool {
+	p := filepath.Join(memDir, MetaDir, File)
+	if fi, err := os.Lstat(p); err != nil || !fi.Mode().IsRegular() {
+		return false
+	}
+	data, err := os.ReadFile(p)
+	return err == nil && string(data) == strconv.Itoa(v)+"\n"
 }
 
 // EnsureConfig does the same for the configuration folder, given its version as read

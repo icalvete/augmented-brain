@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -107,6 +108,37 @@ func TestLoadErrors(t *testing.T) {
 	t.Setenv("AB_LANGUAGE", "es")
 	if _, err := Load(t.TempDir()); !errors.Is(err, ErrNotFound) || !strings.Contains(err.Error(), "no hay ninguna configuración en") {
 		t.Errorf("missing file, system in Spanish: %v", err)
+	}
+}
+
+// A space's name reaches service units, file names and command lines, so one that
+// could break out of them does not load, and the error says how to rename it (R-06).
+func TestSpaceNameIsChecked(t *testing.T) {
+	t.Setenv("AB_LANGUAGE", "en")
+	bad := []string{
+		"x\nExecStartPre=/bin/sh -c 'id > /tmp/pwned'\n#",
+		"../../../../outside",
+		"y --permission-mode bypassPermissions",
+		"a&calc",
+		"a%PATH%b",
+		".hidden",
+		"a/b",
+		`a\\b`,
+	}
+	for _, name := range bad {
+		dir := t.TempDir()
+		write(t, dir, "[spaces."+strconv.Quote(name)+"]\nmemory = \"/m\"")
+		_, err := Load(dir)
+		if err == nil || !strings.Contains(err.Error(), "cannot be used") || !strings.Contains(err.Error(), "[spaces.work]") {
+			t.Errorf("space %q: error %v, want the rename message", name, err)
+		}
+	}
+	for _, name := range []string{"work", "Trabajo", "música", "client_2", "a.b-c"} {
+		dir := t.TempDir()
+		write(t, dir, "[spaces."+strconv.Quote(name)+"]\nmemory = \"/m\"")
+		if _, err := Load(dir); err != nil {
+			t.Errorf("space %q: %v", name, err)
+		}
 	}
 }
 

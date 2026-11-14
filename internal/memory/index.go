@@ -108,6 +108,7 @@ func (m *Memory) index(lang string, compact bool) string {
 		}
 		line(t, extra)
 	}
+	kids := m.children()
 	for _, a := range groups {
 		title := l("noarea")
 		if n, ok := m.Notes[a]; ok {
@@ -116,7 +117,7 @@ func (m *Memory) index(lang string, compact bool) string {
 		fmt.Fprintf(&b, "\n### %s\n", title)
 		for _, t := range byArea[a] {
 			taskLine(t, "")
-			for _, c := range m.Children(t.Header.ID) {
+			for _, c := range kids[t.Header.ID] {
 				if Live(c) {
 					taskLine(c, "  ")
 				}

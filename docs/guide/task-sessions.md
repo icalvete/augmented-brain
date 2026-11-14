@@ -40,6 +40,14 @@ work is not left open: if Claude Code is not logged in, nothing opens, and if th
 answer is an error (the login ran out, the service is overloaded), the session is
 closed. Either way the command says what to do, such as `claude auth login`.
 
+The new session does not get everything your terminal has. Claude starts its sessions
+from one background program, which keeps the variables it started with for every later
+session, of any task and any space. So it gets only what a session needs to work: your
+home and user, `PATH`, language, the desktop's and the ssh agent's variables, proxies,
+and Claude's own settings (`CLAUDE_*`, `ANTHROPIC_*`). A token you exported in a
+terminal, such as `GH_TOKEN` or `AWS_*`, stays in that terminal: a tool in the session
+uses its own login (`gh auth login`, an AWS profile).
+
 ## Which folder it opens in
 
 The folder is the first of the task's repositories found in the space's work folders.
