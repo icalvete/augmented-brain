@@ -616,6 +616,10 @@ augmented-brain space
 
 ## Outside every space
 
+augmented brain works in every Claude Code session on this computer, whatever the
+folder: its plugin is installed for your whole user. A folder that is in no work folder
+is outside every space.
+
 The desktop app starts each new session in a scratch folder of its own. That folder is
 in no space. Then the **default space** is used, `personal` unless you change it, and
 Claude tells you in one line, with how to switch to work.
@@ -623,6 +627,25 @@ Claude tells you in one line, with how to switch to work.
 The default space matters for one more thing: its backup carries your profile and the
 shared notes. Set it with `default_space` in the configuration. With a single space, it
 is that one.
+
+What changes outside, next to a session in a space:
+
+| | In a space | Outside every space |
+|---|---|---|
+| Profile, rules, tasks and the rest of the notes | The space's | The default space's, and Claude tells you |
+| What Claude writes in your notes | Goes to the space | Goes to the default space |
+| Tasks changed by another session | Claude hears of them | Those of the default space |
+| Reminder to write in the task's journal | Yes | No |
+| A session cut short, offered to recover | Yes | No |
+| [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html) | All of it | All of it, the same |
+| Backup when the session ends | The space's | The default space's |
+| Warnings about the window's memory and the model | Yes | Yes |
+
+The guard does not look at the folder: its lists hold for the whole computer. So in any
+project, also one you never gave augmented brain, Claude cannot commit or push until you
+[let it in that repository](https://icalvete.github.io/augmented-brain/guide/guard.html#let-claude-commit-in-a-repository).
+
+To bring a folder into a space, add it to the space's `work_folders` (next).
 
 ## Your projects live elsewhere?
 
@@ -1129,6 +1152,13 @@ as text. It catches the mistakes an assistant makes, also hidden inside other co
 A program determined to get around it could. Read the
 [disclaimer](https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md).
 
+## Where it watches
+
+Everywhere. The guard reads every command in every Claude Code session on this computer,
+inside your spaces or not, and its lists hold for the whole computer. A repository that is
+not in them is closed to commits and pushes, in any project. What else changes outside
+your spaces is in [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+
 ## What it stops
 
 - **Commits and pushes.** `git commit`, `git push`, and what publishes like a push:
@@ -1526,6 +1556,9 @@ Each file is described in [Configuration](https://icalvete.github.io/augmented-b
   sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns that off.
 - **It does not change your Claude Code settings.** The plugin goes in and out with
   Claude Code's own commands, which the installer, `update` and `uninstall` run for you.
+- **It does not stay inside your spaces.** It works in every Claude Code session on this
+  computer. Outside your spaces it uses the default space, and the guard watches the
+  same. See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
 - **Mind this: your assistant reads your notes**, like any file it opens. They travel
   with your conversations to its provider. Do not keep there what you would not share.
 
@@ -1909,10 +1942,11 @@ show only those waiting on you, under way, parked, untouched, or waiting on one 
 A task nobody has changed for 14 days is marked "untouched N days". At the end, folded,
 the tasks left for **Someday** and the **Closed** ones.
 
-Open one. Its essentials come first, the other sections folded, and the journal newest
-first. Write in its journal, change its status or next step, tick its steps, park it or
-close it. You can open new tasks too. If a status skips phases, the journal names them.
-When a task waits on a person you have a note of, "waits on" leads to them.
+Open one. Its essentials come first, then its steps and what you can do with it: write in
+its journal, change its status or next step, tick its steps, park it or close it. Below,
+the other sections folded, and the journal newest first. You can open new tasks too. If a
+status skips phases, the journal names them. When a task waits on a person you have a
+note of, "waits on" leads to them.
 
 Closing a task here does what closing it in a session does: if the task has a session of
 its own, that session ends once it finishes its answer, and its worktree goes when it

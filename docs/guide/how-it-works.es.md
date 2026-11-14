@@ -128,6 +128,9 @@ Cada fichero está explicado en [Configuración](configuration.es.md) y en el
   sin mandar nada tuyo. `AB_NO_UPDATE_CHECK=1` lo apaga.
 - **No toca tus ajustes de Claude Code.** El plugin se pone y se quita con los comandos
   de Claude Code, que el instalador, `update` y `uninstall` lanzan por ti.
+- **No se queda dentro de tus espacios.** Actúa en todas las sesiones de Claude Code de
+  este ordenador. Fuera de tus espacios usa el espacio por defecto, y el guardia vigila
+  igual. Mira [Fuera de todos los espacios](spaces.es.md#fuera-de-todos-los-espacios).
 - **Ojo: tu asistente lee tus notas**, como cualquier fichero que abre. Viajan con tus
   conversaciones a su proveedor. No guardes ahí lo que no compartirías.
 
