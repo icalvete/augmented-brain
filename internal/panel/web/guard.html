@@ -15,71 +15,75 @@
 </div>{{end}}
 
 <h2>{{t "guard.reach"}}</h2>
-<p class="hint">{{t "guard.reach.hint"}}</p>
-{{if .SpaceDirs}}<p class="hint">{{t "guard.reach.dirs"}} {{range .SpaceDirs}}<code>{{.}}</code> {{end}}</p>{{end}}
-{{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/reach" class="stack">
-  {{template "fields" (fields $)}}
-  <label><input type="radio" name="value" value="machine"{{if ne .Reach "spaces"}} checked{{end}}> {{t "guard.reach.machine"}}</label>
-  <label><input type="radio" name="value" value="spaces"{{if eq .Reach "spaces"}} checked{{end}}> {{t "guard.reach.spaces"}}</label>
-  <p class="flash warn">{{t "guard.reach.warn"}}</p>
-  {{if ne .Reach "spaces"}}<label><input type="checkbox" name="confirm" value="yes"> {{t "guard.reach.confirm"}}</label>{{else}}<input type="hidden" name="confirm" value="yes">{{end}}
-  {{template "ferr" ($.FormErr "/guard/reach")}}
-  <button type="submit">{{t "save"}}</button>
-</form>{{end}}
-{{if .Remote}}<p>{{if eq .Reach "spaces"}}{{t "guard.reach.spaces"}}{{else}}{{t "guard.reach.machine"}}{{end}}</p>{{end}}
+<p>{{t "guard.now"}} <strong>{{if eq .Reach "spaces"}}{{t "guard.reach.spaces"}}{{else}}{{t "guard.reach.machine"}}{{end}}</strong></p>
+<details class="box"{{if $.Open "/guard/reach"}} open{{end}}>
+  <summary>{{if $.D.Remote}}{{t "guard.more"}}{{else}}{{t "guard.change"}}{{end}}</summary>
+  <p class="hint">{{t "guard.reach.hint"}}</p>
+  {{if .SpaceDirs}}<p class="hint">{{t "guard.reach.dirs"}} {{range .SpaceDirs}}<code>{{.}}</code> {{end}}</p>{{end}}
+  {{if not $.D.Remote}}  <form method="post" action="{{$.Base}}/guard/reach" class="stack">
+    {{template "fields" (fields $)}}
+    <label class="check"><input type="radio" name="value" value="machine"{{if ne .Reach "spaces"}} checked{{end}}> {{t "guard.reach.machine"}}</label>
+    <label class="check"><input type="radio" name="value" value="spaces"{{if eq .Reach "spaces"}} checked{{end}}> {{t "guard.reach.spaces"}}</label>
+    <p class="flash warn">{{t "guard.reach.warn"}}</p>
+    {{if ne .Reach "spaces"}}<label class="check"><input type="checkbox" name="confirm" value="yes"> {{t "guard.reach.confirm"}}</label>{{else}}<input type="hidden" name="confirm" value="yes">{{end}}
+    {{template "ferr" ($.FormErr "/guard/reach")}}
+    <button type="submit">{{t "save"}}</button>
+  </form>{{end}}
+</details>
 
 <h2>{{t "guard.untouchable"}}</h2>
 <p class="hint">{{t "guard.untouchable.hint"}}</p>
 {{if .Untouchable}}<ul class="cards">{{range .Untouchable}}<li class="card">
-  <div class="title"><code>{{.}}</code></div>
-  {{$f := print "/guard/list#remove " .}}{{if not $.D.Remote}}<details class="said"{{if $.Open $f}} open{{end}}><summary>{{t "guard.remove"}}</summary>
+  <div class="title"><code>{{.Path}}</code>{{template "missing" .}}</div>
+  {{$f := print "/guard/list#remove " .Path}}{{if not $.D.Remote}}<details class="said"{{if $.Open $f}} open{{end}}><summary>{{t "guard.remove"}}</summary>
     <p class="flash warn">{{t "guard.untouchable.removewarn"}}</p>
     <form method="post" action="{{$.Base}}/guard/list" class="stack">
-      {{template "fields" (fields $ "list" "untouchable" "op" "remove" "value" . "form" (print "remove " .))}}
+      {{template "fields" (fields $ "list" "untouchable" "op" "remove" "value" .Path "form" (print "remove " .Path))}}
       <label>{{t "guard.typename"}} <input name="confirm" required maxlength="200" autocomplete="off" value="{{$.Val $f "confirm" ""}}"></label>
       {{template "ferr" ($.FormErr $f)}}
       <button type="submit" class="small">{{t "guard.remove"}}</button>
     </form>
   </details>{{end}}
-</li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.untouchable.none"}}</p>{{end}}
-{{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/list" class="stack">
-  {{template "fields" (fields $ "list" "untouchable" "op" "add" "form" "untouchable")}}
-  <label>{{t "guard.repo"}} <input name="value" required maxlength="500" placeholder="~/work/core" value="{{$.Val "/guard/list#untouchable" "value" ""}}"></label>
-  {{template "ferr" ($.FormErr "/guard/list#untouchable")}}
-  <button type="submit">{{t "add"}}</button>
-</form>{{end}}
+</li>{{end}}</ul>{{else if $.D.Remote}}<p class="empty">{{t "guard.untouchable.none"}}</p>{{end}}
+{{if not $.D.Remote}}<details class="box"{{if $.Open "/guard/list#untouchable"}} open{{end}}>
+  <summary>{{t "guard.add.repo"}}</summary>
+  <form method="post" action="{{$.Base}}/guard/list" class="stack">
+    {{template "fields" (fields $ "list" "untouchable" "op" "add" "form" "untouchable")}}
+    <label>{{t "guard.repo"}} <input name="value" required maxlength="500" placeholder="~/work/core" value="{{$.Val "/guard/list#untouchable" "value" ""}}"></label>
+    {{template "ferr" ($.FormErr "/guard/list#untouchable")}}
+    <button type="submit">{{t "add"}}</button>
+  </form>
+</details>{{end}}
 
-{{range .Spaces}}{{$sp := .Space}}
-<h2>{{tf "guard.repos" $sp}}</h2>
-<h3>{{t "guard.allowed"}}</h3>
+<h2>{{t "guard.allowed"}}</h2>
 <p class="hint">{{t "guard.allowed.hint"}}</p>
-<p class="flash warn">{{t "guard.allowed.warn"}}</p>
-{{if .Allowed}}<ul class="plain">{{range .Allowed}}<li><code>{{.}}</code>
-  {{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/list" class="inline">
-    {{template "fields" (fields $ "list" "allowed" "op" "remove" "space" $sp "value" .)}}
-    <button type="submit" class="small">{{t "guard.remove"}}</button>
-  </form>{{end}}</li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.none"}}</p>{{end}}
-{{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/list" class="stack">
-  {{$f := print "/guard/list#allowed " $sp}}{{template "fields" (fields $ "list" "allowed" "op" "add" "space" $sp "form" (print "allowed " $sp))}}
-  <label>{{t "guard.repo"}} <input name="value" required maxlength="500" value="{{$.Val $f "value" ""}}"></label>
-  <label><input type="checkbox" name="confirm" value="yes" required> {{t "guard.allowed.confirm"}}</label>
-  {{template "ferr" ($.FormErr $f)}}
-  <button type="submit">{{t "add"}}</button>
-</form>{{end}}
-<h3>{{t "guard.ask"}}</h3>
+{{template "repos" (repos $ "allowed" .Allowed)}}
+{{if not $.D.Remote}}<details class="box"{{if $.Open "/guard/list#allowed"}} open{{end}}>
+  <summary>{{t "guard.add.repo"}}</summary>
+  <p class="flash warn">{{t "guard.allowed.warn"}}</p>
+  <form method="post" action="{{$.Base}}/guard/list" class="stack">
+    {{template "fields" (fields $ "list" "allowed" "op" "add" "form" "allowed")}}
+    {{template "space" (repos $ "allowed" .Allowed)}}
+    <label>{{t "guard.repo"}} <input name="value" required maxlength="500" value="{{$.Val "/guard/list#allowed" "value" ""}}"></label>
+    <label class="check"><input type="checkbox" name="confirm" value="yes" required> {{t "guard.allowed.confirm"}}</label>
+    {{template "ferr" ($.FormErr "/guard/list#allowed")}}
+    <button type="submit">{{t "add"}}</button>
+  </form>
+</details>{{end}}
+
+<h2>{{t "guard.ask"}}</h2>
 <p class="hint">{{t "guard.ask.hint"}}</p>
-{{if .Ask}}<ul class="plain">{{range .Ask}}<li><code>{{.}}</code>
-  {{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/list" class="inline">
-    {{template "fields" (fields $ "list" "ask" "op" "remove" "space" $sp "value" .)}}
-    <button type="submit" class="small">{{t "guard.remove"}}</button>
-  </form>{{end}}</li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.none"}}</p>{{end}}
-{{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/list" class="stack">
-  {{$f := print "/guard/list#ask " $sp}}{{template "fields" (fields $ "list" "ask" "op" "add" "space" $sp "form" (print "ask " $sp))}}
-  <label>{{t "guard.repo"}} <input name="value" required maxlength="500" value="{{$.Val $f "value" ""}}"></label>
-  {{template "ferr" ($.FormErr $f)}}
-  <button type="submit">{{t "add"}}</button>
-</form>{{end}}
-{{end}}
+{{template "repos" (repos $ "ask" .AskRepos)}}
+{{if not $.D.Remote}}<details class="box"{{if $.Open "/guard/list#ask"}} open{{end}}>
+  <summary>{{t "guard.add.repo"}}</summary>
+  <form method="post" action="{{$.Base}}/guard/list" class="stack">
+    {{template "fields" (fields $ "list" "ask" "op" "add" "form" "ask")}}
+    {{template "space" (repos $ "ask" .AskRepos)}}
+    <label>{{t "guard.repo"}} <input name="value" required maxlength="500" value="{{$.Val "/guard/list#ask" "value" ""}}"></label>
+    {{template "ferr" ($.FormErr "/guard/list#ask")}}
+    <button type="submit">{{t "add"}}</button>
+  </form>
+</details>{{end}}
 
 <h2>{{t "guard.root"}}</h2>
 <p class="hint">{{t "guard.root.hint"}}</p>
@@ -88,19 +92,22 @@
   {{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/root" class="inline">
     {{template "fields" (fields $ "op" "remove" "value" .Entry)}}
     <button type="submit" class="small">{{t "guard.remove"}}</button>
-  </form>{{end}}</li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.root.none"}}</p>{{end}}
-<p class="flash warn">{{t "guard.root.warn"}}</p>
-{{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/root" class="stack">
-  {{template "fields" (fields $ "op" "add" "form" "add")}}
-  <label>{{t "f.host"}} <input name="host" required maxlength="200" autocomplete="off" value="{{$.Val "/guard/root#add" "host" ""}}"></label>
-  {{template "ferr" ($.Err "/guard/root#add" "host")}}
-  <label>{{t "guard.until"}} <input name="until" required maxlength="40" placeholder="2026-11-30" autocomplete="off" value="{{$.Val "/guard/root#add" "until" ""}}"></label>
-  {{template "ferr" ($.Err "/guard/root#add" "until")}}
-  <label>{{t "guard.typehost"}} <input name="confirm" required maxlength="200" autocomplete="off" value="{{$.Val "/guard/root#add" "confirm" ""}}"></label>
-  {{template "ferr" ($.Err "/guard/root#add" "confirm")}}
-  {{template "ferr" ($.FormErr "/guard/root#add")}}
-  <button type="submit">{{t "add"}}</button>
-</form>{{end}}
+  </form>{{end}}</li>{{end}}</ul>{{else if $.D.Remote}}<p class="empty">{{t "guard.root.none"}}</p>{{end}}
+{{if not $.D.Remote}}<details class="box"{{if $.Open "/guard/root#add"}} open{{end}}>
+  <summary>{{t "guard.add.root"}}</summary>
+  <p class="flash warn">{{t "guard.root.warn"}}</p>
+  <form method="post" action="{{$.Base}}/guard/root" class="stack">
+    {{template "fields" (fields $ "op" "add" "form" "add")}}
+    <label>{{t "f.host"}} <input name="host" required maxlength="200" autocomplete="off" value="{{$.Val "/guard/root#add" "host" ""}}"></label>
+    {{template "ferr" ($.Err "/guard/root#add" "host")}}
+    <label>{{t "guard.until"}} <input name="until" required maxlength="40" placeholder="2026-11-30" autocomplete="off" value="{{$.Val "/guard/root#add" "until" ""}}"></label>
+    {{template "ferr" ($.Err "/guard/root#add" "until")}}
+    <label>{{t "guard.typehost"}} <input name="confirm" required maxlength="200" autocomplete="off" value="{{$.Val "/guard/root#add" "confirm" ""}}"></label>
+    {{template "ferr" ($.Err "/guard/root#add" "confirm")}}
+    {{template "ferr" ($.FormErr "/guard/root#add")}}
+    <button type="submit">{{t "add"}}</button>
+  </form>
+</details>{{end}}
 
 <h2>{{t "guard.profiles"}}</h2>
 <p class="hint">{{t "guard.profiles.hint"}}</p>
@@ -108,14 +115,17 @@
   {{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/list" class="inline">
     {{template "fields" (fields $ "list" "profiles" "op" "remove" "value" .)}}
     <button type="submit" class="small">{{t "guard.remove"}}</button>
-  </form>{{end}}</li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.none"}}</p>{{end}}
+  </form>{{end}}</li>{{end}}</ul>{{else if $.D.Remote}}<p class="empty">{{t "guard.none"}}</p>{{end}}
 {{if .OtherProf}}<p class="hint">{{t "guard.fromspaces"}} {{range .OtherProf}}<code>{{.}}</code> {{end}}</p>{{end}}
-{{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/list" class="stack">
-  {{template "fields" (fields $ "list" "profiles" "op" "add" "form" "profiles")}}
-  <label>{{t "f.name"}} <input name="value" required maxlength="200" value="{{$.Val "/guard/list#profiles" "value" ""}}"></label>
-  {{template "ferr" ($.FormErr "/guard/list#profiles")}}
-  <button type="submit">{{t "add"}}</button>
-</form>{{end}}
+{{if not $.D.Remote}}<details class="box"{{if $.Open "/guard/list#profiles"}} open{{end}}>
+  <summary>{{t "guard.add.profile"}}</summary>
+  <form method="post" action="{{$.Base}}/guard/list" class="stack">
+    {{template "fields" (fields $ "list" "profiles" "op" "add" "form" "profiles")}}
+    <label>{{t "f.name"}} <input name="value" required maxlength="200" value="{{$.Val "/guard/list#profiles" "value" ""}}"></label>
+    {{template "ferr" ($.FormErr "/guard/list#profiles")}}
+    <button type="submit">{{t "add"}}</button>
+  </form>
+</details>{{end}}
 
 <h2>{{t "guard.hosts"}}</h2>
 <p class="hint">{{t "guard.hosts.hint"}}</p>
@@ -123,39 +133,62 @@
   {{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/list" class="inline">
     {{template "fields" (fields $ "list" "hosts" "op" "remove" "value" .)}}
     <button type="submit" class="small">{{t "guard.remove"}}</button>
-  </form>{{end}}</li>{{end}}</ul>{{else}}<p class="empty">{{t "guard.none"}}</p>{{end}}
+  </form>{{end}}</li>{{end}}</ul>{{else if $.D.Remote}}<p class="empty">{{t "guard.none"}}</p>{{end}}
 {{if .OtherHosts}}<p class="hint">{{t "guard.fromspaces"}} {{range .OtherHosts}}<code>{{.}}</code> {{end}}</p>{{end}}
-{{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/list" class="stack">
-  {{template "fields" (fields $ "list" "hosts" "op" "add" "form" "hosts")}}
-  <label>{{t "f.host"}} <input name="value" required maxlength="200" value="{{$.Val "/guard/list#hosts" "value" ""}}"></label>
-  {{template "ferr" ($.FormErr "/guard/list#hosts")}}
-  <button type="submit">{{t "add"}}</button>
-</form>{{end}}
+{{if not $.D.Remote}}<details class="box"{{if $.Open "/guard/list#hosts"}} open{{end}}>
+  <summary>{{t "guard.add.host"}}</summary>
+  <form method="post" action="{{$.Base}}/guard/list" class="stack">
+    {{template "fields" (fields $ "list" "hosts" "op" "add" "form" "hosts")}}
+    <label>{{t "f.host"}} <input name="value" required maxlength="200" value="{{$.Val "/guard/list#hosts" "value" ""}}"></label>
+    {{template "ferr" ($.FormErr "/guard/list#hosts")}}
+    <button type="submit">{{t "add"}}</button>
+  </form>
+</details>{{end}}
 
 <h2>{{t "guard.model"}}</h2>
-<p class="hint">{{t "guard.model.hint"}}</p>
-{{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/model" class="stack">
-  {{template "fields" (fields $)}}
-  <label>{{t "f.model"}} <input name="value" maxlength="100" value="{{$.Val "/guard/model" "value" .Model}}"></label>
-  {{template "ferr" ($.FormErr "/guard/model")}}
-  <button type="submit">{{t "save"}}</button>
-</form>{{end}}
-{{if .Remote}}<p>{{if .Model}}<code>{{.Model}}</code>{{else}}{{t "guard.model.unset"}}{{end}}</p>{{end}}
-{{if .LastStart}}<p class="hint">{{.LastStart}}</p>{{end}}
+<p>{{t "guard.now"}} {{if .Model}}<code>{{.Model}}</code>{{else}}<strong>{{t "guard.model.unset"}}</strong>{{end}}</p>
+<details class="box"{{if $.Open "/guard/model"}} open{{end}}>
+  <summary>{{if $.D.Remote}}{{t "guard.more"}}{{else}}{{t "guard.change"}}{{end}}</summary>
+  <p class="hint">{{t "guard.model.hint"}}</p>
+  {{if .LastStart}}<p class="hint">{{.LastStart}}</p>{{end}}
+  {{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/model" class="stack">
+    {{template "fields" (fields $)}}
+    <label>{{t "f.model"}} <input name="value" maxlength="100" value="{{$.Val "/guard/model" "value" .Model}}"></label>
+    {{template "ferr" ($.FormErr "/guard/model")}}
+    <button type="submit">{{t "save"}}</button>
+  </form>{{end}}
+</details>
 
 <h2>{{t "guard.trust"}}</h2>
-<p class="hint">{{t "guard.trust.hint"}}</p>
-{{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/trust" class="stack">
-  {{template "fields" (fields $)}}
-  <label><input type="radio" name="value" value="tell"{{if not .Ask}} checked{{end}}> {{t "guard.trust.tell"}}</label>
-  <label><input type="radio" name="value" value="ask"{{if .Ask}} checked{{end}}> {{t "guard.trust.ask"}}</label>
-  {{template "ferr" ($.FormErr "/guard/trust")}}
-  <button type="submit">{{t "save"}}</button>
-</form>{{end}}
-
-{{if .Remote}}<p>{{if .Ask}}{{t "guard.trust.ask"}}{{else}}{{t "guard.trust.tell"}}{{end}}</p>{{end}}
+<p>{{t "guard.now"}} <strong>{{if .Ask}}{{t "guard.trust.ask"}}{{else}}{{t "guard.trust.tell"}}{{end}}</strong></p>
+<details class="box"{{if $.Open "/guard/trust"}} open{{end}}>
+  <summary>{{if $.D.Remote}}{{t "guard.more"}}{{else}}{{t "guard.change"}}{{end}}</summary>
+  <p class="hint">{{t "guard.trust.hint"}}</p>
+  {{if not $.D.Remote}}<form method="post" action="{{$.Base}}/guard/trust" class="stack">
+    {{template "fields" (fields $)}}
+    <label class="check"><input type="radio" name="value" value="tell"{{if not .Ask}} checked{{end}}> {{t "guard.trust.tell"}}</label>
+    <label class="check"><input type="radio" name="value" value="ask"{{if .Ask}} checked{{end}}> {{t "guard.trust.ask"}}</label>
+    {{template "ferr" ($.FormErr "/guard/trust")}}
+    <button type="submit">{{t "save"}}</button>
+  </form>{{end}}
+</details>
 
 <h2>{{t "guard.protected"}}</h2>
-<p class="hint">{{t "guard.protected.hint"}}</p>
-<ul class="plain">{{range .Protected}}<li><code>{{.}}</code></li>{{end}}</ul>
+<details class="box">
+  <summary>{{t "guard.protected.see"}}</summary>
+  <p class="hint">{{t "guard.protected.hint"}}</p>
+  <ul class="plain">{{range .Protected}}<li><code>{{.}}</code></li>{{end}}</ul>
+</details>
 {{end}}{{end}}
+
+{{define "missing"}}{{if .Missing}} <span class="badge warn">{{t "guard.missing"}}</span>{{end}}{{end}}
+
+{{/* One list of repositories, every space's: each with its space and a button to take it out. */}}
+{{define "repos"}}{{$p := .P}}{{$list := .List}}{{if .Repos}}<ul class="plain">{{range .Repos}}<li><code>{{.Path}}</code> <span class="badge">{{.Space}}</span>{{template "missing" .}}
+  {{if not $p.D.Remote}}<form method="post" action="{{$p.Base}}/guard/list" class="inline">
+    {{template "fields" (fields $p "list" $list "op" "remove" "space" .Space "value" .Path)}}
+    <button type="submit" class="small">{{t "guard.remove"}}</button>
+  </form>{{end}}</li>{{end}}</ul>{{else if $p.D.Remote}}<p class="empty">{{t "guard.none"}}</p>{{end}}{{end}}
+
+{{/* The space a repository is added to: a choice only when there is more than one. */}}
+{{define "space"}}{{$p := .P}}{{$f := print "/guard/list#" .List}}{{if gt (len $p.D.SpaceNames) 1}}<label>{{t "f.space"}} <select name="space">{{range $p.D.SpaceNames}}<option value="{{.}}"{{if $p.On $f "space" . (eq . $p.D.Current)}} selected{{end}}>{{.}}</option>{{end}}</select></label>{{else}}{{range $p.D.SpaceNames}}<input type="hidden" name="space" value="{{.}}">{{end}}{{end}}{{end}}

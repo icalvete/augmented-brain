@@ -2207,9 +2207,10 @@ Every list the guard answers to, in one page, to read and change:
 - **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
   warns that the other lists decide again for it (if one lets Claude commit and push
   there, it will), and asks you to type the folder's name.
-- **Repositories** each space lets Claude commit in, or ask you about, with a form to add
-  or remove. The list where Claude commits and pushes without asking carries a warning,
-  and adding to it asks you to tick that you understand.
+- **Repositories** where Claude commits and pushes without asking, and where it asks you
+  each time: one list each, with every space's repositories and the space each belongs
+  to, and a form to add (you choose the space) or remove. Adding to the first warns what
+  it allows and asks you to tick that you understand.
 - **Root exceptions**, with the date each ends (the ones that ended are marked). Adding
   one warns what it allows and asks you to type the machine's name again.
 - **Production profiles** and **untouchable machines**.
@@ -2223,6 +2224,11 @@ Every list the guard answers to, in one page, to read and change:
 
 How it behaves:
 
+- Each setting says how it is now. The forms to add or change are folded away under
+  their title (**Add a repository**, **Change**…): click it to open one. One that could
+  not be saved comes back open, with what you typed and the error.
+- A repository whose folder is not on this computer is saved anyway, and the list says
+  so next to it: most often its name was typed wrong.
 - Your comments in `config.toml` stay where they are.
 - If the lists are not the ones you last saw (something changed them outside this page),
   a notice says what was added and what was removed, list by list, compared with the
