@@ -149,6 +149,12 @@ func TestExportCarriesWhatTheGuardReads(t *testing.T) {
 }
 
 // Time grows with the length of the line, not with its square, for every shape.
+// The short line is parsed 10 times in a row and the long one, 10 times longer, once:
+// linear, both take about as long; quadratic, the long one takes about 10 times as
+// long. Timing work of the same length, in turns, keeps a busy machine (the pre-push
+// hook with other builds running) from stalling one side only, as it did when a 2 ms
+// parse was set against a 60 ms one. A shape fails only when every one of three tries
+// is over the limit: a quadratic parse is, every time.
 func TestParseScalesLinearly(t *testing.T) {
 	shapes := map[string]func(n int) string{
 		"nested_subst": func(n int) string { return "echo " + strings.Repeat("$(", n/3) + "date" + strings.Repeat(")", n/3) },
@@ -159,23 +165,37 @@ func TestParseScalesLinearly(t *testing.T) {
 		"open_dquote":  func(n int) string { return "echo \"" + strings.Repeat("$(a b ", n/6) },
 	}
 	for name, build := range shapes {
-		time10 := timeParse(build(10 << 10))
-		time100 := timeParse(build(100 << 10))
-		// 10 times the text: far less than 100 times the time (a floor for noise).
-		if time100 > 30*time10 && time100 > 50*time.Millisecond {
-			t.Errorf("%s: 10 KB in %v, 100 KB in %v", name, time10, time100)
+		short, long := build(10<<10), build(100<<10)
+		var tries []string
+		for range 3 {
+			time10, time100 := timeParse(short, long)
+			// 10 times the text: far less than 10 times the time of 10 short ones (a floor for noise).
+			if time100 <= 3*time10 || time100 <= 50*time.Millisecond {
+				tries = nil
+				break
+			}
+			tries = append(tries, fmt.Sprintf("10 KB ten times in %v, 100 KB in %v", time10, time100))
+		}
+		if tries != nil {
+			t.Errorf("%s: %s", name, strings.Join(tries, "; "))
 		}
 	}
 }
 
-func timeParse(in string) time.Duration {
-	best := time.Hour
-	for range 3 {
+// timeParse is the best of five rounds of parsing short 10 times and long once, timed in turns.
+func timeParse(short, long string) (best10, best100 time.Duration) {
+	best10, best100 = time.Hour, time.Hour
+	for range 5 {
 		start := time.Now()
-		parse(in)
-		best = min(best, time.Since(start))
+		for range 10 {
+			parse(short)
+		}
+		best10 = min(best10, time.Since(start))
+		start = time.Now()
+		parse(long)
+		best100 = min(best100, time.Since(start))
 	}
-	return best
+	return best10, best100
 }
 
 // fuzzSeeds are odd inputs for the fuzz tests: every shape that once stalled the guard

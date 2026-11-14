@@ -1137,7 +1137,26 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) 
 			return allow // a general rule, in a repository no list names
 		}
 	}
-	return Decision{Deny, i18n.T(p.Lang, "guard.git.deny", args[i])}
+	return p.gitDenied(args[i], dir, elsewhere)
+}
+
+// gitDenied is the denial of a commit or a push the lists did not let through. The
+// lists go only by the repository the command names with git -C and a path written
+// out: when the command runs in a listed repository without naming it, or names it
+// through a variable, the reason says how to write it, so the assistant does not tell
+// the user to add a repository that is already there. The verdict is the same.
+func (p Policy) gitDenied(sub, dir string, elsewhere bool) Decision {
+	if !elsewhere {
+		switch {
+		case dir == "" && !p.lost && p.Cwd != "":
+			if d, err := p.resolve(p.Cwd); err == nil && p.repoVerdict(d) != Deny {
+				return Decision{Deny, i18n.T(p.Lang, "guard.git.named", sub, paths.Tilde(d), filepath.ToSlash(d))} // C:/x, as Git Bash takes it
+			}
+		case dir == "" && p.lost, strings.ContainsAny(dir, "$`") || strings.ContainsRune(dir, subst):
+			return Decision{Deny, i18n.T(p.Lang, "guard.git.unknown", sub)}
+		}
+	}
+	return Decision{Deny, i18n.T(p.Lang, "guard.git.deny", sub)}
 }
 
 // cwdKnown is the folder the command runs in, or "" when a cd lost it.
