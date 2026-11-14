@@ -134,6 +134,18 @@ var remoteMessages = map[string]msg{
 		es: "Parado y quitado: %s.\nLas carpetas y sus entradas de work_folders se quedan; bórralas a mano si quieres.",
 	},
 	// remote watch, run by its timer: each line goes to the system journal.
+	"remote.watch.gaveup": {
+		en: "%s: %d restarts in a row brought no Claude session back; the watch leaves it alone until a session shows up again.",
+		es: "%s: %d reinicios seguidos no han recuperado ninguna sesión de Claude; el vigilante lo deja en paz hasta que vuelva a aparecer una sesión.",
+	},
+	"remote.watch.gaveup.status": {
+		en: "the watch gave up on %s: restarting it brought no session back",
+		es: "el vigilante ha dejado %s: reiniciarlo no recuperaba ninguna sesión",
+	},
+	"remote.fix.watch.gaveup": {
+		en: "see why with `journalctl --user -u %s -n 50`, then restart it with `systemctl --user restart %s`; the watch looks after it again once it has a session",
+		es: "mira por qué con `journalctl --user -u %s -n 50` y después reinícialo con `systemctl --user restart %s`; el vigilante vuelve a cuidarlo en cuanto tenga una sesión",
+	},
 	"remote.watch.restart": {
 		en: "%s: the server has no Claude session behind it (the server archived it, or it stopped); restarting the service to bring it back.",
 		es: "%s: el servidor no tiene ninguna sesión de Claude detrás (el servidor la archivó, o se paró); reinicio el servicio para recuperarla.",

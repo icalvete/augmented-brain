@@ -40,11 +40,17 @@ type Env struct {
 	Alive func(pid int) bool
 	// Now is the time to measure ages from; zero is time.Now().
 	Now time.Time
+	// Folders are the working folders of every claude process running now, whatever
+	// Claude folder it uses: sessions/ holds only the sessions of ClaudeDir, while the
+	// scratch folders under TempRoot are shared by every one (R-19 of the November 2026
+	// review: clean removed the scratch folder of a session of another profile). ok is
+	// false where they cannot be read; nil reads none.
+	Folders func() (folders []string, ok bool)
 }
 
 // Local is the Env of this computer, given Claude Code's file and folder.
 func Local(claudeJSON, claudeDir string) Env {
-	e := Env{ClaudeJSON: claudeJSON, ClaudeDir: claudeDir}
+	e := Env{ClaudeJSON: claudeJSON, ClaudeDir: claudeDir, Folders: claudeFolders}
 	if uid := os.Getuid(); uid >= 0 { // -1 on Windows, where Claude Code keeps none there
 		e.TempRoot = filepath.Join(os.TempDir(), "claude-"+strconv.Itoa(uid))
 	}
@@ -80,6 +86,9 @@ type Report struct {
 	// ScratchOK is false when the running sessions could not be read: then no scratch
 	// folder is called left over.
 	ScratchOK bool
+	// AllProfiles is true when the sessions of every Claude folder were seen (Env.Folders),
+	// not only those of ClaudeDir.
+	AllProfiles bool
 }
 
 // Removable are the worktrees Clean would remove.
@@ -125,6 +134,13 @@ func (e Env) now() time.Time {
 func Find(e Env) Report {
 	sessions, ok := e.running()
 	r := Report{ScratchOK: ok}
+	if e.Folders != nil {
+		folders, all := e.Folders()
+		r.AllProfiles = all
+		for _, f := range folders {
+			sessions = append(sessions, session{cwd: f})
+		}
+	}
 	r.Worktrees, r.Prunable = e.worktrees(sessions)
 	if ok {
 		r.Scratch = e.scratch(sessions)
@@ -307,9 +323,16 @@ func (e Env) scratch(sessions []session) []Scratch {
 	if e.TempRoot == "" {
 		return nil
 	}
-	live := map[string]bool{}
+	live, busy := map[string]bool{}, map[string]bool{}
 	for _, s := range sessions {
-		live[s.id] = true
+		if s.id != "" {
+			live[s.id] = true
+		}
+		if s.cwd != "" {
+			// A claude runs in this folder: none of its folder's sessions is left over,
+			// since which one is its own cannot be told.
+			busy[slug(s.cwd)] = true
+		}
 	}
 	old := e.now().Add(-ScratchAge)
 	tops, err := os.ReadDir(e.TempRoot)
@@ -331,6 +354,9 @@ func (e Env) scratch(sessions []session) []Scratch {
 		}
 		if !strings.HasPrefix(top.Name(), "-") {
 			continue // not a working folder's (/home/ana/x is -home-ana-x): Claude Code's own
+		}
+		if busy[top.Name()] {
+			continue
 		}
 		kids, err := os.ReadDir(p)
 		if err != nil {
@@ -475,4 +501,16 @@ func LocalEnv() (Env, bool) {
 		return Env{}, false
 	}
 	return Local(s.ClaudeJSON, s.ClaudeDir), true
+}
+
+// slug is the name of a working folder's scratch folder under TempRoot: /home/ana/x is
+// -home-ana-x, every character but a letter or a digit a dash.
+func slug(dir string) string {
+	b := []rune(dir)
+	for i, r := range b {
+		if !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9') {
+			b[i] = '-'
+		}
+	}
+	return string(b)
 }

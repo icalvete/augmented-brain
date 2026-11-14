@@ -60,6 +60,7 @@ it feels to a newcomer.
 | `internal/i18n` | Every message a person reads, English and Spanish side by side. |
 | `internal/paths` | Paths, and `WriteAtomic`, the one way to replace a file. |
 | `internal/filelock`, `internal/detach` | The cross-process lock; processes that outlive their parent. |
+| `internal/runlimit` | Running a program augmented brain waits for, with a limit that holds. |
 | `internal/rules`, `internal/templates` | The common rules and a new space's starter files. |
 | `internal/version` | The program's version, set at build time. |
 | `internal/doccheck`, `internal/stable`, `internal/portcheck`, `internal/testenv` | Test only: reference pages cover the program; the compatibility promise is frozen; patterns that fail on Windows; a plain test machine. |

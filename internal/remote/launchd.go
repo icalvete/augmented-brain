@@ -1,6 +1,7 @@
 package remote
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -91,6 +92,7 @@ func (s System) installLaunchd(c *config.Config, set Settings) (*InstallResult, 
 	for _, svc := range res.Services {
 		label := launchdLabel(svc.Space)
 		path := filepath.Join(s.UnitDir, label+".plist")
+		trimLog(s.logFile(svc.Space))
 		text := svc.PlistText(res.Claude, set.PermissionMode, s.Self, s.logFile(svc.Space))
 		old, readErr := os.ReadFile(path)
 		changed := readErr != nil || string(old) != text
@@ -143,6 +145,7 @@ func (s System) statusLaunchd(c *config.Config, set Settings) (*Status, error) {
 	disabled, _ := s.Run("launchctl", "print-disabled", s.domain())
 	for _, svc := range s.services(c, set) {
 		x := SpaceStatus{Service: svc, Trusted: trusted(svc.Folder), Log: s.logFile(svc.Space)}
+		trimLog(x.Log)
 		data, err := os.ReadFile(filepath.Join(s.UnitDir, svc.Unit+".plist"))
 		if err == nil && strings.Contains(string(data), markerComment) {
 			x.Installed = true
@@ -174,4 +177,43 @@ func launchdState(out string) string {
 		}
 	}
 	return "inactive"
+}
+
+// LogCap is the size past which a service's log on macOS is cut down to its last
+// LogKeep bytes, when it is installed and whenever its status is read (remote status,
+// doctor). launchd appends to it and never rotates it: a service that fails at every
+// start, relaunched every 30 s for weeks, or a Claude Code that writes on stderr at
+// every redraw, filled the disk (R-20 of the November 2026 review). On Linux the
+// journal rotates; on Windows each start writes it afresh.
+const (
+	LogCap  = 1 << 20
+	LogKeep = 64 << 10
+)
+
+// trimLog cuts the log at path down to its last LogKeep bytes, from a line's start,
+// when it is over LogCap. In place: launchd keeps it open, appending, and goes on
+// writing at its new end.
+func trimLog(path string) {
+	fi, err := os.Stat(path)
+	if err != nil || fi.Size() <= LogCap {
+		return
+	}
+	f, err := os.OpenFile(path, os.O_RDWR, 0)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	tail := make([]byte, LogKeep)
+	n, err := f.ReadAt(tail, fi.Size()-LogKeep)
+	if err != nil && n == 0 {
+		return
+	}
+	tail = tail[:n]
+	if i := bytes.IndexByte(tail, '\n'); i >= 0 {
+		tail = tail[i+1:]
+	}
+	if f.Truncate(0) != nil {
+		return
+	}
+	_, _ = f.WriteAt(tail, 0)
 }

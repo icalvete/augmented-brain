@@ -30,6 +30,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/runlimit"
+
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -82,6 +84,10 @@ type System struct {
 	ClaudeDir string
 	// Sleep waits between looks at a launched session; nil is time.Sleep.
 	Sleep func(time.Duration)
+	// Waiting hears, every WaitNote, how long a wait for a session's answer to end has
+	// lasted (StopWhenIdle, RestartWhenIdle), so the detached process says in its log
+	// that it is still there; nil says nothing.
+	Waiting func(passed time.Duration)
 	// StartDaemon starts Claude's daemon in the background and returns at once; nil
 	// never starts it.
 	StartDaemon func(claude string) error
@@ -161,7 +167,7 @@ func NewSystem() (System, error) {
 func realRunIn(dir string, name string, args ...string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, name, args...)
+	cmd := runlimit.Command(ctx, name, args...)
 	cmd.Dir = dir
 	// claude --bg starts the daemon when none runs, with this environment (daemonenv.go).
 	cmd.Env = daemonEnv(os.Environ())
@@ -180,17 +186,14 @@ func realStartDaemon(claude string, ownScope bool) error {
 	cmd.Env = daemonEnv(os.Environ())
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
 	detach.Cmd(cmd)
-	started, err := detach.Start(cmd)
-	if err != nil {
-		return err
-	}
-	return started.Process.Release()
+	_, err := detach.Start(cmd)
+	return err
 }
 
 func realRun(name string, args ...string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, name, args...)
+	cmd := runlimit.Command(ctx, name, args...)
 	var out, errOut bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &errOut
 	if err := cmd.Run(); err != nil {
@@ -639,6 +642,7 @@ func (s System) Status(c *config.Config, set Settings) (*Status, error) {
 	// Self is how Install knows what the watch runs: without it, it writes no watch.
 	if s.Self != "" || s.watchInstalled() {
 		st.Watch = s.watchStatus()
+		st.Watch.GaveUp = GaveUpUnits(c.Dir)
 	}
 	return st, nil
 }

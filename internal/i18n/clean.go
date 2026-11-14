@@ -42,6 +42,10 @@ var cleanMessages = map[string]msg{
 		en: "Scratch folders of %d Claude sessions that ended over a day ago: %s in %s",
 		es: "Carpetas temporales de %d sesiones de Claude terminadas hace más de un día: %s en %s",
 	},
+	"clean.oneprofile": {
+		en: "Only the sessions of %s count as running: if you use another Claude folder (CLAUDE_CONFIG_DIR) with a session open now, close it first or answer no.",
+		es: "Solo cuento como abiertas las sesiones de %s: si usas otra carpeta de Claude (CLAUDE_CONFIG_DIR) con una sesión abierta ahora, ciérrala antes o contesta que no.",
+	},
 	"clean.noscratch": {
 		en: "The scratch folders were not looked at: the sessions running could not be read from %s.",
 		es: "No he mirado las carpetas temporales: no he podido leer en %s qué sesiones están abiertas.",

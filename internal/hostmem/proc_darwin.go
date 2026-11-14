@@ -7,10 +7,11 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 
 	"golang.org/x/sys/unix"
 )
@@ -67,7 +68,7 @@ func procArgs(raw []byte) []string {
 func (darwin) RSS(pid int) (int64, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
-	out, err := exec.CommandContext(ctx, "/bin/ps", "-o", "rss=", "-p", strconv.Itoa(pid)).Output()
+	out, err := runlimit.Command(ctx, "/bin/ps", "-o", "rss=", "-p", strconv.Itoa(pid)).Output()
 	if err != nil {
 		return 0, false
 	}

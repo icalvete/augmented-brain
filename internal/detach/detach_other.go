@@ -7,5 +7,5 @@ import "os/exec"
 // Cmd does nothing where there are no Unix sessions.
 func Cmd(*exec.Cmd) {}
 
-// Start starts the command and returns it.
-func Start(cmd *exec.Cmd) (*exec.Cmd, error) { return cmd, cmd.Start() }
+// start starts the command and returns it.
+func start(cmd *exec.Cmd) (*exec.Cmd, error) { return cmd, cmd.Start() }

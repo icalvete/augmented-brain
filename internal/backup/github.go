@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/runlimit"
+
 	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/state"
@@ -20,9 +23,19 @@ import (
 // Runner runs a command and returns its combined output. Tests replace it.
 type Runner func(name string, args ...string) (string, error)
 
-// Exec runs real commands.
+// ExecLimit is how long Exec waits for each gh call (auth status, repo view, repo
+// create, auth setup-git): none asks anything, and a gh stuck on the network would
+// leave the MCP tool or the panel's page waiting for good.
+const ExecLimit = time.Minute
+
+// Exec runs real commands, within ExecLimit.
 func Exec(name string, args ...string) (string, error) {
-	out, err := exec.Command(name, args...).CombinedOutput()
+	ctx, cancel := context.WithTimeout(context.Background(), ExecLimit)
+	defer cancel()
+	out, err := runlimit.Command(ctx, name, args...).CombinedOutput()
+	if ctx.Err() == context.DeadlineExceeded {
+		err = fmt.Errorf("no answer from %s in %s: %w", name, ExecLimit, err)
+	}
 	return string(out), err
 }
 
@@ -281,18 +294,18 @@ func startLogin(cfgDir, gh string, wait time.Duration) (*Login, error) {
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, out, out
 	cmd.Env = append(os.Environ(), "GH_PROMPT_DISABLED=1", "GH_NO_UPDATE_NOTIFIER=1")
 	detach.Cmd(cmd)
-	cmd, err = detach.Start(cmd)
+	proc, err := detach.Start(cmd)
 	if err != nil {
 		out.Close()
 		return nil, err
 	}
 	done := make(chan struct{})
-	go func() { _ = cmd.Wait(); out.Close(); close(done) }() // never a zombie that looks alive
+	go func() { <-proc.Done(); out.Close(); close(done) }()
 	deadline := time.Now().Add(wait)
 	for {
 		said, _ := os.ReadFile(logPath)
 		if m := codeRe.FindSubmatch(said); m != nil {
-			l := &Login{Code: string(m[1]), URL: deviceURL, PID: cmd.Process.Pid, Started: time.Now()}
+			l := &Login{Code: string(m[1]), URL: deviceURL, PID: proc.Pid, Started: time.Now()}
 			if u := urlRe.Find(said); u != nil {
 				l.URL = string(u)
 			}
@@ -308,7 +321,7 @@ func startLogin(cfgDir, gh string, wait time.Duration) (*Login, error) {
 		default:
 		}
 		if time.Now().After(deadline) {
-			_ = cmd.Process.Kill()
+			_ = proc.Kill()
 			return nil, errors.New("GitHub did not answer in time; check the internet connection")
 		}
 		time.Sleep(150 * time.Millisecond)
