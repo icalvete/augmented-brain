@@ -1275,7 +1275,9 @@ three things so that the lists stay yours:
   that works once, and run by Claude it prints none, nor does `augmented-brain panel
   remote`: they ask you to run them in a terminal of your own.
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
-  when you start a session and when you save in the panel. If the lists differ from the
+  when you start a session and when you save in the panel. When Claude only adds a
+  production profile or a machine to lists you had accepted, the seal follows: adding
+  only makes the guard ask more. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
   let through asks first, and the Guard page and `doctor` say so, until you accept them
   in the Guard page or you start a new session. Meanwhile the lists cannot soften the
@@ -1327,7 +1329,9 @@ is production", "never touch `db01` without asking me". Claude saves them with t
 
 Claude can only add to these lists. To take one out, use the panel's **Guard** page, or
 edit `production_aws_profiles` and `untouchable_hosts` yourself
-([Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html)).
+([Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html)). An addition does not leave the lists waiting for you
+to accept them: if you had accepted them, they stay accepted, and commits and pushes do
+not start asking. If something else had changed them first, they still wait for you.
 
 These lists are in no backup, because they may name your work's machines. After a
 restore on a new machine, the next session offers to ask you for them again.
