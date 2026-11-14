@@ -45,11 +45,14 @@ func Latest(client *http.Client) (string, error) {
 	return strings.TrimPrefix(loc[i+len("/tag/"):], "v"), nil
 }
 
-// Newer reports whether version a is newer than b. Only the numbers count (0.2.1-alpha
-// is 0.2.1); anything that does not start with numbers is never newer nor older.
+// Newer reports whether version a is newer than b. The numbers decide first; with the
+// same numbers, a release is newer than its pre-releases (1.0.0 after 1.0.0-rc.2), and
+// two pre-releases compare part by part as semantic versioning says (rc.2 after rc.1,
+// rc after beta after alpha). Build metadata after "+" never counts. Anything that does
+// not start with numbers is never newer nor older.
 func Newer(a, b string) bool {
-	x, okA := numbers(a)
-	y, okB := numbers(b)
+	x, preA, okA := parse(a)
+	y, preB, okB := parse(b)
 	if !okA || !okB {
 		return false
 	}
@@ -65,23 +68,62 @@ func Newer(a, b string) bool {
 			return p > q
 		}
 	}
-	return false
+	return comparePre(preA, preB) > 0
 }
 
-func numbers(v string) ([]int, bool) {
+// parse splits a version into its numbers and its pre-release ("rc.1" of 1.0.0-rc.1).
+func parse(v string) (nums []int, pre string, ok bool) {
 	v = strings.TrimPrefix(v, "v")
-	if i := strings.IndexAny(v, "-+"); i >= 0 {
+	if i := strings.IndexByte(v, '+'); i >= 0 {
 		v = v[:i]
 	}
-	var out []int
+	if i := strings.IndexByte(v, '-'); i >= 0 {
+		v, pre = v[:i], v[i+1:]
+	}
 	for _, part := range strings.Split(v, ".") {
 		n, err := strconv.Atoi(part)
 		if err != nil {
-			return nil, false
+			return nil, "", false
 		}
-		out = append(out, n)
+		nums = append(nums, n)
 	}
-	return out, len(out) > 0
+	return nums, pre, len(nums) > 0
+}
+
+// comparePre compares two pre-releases: none is the highest; otherwise part by part,
+// numbers as numbers and below words, words in ASCII order, and more parts win a tie.
+func comparePre(a, b string) int {
+	switch {
+	case a == b:
+		return 0
+	case a == "":
+		return 1
+	case b == "":
+		return -1
+	}
+	pa, pb := strings.Split(a, "."), strings.Split(b, ".")
+	for i := 0; i < len(pa) && i < len(pb); i++ {
+		na, errA := strconv.Atoi(pa[i])
+		nb, errB := strconv.Atoi(pb[i])
+		switch {
+		case errA == nil && errB == nil:
+			if na != nb {
+				if na > nb {
+					return 1
+				}
+				return -1
+			}
+		case errA == nil:
+			return -1
+		case errB == nil:
+			return 1
+		default:
+			if c := strings.Compare(pa[i], pb[i]); c != 0 {
+				return c
+			}
+		}
+	}
+	return len(pa) - len(pb)
 }
 
 type cache struct {
