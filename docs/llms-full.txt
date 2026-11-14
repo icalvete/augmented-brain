@@ -596,34 +596,50 @@ augmented-brain space
 
 ## Outside every space
 
-augmented brain works in every Claude Code session on this computer, whatever the
-folder: its plugin is installed for your whole user. A folder that is in no work folder
-is outside every space.
+A folder that is in no work folder is outside every space. What augmented brain does
+there depends on one choice, on the panel's Guard page: **where augmented brain acts**.
 
-The desktop app starts each new session in a scratch folder of its own. That folder is
-in no space. Then the **default space** is used, `personal` unless you change it, and
-Claude tells you in one line, with how to switch to work.
+- **On the whole computer** (as it comes). augmented brain works in every Claude Code
+  session on this computer, whatever the folder: its plugin is installed for your whole
+  user. Outside your spaces it uses the **default space**, `personal` unless you change
+  it, and Claude tells you in one line, with how to switch to work.
+- **Only in my spaces.** A session outside your spaces' folders gets nothing from
+  augmented brain: no memory, no notices, no backup. The guard there only protects its
+  own files, your home folder and what your lists name. Claude Code's own permissions
+  still decide the rest, as they always do. This is for you if you already use Claude
+  Code in other projects and want them left as they were.
+
+What changes, next to a session in a space:
+
+| | In a space | Outside, on the whole computer | Outside, only in my spaces |
+|---|---|---|---|
+| Profile, rules, tasks and the rest of the notes | The space's | The default space's, and Claude tells you | None |
+| What Claude writes in your notes | Goes to the space | Goes to the default space | Nothing: Claude cannot write notes there |
+| Tasks changed by another session, journal reminder, a session to recover | Yes | Those of the default space | No |
+| Commit and push | As your lists say | As your lists say | Not watched, except in repositories of your lists |
+| Root, secrets in commands, PowerShell | Stopped | Stopped | Not watched |
+| Deleting your home folder | Stopped | Stopped | Stopped |
+| Production profiles, untouchable machines and repositories | Asks, or stopped | Asks, or stopped | Asks, or stopped |
+| The guard's files, the plugin and the program | Protected | Protected | Protected |
+| Backup when the session ends | The space's | The default space's | None |
+| Warnings about the window's memory and the model | Yes | Yes | No |
+
+Three things to know:
+
+- **Inside a space nothing changes**, whichever you choose.
+- **A command that goes into a space is checked whole.** Run from outside,
+  `cd ~/work/app && git commit` or `git -C ~/work/app commit` gets every rule, as in the
+  space. So does a clone of a repository of your lists, found by its address.
+- **Mind the desktop app** if you keep augmented brain to your spaces. It starts each
+  new session in a scratch folder of its own, which is in no space: that session has no
+  memory until you choose a folder. That is why "on the whole computer" is the default.
+
+Change it on the panel's Guard page; a change by hand in `guard.toml` counts only once you
+accept it there ([`reach`](https://icalvete.github.io/augmented-brain/guide/configuration.html#guardtoml)).
 
 The default space matters for one more thing: its backup carries your profile, the shared
 notes and the names of your secrets (never their values). Set it with `default_space` in
 the configuration. With a single space, it is that one.
-
-What changes outside, next to a session in a space:
-
-| | In a space | Outside every space |
-|---|---|---|
-| Profile, rules, tasks and the rest of the notes | The space's | The default space's, and Claude tells you |
-| What Claude writes in your notes | Goes to the space | Goes to the default space |
-| Tasks changed by another session | Claude hears of them | Those of the default space |
-| Reminder to write in the task's journal | Yes | No |
-| A session cut short, offered to recover | Yes | No |
-| [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html) | All of it | All of it, the same |
-| Backup when the session ends | The space's | The default space's |
-| Warnings about the window's memory and the model | Yes | Yes |
-
-The guard does not look at the folder: its lists hold for the whole computer. So in any
-project, also one you never gave augmented brain, Claude cannot commit or push until you
-[let it in that repository](https://icalvete.github.io/augmented-brain/guide/guard.html#let-claude-commit-in-a-repository).
 
 To bring a folder into a space, add it to the space's `work_folders` (next).
 
@@ -1186,6 +1202,11 @@ other way round holds too, with one exception: in the mode that skips Claude Cod
 questions (`bypassPermissions`), a question from the guard may not reach you. Do not use
 that mode with the guard; [why](https://icalvete.github.io/augmented-brain/guide/guard.html#sessions-that-skip-claude-codes-questions).
 
+If you keep augmented brain to your spaces, outside their folders the guard only
+protects its own files, your home folder and what your lists name: there, the rest is
+up to Claude Code's permissions alone. See
+[Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+
 ## Stopped
 
 The guard stops these. Claude tells you what it wanted and gives you the command, for you
@@ -1331,10 +1352,16 @@ commands. Then Claude Code's own permissions decide.
 
 ## Where it watches
 
-Everywhere. The guard reads every command in every Claude Code session on this computer,
-inside your spaces or not, and its lists hold for the whole computer. A repository that is
-not in them is closed to commits and pushes, in any project. What else changes outside
-your spaces is in [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+As it comes, everywhere. The guard reads every command in every Claude Code session on
+this computer, inside your spaces or not, and its lists hold for the whole computer. A
+repository that is not in them is closed to commits and pushes, in any project.
+
+If you choose, on the panel's Guard page, that augmented brain acts **only in your
+spaces**, outside them the guard keeps to its own files, your home folder and what your
+lists name: production profiles, untouchable machines and the repositories of your
+lists. Root, secrets and commits elsewhere are then up to Claude Code's permissions. A
+command that goes into a space is checked with every rule. The table is in
+[Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
 
 ## Let Claude commit in a repository
 
@@ -1839,9 +1866,10 @@ program) and what travels in the backup is in
   sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns that off.
 - **It does not change your Claude Code settings.** The plugin goes in and out with
   Claude Code's own commands, which the installer, `update` and `uninstall` run for you.
-- **It does not stay inside your spaces.** It works in every Claude Code session on this
-  computer. Outside your spaces it uses the default space, and the guard watches the
-  same. See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+- **As it comes, it does not stay inside your spaces.** It works in every Claude Code
+  session on this computer. Outside your spaces it uses the default space, and the guard
+  watches the same. On the panel's Guard page you can keep it to your spaces instead.
+  See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
 - **Mind this: your assistant reads your notes**, like any file it opens. They travel
   with your conversations to its provider. Do not keep there what you would not share.
 
@@ -2167,6 +2195,9 @@ the index, the last backup, the last weekly review, and a link to the space's
 
 Every list the guard answers to, in one page, to read and change:
 
+- **Where augmented brain acts**: on the whole computer (as it comes), or only in your
+  spaces. Choosing your spaces asks you to tick that you understand what the guard stops
+  watching outside them. [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space) tells it.
 - **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
   warns that the other lists decide again for it (if one lets Claude commit and push
   there, it will), and asks you to type the folder's name.
@@ -4917,11 +4948,19 @@ Next to `config.toml`, `guard.toml` holds what the guard never allows:
 
 ```toml
 untouchable_repos = ["~/work/core", "~/work/cli-*"]
+reach = "spaces"
 ```
 
 - `untouchable_repos`: repositories where Claude never commits, pushes or merges,
   whatever `git_allowed_repos` and `git_ask_repos` say. For the whole computer. Same form
   as those lists (`~`, a `*` in the last part, worktrees count).
+- `reach`: where augmented brain acts. `"machine"` (or no line, the default): in every
+  Claude Code session of the computer. `"spaces"`: only in the folders of your spaces;
+  a session outside them gets no memory and no notices, and the guard only protects its
+  own files, your home folder and what your lists name. See
+  [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space). Change it on the panel's Guard
+  page: written here by hand, it counts only once you accept it there, and until then
+  augmented brain acts on the whole computer.
 
 The panel's Guard page writes it. If the file is missing, nothing is untouchable. If it
 cannot be read, the guard does not know which repositories are untouchable, nor whether
@@ -6285,6 +6324,16 @@ own review. What it cannot see:
   skips Claude Code's permission questions (`bypassPermissions`) has no one to ask, so
   Claude cannot save rules, your profile or hosts for the guard there. It tells you what
   it wanted to save.
+- **Only in your spaces: a script that moves into one.** When augmented brain keeps to
+  your spaces, a command run outside them that goes into one (`cd ~/work/app`,
+  `git -C ~/work/app`) is checked with every rule. A script that changes folder inside
+  itself is not: run from outside, `bash build.sh` that moves into a space is checked as
+  outside. See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+- **Only in your spaces, with an earlier version still open.** A Claude session started
+  before an update keeps the earlier program, which does not know this choice. Its start
+  accepts the guard's lists as that program counts them, so until a session of the new
+  version starts again, augmented brain acts on the whole computer. It is the safe side,
+  and Claude Code tells you each time the lists are accepted.
 - **Questions in automatic modes.** When the guard asks, Claude Code shows you the
   question. What Claude Code does with it in its fully automatic modes is up to Claude
   Code, not augmented brain.

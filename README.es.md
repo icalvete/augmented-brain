@@ -94,6 +94,10 @@ seguridad.
 Las próximas veces, igual. Si algo no va, `augmented-brain doctor` te dice qué falta y
 cómo arreglarlo.
 
+¿Ya usas Claude Code en otros proyectos? augmented brain puede quedarse en las carpetas
+que le des y dejar el resto como estaba:
+[Fuera de todos los espacios](https://icalvete.github.io/augmented-brain/guide/spaces.es.html#fuera-de-todos-los-espacios).
+
 ## Cómo se ve
 
 > **Tú:** Nueva tarea: añadir un formulario de contacto a la web.

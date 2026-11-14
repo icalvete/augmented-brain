@@ -38,7 +38,7 @@ func SessionEnd(in io.Reader, cfgDir string) error {
 		fresh.Remove(cfgDir, fresh.HookKey(Getenv))
 	}
 	c, s, err := load(cfgDir, i.Cwd)
-	if err != nil || c == nil || s == nil {
+	if err != nil || c == nil || s == nil || quiet(cfgDir, c, i.Cwd) {
 		return nil
 	}
 	_ = state.Ended(cfgDir, s.Name, i.SessionID, Now())

@@ -48,34 +48,50 @@ augmented-brain space
 
 ## Outside every space
 
-augmented brain works in every Claude Code session on this computer, whatever the
-folder: its plugin is installed for your whole user. A folder that is in no work folder
-is outside every space.
+A folder that is in no work folder is outside every space. What augmented brain does
+there depends on one choice, on the panel's Guard page: **where augmented brain acts**.
 
-The desktop app starts each new session in a scratch folder of its own. That folder is
-in no space. Then the **default space** is used, `personal` unless you change it, and
-Claude tells you in one line, with how to switch to work.
+- **On the whole computer** (as it comes). augmented brain works in every Claude Code
+  session on this computer, whatever the folder: its plugin is installed for your whole
+  user. Outside your spaces it uses the **default space**, `personal` unless you change
+  it, and Claude tells you in one line, with how to switch to work.
+- **Only in my spaces.** A session outside your spaces' folders gets nothing from
+  augmented brain: no memory, no notices, no backup. The guard there only protects its
+  own files, your home folder and what your lists name. Claude Code's own permissions
+  still decide the rest, as they always do. This is for you if you already use Claude
+  Code in other projects and want them left as they were.
+
+What changes, next to a session in a space:
+
+| | In a space | Outside, on the whole computer | Outside, only in my spaces |
+|---|---|---|---|
+| Profile, rules, tasks and the rest of the notes | The space's | The default space's, and Claude tells you | None |
+| What Claude writes in your notes | Goes to the space | Goes to the default space | Nothing: Claude cannot write notes there |
+| Tasks changed by another session, journal reminder, a session to recover | Yes | Those of the default space | No |
+| Commit and push | As your lists say | As your lists say | Not watched, except in repositories of your lists |
+| Root, secrets in commands, PowerShell | Stopped | Stopped | Not watched |
+| Deleting your home folder | Stopped | Stopped | Stopped |
+| Production profiles, untouchable machines and repositories | Asks, or stopped | Asks, or stopped | Asks, or stopped |
+| The guard's files, the plugin and the program | Protected | Protected | Protected |
+| Backup when the session ends | The space's | The default space's | None |
+| Warnings about the window's memory and the model | Yes | Yes | No |
+
+Three things to know:
+
+- **Inside a space nothing changes**, whichever you choose.
+- **A command that goes into a space is checked whole.** Run from outside,
+  `cd ~/work/app && git commit` or `git -C ~/work/app commit` gets every rule, as in the
+  space. So does a clone of a repository of your lists, found by its address.
+- **Mind the desktop app** if you keep augmented brain to your spaces. It starts each
+  new session in a scratch folder of its own, which is in no space: that session has no
+  memory until you choose a folder. That is why "on the whole computer" is the default.
+
+Change it on the panel's Guard page; a change by hand in `guard.toml` counts only once you
+accept it there ([`reach`](configuration.md#guardtoml)).
 
 The default space matters for one more thing: its backup carries your profile, the shared
 notes and the names of your secrets (never their values). Set it with `default_space` in
 the configuration. With a single space, it is that one.
-
-What changes outside, next to a session in a space:
-
-| | In a space | Outside every space |
-|---|---|---|
-| Profile, rules, tasks and the rest of the notes | The space's | The default space's, and Claude tells you |
-| What Claude writes in your notes | Goes to the space | Goes to the default space |
-| Tasks changed by another session | Claude hears of them | Those of the default space |
-| Reminder to write in the task's journal | Yes | No |
-| A session cut short, offered to recover | Yes | No |
-| [The guard](guard.md) | All of it | All of it, the same |
-| Backup when the session ends | The space's | The default space's |
-| Warnings about the window's memory and the model | Yes | Yes |
-
-The guard does not look at the folder: its lists hold for the whole computer. So in any
-project, also one you never gave augmented brain, Claude cannot commit or push until you
-[let it in that repository](guard.md#let-claude-commit-in-a-repository).
 
 To bring a folder into a space, add it to the space's `work_folders` (next).
 

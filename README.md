@@ -91,6 +91,10 @@ which tools you use and who you work with. At the end it offers to set up the ba
 From then on, the same. If something is off, `augmented-brain doctor` tells you what is
 missing and how to fix it.
 
+Already use Claude Code in other projects? augmented brain can keep to the folders you
+give it and leave the rest as it was:
+[Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+
 ## What it looks like
 
 > **You:** New task: add a contact form to the website.

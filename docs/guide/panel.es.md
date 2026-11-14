@@ -215,6 +215,9 @@ enlace a las [Sesiones](#sesiones) del espacio.
 
 Todas las listas a las que responde el guardia, en una página, para leerlas y cambiarlas:
 
+- **Dónde actúa augmented brain**: en todo el ordenador (como viene), o solo en tus
+  espacios. Elegir tus espacios te pide marcar que entiendes lo que el guardia deja de
+  vigilar fuera de ellos. Lo cuenta [Fuera de todos los espacios](spaces.es.md#fuera-de-todos-los-espacios).
 - **Repositorios intocables**, donde Claude nunca hace commit, push ni merge. Quitar uno
   avisa de que las demás listas vuelven a decidir sobre él (si una deja a Claude hacer
   commit y push ahí, lo hará), y te pide escribir el nombre de la carpeta.

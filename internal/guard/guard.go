@@ -99,6 +99,14 @@ type Policy struct {
 	Now      time.Time
 	// Lang is the user's language, for the reasons the user reads when asked (en, es).
 	Lang string
+	// Outside says the session works outside every space while augmented brain keeps
+	// to them (guard.toml's reach = "spaces"): only the rules that protect its own
+	// files and what the lists name apply, unless the command reaches into one of
+	// SpaceDirs, the folders of the spaces (absolute, resolved). See outside.go.
+	Outside   bool
+	SpaceDirs []string
+	// outside says this reading of the line keeps to the rules that hold outside.
+	outside bool
 	// host is the machine the command runs on, as ssh names it; "" is this one.
 	host string
 	// inScript says the commands come from a script file, where "$@" or "$1" as the
@@ -130,6 +138,9 @@ type RootException struct {
 // root is the answer to a command that would run as root: denied, unless the machine
 // it runs on has a root exception in force, and then the user confirms it.
 func (p Policy) root(reason string) Decision {
+	if p.outside {
+		return allow // a general rule
+	}
 	now := p.Now
 	if now.IsZero() {
 		now = time.Now()
@@ -181,17 +192,34 @@ func (p Policy) secret(what string) string { return i18n.T(p.Lang, "secret."+wha
 
 // Command checks a shell command.
 func (p Policy) Command(line string) Decision {
-	if what := FindSecret(line); what != "" {
-		return Decision{Deny, i18n.T(p.Lang, "guard.secret.command", p.secret(what))}
+	if p.Outside {
+		// Outside the spaces first; a line that reaches into one is read again whole.
+		q := p
+		q.Outside, q.outside = false, true
+		if d, inSpace := q.command(line); !inSpace {
+			return d
+		}
+	}
+	p.Outside, p.outside = false, false
+	d, _ := p.command(line)
+	return d
+}
+
+// command is one reading of a line; inSpace says it reached into a space while
+// reading it outside them.
+func (p Policy) command(line string) (Decision, bool) {
+	if what := FindSecret(line); what != "" && !p.outside {
+		return Decision{Deny, i18n.T(p.Lang, "guard.secret.command", p.secret(what))}, false
 	}
 	if p.panelAccess(line) {
-		return p.panelDeny()
+		return p.panelDeny(), false
 	}
 	if len(line) > maxCommand {
-		return Decision{Ask, i18n.T(p.Lang, "guard.toolong", len(line)>>10)}
+		return Decision{Ask, i18n.T(p.Lang, "guard.toolong", len(line)>>10)}, false
 	}
 	p.files = &lineFiles{written: map[string]string{}, touched: map[string]bool{}}
-	return p.commands(parse(line), map[string]string{}, 0)
+	d := p.commands(parse(line), map[string]string{}, 0)
+	return d, p.files.inSpace
 }
 
 // commands checks a list of commands in order. Exported variables carry over to the
@@ -215,6 +243,7 @@ func (p Policy) commands(cmds []command, exported map[string]string, depth int) 
 		}
 		if len(c.words) > 0 && base(c.words[0]) == "popd" {
 			p.Cwd, p.lost, p.cdNamed = "", true, false // back to a folder the guard did not keep
+			p.touch()
 		}
 		if len(c.words) > 0 && base(c.words[0]) == "export" {
 			for _, a := range c.words[1:] {
@@ -350,7 +379,7 @@ func (p Policy) inner(line string, exported map[string]string, depth int) Decisi
 	if depth >= maxDepth {
 		return Decision{Ask, i18n.T(p.Lang, "guard.depth")}
 	}
-	if what := FindSecret(line); what != "" {
+	if what := FindSecret(line); what != "" && !p.outside {
 		return Decision{Deny, i18n.T(p.Lang, "guard.secret.inner", p.secret(what))}
 	}
 	return p.commands(parse(line), maps.Clone(exported), depth+1)
@@ -422,7 +451,7 @@ func (p Policy) prepare(words []string, stdin string, exported map[string]string
 		}
 	}
 	for _, k := range []string{"AWS_SECRET_ACCESS_KEY", "AWS_ACCESS_KEY_ID", "AWS_SESSION_TOKEN"} {
-		if v, ok := env[k]; ok && v != "" && !strings.HasPrefix(v, "$") {
+		if v, ok := env[k]; ok && v != "" && !strings.HasPrefix(v, "$") && !p.outside {
 			return c, Decision{Deny, i18n.T(p.Lang, "guard.awskey", k)}, true
 		}
 	}
@@ -826,6 +855,9 @@ func kubectlDebugNode(args []string) string {
 
 // windowsShell is cmd, powershell or pwsh run from Bash: the guard reads neither.
 func (p Policy) windowsShell(name string) Decision {
+	if p.outside {
+		return allow // a general rule
+	}
 	return Decision{Deny, i18n.T(p.Lang, "guard.powershell.bash", name)}
 }
 
@@ -1047,6 +1079,9 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) 
 			}
 		case sub == "send-pack" || sub == "subtree" && i+1 < len(args) && args[i+1] == "push" ||
 			sub == "svn" && i+1 < len(args) && args[i+1] == "dcommit":
+			if !elsewhere && p.freeRepo(cmp.Or(dir, p.cwdKnown())) {
+				return allow // a general rule, in a repository no list names
+			}
 			return Decision{Deny, i18n.T(p.Lang, "guard.git.publish", sub)}
 		}
 	}
@@ -1096,7 +1131,21 @@ func (p Policy) gitExpanded(env map[string]string, args []string, n, depth int) 
 			}
 		}
 	}
+	if !elsewhere {
+		if repo := cmp.Or(dir, p.cwdKnown()); p.freeRepo(repo) &&
+			(args[i] != "push" || p.freePush(repo, pushDestination(args[i+1:]))) {
+			return allow // a general rule, in a repository no list names
+		}
+	}
 	return Decision{Deny, i18n.T(p.Lang, "guard.git.deny", args[i])}
+}
+
+// cwdKnown is the folder the command runs in, or "" when a cd lost it.
+func (p Policy) cwdKnown() string {
+	if p.lost {
+		return ""
+	}
+	return p.Cwd
 }
 
 // rewrites reports whether the arguments of a push change history on the remote rather
@@ -1292,6 +1341,7 @@ func (p Policy) cd(args []string) Policy {
 	p.cdNamed = false
 	if dir == "-" || strings.ContainsAny(dir, "$`") || strings.ContainsRune(dir, subst) {
 		p.Cwd, p.lost = "", true
+		p.touch() // it may be a space
 		return p
 	}
 	if d, err := p.resolve(dir); err == nil {
@@ -1554,6 +1604,9 @@ func (p Policy) publishExpanded(name string, env map[string]string, args []strin
 			expanded := append(append(slices.Clone(args[:first]), strings.Fields(v)...), args[first+1:]...)
 			return p.publishExpanded(name, env, expanded, n+1, depth)
 		}
+	}
+	if p.freeGh(name, env, args, words) {
+		return allow // general rules, on repositories no list names
 	}
 	if len(words) >= 2 && words[0] == "api" {
 		return p.api(name, args, strings.ToLower(words[1]))
@@ -2225,7 +2278,12 @@ func Write(lang, text string) Decision {
 // WriteFile checks a write of text into the file at path: Write, and a protected file
 // asks the user.
 func (p Policy) WriteFile(path, text string) Decision {
-	if d := Write(p.Lang, text); d.Verdict == Deny {
+	general := true // a secret in the text: a general rule, so not outside the spaces
+	if p.Outside {
+		d, err := p.resolve(path)
+		general = err != nil || p.inSpace(d)
+	}
+	if d := Write(p.Lang, text); general && d.Verdict == Deny {
 		return d
 	}
 	return p.protected(path)
@@ -2273,6 +2331,7 @@ func bashPath(path, goos string) string {
 func (p Policy) resolve(path string) (string, error) {
 	path = bashPath(path, runtime.GOOS)
 	if p.lost && !filepath.IsAbs(path) && path != "~" && !strings.HasPrefix(path, "~/") {
+		p.touch()
 		return "", errors.New("after a cd the guard cannot follow")
 	}
 	if !filepath.IsAbs(path) && path != "~" && !strings.HasPrefix(path, "~/") && p.Cwd != "" {
@@ -2288,6 +2347,9 @@ func (p Policy) resolve(path string) (string, error) {
 	if !ok {
 		r.path, r.err = paths.Resolve(path)
 		p.files.resolved[path] = r
+	}
+	if p.outside && (r.err != nil || p.inSpace(r.path)) {
+		p.touch()
 	}
 	return r.path, r.err
 }

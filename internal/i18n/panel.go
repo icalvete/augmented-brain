@@ -450,6 +450,38 @@ var panelMessages = map[string]msg{
 		en: "Machines that need your confirmation for ssh, scp and rsync.",
 		es: "Máquinas que necesitan tu confirmación para ssh, scp y rsync.",
 	},
+	"panel.guard.reach": {
+		en: "Where augmented brain acts",
+		es: "Dónde actúa augmented brain",
+	},
+	"panel.guard.reach.hint": {
+		en: "On the whole computer, every Claude Code session gets the memory of a space (the default one outside them) and the whole guard. Only in your spaces, a session outside their folders gets nothing from augmented brain: no memory, no notices, and the guard only protects its own files, your home folder and what your lists name (production profiles, untouchable machines, the repositories of your lists). Inside a space nothing changes.",
+		es: "En todo el ordenador, cada sesión de Claude Code recibe la memoria de un espacio (fuera de ellos, la del espacio por defecto) y el guardia entero. Solo en tus espacios, una sesión fuera de sus carpetas no recibe nada de augmented brain: ni memoria ni avisos, y el guardia solo protege sus propios ficheros, tu carpeta personal y lo que nombran tus listas (perfiles de producción, máquinas intocables, los repositorios de tus listas). Dentro de un espacio no cambia nada.",
+	},
+	"panel.guard.reach.machine": {
+		en: "On the whole computer (as it came)",
+		es: "En todo el ordenador (como viene)",
+	},
+	"panel.guard.reach.spaces": {
+		en: "Only in my spaces",
+		es: "Solo en mis espacios",
+	},
+	"panel.guard.reach.warn": {
+		en: "Only in your spaces, outside them the guard no longer stops becoming root, secrets in commands, or commits and pushes in repositories your lists do not name. Claude Code still asks for permission as it always does.",
+		es: "Solo en tus espacios, fuera de ellos el guardia deja de parar que se actúe como root, los secretos en las órdenes y los commits y push en repositorios que tus listas no nombran. Claude Code sigue pidiendo permiso como siempre.",
+	},
+	"panel.guard.reach.confirm": {
+		en: "I understand what the guard stops watching outside my spaces",
+		es: "Entiendo lo que el guardia deja de vigilar fuera de mis espacios",
+	},
+	"panel.guard.reach.dirs": {
+		en: "The folders of your spaces:",
+		es: "Las carpetas de tus espacios:",
+	},
+	"panel.guard.err.reachconfirm": {
+		en: "To keep augmented brain to your spaces, tick the box that says you understand what the guard stops watching outside them.",
+		es: "Para que augmented brain se quede en tus espacios, marca la casilla que dice que entiendes lo que el guardia deja de vigilar fuera de ellos.",
+	},
 	"panel.guard.trust": {
 		en: "What the assistant saves on its own",
 		es: "Lo que el asistente guarda solo",

@@ -51,11 +51,17 @@ siempre. Después deciden los permisos propios de Claude Code.
 
 ## Dónde vigila
 
-En todas partes. El guardia lee cada comando de cada sesión de Claude Code de este
-ordenador, dentro de tus espacios o no, y sus listas valen para todo el ordenador. Un
-repositorio que no está en ellas queda cerrado a commit y push, en cualquier proyecto. Lo
-demás que cambia fuera de tus espacios está en
-[Espacios](spaces.es.md#fuera-de-todos-los-espacios).
+Como viene, en todas partes. El guardia lee cada comando de cada sesión de Claude Code
+de este ordenador, dentro de tus espacios o no, y sus listas valen para todo el
+ordenador. Un repositorio que no está en ellas queda cerrado a commit y push, en
+cualquier proyecto.
+
+Si eliges en la página Guardia del panel que augmented brain actúe **solo en tus
+espacios**, fuera de ellos el guardia se queda en sus propios ficheros, tu carpeta
+personal y lo que nombran tus listas: perfiles de producción, máquinas intocables y los
+repositorios de tus listas. Root, secretos y commits en otros sitios dependen entonces de
+los permisos de Claude Code. Una orden que entra en un espacio se mira con todas las
+reglas. La tabla está en [Espacios](spaces.es.md#fuera-de-todos-los-espacios).
 
 ## Deja que Claude haga commit en un repositorio
 
