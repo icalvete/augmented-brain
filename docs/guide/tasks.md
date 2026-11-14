@@ -147,7 +147,7 @@ is a step.
 A task can have a Claude session of its own, started in the background in the task's
 folder: you say "start a session for the blog task" and go on with something else. The
 session reads the task and gets going. On Linux, `augmented-brain session start` does it;
-see [A session per task](remote.md#a-session-per-task).
+see [A session per task](task-sessions.md).
 
 ## Dates to look at something again
 

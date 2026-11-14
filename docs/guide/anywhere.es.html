@@ -50,12 +50,14 @@
 <ul>
   <li><a href="getting-started.es.html">Primeros pasos</a></li>
   <li><a href="install.es.html">Instalación</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
 </ul>
 <p class="docnav-group">Conceptos</p>
 <ul>
   <li><a href="spaces.es.html">Espacios</a></li>
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
   <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="where-things-live.es.html">Dónde vive cada cosa</a></li>
@@ -65,14 +67,17 @@
 <ul>
   <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
   <li><a href="panel.es.html">El panel</a></li>
-  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
-  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="weekly-review.es.html">La revisión semanal</a></li>
-  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+</ul>
+<p class="docnav-group">Ponlo a tu medida</p>
+<ul>
   <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
-  <li><a href="remote.es.html">Acceso remoto</a></li>
-  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="anywhere.es.html" aria-current="page">Desde el móvil u otro ordenador</a></li>
+  <li><a href="remote.es.html">Acceso remoto</a></li>
+  <li><a href="task-sessions.es.html">Una sesión por tarea</a></li>
+  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
   <li><a href="update-and-uninstall.es.html">Actualizar y desinstalar</a></li>
 </ul>
 <p class="docnav-group">Referencia</p>
@@ -97,29 +102,24 @@
   <p>Tus notas viven en un ordenador. Aun así puedes trabajar con ellas desde el móvil, una tableta u otro ordenador. Hay dos formas, y hacen cosas distintas:</p>
   <ul><li><strong>Hablar con Claude</strong> en ese ordenador, desde cualquier sitio: el <a href="remote.es.html">acceso remoto</a>. Eliges una sesión en <a href="https://claude.ai/code">claude.ai/code</a> o Claude Desktop y trabajas como si estuvieras sentado delante.</li><li><strong>Mirar tus notas</strong> en el panel, desde cualquier sitio: <a href="panel-remote.es.html">el panel desde otro dispositivo</a>. Hoy, tus tareas, el buzón, todo lo que enseña el panel.</li></ul>
   <p>Puedes usar una, la otra o las dos. El acceso remoto funciona en Linux, macOS y Windows; el panel desde otro dispositivo funciona donde funcione <a href="https://tailscale.com">Tailscale</a>.</p>
-  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#se-prepara-una-vez">Se prepara una vez</a></li><li><a href="#qué-sesión-usar">Qué sesión usar</a></li><li><a href="#cuando-deja-de-responder">Cuando deja de responder</a></li><li><a href="#una-sesión-vieja-con-el-mismo-nombre">Una sesión vieja con el mismo nombre</a></li><li><a href="#empezar-sesiones-nuevas-desde-el-móvil">Empezar sesiones nuevas desde el móvil</a></li><li><a href="#con-seguridad">Con seguridad</a></li></ul></nav>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#se-prepara-una-vez">Se prepara una vez</a></li><li><a href="#qué-sesión-usar">Qué sesión usar</a></li><li><a href="#cuando-deja-de-responder">Cuando deja de responder</a></li><li><a href="#una-sesión-para-cada-tarea">Una sesión para cada tarea</a></li><li><a href="#con-seguridad">Con seguridad</a></li></ul></nav>
   <h2 id="se-prepara-una-vez">Se prepara una vez</h2>
   <p>En el ordenador que guarda tus notas:</p>
   <ol><li><strong>Acceso remoto.</strong> Lanza <code>augmented-brain remote install</code> y haz lo que pide: que Claude confíe en la carpeta y, en Linux, encender «linger» para que aguante un reinicio (en macOS y Windows arranca cuando entras en tu sesión). Detalles en <a href="remote.es.html">Acceso remoto</a>.</li><li><strong>El panel.</strong> Instala Tailscale en el ordenador y en el móvil, con la misma cuenta, y lanza <code>augmented-brain panel remote</code>. Escribe una dirección y un código QR. Detalles en <a href="panel-remote.es.html">El panel desde otro dispositivo</a>.</li></ol>
-  <p><code>augmented-brain doctor</code> comprueba las dos cosas, una línea cada una.</p>
+  <p><code>augmented-brain doctor</code> comprueba las dos: una línea para la puerta de cada espacio y, en cuanto lo has usado, otra para el panel desde otro dispositivo.</p>
   <h2 id="qué-sesión-usar">Qué sesión usar</h2>
   <p>El acceso remoto abre <strong>una puerta por espacio</strong>, con el nombre <code>&lt;nombre del ordenador&gt;-&lt;espacio&gt;</code>, como <code>mi-portatil-personal</code>. Una sesión que entra por ella empieza en la primera carpeta de trabajo de ese espacio, así que Claude carga las notas y las reglas de ese espacio.</p>
   <ul><li>En claude.ai o Claude Desktop, elige el entorno con ese nombre y empieza una sesión. Puedes empezar todas las que quieras.</li><li>Para trabajar en una tarea, dilo: «retoma task-hornear-pan». Claude lee la tarea y sigue donde se quedó.</li><li>Para llegar a otro espacio, usa la puerta de ese espacio. Las notas nunca se cruzan entre espacios.</li></ul>
   <h2 id="cuando-deja-de-responder">Cuando deja de responder</h2>
-  <ul><li><strong>El ordenador está dormido.</strong> Un portátil que se duerme corta la conexión. Vuelve cuando se despierta.</li><li><strong>La sesión se archivó.</strong> Archivar una sesión en claude.ai, o dejarla mucho tiempo sin usar, puede terminarla en el lado de Claude mientras el servicio de tu ordenador sigue en marcha sin nada detrás. Vuelve a arrancar el servicio, en el ordenador:</li></ul>
-  <p><code></code><code>bash systemctl --user restart augmented-brain-remote-personal </code><code></code></p>
-  <p>La sesión nueva puede tardar unos minutos en aparecer: el lado de Claude deja antes que caduque la vieja. El vigilante lo hace solo en unos minutos; si reinicias a mano, lanza antes <code>augmented-brain remote watch</code>, para que las sesiones de tus tareas abiertas desde allí sigan en marcha.</p>
-  <ul><li><strong>Ha caducado tu sesión de Claude.</strong> <code>augmented-brain remote status</code> lo dice. Lanza <code>claude</code> una vez en el ordenador y vuelve a entrar.</li></ul>
-  <p><code>augmented-brain remote status</code> dice cómo está cada puerta, y qué hacer.</p>
-  <h2 id="una-sesión-vieja-con-el-mismo-nombre">Una sesión vieja con el mismo nombre</h2>
-  <p>Cuando la puerta de un espacio se cambia de carpeta (por ejemplo, porque una versión nueva la arranca en tu carpeta de trabajo), el lado de Claude conserva también la sesión vieja, con el mismo nombre, en otro grupo de la lista. En la vieja no contesta nadie: lo que escribas ahí se pierde. Usa la del grupo con el nombre de la carpeta nueva, y archiva la vieja en claude.ai o Claude Desktop.</p>
-  <h2 id="empezar-sesiones-nuevas-desde-el-móvil">Empezar sesiones nuevas desde el móvil</h2>
-  <p>Pídele a la sesión de la puerta del espacio que abra una para una tarea («ábreme una sesión para la tarea de la web»). Lanza <code>augmented-brain session start</code>, y en menos de un minuto sale en tu lista una sesión propia para esa tarea, con su nombre, en su carpeta y ya leyéndola. Abre tantas como tareas tengas. La primera vez en una carpeta te dice cómo hacer que Claude confíe en ella. Mira <a href="remote.es.html#una-sesión-por-tarea">Una sesión por tarea</a>.</p>
+  <ul><li><strong>El ordenador está dormido.</strong> Un portátil que se duerme corta la conexión. Vuelve cuando se despierta.</li><li><strong>La sesión se archivó</strong> en claude.ai, o terminó en el lado de Claude. En Linux vuelve sola, en unos diez minutos; en macOS y Windows son tres pasos a mano. Los dos casos están en <a href="remote.es.html#conviene-saber">Acceso remoto</a>.</li><li><strong>Ha caducado tu sesión de Claude.</strong> Lanza <code>claude</code> una vez en el ordenador y vuelve a entrar.</li></ul>
+  <p><code>augmented-brain remote status</code> dice cómo está cada puerta, y qué hacer. Otros problemas están en <a href="troubleshooting.es.html#el-acceso-remoto-no-funciona">Si algo falla</a>.</p>
+  <h2 id="una-sesión-para-cada-tarea">Una sesión para cada tarea</h2>
+  <p>En Linux, la sesión de la puerta de un espacio puede abrir otra para una tarea («ábreme una sesión para la tarea de la web»). En menos de un minuto sale en tu lista, con el nombre de la tarea, en su carpeta y ya leyéndola. Abre tantas como tareas tengas. En macOS y Windows todavía no está. Mira <a href="task-sessions.es.html">Una sesión por tarea</a>.</p>
   <h2 id="con-seguridad">Con seguridad</h2>
   <p>Las dos son puertas a tu ordenador. El acceso remoto es una puerta permanente: quien entre en tu cuenta de Claude puede trabajar en la máquina a través de ella. Protege esa cuenta con una contraseña fuerte y verificación en dos pasos, deja que Claude pregunte antes de actuar (nunca <code>bypassPermissions</code>), y quita las puertas que no uses: <code>augmented-brain remote uninstall</code> y <code>augmented-brain panel stop</code>. La dirección del panel solo funciona para tus propios dispositivos de tu red de Tailscale, y solo mientras el panel está en marcha.</p>
   <nav class="pager" aria-label="Anterior / Siguiente">
-    <a class="prev" href="import.es.html"><span>← Anterior</span>Trae una memoria que ya tienes</a>
-    <a class="next" href="update-and-uninstall.es.html"><span>Siguiente →</span>Actualizar y desinstalar</a>
+    <a class="prev" href="config-history.es.html"><span>← Anterior</span>Versiones de la configuración</a>
+    <a class="next" href="remote.es.html"><span>Siguiente →</span>Acceso remoto</a>
   </nav>
 </main>
 </div>

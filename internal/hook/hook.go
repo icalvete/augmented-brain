@@ -70,8 +70,9 @@ type output struct {
 	SystemMessage string `json:"systemMessage,omitempty"`
 }
 
-// userNotice is what the user must hear about the guard's lists (state.TakeGuardNotice)
-// and about what a tool saved for every session (state.TakeToolNotice), as a message
+// userNotice is what the user must hear about the guard's lists (state.TakeGuardNotice),
+// about what a tool saved for every session (state.TakeToolNotice) and about the
+// sessions the usage limit stopped (state.TakeQuotaNotice), as a message
 // Claude Code shows them directly, or "". Taking it removes it.
 func userNotice(lang, cfgDir string) string {
 	var parts []string
@@ -80,6 +81,9 @@ func userNotice(lang, cfgDir string) string {
 	}
 	if n := state.TakeToolNotice(cfgDir); n != "" {
 		parts = append(parts, i18n.T(lang, "hook.toolnotice", n))
+	}
+	if n := state.TakeQuotaNotice(cfgDir); n != "" {
+		parts = append(parts, i18n.T(lang, "hook.quotanotice", n))
 	}
 	return strings.Join(parts, "\n\n")
 }
@@ -184,6 +188,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir, task string) 
 	note += rootNote(c)
 	note += oldServersNote(c, task == "")
 	note += guardSealNote(c, cfgDir, i.Source)
+	note += unknownSettingsNote(c, cfgDir)
 	note += launcherNote(c)
 	// A change made by hand since the last version becomes one: it can be undone too.
 	_, _ = confighistory.Record(cfgDir, confighistory.ByOutside, "")
@@ -479,6 +484,18 @@ func hiddenFiles(cfgDir string) (hidden, dirs []string) {
 	}
 	dirs = []string{cfgDir, paths.Tilde(cfgDir), ".config/augmented-brain", "AB_CONFIG_DIR"}
 	return []string{f}, dirs
+}
+
+// unknownSettingsNote, at the start of a session, has the assistant tell the user about
+// settings of guard.toml or session.toml this program ignores: a misspelled one does
+// nothing, and nothing else would say so. Every session, until the file is corrected.
+func unknownSettingsNote(c *config.Config, cfgDir string) string {
+	var note string
+	for _, f := range config.UnknownByFile(c.Language, config.UnknownSettings(cfgDir)) {
+		note += "\n" + i18n.T(c.Language, "hook.unknownsettings", f[0], f[1]) + " " + session.TellUserLine(c.Language) + ", " +
+			i18n.T(c.Language, "hook.unknownsettings.fix", paths.Tilde(filepath.Join(cfgDir, f[0]))) + "\n"
+	}
+	return note
 }
 
 // guardSealNote compares the guard's lists with the ones the user last saw and says so

@@ -2,7 +2,7 @@
 
 [Read in English](weekly-review.md)
 
-El lunes abres Claude. Te dice: "Toca la revisión semanal: 3 capturas en el buzón y 1
+Una semana después de tu última revisión, abres Claude. Te dice: "Toca la revisión semanal: 3 capturas en el buzón y 1
 tarea sin tocar desde hace dos semanas. ¿La hacemos? Son unos diez minutos." Dices que
 sí, y repasa contigo cada cosa, una a una.
 
@@ -34,7 +34,8 @@ del buzón las capturas procesadas.
 
 El panel tiene una página **Revisión semanal**. Cada captura tiene sus botones: tarea,
 referencia, lección o descartarla. Cada tarea sin tocar sigue, o pasa a algún día (o la
-abres para cerrarla). Lo que decides se va apuntando, en un borrador en este ordenador,
+abres para cerrarla). Llevar una captura a un área no está entre los botones: eso se lo
+pides a Claude. Lo que decides se va apuntando, en un borrador en este ordenador,
 así que puedes irte y volver. Al terminar, todo queda escrito en el registro de la
 revisión.
 

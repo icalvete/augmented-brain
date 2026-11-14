@@ -50,12 +50,14 @@
 <ul>
   <li><a href="getting-started.es.html">Primeros pasos</a></li>
   <li><a href="install.es.html">Instalación</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
 </ul>
 <p class="docnav-group">Conceptos</p>
 <ul>
   <li><a href="spaces.es.html">Espacios</a></li>
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
   <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="where-things-live.es.html">Dónde vive cada cosa</a></li>
@@ -65,14 +67,17 @@
 <ul>
   <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
   <li><a href="panel.es.html">El panel</a></li>
-  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
-  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="weekly-review.es.html">La revisión semanal</a></li>
-  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+</ul>
+<p class="docnav-group">Ponlo a tu medida</p>
+<ul>
   <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
-  <li><a href="remote.es.html">Acceso remoto</a></li>
-  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="anywhere.es.html">Desde el móvil u otro ordenador</a></li>
+  <li><a href="remote.es.html">Acceso remoto</a></li>
+  <li><a href="task-sessions.es.html">Una sesión por tarea</a></li>
+  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
   <li><a href="update-and-uninstall.es.html">Actualizar y desinstalar</a></li>
 </ul>
 <p class="docnav-group">Referencia</p>
@@ -122,7 +127,7 @@ backup = "https://github.com/lucia/augmented-brain-personal.git"</code></pre>
   <p>Las rutas pueden empezar por <code>~</code>, tu carpeta personal. El programa lee el fichero cada vez que se ejecuta, así que un cambio vale al momento.</p>
   <h2 id="ajustes-de-todo-el-ordenador">Ajustes de todo el ordenador</h2>
   <p>Van arriba, antes de cualquier encabezado <code>[spaces.…]</code>.</p>
-  <ul><li><code>language</code>: el idioma en el que te habla el programa, <code>en</code> o <code>es</code>: sus mensajes y los motivos del guardia. Por defecto, <code>en</code>.</li><li><code>default_space</code>: el espacio que se usa fuera de todas las carpetas de trabajo, como la carpeta provisional en la que la app de escritorio abre una sesión nueva. Su copia de seguridad lleva tu perfil y las notas compartidas. Es opcional; con dos espacios o más, lo ponen <code>init</code> y <code>space add</code>.</li><li><code>production_aws_profiles</code>: los perfiles de AWS que llegan a producción. El guardia te pregunta antes de cualquier comando que use uno, en todos los espacios. Lo tienes en <a href="guard.es.html">El guardia</a>.</li><li><code>untouchable_hosts</code>: máquinas que no se tocan sin preguntar. El guardia pregunta antes de un <code>ssh</code>, <code>scp</code>, <code>rsync</code>, <code>sftp</code> o <code>mosh</code> a ellas, en todos los espacios. Los nombres coinciden sin mirar mayúsculas, y un nombre corto coincide con el completo (<code>db01</code> y <code>db01.example.com</code>).</li><li><code>root_ask</code>: excepciones temporales para root, una máquina cada una, escritas <code>"&lt;máquina&gt; until &lt;fecha&gt;"</code>. La fecha es un día (<code>2026-12-31</code>, que dura hasta que acaba, en UTC) o una hora (<code>2026-12-31T23:59Z</code>). Hasta entonces, root en esa máquina te pregunta en vez de pararse. La fecha es obligatoria.</li><li><code>format</code>: la versión de la carpeta de configuración. El programa la escribe cuando una versión nueva lo necesita; no la cambies nunca a mano. Si no está, es 1.</li></ul>
+  <ul><li><code>language</code>: el idioma en el que te habla el programa, <code>en</code> o <code>es</code>: sus mensajes y los motivos del guardia. Por defecto, <code>en</code>. Lo pregunta el instalador; cámbialo aquí cuando quieras. Cuenta al momento. Las carpetas y notas ya creadas no cambian de nombre ni de idioma.</li><li><code>default_space</code>: el espacio que se usa fuera de todas las carpetas de trabajo, como la carpeta provisional en la que la app de escritorio abre una sesión nueva. Su copia de seguridad lleva tu perfil y las notas compartidas. Es opcional; con dos espacios o más, lo ponen <code>init</code> y <code>space add</code>.</li><li><code>production_aws_profiles</code>: los perfiles de AWS que llegan a producción. El guardia te pregunta antes de cualquier comando que use uno, en todos los espacios. Lo tienes en <a href="guard.es.html">El guardia</a>.</li><li><code>untouchable_hosts</code>: máquinas que no se tocan sin preguntar. El guardia pregunta antes de un <code>ssh</code>, <code>scp</code>, <code>rsync</code>, <code>sftp</code> o <code>mosh</code> a ellas, en todos los espacios. Los nombres coinciden sin mirar mayúsculas, y un nombre corto coincide con el completo (<code>db01</code> y <code>db01.example.com</code>).</li><li><code>root_ask</code>: excepciones temporales para root, una máquina cada una, escritas <code>"&lt;máquina&gt; until &lt;fecha&gt;"</code>. La fecha es un día (<code>2026-12-31</code>, que dura hasta que acaba, en UTC) o una hora (<code>2026-12-31T23:59Z</code>). Hasta entonces, root en esa máquina te pregunta en vez de pararse. La fecha es obligatoria.</li><li><code>format</code>: la versión de la carpeta de configuración. El programa la escribe cuando una versión nueva lo necesita; no la cambies nunca a mano. Si no está, es 1.</li></ul>
   <h2 id="ajustes-de-cada-espacio">Ajustes de cada espacio</h2>
   <p>Cada espacio es una sección, <code>[spaces.&lt;nombre&gt;]</code>. Juntas son los <code>spaces</code> del fichero. El nombre lleva minúsculas, cifras y guiones, y empieza por una letra.</p>
   <ul><li><code>memory</code>: la carpeta de notas del espacio. Obligatoria.</li><li><code>work_folders</code>: las carpetas que eligen este espacio cuando abres Claude en ellas, o en una carpeta dentro de ellas. Lo tienes en <a href="spaces.es.html">Espacios</a>.</li><li><code>backup</code>: la dirección del repositorio git privado del espacio. La escribe <code>backup setup</code>. Sin ella, el espacio no tiene copia de seguridad.</li><li><code>git_allowed_repos</code>: repositorios donde Claude puede hacer commit y push, escritos con <code>git -C &lt;repo&gt;</code>. La última parte de una ruta puede llevar un <code>*</code>, que vale por una carpeta. Un worktree de git de un repositorio de la lista cuenta como él.</li><li><code>git_ask_repos</code>: lo mismo, pero Claude te pregunta cada vez. Un repositorio que está en las dos listas pregunta.</li><li><code>production_aws_profiles</code> y <code>untouchable_hosts</code>: las versiones antiguas los guardaban en cada espacio. Ahí siguen funcionando, y el guardia los junta con las listas de arriba. Los nuevos van arriba.</li></ul>
@@ -150,6 +155,7 @@ backup = "https://github.com/lucia/augmented-brain-personal.git"</code></pre>
 memory_trust = "ask"</code></pre>
   <ul><li><code>preferred_model</code>: el modelo que esperas que responda (<code>opus</code>, <code>sonnet</code>, <code>haiku</code> o un nombre completo como <code>claude-opus-5-5</code>). Si una sesión responde con otro modelo, Claude te lo dice. Lo mira al empezar, si Claude Code dice con qué modelo arranca. Si no, lo mira después de una respuesta: en una sesión nueva, como tarde la segunda. Y otra vez si el modelo cambia. Una vez por sesión y modelo. Nunca cambia el modelo por su cuenta: lo cambias tú, con <code>/model</code> o con el selector de modelo.</li><li><code>memory_trust</code>: qué hace Claude antes de guardar algo que siguen todas las sesiones: una regla (nueva, cambiada o retirada), tu perfil, o algo que se añade a las listas del guardia. <code>"tell"</code>: Claude lo guarda y Claude Code te dice qué se ha guardado. Es lo que pasa si el ajuste falta. <code>"ask"</code>: Claude Code te pregunta antes, enseñando lo que se guardaría, y si dices que no, no se escribe nada. Un valor que el programa no conoce cuenta como <code>"ask"</code>. Las tareas, el buzón, las referencias y las lecciones se guardan siempre sin preguntar. En una sesión que se salta las preguntas de permiso (<code>bypassPermissions</code>), <code>"ask"</code> deniega en vez de preguntar: Claude te dice lo que quería guardar. Más en <a href="guard.es.html#preguntar-antes-de-que-claude-guarde-una-regla">el guardia</a>.</li></ul>
   <p>La página Guardia del panel lo escribe, y el guardia pregunta antes de que Claude lo escriba. Si el fichero falta o <code>preferred_model</code> está vacío, el modelo no se comprueba. Es un fichero aparte por la misma razón que <code>guard.toml</code>. Las copias de seguridad no lo llevan.</p>
+  <p>Una línea de <code>guard.toml</code> o <code>session.toml</code> que el programa no conoce no se tiene en cuenta, pero no se rechaza: una versión más nueva puede añadir ajustes ahí, y una anterior sigue funcionando. <code>doctor</code> y el inicio de una sesión la nombran, con el nombre correcto si parece una errata, porque un ajuste mal escrito ahí no hace nada.</p>
   <h2 id="remotetoml"><code>remote.toml</code></h2>
   <p>Junto a <code>config.toml</code>, <code>remote.toml</code> guarda los ajustes del <a href="remote.es.html">acceso remoto</a>, que mantiene Claude accesible desde otro ordenador. Lo crea <code>augmented-brain remote install</code>. Es un fichero aparte porque las versiones anteriores a esta rechazan un ajuste de <code>config.toml</code> que no conocen, y tienen que seguir leyendo tu configuración.</p>
   <pre><code>enabled = true

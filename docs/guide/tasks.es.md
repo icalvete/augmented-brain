@@ -148,7 +148,7 @@ paso.
 Una tarea puede tener una sesión de Claude propia, abierta en segundo plano en la carpeta
 de la tarea: dices "abre una sesión para la tarea del blog" y sigues con otra cosa. La
 sesión lee la tarea y se pone con ella. En Linux lo hace `augmented-brain session start`;
-mira [Una sesión por tarea](remote.es.md#una-sesión-por-tarea).
+mira [Una sesión por tarea](task-sessions.es.md).
 
 ## Fechas para volver a mirar algo
 

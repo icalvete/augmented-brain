@@ -142,7 +142,8 @@ Hay dos carpetas que no se cargan nunca:
 
 Cada nota es Markdown normal. Ábrela con cualquier editor y cámbiala. Después, lanza
 `augmented-brain check` en una carpeta del espacio: comprueba todas las notas y rehace el
-índice.
+índice. [Editar las notas a mano](editing-notes.es.md) dice qué respetar para que la nota
+se siga leyendo.
 
 ## Por dónde seguir
 

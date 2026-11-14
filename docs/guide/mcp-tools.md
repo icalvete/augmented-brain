@@ -92,6 +92,12 @@ journal, and when it skips phases (straight from `definition` to `execution`, sa
 line names the ones skipped: skipping is allowed, and it is seen. A closed task opens
 again only with `reopen`.
 
+`status` `closed` closes the task exactly as [`task_close`](#task_close) does: open
+subtasks keep it from closing, the result goes to the note, open watch dates are named,
+and the task's session and worktrees are dealt with the same way. Without `result` it
+still closes, with a line saying no result was given, and Claude writes the result in
+the journal.
+
 - `id`: the task's id.
 - `status` (optional): `definition`, `analysis`, `plan`, `execution`, `validation`,
   `closed`, `parked` or `someday`.
@@ -104,6 +110,8 @@ again only with `reopen`.
 - `watch_done` (optional): mark the watch date of this day as done.
 - `reopen` (optional): only to open a closed task again, with a new `status`: why, in a
   few words. It goes to the journal. Claude asks you first.
+- `result` (optional): with `status` `closed`, what the task achieved, as in
+  `task_close`. With any other status it is refused.
 - `space` (optional): another of your spaces, whose task this is. Claude uses it only
   when you ask to work on a task of that space from here. Closing it is left to a
   session of that space. See
@@ -159,7 +167,7 @@ refused: it opens again only with `task_update` and `reopen`, so its result stay
 Closes a finished task with its result. It is kept, never deleted. A task with open
 subtasks cannot close, and a task already closed is refused, so its result is never
 written over. If the task has watch dates not marked done, it says so: they
-still come up at the start of the session on their day, since closing is often when you
+still come up at the start of the session from a week before their day, since closing is often when you
 write down what to check later. When `session start` made a git worktree for the task and
 its session no longer runs, closing removes it with its branch if it holds nothing that
 is not on the remote (nor a file git ignores that no build makes again, such as a

@@ -17,11 +17,6 @@ such as `https://my-laptop.example.ts.net:8443/t/…`, and a QR code. Point the
 phone's camera at the code, or open the address on the other computer. The address
 opens the panel once, within 10 minutes: run the command again for another.
 
-If the panel is already open on this computer, it is not stopped: the same panel starts
-answering through the network too, and the pages you have open go on working. If that
-panel came from an earlier version, it has to start again: the command says so, and you
-reload those pages. If publishing fails, the panel stays on this computer only.
-
 ## What you need, once
 
 The command checks each of these and, when one is missing, says exactly what to do. It
@@ -56,14 +51,33 @@ Four things keep it yours:
   account you signed in with, with its own password and second factor), and the panel
   lets in only the owner of the computer. Someone else in your network, or someone you
   share a device with, gets "forbidden" even with the address.
-- **The network has a door of its own.** What Tailscale brings in arrives at a port of
-  the panel that only it uses, and is treated as coming from the network whatever it
-  says about itself: from there, nothing that is only for this computer (setting up a
-  backup, going back to an earlier configuration) can be done.
+- **What comes from another device is always treated as such.** Tailscale hands the
+  panel its visits through an entrance of their own, and the panel knows them by that
+  entrance, not by what the visit says about itself. So a visit cannot pretend to come
+  from this computer, and what only this computer may do stays here (see below).
 - **The address works once**, and the pages it opens hold a key that changes every
-  time the panel starts.
+  time the panel starts. That key is the other device's own: it does not open the
+  panel on this computer, and the key of this computer's pages does not open it from
+  another device. So whoever got hold of the address from another device still could
+  not do here what only this computer may.
+  The address is for you, not for Claude: run by Claude, the command publishes nothing
+  and asks you to run it in a terminal of your own.
 
 There is no extra password to type: your Tailscale account is the login.
+
+## What only this computer can do
+
+From another device you can read every page and do most things: tasks, the inbox,
+reminders, people, your profile. A few things change your backup or what Claude may do,
+so the panel does them only on this computer, and from another device the page only
+shows:
+
+- back up now;
+- set up a backup;
+- go back to a copy of your notes;
+- go back to an earlier configuration, on the Versions page;
+- change anything on the Guard page: its lists, the model of your sessions and what the
+  assistant saves on its own.
 
 ## It is always temporary
 
@@ -86,3 +100,11 @@ takes back the address it published itself.
 `augmented-brain doctor` has a line about the remote panel once you have used it:
 whether Tailscale is still installed, connected and with HTTPS, and whether an address
 of the panel was left published.
+
+## If the panel was already open
+
+If the panel is already open on this computer when you run
+`augmented-brain panel remote`, it is not stopped: the same panel starts answering through the network too, and
+the pages you have open go on working. If that panel came from an earlier version, it has
+to start again: the command says so, and you reload those pages. If publishing fails, the
+panel stays on this computer only.

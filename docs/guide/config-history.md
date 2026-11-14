@@ -3,16 +3,17 @@
 [Leer en español](config-history.es.md)
 
 Your configuration is what augmented brain knows about this computer and about you:
-your spaces, the guard's lists, remote access, your profile and the names of your
-secrets. A wrong change there (a list emptied by mistake, a space pointing to the wrong
-folder) used to have no way back. Now every change is kept as a **version**, and you can
-see what changed and go back.
+your spaces, the guard's lists, remote access, your session settings, your profile and
+the names of your secrets. Every change to it is kept as a **version**, so a wrong change
+(a list emptied by mistake, a space pointing to the wrong folder) can be seen and undone.
 
 ## What is kept
 
 A version is a copy of these files, in the configuration folder, as they were at one
 moment: `config.toml`, `guard.toml`, `remote.toml`, `session.toml`, `profile.md` and
-`secrets.toml` (only the names of your secrets, never a value). It also says who made the
+`secrets.toml` (only the names of your secrets, never a value). `session.toml` holds
+the model you want your sessions to use and what the assistant saves on its own (see
+[The guard](guard.md#asking-before-claude-saves-a-rule)). It also says who made the
 change: the panel, a command, the assistant (and with which tool), going back to an
 earlier version, or by hand.
 
@@ -41,8 +42,10 @@ nothing changes. If the guard's lists change, going back from the panel counts a
 accepting them, as any change on the [Guard](guard.md) page does.
 
 From another device ([the panel from another device](panel-remote.md)) the page only
-shows the versions: going back is only from the panel on this computer, because it can
-change what the guard allows.
+shows the versions. Going back can change the guard's lists, and those decide what Claude
+may do on this computer: so, as on the Guard page, they change only from this computer's
+panel. The whole list of what only this computer can do is in
+[the panel from another device](panel-remote.md#what-only-this-computer-can-do).
 
 ## With commands
 

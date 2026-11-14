@@ -50,12 +50,14 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
   <li><a href="spaces.html">Spaces</a></li>
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="editing-notes.html">Editing notes by hand</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
   <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
@@ -65,14 +67,17 @@
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
-  <li><a href="remote.html">Remote access</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -95,17 +100,18 @@
 <main class="prose" id="main">
   <h1>What stays stable</h1>
   <p>augmented brain numbers its versions the usual way: <strong>1.x</strong> means every version that starts with 1. From 1.0 on, nothing on this page breaks inside 1.x. If something here ever has to break, that is version <strong>2.0</strong>, and the changelog says what changes and how to move.</p>
-  <p>The beta versions (0.x) already follow these rules, but they are not a promise yet.</p>
+  <p><strong>1.0 is not out yet.</strong> Today's versions are betas, numbered 0.x (<code>augmented-brain version</code> says which one you have). They already follow these rules, but they are not a promise yet.</p>
+  <p>If you only talk to Claude, what matters to you is the first point: your notes. The rest is for those who run the commands or write scripts around them.</p>
   <h2 id="what-is-promised">What is promised</h2>
-  <ul><li><strong>Your notes.</strong> The format the <a href="memory-format.html">memory format</a> describes: the folders, the types of note, the fields of the header and what each one means. When a 1.x writes something in a new way, it brings the step that moves your notes forward, and runs it by itself after a full copy. Notes of any beta (0.x) move forward the same way.</li><li><strong>Your configuration.</strong> <code>config.toml</code>, <code>secrets.toml</code>, <code>guard.toml</code>, <code>session.toml</code>, <code>remote.toml</code> and <code>profile.md</code>: every setting in the <a href="configuration.html">configuration reference</a> keeps its name and what it does.</li><li><strong>The commands.</strong> Every command and option in the <a href="commands.html">command reference</a> stays and does the same. So do the exit codes that page gives (for example, <code>watch pr</code> ends with 0 or 1).</li><li><strong>The assistant's tools.</strong> Every MCP tool in the <a href="mcp-tools.html">tool reference</a> keeps its name, its parameters and what it does. A version may add tools, or parameters you can leave out; never a new parameter a call must give. This matters because your rules and notes name these tools.</li><li><strong>The environment variables</strong> in <a href="configuration.html#environment-variables">Configuration</a> (<code>AB_CONFIG_DIR</code>, <code>AB_LANGUAGE</code>, <code>AB_NO_AUTO_BACKUP</code>…) and those of the installer.</li><li><strong>Backups.</strong> A backup made with any 1.x restores with any later 1.x.</li><li><strong>Installing and updating.</strong> The install line on the front page keeps working, and <code>augmented-brain update</code> takes any 1.x to the latest one.</li></ul>
+  <ul><li><strong>Your notes.</strong> The format the <a href="memory-format.html">memory format</a> describes: the folders, the types of note, the fields of the header and what each one means. When a 1.x writes something in a new way, it brings the step that moves your notes forward, and runs it by itself after a full copy. Notes of any beta (0.x) move forward the same way.</li><li><strong>Your configuration.</strong> <code>config.toml</code>, <code>guard.toml</code>, <code>session.toml</code>, <code>remote.toml</code>, <code>secrets.toml</code> and <code>profile.md</code>: every setting in the <a href="configuration.html">configuration reference</a> keeps its name and what it does.</li><li><strong>The commands.</strong> Every command and option in the <a href="commands.html">command reference</a> stays and does the same. So do the exit codes that page gives (for example, <code>watch pr</code> ends with 0 or 1).</li><li><strong>The assistant's tools.</strong> Every MCP tool in the <a href="mcp-tools.html">tool reference</a> keeps its name, its parameters and what it does. A version may add tools, or parameters you can leave out; never a new parameter a call must give. This matters because your rules and notes name these tools.</li><li><strong>The environment variables</strong> in <a href="configuration.html#environment-variables">Configuration</a> (<code>AB_CONFIG_DIR</code>, <code>AB_LANGUAGE</code>, <code>AB_NO_AUTO_BACKUP</code>…) and those of the installer.</li><li><strong>Backups.</strong> A backup made with any 1.x restores with any later 1.x.</li><li><strong>Installing and updating.</strong> The install line on the front page keeps working, and <code>augmented-brain update</code> takes any 1.x to the latest one.</li></ul>
   <p><strong>A name that changes keeps working.</strong> When a command, an option, a setting, a tool or a parameter gets a new name, the old one still works until 2.0 and says what replaced it. Nothing on the list goes away inside 1.x.</p>
-  <p><strong>An earlier version never damages your notes.</strong> With two computers, or with a session still open after an update, an older program may read notes a newer one wrote. The two versions before the newest read them; if the format changed, they refuse them and ask you to update, without writing anything.</p>
+  <p><strong>The two versions before the newest do not damage your notes.</strong> With two computers, or with a session still open after an update, an older program may read notes a newer one wrote. The two versions before the newest read them; if the format changed, or a note has a field they do not know, they refuse it and ask you to update, without writing anything. Older versions than that are not checked: update every computer you use.</p>
   <h2 id="what-is-not-promised">What is not promised</h2>
-  <ul><li><strong>The words.</strong> The program's messages, what the tools answer, what the assistant reads when a session starts, and the wording of the common rules change to explain things better. Do not read them from a script; use the exit codes.</li><li><strong>The panel.</strong> Its pages, how they look and their addresses.</li><li><strong>The inside.</strong> The folders <code>state/</code>, <code>history/</code>, <code>migrations/</code> and <code>marketplace/</code> of the configuration folder, the hidden commands (<code>panel serve</code>, <code>remote watch</code>), what <code>hook</code> and <code>mcp</code> print (the names stay: the plugin calls them), and the Go code (it is not a library).</li><li><strong>What the guard lets through.</strong> It may get stricter in any version: a command that passes today may ask tomorrow. Your lists (<code>git_allowed_repos</code> and the rest) keep working.</li><li><strong>The systems and versions of other programs.</strong> A 1.x may need a newer Claude Code, Git or operating system when older ones stop working; the changelog says so.</li><li><strong>Variables for testing</strong> that the documentation does not give.</li></ul>
+  <ul><li><strong>The words.</strong> The program's messages, what the tools answer, what the assistant reads when a session starts, and the wording of the common rules change to explain things better. Do not read them from a script; use the exit codes.</li><li><strong>The panel.</strong> Its pages, how they look and their addresses.</li><li><strong>The inside.</strong> The folders <code>state/</code>, <code>history/</code>, <code>migrations/</code> and <code>marketplace/</code> of the configuration folder, the hidden commands (<code>panel serve</code>, <code>remote watch</code>), what <code>hook</code> and <code>mcp</code> print (the names stay: the plugin calls them), and the Go code (it is not a library). <code>session</code>, <code>remote</code>, <code>watch</code> and <code>config</code> are hidden on their own too, but their subcommands in the <a href="commands.html">command reference</a> are promised.</li><li><strong>What the guard lets through.</strong> It may get stricter in any version: a command that passes today may ask tomorrow. Your lists (<code>git_allowed_repos</code> and the rest) keep working.</li><li><strong>The systems and versions of other programs.</strong> A 1.x may need a newer Claude Code, Git or operating system when older ones stop working; the changelog says so.</li><li><strong>Variables for testing</strong> that the documentation does not give.</li></ul>
   <h2 id="one-exception-security">One exception: security</h2>
   <p>If fixing a security problem means breaking something on the list, it is fixed in a 1.x, and the changelog says so first, with what you have to do.</p>
   <h2 id="how-it-is-checked">How it is checked</h2>
-  <p>What can be checked is frozen in files inside the repository, and the tests fail when a version takes away or changes something in them: the MCP tools with their parameters and which ones a call must give, the commands with their options and the events of <code>hook</code>, and the settings of each configuration file. Adding is fine. For the notes, every change of format ships with its step and a test that runs it on notes written the old way, and in every change the two versions before it must read everything the new one writes.</p>
+  <p>What can be checked is frozen in files inside the repository, and the tests fail when a version takes away or changes something in them: the MCP tools with their parameters and which ones a call must give, the commands with their options and the events of <code>hook</code>, and the settings of <code>config.toml</code>, <code>guard.toml</code>, <code>session.toml</code> and <code>remote.toml</code>. Adding is fine. <code>secrets.toml</code>, <code>profile.md</code>, the environment variables and the exit codes are not frozen that way: they are checked by hand before a release. For the notes, every change of format ships with its step and a test that runs it on notes written the old way, and in every change the two versions before it must read everything the new one writes.</p>
   <nav class="pager" aria-label="Previous / Next">
     <a class="prev" href="memory-format.html"><span>← Previous</span>Memory format</a>
     <a class="next" href="troubleshooting.html"><span>Next →</span>Troubleshooting</a>

@@ -158,14 +158,14 @@ func TestPersonCardChecks(t *testing.T) {
 	id := twoFiles(t, s, cfg)
 	form := cardPost(id, []string{"x", "work"})
 	form.Set("csrf", "wrong")
-	if w := s.do(t, req{method: http.MethodPost, path: s.base() + "/person/card", origin: "http://" + host, form: form}); w.Code != http.StatusForbidden {
+	if w := s.do(t, req{method: http.MethodPost, path: s.localBase() + "/person/card", origin: "http://" + host, form: form}); w.Code != http.StatusForbidden {
 		t.Errorf("bad csrf: %d", w.Code)
 	}
 	form.Set("csrf", s.csrf)
-	if w := s.do(t, req{method: http.MethodPost, path: s.base() + "/person/card", origin: "http://evil.example", form: form}); w.Code != http.StatusForbidden {
+	if w := s.do(t, req{method: http.MethodPost, path: s.localBase() + "/person/card", origin: "http://evil.example", form: form}); w.Code != http.StatusForbidden {
 		t.Errorf("bad origin: %d", w.Code)
 	}
-	if w := s.do(t, req{method: http.MethodPost, path: s.base() + "/person/card", host: "evil.example", origin: "http://" + host, form: form}); w.Code != http.StatusForbidden {
+	if w := s.do(t, req{method: http.MethodPost, path: s.localBase() + "/person/card", host: "evil.example", origin: "http://" + host, form: form}); w.Code != http.StatusForbidden {
 		t.Errorf("bad host: %d", w.Code)
 	}
 	// An unknown space in a box is refused by the server, whatever the page offered.

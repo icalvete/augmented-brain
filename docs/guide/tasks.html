@@ -50,12 +50,14 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
   <li><a href="spaces.html">Spaces</a></li>
   <li><a href="tasks.html" aria-current="page">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="editing-notes.html">Editing notes by hand</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
   <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
@@ -65,14 +67,17 @@
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
-  <li><a href="remote.html">Remote access</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -153,7 +158,7 @@ Done: the new host is ready. Next: copy the database.
   <ul><li>Only one level: a subtask has no subtasks.</li><li>The bigger task closes last, when all its subtasks are closed.</li><li>Parking the bigger task leaves its subtasks as they are.</li></ul>
   <p>Rule of thumb: if it waits on someone or has its own pace, it is a subtask. Otherwise, it is a step.</p>
   <h2 id="a-session-of-its-own">A session of its own</h2>
-  <p>A task can have a Claude session of its own, started in the background in the task's folder: you say “start a session for the blog task” and go on with something else. The session reads the task and gets going. On Linux, <code>augmented-brain session start</code> does it; see <a href="remote.html#a-session-per-task">A session per task</a>.</p>
+  <p>A task can have a Claude session of its own, started in the background in the task's folder: you say “start a session for the blog task” and go on with something else. The session reads the task and gets going. On Linux, <code>augmented-brain session start</code> does it; see <a href="task-sessions.html">A session per task</a>.</p>
   <h2 id="dates-to-look-at-something-again">Dates to look at something again</h2>
   <p>Some checks belong to a day: “on the 16th, is the certificate renewed?”. Tell Claude and it adds a <strong>watch date</strong> to the task. From 7 days before, and every day after, Claude tells you at the start of the session, until it is marked done.</p>
   <p>This also works on a closed task. Closing is often when you write down what to check later, so when Claude closes a task that still has one, it tells you it will keep coming up.</p>

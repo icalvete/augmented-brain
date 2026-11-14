@@ -50,12 +50,14 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
   <li><a href="spaces.html">Spaces</a></li>
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="editing-notes.html">Editing notes by hand</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
   <li><a href="guard.html" aria-current="page">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
@@ -65,14 +67,17 @@
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
-  <li><a href="remote.html">Remote access</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -122,7 +127,7 @@ git_ask_repos = ["~/code/shop"]                        # ask me each time</code>
   <p>When a repository is in <code>git_ask_repos</code>, the question names the repository, the branch and where the remote leads (the address, never a password): <code>Branch: feat/x. Remote: git.example.com/acme/app</code>. The same for merging a pull request.</p>
   <h2 id="only-you-change-the-guards-lists">Only you change the guard's lists</h2>
   <p>The assistant works in the same account as you, so the guard cannot be a wall. It does three things so that the lists stay yours:</p>
-  <ul><li><strong>It asks before a write to the guard's files</strong> (<code>config.toml</code>, <code>guard.toml</code>, <code>secrets.toml</code>, <code>remote.toml</code>, <code>session.toml</code>, the seal below, and Claude Code's settings), or to what runs the guard: the plugin as Claude Code keeps it (<code>~/.claude/plugins/cache/augmented-brain/</code>, <code>installed_plugins.json</code>) and the <code>augmented-brain</code> program. Copying, unpacking or syncing into the folder that holds one of them asks too (<code>cp -t</code>, <code>tar -C</code>, <code>rsync</code>).</li><li><strong>It denies reaching the panel.</strong> Reading <code>panel.json</code> (the panel's key) with a tool or a command, also by a pattern or by copying, archiving or searching its folder, and calling a panel page from a command, are denied, however the address is written: the panel's Guard page is how you change the lists, and it works with that key. <code>augmented-brain panel</code> never prints the key either: it prints a link that works once, and run by Claude it prints none.</li><li><strong>It notices a change it did not see.</strong> The guard keeps a seal of its lists: taken when you start a session and when you save in the panel. If the lists differ from the seal, something else changed them, and a commit, push or merge that the lists would let through asks first, and the Guard page and <code>doctor</code> say so, until you accept them in the Guard page or you start a new session. Meanwhile the lists cannot soften the guard: a root exception for this machine does not count, and every <code>aws</code> command and every <code>ssh</code>, <code>scp</code> or <code>rsync</code> to another machine asks, since a profile or host taken out may be what changed. A new session takes the lists as they are, and Claude Code tells you so itself. When Claude Code compacts a conversation, or after <code>/clear</code>, the seal stays: that is not you looking. If the seal cannot be read, the guard asks too, and <code>doctor</code> says why. The Guard page shows what was added and removed since then.</li><li><strong>It tells you what the panel changed.</strong> A change to the lists made in the panel, or lists accepted there, reaches you as a line from Claude Code itself, not from Claude, after the next answer or message in your open sessions.</li></ul>
+  <ul><li><strong>It asks before a write to the guard's files</strong> (<code>config.toml</code>, <code>guard.toml</code>, <code>secrets.toml</code>, <code>remote.toml</code>, <code>session.toml</code>, the seal below, and Claude Code's settings), or to what runs the guard: the plugin as Claude Code keeps it (<code>~/.claude/plugins/cache/augmented-brain/</code>, <code>installed_plugins.json</code>) and the <code>augmented-brain</code> program. Copying, unpacking or syncing into the folder that holds one of them asks too (<code>cp -t</code>, <code>tar -C</code>, <code>rsync</code>).</li><li><strong>It denies reaching the panel.</strong> Reading <code>panel.json</code> (the panel's key) with a tool or a command, also by a pattern or by copying, archiving or searching its folder, and calling a panel page from a command, are denied, however the address is written: the panel's Guard page is how you change the lists, and it works with that key. <code>augmented-brain panel</code> never prints the key either: it prints a link that works once, and run by Claude it prints none, nor does <code>augmented-brain panel remote</code>: they ask you to run them in a terminal of your own.</li><li><strong>It notices a change it did not see.</strong> The guard keeps a seal of its lists: taken when you start a session and when you save in the panel. If the lists differ from the seal, something else changed them, and a commit, push or merge that the lists would let through asks first, and the Guard page and <code>doctor</code> say so, until you accept them in the Guard page or you start a new session. Meanwhile the lists cannot soften the guard: a root exception for this machine does not count, and every <code>aws</code> command and every <code>ssh</code>, <code>scp</code> or <code>rsync</code> to another machine asks, since a profile or host taken out may be what changed. A new session takes the lists as they are, and Claude Code tells you so itself. When Claude Code compacts a conversation, or after <code>/clear</code>, the seal stays: that is not you looking. If the seal cannot be read, the guard asks too, and <code>doctor</code> says why. The Guard page shows what was added and removed since then.</li><li><strong>It tells you what the panel changed.</strong> A change to the lists made in the panel, or lists accepted there, reaches you as a line from Claude Code itself, not from Claude, after the next answer or message in your open sessions.</li></ul>
   <p>What this does not stop: a script that Claude writes in line (<code>python -c</code>, a heredoc) can still edit the files, as it can anything your account can. The guard then notices the change and asks before a push, but it did not prevent it. It is a safety net, not a security boundary.</p>
   <h2 id="asking-before-claude-saves-a-rule">Asking before Claude saves a rule</h2>
   <p>Some of what Claude saves changes how every session works from then on: a rule, your profile, and what it adds to the guard's lists. You choose how much it does on its own:</p>
