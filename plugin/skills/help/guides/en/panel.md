@@ -206,7 +206,9 @@ survive if this computer breaks. A space with no backup says so in red.
   to a copy](backup.md#go-back-to-a-copy).
 - For a space with none: **Set it up on my GitHub** makes a private repository called
   `augmented-brain-<space>` in your GitHub account and the first copy. It needs the
-  GitHub command line, `gh`, installed and logged in; the page says how if it is not.
+  GitHub command line, `gh`, which the installer offers. If `gh` has not entered your
+  account yet, the page gives you a short code to type at github.com/login/device; then
+  press the button again.
   **I already have a private repository** takes its address instead.
 - **Bring the notes back on another computer** shows the command to run there. Restoring
   is never done from the panel: it is for a computer that does not have the notes yet.

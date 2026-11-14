@@ -15,8 +15,15 @@ Claude también te la ofrece.
 
 Crea en tu cuenta de GitHub un repositorio privado, `augmented-brain-<espacio>`, lo
 conecta y hace la primera copia. Para eso usa `gh`, la herramienta oficial de GitHub para
-la terminal. Si no la tienes, Claude te dice cómo instalarla, y te guía en el único paso
-que necesita tu navegador: entrar con tu cuenta.
+la terminal, que te ofrece el instalador (si dijiste que no, Claude te dice cómo tenerla).
+
+La primera vez, `gh` tiene que entrar en tu cuenta de GitHub, y ese es el único paso que
+es tuyo: Claude, o la página Copia del panel, te da un código corto. Abre
+[github.com/login/device](https://github.com/login/device), escribe el código y acepta;
+después di "ya está", o pulsa otra vez el botón. El código vale unos 15 minutos.
+
+¿No tienes cuenta de GitHub? Crea una gratis en [github.com/signup](https://github.com/signup),
+o guarda la copia en otro sitio, como se cuenta abajo.
 
 ¿Prefieres otro sitio (GitLab, el git de tu empresa)? Hazlo tú, en una carpeta del
 espacio:
@@ -94,7 +101,7 @@ volver a encenderla, quita la línea (en Windows, `setx AB_NO_AUTO_BACKUP ""`).
 1. Instala augmented brain con el comando de siempre. Te crea los espacios vacíos. Si al
    acabar se abre Claude, ciérralo sin hacer la entrevista: tu perfil viene en la copia.
 2. Si el repositorio está en GitHub, entra una vez con `gh auth login`, para que git
-   tenga permiso.
+   tenga permiso (el instalador te ofrece `gh`).
 3. Recupera cada espacio desde su copia:
    ```bash
    augmented-brain restore https://github.com/lucia/augmented-brain-trabajo.git

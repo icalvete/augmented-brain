@@ -22,6 +22,7 @@ walks you through it.
   Claude Code beforehand it does not ask: it acts on the whole computer.
 - **No GitHub account.** The program downloads from GitHub without one. The backup does
   use one, or another git server, and you set it up later: see [Backup and restore](backup.md).
+  The installer offers `gh`, GitHub's program, for it; it never asks you to sign in.
 - **A new installation ends the same way:** two spaces, `work` and `personal` (in Spanish,
   `trabajo` and `personal`), in `~/augmented-brain`, the Claude Code plugin installed, and
   the offer to open Claude. Run over one you already have, it keeps your spaces and
@@ -53,9 +54,13 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    Anthropic's apt repository, which it adds for you; it asks for your password. On other
    distributions you use Claude in the terminal.
 4. **The program**, into `~/.local/bin/augmented-brain`.
-5. **The PATH:** it adds `~/.local/bin` to `~/.bashrc` with bash, `~/.zshrc` with zsh, or
+5. **gh**, GitHub's program, if missing and you want it: the backup of your notes is made
+   with it. It comes from GitHub's own release, checked, into `~/.local/bin` next to the
+   program, with no password. It does not sign in to GitHub: that waits until you
+   ask for the backup.
+6. **The PATH:** it adds `~/.local/bin` to `~/.bashrc` with bash, `~/.zshrc` with zsh, or
    `~/.profile` otherwise, unless it is already there.
-6. **The setup**, and the offer to open Claude.
+7. **The setup**, and the offer to open Claude.
 
 **Where things go:** the program and Claude Code in `~/.local/bin`; the configuration in
 `~/.config/augmented-brain` (or `$XDG_CONFIG_HOME/augmented-brain`); your notes in
@@ -95,10 +100,14 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    straight from Anthropic, with its signature checked. It goes to `/Applications`, or to
    `~/Applications` if you cannot write there.
 5. **The program**, into `~/.local/bin/augmented-brain`.
-6. **The PATH:** with zsh, the Mac's usual shell, in `~/.zshrc`. With bash, in
+6. **gh**, GitHub's program, if missing and you want it: the backup of your notes is made
+   with it. It comes from GitHub's own release, checked, into `~/.local/bin` next to the
+   program, with no password (with Homebrew when you have it). It does not sign in to GitHub: that waits until you
+   ask for the backup.
+7. **The PATH:** with zsh, the Mac's usual shell, in `~/.zshrc`. With bash, in
    `~/.bash_profile`, or in `~/.bash_login` or `~/.profile` if you already have one of them:
    the Mac's Terminal reads those, not `~/.bashrc`.
-7. **The setup**, and the offer to open the Claude app.
+8. **The setup**, and the offer to open the Claude app.
 
 **Where things go:** as on Linux: `~/.local/bin`, `~/.config/augmented-brain` and
 `~/augmented-brain`.
@@ -136,9 +145,12 @@ irm https://github.com/icalvete/augmented-brain/releases/latest/download/install
 3. **The Claude desktop app**, if you want it, with winget (without winget, it is not
    offered: get it from [claude.ai/download](https://claude.ai/download)).
 4. **The program**, into `%USERPROFILE%\.local\bin\augmented-brain.exe`.
-5. **The PATH:** it adds that folder to your user's PATH. Claude Code's own installer leaves
+5. **gh**, GitHub's program, if missing and you want it: the backup of your notes is made
+   with it. It comes from GitHub's own release, checked, into the same folder, with no
+   administrator. It does not sign in to GitHub: that waits until you ask for the backup.
+6. **The PATH:** it adds that folder to your user's PATH. Claude Code's own installer leaves
    that to you; this one does it.
-6. **The setup**, and the offer to open the Claude app.
+7. **The setup**, and the offer to open the Claude app.
 
 **Where things go:** the program and Claude Code in `%USERPROFILE%\.local\bin`; the
 configuration in `%APPDATA%\augmented-brain`; your notes in
