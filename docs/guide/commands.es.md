@@ -25,8 +25,9 @@ Algunos comandos los lanza otro, no tú: Claude Code lanza `mcp` y `hook`, `pane
 `panel serve`, y en Linux un temporizador lanza `remote watch`. Están aquí para que sepas
 qué son.
 
-Dentro de Claude Code hay un comando con barra: `/brain:panel` abre el panel, igual que
-`augmented-brain panel`.
+Dentro de Claude Code hay dos comandos con barra: `/brain:panel` abre el panel, igual que
+`augmented-brain panel`, y `/brain:help` responde una duda sobre augmented brain con estas
+guías, o sin pregunta te propone el siguiente paso.
 
 ## Quiero…
 

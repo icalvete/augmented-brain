@@ -63,7 +63,7 @@ it feels to a newcomer.
 | `internal/rules`, `internal/templates` | The common rules and a new space's starter files. |
 | `internal/version` | The program's version, set at build time. |
 | `internal/doccheck`, `internal/stable`, `internal/portcheck`, `internal/testenv` | Test only: reference pages cover the program; the compatibility promise is frozen; patterns that fail on Windows; a plain test machine. |
-| `plugin/` | The Claude Code plugin (hooks, MCP server, `/brain:panel`); it travels inside the program (`marketplace.go`). |
+| `plugin/` | The Claude Code plugin (hooks, MCP server, `/brain:panel`, and the help skill `/brain:help` with the guides inside); it travels inside the program (`marketplace.go`). |
 | `install.sh`, `install.ps1` | The installers people run. |
 | `docs/` | The website (GitHub Pages, from `main`), the guides in `docs/guide/` and the format spec. |
 | `scripts/` | Checks, builders and release helpers. |
@@ -151,7 +151,8 @@ The full text, with the reasons, is in [dev/rules.md](dev/rules.md).
   reference misses a command, flag, tool, parameter or setting, when a link is broken or
   a guide lacks its twin.
 - **Generated files are not edited by hand:** the guides' HTML, `docs/sitemap.xml`,
-  `docs/llms-full.txt` and `internal/i18n/cmdhelp.go` come from `scripts/build-guides.py`;
+  `docs/llms-full.txt`, `internal/i18n/cmdhelp.go` and the help skill's `plugin/skills/help/guides/` come
+  from `scripts/build-guides.py`;
   `docs/img/*.svg` from `docs/img/diagrams.py`; `MEMORY.md` from the program.
 - **The memory format is a contract.** Anything an earlier program would refuse (a new
   header field, note type or task status) raises the format version with a migration.

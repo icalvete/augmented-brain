@@ -170,3 +170,71 @@ func readJSON(t *testing.T, p string, v any) {
 		t.Fatalf("%s: %v", p, err)
 	}
 }
+
+// The help skill carries every guide in both languages (scripts/build-guides.py writes
+// them), each link between them leads to a file the plugin carries, and what Claude
+// sees of the skill before using it fits in the 1,536 characters Claude Code keeps.
+func TestHelpSkillCarriesTheGuides(t *testing.T) {
+	carried := map[string]bool{}
+	for _, f := range Files() {
+		carried[f] = true
+	}
+	const dir = "plugin/skills/help/"
+	for _, f := range []string{dir + "SKILL.md", dir + "guides/index.md"} {
+		if !carried[f] {
+			t.Errorf("the plugin does not carry %s", f)
+		}
+	}
+	guides, _ := filepath.Glob(filepath.Join("..", "..", "docs", "guide", "*.md"))
+	if len(guides) < 10 {
+		t.Fatalf("found %d guides", len(guides))
+	}
+	for _, g := range guides {
+		name := filepath.Base(g)
+		lang := "en"
+		if strings.HasSuffix(name, ".es.md") {
+			lang, name = "es", strings.TrimSuffix(name, ".es.md")+".md"
+		}
+		if f := dir + "guides/" + lang + "/" + name; !carried[f] {
+			t.Errorf("the help skill does not carry %s: run scripts/build-guides.py", f)
+		}
+	}
+	link := regexp.MustCompile(`\]\(([^)\s#]+)`)
+	for f := range carried {
+		if !strings.HasPrefix(f, dir+"guides/") {
+			continue
+		}
+		b, err := Content(f, "x", "linux")
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, m := range link.FindAllStringSubmatch(string(b), -1) {
+			to := m[1]
+			if strings.Contains(to, "://") || strings.HasPrefix(to, "mailto:") {
+				continue
+			}
+			if target := filepath.ToSlash(filepath.Join(filepath.Dir(f), to)); !carried[target] {
+				t.Errorf("%s links to %s, which the plugin does not carry", f, to)
+			}
+		}
+	}
+	skill, err := Content(dir+"SKILL.md", "x", "linux")
+	if err != nil {
+		t.Fatal(err)
+	}
+	head := strings.SplitN(string(skill), "---", 3)
+	if len(head) != 3 {
+		t.Fatal("SKILL.md has no header")
+	}
+	seen := 0
+	for _, line := range strings.Split(head[1], "\n") {
+		for _, key := range []string{"description: ", "when_to_use: "} {
+			if v, ok := strings.CutPrefix(line, key); ok {
+				seen += len([]rune(v))
+			}
+		}
+	}
+	if seen == 0 || seen > 1536 {
+		t.Errorf("SKILL.md's description and when_to_use take %d characters; Claude Code keeps 1,536", seen)
+	}
+}

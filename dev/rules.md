@@ -32,7 +32,7 @@
 - **The docs follow the code.** A new command or flag goes in `commands` (`cmd/augmented-brain/commands.go`) and in the usage text; its help is its section of the reference (`TestEveryCommandHasHelp`); a new command, flag, MCP tool, tool parameter or `config.toml` setting also goes in its reference page, in both languages, or `go test` fails (`TestCommandsDocumented`, `TestToolsDocumented`, `TestSettingsDocumented`). A change people notice also updates the guide that tells it.
 - **Generated files are not edited by hand.** Change the source and regenerate:
   `docs/img/*.svg` from `docs/img/diagrams.py`; every `docs/guide/*.html`,
-  `docs/sitemap.xml` and `docs/llms-full.txt` from the `.md` sources with
+  `docs/sitemap.xml`, `docs/llms-full.txt` and the help skill's `plugin/skills/help/guides/` from the `.md` sources with
   `scripts/build-guides.py` (its `GROUPS` list is the sidebar: a new page goes there), which
   also writes `internal/i18n/cmdhelp.go`, what `augmented-brain help <command>` prints, from
   each command's section of `docs/guide/commands.md` and its twin (first paragraph,
