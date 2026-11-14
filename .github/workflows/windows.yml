@@ -39,9 +39,10 @@ jobs:
       # -timeout well below the job's 10 minutes (a package's binary may start minutes
       # after go test, once one of the runner's few slots frees): a test that hangs then
       # fails with the stack of every goroutine, which says where it waits, instead of
-      # the job being cancelled with nothing to go on. The slowest package takes 2.
+      # the job being cancelled with nothing to go on. internal/hook starts some 5
+      # minutes in; the slowest package (internal/backup) takes 2.
       - name: Test
-        run: go test -timeout 4m ./...
+        run: go test -timeout 3m ./...
       - name: Build
         run: go build -o augmented-brain.exe ./cmd/augmented-brain
       - name: The program runs
