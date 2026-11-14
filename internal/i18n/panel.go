@@ -1176,6 +1176,14 @@ var panelMessages = map[string]msg{
 		en: "Watch date added.",
 		es: "Fecha para mirar añadida.",
 	},
+	"panel.ok.watch.drop": {
+		en: "Watch date taken out.",
+		es: "Fecha para revisar quitada.",
+	},
+	"panel.ok.watch.move": {
+		en: "Watch date moved.",
+		es: "Fecha para revisar movida.",
+	},
 	"panel.ok.watch.done": {
 		en: "Watch date marked done.",
 		es: "Fecha marcada como hecha.",
@@ -1467,6 +1475,34 @@ var panelMessages = map[string]msg{
 	"panel.you": {
 		en: "you",
 		es: "ti",
+	},
+	"panel.steps.fix": {
+		en: "Correct, move or remove steps",
+		es: "Corregir, mover o quitar pasos",
+	},
+	"panel.steps.fix.hint": {
+		en: "Each change goes into the journal. A step taken out is gone from the plan, but the journal still says what it was.",
+		es: "Cada cambio queda en el diario. Un paso quitado sale del plan, pero el diario sigue diciendo cuál era.",
+	},
+	"panel.step.up": {
+		en: "Move up",
+		es: "Subir",
+	},
+	"panel.step.down": {
+		en: "Move down",
+		es: "Bajar",
+	},
+	"panel.remove": {
+		en: "Remove",
+		es: "Quitar",
+	},
+	"panel.watch.move": {
+		en: "Move to",
+		es: "Mover al",
+	},
+	"panel.watch.drop": {
+		en: "Take out",
+		es: "Quitar",
 	},
 	"panel.save": {
 		en: "Save",
