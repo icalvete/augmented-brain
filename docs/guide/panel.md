@@ -122,7 +122,8 @@ belongs to no task is a capture with a date: make it in the [Inbox](#inbox).
 ## Inbox
 
 Capture an idea, with a date to be reminded if you want one. Mark one as dealt with, or
-make it a task.
+make it a task. **Correct** changes a capture's text or its reminder (empty removes it);
+its date stays, and so does the space it came from.
 
 ## Weekly review
 

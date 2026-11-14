@@ -240,6 +240,34 @@ func (b *Brain) InboxDoneEntry(date, text string) (bool, error) {
 	return true, paths.WriteAtomicNoLink(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o600)
 }
 
+// InboxEdit corrects one capture: the first with that date and exactly that text, as
+// Inbox returns them. It gets newText and the reminder remind ("" for none); its date
+// and the space it came from stay. It reports whether it found the capture.
+func (b *Brain) InboxEdit(date, text, newText, remind string) (bool, error) {
+	data, err := os.ReadFile(b.inboxPath())
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	text = memory.OneLine(text)
+	lines := strings.Split(string(data), "\n")
+	for i, l := range lines {
+		e, ok := parseInboxLine(l, b.spaceSet())
+		if !ok || e.Date != date || (e.Text != text && e.full() != text) {
+			continue
+		}
+		line, err := b.captureText(newText, remind, e.From)
+		if err != nil {
+			return true, err
+		}
+		lines[i] = strings.TrimSuffix(memory.DatedLine(e.Date, line), "\n")
+		return true, paths.WriteAtomicNoLink(b.inboxPath(), []byte(strings.Join(lines, "\n")), 0o600)
+	}
+	return false, nil
+}
+
 // ---- watch dates ----
 
 // CheckDate says whether d is a date as the notes write it (YYYY-MM-DD): a form can
