@@ -15,6 +15,7 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -51,6 +52,11 @@ type Brain struct {
 	// spaces are the names of the configuration's spaces, to tell a capture sent from
 	// another space (its origin must be one of them).
 	spaces []string
+	// inbox is the inbox as Inbox last read it from inboxData, the file's contents then.
+	inboxMu   sync.Mutex
+	inboxRead bool
+	inboxData string
+	inbox     []InboxEntry
 	// archived are the files of old journal entries written since it was last emptied
 	// (archiveJournal).
 	archived []string
