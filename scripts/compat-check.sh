@@ -86,6 +86,10 @@ printf '# How you want your sessions.\npreferred_model = "opus"\n' > "$XDG_CONFI
 WORKDIR="$HOME/augmented-brain/work"
 # A repository of the user's, for repo_describe (its note is an ordinary reference).
 mkdir -p "$WORKDIR/code/site"
+# The guard's file with every setting: an untouchable repository, and augmented brain
+# kept to the spaces. The session start below accepts it (seals it), as a session the
+# user starts does. Earlier releases must read the file and keep the list.
+printf 'untouchable_repos = ["%s"]\nreach = "spaces"\n' "$WORKDIR/code/site" > "$XDG_CONFIG_HOME/augmented-brain/guard.toml"
 cat > "$WORK/write.json" <<'EOF'
 [
  ["task_new", {"title": "Bake bread", "summary": "for the shop"}],
@@ -119,6 +123,14 @@ grep -q "sent from another space (from personal) (remind: 2030-01-03)" "$WORKDIR
 # What a session leaves in the configuration folder (state/seen) must not trouble them either.
 (cd "$WORKDIR" && echo '{"session_id":"s1","cwd":"'"$WORKDIR"'","prompt":"hi"}' | CLAUDE_PID=4242 "$NEW" hook user-prompt-submit >/dev/null)
 test -f "$XDG_CONFIG_HOME/augmented-brain/state/seen/pid-4242.json" || { echo "  FAIL no seen file"; fail=1; }
+# guard <binary> <folder> <command>: what the guard answers, "" when it lets it through.
+guard() {
+  (cd "$2" && printf '{"session_id":"s1","cwd":"%s","tool_name":"Bash","tool_input":{"command":"%s"}}' "$2" "$3" |
+    "$1" hook pre-tool-use 2>/dev/null | python3 -c 'import json,sys; t=sys.stdin.read().strip(); print(json.loads(t)["hookSpecificOutput"]["permissionDecision"] if t else "")')
+}
+su="su""do"
+[ "$(guard "$NEW" "$HOME" "$su id")" = "" ] || { echo "  FAIL the new program does not keep to the spaces"; fail=1; }
+[ "$(guard "$NEW" "$HOME" "git -C $WORKDIR/code/site push")" = "deny" ] || { echo "  FAIL the new program lets an untouchable push through"; fail=1; }
 (cd "$WORKDIR" && "$NEW" check >/dev/null) || fail=1
 git init -q --bare "$WORK/backup.git"
 (cd "$WORKDIR" && "$NEW" backup setup "$WORK/backup.git" >/dev/null && "$NEW" backup >/dev/null) || { echo "  FAIL backup"; fail=1; }
@@ -180,6 +192,10 @@ for v in "$@"; do
   mv "$WORK/home" "$WORK/home-before-$v"
   cp -R "$WORK/written" "$WORK/home"
   out=$(cd "$WORKDIR" && "$OLD" doctor 2>&1) || true
+  # reach is a setting of guard.toml only newer programs know: a release that names
+  # unknown settings (0.26.0 on) says so and to update, which is what it should say.
+  # That warning, about reach alone, and its fix line are expected; nothing else is.
+  out=$(printf '%s\n' "$out" | awk '/guard\.toml has settings this version does not know, and ignores them: reach$/ { skip = 1; next } skip && /^ *→/ { skip = 0; next } { skip = 0; print }')
   if printf '%s' "$out" | grep -qi "unknown settings\|cannot be read\|newer augmented brain"; then
     echo "  FAIL doctor:"; printf '%s\n' "$out" | sed 's/^/    /'; fail=1
   else
@@ -193,6 +209,14 @@ for v in "$@"; do
     echo "  ok   session start"
   fi
   mcp "$OLD" "$WORKDIR" "$WORK/read.json" || fail=1
+  # It reads guard.toml with reach in it: the untouchable repository holds, and outside
+  # the spaces it still guards the whole computer (it does not know reach: the safe side).
+  if [ "$(guard "$OLD" "$HOME" "git -C $WORKDIR/code/site push")" = "deny" ] &&
+     [ "$(guard "$OLD" "$HOME" "$su id")" = "deny" ]; then
+    echo "  ok   guard"
+  else
+    echo "  FAIL guard: guard.toml with reach is not read as before"; fail=1
+  fi
   # A new machine restores the backup with the old program.
   export HOME="$WORK/fresh-$v" XDG_CONFIG_HOME="$WORK/fresh-$v/.config"
   mkdir -p "$HOME"

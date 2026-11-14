@@ -347,6 +347,36 @@ func (c *Config) SpaceFor(dir string) *Space {
 	return best
 }
 
+// InSpace says whether dir is inside a space: one of its work folders or its notes.
+func (c *Config) InSpace(dir string) bool {
+	if c.SpaceFor(dir) != nil {
+		return true
+	}
+	d, err := absPath(dir)
+	if err != nil {
+		return false
+	}
+	for _, s := range c.Spaces {
+		if s.Memory != "" && paths.Within(d, s.Memory) {
+			return true
+		}
+	}
+	return false
+}
+
+// SpaceDirs are the folders of every space: work folders and notes.
+func (c *Config) SpaceDirs() []string {
+	var dirs []string
+	for _, name := range c.SpaceNames() {
+		s := c.Spaces[name]
+		if s.Memory != "" {
+			dirs = append(dirs, s.Memory)
+		}
+		dirs = append(dirs, s.WorkFolders...)
+	}
+	return unique(dirs)
+}
+
 // SpaceAt returns the space for a session in dir: the one whose work folder holds it,
 // or else the default space, if there is one. isDefault says which.
 func (c *Config) SpaceAt(dir string) (s *Space, isDefault bool) {

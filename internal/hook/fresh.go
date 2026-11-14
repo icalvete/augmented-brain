@@ -42,7 +42,7 @@ func freshBaseline(c *config.Config, s *config.Space, i input, cfgDir string) {
 func UserPromptSubmit(in io.Reader, out io.Writer, cfgDir string) error {
 	i := read(in)
 	c, s, err := load(cfgDir, i.Cwd)
-	if err != nil {
+	if err != nil || quiet(cfgDir, c, i.Cwd) {
 		return nil
 	}
 	notice := userNotice(c.Language, cfgDir)

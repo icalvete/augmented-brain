@@ -113,6 +113,16 @@ seguridad ni tu propia revisión. Lo que no puede ver:
   una sesión que se salta las preguntas de permiso de Claude Code (`bypassPermissions`)
   no tiene a quién preguntar, así que ahí Claude no puede guardar reglas, tu perfil ni
   máquinas para el guardia. Te dice qué quería guardar.
+- **Solo en tus espacios: un script que entra en uno.** Cuando augmented brain se queda
+  en tus espacios, una orden lanzada fuera de ellos que entra en uno (`cd ~/work/app`,
+  `git -C ~/work/app`) se mira con todas las reglas. Un script que cambia de carpeta por
+  dentro, no: lanzado desde fuera, un `bash build.sh` que entra en un espacio se mira
+  como de fuera. Mira [Fuera de todos los espacios](spaces.es.md#fuera-de-todos-los-espacios).
+- **Solo en tus espacios, con una versión anterior aún abierta.** Una sesión de Claude
+  abierta antes de actualizar sigue con el programa anterior, que no conoce esta opción.
+  Su arranque acepta las listas del guardia como las cuenta ese programa, así que hasta
+  que vuelve a arrancar una sesión de la versión nueva, augmented brain actúa en todo el
+  ordenador. Es el lado seguro, y Claude Code te avisa cada vez que se aceptan las listas.
 - **Preguntas en los modos automáticos.** Cuando el guardia pregunta, Claude Code te
   enseña la pregunta. Qué hace Claude Code con ella en sus modos totalmente automáticos
   depende de Claude Code, no de augmented brain.

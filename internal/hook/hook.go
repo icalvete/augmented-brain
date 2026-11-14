@@ -24,6 +24,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/reach"
 	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
@@ -119,6 +120,13 @@ func load(cfgDir, dir string) (*config.Config, *config.Space, error) {
 	return c, s, nil
 }
 
+// quiet says a session in dir is outside every space while augmented brain keeps to
+// them (reach = "spaces"): there it loads no memory and says nothing, and the guard
+// keeps to its own files and what the lists name.
+func quiet(cfgDir string, c *config.Config, dir string) bool {
+	return c != nil && reach.Outside(cfgDir, c, dir)
+}
+
 // SessionStart adds the space's profile, rules and index to the session, in one text
 // within session.Budget (plugins before 0.5.5 call it so).
 func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
@@ -131,7 +139,7 @@ func SessionStart(in io.Reader, out io.Writer, cfgDir string) error {
 func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 	i := read(in)
 	c, s, err := load(cfgDir, i.Cwd)
-	if n > 1 && (err != nil || s == nil) {
+	if quiet(cfgDir, c, i.Cwd) || n > 1 && (err != nil || s == nil) {
 		return write(out, output{HookSpecificOutput: specific{HookEventName: "SessionStart"}})
 	}
 	var text string
@@ -283,6 +291,9 @@ func toolDecision(p guard.Policy, i input) guard.Decision {
 		}
 		return p.Command(cmd)
 	case "PowerShell":
+		if p.Outside {
+			return guard.Decision{} // a general rule: not outside the spaces
+		}
 		return guard.PowerShell(p.Lang)
 	case "Read", "Grep":
 		key := map[string]string{"Read": "file_path", "Grep": "path"}[i.ToolName]
@@ -353,10 +364,13 @@ func policy(cfgDir, dir string) guard.Policy {
 				p.SealProblem = err.Error()
 			case seal != "" && seal != c.GuardFingerprint(g):
 				p.ConfigChanged = true
+			case seal != "" && g.OnlySpaces() && !c.InSpace(dir):
+				// Keeping to the spaces, as the user accepted (the seal holds reach).
+				p.Outside, p.SpaceDirs = true, c.SpaceDirs()
 			}
 		}
 	}
-	p.Protected = protectedFiles(cfgDir, dir)
+	p.Protected = protectedFiles(cfgDir, dir, p.Outside)
 	p.ProtectedDirs = protectedDirs()
 	p.Hidden, p.ConfigDirs = hiddenFiles(cfgDir)
 	return p
@@ -411,7 +425,7 @@ func written(v any) string {
 // protectedFiles are the files the assistant does not change on its own: the guard's
 // configuration, and Claude Code's settings (yours and the project's), where a line can
 // switch the plugin, and so the guard, off.
-func protectedFiles(cfgDir, dir string) []string {
+func protectedFiles(cfgDir, dir string, outside bool) []string {
 	var list []string
 	if cfgDir != "" { // unknown: never a file of the current folder in its place
 		list = []string{filepath.Join(cfgDir, config.FileName), filepath.Join(cfgDir, config.GuardFile),
@@ -440,6 +454,9 @@ func protectedFiles(cfgDir, dir string) []string {
 		list = append(list, exe) // the program running this hook, wherever it is
 	}
 	for _, f := range []string{"settings.json", "settings.local.json"} {
+		if outside {
+			break // the project's own settings are the user's business outside the spaces
+		}
 		list = append(list, filepath.Join(dir, ".claude", f))
 	}
 	for i, f := range list {

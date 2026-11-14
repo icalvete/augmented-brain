@@ -8,7 +8,8 @@ cada paso, para que lo hagas con calma.
 
 ## Actualizar
 
-Cuando sale una versión nueva, Claude te lo dice al empezar una sesión. Para actualizar:
+Cuando sale una versión nueva, Claude te lo dice al empezar una sesión y se ofrece a
+actualizarlo. También puedes hacerlo tú:
 
 ```bash
 augmented-brain update
@@ -19,24 +20,36 @@ Qué hace, por orden:
 1. **Revisa la instalación** y enseña lo que encuentra, para que un problema que ya estaba
    no se tome por uno de la versión nueva.
 2. **Hace la copia de seguridad de cada espacio que la tenga.** Si falla una, se para y no
-   actualiza nada: esa copia es tu vuelta atrás. Si no hay ninguna, dice que sigue sin
-   copia.
+   actualiza nada: esa copia es tu vuelta atrás. `--force` actualiza igualmente. Si no
+   hay ninguna, dice que sigue sin copia.
 3. **Descarga e instala** la versión nueva, con el plugin de Claude Code que trae dentro.
-   Si GitHub no entrega los ficheros, lo intenta tres veces, también por la API de
-   GitHub; si falla todo, lo dice y no cambia nada.
-4. **Comprueba que la versión nueva está puesta**, y reinicia una a una las sesiones de
-   Claude quietas que siguen con la vieja, con la misma conversación: la sesión de una
-   tarea, las del acceso remoto y las de Claude Desktop, que siguen abiertas y solo
-   reinician su augmented brain. Una sesión que está respondiendo se queda como está.
+   Pregunta a GitHub cuál es la última versión una sola vez: si GitHub no responde, lo
+   dice y se para. La descarga se intenta tres veces, también por la API de GitHub. Si
+   falla todo, o el programa no es la versión nueva al acabar, lo dice y no cambia nada:
+   vuelve a lanzarlo más tarde. Si no hay versión nueva, solo actualiza el plugin.
+4. **Reinicia las sesiones de Claude quietas** que siguen con la versión vieja, una a una
+   y con la misma conversación. Una sesión que está respondiendo se queda como está.
+   - **La sesión de una tarea** (abierta con `session start`) recibe un proceso nuevo.
+   - **Una sesión del acceso remoto** (`remote install`): se reinicia su servicio. Solo
+     en Linux; en macOS y Windows cuenta como una de Claude Desktop.
+   - **Una sesión de Claude Desktop o de una terminal** sigue abierta, y solo se reinicia
+     su augmented brain. En Windows se queda como está.
 5. **Dice lo que queda:** las sesiones que no ha podido reiniciar (una que respondía, la
    desde la que lo lanzaste, en Windows cualquiera de Claude Desktop) y qué tarea está
    activa en cada espacio.
 
 Para las que quedan, pide a la sesión que aparque su tarea, y ciérrala y ábrela. Una
-sesión que estaba abierta sigue con el programa viejo hasta que se reinicia; `/clear` no
-basta. Si la sesión en la que estás es una de ellas, su inicio te lo dice. Más tarde,
-`augmented-brain session restart --old` reinicia las que ya estén quietas, y
-`augmented-brain update --no-restart` actualiza sin reiniciar ninguna.
+sesión que estaba abierta sigue con el programa viejo hasta que se reinicia, y sus
+herramientas de augmented brain pueden fallar; `/clear` no basta. `augmented-brain
+doctor` y el inicio de una sesión nueva dicen cuántas siguen con la versión vieja. Más
+tarde, `augmented-brain session restart --old` reinicia las que ya estén quietas.
+
+Otras formas:
+
+- `augmented-brain update --no-restart` actualiza sin reiniciar ninguna sesión.
+- `augmented-brain update --plugin` actualiza solo el plugin de Claude Code.
+- Volver a lanzar el [comando de instalación](install.es.md) también actualiza, sin los
+  pasos 1, 2, 4 y 5.
 
 ### Antes de actualizar
 
@@ -57,11 +70,17 @@ de la configuración, y Claude te lo dice. Nada se pasa sin esa copia.
 augmented-brain uninstall
 ```
 
-Enseña lo que va a quitar y pregunta. Hay tres niveles:
+Enseña lo que va a quitar y pregunta. Primero para lo que seguiría funcionando sin él:
+los servicios del [acceso remoto](remote.es.md) y las sesiones abiertas para tareas
+(`session start`). Sin el plugin seguirían sin guardia, y sin el programa que sabe
+quitarlos. Si alguno no se puede parar, no quita nada más: te dice por qué, para que lo
+arregles y lo vuelvas a lanzar.
+
+Después hay tres niveles:
 
 | Comando | Quita | Deja |
 |---|---|---|
-| `uninstall` | El programa y el plugin de Claude Code | Tus notas y la configuración |
+| `uninstall` | El programa, el plugin de Claude Code y lo que Claude Code guarda de él (su caché, sus datos y los registros de su servidor) | Tus notas y la configuración |
 | `uninstall --config` | También la configuración y tu perfil | Tus notas |
 | `uninstall --all` | También las notas de todos los espacios | Tus copias de seguridad |
 
@@ -70,20 +89,23 @@ Enseña lo que va a quitar y pregunta. Hay tres niveles:
 - **`--all` borra tus notas.** Enseña cada carpeta de notas con cuántas notas tiene, y
   avisa de las que no tienen copia de seguridad: se perderán para siempre. Responde que no,
   configura la copia o copia las carpetas, y vuelve a lanzarlo.
+- **Solo quita lo que guarda augmented brain** en una carpeta de notas (las carpetas de
+  notas, `MEMORY.md`, `inbox.md`, `docs/`, `archive/`), y la carpeta solo si no queda
+  nada más. Una carpeta de notas que contiene una carpeta de trabajo, tu carpeta personal
+  o una carpeta sin notas se deja entera, y el plan lo dice. `--config` solo borra una
+  carpeta que tenga un `config.toml`.
 - **Tus copias de seguridad nunca se borran**, ni en GitHub ni en ningún sitio. Dice cuáles
   son y cómo borrar una, si quieres.
-- Claude Code, su app de escritorio y git se quedan.
+- Claude Code, su app de escritorio, git y la entrada del PATH se quedan: Claude Code
+  vive en esa misma carpeta.
 
 En Windows el fichero del programa desaparece un momento después de acabar el comando:
 Windows no deja que un programa en marcha se borre a sí mismo.
 
 ## Pasarte a un ordenador nuevo
 
-1. En el viejo, haz una última copia: `augmented-brain backup --all`.
-2. En el nuevo, instala augmented brain y restaura cada espacio:
-   `augmented-brain restore <dirección de su copia>`.
-3. Da otra vez lo que no viaja: las listas del guardia, y el valor de los secretos
-   (`restore` nombra los que le faltan a su llavero, con el comando para guardar cada uno).
-
-Mira [Copia de seguridad y restauración](backup.es.md), y [Dónde vive cada
-cosa](where-things-live.es.md) para lo que viaja y lo que no.
+Haz una última copia en el viejo (`augmented-brain backup --all`), instala augmented
+brain en el nuevo y restaura cada espacio desde su copia, también el espacio por defecto.
+Los pasos, y lo que vuelves a configurar a mano, están en [Copia de seguridad y
+restauración](backup.es.md#en-una-máquina-nueva). Lo que viaja y lo que no: [Dónde vive
+cada cosa](where-things-live.es.md).

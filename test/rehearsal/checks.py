@@ -152,6 +152,62 @@ got, why = hook("pre-tool-use", {"hook_event_name": "PreToolUse", "tool_name": "
                                  "tool_input": {"file_path": os.path.join(CFGDIR, "config.toml"), "content": "x=1\n"}}, cwd=work)
 report("writing the guard's configuration asks", got == "ask", got)
 
+# ---- outside the spaces, with augmented brain kept to them (reach = "spaces")
+print("##### outside the spaces")
+gfile = os.path.join(CFGDIR, "guard.toml")
+gbefore = open(gfile, encoding="utf-8").read() if os.path.exists(gfile) else None
+outside = tempfile.mkdtemp(prefix="ab-outside-")
+free = os.path.join(outside, "free")  # a repository outside every space, in no list
+os.makedirs(free)
+subprocess.run(["git", "init", "-q", free])
+
+
+def accept():
+    """A session the user starts inside a space accepts the guard's file as it is."""
+    hook("session-start", {"hook_event_name": "SessionStart", "session_id": "r-" + rnd(string.ascii_lowercase, 6), "cwd": work, "source": "startup"}, "1", cwd=work)
+
+
+def bash_at(cwd, cmd):
+    return hook("pre-tool-use", {"hook_event_name": "PreToolUse", "tool_name": "Bash", "session_id": "o", "cwd": cwd, "tool_input": {"command": cmd}}, cwd=cwd)
+
+
+with open(gfile, "a", encoding="utf-8") as f:
+    f.write('\nreach = "spaces"\n')
+got, _ = bash_at(outside, f"{S} id")
+report("reach written by hand waits to be accepted", got == "deny", got)
+accept()
+_, text = hook("session-start", {"hook_event_name": "SessionStart", "session_id": "o", "cwd": outside, "source": "startup"}, "1", cwd=outside)
+report("a session outside gets no memory", text == "", text[:80])
+w = work.replace(os.sep, "/")
+for label, cmd, want in [
+    ("outside: root", f"{S} apt install git", "allow"),
+    ("outside: commit where no list names", f"{G} -C {free.replace(os.sep, '/')} commit -m x", "allow"),
+    ("outside: commit in a space's repository", f"{G} -C {other.replace(os.sep, '/')} commit -m x", "deny"),
+    ("outside: an untouchable host", "ssh db01 uptime", "ask"),
+    ("outside: a production profile", "aws --profile acme-prod s3 ls", "ask"),
+    ("outside: rm -rf of the home", "rm -rf ~", "deny"),
+    ("outside: a line that goes into a space", f"cd {w} && {S} id", "deny"),
+]:
+    got, why = bash_at(outside, cmd)
+    report(label, got == want, f"{got} (want {want}) {why[:80]}")
+got, _ = hook("pre-tool-use", {"hook_event_name": "PreToolUse", "tool_name": "Write", "session_id": "o", "cwd": outside,
+                               "tool_input": {"file_path": gfile, "content": 'reach = "machine"\n'}}, cwd=outside)
+report("outside: the guard's file still asks", got == "ask", got)
+got, _ = bash_at(work, f"{S} id")
+report("inside a space nothing changes", got == "deny", got)
+code, out, err = ab("doctor", cwd=work)
+report("doctor says augmented brain keeps to the spaces", "keeps to the folders of your spaces" in out + err or "se queda en las carpetas" in out + err, "")
+# Back as it was: the whole computer.
+if gbefore is None:
+    os.remove(gfile)
+else:
+    with open(gfile, "w", encoding="utf-8") as f:
+        f.write(gbefore)
+accept()
+got, _ = bash_at(outside, f"{S} id")
+report("back to the whole computer", got == "deny", got)
+shutil.rmtree(outside, ignore_errors=True)
+
 # ---- notes through the MCP tools
 print("##### notes")
 e, t = m.tool("task_new", {"title": "Rehearsal " + RUN, "goal": "try the cycle", "done_when": "it closes"})

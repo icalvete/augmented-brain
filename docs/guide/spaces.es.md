@@ -50,35 +50,53 @@ augmented-brain space
 
 ## Fuera de todos los espacios
 
-augmented brain actúa en todas las sesiones de Claude Code de este ordenador, sea cual
-sea la carpeta: su plugin está instalado para todo tu usuario. Una carpeta que no está en
-ninguna carpeta de trabajo está fuera de todos los espacios.
+Una carpeta que no está en ninguna carpeta de trabajo está fuera de todos los espacios.
+Lo que hace augmented brain ahí depende de una opción, en la página Guardia del panel:
+**dónde actúa augmented brain**.
 
-La app de escritorio empieza cada sesión nueva en una carpeta temporal suya. Esa carpeta
-no es de ningún espacio. Entonces se usa el **espacio por defecto**, `personal` salvo que
-lo cambies, y Claude te lo dice en una línea, con cómo pasar al de trabajo.
+- **En todo el ordenador** (como viene). augmented brain actúa en todas las sesiones de
+  Claude Code de este ordenador, sea cual sea la carpeta: su plugin está instalado para
+  todo tu usuario. Fuera de tus espacios usa el **espacio por defecto**, `personal` salvo
+  que lo cambies, y Claude te lo dice en una línea, con cómo pasar al de trabajo.
+- **Solo en mis espacios.** Una sesión fuera de las carpetas de tus espacios no recibe
+  nada de augmented brain: ni memoria, ni avisos, ni copia. Ahí el guardia solo protege
+  sus propios ficheros, tu carpeta personal y lo que nombran tus listas. Lo demás lo
+  siguen decidiendo los permisos de Claude Code, como siempre. Es para ti si ya usas
+  Claude Code en otros proyectos y quieres que sigan como estaban.
+
+Lo que cambia, al lado de una sesión en un espacio:
+
+| | En un espacio | Fuera, en todo el ordenador | Fuera, solo en mis espacios |
+|---|---|---|---|
+| Perfil, reglas, tareas y el resto de las notas | Las del espacio | Las del espacio por defecto, y Claude te lo dice | Ninguna |
+| Lo que Claude escribe en tus notas | Va al espacio | Va al espacio por defecto | Nada: ahí Claude no puede escribir notas |
+| Tareas cambiadas por otra sesión, recordatorio del diario, una sesión que recuperar | Sí | Las del espacio por defecto | No |
+| Commit y push | Según tus listas | Según tus listas | Sin vigilar, salvo en repositorios de tus listas |
+| Root, secretos en las órdenes, PowerShell | Parado | Parado | Sin vigilar |
+| Borrar tu carpeta personal | Parado | Parado | Parado |
+| Perfiles de producción, máquinas y repositorios intocables | Pregunta, o parado | Pregunta, o parado | Pregunta, o parado |
+| Los ficheros del guardia, el plugin y el programa | Protegidos | Protegidos | Protegidos |
+| Copia de seguridad al cerrar la sesión | La del espacio | La del espacio por defecto | Ninguna |
+| Avisos de la memoria de la ventana y del modelo | Sí | Sí | No |
+
+Tres cosas que saber:
+
+- **Dentro de un espacio no cambia nada**, elijas lo que elijas.
+- **Una orden que entra en un espacio se mira entera.** Lanzada desde fuera,
+  `cd ~/work/app && git commit` o `git -C ~/work/app commit` recibe todas las reglas, como
+  en el espacio. Igual un clon de un repositorio de tus listas, que se reconoce por su
+  dirección.
+- **Ojo con la app de escritorio** si haces que augmented brain se quede en tus espacios.
+  Empieza cada sesión nueva en una carpeta temporal suya, que no es de ningún espacio: esa
+  sesión no tiene memoria hasta que eliges carpeta. Por eso «en todo el ordenador» es lo
+  que viene.
+
+Se cambia en la página Guardia del panel; un cambio a mano en `guard.toml` cuenta solo
+cuando lo aceptas allí ([`reach`](configuration.es.md#guardtoml)).
 
 El espacio por defecto importa para una cosa más: su copia de seguridad lleva tu perfil,
 las notas compartidas y los nombres de tus secretos (nunca sus valores). Se elige con
 `default_space` en la configuración. Si tienes un solo espacio, es ese.
-
-Lo que cambia fuera, al lado de una sesión en un espacio:
-
-| | En un espacio | Fuera de todos los espacios |
-|---|---|---|
-| Perfil, reglas, tareas y el resto de las notas | Las del espacio | Las del espacio por defecto, y Claude te lo dice |
-| Lo que Claude escribe en tus notas | Va al espacio | Va al espacio por defecto |
-| Tareas cambiadas por otra sesión | Claude se entera | Las del espacio por defecto |
-| Recordatorio de escribir en el diario de la tarea | Sí | No |
-| Una sesión cortada, con oferta de recuperarla | Sí | No |
-| [El guardia](guard.es.md) | Entero | Entero, igual |
-| Copia de seguridad al cerrar la sesión | La del espacio | La del espacio por defecto |
-| Avisos de la memoria de la ventana y del modelo | Sí | Sí |
-
-El guardia no mira la carpeta: sus listas valen para todo el ordenador. Así que en
-cualquier proyecto, también en uno que nunca diste a augmented brain, Claude no puede
-hacer commit ni push hasta que lo
-[dejes en ese repositorio](guard.es.md#deja-que-claude-haga-commit-en-un-repositorio).
 
 Para meter una carpeta en un espacio, añádela a los `work_folders` del espacio (lo
 siguiente).
