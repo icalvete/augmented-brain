@@ -648,6 +648,7 @@ func (s System) Status(c *config.Config, set Settings) (*Status, error) {
 	// Self is how Install knows what the watch runs: without it, it writes no watch.
 	if s.Self != "" || s.watchInstalled() {
 		st.Watch = s.watchStatus()
+		st.Watch.GaveUp = GaveUpUnits(c.Dir)
 	}
 	return st, nil
 }

@@ -464,6 +464,11 @@ What it does on each look:
   `bridge-pointer.json.archived`, in the folder's project in `~/.claude/projects`) and
   restarts the service again, so a new session starts: about ten minutes in all. The
   conversation of the archived session does not come back.
+- **Still nothing.** When both steps bring no session back, something a restart does
+  not mend is wrong. The watch waits 4 minutes before it tries again, then 8, 16 and 32.
+  After 5 tries it gives up and leaves the service alone: `remote status` and `doctor`
+  say so, with the command that shows why. Once the service has a session again, the
+  watch looks after it as before.
 - **Task sessions kept safe.** Stopping a service stops everything started inside it.
   A task session started from a remote session can start Claude's background service
   there, which runs every task session. So the watch moves out of each service whatever

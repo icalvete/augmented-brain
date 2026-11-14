@@ -190,6 +190,53 @@ func TestWatchTwoSteps(t *testing.T) {
 	}
 }
 
+// A server that stays up with no session whatever is done is not restarted every 4
+// minutes for ever: each cycle that brings nothing back waits twice as long, and after
+// WatchCycles the watch gives up and says so (R-12 of the November 2026 review: 360
+// actions a day).
+func TestWatchGivesUp(t *testing.T) {
+	f, kids := watchFake(t)
+	const unit = "augmented-brain-remote-personal.service"
+	other := "augmented-brain-remote-work.service"
+	f.pids[unit], f.pids[other] = 100, 900
+	kids[900] = []int{901}
+	clock := time.Date(2026, 11, 14, 10, 0, 0, 0, time.UTC)
+	f.sys.Now = func() time.Time { return clock }
+	actions, said := 0, ""
+	for look := 0; look < 720; look++ { // 24 hours, a look every 2 minutes
+		out, acts := f.watch()
+		said += out
+		if len(acts) > 0 {
+			actions++
+			f.pids[unit]++ // systemd starts a new server
+		}
+		clock = clock.Add(2 * time.Minute)
+	}
+	if actions > 2*WatchCycles {
+		t.Errorf("%d actions in 24 hours", actions)
+	}
+	if !strings.Contains(said, "brought no Claude session back") {
+		t.Errorf("the watch never said it gave up:\n%s", said)
+	}
+	if got := GaveUpUnits(f.cfgDir); !slices.Equal(got, []string{unit}) {
+		t.Errorf("gave up on %v", got)
+	}
+	c, set := f.load()
+	st, err := f.sys.Status(c, set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lines := strings.Join(f.sys.StatusLines("en", st), "\n"); !strings.Contains(lines, "the watch gave up on "+unit) {
+		t.Errorf("remote status does not say it:\n%s", lines)
+	}
+	// A session shows up again: the watch looks after the service as before.
+	kids[f.pids[unit]] = []int{1}
+	f.watch()
+	if got := GaveUpUnits(f.cfgDir); len(got) != 0 {
+		t.Errorf("still given up after a session came back: %v", got)
+	}
+}
+
 // A service that is not running is systemd's business: the watch does nothing.
 func TestWatchLeavesStoppedServices(t *testing.T) {
 	f, _ := watchFake(t)

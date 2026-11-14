@@ -476,6 +476,11 @@ Lo que hace en cada vuelta:
   `bridge-pointer.json.archived`, en el proyecto de la carpeta en `~/.claude/projects`) y
   reinicia otra vez el servicio, para que empiece una sesión nueva: unos diez minutos en total.
   La conversación de la sesión archivada no vuelve.
+- **Sigue sin nada.** Si los dos pasos no recuperan ninguna sesión, falla algo que
+  reiniciar no arregla. El vigilante espera 4 minutos antes de volver a intentarlo,
+  después 8, 16 y 32. Tras 5 intentos se rinde y deja el servicio en paz: `remote status`
+  y `doctor` lo dicen, con la orden que enseña por qué. En cuanto el servicio vuelve a
+  tener una sesión, el vigilante lo cuida como antes.
 - **Las sesiones de tareas, a salvo.** Parar un servicio para todo lo que se arrancó
   dentro de él. La sesión de una tarea abierta desde una sesión remota puede arrancar
   allí el servicio en segundo plano de Claude, del que dependen todas las sesiones de
