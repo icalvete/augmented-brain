@@ -47,6 +47,7 @@ jobs:
         # every process with its parent and command line, to see what keeps it waiting.
         run: |
           $p = Start-Process go -ArgumentList 'test','-timeout','3m','./...' -NoNewWindow -PassThru
+          $null = $p.Handle  # so ExitCode is read after the process ends
           if (-not $p.WaitForExit(420000)) {
             Write-Output "go test still running after 7 minutes; processes:"
             Get-CimInstance Win32_Process | Sort-Object ParentProcessId |
