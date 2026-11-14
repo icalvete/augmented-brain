@@ -33,6 +33,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"maps"
 	"os"
 	"path/filepath"
 	"sort"
@@ -239,8 +240,7 @@ func Check(cfgDir, key string, sp Space, now time.Time) (Report, error) {
 		r.Changes = nil
 	}
 	sort.Slice(r.Changes, func(i, j int) bool { return r.Changes[i].ID < r.Changes[j].ID })
-	old.Tasks, old.Format, old.Taken = cur, sp.Format, now
-	return r, save(cfgDir, key, old)
+	return r, update(cfgDir, key, old, cur, sp.Format, now)
 }
 
 // Absorb records as seen, and touched, every task that changed since the last Check or
@@ -268,7 +268,23 @@ func Absorb(cfgDir, key string, sp Space, now time.Time, touched []string) error
 		c.Touched = (had && o.Touched) || read[id] || !had || o.Hash != c.Hash
 		cur[id] = c
 	}
-	old.Tasks, old.Format, old.Taken = cur, sp.Format, now
+	return update(cfgDir, key, old, cur, sp.Format, now)
+}
+
+// Refresh is how long a seen file whose versions did not move goes without being
+// written again. Writing it only to move Taken would cost a full encode and write on
+// every message and every tool; leaving Taken behind costs nothing but rereading the
+// few files within Racy of it. It is written again from time to time anyway, so that
+// Prune, which goes by the file's time, never takes it for a process that ended.
+const Refresh = time.Hour
+
+// update records cur as the versions seen now, unless nothing moved since old: then
+// the file stays as it is (see Refresh).
+func update(cfgDir, key string, old Seen, cur map[string]Version, format int, now time.Time) error {
+	if old.Format == format && maps.Equal(old.Tasks, cur) && now.Sub(old.Taken) < Refresh && !now.Before(old.Taken) {
+		return nil
+	}
+	old.Tasks, old.Format, old.Taken = cur, format, now
 	return save(cfgDir, key, old)
 }
 
