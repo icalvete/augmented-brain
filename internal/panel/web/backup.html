@@ -10,7 +10,7 @@
   {{if .URL}}
   <ul class="health">
     {{if .WentBack}}<li class="good" role="status">{{tf "backup.back.done" .WentBack}}</li>{{else if .Started}}<li class="good" role="status">{{t "backup.started"}}</li>{{end}}
-    {{if .Known}}<li class="{{if .OK}}good{{else}}bad{{end}}">{{if .OK}}{{tf "space.backup.ok" .Time}}{{else}}{{tf "space.backup.failed" .Time .Error}}{{end}}</li>
+    {{if .Known}}<li class="{{if .OK}}good{{else}}bad{{end}}">{{if .OK}}{{tf "space.backup.ok" (day .Time)}}{{else}}{{tf "space.backup.failed" (day .Time) .Error}}{{end}}</li>
     {{else}}<li class="warn">{{t "space.backup.never"}}</li>{{end}}
     {{if .Warning}}<li class="warn sub">{{.Warning}}</li>{{end}}
     <li class="sub">{{tf "space.backup.to" .URL}}</li>
@@ -18,7 +18,7 @@
   </ul>
   {{if .Copies}}<h3>{{t "backup.copies"}}</h3>
   <ul class="cards">{{range .Copies}}<li class="card">
-    <div class="title">{{.When}}</div>
+    <div class="title"><time datetime="{{.When}}" title="{{.When}}">{{day .When}}</time></div>
     <div class="meta">{{tf "backup.from" .What}}{{if .Back}} · {{tf "backup.wentback" .Back}}{{end}}</div>
     <details class="said"><summary>{{t "backup.what"}}</summary>
       {{if .Changes.Files}}{{template "changes" .Changes}}{{else}}<p class="hint">{{t "backup.nochange"}}</p>{{end}}
@@ -38,15 +38,17 @@
   <ul class="health"><li class="bad">{{t "backup.none"}}</li></ul>
   {{if not $.D.Remote}}
   <form method="post" action="{{$.Base}}/backup/setup" class="stack box">
-    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}">
+    <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}"><input type="hidden" name="form" value="github {{$sp}}">
     <p class="hint">{{tf "backup.github.hint" $sp}}</p>
+    {{template "ferr" ($.FormErr (print "/backup/setup#github " $sp))}}
     <button type="submit">{{t "backup.github"}}</button>
   </form>
-  <details class="said"><summary>{{t "backup.own"}}</summary>
+  {{$own := print "/backup/setup#own " $sp}}<details class="said"{{if $.Open $own}} open{{end}}><summary>{{t "backup.own"}}</summary>
     <form method="post" action="{{$.Base}}/backup/setup" class="stack">
-      <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}">
+      <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}"><input type="hidden" name="form" value="own {{$sp}}">
       <p class="hint">{{t "backup.own.hint"}}</p>
-      <label>{{t "backup.url"}} <input name="url" required maxlength="500" autocomplete="off" placeholder="git@github.com:you/notes.git"></label>
+      <label>{{t "backup.url"}} <input name="url" required maxlength="500" autocomplete="off" placeholder="git@github.com:you/notes.git" value="{{$.Val $own "url" ""}}"></label>
+      {{template "ferr" ($.FormErr $own)}}
       <button type="submit" class="small">{{t "backup.connect"}}</button>
     </form>
   </details>

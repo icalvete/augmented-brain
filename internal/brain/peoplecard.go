@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
+
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
@@ -20,7 +22,7 @@ import (
 // name: two people can share one). Nothing about this is a new format.
 
 // ErrNoPerson says no space holds a person with that id.
-var ErrNoPerson = errors.New("no such person in any space")
+var ErrNoPerson = i18n.Errorf("err.person.none")
 
 // cardNow gives today's date for the notes the card functions write; tests replace it.
 var cardNow = time.Now
@@ -257,7 +259,7 @@ func (e *CardError) Error() string { return fmt.Sprintf("detail %d: %v", e.Row+1
 func (e *CardError) Unwrap() error { return e.Err }
 
 // ErrNoSpaceForDetail says a detail with text was left with no space to live in.
-var ErrNoSpaceForDetail = errors.New("a detail needs at least one space where it is visible")
+var ErrNoSpaceForDetail = i18n.Errorf("err.person.nospace")
 
 // SavePersonCard writes the card back, in one operation: everything is checked first
 // (the details, every note that would be written, in every space), then each file that
@@ -288,13 +290,13 @@ func SavePersonCard(c *config.Config, in CardInput) ([]string, error) {
 		}
 		for _, sp := range d.Spaces {
 			if !have[sp] {
-				return nil, &CardError{i, fmt.Errorf("space %q is not one of the spaces of this machine", sp)}
+				return nil, &CardError{i, i18n.Errorf("err.person.space", sp)}
 			}
 		}
 	}
 	for sp := range in.Spaces {
 		if !have[sp] {
-			return nil, fmt.Errorf("space %q is not one of the spaces of this machine", sp)
+			return nil, i18n.Errorf("err.person.space", sp)
 		}
 	}
 	// 2. The note each space would hold.
@@ -316,7 +318,7 @@ func SavePersonCard(c *config.Config, in CardInput) ([]string, error) {
 		roleIn, hasRole := in.Spaces[sp]
 		old := b.Mem.Notes[in.ID]
 		if old != nil && old.Header.Type != "person" {
-			return nil, fmt.Errorf("%s in %s is not a person", in.ID, sp)
+			return nil, i18n.Errorf("err.person.notperson", in.ID, sp)
 		}
 		if old == nil {
 			if len(want) == 0 && (!hasRole || (strings.TrimSpace(roleIn.Role) == "" && len(roleIn.Aliases) == 0)) {
@@ -369,7 +371,7 @@ func SavePersonCard(c *config.Config, in CardInput) ([]string, error) {
 // the spaces written. The caller holds the notes lock.
 func SavePersonIn(c *config.Config, spaces []string, in PersonInput) (string, []string, error) {
 	if strings.TrimSpace(in.Name) == "" {
-		return "", nil, errors.New("a person needs a name")
+		return "", nil, i18n.Errorf("err.person.name")
 	}
 	brains, err := openSpaces(c)
 	if err != nil {
@@ -379,14 +381,14 @@ func SavePersonIn(c *config.Config, spaces []string, in PersonInput) (string, []
 	for _, name := range spaces {
 		i := slices.IndexFunc(brains, func(b *Brain) bool { return b.Space.Name == name })
 		if i < 0 {
-			return "", nil, fmt.Errorf("%q is not one of the spaces: %s", name, strings.Join(c.SpaceNames(), ", "))
+			return "", nil, i18n.Errorf("err.person.spaces", name, strings.Join(c.SpaceNames(), ", "))
 		}
 		if !slices.Contains(chosen, brains[i]) {
 			chosen = append(chosen, brains[i])
 		}
 	}
 	if len(chosen) == 0 {
-		return "", nil, errors.New("no space to save the person in")
+		return "", nil, i18n.Errorf("err.person.nowhere")
 	}
 	id, title := "", ""
 	for _, b := range brains {

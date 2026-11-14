@@ -72,26 +72,26 @@ GROUPS = [
                    "Cómo editar a mano las notas de augmented brain sin romperlas: antes y después, las reglas de la cabecera, la línea del diario con su raya larga, el buzón y lo que no se toca."),
              line=("Change a note with any editor and keep it readable.",
                    "Cambia una nota con cualquier editor sin que deje de leerse.")),
-        dict(slug="guard", title=("The guard", "El guardia"),
-             desc=("The guard of augmented brain: what it stops (pushes, root, secrets), what it asks you first (production, untouchable machines), the repository lists, root exceptions, and why it is a safety net, not a security boundary.",
-                   "El guardia de augmented brain: lo que para (push, root, secretos), lo que te pregunta antes (producción, máquinas intocables), las listas de repositorios, las excepciones de root, y por qué es una red, no un muro de seguridad."),
-             line=("What it stops, what it asks you first, and what it is not.",
-                   "Lo que para, lo que te pregunta antes, y lo que no es.")),
-        dict(slug="how-it-works", title=("How it works inside", "Cómo funciona por dentro"),
-             desc=("How augmented brain works inside, in four layers: you and your assistant, the plugin, the program and your files. A session step by step and where every file lives.",
-                   "Cómo funciona augmented brain por dentro, en cuatro capas: tú y tu asistente, el plugin, el programa y tus ficheros. Una sesión paso a paso y dónde vive cada fichero."),
-             line=("Four layers, a session step by step, and where every file lives.",
-                   "Cuatro capas, una sesión paso a paso y dónde vive cada fichero.")),
         dict(slug="what-claude-may-do", title=("What Claude may do without asking you", "Qué puede hacer Claude sin preguntarte"),
              desc=("What Claude may do on its own and what asks you first: the guard and Claude Code's permissions side by side, the repository lists, the seal of the lists and accepting changes in the Guard page.",
                    "Qué puede hacer Claude por su cuenta y qué te pregunta antes: el guardia y los permisos de Claude Code uno al lado del otro, las listas de repositorios, el sello de las listas y aceptar cambios en la página Guardia."),
              line=("Never, always asks, without asking: the guard and Claude Code together.",
                    "Nunca, pregunta siempre, sin preguntar: el guardia y Claude Code juntos.")),
+        dict(slug="guard", title=("The guard", "El guardia"),
+             desc=("The guard of augmented brain: what it stops (pushes, root, secrets), what it asks you first (production, untouchable machines), the repository lists, root exceptions, and why it is a safety net, not a security boundary.",
+                   "El guardia de augmented brain: lo que para (push, root, secretos), lo que te pregunta antes (producción, máquinas intocables), las listas de repositorios, las excepciones de root, y por qué es una red, no un muro de seguridad."),
+             line=("What it stops, what it asks you first, and what it is not.",
+                   "Lo que para, lo que te pregunta antes, y lo que no es.")),
         dict(slug="where-things-live", title=("Where everything lives", "Dónde vive cada cosa"),
              desc=("Where augmented brain keeps your notes, configuration, state and secrets' names, how each is protected, and what the backup takes and leaves.",
                    "Dónde guarda augmented brain tus notas, la configuración, el estado y los nombres de tus secretos, cómo se protege cada cosa, y qué lleva la copia de seguridad y qué deja fuera."),
              line=("Notes, configuration, state and secrets: where, and how they are kept safe.",
                    "Notas, configuración, estado y secretos: dónde, y cómo se protegen.")),
+        dict(slug="how-it-works", title=("How it works inside", "Cómo funciona por dentro"),
+             desc=("How augmented brain works inside, in four layers: you and your assistant, the plugin, the program and your files. A session step by step and where your notes live.",
+                   "Cómo funciona augmented brain por dentro, en cuatro capas: tú y tu asistente, el plugin, el programa y tus ficheros. Una sesión paso a paso y dónde viven tus notas."),
+             line=("Four layers, a session step by step, and what it does not do.",
+                   "Cuatro capas, una sesión paso a paso y lo que no hace.")),
     ]),
     (("Daily use", "Día a día"), [
         dict(slug="phrases", title=("What to say to Claude", "Qué decirle a Claude"),
@@ -450,7 +450,7 @@ def header(lang, other):
     if other:
         o = "en" if lang == "es" else "es"
         switch = f'\n    <a href="{other}" hreflang="{o}" data-lang="{o}">{"English" if o == "en" else "Español"}</a>'
-    return f"""<header class="wrap top">
+    return f"""<header class="wrap wide top">
   <a class="brand" href="{home}"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="{u["main"]}">
     <a href="{docs}">{u["docs"]}</a>{switch}
@@ -515,7 +515,7 @@ document.querySelectorAll("[data-lang]").forEach(function (a) {
 
 def footer(lang):
     u = UI[lang]
-    return (f'<footer>\n  <div class="wrap"><span>{u["footer"]} · <a href="{CHANGELOG if lang == "en" else CHANGELOG_ES}">'
+    return (f'<footer>\n  <div class="wrap wide"><span>{u["footer"]} · <a href="{CHANGELOG if lang == "en" else CHANGELOG_ES}">'
             f'{"Changelog" if lang == "en" else "Registro de cambios"}</a></span></div>\n</footer>\n'
             + COPY.replace("{copy}", u["copy"]).replace("{copied}", u["copied"]) + "\n</body>\n</html>\n")
 
@@ -544,15 +544,18 @@ def page(p, lang):
     other = alternates.get("es" if lang == "en" else "en")
     if lang == "en" and not has_es(p):
         other = "index.es.html"
-    contents = ""
+    contents = aside = ""
     if len(toc) >= TOC_MIN and slug not in NO_TOC:
-        contents = (f'  <nav class="toc" aria-label="{u["onpage"]}"><p>{u["onpage"]}</p><ul>'
-                    + "".join(f'<li><a href="#{a}">{t}</a></li>' for a, t in toc) + "</ul></nav>")
+        items = "".join(f'<li><a href="#{a}">{t}</a></li>' for a, t in toc)
+        contents = f'  <nav class="toc" aria-label="{u["onpage"]}"><p>{u["onpage"]}</p><ul>{items}</ul></nav>'
+        # The same list beside the page on a wide screen, where it stays while you read;
+        # the stylesheet shows one or the other, never both.
+        aside = f'<aside class="pagetoc"><p>{u["onpage"]}</p><ul>{items}</ul></aside>\n'
     html_body = "\n".join(contents if b == "TOC" else b for b in body if b != "TOC" or contents)
     out = (head(lang, name, p["title"][L(lang)], p["desc"][L(lang)], p["line"][L(lang)], alternates)
            + header(lang, other)
            + '\n<div class="wrap docs">\n' + sidebar(lang, slug)
-           + '<main class="prose" id="main">\n' + html_body + "\n" + pager(lang, slug) + "\n</main>\n</div>\n\n"
+           + '<main class="prose" id="main">\n' + html_body + "\n" + pager(lang, slug) + "\n</main>\n" + aside + "</div>\n\n"
            + footer(lang))
     (G / name).write_text(out)
     print("ok", name)

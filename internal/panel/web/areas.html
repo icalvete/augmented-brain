@@ -5,12 +5,13 @@
 {{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
   <div class="meta">{{if .Summary}}<span>{{inline .Summary}}</span>{{end}}<span class="badge">{{tf "areas.tasks" .Count}}</span></div></li>{{end}}
 </ul>{{else}}<p class="empty">{{t "areas.none"}}</p>{{end}}
-<details class="box">
+<details class="box"{{if $.Open "/area/new"}} open{{end}}>
   <summary>{{t "area.new"}}</summary>
   <form method="post" action="{{$.Base}}/area/new" class="stack">
     {{template "fields" (fields $)}}
-    <label>{{t "f.title"}} <input name="title" required maxlength="200"></label>
-    <label>{{t "f.summary"}} <input name="summary" maxlength="500"></label>
+    <label>{{t "f.title"}} <input name="title" required maxlength="200" value="{{$.Val "/area/new" "title" ""}}"></label>
+    <label>{{t "f.summary"}} <input name="summary" maxlength="500" value="{{$.Val "/area/new" "summary" ""}}"></label>
+    {{template "ferr" ($.FormErr "/area/new")}}
     <button type="submit">{{t "create"}}</button>
   </form>
 </details>

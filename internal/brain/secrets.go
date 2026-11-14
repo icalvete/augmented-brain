@@ -11,6 +11,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
+
 	"github.com/BurntSushi/toml"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/guard"
@@ -149,14 +151,14 @@ func MoveSecrets(cfgDir string) error {
 
 // ErrSecretName is a service or a name that is not one plain word, or a description
 // that is not one plain line.
-var ErrSecretName = errors.New("service and name are single words (letters, digits, . _ @ + -, not starting with -), and what it is for one line of plain text, up to 160 characters")
+var ErrSecretName = i18n.Errorf("err.secret.name")
 
 // secretWhatMax is how long what a secret is for may be: a few words, never a value
 // pasted with them.
 const secretWhatMax = 160
 
 // ErrSecretValue is a name or a description that looks like a secret itself.
-var ErrSecretValue = errors.New("that looks like a secret's value: only its name and what it is for are kept")
+var ErrSecretValue = i18n.Errorf("err.secret.value")
 
 // SaveSecretName adds a secret's name to the configuration, or changes what it is for.
 // It refuses anything that looks like a value.
@@ -221,7 +223,7 @@ func (b *Brain) ForgetSecretName(service, name string) error {
 		list = append(list, e)
 	}
 	if len(list) == len(all) {
-		return fmt.Errorf("there is no secret %s in the list", key)
+		return i18n.Errorf("err.secret.missing", key)
 	}
 	return writeSecrets(b.ConfigDir, list)
 }

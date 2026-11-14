@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Main">
     <a href="index.html">Docs</a>
@@ -58,10 +58,10 @@
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
   <li><a href="editing-notes.html">Editing notes by hand</a></li>
-  <li><a href="guard.html">The guard</a></li>
-  <li><a href="how-it-works.html">How it works inside</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html" aria-current="page">Where everything lives</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
 </ul>
 <p class="docnav-group">Daily use</p>
 <ul>
@@ -104,10 +104,10 @@
   <h2 id="your-notes">Your notes</h2>
   <p><strong>Where:</strong> one folder per space, inside its work folder: <code>~/augmented-brain/work/notes/</code>, say (<code>notas</code> in Spanish). Tasks, areas, knowledge, people, the inbox, the index <code>MEMORY.md</code>. Markdown files you can open and read.</p>
   <p><strong>How they are kept safe:</strong></p>
-  <ul><li><strong>Only you can read them.</strong> The folder is private to your user; <code>augmented-brain check</code> closes it again if it was opened.</li><li><strong>No secrets inside.</strong> Claude's tools refuse to write a password, a token or a key into a note.</li><li><strong>Never half written.</strong> Every change is checked first and written in one go, so a crash leaves the note as it was.</li><li><strong>The backup</strong>, if you set it up: the notes folder is a git repository, copied to a private repository of yours at the end of every session. See <a href="backup.html">Backup and restore</a>.</li></ul>
+  <ul><li><strong>Only you can read them</strong>, on Linux and macOS. The folder is private to your user; <code>augmented-brain check</code> closes it again if it was opened. On Windows the program does not change it: it keeps the permissions of the folder it is in.</li><li><strong>No secrets inside.</strong> Claude's tools refuse to write a password, a token or a key into a note.</li><li><strong>Never half written.</strong> Every change is checked first and written in one go, so a crash leaves the note as it was.</li><li><strong>The backup</strong>, if you set it up: the notes folder is a git repository, copied to a private repository of yours at the end of every session. See <a href="backup.html">Backup and restore</a>.</li></ul>
   <h2 id="the-configuration">The configuration</h2>
   <p><strong>Where:</strong> one folder per computer, the configuration folder: <code>~/.config/augmented-brain/</code> on Linux and macOS, <code>%APPDATA%\augmented-brain\</code> on Windows.</p>
-  <div class="table-wrap"><table><thead><tr><th>File</th><th>What it holds</th></tr></thead><tbody><tr><td><code>config.toml</code></td><td>The spaces and the guard's lists for the whole computer.</td></tr><tr><td><code>guard.toml</code></td><td>The repositories nothing may touch.</td></tr><tr><td><code>secrets.toml</code></td><td>The <strong>names</strong> of your secrets and what each is for. Never a value.</td></tr><tr><td><code>session.toml</code></td><td>The model your sessions should use.</td></tr><tr><td><code>remote.toml</code></td><td>Remote access: which spaces have a door.</td></tr><tr><td><code>profile.md</code></td><td>Who you are and how you like to work.</td></tr></tbody></table></div>
+  <div class="table-wrap"><table><thead><tr><th>File</th><th>What it holds</th></tr></thead><tbody><tr><td><code>config.toml</code></td><td>The spaces and the guard's lists for the whole computer.</td></tr><tr><td><code>guard.toml</code></td><td>The repositories nothing may touch.</td></tr><tr><td><code>secrets.toml</code></td><td>The <strong>names</strong> of your secrets and what each is for. Never a value.</td></tr><tr><td><code>session.toml</code></td><td>Two choices of yours: the model your sessions should use, and whether Claude <a href="guard.html#asking-before-claude-saves-a-rule">asks before it saves a rule</a>, your profile or the guard's lists.</td></tr><tr><td><code>remote.toml</code></td><td>Remote access: which spaces have a door.</td></tr><tr><td><code>profile.md</code></td><td>Who you are and how you like to work.</td></tr><tr><td><code>shared/</code></td><td>The rules, references and lessons for every space.</td></tr></tbody></table></div>
   <p><strong>How it is kept safe:</strong></p>
   <ul><li><strong>The guard asks</strong> before Claude writes any of these files.</li><li><strong>Versions.</strong> The last 10 versions are kept, with who made each change: going back takes one command, even if <code>config.toml</code> was left broken. See <a href="config-history.html">Configuration versions</a>. Only on this computer.</li><li><strong>The seal.</strong> The guard notices when its lists changed outside the panel, and asks before using them. See <a href="what-claude-may-do.html">What Claude may do without asking you</a>.</li></ul>
   <h2 id="what-this-computer-knows">What this computer knows</h2>
@@ -116,20 +116,21 @@
   <h2 id="your-secrets">Your secrets</h2>
   <p>The values stay in your system's keychain (or wherever you keep them): augmented brain never stores them. Only their names are written down, in <code>secrets.toml</code>, so you and a new machine know which secrets there are. The panel's <strong>Secrets</strong> page says which ones this computer's keychain has.</p>
   <h2 id="what-the-backup-takes-and-what-it-leaves">What the backup takes, and what it leaves</h2>
-  <div class="table-wrap"><table><thead><tr><th>Goes in the backup</th><th>Never goes</th></tr></thead><tbody><tr><td>Every note of the space</td><td>The values of your secrets</td></tr><tr><td>The space's own settings: its folders and its lists</td><td>The lists for the whole computer: production profiles, untouchable machines and repositories, root exceptions</td></tr><tr><td>In the default space only: your profile, the shared notes and the names of your secrets</td><td>The configuration's versions, <code>state/</code> and <code>panel.json</code></td></tr></tbody></table></div>
+  <div class="table-wrap"><table><thead><tr><th>Goes in the backup</th><th>Never goes</th></tr></thead><tbody><tr><td>Every note of the space</td><td>The values of your secrets</td></tr><tr><td>The space's own settings: its folders and its lists</td><td>The lists for the whole computer: production profiles, untouchable machines and repositories, root exceptions</td></tr><tr><td>In the default space only: your profile, the shared notes and the names of your secrets</td><td><code>guard.toml</code>, <code>session.toml</code> and <code>remote.toml</code>; the configuration's versions, <code>state/</code> and <code>panel.json</code></td></tr></tbody></table></div>
   <p>The lists for the whole computer stay out because they may name your work's machines. The repositories where Claude may commit or push travel with the space, but a restore does not use them, since someone could have changed the backup: it names them, and you add them again if you still want to.</p>
   <h2 id="the-program-and-the-plugin">The program and the plugin</h2>
   <ul><li>The program: <code>~/.local/bin/augmented-brain</code> (<code>augmented-brain.exe</code> on Windows).</li><li>The Claude Code plugin travels inside the program: it writes it to <code>marketplace/</code> in the configuration folder, and Claude Code reads it from there. So its hooks are always the ones of the version you installed, and the guard asks before Claude changes them.</li></ul>
   <p>Uninstalling removes these two and leaves your notes. See <a href="update-and-uninstall.html">Updating and uninstalling without losing anything</a>.</p>
   <nav class="pager" aria-label="Previous / Next">
-    <a class="prev" href="what-claude-may-do.html"><span>← Previous</span>What Claude may do without asking you</a>
-    <a class="next" href="phrases.html"><span>Next →</span>What to say to Claude</a>
+    <a class="prev" href="guard.html"><span>← Previous</span>The guard</a>
+    <a class="next" href="how-it-works.html"><span>Next →</span>How it works inside</a>
   </nav>
 </main>
+<aside class="pagetoc"><p>On this page</p><ul><li><a href="#your-notes">Your notes</a></li><li><a href="#the-configuration">The configuration</a></li><li><a href="#what-this-computer-knows">What this computer knows</a></li><li><a href="#your-secrets">Your secrets</a></li><li><a href="#what-the-backup-takes-and-what-it-leaves">What the backup takes, and what it leaves</a></li><li><a href="#the-program-and-the-plugin">The program and the plugin</a></li></ul></aside>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+  <div class="wrap wide"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {
