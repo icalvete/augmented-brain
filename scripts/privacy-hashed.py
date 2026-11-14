@@ -28,7 +28,9 @@ are removed first, as in privacy-check.sh.
 Besides the tracked files and their names, scan reads the author, the committer and the
 message of each commit in AB_PRIVACY_COMMITS (a git range, such as base..head; without
 it, the last commit), and the text in AB_PRIVACY_TEXT (CI puts there the branch name and
-the pull request's title).
+the pull request's title). The one thing let be: in the first line of a GitHub merge
+commit, "Merge pull request #N from owner/branch", the repository owner's name, which is
+public in the repository's address (GITHUB_REPOSITORY_OWNER, or origin's URL).
 
     AB_PRIVACY_KEY=... scripts/privacy-hashed.py build [denylist]   # rewrite scripts/privacy-hashes
     AB_PRIVACY_KEY=... scripts/privacy-hashed.py scan [file...]     # default: every tracked file
@@ -199,6 +201,31 @@ def commits(rng):
     return out
 
 
+def repo_owner():
+    """The repository owner's name: public, it is in the repository's address."""
+    owner = os.environ.get("GITHUB_REPOSITORY_OWNER", "").strip()
+    if owner:
+        return owner
+    r = subprocess.run(["git", "remote", "get-url", "origin"], capture_output=True, text=True)
+    m = re.search(r"github\.com[:/]([^/]+)/", r.stdout)
+    return m.group(1) if m else ""
+
+
+def without_merge_owner(message, owner):
+    """A message without the owner's name where GitHub writes it in a merge commit.
+
+    GitHub titles the merge of a pull request "Merge pull request #N from owner/branch".
+    Only that exact first line loses the "owner/" part; the branch name and the rest of
+    the message are still checked."""
+    if not owner:
+        return message
+    first, sep, rest = message.partition("\n")
+    m = re.fullmatch(r"Merge pull request #(\d+) from " + re.escape(owner) + r"/(\S+)", first.strip(), re.IGNORECASE)
+    if not m:
+        return message
+    return f"Merge pull request #{m.group(1)} from {m.group(2)}" + sep + rest
+
+
 def scan(args):
     allowed = literals(ALLOW) if os.path.exists(ALLOW) else []
     m = Matcher(key(), set(literals(HASHES)), allowed)
@@ -221,7 +248,9 @@ def scan(args):
     # Who made the commits and what they say: a personal name in them is just as public.
     rng = os.environ.get("AB_PRIVACY_COMMITS", "").strip()
     listed = commits(rng)
+    owner = repo_owner()
     for short, ident, message in listed:
+        message = without_merge_owner(message, owner)
         if m.hit(ident):
             print(f"  PERSONAL  commit {short}: author or committer")
             found = True
@@ -285,6 +314,18 @@ def selftest(_args):
     allowing = Matcher(k, m.prints, ["jane doe & co"])
     if allowing.hit("Jane Doe & Co") or not allowing.hit("Jane Doe & Co, and Jane Doe"):
         bad.append("the allow list is not applied as a literal")
+    # A GitHub merge message names the repository's owner: that, and only that, is let be.
+    merges = [
+        ("Merge pull request #12 from JaneDoe/fix-typo\n\nFix a typo", False),
+        ("Merge pull request #12 from janedoe/notes-of-jane-doe", True),
+        ("Merge pull request #12 from janedoe/fix\n\nThanks, Jane Doe", True),
+        ("Merge pull request #12 from janedoe/fix and more", True),
+        ("Merged by janedoe/fix", True),
+        ("Merge pull request #12 from someone/fix\n\njanedoe", True),
+    ]
+    for text, want in merges:
+        if m.hit(without_merge_owner(text, "janedoe")) != want:
+            bad.append(f"merge message {text!r}: {'missed' if want else 'caught'}")
     if key_problem("x" * (MIN_KEY - 1)) is None or key_problem("x" * MIN_KEY) is not None:
         bad.append(f"a key shorter than {MIN_KEY} characters is not refused")
     if bad:
