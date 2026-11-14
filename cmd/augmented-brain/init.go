@@ -135,7 +135,10 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 	if !plugin {
 		fmt.Fprintf(out, "\n%s\n", msg(*lang, "noplugin"))
 	}
-	fmt.Fprintf(out, "\n%s\n", nextStep(*lang, spaces[0].WorkFolder))
+	// The desktop app with no folder chosen works in the default space: there is none
+	// with a single space, and with reach spaces no space acts outside its folders.
+	pick := len(spaces) == 1 || opts.reach == config.ReachSpaces
+	fmt.Fprintf(out, "\n%s\n", nextStep(*lang, spaces[0].WorkFolder, pick))
 	return 0
 }
 
@@ -245,12 +248,16 @@ func createSpaces(spaces []setup.Options, lang string, verbose bool, out io.Writ
 }
 
 // nextStep is init's last message: how to start working in the folder work. The
-// installer says, through the environment, what fits this machine.
-func nextStep(lang, work string) string {
+// installer says, through the environment, what fits this machine. pick: the desktop
+// app must be pointed at a space's folder, since none acts without one.
+func nextStep(lang, work string, pick bool) string {
 	next := "now"
 	switch {
 	case os.Getenv("AB_DESKTOP") == "1": // install.sh found the Claude desktop app
 		next = "desktop"
+		if pick {
+			next = "desktop.pick"
+		}
 	case os.Getenv("AB_LAUNCH") == "1": // install.sh offers to open Claude right after
 		next = "launch"
 	case os.Getenv("AB_NEW_TERMINAL") == "1": // set by install.sh when it changed the PATH
