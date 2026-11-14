@@ -378,6 +378,9 @@ func (s System) Install(c *config.Config, set Settings) (*InstallResult, error) 
 		return nil, errors.New(i18n.T(c.Language, "remote.nosystemd", err))
 	}
 	res := &InstallResult{Services: Services(c, set), Claude: claude}
+	if err := s.checkPaths(c.Language, res); err != nil {
+		return nil, err
+	}
 	// Before any unit is written: a unit written and not restarted would look current to
 	// the next install, which then would not restart it either.
 	units := make([]string, 0, len(res.Services))

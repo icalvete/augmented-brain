@@ -92,7 +92,10 @@ These go at the top, before any `[spaces.…]` heading.
 
 Each space is a section, `[spaces.<name>]`. Together they are the `spaces` of the file.
 The name is lowercase letters, digits and dashes, starting with a letter. A file with no
-space at all is an error: there must be one.
+space at all is an error: there must be one. A name written by hand may hold more (capital
+letters, accents, dots, underscores), but never a space, a slash, a line break or a sign
+such as `&` or `%`: the name goes into file names and services, so the file does not load,
+and the error says how to rename it. Remote access asks for a plain ASCII name.
 
 - `memory`: the space's notes folder. Required.
 - `work_folders`: the folders that pick this space when you open Claude in them, or in a
