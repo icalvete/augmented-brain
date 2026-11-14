@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Saltar al contenido</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Principal">
     <a href="index.es.html">Documentación</a>
@@ -57,10 +57,11 @@
   <li><a href="spaces.es.html">Espacios</a></li>
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html" aria-current="page">Áreas, conocimiento y lo demás</a></li>
-  <li><a href="guard.es.html">El guardia</a></li>
-  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="where-things-live.es.html">Dónde vive cada cosa</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
 </ul>
 <p class="docnav-group">Día a día</p>
 <ul>
@@ -99,7 +100,7 @@
 <main class="prose" id="main">
   <h1>Áreas, conocimiento y lo demás</h1>
   <p>Las tareas van y vienen. Alrededor de ellas, un espacio guarda otros tipos de notas. Cada una es un fichero Markdown en su propia carpeta, y nunca tienes que crearlas a mano: lo dices, y Claude lo escribe.</p>
-  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#áreas">Áreas</a></li><li><a href="#conocimiento">Conocimiento</a></li><li><a href="#personas">Personas</a></li><li><a href="#buzón">Buzón</a></li><li><a href="#reglas">Reglas</a></li><li><a href="#tu-perfil">Tu perfil</a></li><li><a href="#repositorios">Repositorios</a></li><li><a href="#el-índice">El índice</a></li><li><a href="#documentos-y-el-archivo">Documentos y el archivo</a></li><li><a href="#editar-a-mano">Editar a mano</a></li><li><a href="#por-dónde-seguir">Por dónde seguir</a></li></ul></nav>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#áreas">Áreas</a></li><li><a href="#conocimiento">Conocimiento</a></li><li><a href="#personas">Personas</a></li><li><a href="#buzón">Buzón</a></li><li><a href="#reglas">Reglas</a></li><li><a href="#retirar-una-nota-que-ya-no-vale">Retirar una nota que ya no vale</a></li><li><a href="#tu-perfil">Tu perfil</a></li><li><a href="#repositorios">Repositorios</a></li><li><a href="#el-índice">El índice</a></li><li><a href="#documentos-y-el-archivo">Documentos y el archivo</a></li><li><a href="#editar-a-mano">Editar a mano</a></li><li><a href="#por-dónde-seguir">Por dónde seguir</a></li></ul></nav>
   <h2 id="áreas">Áreas</h2>
   <p>“El blog”, “los servidores”, “la casa”. Un <strong>área</strong> es algo que cuidas sin fecha de fin. Agrupa las tareas y el conocimiento que le tocan.</p>
   <p>Dices: “el boletín es un área nueva”. Claude crea <code>areas/area-boletin.md</code>. Su texto dice qué cuidas, cómo va y qué vigilar. El programa ya lista dentro las tareas y el conocimiento del área por su cuenta.</p>
@@ -107,7 +108,7 @@
   <h2 id="conocimiento">Conocimiento</h2>
   <p>Lo que merece la pena guardar más allá de una tarea. Hay dos tipos, en <code>knowledge/</code>:</p>
   <ul><li>Una <strong>referencia</strong> dice cómo funciona algo: “cómo se publica el blog”.</li><li>Una <strong>lección</strong> dice lo que aprendiste, con un título que ya dice la conclusión: “Prueba a restaurar la copia, no solo a hacerla”.</li></ul>
-  <p>Dices: “guárdalo como lección”. Las dos son de un área, y Claude las abre cuando una tarea las necesita.</p>
+  <p>Dices: “guárdalo como lección”. Cualquiera de las dos puede ser de un área, y Claude la abre cuando una tarea la necesita.</p>
   <h2 id="personas">Personas</h2>
   <p>Dices: “Diego lleva la empresa del hosting; le llamo Dieguito”. Claude guarda <code>people/person-diego.md</code>. La próxima vez que digas “dile a Dieguito que ya está”, sabe quién es.</p>
   <p>Una <strong>persona</strong> tiene un nombre, quién es para ti, los otros nombres que usas para ella y lo que merezca la pena recordar. Una tarea puede esperar a una persona (<code>waiting_on: Diego</code>).</p>
@@ -117,35 +118,44 @@
   <pre><code>- 2026-10-17 — Mirar los precios nuevos del hosting
 - 2026-10-17 — Llamar al seguro (remind: 2026-10-22)</code></pre>
   <p>Cada línea es una <strong>captura</strong>. La <a href="weekly-review.es.html">revisión semanal</a> vacía el buzón: cada captura pasa a ser una tarea, va a un área o al conocimiento, o se descarta.</p>
-  <p>“Recuérdame el jueves que llame al seguro” es una captura con fecha. Desde una semana antes, y cada día después, sale al empezar la sesión, hasta que la revisión semanal la resuelve (o la marcas como hecha en el panel).</p>
+  <p>“Recuérdame el jueves que llame al seguro” es una captura con fecha. Desde una semana antes, y cada día después, sale al empezar la sesión, hasta que se resuelve.</p>
+  <h3 id="mandar-una-captura-a-otro-espacio">Mandar una captura a otro espacio</h3>
+  <p>A veces decides en un espacio algo que hay que hacer en otro. En tu sesión de <code>personal</code> dices: “apunta en trabajo: renovar el contrato del hosting”. La captura va al buzón de <code>trabajo</code> y acaba en <code>(from personal)</code>. Sale al empezar cada sesión de <code>trabajo</code> hasta que se resuelve.</p>
+  <h3 id="dar-una-captura-por-hecha">Dar una captura por hecha</h3>
+  <p>Tres formas, la que te pille más a mano:</p>
+  <ul><li>díselo a Claude: “esa captura ya está” (o “conviértela en tarea”);</li><li>márcala como hecha en la página Buzón del panel;</li><li>deja que la <a href="weekly-review.es.html">revisión semanal</a> la repase.</li></ul>
   <h2 id="reglas">Reglas</h2>
   <p>Cómo quieres que trabaje Claude. Dices: “a partir de ahora, contesta con frases cortas”. Claude lo guarda como <strong>regla</strong>. Cada sesión carga todas las reglas, enteras.</p>
   <p>Hay tres niveles:</p>
   <ul><li><strong>reglas comunes</strong>, que vienen con el programa: comprobar antes de aconsejar, no subir nunca código sin que se pida, no hacerse nunca root, no escribir nunca secretos…</li><li><strong>reglas compartidas</strong>, tuyas, para todos los espacios (“contesta con frases cortas”);</li><li><strong>reglas del espacio</strong>, en <code>rules/</code> del espacio, para lo que solo vale ahí (“la base de datos de la tienda no se reinicia nunca en viernes”).</li></ul>
   <p>Una regla que vale en todas partes va a las notas compartidas. Dile a Claude “esto vale para todo”.</p>
   <p>Tus reglas se leen al empezar cada sesión, así que cada una ocupa un poco de sitio cada vez. <code>augmented-brain doctor</code> dice cuánto ocupan y cuáles son las más largas.</p>
+  <p>Por defecto, Claude guarda la regla y te avisa. Si lo prefieres, puede preguntarte antes: mira <a href="guard.es.html#preguntar-antes-de-que-claude-guarde-una-regla">Preguntar antes de que Claude guarde una regla</a>.</p>
+  <h2 id="retirar-una-nota-que-ya-no-vale">Retirar una nota que ya no vale</h2>
+  <p>Una regla, una referencia o una lección pueden dejar de ser ciertas. Dices: “esa regla ya no vale” o “retira la lección vieja de la copia”. Claude te pide que lo confirmes y mueve la nota a <code>archive/</code>, con una línea que dice cuándo, por qué y qué la sustituye. No se borra nada, pero la nota deja de cargarse: una regla retirada ya no llega a tus sesiones.</p>
   <h2 id="tu-perfil">Tu perfil</h2>
   <p>Quién eres y cómo te gusta trabajar: tu nombre, a qué te dedicas, tu idioma, lo largas que te gustan las respuestas, cuánto puede hacer Claude sin preguntarte. Es un solo fichero para todos los espacios, <code>profile.md</code> en la carpeta de configuración. Lo escribe la entrevista de la primera sesión. Para cambiarlo, díselo a Claude.</p>
   <h2 id="repositorios">Repositorios</h2>
   <p>Qué es cada uno de tus repositorios git, una línea cada uno: "<code>~/code/blog</code> — El blog, hecho con Hugo". Vive en una referencia del espacio, <code>knowledge/ref-repositories.md</code>, así que la copia de seguridad lo guarda. Escribes la línea en la página Repositorios del panel, o te la escribe Claude.</p>
   <h2 id="el-índice">El índice</h2>
-  <p><code>MEMORY.md</code> es la lista que Claude lee al empezar cada sesión: la línea de tu perfil, las reglas, las áreas y las tareas vivas con su estado y su siguiente paso. Las referencias y lecciones compartidas salen con su título y su fichero. Al empezar, Claude la recibe más corta: las tareas van sin su resumen, y una tarea enseña su siguiente paso (los primeros 120 caracteres) solo si te espera a ti. Claude lee una tarea antes de trabajar en ella. El programa escribe este fichero después de cada cambio: no lo edites a mano, se reescribiría.</p>
+  <p><code>MEMORY.md</code> es la lista que Claude lee al empezar cada sesión: la línea de tu perfil, las reglas, las áreas y las tareas vivas con su estado y su siguiente paso. Las referencias y lecciones compartidas salen con su título y su fichero. Claude lee una tarea entera antes de trabajar en ella. El programa escribe este fichero después de cada cambio: no lo edites a mano, se reescribiría.</p>
   <h2 id="documentos-y-el-archivo">Documentos y el archivo</h2>
   <p>Hay dos carpetas que no se cargan nunca:</p>
   <ul><li><code>docs/&lt;tarea&gt;/</code> guarda los documentos largos que produce una tarea (un plan, un análisis), junto a las notas y fuera del repositorio del proyecto.</li><li><code>archive/</code> guarda lo antiguo: diarios largos que se sacan de la tarea, resúmenes de conversaciones compactadas. Ahí no se borra nunca nada.</li></ul>
   <h2 id="editar-a-mano">Editar a mano</h2>
-  <p>Cada nota es Markdown normal. Ábrela con cualquier editor y cámbiala. Después, lanza <code>augmented-brain check</code> en una carpeta del espacio: comprueba todas las notas y rehace el índice.</p>
+  <p>Cada nota es Markdown normal. Ábrela con cualquier editor y cámbiala. Después, lanza <code>augmented-brain check</code> en una carpeta del espacio: comprueba todas las notas y rehace el índice. <a href="editing-notes.es.html">Editar las notas a mano</a> dice qué respetar para que la nota se siga leyendo.</p>
   <h2 id="por-dónde-seguir">Por dónde seguir</h2>
   <ul><li><a href="phrases.es.html">Qué decirle a Claude</a>: las frases para cada tipo de nota.</li><li><a href="memory-format.html">Formato de la memoria</a> (en inglés): todas las carpetas y los campos de la cabecera.</li></ul>
   <nav class="pager" aria-label="Anterior / Siguiente">
     <a class="prev" href="tasks.es.html"><span>← Anterior</span>Tareas</a>
-    <a class="next" href="guard.es.html"><span>Siguiente →</span>El guardia</a>
+    <a class="next" href="editing-notes.es.html"><span>Siguiente →</span>Editar las notas a mano</a>
   </nav>
 </main>
+<aside class="pagetoc"><p>En esta página</p><ul><li><a href="#áreas">Áreas</a></li><li><a href="#conocimiento">Conocimiento</a></li><li><a href="#personas">Personas</a></li><li><a href="#buzón">Buzón</a></li><li><a href="#reglas">Reglas</a></li><li><a href="#retirar-una-nota-que-ya-no-vale">Retirar una nota que ya no vale</a></li><li><a href="#tu-perfil">Tu perfil</a></li><li><a href="#repositorios">Repositorios</a></li><li><a href="#el-índice">El índice</a></li><li><a href="#documentos-y-el-archivo">Documentos y el archivo</a></li><li><a href="#editar-a-mano">Editar a mano</a></li><li><a href="#por-dónde-seguir">Por dónde seguir</a></li></ul></aside>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
+  <div class="wrap wide"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

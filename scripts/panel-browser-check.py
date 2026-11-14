@@ -10,7 +10,9 @@ one. For each page: it loads, the browser's console has no error, nothing on the
 fails to load, and on the phone nothing is wider than the screen. Then a few things a
 person does: send a capture from the inbox, open a task, and on the Guard page see that
 adding a repository where the assistant commits and pushes without asking needs its box
-ticked, and that a change made outside the page is shown. One line per check, "ok " or
+ticked, and that a change made outside the page is shown. And the menu: on a 1366×768
+window, at the foot of a long page, its last entry and "Stop the panel" can be reached,
+and so can the last entry of the phone's open menu. One line per check, "ok " or
 "BAD"; exit code 1 when anything is BAD.
 
 Needs Playwright for Python and its browsers (pip install playwright; python -m
@@ -27,6 +29,26 @@ EXE = ".exe" if WIN else ""
 ENGINES = [a for a in sys.argv[1:] if not a.startswith("-")] or ["chromium"]
 PAGES = ["today", "tasks", "reminders", "inbox", "areas", "knowledge", "rules", "people", "search?q=bread",
          "review", "secrets", "backup", "profile", "space", "sessions", "repos", "guard", "versions", "help"]
+# The lowest contrast of any text on the page (WCAG's ratio): for each element with a
+# text of its own, its color against the first background behind it, with opacity.
+# Answers [ratio, "what"] for the worst one.
+CONTRAST = """() => {
+  const lum = c => { const v = c.match(/[\\d.]+/g).map(Number); return v.slice(0, 3).map(x => x / 255)
+    .map(x => x <= .03928 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4).reduce((s, x, i) => s + x * [.2126, .7152, .0722][i], 0) };
+  const alpha = c => { const v = c.match(/[\\d.]+/g).map(Number); return v.length > 3 ? v[3] : 1 };
+  const behind = el => { for (let e = el; e; e = e.parentElement) { const b = getComputedStyle(e).backgroundColor; if (alpha(b) > 0) return b } return 'rgb(255,255,255)' };
+  let worst = [99, ''];
+  for (const el of document.querySelectorAll('body *')) {
+    if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
+    const st = getComputedStyle(el), r = el.getBoundingClientRect();
+    if (st.visibility === 'hidden' || st.display === 'none' || !r.width || !r.height || el.closest('[hidden], option')) continue;
+    let fg = lum(st.color), bg = lum(behind(el)), op = 1;
+    for (let e = el; e; e = e.parentElement) op *= Number(getComputedStyle(e).opacity);
+    fg = fg * op + bg * (1 - op);
+    const ratio = (Math.max(fg, bg) + .05) / (Math.min(fg, bg) + .05);
+    if (ratio < worst[0]) worst = [Math.round(ratio * 100) / 100, el.tagName.toLowerCase() + (el.className ? '.' + el.className : '') + ' "' + el.textContent.trim().slice(0, 30) + '"'];
+  }
+  return worst }"""
 # Each blocked resource says what and where, so a report names the culprit.
 WATCH = """document.addEventListener('securitypolicyviolation', e =>
     console.error('CSP ' + e.violatedDirective + ' blocked ' + (e.blockedURI || 'inline') +
@@ -67,7 +89,10 @@ HOME = os.path.join(TMP, "home")
 os.makedirs(HOME)
 AB = os.path.join(TMP, "augmented-brain" + EXE)
 subprocess.run(["go", "build", "-o", AB, "./cmd/augmented-brain"], cwd=ROOT, check=True)
-CFG = os.path.join(HOME, "cfg")
+# A configuration folder with a long path: the Profile and Health pages show it, and on a
+# phone it must break instead of making the page wider than the screen (no hyphens, which
+# would give the browser a place to break on its own).
+CFG = os.path.join(HOME, "SettingsOfAPersonWhoNamesFoldersInFullAndNeverUsesSpaces", "augmented-brain")
 ENV = dict(os.environ, HOME=HOME, USERPROFILE=HOME, AB_CONFIG_DIR=CFG, AB_LANGUAGE="en", AB_NO_BROWSER="1",
            AB_NO_UPDATE_CHECK="1", CLAUDE_CONFIG_DIR=os.path.join(HOME, ".claude"))
 
@@ -99,7 +124,12 @@ try:
     tools(work, [("task_new", {"title": "Bake bread", "summary": "two loaves for Sunday"}),
                  ("capture", {"text": "buy flour"}),
                  ("knowledge_new", {"type": "lesson", "title": "Let the dough rest", "summary": "an hour at least", "body": "It rises better."}),
-                 ("person_save", {"name": "Lucía", "summary": "runs the bakery"})])
+                 ("person_save", {"name": "Lucía", "summary": "runs the bakery"}),
+                 # A profile with an assistant: Profile then shows how it signs.
+                 ("profile_save", {"name": "María José Fernández-Villaverde", "about": "- bakes on Sundays",
+                                   "assistant_name": "Bartolomé", "assistant_personality": "calm and to the point"})]
+          # A long page: the task's journal, for the menu checks below.
+          + [("task_journal", {"id": "task-bake-bread", "entry": f"Day {i}: fed the starter, weighed the flour, wrote down how it rose."}) for i in range(60)])
     r = ab("panel", "--no-browser", cwd=work)
     base = spend_ticket(r.stdout + r.stderr)
     if not base:
@@ -149,10 +179,39 @@ try:
                     errors[:] = [e for e in errors if same(e) not in known]
                     ok = resp is not None and resp.status == 200 and not errors and not failed
                     report(f"{engine} {size}: {path.split('?')[0]} loads clean", ok, [e for e in errors if e.startswith('CSP')][:1] + (errors + failed)[:1] or (resp.status if resp else "no answer"))
+                    if size == "desktop":
+                        low, what = page.evaluate(CONTRAST)
+                        report(f"{engine}: {path.split('?')[0]} text has 4.5:1 contrast or more", low >= 4.5, f"{low}:1 {what}")
                     if size == "phone":
                         wide = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
                         report(f"{engine} phone: {path.split('?')[0]} fits the screen", wide <= 1, f"{wide}px wider")
                 ctx.close()
+
+            # The menu can be reached on a low window, at the foot of a long page: the
+            # sidebar scrolls on its own. Each element is scrolled into view the way a
+            # person would get there, then must be on screen and the one under its middle.
+            reach = """el => { el.scrollIntoView({block: 'nearest'}); const r = el.getBoundingClientRect();
+                const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+                const ok = r.bottom <= innerHeight + 1 && r.top >= -1 && !!top && (top === el || el.contains(top));
+                return [ok, `bottom ${Math.round(r.bottom)} of ${innerHeight}, under it: ${top ? top.tagName + '.' + top.className : 'nothing'}`] }"""
+            ctx = browser.new_context(viewport={"width": 1366, "height": 768})
+            page = ctx.new_page()
+            page.goto(f"{base}/task?id=task-bake-bread&s=work")
+            page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+            long = page.evaluate("document.documentElement.scrollHeight > 2 * innerHeight")
+            report(f"{engine} 1366x768: the task's page is long", long, "")
+            for what, sel in (("the menu's last entry", ".sections a >> nth=-1"), ("Stop the panel", ".side footer button")):
+                report(f"{engine} 1366x768: {what} can be reached", *page.locator(sel).evaluate(reach))
+            ctx.close()
+            ctx = browser.new_context(viewport={"width": 375, "height": 600})
+            page = ctx.new_page()
+            page.goto(f"{base}/profile?s=work")
+            label = page.locator(".menu summary").inner_text().strip()
+            report(f"{engine} phone: the menu button names Profile there", label == "Profile", label)
+            page.click(".menu summary")
+            report(f"{engine} phone: the open menu's last entry can be reached",
+                   *page.locator(".menu-list nav a >> nth=-1").evaluate(reach))
+            ctx.close()
 
             # What a person does.
             ctx = browser.new_context()
@@ -162,10 +221,30 @@ try:
             page.click("form[action$='/inbox/capture'] button[type=submit]")
             page.wait_for_load_state("networkidle")
             report(f"{engine}: a capture from the inbox page", "call the miller" in page.content(), "")
+            said = page.locator(".flash.ok").count() == 1 and "ok=" not in page.url
+            page.reload()
+            page.wait_for_load_state("networkidle")
+            report(f"{engine}: saved is said once, not again on reload", said and page.locator(".flash.ok").count() == 0, page.url)
+            # A form that cannot be saved comes back with what was typed and the error next to it.
+            page.goto(f"{base}/guard?s=work")
+            root = page.locator("form[action$='/guard/root']:has(input[name=host])")
+            root.locator("input[name=host]").fill("lab-pc")
+            root.locator("input[name=until]").fill("next friday")
+            root.locator("input[name=confirm]").fill("lab-pc")
+            root.locator("button[type=submit]").click()
+            page.wait_for_load_state("networkidle")
+            root = page.locator("form[action$='/guard/root']:has(input[name=host])")
+            err = root.locator(".ferr")
+            report(f"{engine}: a form that fails keeps what was typed, with the error next to it",
+                   err.count() == 1 and "next friday" in err.inner_text() and root.locator("input[name=until]").input_value() == "next friday", page.url)
             page.goto(f"{base}/tasks?s=work")
             page.click("text=Bake bread")
             page.wait_for_load_state("networkidle")
             report(f"{engine}: a task opens from the list", "two loaves for Sunday" in page.content(), page.url)
+            # What can be done with it (park, close) comes before its body, not after the journal.
+            above = page.evaluate("""() => { const c = document.querySelector("form[action$='/task/close']"), b = document.querySelector('.doc:has(.journal)');
+                return !!c && !!b && c.closest('details').getBoundingClientRect().top < b.getBoundingClientRect().top }""")
+            report(f"{engine}: a task's actions come before its body", above, "")
 
             page.goto(f"{base}/guard?s=work")
             form = page.locator("form:has(input[name=list][value=allowed]):has(input[name=op][value=add])").first

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cómo funciona por dentro · augmented brain</title>
-<meta name="description" content="Cómo funciona augmented brain por dentro, en cuatro capas: tú y tu asistente, el plugin, el programa y tus ficheros. Una sesión paso a paso y dónde vive cada fichero.">
+<meta name="description" content="Cómo funciona augmented brain por dentro, en cuatro capas: tú y tu asistente, el plugin, el programa y tus ficheros. Una sesión paso a paso y dónde viven tus notas.">
 <link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html">
 <link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html">
 <link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="augmented brain">
 <meta property="og:title" content="Cómo funciona por dentro · augmented brain">
-<meta property="og:description" content="Cuatro capas, una sesión paso a paso y dónde vive cada fichero.">
+<meta property="og:description" content="Cuatro capas, una sesión paso a paso y lo que no hace.">
 <meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html">
 <meta property="og:locale" content="es_ES">
 <meta property="og:locale:alternate" content="en_US">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Cómo funciona por dentro · augmented brain">
-<meta name="twitter:description" content="Cuatro capas, una sesión paso a paso y dónde vive cada fichero.">
+<meta name="twitter:description" content="Cuatro capas, una sesión paso a paso y lo que no hace.">
 <meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
 <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Saltar al contenido</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Principal">
     <a href="index.es.html">Documentación</a>
@@ -57,10 +57,11 @@
   <li><a href="spaces.es.html">Espacios</a></li>
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
-  <li><a href="guard.es.html">El guardia</a></li>
-  <li><a href="how-it-works.es.html" aria-current="page">Cómo funciona por dentro</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="where-things-live.es.html">Dónde vive cada cosa</a></li>
+  <li><a href="how-it-works.es.html" aria-current="page">Cómo funciona por dentro</a></li>
 </ul>
 <p class="docnav-group">Día a día</p>
 <ul>
@@ -100,7 +101,6 @@
   <h1>Cómo funciona por dentro</h1>
   <p>augmented brain es un programa pequeño y una carpeta de notas. Esta página cuenta cómo encajan las piezas. Para usarlo, no te hace falta nada de esto.</p>
   <figure class="diagram"><picture><source media="(max-width: 600px)" srcset="../img/how-layers-narrow.es.svg"><img alt="augmented brain en cuatro capas" src="../img/how-layers.es.svg"></picture></figure>
-  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#cuatro-capas">Cuatro capas</a></li><li><a href="#una-sesión-paso-a-paso">Una sesión, paso a paso</a></li><li><a href="#dónde-viven-los-ficheros">Dónde viven los ficheros</a></li><li><a href="#lo-que-no-hace">Lo que no hace</a></li><li><a href="#lo-que-se-ha-ido-de-esta-página">Lo que se ha ido de esta página</a></li></ul></nav>
   <h2 id="cuatro-capas">Cuatro capas</h2>
   <div class="table-wrap"><table><thead><tr><th>Capa</th><th>Qué es</th><th>Dónde vive</th></tr></thead><tbody><tr><td><strong>3 · Tú y tu asistente</strong></td><td>Hablas con Claude Code como siempre. No hay comandos nuevos que aprender.</td><td>Tu terminal o la app de Claude</td></tr><tr><td><strong>2 · El plugin</strong></td><td>Las puertas por las que Claude entra al programa: varios hooks y un servidor MCP.</td><td>Dentro de Claude Code, que lo instala</td></tr><tr><td><strong>1 · El programa</strong></td><td><code>augmented-brain</code>, un solo fichero. Vigila los comandos, lleva las tareas, rehace el índice y hace la copia de seguridad.</td><td><code>~/.local/bin/augmented-brain</code></td></tr><tr><td><strong>0 · Tus ficheros</strong></td><td>Texto normal: la configuración, tus notas y, si quieres, su copia de seguridad.</td><td><code>~/.config/augmented-brain/</code>, <code>~/augmented-brain/</code> y tu repositorio git</td></tr></tbody></table></div>
   <p>Dicho de otra forma: <strong>tus notas son un cuaderno, el programa es quien lo ordena y el plugin es la puerta.</strong> Tú solo hablas con Claude. Claude entra por la puerta y el programa escribe en el cuaderno.</p>
@@ -112,11 +112,11 @@
   <p><strong>1. Abres Claude.</strong> El hook de inicio mira en qué carpeta estás y elige tu <a href="spaces.es.html">espacio</a>. Antes de que escribas nada, le pasa a Claude tu perfil, tus reglas y la lista de tareas vivas. También le dice lo que vence pronto, si toca la revisión semanal y si una sesión anterior se cortó. Por eso Claude sabe dónde lo dejaste. Una sesión abierta para una tarea (<code>session start</code>) solo oye las fechas de esa tarea.</p>
   <p><strong>2. Dices “apárcala”.</strong> Claude usa la herramienta <code>task_park</code>. El programa apunta en el fichero de la tarea dónde se quedó y cuál es el siguiente paso, y rehace el índice. Abrir, retomar y cerrar funcionan igual. Mira <a href="tasks.es.html">Tareas</a>.</p>
   <p><strong>3. Claude va a ejecutar un comando.</strong> El hook del guardia lo lee antes, y lo deja pasar, te pregunta o lo para. Mira <a href="guard.es.html">El guardia</a>.</p>
-  <p><strong>4. Claude termina una respuesta.</strong> Si la sesión tiene una tarea abierta y en 20 minutos no se ha escrito nada en ella, un hook le recuerda a Claude que escriba en su diario, una vez. Cada sesión tiene su propia tarea, así que dos ventanas nunca reciben el aviso de la otra. El mismo hook mira la memoria de la ventana: si ha crecido mucho más de lo normal, Claude te lo dice, para que aparques la tarea antes de que el sistema cierre la ventana. Mira <a href="troubleshooting.es.html#la-ventana-usa-mucha-memoria">Si algo falla</a>.</p>
+  <p><strong>4. Claude termina una respuesta.</strong> Si la sesión tiene una tarea abierta y en 20 minutos no se ha escrito nada en ella, un hook le recuerda a Claude que escriba en su diario, una vez. Cada sesión tiene su propia tarea, así que dos ventanas nunca reciben el aviso de la otra. En Linux y macOS, el mismo hook mira también la memoria de la ventana: si ha crecido mucho más de lo normal, Claude te lo dice, para que aparques la tarea antes de que el sistema cierre la ventana. Mira <a href="troubleshooting.es.html#la-ventana-usa-mucha-memoria">Si algo falla</a>.</p>
   <p><strong>5. Cierras la sesión.</strong> El hook de cierre apunta que la sesión acabó bien. Lanza la <a href="backup.es.html">copia de seguridad</a> del espacio por detrás, si la has configurado. No esperas a nada. Si la red no contesta, la copia se rinde a los 3 minutos en vez de quedarse colgada. Si la copia falla, Claude te lo dice al empezar la siguiente sesión.</p>
   <p>Si una sesión no acabó bien (se cerró la ventana a la fuerza, se apagó el ordenador), la siguiente te ofrece recuperarla. Claude lee lo que os dijisteis después de la última entrada del diario de la tarea, en el registro de la conversación que guarda Claude Code en este ordenador (lo guarda 30 días), y apunta lo que falte.</p>
-  <h2 id="dónde-viven-los-ficheros">Dónde viven los ficheros</h2>
-  <p>Tus notas, una carpeta por espacio:</p>
+  <h2 id="dónde-viven-tus-notas">Dónde viven tus notas</h2>
+  <p><a id="dónde-viven-los-ficheros"></a>Tus notas, una carpeta por espacio:</p>
   <pre><code>~/augmented-brain/
 ├── trabajo/              una carpeta de trabajo: abre Claude aquí para lo del trabajo
 │   ├── notas/
@@ -132,33 +132,19 @@
 │   │   └── archive/      lo antiguo; no se carga y no se borra
 │   └── (tus proyectos)
 └── personal/             lo mismo, para lo personal</code></pre>
-  <p>La carpeta de configuración, <code>~/.config/augmented-brain/</code> (en Windows, <code>%APPDATA%\augmented-brain</code>):</p>
-  <pre><code>config.toml       los espacios y las listas del guardia
-guard.toml        los repositorios que Claude no debe tocar nunca
-remote.toml       el acceso remoto, si lo configuras
-session.toml      ajustes de las sesiones (el modelo preferido)
-secrets.toml      los nombres de tus secretos, nunca su valor
-profile.md        quién eres, para todos los espacios
-shared/           reglas, referencias y lecciones para todos los espacios
-state/            lo que este ordenador sabe de las sesiones de cada espacio; sin copia
-migrations/       una copia completa de las notas antes de que una versión nueva las mueva
-panel.json        dónde escucha el panel, mientras funciona
-history/          las 10 últimas versiones de estos ficheros; solo en este ordenador</code></pre>
-  <p>Cada fichero está explicado en <a href="configuration.es.html">Configuración</a> y en el <a href="memory-format.html">formato de la memoria</a> (en inglés).</p>
+  <p>Todo lo demás (la carpeta de configuración, lo que este ordenador guarda para sí, el programa) y lo que viaja en la copia está en <a href="where-things-live.es.html">Dónde vive cada cosa</a>.</p>
   <h2 id="lo-que-no-hace">Lo que no hace</h2>
-  <ul><li><strong>No hay servidor ni cuenta.</strong> Si Claude no está abierto, no funciona nada, salvo el panel mientras lo usas, la copia de seguridad que lanza el final de una sesión y, si lo configuras, el <a href="remote.es.html">acceso remoto</a>, que sigue en marcha para que llegues a tus sesiones desde otro dispositivo.</li><li><strong>No envía tus datos a nadie.</strong> Solo la copia de seguridad, si la configuras, habla con tu repositorio. Aparte, una vez al día, pregunta a GitHub cuál es la última versión, sin mandar nada tuyo. <code>AB_NO_UPDATE_CHECK=1</code> lo apaga.</li><li><strong>No toca tus ajustes de Claude Code.</strong> El plugin se pone y se quita con los comandos de Claude Code, que el instalador, <code>update</code> y <code>uninstall</code> lanzan por ti.</li><li><strong>Ojo: tu asistente lee tus notas</strong>, como cualquier fichero que abre. Viajan con tus conversaciones a su proveedor. No guardes ahí lo que no compartirías.</li></ul>
-  <h2 id="lo-que-se-ha-ido-de-esta-página">Lo que se ha ido de esta página</h2>
-  <p>Esta página tenía más cosas. Ahora cada parte tiene su propia página:</p>
-  <ul><li><a id="tus-ficheros"></a><a id="trabajo-y-personal-separados"></a><a id="notas-compartidas"></a>Tus ficheros, los espacios y las notas compartidas: <a href="spaces.es.html">Espacios</a> y <a href="notes.es.html">Áreas, conocimiento y lo demás</a>.</li><li><a id="la-copia-de-seguridad"></a><a id="en-una-máquina-nueva"></a>La copia de seguridad, y una máquina nueva: <a href="backup.es.html">Copia de seguridad y restauración</a>.</li><li><a id="trae-una-memoria-que-ya-tienes"></a>Importar una memoria que ya tienes: <a href="import.es.html">Trae una memoria</a>.</li><li><a id="el-panel"></a>El panel y cada una de sus páginas: <a href="panel.es.html">El panel</a>.</li><li><a id="actualizarlo"></a><a id="quitarlo"></a>Actualizarlo y quitarlo: <a href="install.es.html#actualizar">Instalación</a>.</li></ul>
+  <ul><li><strong>No hay servidor ni cuenta.</strong> Si Claude no está abierto, no funciona nada, salvo: - el panel, mientras lo usas; - la copia de seguridad que lanza el final de una sesión; - la sesión propia de una tarea, abierta con <code>augmented-brain session start</code>, hasta que se para o se cierra la tarea; - <code>augmented-brain watch pr</code>, que espera las comprobaciones de una pull request, tres horas como mucho; - si lo configuras, el <a href="remote.es.html">acceso remoto</a>, que sigue en marcha para que llegues a tus sesiones desde otro dispositivo.</li><li><strong>No envía tus datos a nadie.</strong> Solo la copia de seguridad, si la configuras, habla con tu repositorio. Aparte, una vez al día, pregunta a GitHub cuál es la última versión, sin mandar nada tuyo. <code>AB_NO_UPDATE_CHECK=1</code> lo apaga.</li><li><strong>No toca tus ajustes de Claude Code.</strong> El plugin se pone y se quita con los comandos de Claude Code, que el instalador, <code>update</code> y <code>uninstall</code> lanzan por ti.</li><li><strong>No se queda dentro de tus espacios.</strong> Actúa en todas las sesiones de Claude Code de este ordenador. Fuera de tus espacios usa el espacio por defecto, y el guardia vigila igual. Mira <a href="spaces.es.html#fuera-de-todos-los-espacios">Fuera de todos los espacios</a>.</li><li><strong>Ojo: tu asistente lee tus notas</strong>, como cualquier fichero que abre. Viajan con tus conversaciones a su proveedor. No guardes ahí lo que no compartirías.</li></ul>
+  <p><a id="tus-ficheros"></a><a id="trabajo-y-personal-separados"></a><a id="notas-compartidas"></a><a id="la-copia-de-seguridad"></a><a id="en-una-máquina-nueva"></a><a id="trae-una-memoria-que-ya-tienes"></a><a id="el-panel"></a><a id="actualizarlo"></a><a id="quitarlo"></a></p>
   <nav class="pager" aria-label="Anterior / Siguiente">
-    <a class="prev" href="guard.es.html"><span>← Anterior</span>El guardia</a>
-    <a class="next" href="what-claude-may-do.es.html"><span>Siguiente →</span>Qué puede hacer Claude sin preguntarte</a>
+    <a class="prev" href="where-things-live.es.html"><span>← Anterior</span>Dónde vive cada cosa</a>
+    <a class="next" href="phrases.es.html"><span>Siguiente →</span>Qué decirle a Claude</a>
   </nav>
 </main>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
+  <div class="wrap wide"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

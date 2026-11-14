@@ -154,7 +154,7 @@ Spanish:
 - **Get started**: [Getting started](https://icalvete.github.io/augmented-brain/guide/getting-started.html), [Installing](https://icalvete.github.io/augmented-brain/guide/install.html),
   [Bring in a memory](https://icalvete.github.io/augmented-brain/guide/import.html).
 - **Concepts**: [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html), [Tasks](https://icalvete.github.io/augmented-brain/guide/tasks.html),
-  [Areas, knowledge and the rest](https://icalvete.github.io/augmented-brain/guide/notes.html), [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html),
+  [Areas, knowledge and the rest](https://icalvete.github.io/augmented-brain/guide/notes.html), [Editing notes by hand](https://icalvete.github.io/augmented-brain/guide/editing-notes.html), [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html),
   [How it works inside](https://icalvete.github.io/augmented-brain/guide/how-it-works.html), [What Claude may do without asking you](https://icalvete.github.io/augmented-brain/guide/what-claude-may-do.html),
   [Where everything lives](https://icalvete.github.io/augmented-brain/guide/where-things-live.html).
 - **Daily use**: [What to say to Claude](https://icalvete.github.io/augmented-brain/guide/phrases.html), [The panel](https://icalvete.github.io/augmented-brain/guide/panel.html),

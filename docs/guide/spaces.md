@@ -48,13 +48,36 @@ augmented-brain space
 
 ## Outside every space
 
+augmented brain works in every Claude Code session on this computer, whatever the
+folder: its plugin is installed for your whole user. A folder that is in no work folder
+is outside every space.
+
 The desktop app starts each new session in a scratch folder of its own. That folder is
 in no space. Then the **default space** is used, `personal` unless you change it, and
 Claude tells you in one line, with how to switch to work.
 
-The default space matters for one more thing: its backup carries your profile and the
-shared notes. Set it with `default_space` in the configuration. With a single space, it
-is that one.
+The default space matters for one more thing: its backup carries your profile, the shared
+notes and the names of your secrets (never their values). Set it with `default_space` in
+the configuration. With a single space, it is that one.
+
+What changes outside, next to a session in a space:
+
+| | In a space | Outside every space |
+|---|---|---|
+| Profile, rules, tasks and the rest of the notes | The space's | The default space's, and Claude tells you |
+| What Claude writes in your notes | Goes to the space | Goes to the default space |
+| Tasks changed by another session | Claude hears of them | Those of the default space |
+| Reminder to write in the task's journal | Yes | No |
+| A session cut short, offered to recover | Yes | No |
+| [The guard](guard.md) | All of it | All of it, the same |
+| Backup when the session ends | The space's | The default space's |
+| Warnings about the window's memory and the model | Yes | Yes |
+
+The guard does not look at the folder: its lists hold for the whole computer. So in any
+project, also one you never gave augmented brain, Claude cannot commit or push until you
+[let it in that repository](guard.md#let-claude-commit-in-a-repository).
+
+To bring a folder into a space, add it to the space's `work_folders` (next).
 
 ## Your projects live elsewhere?
 
@@ -74,6 +97,13 @@ It asks for the work folder and the notes folder, suggesting
 If there was no default space yet, it sets one. The options are in
 [Commands](commands.md#augmented-brain-space-add).
 
+Then two things:
+
+- **Give it a backup.** Open Claude in the new work folder and say "set up the backup";
+  each space has its own. See [Backup and restore](backup.md).
+- **Work in it.** Open Claude in its work folder, or in a folder inside it, and the
+  session uses the new space.
+
 ## What each space has, and what they share
 
 Each space has its own:
@@ -89,8 +119,9 @@ Every space shares:
 - **the shared notes**: rules, references and lessons that hold everywhere (below).
 - **the guard's lists**: production AWS profiles, machines not to touch, the
   repositories where Claude may commit and those it must never touch, and the root
-  exceptions. They hold on the whole machine. A production
-  profile saved from the work space is guarded in the personal one too.
+  exceptions. They hold on the whole machine, whichever space you write them from. A
+  production profile saved from the work space is guarded in the personal one too, and a
+  repository where Claude may commit is allowed from every space.
 
 Spaces never read each other's notes on their own.
 
@@ -106,7 +137,8 @@ on.
   space knows where it was decided.
 - Nothing is copied into this space's notes: what Claude reads stays in the
   conversation.
-- Claude does it only when you ask, as with sending a capture to another space.
+- Claude does it only when you ask, as with
+  [sending a capture to another space](notes.md#sending-a-capture-to-another-space).
 - Closing that task is done from a session of its own space, because closing also ends
   the task's session and its worktree.
 - That space is backed up when this session ends, if it has a backup: it does not wait

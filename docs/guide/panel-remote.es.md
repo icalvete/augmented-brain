@@ -60,6 +60,8 @@ Cuatro cosas hacen que sea solo tuyo:
   panel en este ordenador, y la llave de las páginas de este ordenador no lo abre desde
   otro dispositivo. Así, quien se hiciera con la dirección del otro dispositivo seguiría
   sin poder hacer aquí lo que solo puede este ordenador.
+  La dirección es para ti, no para Claude: lanzado por Claude, el comando no publica
+  nada y te pide que lo lances en una terminal tuya.
 
 No hay otra contraseña que teclear: tu cuenta de Tailscale es la entrada.
 
