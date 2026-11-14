@@ -2,7 +2,9 @@
 
 A handbook for AI coding agents working on this repository. People should start with
 [README.md](README.md); how the pieces fit is in
-[docs/guide/how-it-works.md](docs/guide/how-it-works.md).
+[docs/guide/how-it-works.md](docs/guide/how-it-works.md). The detail behind every section
+here is in [dev/](dev/): [map](dev/map.md), [checks](dev/checks.md),
+[rules](dev/rules.md), [releases](dev/releases.md).
 
 ## What this is
 
@@ -13,254 +15,165 @@ a Claude Code plugin plugs it in through hooks and an MCP server. It is public, 
 beta, and for people who are not necessarily technical: every change is judged by how
 it feels to a newcomer.
 
+## Before you touch anything
+
+- **You probably run on the maintainer's machine, with augmented brain installed.** Never
+  try the program against the real notes: give every manual run a configuration of its
+  own, `AB_CONFIG_DIR=$(mktemp -d) ./augmented-brain init …`. Tests already use temp
+  folders.
+- **The guard and the installed plugin apply to you too.** A push, a pull request merge
+  or a release asks the maintainer, and so does a write to the plugin's own files. The MCP
+  tools and hooks in your session are the *installed* version's, not this checkout's: to
+  try a change, build it and run `claude --plugin-dir plugin` with it first in `PATH`.
+- **Code, comments, commit messages and `dev/` are in English.** Whatever a person reads
+  in the program or the docs is in English and Spanish (rules below).
+- **Read the package comment first.** Every package starts with `// Package …`, which
+  says what it is for; [dev/map.md](dev/map.md) adds the reasons and the traps.
+
 ## Map
 
 | Path | What |
 |---|---|
-| `cmd/augmented-brain/` | The commands: `init`, `space add`, `doctor`, `check`, `import`, `backup`, `restore`, `panel`, `remote`, `session`, `config history`, `config restore`, `update`, `uninstall`, `version`, `mcp`, `hook`. `loadConfig` and `currentSpace` (main.go) are how a command gets the configuration and its space. |
-| `internal/config` | The configuration file: spaces, `default_space`, the machine-wide guard lists (`root_ask` parsed in `rootask.go`), `SecretsFile` (`secrets.toml`: the names of the user's secrets, a file of its own because earlier programs refuse an unknown setting of `config.toml`), `GuardFile` (`guard.toml`: `untouchable_repos` and `reach`, same reason; `LoadGuard`, `SaveGuard`; remote access follows it with `remote.toml`, read by `internal/remote`), `SessionFile` (`session.toml`: `preferred_model` and `memory_trust`, same reason; `LoadSession`, `SaveSession`, `ModelMatches`, `Session.Trust`) and `GuardFingerprint` (a hash of every list the guard answers to, sealed in `state/guard.seal`). `Load` says "update" when a newer format holds settings it does not know. Edits keep the user's comments: every one goes through the line editor in `edit.go` (`AddSpace`, `SetSpaceKey`, `SetSpaceList`, `SetTopList`, `SetDefaultSpace`, `SetFormat`, and `SaveGuard` for `guard.toml`, whose unknown settings stay too), which loads the file back before the change stays. |
-| `internal/memory` | Reads and checks notes (headers only), builds the index `MEMORY.md`. The one place for what a note looks like: `Types` (folder and id prefix of each type, `PathFor`), the dated line `- date — text` (`dated.go`), `## ` headings (`Headings`), dates (`ParseDate`, `DaysBetween`), the header (`SplitHeader`). `LoadSpace` loads a space with the shared notes it may link to; `LoadShared` the shared notes alone (`<config>/shared/`: rules and knowledge for every space). |
-| `internal/brain` | Everything that writes notes: tasks, areas, knowledge, people, the profile, safety settings, recovered sessions (`Recover`), the list of secret names (`secrets.go`: names only, a value is refused), what each repository is (`repos.go`: the reference `ref-repositories`, a line per repository), captures sent to another space's inbox (`CaptureTo`: the line ends `(from <space>)`, before any reminder, and is read as an origin only for a space of the configuration; `Arrived`, `InboxDoneEntry` for `capture_done`), a task of another space (`Other`: the task tools' `space`; its journal lines end `(from <space>)` and `state.MarkOutside` has the next session end back that space up). A change copies the note, checks everything, then writes once (`Update` takes the watch dates too), so a failed change leaves nothing behind. |
-| `internal/mcpserver` | The MCP tools, thin layers over `brain`. Calls run one at a time (`filelock.Writer`: a mutex plus the notes lock file). |
-| `internal/panel` | The local web panel (`augmented-brain panel`): started detached on demand, 127.0.0.1 only (with `panel remote`, also through the user's Tailscale network: `Remote` and `RemotePort` in `panel.json`; the server opens a second socket of its own on 127.0.0.1 (`openNet`, `serveNet`), the one Tailscale publishes, where every request is from the network whatever its Host (`viaRemote` reads the socket, never the Host), must carry exactly that Host and `Tailscale-User-Login` equal to the machine's owner, gets no `/ping` and no command, and the origin is `https://`; the local socket refuses requests with proxy or `Tailscale-*` headers; a ticket is spent only through the socket it was made for, and each socket has its own session and form code (`sessionFor`, `csrfFor`: the network's session is `netSessionOf` the token, its code random), neither good on the other socket, so a ticket for the phone spent by a program of this machine never yields a local session; the server takes the address back when it stops, and `StartMode` clears a leftover through `UnpublishLeftover` whenever no panel answers, only the port recorded in `state/panel-published` (`tailnet.Record`), and without a record it never runs tailscale; `GoRemote` has a panel already running switch in place, `POST /remote` with its token (waiting `RemoteWait`, 25 s, for a slow Tailscale) and never through the network, so its key and the open pages stay, and falls back to starting again only for an earlier panel (404, 405 or 501, or remote without `RemotePort`); `GoLocal` undoes it when publishing fails), pages under `/s/<session>/` (derived from the run's token in `panel.json`; no cookie, since cookies of 127.0.0.1 reach every port; never printed: the command asks `POST /ticket` with the token and opens `/t/<ticket>`, which `ticket.go` spends once, 303 to the session, 410 after, 2 minutes or 10 for remote; under Claude Code with the browser open it prints no address), a change or acceptance of the guard's lists leaves `state.AddGuardNotice`, which the next Stop, UserPromptSubmit or SessionStart hook shows the user once as `systemMessage`, `/ping` answers an HMAC challenge so a stale `panel.json` cannot be impersonated, and its process is ended only when `ours` finds it is this program's `panel serve` that started before the file's `Started` (`procInfo`: `/proc` on Linux, `ps` on macOS, start time only on Windows), `panel.lock` serializes start and stop, Host/Origin/CSRF checks, strict CSP, stops after 30 idle minutes (`/stamp`, which an open note's page asks now and then to tell whether the note changed on disk, does not count as use). Routes in `pages.go`; one file per page: `today.go` (every space at once, and the repositories of open tasks with work not committed or not pushed), `tasks.go`, `notes.go` (areas, knowledge, rules, people, any note), `people.go`, `search.go`, `review.go` (the weekly review; its draft lives in the configuration folder until finished), `secrets.go`, `sessions.go`, `reminders.go`, `inbox.go`, `profile.go`, `space.go` (Health), `repos.go` (Repositories: every git repository in each space's work folders, found by `repostat.Find`, with what is pending, the tasks that name it and the user's line on what it is), `versions.go` (Versions: the configuration's versions, what each changed, going back; local only), `guard.go` (Guard: every list the guard answers to, edited in place with comments kept, sealed with `state.WriteSeal` unless something else had changed them; the one way to change `guard.toml`), `help.go` (Help: links to the website, and a problem report or an idea for GitHub's issue forms in `.github/ISSUE_TEMPLATE`, filled in by field id; `GET /help/report`, a plain link (a form could not redirect to github.com under the CSP's `form-action`), runs `doctor` without holding the notes lock, redacts it with the version and the system, and answers 303 to the problem form with it filled in, under an 8,000-character cap; the idea link goes straight to its form). `markdown.go` renders notes: a small renderer of its own that escapes every piece of text and writes only its own tags, so a note cannot put HTML or scripts in the page. Pages in `web/` (`go:embed`, no external requests; light only, on purpose); writes through `brain` under the same `filelock.Writer` as the MCP server. |
-| `internal/tailnet` | Tailscale for the remote panel (`panel remote`): `Status` (`tailscale status --json`: the machine's name, its owner's login, whether the network gives it HTTPS), `Serve`/`Unserve` (`tailscale serve --bg --https=8443` to `http://127.0.0.1:<port>`, and `off`), only ever its own entry: port `Port` (8443) with a single proxy to one of the ports passed as ours (`Ours`; the panel's is the one `Record` wrote in `state/panel-published`, `Published`, `Forget`); anything else there, a proxy to another local port included, is `ErrPortTaken` and never touched, never `serve reset`. Errors the command explains: `ErrMissing`, `ErrStopped`, `ErrNoHTTPS`, `ErrOperator` (Linux: `sudo tailscale set --operator=<user>`, printed, never run). `MarkUsed`/`Used` (`state/panel-remote`): only then does `doctor` add its line. All through `Tailnet.Run`, so tests never run tailscale; on macOS it also finds the app's program. |
-| `internal/repostat` | Whether a repository on this computer holds changes not committed or commits not pushed, for the panel's Today. Read only: git with no optional locks, no password prompt, no filesystem monitor, 4 seconds at most. A branch never pushed counts only when the repository has a remote. `find.go`: the repositories inside a folder (a few levels down, no links followed, capped) and a remote's address with no credentials (`CleanRemote`). |
-| `internal/remote` | `augmented-brain remote install \| uninstall \| status`: one service per space that keeps `claude remote-control` running, so the machine can be reached from claude.ai or Claude Desktop after a reboot: a `systemd --user` unit on Linux (`augmented-brain-remote-<space>.service`), a LaunchAgent on macOS (`launchd.go`: `com.augmented-brain.remote.<space>.plist` in `~/Library/LaunchAgents`, `launchctl bootstrap`/`bootout` in `gui/<uid>`, KeepAlive, PATH in EnvironmentVariables, stderr to `~/Library/Logs/augmented-brain/`), a task of the Task Scheduler on Windows (`tasks.go`: `\augmented-brain\remote-<space>`, registered with `schtasks /Create /XML` from a UTF-16 copy kept in `%LOCALAPPDATA%\augmented-brain\remote`; InteractiveToken, since S4U is refused to a standard user; `conhost.exe --headless` so no window opens; a logon trigger plus one repeating every minute with `IgnoreNew`, since "restart on failure" does not restart a program that exits; `cmd` sets PATH and sends stderr to the log; `schtasks /End` stops only conhost, so stopping also kills the cmd tree that names the log). macOS and Windows start it at login only (`LingerNone`: no linger there). `services.go` is what they share (`prepare`, `folders`, `finish`, `servicePath`: claude's and this program's folders first). Each service starts in the space's first work folder, or the one `folders` in `remote.toml` names (it must lie inside a work folder of the space); only a space with no work folder gets `<config>/remote/<space>` (`Service.Own`), which `install` creates and adds through `config.SetSpaceList`. Either way the session's space comes from its folder as always. `System` holds everything outside the configuration folder (command runner, `LookPath`, hostname, GOOS, the unit folder, Claude's `.claude.json`, read only for `hasTrustDialogAccepted`), so tests use fakes and temp folders and never run claude, systemctl or loginctl. Settings (`enabled`, `spaces`, `name_prefix`, `permission_mode`, `folders`) are in `remote.toml`, a file of its own for the same reason as `secrets.toml`. Units carry a marker line (an XML comment in the plist and the task): uninstall removes only those. Their stderr goes to the journal (rate-limited; claude remote-control writes its errors there and redraws on stdout, which goes nowhere); `Outdated` flags a unit of an earlier program, and `status`/`doctor` say to install again. `install` never runs `loginctl enable-linger` (root): it prints the command. `scripts/remote-check.py` runs install, status, doctor and uninstall for real on macOS and Windows with a pretend claude (CI). `doctor` gets a line per space when `enabled`. `launch.go` is `augmented-brain session start \| stop \| list` (Linux only for now: tried only there): a background Claude session (`claude --bg --remote-control <name>`) in the task's folder, whose first message (`session.first`) names the task and has it read it and get going; never through a variable, since every `--bg` session gets the environment of whoever started Claude's daemon (so `AUGMENTED_BRAIN_TASK` is taken out of what the daemon may get). Its id (from `claude --bg`, or found in `claude agents --json`) is kept in `state/sessions/<task>.json`; `stop` is `claude stop` plus `claude rm`, which also takes it out of Claude Desktop and claude.ai. `Start` checks `claude auth status` first (`ErrLoggedOut`) and waits up to `FirstTurnWait` for the first answer in the session's transcript (found by its `sessionId` under `ClaudeDir/projects`, read by `state.LastAnswer`): an API error there stops and removes it (`*FirstTurnFailed`), and `Launches` calls a running session whose last answer is one `Failed`, with its `Problem`. A session runs when `claude agents --json` gives it a pid: Claude retires one left idle for hours (no pid, still listed; `Retired` in `session list`), and its daemon exits once unused, when `claude rm` fails until `wakeDaemon` starts it (`StartDaemon`, without TaskEnv or AB_CONFIG_DIR); if it still fails, the record goes and the error is `*LeftInClaude`. `--when-idle` counts a retired session as idle, stops units of earlier versions, and, started by `task_close`, writes to `state/session-stop.log`; with nothing to close, `ErrNoSession`. The folder must be trusted on its own (`FolderTrusted`: exact, or through a worktree's main repository, `WorktreeRoot`; Claude would not ask) and used by no other task's session. Systemd units of earlier versions (`augmented-brain-session-<task>`) are still listed and stopped. For a bare repository, `worktree.go` makes the task's own worktree (`TaskWorktree`: `<repo>-<task>`, a new branch from origin's default, through `backup.Git`) and records it in `state/session-worktrees/<task>`; only recorded ones are ever removed, and only when the record names the task's own path, git knows the folder as a worktree and `WorktreeWork` finds nothing of its own (changes, whatever the user's git settings hide; commits not on a remote on HEAD and on the task's branch; ignored files outside build folders: `KeptIgnored`), with their branch only when it is all on a remote (`RemoveTaskWorktree`), by `session stop`, by `SweepWorktrees` (sessions no longer running, records older than `sweepAfter`, at `session start`; `doctor` only reports, through `SweepableWorktrees`) and by `CloseTaskWorktree` (`task_close`). `quota.go` wakes the tasks' sessions the usage limit stopped (`WakeQuota`, from `remote watch`): a background session whose last answer is the limit's refusal (`state.QuotaStop`: `apiError` `usage_limit_reached`, with `quotaLimits.resetsAt`) does nothing until written to, so past that hour it is stopped, waited for until Claude lists it with no process and its daemon writes `bg settled <id>` in `daemon.log` (`daemonSettled`; 15 seconds when the log says nothing: sooner, Claude starts a copy) and resumed with `claude --bg --resume <session id> <message>`, same id and remote thread; one on each look, only sessions on record, three tries; what waits is `state/quota-wait.json`, and the user hears twice (`state.AddQuotaNotice`, shown by the next hook). `Start` holds a lock per task (`state/session-locks`) until the session is on record; `Stop` returns `ErrCannotTell`, keeping the record, when Claude cannot say whether the session runs. |
-| `internal/keyring` | Whether the system keychain holds a secret, never its value: `secret-tool` on Linux, `security` on macOS, unknown elsewhere. What the command prints is discarded. |
-| `internal/fresh` | Which tasks changed outside a session since it last looked. A "seen" file per Claude process (`state/seen/pid-<n>.json`, named after the process, not the session: after /clear the hooks get a new session id but the MCP server keeps the old one): for every task its modification time, size, SHA-256 and what the index says of it. `HookKey` (CLAUDE_PID) and `ServerKey` (the MCP server's parent, when CLAUDECODE is set) name the same file; without them nothing is tracked. `Baseline` (SessionStart part 1, after the migration and before the index is written), `Check` (UserPromptSubmit, and the MCP server before each tool: changes from outside), `Absorb` (the MCP server after each tool, still under the notes lock: the tool's own writes, never reported back), `Text` (the note, at most 8 lines). Reported: a change of what the index says of any task, any change of a task the session read or wrote, new and gone tasks; a change of format, in one line. |
-| `internal/confighistory` | The last versions of the configuration (`Keep`, 10), only on this machine and never in the backup: `config.toml`, `guard.toml`, `remote.toml`, `session.toml`, `profile.md`, `secrets.toml` as they were, with who changed them (`ByOutside`, `ByCommand`, `ByTool`, `ByPanel`, `ByRestore`), in `<config>/history/<id>.json`. `Record` keeps one only when something changed; it runs before and after every command that may change the configuration (`keepsHistory` in main.go), MCP tool and panel write, and at the session start, so a change by hand is its own version. `Restore` keeps the current one first, checks the result (`Check`) and puts it back if it fails; it never seals the guard's lists: the panel's Versions page does (local only; through the network it only shows), `config restore` does not, so a command the assistant runs stays one the guard asks about. `Compare` is the line diff the page and `config history N` show. |
-| `internal/reach` | Where augmented brain acts: `OnlySpaces` (guard.toml's `reach = "spaces"`, taken only when the seal holds it) and `Outside` (a folder in no space, `config.InSpace`: work folders and notes). Every hook, the MCP server and `doctor` ask it; outside, they stay quiet and the guard gets `Policy.Outside`. |
-| `internal/filelock`, `internal/detach` | The cross-process lock and the shared `Writer`; starting a process that outlives its parent (the automatic backup, the panel). |
-| `internal/hook`, `internal/session` | The SessionStart, PreToolUse, UserPromptSubmit, Stop, PostCompact and SessionEnd hooks (UserPromptSubmit tells the assistant which tasks changed outside its session, package fresh, waiting at most `FreshWait` for the notes lock; its command in `hooks.json` ends in `|| true`, because the plugin can reach a machine before the program and an unknown hook exits 2, which there would throw the user's message away; the guard's never does) (SessionEnd starts the automatic backup); what the assistant reads at the start, in up to `session.Parts` (9) hooks of 9,500 UTF-16 units each (Claude Code cuts each hook's text at 10,000); only the parts that have something are sent and counted ("part 2 of 3"): part 1 alone does the work behind the notes. How the hooks ask the assistant to pass news on in the user's language is worded once, in `session/say.go`. Stop also warns about memory: `internal/hostmem` walks up from the hook to `claude`, takes its parent when that is VS Code's extension host (claude itself otherwise), reads its resident memory (`/proc` on Linux, one `ps` on macOS, nothing on Windows), and past 2, 4 and 8 GB has the assistant warn the user, once per host (pid and start time) and step; the marks are `state/memory.json`, and `doctor` warns about every Claude host past 2 GB. With `preferred_model` set, SessionStart (when Claude Code sends `model`) and Stop (the model of the last answer, read from the end of the transcript by `state.LastModel`) have the assistant tell the user when another model answers, once per session and model (`state/model.json`, which also records what the last start said). With `memory_trust = "ask"`, PreToolUse also answers for the MCP tools that save what every session follows (`trust.go`: `memoryTools`, named by the plugin's second matcher; "ask", or "deny" in bypassPermissions). `AB_MEMORY_WARN_MB` is a test aid, not a setting: it moves the first step (the others at twice and four times it) to try the warning on a window of normal size. |
-| `internal/format` | The version of each space's notes (`.augmented-brain/format`) and of the configuration folder (`format =` in `config.toml`, never written while it is 1), and the migrations that move them forward at the start of a session or in `check`, after a full copy. Notes of a newer version are refused, never written. |
-| `internal/importer` | `augmented-brain import`: a memory of Claude Code into the spaces. `MakePlan` decides (and reports what it cannot), `Apply` writes, never over a note that exists; the source is only read. |
-| `internal/state` | What this machine knows about each space's sessions (active task, last write, sessions that did not end), in the configuration folder, never backed up; the reader of Claude Code's transcripts for `session_recover`; and the MCP servers running (`servers/<pid>`, with their version), so `doctor` and the session start can say which open sessions still run an earlier program after an update (on Linux also those of versions that kept no note: their program was replaced on disk). |
-| `internal/guard` | The command guard: a small shell parser and the policy (push, root and its dated exceptions in `root_ask`, secrets, production profiles, untouchable hosts). `simple` checks one command in three steps: `prepare` (the program, its environment, AWS keys written in it, a program only known when it runs), the program's rule in `rules` (one function per program; a wrapper of `shell.go` never has one, `TestWrappersHaveNoRule`), then `everyProgram`, applied to whatever the rule said (a production profile set in the command). `gitdir.go` is the one reader of a repository's or worktree's git folders (`gitDirs`) and of git's config files (`readGitConfig`), for aliases, remotes, the branch and a worktree's repository; `ghValue` is the one table of gh's options that take a value. `pinned_test.go` holds a row per rule with its verdict, and `scripts/guard-coverage.sh` keeps coverage from going down. `secrets.go`: each pattern of `secretPatterns` carries `may`, a cheap test every match of it passes, and its expression runs only when that says yes (about 40 times faster); a new pattern brings its test, and `secrets_filter_test.go` keeps the plain expressions as the reference and compares both ways. `repoVerdict` is what the repository lists say (the untouchable list first: it wins), for a push and for merging a pull request (`merge.go`: the folder a `cd` in the command names, never the session's alone, and the remotes in its `.git/config`, read without running git)). `panelaccess.go` denies what reaches the panel's key (`ReadFile` for Read and Grep, `panelAccess` for commands) and `ConfigChanged` (the lists are not the sealed ones) turns an allowed commit, push or merge into a question, keeps a root exception for this machine from counting and has every command the profiles or hosts cover ask (`listsUnknown`); the hook feeds both (`hiddenFiles`, `guardSealNote`). `protected` asks for a write of a file in `Protected` or under `ProtectedDirs` (the plugin's cache in `~/.claude/plugins/cache/`), and for one into the folder that holds one (`cp -t`, `tar -C`, `rsync`: the `writers`). `written.go` follows the files a command line writes before it runs one as a script (`lineFiles`: known text is checked, anything else asks); `gitalias.go` reads the user's git aliases from the config files, without running git. `gitrun.go`: the doors through which git runs a command or takes settings the command line does not show (`-c`, `--config-env`, `GIT_CONFIG_PARAMETERS`, `git config`, variables that name a program, options whose value is a command), where a push goes (`pushTo`: a remote of its own, a repository of the lists, or somewhere else) and the commands that commit without saying so (`gitCommits`, denied in an untouchable repository). `ghapi.go`: `gh api` and `glab api` (`apiDenied`, `graphql`), and the aliases gh and glab keep (`ghAlias`). |
-| `internal/setup`, `internal/doctor`, `internal/backup`, `internal/claudecode`, `internal/update` | Creating spaces, the health check, backup and restore, installing the plugin, the new-version check. |
-| `internal/i18n` | Every message a person reads, and every text the program writes into notes, in one catalogue: a file per subject (`doctor.go`, `commands.go`, `panel.go`, `import.go`, `init.go`, `notes.go`, `guard.go`, `help.go`, `hook.go`: what the hooks tell the assistant in the configuration's language), each message with its English and Spanish side by side. `T` formats one; `All` gives both, to read back text written in either. |
-| `internal/paths` | Paths and files: `~`, `Resolve`, `Within`, `Rename` (patient on Windows), `WriteAtomic`, the one way the program replaces a file (synced to the disk, file and folder; `WriteAtomicNoLink` for notes, which refuses a symbolic link; `WriteAtomicQuick`, not synced, for the machine's state written at every message), `CleanTemps` (what a write cut short left, at the session start), and `CopyTree` (`CopyTreeExact` for the copy before a migration: links as links, synced, marked `.copy-complete` by `format`, which reuses a finished copy of the same version instead of making another). |
-| `internal/rules`, `internal/templates` | The common rules and the starter files, in English and Spanish. |
-| `plugin/` | The Claude Code plugin: `hooks/hooks.json` (every hook but the guard's hands "not found", exit 127, to `hooks/missing.sh`: part 1 of the session start says the program is missing and how to install it, the rest say nothing), `.mcp.json`, `commands/panel.md` (`/brain:panel`). `.claude-plugin/marketplace.json` makes this repo its marketplace. Both travel inside the program (`marketplace.go`, `go:embed`): `claudecode.WriteLocal` writes them to `<config>/marketplace/` (the version in `plugin.json`; on Windows `.mcp.json` without its PATH) and `Install`/`Update` have Claude Code read the plugin from there, so it is always the installed version's, never `main`'s. `Update` runs `marketplace add` first, which moves an installation still on GitHub keeping the plugin and its data (never `marketplace remove`: it uninstalls and deletes them). `AB_MARKETPLACE` takes its place for tests. The files written there are in the guard's protected list, and so are Claude Code's copy of the plugin (`~/.claude/plugins/cache/augmented-brain/`, which is what it runs), `installed_plugins.json` and the program (`protectedFiles`, `protectedDirs` in the hook). |
-| `install.sh` | The installer people run with `curl … \| sh`. |
-| `internal/portcheck` | Used only by tests: reads the repository's tests for what passes on Linux and fails on Windows (`.Perm()` in a test that never looks at `runtime.GOOS`; JSON joined by hand around a path). A line that is fine says `// windows-ok`. |
-| `internal/doccheck` | Used only by tests: whether the reference pages (`docs/guide/commands`, `mcp-tools`, `configuration`, each with its `.es` twin) cover every command and flag (`commands` in `cmd/augmented-brain/commands.go`), MCP tool and parameter, and `config.toml` setting. `AB_DOCS_DIR` points the tests at other pages. |
-| `internal/stable` | Used only by tests: what the compatibility promise (`docs/guide/compatibility.md`) covers, frozen in each package's `testdata/stable-*.json` (MCP tools with parameter types and which are required, commands with flags and hook events, the settings of `config.toml`, `guard.toml`, `session.toml`, `remote.toml`). A test fails when something frozen is gone or changed, or a frozen tool gets a new required parameter; something new fails until frozen with `AB_STABLE_UPDATE=1 go test ./...`, which only adds. |
-| `docs/` | The website (GitHub Pages, served from `main`): the landing pages, the documentation in `docs/guide/` (Markdown sources, rendered with a sidebar by `scripts/build-guides.py`, which also writes `docs/llms-full.txt`) and the format spec. |
-| `scripts/` | Checks, builders and release helpers (below). `changelog.py`: the changelog entries of `changelog.d/`, checked (`check`) and gathered into both changelogs at a release (`release`). |
-| `changelog.d/` | The changelog entries waiting for the next release, one pair of files per pull request (`README.md` says how). |
-| `test/rehearsal/` | The rehearsal before a release: `rehearse.sh` builds the release from the checkout, serves it to the VMs, installs or updates from a snapshot (`--from`, `clean` by default; `--update` installs the release published last first, `--update-from <version>` a release you name) and runs `checks.py` there (the program, the guard, notes through MCP, the hooks, backup and restore; `--sessions` adds a real Claude), all with made-up data. Logs in `logs/`, not committed. |
-| `test/vm/ubuntu-desktop/` | A clean Ubuntu desktop VM (Vagrant + VirtualBox) to try it as a newcomer. |
-| `test/vm/windows-11/` | A clean Windows 11 VM, the same way, for the Windows work (evaluation edition, about 90 days). |
+| `cmd/augmented-brain/` | The commands. Their list, flags and hidden ones: `commands` in `commands.go`. `loadConfig` and `currentSpace` (main.go) give a command its configuration and space. |
+| `internal/config` | `config.toml` and its sibling files (`guard.toml` with `reach`, `secrets.toml`, `session.toml` with `memory_trust`); edits keep the user's comments (`edit.go`). |
+| `internal/memory` | Reads and checks notes (headers only); builds `MEMORY.md`; the one place for what a note looks like. |
+| `internal/brain` | Everything that writes notes: tasks, areas, knowledge, people, captures, secrets' names. |
+| `internal/mcpserver` | The MCP tools, thin layers over `brain`, one call at a time. |
+| `internal/hook`, `internal/session` | Claude Code's hooks; what the assistant reads at the start of a session. |
+| `internal/guard` | The command guard: a small shell parser and the policy. |
+| `internal/reach` | Where augmented brain acts: everywhere, or only in the spaces (`reach`). |
+| `internal/panel` | The local web panel; routes in `pages.go`, one file per page. |
+| `internal/tailnet` | Tailscale, for `panel remote`. |
+| `internal/remote` | `remote install` services and `session start \| stop \| restart \| list`. |
+| `internal/watch` | `watch pr`: follows a pull request until there is news. |
+| `internal/leftovers` | `clean`: what Claude Code leaves behind. |
+| `internal/backup` | Backup and restore through a private git repository; the git runner. |
+| `internal/format` | Format versions and their migrations. |
+| `internal/confighistory` | The last versions of the configuration, and going back. |
+| `internal/state` | What this machine knows of each space's sessions; Claude's transcripts. |
+| `internal/fresh` | Which tasks changed outside a session since it last looked. |
+| `internal/importer` | `import`: a memory of Claude Code into the spaces. |
+| `internal/setup`, `internal/doctor`, `internal/claudecode`, `internal/update` | `init` and `space add`; the health check; the plugin in Claude Code; the new-version check. |
+| `internal/repostat` | Whether a repository has work not committed or not pushed. |
+| `internal/keyring` | Whether the system keychain holds a secret, never its value. |
+| `internal/hostmem` | The memory of the program hosting a Claude session. |
+| `internal/i18n` | Every message a person reads, English and Spanish side by side. |
+| `internal/paths` | Paths, and `WriteAtomic`, the one way to replace a file. |
+| `internal/filelock`, `internal/detach` | The cross-process lock; processes that outlive their parent. |
+| `internal/rules`, `internal/templates` | The common rules and a new space's starter files. |
+| `internal/version` | The program's version, set at build time. |
+| `internal/doccheck`, `internal/stable`, `internal/portcheck`, `internal/testenv` | Test only: reference pages cover the program; the compatibility promise is frozen; patterns that fail on Windows; a plain test machine. |
+| `plugin/` | The Claude Code plugin (hooks, MCP server, `/brain:panel`); it travels inside the program (`marketplace.go`). |
+| `install.sh`, `install.ps1` | The installers people run. |
+| `docs/` | The website (GitHub Pages, from `main`), the guides in `docs/guide/` and the format spec. |
+| `scripts/` | Checks, builders and release helpers. |
+| `changelog.d/` | Changelog entries waiting for the next release. |
+| `test/` | `COVERAGE.md`, the release rehearsal and the Ubuntu and Windows VMs. |
+| `dev/` | Detail for agents and contributors, English only. |
+
+## Recipes
+
+- **A command or flag:** add it to `commands` in `commands.go` and to the usage text;
+  write its section in `docs/guide/commands.md` and `commands.es.md` (its
+  `augmented-brain help` text is generated from there); freeze it (below).
+- **An MCP tool or parameter:** `internal/mcpserver/server.go`, its work in
+  `internal/brain`, the tool list in `server_test.go`, `docs/guide/mcp-tools.md` and its
+  twin; freeze it.
+- **A setting:** its file in `internal/config` (a new file of settings rather than a new
+  key in `config.toml`: earlier programs refuse unknown keys there),
+  `docs/guide/configuration.md` and its twin; freeze it.
+- **A panel page:** a file in `internal/panel`, its route in `pages.go`, a row in
+  `test/COVERAGE.md`; it must load without console errors and fit a phone
+  (`scripts/panel-browser-check.py`).
+- **A guard rule:** its function in `rules`, a row in `pinned_test.go`, and whether it
+  holds outside the spaces (`outside.go`, `outside_test.go`).
+- **A message:** `internal/i18n`, in the file of its subject, both languages.
+- **A change of note or configuration format:** the spec, a migration step, its test
+  ([dev/rules.md](dev/rules.md)).
+
+Freezing: `AB_STABLE_UPDATE=1 go test ./...` adds what is new to the `testdata/stable-*.json`
+files; it never removes anything.
 
 ## Build and check
 
 Go 1.26 or later (`go.mod`; an older `go` fetches it by itself).
 
 ```bash
-gofmt -l .                 # must print nothing
+gofmt -l .                     # must print nothing
 go vet ./...
 go test -race ./...
+go test ./internal/guard/      # one package
 go build ./cmd/augmented-brain
+scripts/precheck.sh            # before every push
 ```
 
-`scripts/precheck.sh` runs all of that and more before every push (the `pre-push` hook,
-with `git config core.hooksPath .githooks`): vet compiled for Linux, Windows and macOS,
-the tests compiled for Windows and macOS, the guard's test coverage (`scripts/guard-coverage.sh`:
-never below `internal/guard/coverage-floor`; raise the floor when a change raises it),
-the privacy check and the generated guides,
-in well under a minute. `--full` adds `compat-check`. `--windows` also runs every
-package's tests on Windows, in the VM of `test/vm/windows-11` (`scripts/test-windows.sh`,
-about 3 minutes): use it for a change to paths, files, permissions, hooks or commands,
-the kind that passed on Linux and failed on Windows in CI. `internal/portcheck` catches
-the two such patterns a reader can see (permission bits checked without looking at
-`runtime.GOOS`, JSON written by hand around a path) in every `go test`. CI runs once per change, in its
-pull request and again on `main`: a branch with no pull request gets no CI, so this is
-how it gets tried. Never push without it.
+`scripts/precheck.sh` is what CI would say, in about a minute: format, vet and test
+builds for Linux, Windows and macOS, the tests, the guard's coverage floor, privacy, the
+generated guides, the changelog entries and the third-party notices. The `pre-push` hook
+runs it (`git config core.hooksPath .githooks`). Never push without it.
 
-What each case is covered by, and what is left for a person on a real Mac, is in
-[test/COVERAGE.md](test/COVERAGE.md): a new command, tool, panel page or missing piece
-adds its row there.
+| If you touch | Also run |
+|---|---|
+| paths, files, permissions, hooks, commands | `scripts/precheck.sh --windows` (the Windows VM) |
+| what notes, backups or settings look like | `scripts/precheck.sh --full` (compat-check) |
+| `install.sh`, `install.ps1`, the plugin | `scripts/install-check.sh` with `AB_CHECK_HOME=<throwaway>` |
+| the panel's pages | `scripts/panel-browser-check.py chromium` |
+| `remote install` | `scripts/remote-check.py` (CI, macOS and Windows) |
+| what happens when a tool is missing | `python3 -I scripts/faults-check.py` |
+| the guides in `docs/guide/` | `scripts/build-guides.py` |
 
-Known vulnerabilities: `vuln.yml` runs `go mod verify` and `govulncheck` (Linux, macOS and
-Windows) on every change and every Monday, and fails on anything the code can reach. The
-fix is usually a newer patch in the `toolchain` line of `go.mod` or a newer module;
-Dependabot (`.github/dependabot.yml`) proposes both weekly. How people report a security
-problem is in `SECURITY.md`.
+CI runs only in pull requests and on `main`, and every job stops at 10 minutes. The
+heavier checks, the VMs and the real-Claude runs are in [dev/checks.md](dev/checks.md).
 
-Heavier checks, before a release or when you touch what they cover:
+## Done when
 
-- `scripts/install-check.sh`: the installer from nothing, hands-off, and checks of the
-  result; then uninstall and install again, `--config`, a home with spaces and accents,
-  `--all`, and the update from the release published last. It installs Claude Code for whoever runs it, so use
-  `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on macOS and Ubuntu in
-  every pull request that touches the installer, the plugin or the code (`install.yml`);
-  the Intel Mac only on `main`.
-- `scripts/compat-check.sh`: what this version writes (tasks, people, secrets' names, what a repository is,
-  captures, rules, a backup), the last two releases must still read: their `doctor`,
-  `check`, MCP tools, session start and restore. After an update, open Claude sessions
-  keep the old program, and other machines may not be updated yet. The other way round,
-  each of them makes a backup and the new program restores it. CI runs it in every
-  pull request (`compat` in `ci.yml`). By hand: `COMPAT_DIR=<folder> scripts/compat-check.sh
-  <new binary> [versions]`; it leaves the folder for you to delete.
-- `scripts/install-check-mac.sh`: what only a Mac can get wrong in the installer (the PATH
-  file for zsh and bash, macOS 13 or later, Apple's stub git), with fakes for `sw_vers`
-  and `xcode-select`. CI runs it on every Mac row; on a Mac without Go, give it a built
-  release with `AB_CHECK_RELEASE`.
-- `scripts/install-check.ps1`: the same for Windows and `install.ps1`, with the update
-  from the release published last. It
-  installs Git, Claude Code and the program for whoever runs it: CI runs it on
-  windows-latest (`windows.yml`), and so can the Windows VM from its `clean` snapshot.
-- `scripts/remote-check.py`: `remote install`, `status`, `doctor` and `uninstall` for real,
-  against launchd on macOS and the Task Scheduler on Windows, with a `claude` that only
-  pretends (built by the script; it writes its arguments, folder and PATH to the
-  service's log). CI runs it on both (`remote` in `ci.yml` and `windows.yml`). On a
-  Windows machine without Go, `AB_REMOTE_CHECK_PREBUILT` names a folder with both
-  programs built.
-- `scripts/faults-check.py`: what the program does when something it uses is missing,
-  one thing at a time in a throwaway home (Claude Code, gh, git, the network, Tailscale,
-  systemd, a backup, a configuration that loads, write access to the notes): it must say
-  so and leave nothing half done. Tools reach it through wrappers on a PATH of its own.
-  CI runs it on Linux, macOS and Windows (`faults` in `ci.yml`); by hand, `python3 -I
-  scripts/faults-check.py`, about a minute.
-- `scripts/panel-browser-check.py`: the panel in real browser engines (Playwright for
-  Python): every page loads with no console error and fits a phone's screen, and a few
-  things a person does (a capture, opening a task, the Guard page's confirmations and
-  what-changed list) work. CI runs it with Chromium and WebKit (`panel` in `ci.yml`); by
-  hand, `pip install playwright && python -m playwright install chromium`, then
-  `python3 -I scripts/panel-browser-check.py chromium`. Firefox once before a release.
-- `scripts/mac-check.py`: what only a real Mac can tell, with no one at the screen: what
-  Gatekeeper says of the program downloaded by a browser (and that it still runs from
-  Terminal), the Secrets page with the keychain locked (no password dialog, never
-  "missing"), and every page of the panel in Safari itself through `safaridriver`. CI runs
-  it on macOS (`mac` in `ci.yml`), with `AB_MAC_CHECK_KEYCHAIN=1` so it may add a
-  throwaway keychain; on your Mac, allow Safari's remote automation first (Develop menu).
-- `scripts/e2e-fresh.py`: several real, isolated Claude sessions on one space: a task
-  closed by another session is heard before the next answer, own writes are not, /clear
-  keeps it working, a capture sent from another space comes up there. Same login and
-  cost as `e2e-claude.sh`.
-- `scripts/e2e-claude.sh`: the whole story (open, park, resume, close a task; the guard;
-  the automatic backup; the first-session interview) against a real, isolated Claude
-  Code. It spends usage of a logged-in account; see the script's header for the one-time
-  login.
-- `test/vm/ubuntu-desktop/Vagrantfile`: for what only a person can judge (the desktop app,
-  signing in, the first-session interview). Restore the `clean` snapshot between tries.
-  To test unpublished work there, upload a release built with `scripts/release-build.sh`
-  (the plugin goes inside the program) and run the installer with `AB_RELEASE_URL`.
-- `test/vm/windows-11/Vagrantfile`: the same on Windows 11 (an evaluation edition,
-  about 90 days). From the host, `vagrant winrm -s powershell -c …` runs commands inside
-  and the guest reaches the host's 127.0.0.1 at 10.0.2.2, so a release served there with
-  `python3 -m http.server` can be installed with `AB_RELEASE_URL`.
+- [ ] `scripts/precheck.sh` passes, plus the row of the table above that fits.
+- [ ] A change people notice has its pair `changelog.d/<branch>.en.md` and `.es.md`;
+      otherwise a commit line `Changelog: none`.
+- [ ] Every new text a person reads is in `internal/i18n`, or the doc and its `.es` twin.
+- [ ] The reference page and the guide that tell it are updated, and regenerated.
+- [ ] A new command, tool, page or gap has its row in `test/COVERAGE.md`.
+- [ ] What the compatibility promise covers is frozen.
+- [ ] A format change has its migration and test.
+- [ ] A new or updated dependency regenerated `THIRD_PARTY_NOTICES.md`.
 
 ## Rules of the house
 
-- **Nothing personal, no secrets.** The repo is public. `scripts/privacy-check.sh` runs as
-  the pre-commit hook (`git config core.hooksPath .githooks`) and in CI. Never bypass it.
-  Its denylist of the maintainer's personal data lives outside the repo; CI checks it by
-  keyed fingerprints (`scripts/privacy-hashed.py`, `scripts/privacy-hashes`, the key in the
-  `AB_PRIVACY_KEY` secret). After changing the denylist, run `scripts/privacy-hashed.py build`
-  and commit the fingerprints.
+The full text, with the reasons, is in [dev/rules.md](dev/rules.md).
+
+- **Nothing personal, no secrets.** The repo is public; `scripts/privacy-check.sh` runs
+  as the pre-commit hook and in CI. Never bypass it. Made-up data in examples.
 - **Two languages, always in step.** Everything a person reads exists in English and
-  Spanish: a new message goes in `internal/i18n`, in the file of its subject, with both
-  languages (`TestCatalog` checks they have the same placeholders); no package keeps a
-  language table of its own. Outside Go: `say` in `install.sh`, the templates,
-  `README.md` and `README.es.md`, each entry of `changelog.d/` (`.en.md` and `.es.md`),
-  `docs/index.html` and `docs/es/index.html`, each guide and its `.es` twin. Change one,
-  change the other.
-- **A change people notice brings its changelog entry, in a file of its own.** Never in
-  `CHANGELOG.md` or `CHANGELOG.es.md`: two pull requests that both add a line there
-  conflict as soon as one merges. The entry goes in `changelog.d/<name>.en.md` and
-  `.es.md` (the branch's name; how to write it in `changelog.d/README.md`), and the
-  release gathers them. `scripts/changelog.py check --base origin/main` (in precheck)
-  wants one when the branch changes the program, and accepts a commit line
-  `Changelog: none` for a change no one notices.
-- **The docs are checked as people read them.** `cmd/augmented-brain/docsite_test.go`: every
-  relative link and #anchor leads somewhere, a Spanish page links Spanish guides, every
-  guide has its `.es` twin with the same headings and examples, sits in `GROUPS` and is
-  linked from both READMEs, and every `augmented-brain …` example is a real command with
-  flags it reads. CI also checks the generated pages match the guides.
-- **The docs follow the code.** A new command or flag goes in `commands` (`cmd/augmented-brain/commands.go`) and in the usage text; its help is its section of the reference (`TestEveryCommandHasHelp`); a new command, flag, MCP tool, tool parameter or `config.toml` setting also goes in its reference page, in both languages, or `go test` fails (`TestCommandsDocumented`, `TestToolsDocumented`, `TestSettingsDocumented`). A change people notice also updates the guide that tells it.
-- **Generated files are not edited by hand.** Change the source and regenerate:
-  `docs/img/*.svg` from `docs/img/diagrams.py`; every `docs/guide/*.html`,
-  `docs/sitemap.xml` and `docs/llms-full.txt` from the `.md` sources with
-  `scripts/build-guides.py` (its `GROUPS` list is the sidebar: a new page goes there), which
-  also writes `internal/i18n/cmdhelp.go`, what `augmented-brain help <command>` prints, from
-  each command's section of `docs/guide/commands.md` and its twin (first paragraph,
-  `Syntax:`, the items of its arguments and options, first example); a space's `MEMORY.md` is written
-  by the program.
-- **The memory format is a contract.** `docs/spec/memory-format.md` describes it; a change
-  to folders, header fields or note types updates the spec, the index and their tests.
-  A change that older notes do not already follow adds a step to
-  `format.NotesMigrations` (or `ConfigMigrations` for the configuration folder), which
-  raises the format version by one: the step must be safe to repeat, and gets a test
-  that runs it on notes written the old way.
-  Anything an earlier program would refuse is such a change, even when the step has
-  nothing to move: a new header field, note type or task status (headers are read
-  strictly, so an earlier program would leave those notes out instead of asking to
-  update).
-- **What people have keeps working.** This is a promise in the README and the
-  DISCLAIMER: every change to how notes or settings are kept ships with its migration
-  (above), and a command, flag, setting or MCP tool that is renamed or removed keeps
-  working under its old name, saying what replaced it. `compat-check` (below) is the
-  other half: what this version writes, the last two releases still read.
-- **Every guard rule says whether it holds outside the spaces.** With `reach = "spaces"`
-  a session outside them keeps only the rules that protect the guard's own files and what
-  the lists name (`internal/guard/outside.go`); every other rule is general and returns
-  early when `p.outside` is set. A new general rule adds that line and, if its reason is
-  new, its key to `generalOnly` or `generalAny` in `outside_test.go`; `checkPinned` runs
-  every pinned row in both modes.
-- **A test package that runs git calls `testenv.CleanGit()` first in its `TestMain`.**
-  Git hands its hooks `GIT_DIR` and friends: without this, tests run from the pre-push
-  hook make their throwaway repositories inside the real one.
-- **A new or updated dependency regenerates `THIRD_PARTY_NOTICES.md`** with
-  `scripts/third-party-notices.py` (precheck fails otherwise): its license travels in the
-  release archives next to `LICENSE`.
-- **Replace files with `paths.WriteAtomic`** (a crash or a power cut never leaves half a file; a note goes through `WriteAtomicNoLink`, state written at every message through `WriteAtomicQuick`), and run
-  git through the backup package's runner, which never waits for a password.
-- **A new MCP tool** goes in `internal/mcpserver/server.go`, does its work in
-  `internal/brain`, and is added to the tool list in `server_test.go`.
-- **The assistant reads what the hooks print.** Keep the session text under the budget,
-  write it as instructions to the assistant, and tell it to answer in the user's language.
-- **SessionEnd has 1.5 seconds in all**, and a plugin's `timeout` does not raise it. Work
-  there must take well under a second (a small state file), or run in a detached process,
-  as the automatic backup does. Stop runs after every answer: keep it to milliseconds.
-- **The installer must work without a terminal** (CI, `AB_YES=1`) and with one; its own
-  messages go through `say`, and other tools' noise through `quiet`.
-- **Plain words for people.** Short sentences, one idea each; a technical word is
-  explained the first time. The user of this project is a newcomer.
+  Spanish, and changing one changes the other. Only `dev/`, code and commits are English
+  alone.
+- **Changelog entries go in `changelog.d/`,** never in `CHANGELOG.md`.
+- **The docs follow the code, and are checked as people read them.** Tests fail when the
+  reference misses a command, flag, tool, parameter or setting, when a link is broken or
+  a guide lacks its twin.
+- **Generated files are not edited by hand:** the guides' HTML, `docs/sitemap.xml`,
+  `docs/llms-full.txt` and `internal/i18n/cmdhelp.go` come from `scripts/build-guides.py`;
+  `docs/img/*.svg` from `docs/img/diagrams.py`; `MEMORY.md` from the program.
+- **The memory format is a contract.** Anything an earlier program would refuse (a new
+  header field, note type or task status) raises the format version with a migration.
+- **What people have keeps working.** A renamed or removed command, flag, setting or tool
+  keeps working under its old name; the last two releases must read what this one writes.
+- **Every guard rule says whether it holds outside the spaces** (`reach = "spaces"`).
+- **A test package that runs git calls `testenv.CleanGit()`** in its `TestMain`.
+- **Replace files with `paths.WriteAtomic`** and its variants; run git through the backup
+  package's runner, which never waits for a password.
+- **Hooks are short.** The assistant reads what they print: write it as instructions,
+  under the budget. SessionEnd has 1.5 seconds in all; Stop runs after every answer.
+- **The installer works with and without a terminal** (`AB_YES=1`).
+- **Plain words for people.** Short sentences, one idea each.
 
 ## Commits and releases
 
-- Small commits that stand on their own, with a message that says why. Nothing is pushed
-  to `main` that the website should not show yet: Pages publishes `main` right away, so
-  try work on a branch, with `scripts/precheck.sh` and then a pull request (CI runs in
-  pull requests, not on bare branches). Every CI job stops at 10 minutes, so a stuck
-  runner fails instead of waiting for hours.
-- Before a release, the rehearsal in the VMs: `test/rehearsal/rehearse.sh` (Ubuntu and
-  Windows, from `clean`, about 5 minutes each), and again with `--update` (it installs the
-  release published last first, then this one over it) to rehearse the update; once the
-  release is out, `--update-from <version>` names the one before it. A new version is installed on a real machine
-  only after it. What a release brings that its checks do not cover yet goes into
-  `test/rehearsal/checks.py` with it.
-- `main` takes changes only through a pull request whose CI is green and up to date with
-  `main` (a GitHub ruleset; no force push, no deletion, no one bypasses it). Tags `v*`
-  cannot be moved or deleted once pushed.
-- A release: on a branch, set `VERSION`, run `python3 -I scripts/changelog.py release
-  <version>` (it writes `## <version>` with its date, `Released <date>.` and `Publicada el
-  <date>.`, in `CHANGELOG.md` and `CHANGELOG.es.md` with every entry of `changelog.d/`,
-  and empties the folder, then regenerates the guides, whose sidebar shows the version last released), commit, open a pull request and merge it when CI is green.
-  `release.yml` refuses a release while `changelog.d/` still holds entries. Publishing is then the maintainer's one gesture: Run workflow on
-  `release` in GitHub's Actions tab (or `gh workflow run release -R icalvete/augmented-brain`).
-  `release.yml` takes the version from `VERSION` on `main` and the commit that last set it
-  or changed its section of the changelog (`scripts/release-commit.sh`: what merged
-  later waits for the next version), refuses one already tagged, a tag on a commit not
-  on `main`, or a commit where any required check, or a macOS one, has not passed
-  (`scripts/release-checks.sh`); then a read-only job with no cache builds the archives,
-  the installers and `checksums.txt` (reproducible: the same commit and Go give the same
-  bytes), and another, in the environment `release`, attests their provenance and
-  publishes them; the installer always takes the latest release. Two settings are the
-  maintainer's, in GitHub: immutable releases, and actions pinned to a full commit SHA
-  (every workflow already pins them; `zizmor` and `actionlint` check the workflows in
-  `ci.yml`). An
-  assistant prepares the branch and may start that workflow only when the maintainer
-  asks for it: the guard asks the maintainer each time (pushing a tag `v<version>` by
-  hand still works too).
+- Small commits that stand on their own, with a message that says why.
+- Work on a branch, open a pull request, merge when CI is green: `main` only takes
+  pull requests whose CI is green and up to date, and Pages publishes `main` right away.
+  No force push; tags `v*` never move.
+- A release is the maintainer's gesture. An assistant prepares the branch (`VERSION`,
+  `python3 -I scripts/changelog.py release <version>`), and runs the `release` workflow
+  only when the maintainer asks. The workflow refuses a commit whose required checks, or
+  the macOS ones, have not passed. Before it, the rehearsal in the VMs. The detail is in
+  [dev/releases.md](dev/releases.md).
