@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/icalvete/augmented-brain/internal/version"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -191,7 +192,7 @@ func TestUpdateIgnoresReleaseURL(t *testing.T) {
 	t.Setenv("AB_RELEASE_URL", srv.URL)
 	t.Setenv("AB_MARKETPLACE", srv.URL)
 	old := latestRelease
-	latestRelease = func(*http.Client) (string, error) { return "0.0.1", nil } // nothing newer
+	latestRelease = func(*http.Client) (string, error) { return version.Version, nil } // nothing newer
 	t.Cleanup(func() { latestRelease = old })
 	var out, errOut bytes.Buffer
 	if code := cmdUpdate(nil, &out, &errOut); code != 0 {

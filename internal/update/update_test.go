@@ -16,7 +16,17 @@ func TestNewer(t *testing.T) {
 		{"0.3.0", "0.2.9", true},
 		{"0.10.0", "0.9.0", true},
 		{"1.0", "0.99.99", true},
-		{"0.2.1", "0.2.1-alpha", false}, // same numbers: not newer
+		{"0.2.1", "0.2.1-alpha", true}, // a release is newer than its pre-releases
+		{"0.2.1-alpha", "0.2.1", false},
+		{"1.0.0", "1.0.0-rc.1", true},
+		{"1.0.0-rc.2", "1.0.0-rc.1", true},
+		{"1.0.0-rc.10", "1.0.0-rc.9", true}, // numbers, not letters
+		{"1.0.0-rc.1", "1.0.0-rc.2", false},
+		{"1.0.0-rc.1", "1.0.0-rc.1", false},
+		{"1.0.0-rc.1", "0.26.1-beta", true},
+		{"1.0.0-rc.1", "1.0.0-beta", true}, // rc after beta
+		{"1.0.0-beta.2", "1.0.0-beta", true},
+		{"1.0.0+build.7", "1.0.0", false}, // build metadata never counts
 		{"v0.2.1-alpha", "0.2.0", true},
 		{"0.17.0-beta", "0.16.4-alpha", true}, // alpha to beta: the numbers decide
 		{"0.2.1", "0.0.1-dev", true},
