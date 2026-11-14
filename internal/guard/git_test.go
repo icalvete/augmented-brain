@@ -143,3 +143,54 @@ func TestAskSaysBranchAndRemote(t *testing.T) {
 		}
 	}
 }
+
+// A commit or a push in a listed repository that does not name it with git -C and a
+// path written out is still denied, but the reason says how to write it, never that
+// the repository should be added to the lists it is already in.
+func TestGitDeniedSaysHowToNameTheRepository(t *testing.T) {
+	home, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("HOME", home)
+	repo := filepath.Join(home, "code", "app-fix")
+	other := filepath.Join(home, "code", "lib")
+	for _, d := range []string{repo, other} {
+		if err := os.MkdirAll(filepath.Join(d, ".git"), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	ci := "com" + "mit"
+	p := Policy{Cwd: home, GitAllowedRepos: []string{filepath.Join(home, "code", "app-*")}}
+	slashed := filepath.ToSlash(repo) // C:/x on Windows: a shell would eat the backslashes
+	named := "git -C " + slashed + " "
+	cases := []struct{ cmd, key string }{
+		{"cd ~/code/app-fix && git " + ci + " -m x", "guard.git.named"},
+		{"cd " + slashed + " && git push", "guard.git.named"},
+		{"W=~/code/app-fix; cd $W && git " + ci + " -m x", "guard.git.unknown"},
+		{"git -C \"$W\" " + ci + " -m x", "guard.git.unknown"},
+		{"git -C $(pwd) push", "guard.git.unknown"},
+		{"cd ~/code/lib && git " + ci + " -m x", "guard.git.deny"}, // in no list: for the user
+		{"git " + ci + " -m x", "guard.git.deny"},                  // home is no repository of the lists
+	}
+	for _, c := range cases {
+		d := p.Command(c.cmd)
+		if d.Verdict != Deny {
+			t.Errorf("%s: %v, want Deny", c.cmd, d.Verdict)
+		}
+		if !reasonIs(d.Reason, []string{c.key}) {
+			t.Errorf("%s: reason %q, want %s", c.cmd, d.Reason, c.key)
+		}
+		if c.key == "guard.git.named" && !strings.Contains(d.Reason, named) {
+			t.Errorf("%s: the reason does not say %q: %s", c.cmd, named, d.Reason)
+		}
+	}
+	if d := p.Command(named + ci + " -m x"); d.Verdict != Allow {
+		t.Errorf("as the reason says: %v (%s)", d.Verdict, d.Reason)
+	}
+	q := p
+	q.Cwd = repo
+	if d := q.Command("git " + ci + " -m x"); d.Verdict != Deny || !strings.Contains(d.Reason, named) {
+		t.Errorf("in the repository's own folder: %v (%s)", d.Verdict, d.Reason)
+	}
+}
