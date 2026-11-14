@@ -55,6 +55,8 @@ try {
   Write-Host "2. run the installer, hands-off"
   $env:AB_YES = '1'; $env:AB_LANGUAGE = 'es'
   $env:AB_NO_DESKTOP = if ($env:AB_CHECK_DESKTOP -eq '1') { '' } else { '1' }
+  # GitHub's runners have gh, a newcomer does not: the offer must run.
+  $env:AB_GH_ABSENT = '1'
   $env:AB_RELEASE_URL = ([Uri]$rel).AbsoluteUri
   # No AB_MARKETPLACE: the plugin must come from the program itself.
   $env:AB_MARKETPLACE = $null
@@ -71,6 +73,8 @@ try {
   Check "~\.local\bin in the user's PATH" { [Environment]::GetEnvironmentVariable('Path', 'User') -split ';' | Where-Object { $_.TrimEnd('\') -ieq $dir } }
   Check "Git installed" { Get-Command git -ErrorAction SilentlyContinue }
   Check "Claude Code installed" { Test-Path (Join-Path $dir 'claude.exe') }
+  Check "gh installed next to the program, and it runs" { $null = & (Join-Path $dir 'gh.exe') --version; $LASTEXITCODE -eq 0 }
+  Check "the installer said what gh is for" { $log -match 'repositorio privado de tu cuenta de GitHub' }
   $cfg = Join-Path $env:APPDATA 'augmented-brain\config.toml'
   Check "configuration in Spanish" { Select-String -Path $cfg -Pattern '^language = "es"' -Quiet }
   Check "default space is personal" { Select-String -Path $cfg -Pattern '^default_space = "personal"' -Quiet }

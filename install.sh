@@ -23,6 +23,7 @@
 # from, instead of the one the program carries), AB_NO_INIT=1 (only install the program:
 # no checks, no init), AB_API_URL (stands in for GitHub's API of the repository, the second way to
 # download) and AB_RETRY_DELAY (seconds between two tries of a download, default 5).
+# AB_NO_GH=1 does not offer gh, GitHub's program, used to make the backup.
 # AB_ALLOW_ROOT=1 installs even as root, which it refuses otherwise.
 set -eu
 
@@ -509,6 +510,65 @@ rm -f "$DIR/augmented-brain.old"
 
 say "✓ augmented brain $v installed in $(tilde "$DIR")" \
     "✓ augmented brain $v instalado en $(tilde "$DIR")"
+
+# --- gh, GitHub's program, for the backup -------------------------------------------
+
+# The backup goes to a private repository in the person's GitHub account, made with gh.
+# Without it, saying yes to the backup at the end of the first session meant a terminal
+# and a password. Offered here, with no password: GitHub's own release, checked against
+# its checksums and put next to augmented-brain (Homebrew's on a Mac that has it). It
+# never stops the installation, and it never signs in: that comes when the person asks
+# for the backup, as a code to type in the browser. AB_NO_GH=1 does not offer it.
+# AB_GH_ABSENT=1, for tests, takes a gh elsewhere on the PATH (CI runners have one) as missing.
+has_gh() { [ -x "$DIR/gh" ] || { [ "${AB_GH_ABSENT:-}" != 1 ] && command -v gh >/dev/null 2>&1; }; }
+GH_RELEASES="https://github.com/cli/cli/releases"
+gh_install() {
+  if [ "$os" = darwin ] && command -v brew >/dev/null 2>&1; then
+    brew install gh
+    return
+  fi
+  # The version: where "latest" leads, or else what GitHub's API says.
+  ver=""
+  if command -v curl >/dev/null 2>&1; then
+    ver="$(curl -fsSLI --connect-timeout 20 --max-time 60 -o /dev/null -w '%{url_effective}' "$GH_RELEASES/latest" | sed -n 's|.*/tag/v\([0-9][0-9.]*\)$|\1|p')"
+  fi
+  if [ -z "$ver" ]; then
+    get https://api.github.com/repos/cli/cli/releases/latest "$TMP/gh.json" application/vnd.github+json || return 1
+    ver="$(tr ',' '\n' <"$TMP/gh.json" | sed -n 's/.*"tag_name": *"v\([0-9][0-9.]*\)".*/\1/p' | head -n 1)"
+  fi
+  [ -n "$ver" ] || return 1
+  case "$os" in
+    darwin) name="gh_${ver}_macOS_${arch}.zip" ;;
+    *) name="gh_${ver}_linux_${arch}.tar.gz" ;;
+  esac
+  get "$GH_RELEASES/download/v$ver/gh_${ver}_checksums.txt" "$TMP/gh-sums.txt" || return 1
+  get "$GH_RELEASES/download/v$ver/$name" "$TMP/$name" || return 1
+  want="$(grep " ${name}\$" "$TMP/gh-sums.txt" | awk '{print $1}')"
+  [ -n "$want" ] && [ "$(sha "$TMP/$name")" = "$want" ] || { echo "gh: the download does not match its checksum" >&2; return 1; }
+  mkdir -p "$TMP/gh"
+  case "$name" in
+    *.zip) unzip -q "$TMP/$name" -d "$TMP/gh" ;;
+    *) tar -xzf "$TMP/$name" -C "$TMP/gh" ;;
+  esac || return 1
+  bin="$(find "$TMP/gh" -type f -path '*/bin/gh' | head -n 1)"
+  [ -n "$bin" ] && "$bin" --version >/dev/null 2>&1 || return 1
+  cp "$bin" "$DIR/gh.new" && chmod 755 "$DIR/gh.new" && mv "$DIR/gh.new" "$DIR/gh"
+}
+if [ "${AB_NO_INIT:-}" != 1 ] && [ "${AB_NO_GH:-}" != 1 ] && ! has_gh &&
+  { [ "${AB_YES:-}" = 1 ] || (exec </dev/tty) 2>/dev/null; }; then
+  echo
+  say "The backup of your notes goes to a private repository in your GitHub account, made with GitHub's program, gh. It is not on this computer yet." \
+      "La copia de seguridad de tus notas va a un repositorio privado de tu cuenta de GitHub, que se crea con el programa de GitHub, gh. Aún no está en este ordenador."
+  if ask "$(say "Install gh too? No password needed; you sign in to GitHub later, only if you want the backup." "¿Instalo gh también? No pide contraseña; entras en GitHub más tarde, solo si quieres la copia.") $(yn)"; then
+    say "Installing gh…" "Instalando gh…"
+    if busy gh_install && has_gh; then
+      say "✓ gh installed" "✓ gh instalado"
+    else
+      say "gh was not installed. The backup can wait: when you ask Claude for it, Claude tells you how." \
+          "gh no se ha instalado. La copia puede esperar: cuando se la pidas a Claude, te dirá cómo."
+    fi
+  fi
+fi
 
 # --- 3. PATH ----------------------------------------------------------------------
 
