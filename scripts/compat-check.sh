@@ -209,10 +209,16 @@ for v in "$@"; do
     echo "  ok   session start"
   fi
   mcp "$OLD" "$WORKDIR" "$WORK/read.json" || fail=1
-  # It reads guard.toml with reach in it: the untouchable repository holds, and outside
-  # the spaces it still guards the whole computer (it does not know reach: the safe side).
+  # It reads guard.toml with reach in it: the untouchable repository holds. Outside the
+  # spaces, a release that knows reach (1.0.0-rc.1 on) keeps to the spaces as the new one
+  # does; an earlier one still guards the whole computer (it does not know reach: the
+  # safe side).
+  case "$v" in
+    0.*) outside="deny" ;;
+    *) outside="" ;;
+  esac
   if [ "$(guard "$OLD" "$HOME" "git -C $WORKDIR/code/site push")" = "deny" ] &&
-     [ "$(guard "$OLD" "$HOME" "$su id")" = "deny" ]; then
+     [ "$(guard "$OLD" "$HOME" "$su id")" = "$outside" ]; then
     echo "  ok   guard"
   else
     echo "  FAIL guard: guard.toml with reach is not read as before"; fail=1
