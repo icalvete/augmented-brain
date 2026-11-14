@@ -2,6 +2,150 @@
 
 ## Sin publicar
 
+## 1.0.0-rc.1
+
+Publicada el 2026-11-14.
+
+- **`update` ya ve el paso siguiente a una versión candidata.** Solo comparaba los
+  números, así que tras instalar la 1.0.0-rc.1 nunca habría ofrecido la 1.0.0-rc.2 ni la
+  1.0.0: los mismos números. Ahora una versión es más nueva que sus candidatas, y la rc.2
+  más nueva que la rc.1.
+- **Si ya usas Claude Code, el instalador te pregunta dónde actúa augmented brain.** En
+  una instalación nueva te ofrece todo el ordenador (por defecto, como hasta ahora) o
+  solo sus espacios, para que tus otros proyectos sigan como estaban. A quien llega sin
+  Claude Code no se le pregunta. `AB_REACH=machine|spaces` lo contesta sin terminal, y
+  el nuevo `init --reach` vale solo la primera vez: después, se cambia en la página
+  Guardia del panel.
+- **El plugin solo dice que falta el programa.** Claude Code puede añadir el plugin desde
+  su menú de plugins sin el programa augmented-brain. Entonces cada sesión empezaba con
+  errores de los hooks y sin explicación. Ahora empieza con un mensaje que dice que falta
+  el programa y el comando para instalarlo, y Claude te lo cuenta en tu idioma.
+  [Instalar](https://icalvete.github.io/augmented-brain/guide/install.es.html) cuenta
+  este caso.
+- **El guardia dice cómo escribir un commit o un push en un repositorio que ya deja
+  pasar.** Las listas solo cuentan un repositorio nombrado con `git -C` y su ruta entera.
+  Un `cd` a un repositorio permitido, o una ruta en una variable, se negaba con el consejo
+  de añadir el repositorio a las listas, donde ya estaba, y Claude se quedaba ahí. Ahora
+  la negativa da el comando `git -C` exacto; lo que el guardia deja pasar no cambia.
+- **El instalador dice una sola vez cómo empezar, y avisa de las primeras preguntas.** Con
+  la app de escritorio de Claude, las instrucciones para abrirla salían dos veces
+  seguidas; ahora salen una, y todos los finales dicen que la primera vez Claude te
+  preguntará quién eres y cómo te gusta trabajar. Si augmented brain actúa solo en sus
+  espacios, o hay un solo espacio, pide elegir en la app la carpeta de un espacio en vez
+  de decir que no hace falta.
+- **La página Guardia conserva tus comentarios de `guard.toml`, y volver a una versión te
+  cuenta todo lo que cambia.** Añadir o quitar un repositorio intocable ya solo cambia esa
+  lista: tus comentarios y cualquier ajuste que escribiera una versión más nueva se
+  quedan. Volver a una versión en la página Versiones ahora también te avisa, en tus
+  sesiones abiertas, si cambió lo que Claude guarda solo, el modelo que esperas o el
+  acceso remoto. Un enlace de una nota que empieza por `//` o `/\` ya no sale como enlace
+  del panel, porque lleva a otro sitio, y la comprobación de que el panel está en marcha
+  ya no dice qué es a quien pregunta.
+- **La página Guardia del panel cabe en la mitad de alto.** Los formularios para añadir
+  o cambiar van plegados bajo su título hasta que abres uno, cada lista de repositorios
+  junta los de todos tus espacios con su aviso una sola vez, y las casillas y los botones
+  de opción quedan al lado de su texto. Un repositorio cuya carpeta no está en este
+  ordenador lo dice en la lista: casi siempre es que el nombre está mal escrito.
+- **Cada comando tiene su ayuda: `augmented-brain help <comando>`, o `--help` detrás.**
+  `augmented-brain panel --help` contestaba «Este comando no lleva: --help». Ahora dice
+  qué hace el comando, su sintaxis, sus opciones y un ejemplo, en tu idioma, y funciona
+  también antes de `init`. El texto es el principio del apartado del comando en la
+  [referencia de comandos](https://icalvete.github.io/augmented-brain/guide/commands.es.html),
+  así que los dos dicen siempre lo mismo.
+- **Cuando el guardia para un commit, Claude te dice dónde permitirlo.** Antes nombraba
+  dos ajustes, `git_allowed_repos` y `git_ask_repos`; ahora remite a la página Guardia
+  del panel, que se abre con `/brain:panel`. Y en la entrevista de la primera sesión, a
+  quien programa se le pregunta en qué repositorios puede Claude hacer commit, y se le
+  ofrece la página para añadirlos.
+- **La portada de la web enseña el producto al primer vistazo.** Junto al titular, una
+  demo corta de tres días en la aplicación de Claude: una tarea que se abre y se aparca,
+  la sesión siguiente que empieza donde se quedó y el guardia preguntando antes de un
+  cambio en producción, con el fichero de la tarea cambiando a la vista. La página es más
+  corta, cuenta una sola historia y sus pasos de instalación son los cinco de primeros
+  pasos.
+- **Una tarea cerrada se reabre desde su página del panel.** La guía lo decía, pero la
+  página no tenía formulario. Ahora **Reabrirla** pide la fase, qué viene ahora y, si
+  quieres, por qué, y lo escribe en el diario de la tarea. Una tarea cerrada ya no enseña
+  el título «Pasos» vacío, y un espacio sin nada para ti lo dice en Hoy.
+- **La página del guardia empieza con lo que para, lo que pregunta y lo que deja pasar,
+  en un minuto.** Las listas de comandos pasan a una sección al final, la jerga se
+  explica, y una sección nueva dice por qué no usar el modo que se salta las preguntas de
+  Claude Code. «Qué puede hacer Claude sin preguntarte» lo cubre ya todo: ni commit ni
+  push en un repositorio que no has puesto en una lista, PowerShell, las publicaciones,
+  los comandos que el guardia no sabe leer, guardar reglas con «preguntarte antes», y que
+  añadir un perfil de producción deja las listas aceptadas.
+- **El panel se lee mejor y se usa mejor con el dedo.** Todos los textos destacan lo
+  bastante sobre su fondo para leerse sin esfuerzo (el texto gris claro costaba de ver).
+  Las fechas dicen «13 nov», «hoy» u «hoy, 10:04» en vez de `2026-11-13`; la exacta sale
+  al pasar el ratón por encima. Los botones pequeños, como **Hecho** y **Quitar**, son más
+  altos, y más aún en una pantalla táctil. Las rutas largas de carpetas empiezan por `~` y
+  se parten en el móvil en vez de ensanchar la página. En la página de una tarea, escribir
+  en su diario, editarla, aparcarla y cerrarla van antes de su contenido, no al final.
+- **El README, Primeros pasos e Instalación cuentan el mismo primer arranque.** Las tres
+  dicen que se abra la pestaña Code, usan la misma carpeta de ejemplo, piden contestar
+  que sí cuando Claude pregunta si confías en la carpeta, y avisan de antemano de que
+  instalar no necesita cuenta de GitHub y la copia de seguridad sí. En Windows, winget ya
+  no figura como imprescindible.
+- **Claude nunca recibe una dirección que abra el panel.** Lanzado por Claude sin
+  navegador que abrir (una sesión en segundo plano, un ordenador sin pantalla),
+  `augmented-brain panel` escribía la dirección; ahora te pide que lo lances en una
+  terminal tuya, y lo mismo `augmented-brain panel remote`. En Linux el navegador ya no
+  recibe la dirección como argumento, que cualquier usuario del ordenador puede leer, sino
+  un pequeño fichero que solo tú puedes leer (no con un navegador snap o flatpak, que no
+  puede leerlo).
+- **El menú del panel cabe en cualquier ventana.** En una ventana baja, el lateral se
+  desplaza por su cuenta, así que sus últimas páginas y **Parar el panel** siempre están a
+  mano. El menú va en tres bloques (Día a día, Notas, Mantenimiento), y **Sesiones** vuelve
+  a estar en él. En el móvil, el botón del menú dice **Perfil** en tu perfil, el menú
+  abierto va en dos columnas y una sombra al pie dice que sigue.
+- **La dirección del panel remoto ya no abre el panel en este ordenador.** Las páginas
+  que abres desde otro dispositivo llevan ahora una llave propia, que no sirve en este
+  ordenador, y sus formularios un código propio. Antes, un programa de este ordenador
+  que se hiciera con la dirección pensada para tu móvil podía usarla para cambiar las
+  listas del guardia, que solo puede cambiar este ordenador.
+- **Un formulario del panel que no se puede guardar vuelve con lo que escribiste y el
+  error al lado, en tu idioma.** Antes llevaba a una página aparte, en inglés para los
+  errores de dentro («date "mañana": use YYYY-MM-DD»), con un enlace para volver. Y
+  «Guardado» dice ahora qué se ha guardado («Tarea actualizada.», «Fecha para mirar
+  añadida.») y ya no vuelve a salir al recargar la página.
+- **Las páginas de ayuda, agrupadas y al día, y una página nueva para editar las notas a
+  mano.** Si algo falla va por temas y cubre lo que detecta `doctor` (el plugin, la
+  carpeta de notas que falta, el espacio por defecto, tres avisos de la copia, guardar
+  reglas con `memory_trust`). Limitaciones conocidas, Lo que no cambia, `SECURITY.md` y
+  `DISCLAIMER.md` dicen lo mismo: la 1.0 aún no ha salido, macOS solo se prueba en la CI
+  y qué cuenta como vulnerabilidad.
+- **augmented brain puede quedarse en tus espacios.** En la página Guardia del panel,
+  «Dónde actúa augmented brain» tiene ahora dos opciones. «En todo el ordenador» es como
+  ha funcionado siempre. «Solo en mis espacios» hace que una sesión de Claude Code fuera
+  de las carpetas de tus espacios no reciba memoria ni avisos. Ahí el guardia solo
+  protege sus propios ficheros, tu carpeta personal y lo que nombran tus listas: perfiles
+  de producción, máquinas intocables y los repositorios de tus listas. Dentro de un
+  espacio no cambia nada. Es para quien ya usa Claude Code en otros proyectos y quiere
+  que sigan como estaban.
+- **Cerrar una tarea cambiando su estado ahora la cierra del todo.** `task_update` con
+  estado `closed` solo cambiaba el estado: sin resultado, y la sesión y el worktree de la
+  tarea se quedaban. Ahora hace lo mismo que `task_close`, con un `result` opcional nuevo;
+  el botón Cerrar del panel también acaba la sesión de la tarea y quita su worktree.
+- **Los errores de la copia de seguridad, en tu idioma.** Una copia sin respuesta de la
+  red, una atascada detrás de otra y un espacio sin copia se decían solo en inglés;
+  ahora siguen el idioma de tu configuración, y la guía de problemas los cita tal como
+  los escribe el programa.
+- **Textos más claros para Claude y en la ayuda.** La ayuda ya no dice que `remote install`
+  es solo de Linux: funciona en Linux, macOS y Windows. Las herramientas que lee Claude
+  dicen ahora que un recordatorio sale desde una semana antes de su día, que `task_step`
+  sin `done` desmarca el paso, que guardar una regla, el perfil o las listas del guardia
+  puede preguntarte antes, y describen todos sus parámetros.
+- **La guía de la copia de seguridad dice exactamente qué trae una restauración y dónde
+  deja tus notas.** Nombra lo que hay que volver a preparar a mano en una máquina nueva
+  (el acceso remoto, el panel desde otro dispositivo, el modelo y la confianza, tu
+  código), las listas del guardia de espacios antiguos que sí viajan, y los límites de
+  tiempo reales.
+- **Guardar un perfil de producción o una máquina ya no hace que el guardia pregunte en
+  cada commit.** Cuando Claude añadía uno a listas que ya habías aceptado, quedaban «sin
+  aceptar» hasta la sesión siguiente, y cada commit, push, `aws` o `ssh` preguntaba antes.
+  Añadir solo hace que el guardia pregunte más, así que las listas siguen aceptadas; un
+  cambio que aún no habías aceptado sigue esperándote.
+
 ## 0.26.1-beta
 
 Publicada el 2026-11-14.
