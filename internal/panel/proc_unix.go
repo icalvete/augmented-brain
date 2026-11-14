@@ -3,15 +3,17 @@
 package panel
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 )
 
 // pidAlive reports whether process pid is running. On Linux a process that has ended
@@ -41,7 +43,7 @@ func exePath(pid int) (string, error) {
 		// A program replaced on disk (an update) still runs from the old file.
 		return strings.TrimSuffix(p, " (deleted)"), err
 	}
-	out, err := exec.Command("ps", "-o", "comm=", "-p", strconv.Itoa(pid)).Output()
+	out, err := runlimit.Output(runlimit.PsLimit, "ps", "-o", "comm=", "-p", strconv.Itoa(pid))
 	return strings.TrimSpace(string(out)), err
 }
 
@@ -52,7 +54,9 @@ func procInfo(pid int) (args []string, started time.Time, err error) {
 		return linuxProc(pid)
 	}
 	p := strconv.Itoa(pid)
-	cmd := exec.Command("ps", "-o", "lstart=", "-p", p)
+	ctx, cancel := context.WithTimeout(context.Background(), runlimit.PsLimit)
+	defer cancel()
+	cmd := runlimit.Command(ctx, "ps", "-o", "lstart=", "-p", p)
 	cmd.Env = append(os.Environ(), "LC_ALL=C", "LANG=C")
 	out, err := cmd.Output()
 	if err != nil {
@@ -66,7 +70,7 @@ func procInfo(pid int) (args []string, started time.Time, err error) {
 	if err != nil {
 		return nil, time.Time{}, err
 	}
-	out, err = exec.Command("ps", "-o", "args=", "-p", p).Output()
+	out, err = runlimit.Output(runlimit.PsLimit, "ps", "-o", "args=", "-p", p)
 	if err != nil {
 		return nil, time.Time{}, err
 	}

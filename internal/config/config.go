@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"slices"
 	"sort"
@@ -193,6 +194,9 @@ func (c *Config) normalize() error {
 	}
 	for name, s := range c.Spaces {
 		s.Name = name
+		if !SafeSpaceName(name) {
+			return errors.New(i18n.T(lang, "config.badspacename", name, filepath.Join(c.Dir, FileName)))
+		}
 		if s.Memory == "" {
 			return errors.New(i18n.T(lang, "config.nomemory", name))
 		}
@@ -209,6 +213,17 @@ func (c *Config) normalize() error {
 	}
 	return nil
 }
+
+// safeSpaceName is what any space's name may hold, whoever wrote it: letters and digits
+// of any alphabet, dots, dashes and underscores, starting with a letter or a digit. A
+// name goes into file names, service names and command lines, so a line break, a slash,
+// a space or a shell character is refused when the configuration is read. init and
+// space add ask for a stricter name (setup.ValidName); this only keeps out what can do
+// harm, so a name written by hand that is merely unusual still loads.
+var safeSpaceName = regexp.MustCompile(`^[\p{L}\p{N}][\p{L}\p{N}._-]{0,62}$`)
+
+// SafeSpaceName reports whether name may be the name of a space in config.toml.
+func SafeSpaceName(name string) bool { return safeSpaceName.MatchString(name) }
 
 // absAll makes every path of list absolute, in place (see absPath).
 func absAll(list []string) error {

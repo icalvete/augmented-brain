@@ -92,6 +92,10 @@ func (s System) StatusLines(l string, st *Status) []string {
 		if fix := WatchAdvice(l, *w); fix != "" {
 			out = append(out, i18n.T(l, "remote.status.fix", fix))
 		}
+		for _, unit := range w.GaveUp {
+			out = append(out, i18n.T(l, "remote.status.fix", i18n.T(l, "remote.watch.gaveup.status", unit)+": "+
+				i18n.T(l, "remote.fix.watch.gaveup", unit, unit)))
+		}
 	}
 	if st.Linger == LingerNone {
 		return append(out, i18n.T(l, "remote.status.atlogin"))
@@ -162,6 +166,16 @@ func (s System) WatchDoctorLine(l string, w WatchStatus) (what, fix string, ok b
 		return "", "", true
 	}
 	return i18n.T(l, "remote.doctor.watch", s.WatchWord(l, w)), WatchAdvice(l, w), false
+}
+
+// WatchGaveUpLines are the lines `doctor` gives the services the watch gave up on
+// (WatchCycles), each with what to do.
+func WatchGaveUpLines(l string, w WatchStatus) (what, fix []string) {
+	for _, unit := range w.GaveUp {
+		what = append(what, i18n.T(l, "remote.doctor.watch", i18n.T(l, "remote.watch.gaveup.status", unit)))
+		fix = append(fix, i18n.T(l, "remote.fix.watch.gaveup", unit, unit))
+	}
+	return what, fix
 }
 
 // ago says a span of time in the largest whole unit: seconds, minutes, hours or days.

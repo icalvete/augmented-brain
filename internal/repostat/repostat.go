@@ -8,13 +8,14 @@ package repostat
 import (
 	"context"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 )
 
 // Status is what one repository holds that is not yet elsewhere.
@@ -45,7 +46,7 @@ func Read(path string) Status {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	git := func(args ...string) (string, error) {
-		cmd := exec.CommandContext(ctx, "git", append([]string{"-c", "core.fsmonitor=false", "-C", path}, args...)...)
+		cmd := runlimit.Command(ctx, "git", append([]string{"-c", "core.fsmonitor=false", "-C", path}, args...)...)
 		cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0", "GIT_OPTIONAL_LOCKS=0", "LC_ALL=C")
 		out, err := cmd.Output()
 		return string(out), err

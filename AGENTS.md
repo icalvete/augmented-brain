@@ -60,6 +60,7 @@ it feels to a newcomer.
 | `internal/i18n` | Every message a person reads, English and Spanish side by side. |
 | `internal/paths` | Paths, and `WriteAtomic`, the one way to replace a file. |
 | `internal/filelock`, `internal/detach` | The cross-process lock; processes that outlive their parent. |
+| `internal/runlimit` | Running a program augmented brain waits for, with a limit that holds. |
 | `internal/rules`, `internal/templates` | The common rules and a new space's starter files. |
 | `internal/version` | The program's version, set at build time. |
 | `internal/doccheck`, `internal/stable`, `internal/portcheck`, `internal/testenv` | Test only: reference pages cover the program; the compatibility promise is frozen; patterns that fail on Windows; a plain test machine. |
@@ -107,7 +108,7 @@ go build ./cmd/augmented-brain
 scripts/precheck.sh            # before every push
 ```
 
-`scripts/precheck.sh` is what CI would say, in about a minute: format, vet and test
+`scripts/precheck.sh` is what CI would say, in about a minute: format, vet, staticcheck and test
 builds for Linux, Windows and macOS, the tests, the guard's coverage floor, privacy, the
 generated guides, the changelog entries and the third-party notices. The `pre-push` hook
 runs it (`git config core.hooksPath .githooks`). Never push without it.
@@ -142,7 +143,7 @@ heavier checks, the VMs and the real-Claude runs are in [dev/checks.md](dev/chec
 The full text, with the reasons, is in [dev/rules.md](dev/rules.md).
 
 - **Nothing personal, no secrets.** The repo is public; `scripts/privacy-check.sh` runs
-  as the pre-commit hook and in CI. Never bypass it. Made-up data in examples.
+  as the pre-commit and commit-msg hooks and in CI. Never bypass it. Made-up data in examples.
 - **Two languages, always in step.** Everything a person reads exists in English and
   Spanish, and changing one changes the other. Only `dev/`, code and commits are English
   alone.

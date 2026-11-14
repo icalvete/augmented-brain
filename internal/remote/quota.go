@@ -268,8 +268,8 @@ func (s System) wakeStopped(claude string, r launchRecord, a claudeAgent, messag
 			return fmt.Errorf("claude stop %s: %w", r.ID, err)
 		}
 		gone := false
-		for waited := time.Duration(0); waited <= quotaStopWait && !gone; waited += time.Second {
-			s.sleep(time.Second)
+		for p := s.newPace(quotaStopWait, everySecond); !p.over() && !gone; {
+			p.sleep(false)
 			list, err := s.agents(claude)
 			if err != nil {
 				continue
@@ -281,8 +281,8 @@ func (s System) wakeStopped(claude string, r launchRecord, a claudeAgent, messag
 			// Resumed now, Claude would start a copy. It is stopped: the next look resumes it.
 			return fmt.Errorf("claude stop %s: the session still has a process after %d seconds", r.ID, int(quotaStopWait.Seconds()))
 		}
-		for waited := time.Duration(0); waited < quotaSettleWait && !s.daemonSettled(r.ID, since); waited += time.Second {
-			s.sleep(time.Second)
+		for p := s.newPace(quotaSettleWait, everySecond); p.passed() < quotaSettleWait && !s.daemonSettled(r.ID, since); {
+			p.sleep(false)
 		}
 	}
 	bg, bgArgs := s.scoped(claude, "--bg", "--resume", a.SessionID, message)

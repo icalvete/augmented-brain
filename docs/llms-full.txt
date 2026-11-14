@@ -2242,7 +2242,9 @@ survive if this computer breaks. A space with no backup says so in red.
   `augmented-brain-<space>` in your GitHub account and the first copy. It needs the
   GitHub command line, `gh`, which the installer offers. If `gh` has not entered your
   account yet, the page gives you a short code to type at github.com/login/device; then
-  press the button again.
+  press the button again. A repository of that name with notes in it (another computer's
+  backup) is left alone: the copy goes to one named after this computer, and the page says
+  so.
   **I already have a private repository** takes its address instead.
 - **Bring the notes back on another computer** shows the command to run there. Restoring
   is never done from the panel: it is for a computer that does not have the notes yet.
@@ -2535,6 +2537,12 @@ then say "done", or press the button again. The code works for about 15 minutes.
 
 No GitHub account? Create one for free at [github.com/signup](https://github.com/signup),
 or keep the copy somewhere else, as below.
+
+Already a repository called `augmented-brain-<space>` in your account, with notes in it?
+That is most likely the backup of another computer, so it is left alone: using it would
+mix this computer's notes with those. This copy goes to `augmented-brain-<space>-<computer>`
+instead, and Claude or the page tells you. To bring that backup's notes to this computer,
+that is [restore](https://icalvete.github.io/augmented-brain/guide/backup.html#on-a-new-machine), not a new backup.
 
 Rather somewhere else (GitLab, your company's git)? Do it yourself, in a folder of the
 space:
@@ -2992,7 +3000,8 @@ journalctl --user -u augmented-brain-remote-personal -n 20
 
 On macOS, in `~/Library/Logs/augmented-brain/augmented-brain-remote-<space>.log`; on
 Windows, in `augmented-brain-remote-<space>.log` inside
-`%LOCALAPPDATA%\augmented-brain\remote`. `status` names the file.
+`%LOCALAPPDATA%\augmented-brain\remote`. `status` names the file. On macOS, when it
+passes 1 MB, `status`, `doctor` and `install` cut it down to its last 64 KB.
 
 A service installed by an earlier version sent its errors nowhere; `status` and `doctor`
 tell you to run `augmented-brain remote install` again, which brings it up to date.
@@ -3109,6 +3118,14 @@ The command waits for the session's first answer, up to a minute. A session that
 work is not left open: if Claude Code is not logged in, nothing opens, and if the first
 answer is an error (the login ran out, the service is overloaded), the session is
 closed. Either way the command says what to do, such as `claude auth login`.
+
+The new session does not get everything your terminal has. Claude starts its sessions
+from one background program, which keeps the variables it started with for every later
+session, of any task and any space. So it gets only what a session needs to work: your
+home and user, `PATH`, language, the desktop's and the ssh agent's variables, proxies,
+and Claude's own settings (`CLAUDE_*`, `ANTHROPIC_*`). A token you exported in a
+terminal, such as `GH_TOKEN` or `AWS_*`, stays in that terminal: a tool in the session
+uses its own login (`gh auth login`, an AWS profile).
 
 ## Which folder it opens in
 
@@ -3924,6 +3941,11 @@ What it does on each look:
   `bridge-pointer.json.archived`, in the folder's project in `~/.claude/projects`) and
   restarts the service again, so a new session starts: about ten minutes in all. The
   conversation of the archived session does not come back.
+- **Still nothing.** When both steps bring no session back, something a restart does
+  not mend is wrong. The watch waits 4 minutes before it tries again, then 8, 16 and 32.
+  After 5 tries it gives up and leaves the service alone: `remote status` and `doctor`
+  say so, with the command that shows why. Once the service has a session again, the
+  watch looks after it as before.
 - **Task sessions kept safe.** Stopping a service stops everything started inside it.
   A task session started from a remote session can start Claude's background service
   there, which runs every task session. So the watch moves out of each service whatever
@@ -4028,7 +4050,7 @@ augmented-brain session stop task-new-website
   session waiting for a permission counts as answering, and one still answering by then
   stays open. Closing the task runs it this way by itself, so a session can close its own
   task without cutting its answer off. What it did goes to `state/session-stop.log` in
-  the configuration folder.
+  the configuration folder, with a line every 5 minutes while it waits.
 
 **The task's worktree** (the one `session start` made, see above) goes too, with its
 branch, as long as nothing would be lost. It stays, and the command says so, when it
@@ -4230,7 +4252,9 @@ It looks in every folder Claude Code was opened in, and in its scratch folder:
 - **Worktrees git remembers whose folder is gone**: `git worktree prune` forgets them.
   Their branches stay.
 - **Scratch folders of sessions that ended** (`/tmp/claude-<number>` on Linux), untouched
-  for over a day. Those of running sessions stay, and so does anything else there.
+  for over a day. Those of running sessions stay, and so does anything else there. On
+  Linux that includes sessions of another Claude folder (`CLAUDE_CONFIG_DIR`); elsewhere
+  only those of your usual Claude folder count, and the command reminds you.
 
 Before removing each thing it looks again, so a session that started meanwhile keeps its
 folders. `doctor` says when there is something to clean.
@@ -4867,7 +4891,9 @@ It creates `augmented-brain-<space>`, a private repository in your GitHub accoun
 the `gh` command line, and makes the first copy right away. When `gh` has not entered
 your GitHub account yet, it starts that and returns a short code for you to type at
 github.com/login/device; call it again once you accept. When `gh` is missing, it
-returns the steps to guide you through.
+returns the steps to guide you through. A repository of that name with something in it
+(most likely another computer's backup) is never used: the backup goes to
+`augmented-brain-<space>-<computer>`, and when that is taken too, nothing is set up.
 
 - `repo_url` (optional): leave it out. It is kept so that calls from earlier versions
   still work, and an address in it is always refused. A backup somewhere else (GitLab, your company's git) is yours to
@@ -4989,7 +5015,10 @@ These go at the top, before any `[spaces.…]` heading.
 
 Each space is a section, `[spaces.<name>]`. Together they are the `spaces` of the file.
 The name is lowercase letters, digits and dashes, starting with a letter. A file with no
-space at all is an error: there must be one.
+space at all is an error: there must be one. A name written by hand may hold more (capital
+letters, accents, dots, underscores), but never a space, a slash, a line break or a sign
+such as `&` or `%`: the name goes into file names and services, so the file does not load,
+and the error says how to rename it. Remote access asks for a plain ASCII name.
 
 - `memory`: the space's notes folder. Required.
 - `work_folders`: the folders that pick this space when you open Claude in them, or in a
@@ -6390,8 +6419,9 @@ task) works on Linux only for now: on macOS and Windows it says so and changes n
   restart, including one the computer does by itself (an update, a power cut), nobody
   can connect until you log in once. On Linux it can start with nobody logged in.
 - **On Windows it runs only while you are logged in.** If you sign out, it stops.
-- **On Windows, a folder with `%` in its name** may keep remote access from starting
-  there. Pick another folder with `folders` in `remote.toml`.
+- **On Windows, a folder with `%` or a quote in its name** cannot hold remote access:
+  `remote install` says so and writes nothing. The same goes for the paths of claude and
+  of the program. Pick another folder with `folders` in `remote.toml`.
 - **A real connection has been tried on Linux only.** On a Mac and on Windows, install,
   status and uninstall are tested in CI with a pretend Claude; connecting from claude.ai
   has not been tried yet.

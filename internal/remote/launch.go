@@ -523,11 +523,10 @@ func (s System) Wake(cfgDir string, l Launch) (woke bool, err error) {
 	if _, err := s.Run(claude, "respawn", r.ID); err != nil {
 		return false, nil
 	}
-	for waited := time.Duration(0); waited <= wakeWait; waited += time.Second {
+	for p := s.newPace(wakeWait, everySecond); !p.over(); p.sleep(false) {
 		if running, err := s.runningAgents(claude); err == nil && running[r.ID] {
 			return true, nil
 		}
-		s.sleep(time.Second)
 	}
 	// Claude took it back but it shows no process yet: a new session would step on it.
 	return false, fmt.Errorf("claude respawn %s: the session has no process after %d seconds; try again in a moment", r.ID, int(wakeWait.Seconds()))
@@ -566,8 +565,9 @@ func (s System) firstTurn(claude, id, cfgDir, task string) error {
 		_ = os.Remove(launchRecordPath(cfgDir, task))
 		return err
 	}
-	for waited := time.Duration(0); waited < FirstTurnWait; waited += time.Second {
-		s.sleep(time.Second)
+	p := s.newPace(FirstTurnWait, startSpacing)
+	for p.passed() < FirstTurnWait {
+		p.sleep(false)
 		list, err := s.agents(claude)
 		if err != nil {
 			continue
@@ -581,7 +581,7 @@ func (s System) firstTurn(claude, id, cfgDir, task string) error {
 		}
 		path := s.transcript(a.SessionID)
 		if path == "" {
-			if waited+time.Second >= startupWait {
+			if p.passed() >= startupWait {
 				return nil
 			}
 			continue
@@ -761,8 +761,8 @@ func (s System) wakeDaemon(claude string) {
 	if err := s.StartDaemon(claude); err != nil {
 		return
 	}
-	for i := 0; i < 10; i++ {
-		s.sleep(time.Second)
+	for p := s.newPace(10*time.Second, everySecond); !p.over(); {
+		p.sleep(false)
 		if _, err := s.Run(claude, "daemon", "status"); err == nil {
 			return
 		}
@@ -821,11 +821,12 @@ func (s System) StopWhenIdle(cfgDir, task string, max time.Duration) error {
 		return err
 	}
 	idle := 0
-	for waited := time.Duration(0); idle < 2; waited += 2 * time.Second {
-		if waited > max {
+	p := s.newPace(max, idleSpacing)
+	for idle < 2 {
+		if p.over() {
 			return ErrStillBusy
 		}
-		s.sleep(2 * time.Second)
+		p.sleep(idle > 0)
 		list, err := s.agents(claude)
 		if err != nil {
 			continue

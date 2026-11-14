@@ -69,6 +69,9 @@ func cmdClean(args []string, in io.Reader, out, errOut io.Writer) int {
 	}
 	if len(r.Scratch) > 0 {
 		fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.scratch", len(r.Scratch), leftovers.HumanSize(r.ScratchSize()), paths.Tilde(env.TempRoot)))
+		if !r.AllProfiles {
+			fmt.Fprintln(out, i18n.T(lang, "clean.oneprofile", paths.Tilde(env.ClaudeDir)))
+		}
 	}
 	if !r.ScratchOK {
 		fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.noscratch", paths.Tilde(env.ClaudeDir)))

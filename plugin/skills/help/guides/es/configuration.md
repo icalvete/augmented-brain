@@ -99,7 +99,11 @@ Van arriba, antes de cualquier encabezado `[spaces.…]`.
 
 Cada espacio es una sección, `[spaces.<nombre>]`. Juntas son los `spaces` del fichero.
 El nombre lleva minúsculas, cifras y guiones, y empieza por una letra. Un fichero sin
-ningún espacio es un error: tiene que haber uno.
+ningún espacio es un error: tiene que haber uno. Un nombre escrito a mano puede llevar más
+(mayúsculas, acentos, puntos, guiones bajos), pero nunca un espacio, una barra, un salto
+de línea ni un signo como `&` o `%`: el nombre va a nombres de fichero y de servicios, así
+que el fichero no carga, y el error dice cómo cambiarlo. El acceso remoto pide un nombre
+ASCII sencillo.
 
 - `memory`: la carpeta de notas del espacio. Obligatoria.
 - `work_folders`: las carpetas que eligen este espacio cuando abres Claude en ellas, o en

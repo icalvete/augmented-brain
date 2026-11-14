@@ -3,11 +3,15 @@
 # Rules of the house, in detail
 
 - **Nothing personal, no secrets.** The repo is public. `scripts/privacy-check.sh` runs as
-  the pre-commit hook (`git config core.hooksPath .githooks`) and in CI. Never bypass it.
-  Its denylist of the maintainer's personal data lives outside the repo; CI checks it by
-  keyed fingerprints (`scripts/privacy-hashed.py`, `scripts/privacy-hashes`, the key in the
-  `AB_PRIVACY_KEY` secret). After changing the denylist, run `scripts/privacy-hashed.py build`
-  and commit the fingerprints.
+  the pre-commit and commit-msg hooks (`git config core.hooksPath .githooks`) and in CI.
+  Never bypass it. Its denylist of the maintainer's personal data lives outside the repo;
+  CI checks it by keyed fingerprints (`scripts/privacy-hashed.py`, `scripts/privacy-hashes`,
+  the key in the `AB_PRIVACY_KEY` secret, at least 32 characters), on the files, every
+  commit's author, committer and message, the branch name and the pull request's title.
+  Text is compared in a canonical form (no case, no accents, words apart or together), so
+  `jane.doe` or `janedoe` hit the entry `jane doe`. After changing the denylist, or the
+  canonical form, run `scripts/privacy-hashed.py build` and commit the fingerprints;
+  `scripts/privacy-hashed.py selftest` checks the matching on made-up data.
 - **Two languages, always in step.** Everything a person reads exists in English and
   Spanish: a new message goes in `internal/i18n`, in the file of its subject, with both
   languages (`TestCatalog` checks they have the same placeholders); no package keeps a

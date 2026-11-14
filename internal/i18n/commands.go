@@ -64,6 +64,10 @@ var commandMessages = map[string]msg{
 		en: "space %q: memory folder is missing",
 		es: "espacio %q: falta la carpeta de memoria (memory)",
 	},
+	"config.badspacename": {
+		en: "the space %q has a name that cannot be used: a space's name holds only letters, digits, dots, dashes and underscores, and starts with a letter or a digit. Rename it in %s: change its line [spaces.…] to a plain name, such as [spaces.work], and write the same name in default_space and in remote.toml if they name it. Its notes stay where they are",
+		es: "el espacio %q tiene un nombre que no se puede usar: el nombre de un espacio solo lleva letras, cifras, puntos, guiones y guiones bajos, y empieza por una letra o una cifra. Cámbialo en %s: pon en su línea [spaces.…] un nombre sencillo, como [spaces.trabajo], y escribe el mismo nombre en default_space y en remote.toml si lo nombran. Sus notas siguen donde están",
+	},
 	"config.nospace": {
 		en: "%s has no space %q",
 		es: "%s no tiene ningún espacio %q",
@@ -445,6 +449,10 @@ var commandMessages = map[string]msg{
 	"uninstall.nothing": {
 		en: "Nothing removed.",
 		es: "No he quitado nada.",
+	},
+	"uninstall.selfpath": {
+		en: "The program stays at %s: its path holds a %% or a quote, which the cleanup cannot carry. Delete the file by hand.",
+		es: "El programa se queda en %s: su ruta lleva un %% o unas comillas, que la limpieza no puede llevar. Borra el fichero a mano.",
 	},
 	"uninstall.keptself": {
 		en: "The program stays at %s: the plugin could not be removed completely, and while it is there Claude Code needs the program to check commands (without it, it stops every command and file change). Fix the error above and run `augmented-brain uninstall` again.",

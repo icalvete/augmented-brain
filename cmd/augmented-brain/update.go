@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/runlimit"
+
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/doctor"
@@ -307,7 +309,7 @@ func installedVersion() string {
 	if err != nil {
 		return ""
 	}
-	o, err := exec.Command(exe, "version").Output()
+	o, err := runlimit.Output(10*time.Second, exe, "version")
 	if err != nil {
 		return ""
 	}

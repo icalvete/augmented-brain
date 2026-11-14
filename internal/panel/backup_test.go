@@ -24,7 +24,7 @@ func TestBackupPage(t *testing.T) {
 	var started []string
 	s.backupNow = func(space string) error { started = append(started, space); return nil }
 	made := filepath.Join(t.TempDir(), "made.git")
-	s.github = func(space string) (string, error) { return made, nil }
+	s.github = func(space string) (backup.Repo, error) { return backup.Repo{URL: made}, nil }
 
 	page := html.UnescapeString(s.get(t, "/backup?s=work").Body.String())
 	for _, want := range []string{"2 spaces have no backup", "Set it up on my GitHub", "augmented-brain-work", "I already have a private repository"} {
@@ -113,7 +113,7 @@ func TestBackupPage(t *testing.T) {
 func TestBackupSetupWithoutGitHub(t *testing.T) {
 	s, cfg := fixture(t, "es")
 	s.backupNow = func(string) error { return nil }
-	s.github = func(string) (string, error) { return "", &backup.ErrNoGitHub{Steps: "steps"} }
+	s.github = func(string) (backup.Repo, error) { return backup.Repo{}, &backup.ErrNoGitHub{Steps: "steps"} }
 	w := s.post(t, "/backup/setup", url.Values{"s": {"work"}})
 	if w.Code != http.StatusBadRequest || !strings.Contains(html.UnescapeString(w.Body.String()), "Vuelve a lanzar el instalador") {
 		t.Errorf("no steps: %d", w.Code)
@@ -226,7 +226,7 @@ func TestBackupSetupGitHubLogin(t *testing.T) {
 	s, cfg := fixture(t, "es")
 	s.backupNow = func(string) error { return nil }
 	l := &backup.Login{Code: "QWER-5678", URL: "https://github.com/login/device", PID: os.Getpid(), Started: time.Now()}
-	s.github = func(string) (string, error) { return "", &backup.ErrNoGitHub{Steps: "steps", Login: l} }
+	s.github = func(string) (backup.Repo, error) { return backup.Repo{}, &backup.ErrNoGitHub{Steps: "steps", Login: l} }
 	w := s.post(t, "/backup/setup", url.Values{"s": {"work"}})
 	loc := w.Header().Get("Location")
 	if w.Code != http.StatusSeeOther || !strings.Contains(loc, "login=work") {
@@ -254,11 +254,51 @@ func TestBackupSetupGitHubLogin(t *testing.T) {
 	if c, _ := config.Load(cfg); c.Spaces["work"].Backup != "" {
 		t.Error("a backup was set up before the login")
 	}
-	s.github = func(string) (string, error) {
-		return "", &backup.ErrNoGitHub{Steps: "steps", Reason: "GitHub did not answer in time"}
+	s.github = func(string) (backup.Repo, error) {
+		return backup.Repo{}, &backup.ErrNoGitHub{Steps: "steps", Reason: "GitHub did not answer in time"}
 	}
 	w = s.post(t, "/backup/setup", url.Values{"s": {"work"}})
 	if w.Code != http.StatusBadRequest || !strings.Contains(html.UnescapeString(w.Body.String()), "No se pudo empezar la entrada en GitHub (GitHub did not answer in time)") {
 		t.Errorf("failed login: %d", w.Code)
+	}
+}
+
+// A repository of the usual name with notes in it is another computer's backup: the
+// page never uses it. When gh made one named after this computer, the page says which
+// one was left alone; when every name is taken, nothing is set up and it says why.
+func TestBackupSetupLeavesAnotherBackupAlone(t *testing.T) {
+	s, cfg := fixture(t, "es")
+	s.backupNow = func(string) error { return nil }
+	made := filepath.Join(t.TempDir(), "made.git")
+	s.github = func(string) (backup.Repo, error) {
+		return backup.Repo{URL: made, Taken: "https://github.com/lucia/augmented-brain-work"}, nil
+	}
+	w := s.post(t, "/backup/setup", url.Values{"s": {"work"}})
+	loc := w.Header().Get("Location")
+	if w.Code != http.StatusSeeOther || !strings.Contains(loc, "taken=") {
+		t.Fatalf("setup: %d %q", w.Code, loc)
+	}
+	if c, _ := config.Load(cfg); c.Spaces["work"].Backup != made {
+		t.Errorf("not set up to the new one: %q", c.Spaces["work"].Backup)
+	}
+	page := html.UnescapeString(s.get(t, strings.TrimPrefix(loc, s.localBase())).Body.String())
+	if !strings.Contains(page, "Tu cuenta de GitHub ya tenía https://github.com/lucia/augmented-brain-work") {
+		t.Error("the page does not say which repository was left alone")
+	}
+	// Only a GitHub address is shown from the query.
+	if strings.Contains(html.UnescapeString(s.get(t, "/backup?started=work&taken=http://elsewhere.example").Body.String()), "ya tenía http://elsewhere.example") {
+		t.Error("the page shows any address it is given")
+	}
+
+	s.github = func(string) (backup.Repo, error) {
+		return backup.Repo{}, &backup.ErrRepoTaken{Taken: []string{"https://github.com/lucia/augmented-brain-home", "https://github.com/lucia/augmented-brain-home-pc"}}
+	}
+	w = s.post(t, "/backup/setup", url.Values{"s": {"home"}})
+	body := html.UnescapeString(w.Body.String())
+	if w.Code != http.StatusBadRequest || !strings.Contains(body, "augmented-brain-home-pc") || !strings.Contains(body, "augmented-brain restore") {
+		t.Errorf("both taken: %d", w.Code)
+	}
+	if c, _ := config.Load(cfg); c.Spaces["home"].Backup != "" {
+		t.Error("a backup was set up to a repository already taken")
 	}
 }

@@ -89,8 +89,12 @@ func sessionRestart(c *config.Config, sys remote.System, args []string, out, err
 		fmt.Fprintln(out, i18n.T(l, "restart.waiting", se.Label(), int(restartWait.Minutes()), tilde(logPath)))
 		return 0
 	}
-	stamp := time.Now().Format("2006-01-02 15:04:05") + " "
+	fmt.Fprintln(out, logStamp()+i18n.T(l, "wait.start", se.Label(), int(restartWait.Minutes())))
+	sys.Waiting = func(d time.Duration) {
+		fmt.Fprintln(out, logStamp()+i18n.T(l, "wait.still", se.Label(), int(d.Minutes())))
+	}
 	r := sys.RestartWhenIdle(claude, se, restartWait)
+	stamp := logStamp()
 	if errors.Is(r.Err, remote.ErrStillBusy) {
 		fmt.Fprintln(out, stamp+i18n.T(l, "restart.stillbusy", se.Label(), int(restartWait.Minutes())))
 		return 1
@@ -188,3 +192,6 @@ var detachRestart = func(cfgDir string, sys remote.System, key string) (string, 
 	_, err = detach.Start(cmd)
 	return logPath, err
 }
+
+// logStamp is the date at the start of each line of a detached command's log.
+func logStamp() string { return time.Now().Format("2006-01-02 15:04:05") + " " }
