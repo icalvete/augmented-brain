@@ -42,7 +42,19 @@ jobs:
       # the job being cancelled with nothing to go on. internal/hook starts some 5
       # minutes in; the slowest package (internal/backup) takes 2.
       - name: Test
-        run: go test -timeout 3m ./...
+        shell: pwsh
+        # Diagnosis (to be taken out): when go test has not ended after 7 minutes, list
+        # every process with its parent and command line, to see what keeps it waiting.
+        run: |
+          $p = Start-Process go -ArgumentList 'test','-timeout','3m','./...' -NoNewWindow -PassThru
+          if (-not $p.WaitForExit(420000)) {
+            Write-Output "go test still running after 7 minutes; processes:"
+            Get-CimInstance Win32_Process | Sort-Object ParentProcessId |
+              ForEach-Object { "{0,6} {1,6} {2}" -f $_.ProcessId, $_.ParentProcessId, $_.CommandLine } | Write-Output
+            Stop-Process -Id $p.Id -Force
+            exit 1
+          }
+          exit $p.ExitCode
       - name: Build
         run: go build -o augmented-brain.exe ./cmd/augmented-brain
       - name: The program runs
