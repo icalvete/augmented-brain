@@ -71,8 +71,9 @@ type output struct {
 	SystemMessage string `json:"systemMessage,omitempty"`
 }
 
-// userNotice is what the user must hear about the guard's lists (state.TakeGuardNotice)
-// and about what a tool saved for every session (state.TakeToolNotice), as a message
+// userNotice is what the user must hear about the guard's lists (state.TakeGuardNotice),
+// about what a tool saved for every session (state.TakeToolNotice) and about the
+// sessions the usage limit stopped (state.TakeQuotaNotice), as a message
 // Claude Code shows them directly, or "". Taking it removes it.
 func userNotice(lang, cfgDir string) string {
 	var parts []string
@@ -81,6 +82,9 @@ func userNotice(lang, cfgDir string) string {
 	}
 	if n := state.TakeToolNotice(cfgDir); n != "" {
 		parts = append(parts, i18n.T(lang, "hook.toolnotice", n))
+	}
+	if n := state.TakeQuotaNotice(cfgDir); n != "" {
+		parts = append(parts, i18n.T(lang, "hook.quotanotice", n))
 	}
 	return strings.Join(parts, "\n\n")
 }

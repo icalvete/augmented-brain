@@ -9,16 +9,20 @@ walks you through it.
 
 ## On every system
 
-- **A paid Claude plan** (Pro, Max, Team or Enterprise) or an Anthropic API key. augmented
-  brain is free, but it works with Claude Code, and the free plan does not include Claude
+- **A paid Claude plan** (Pro or above: Pro, Max, Team or Enterprise), or an Anthropic API
+  key. augmented brain is free, but it works with Claude Code, and the free plan does not include Claude
   Code. The installer says so before installing it. Plans: [claude.com/pricing](https://claude.com/pricing).
 - **No administrator or root.** The program goes in your own folder. Only installing
   something that is missing, like git, may ask for your password.
-- **The installer asks first.** The language, then each missing piece, with what it is for.
-  Press Enter to accept what it suggests.
-- **It always ends the same way:** two spaces, `work` and `personal` (in Spanish, `trabajo`
-  and `personal`), in `~/augmented-brain`, the Claude Code plugin installed, and the offer to
-  open Claude.
+- **The installer asks first.** The language (your system's is suggested), then each
+  missing piece, with what it is for. Press Enter to accept what it suggests. To change the
+  language later, set `language` in your [configuration](configuration.md#settings-for-the-whole-computer).
+- **No GitHub account.** The program downloads from GitHub without one. The backup does
+  use one, or another git server, and you set it up later: see [Backup and restore](backup.md).
+- **A new installation ends the same way:** two spaces, `work` and `personal` (in Spanish,
+  `trabajo` and `personal`), in `~/augmented-brain`, the Claude Code plugin installed, and
+  the offer to open Claude. Run over one you already have, it keeps your spaces and
+  settings, and updates the program and the plugin.
 - **Every download is checked.** The program comes from the project's latest release on
   GitHub, and its SHA-256 must match the release's list, or nothing is installed. When
   GitHub fails to hand it out, the installer tries three times, also through GitHub's
@@ -57,7 +61,11 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
 **Good to know:**
 
 - After installing, **open a new terminal**: the one you used does not see the new PATH yet.
+- In the app: **Code** tab, **+ New**. Without choosing a folder you work in your personal
+  space; for work, **Choose…** and pick `~/augmented-brain/work`.
 - To work without the app: `cd ~/augmented-brain/work && claude`.
+- The first time you open Claude in a folder, it asks whether you trust it: say yes, or
+  augmented brain cannot load your notes.
 
 ## macOS
 
@@ -100,9 +108,11 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
 
 ## Windows
 
-**You need:** **Windows 10 or 11**, 64-bit PC or Arm. **winget**, Windows' own installer,
-which Windows 11 and an up-to-date Windows 10 already have (if it is missing, it comes with
-"App Installer" from the Microsoft Store). The PowerShell that comes with Windows is enough.
+**You need:** **Windows 10 or 11**, 64-bit PC or Arm. The PowerShell that comes with
+Windows is enough. **winget**, Windows' own installer, helps but is not required: Windows 11
+and an up-to-date Windows 10 already have it (if it is missing, it comes with "App
+Installer" from the Microsoft Store). Without it, Git comes from its own website; only the
+desktop app needs winget.
 
 **Install:** open **PowerShell** (Start menu, type `PowerShell`, Enter) and paste, with a
 right click:
@@ -113,13 +123,15 @@ irm https://github.com/icalvete/augmented-brain/releases/latest/download/install
 
 **What it does:**
 
-1. **Git for Windows**, if missing, with winget. **On Windows it is required**, not only for
+1. **Git for Windows**, if missing, with winget, or from Git's own website without it.
+   **On Windows it is required**, not only for
    the history of your notes: it brings **Git Bash**, where Claude runs commands with the
    guard watching. Windows shows a permission window: click **Yes**.
 2. **Claude Code**, if missing, with Anthropic's own installer, into
    `%USERPROFILE%\.local\bin`. If you have it but it is behind, it offers to update it
    (`claude update`).
-3. **The Claude desktop app**, if you want it, with winget.
+3. **The Claude desktop app**, if you want it, with winget (without winget, it is not
+   offered: get it from [claude.ai/download](https://claude.ai/download)).
 4. **The program**, into `%USERPROFILE%\.local\bin\augmented-brain.exe`.
 5. **The PATH:** it adds that folder to your user's PATH. Claude Code's own installer leaves
    that to you; this one does it.
@@ -140,34 +152,6 @@ configuration in `%APPDATA%\augmented-brain`; your notes in
   winget does not always have the very latest one. Click **Update**.
 - To work without the app: `cd ~\augmented-brain\work; claude` (Windows PowerShell has no
   `&&`).
-
-## Check a download
-
-You do not need this to install. It is for whoever wants to be sure that what they
-downloaded is what the project published, made from its public code.
-
-Every release is built by GitHub from a commit of `main`, never on someone's computer,
-and GitHub signs a record of it: which workflow built each file, from which commit.
-With the [GitHub CLI](https://cli.github.com/) (`gh`), check any file of a release,
-the installer included:
-
-```bash
-gh attestation verify augmented-brain_0.23.0-beta_linux_amd64.tar.gz -R icalvete/augmented-brain
-```
-
-It ends with `Verification succeeded!` and names the workflow and the commit. A file
-changed after it was built fails.
-
-`checksums.txt`, in every release, holds the SHA-256 of each archive and of both
-installers. The installers check the archive against it; you can check any file too:
-
-```bash
-sha256sum --ignore-missing -c checksums.txt
-```
-
-The build is reproducible: the same commit, built with the Go version in `go.mod`, gives
-the same bytes. `scripts/release-build.sh <version>` from a clone of that tag writes
-the same `checksums.txt` as the release.
 
 ## Updating
 
@@ -271,3 +255,33 @@ All the commands and their options: [Commands](commands.md).
 - **Something else.** See [Troubleshooting](troubleshooting.md), or tell us in
   [the project's issues](https://github.com/icalvete/augmented-brain/issues), with what
   showed up on screen.
+
+## Check a download
+
+You do not need this to install. It is for whoever wants to be sure that what they
+downloaded is what the project published, made from its public code.
+
+Every release is built by GitHub from a commit of `main`, never on someone's computer,
+and GitHub signs a record of it: which workflow built each file, from which commit.
+With the [GitHub CLI](https://cli.github.com/) (`gh`), check any file of a release,
+the installer included:
+
+```bash
+gh attestation verify augmented-brain_<version>_linux_amd64.tar.gz -R icalvete/augmented-brain
+```
+
+with the name of the file you downloaded.
+
+It ends with `Verification succeeded!` and names the workflow and the commit. A file
+changed after it was built fails.
+
+`checksums.txt`, in every release, holds the SHA-256 of each archive and of both
+installers. The installers check the archive against it; you can check any file too:
+
+```bash
+sha256sum --ignore-missing -c checksums.txt
+```
+
+The build is reproducible: the same commit, built with the Go version in `go.mod`, gives
+the same bytes. `scripts/release-build.sh <version>` from a clone of that tag writes
+the same `checksums.txt` as the release.

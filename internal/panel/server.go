@@ -35,15 +35,23 @@ type Server struct {
 	cfgDir  string
 	port    int
 	token   string // in the info file: the command's key (Authorization header, ping proof)
-	session string // in every address of the browser: /s/<session>/...
-	csrf    string // in every form, checked on every POST from the browser
-	writer  *filelock.Writer
-	pages   map[string]map[string]*template.Template // language → page → template
-	static  http.Handler
-	mux     *http.ServeMux
-	last    atomic.Int64 // when the last authorized request came, in Unix nanoseconds
-	stopped chan struct{}
-	stop    sync.Once
+	session string // in every address of the browser on 127.0.0.1: /s/<session>/...
+	csrf    string // in every form of those pages, checked on every POST from them
+	// netSession and netCSRF are the same for the network's socket, and they are its
+	// own: neither works on the other socket. The network's socket listens on 127.0.0.1
+	// too, so a program of this machine can reach it with the headers Tailscale would
+	// set and spend there a ticket meant for the phone; what it gets must not change
+	// what only this machine may (the guard's lists, a version, a backup).
+	netSession string
+	netCSRF    string
+	writer     *filelock.Writer
+	pages      map[string]map[string]*template.Template // language → page → template
+	static     http.Handler
+	mux        *http.ServeMux
+	reads      map[string]readRoute // the pages, by path: a form that fails shows its page again
+	last       atomic.Int64         // when the last authorized request came, in Unix nanoseconds
+	stopped    chan struct{}
+	stop       sync.Once
 
 	diagnose  func(lang string) []doctor.Check   // the Help page's health check; nil: doctor.Run
 	backupNow func(space string) error           // starts a copy of a space; nil: the program, detached
@@ -141,12 +149,12 @@ func New(cfgDir string, port int) (*Server, error) {
 	s := &Server{cfgDir: cfgDir, port: port, writer: filelock.NewWriter(filepath.Join(cfgDir, backup.NotesLock)),
 		stopped: make(chan struct{})}
 	var err error
-	for _, v := range []*string{&s.token, &s.csrf} {
+	for _, v := range []*string{&s.token, &s.csrf, &s.netCSRF} {
 		if *v, err = random(); err != nil {
 			return nil, err
 		}
 	}
-	s.session = sessionOf(s.token)
+	s.session, s.netSession = sessionOf(s.token), netSessionOf(s.token)
 	if s.pages, err = parsePages(); err != nil {
 		return nil, err
 	}
@@ -163,8 +171,25 @@ func New(cfgDir string, port int) (*Server, error) {
 // Token is this run's token.
 func (s *Server) Token() string { return s.token }
 
-// base is the start of every address of the panel's pages.
-func (s *Server) base() string { return "/s/" + s.session }
+// base is the start of every address of the panel's pages, for the socket r came
+// through.
+func (s *Server) base(r *http.Request) string { return "/s/" + s.sessionFor(r) }
+
+// sessionFor is the session of the socket r came through.
+func (s *Server) sessionFor(r *http.Request) string {
+	if s.viaRemote(r) {
+		return s.netSession
+	}
+	return s.session
+}
+
+// csrfFor is the forms' code of the socket r came through.
+func (s *Server) csrfFor(r *http.Request) string {
+	if s.viaRemote(r) {
+		return s.netCSRF
+	}
+	return s.csrf
+}
 
 func parsePages() (map[string]map[string]*template.Template, error) {
 	names, err := fs.Glob(webFS, "web/*.html")
@@ -195,6 +220,8 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 					return i18n.T(l, "panel.days.in", d)
 				}
 			},
+			// day says a date (or a date and time) as a person reads it: "13 Nov", "today, 10:04".
+			"day":    func(s string) string { return humanDate(l, s, time.Now()) },
 			"fields": fields,
 			"intro":  intro,
 		}
@@ -355,7 +382,7 @@ func (s *Server) bearer(r *http.Request) bool {
 // inSession reports whether the request is for a page of this run, under
 // /s/<session>/, and returns it with that prefix taken off the path; bare says the
 // address was the panel's root without its final slash. The session is in the
-// address, not in a cookie: cookies of 127.0.0.1 are shared by every port, so any
+// address, not in a cookie, and each socket has its own: cookies of 127.0.0.1 are shared by every port, so any
 // other local server would receive it.
 func (s *Server) inSession(r *http.Request) (out *http.Request, ok, bare bool) {
 	rest, found := strings.CutPrefix(r.URL.Path, "/s/")
@@ -363,7 +390,7 @@ func (s *Server) inSession(r *http.Request) (out *http.Request, ok, bare bool) {
 		return r, false, false
 	}
 	seg, after, slash := strings.Cut(rest, "/")
-	if !equal(seg, s.session) {
+	if !equal(seg, s.sessionFor(r)) {
 		return r, false, false
 	}
 	if !slash {
@@ -454,7 +481,7 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request, remote bool) {
 	}
 	r, browser, bare := s.inSession(r)
 	if bare {
-		http.Redirect(w, r, s.base()+"/", http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+"/", http.StatusSeeOther)
 		return
 	}
 	bearer := !browser && !remote && s.bearer(r) // the command talks to 127.0.0.1 only
@@ -479,7 +506,7 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request, remote bool) {
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
-		if !bearer && !equal(r.PostForm.Get("csrf"), s.csrf) {
+		if !bearer && !equal(r.PostForm.Get("csrf"), s.csrfFor(r)) {
 			forbidden(w)
 			return
 		}
@@ -559,7 +586,7 @@ func (s *Server) handleLocal(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleStop(w http.ResponseWriter, r *http.Request) {
 	lang := s.lang()
-	s.render(w, http.StatusOK, "message", page{Lang: lang, Title: i18n.T(lang, "panel.stopped"), Section: "tasks",
+	s.render(w, r, http.StatusOK, "message", page{Lang: lang, Title: i18n.T(lang, "panel.stopped"), Section: "tasks",
 		D: message{Heading: i18n.T(lang, "panel.stopped"), Text: i18n.T(lang, "panel.stopped.text")}})
 	s.stop.Do(func() { close(s.stopped) })
 }

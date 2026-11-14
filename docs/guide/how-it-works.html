@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How it works inside · augmented brain</title>
-<meta name="description" content="How augmented brain works inside, in four layers: you and your assistant, the plugin, the program and your files. A session step by step and where every file lives.">
+<meta name="description" content="How augmented brain works inside, in four layers: you and your assistant, the plugin, the program and your files. A session step by step and where your notes live.">
 <link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html">
 <link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.html">
 <link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="augmented brain">
 <meta property="og:title" content="How it works inside · augmented brain">
-<meta property="og:description" content="Four layers, a session step by step, and where every file lives.">
+<meta property="og:description" content="Four layers, a session step by step, and what it does not do.">
 <meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/how-it-works.html">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="How it works inside · augmented brain">
-<meta name="twitter:description" content="Four layers, a session step by step, and where every file lives.">
+<meta name="twitter:description" content="Four layers, a session step by step, and what it does not do.">
 <meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
 <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Main">
     <a href="index.html">Docs</a>
@@ -50,29 +50,34 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
   <li><a href="spaces.html">Spaces</a></li>
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
-  <li><a href="guard.html">The guard</a></li>
-  <li><a href="how-it-works.html" aria-current="page">How it works inside</a></li>
+  <li><a href="editing-notes.html">Editing notes by hand</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
+  <li><a href="how-it-works.html" aria-current="page">How it works inside</a></li>
 </ul>
 <p class="docnav-group">Daily use</p>
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
-  <li><a href="remote.html">Remote access</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -96,7 +101,6 @@
   <h1>How it works inside</h1>
   <p>augmented brain is one small program and a folder of notes. This page is how the pieces fit. To use it, you do not need any of this.</p>
   <figure class="diagram"><picture><source media="(max-width: 600px)" srcset="../img/how-layers-narrow.en.svg"><img alt="augmented brain in four layers" src="../img/how-layers.en.svg"></picture></figure>
-  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#four-layers">Four layers</a></li><li><a href="#a-session-step-by-step">A session, step by step</a></li><li><a href="#where-files-live">Where files live</a></li><li><a href="#what-it-does-not-do">What it does not do</a></li><li><a href="#moved-from-this-page">Moved from this page</a></li></ul></nav>
   <h2 id="four-layers">Four layers</h2>
   <div class="table-wrap"><table><thead><tr><th>Layer</th><th>What it is</th><th>Where it lives</th></tr></thead><tbody><tr><td><strong>3 · You and your assistant</strong></td><td>You talk to Claude Code as usual. No new commands to learn.</td><td>Your terminal or the Claude app</td></tr><tr><td><strong>2 · The plugin</strong></td><td>The doors Claude uses to reach the program: a few hooks and an MCP server.</td><td>Inside Claude Code, which installs it</td></tr><tr><td><strong>1 · The program</strong></td><td><code>augmented-brain</code>, a single file. It guards commands, keeps tasks, rebuilds the index and runs the backup.</td><td><code>~/.local/bin/augmented-brain</code></td></tr><tr><td><strong>0 · Your files</strong></td><td>Plain text: the configuration, your notes and, if you want, their backup.</td><td><code>~/.config/augmented-brain/</code>, <code>~/augmented-brain/</code> and your git repository</td></tr></tbody></table></div>
   <p>Put another way: <strong>your notes are a notebook, the program keeps it in order and the plugin is the door.</strong> You only talk to Claude. Claude comes in through the door, and the program writes in the notebook.</p>
@@ -108,11 +112,11 @@
   <p><strong>1. You open Claude.</strong> The start hook looks at the folder you are in and picks your <a href="spaces.html">space</a>. Before you type anything, it hands Claude your profile, your rules and the list of live tasks. It also says what is due soon, whether the weekly review is due, and whether an earlier session was cut off. That is how Claude knows where you left off. A session opened for a task (<code>session start</code>) hears only that task's dates.</p>
   <p><strong>2. You say “park it”.</strong> Claude uses the <code>task_park</code> tool. The program writes in the task file where it stopped and what comes next, and rebuilds the index. Opening, resuming and closing work the same way. See <a href="tasks.html">Tasks</a>.</p>
   <p><strong>3. Claude is about to run a command.</strong> The guard hook reads it first, and lets it through, asks you, or stops it. See <a href="guard.html">The guard</a>.</p>
-  <p><strong>4. Claude finishes an answer.</strong> If the session has a task open and nothing was written in it for 20 minutes, a hook reminds Claude to write in its journal, once. Each session has its own task, so two windows never get each other's reminder. The same hook looks at the memory of the window: if it has grown far past normal, Claude tells you, so you can park the task before the system closes the window. See <a href="troubleshooting.html#the-window-uses-a-lot-of-memory">Troubleshooting</a>.</p>
+  <p><strong>4. Claude finishes an answer.</strong> If the session has a task open and nothing was written in it for 20 minutes, a hook reminds Claude to write in its journal, once. Each session has its own task, so two windows never get each other's reminder. On Linux and macOS, the same hook also looks at the memory of the window: if it has grown far past normal, Claude tells you, so you can park the task before the system closes the window. See <a href="troubleshooting.html#the-window-uses-a-lot-of-memory">Troubleshooting</a>.</p>
   <p><strong>5. You close the session.</strong> The end hook notes that the session ended well. It starts the <a href="backup.html">backup</a> of the space in the background, if you set one up. You wait for nothing. If the network does not answer, the backup gives up after 3 minutes instead of hanging. If the backup fails, Claude tells you at the start of the next session.</p>
   <p>If a session did not end well (the window was closed by force, the computer went down), the next one offers to recover it. Claude reads what you both said after the task's last journal entry, from Claude Code's own record of the conversation on this computer (kept 30 days), and writes down what is missing.</p>
-  <h2 id="where-files-live">Where files live</h2>
-  <p>Your notes, one folder per space:</p>
+  <h2 id="where-your-notes-live">Where your notes live</h2>
+  <p><a id="where-files-live"></a>Your notes, one folder per space:</p>
   <pre><code>~/augmented-brain/
 ├── work/                 a work folder: open Claude here for work
 │   ├── notes/
@@ -128,33 +132,19 @@
 │   │   └── archive/      old stuff; never loaded, never deleted
 │   └── (your projects)
 └── personal/             the same, for personal things</code></pre>
-  <p>The configuration folder, <code>~/.config/augmented-brain/</code> (on Windows, <code>%APPDATA%\augmented-brain</code>):</p>
-  <pre><code>config.toml       the spaces and the guard's lists
-guard.toml        the repositories Claude must never touch
-remote.toml       remote access, if you set it up
-session.toml      session settings (the preferred model)
-secrets.toml      the names of your secrets, never their values
-profile.md        who you are, for every space
-shared/           rules, references and lessons for every space
-state/            what this computer knows of each space's sessions; never backed up
-migrations/       a full copy of the notes before a new version moves them
-panel.json        where the panel listens, while it runs
-history/          the last 10 versions of these files; only on this computer</code></pre>
-  <p>Each file is described in <a href="configuration.html">Configuration</a> and in the <a href="memory-format.html">memory format</a>.</p>
+  <p>Everything else (the configuration folder, what this computer keeps for itself, the program) and what travels in the backup is in <a href="where-things-live.html">Where everything lives</a>.</p>
   <h2 id="what-it-does-not-do">What it does not do</h2>
-  <ul><li><strong>No server and no account.</strong> If Claude is not open, nothing runs, except the panel while you use it, the backup that the end of a session starts and, if you set it up, <a href="remote.html">remote access</a>, which keeps running so you can reach your sessions from another device.</li><li><strong>It sends your data to no one.</strong> Only the backup, if you set it up, talks to your repository. Apart from that, once a day, it asks GitHub which version is the latest, sending nothing of yours. <code>AB_NO_UPDATE_CHECK=1</code> turns that off.</li><li><strong>It does not change your Claude Code settings.</strong> The plugin goes in and out with Claude Code's own commands, which the installer, <code>update</code> and <code>uninstall</code> run for you.</li><li><strong>Mind this: your assistant reads your notes</strong>, like any file it opens. They travel with your conversations to its provider. Do not keep there what you would not share.</li></ul>
-  <h2 id="moved-from-this-page">Moved from this page</h2>
-  <p>This page used to hold more. Each part now has a page of its own:</p>
-  <ul><li><a id="your-files"></a><a id="work-and-personal-apart"></a><a id="shared-notes"></a>Your files, spaces and shared notes: <a href="spaces.html">Spaces</a> and <a href="notes.html">Areas, knowledge and the rest</a>.</li><li><a id="the-backup"></a><a id="on-a-new-machine"></a>The backup, and a new machine: <a href="backup.html">Backup and restore</a>.</li><li><a id="bring-in-a-memory-you-already-have"></a>Importing an existing memory: <a href="import.html">Bring in a memory</a>.</li><li><a id="the-panel"></a>The panel and every page in it: <a href="panel.html">The panel</a>.</li><li><a id="update-it"></a><a id="remove-it"></a>Updating and removing it: <a href="install.html#updating">Installing</a>.</li></ul>
+  <ul><li><strong>No server and no account.</strong> If Claude is not open, nothing runs, except: - the panel, while you use it; - the backup that the end of a session starts; - a task's own session, started with <code>augmented-brain session start</code>, until it is stopped or the task is closed; - <code>augmented-brain watch pr</code>, which waits for a pull request's checks, three hours at most; - if you set it up, <a href="remote.html">remote access</a>, which keeps running so you can reach your sessions from another device.</li><li><strong>It sends your data to no one.</strong> Only the backup, if you set it up, talks to your repository. Apart from that, once a day, it asks GitHub which version is the latest, sending nothing of yours. <code>AB_NO_UPDATE_CHECK=1</code> turns that off.</li><li><strong>It does not change your Claude Code settings.</strong> The plugin goes in and out with Claude Code's own commands, which the installer, <code>update</code> and <code>uninstall</code> run for you.</li><li><strong>As it comes, it does not stay inside your spaces.</strong> It works in every Claude Code session on this computer. Outside your spaces it uses the default space, and the guard watches the same. On the panel's Guard page you can keep it to your spaces instead. See <a href="spaces.html#outside-every-space">Outside every space</a>.</li><li><strong>Mind this: your assistant reads your notes</strong>, like any file it opens. They travel with your conversations to its provider. Do not keep there what you would not share.</li></ul>
+  <p><a id="your-files"></a><a id="work-and-personal-apart"></a><a id="shared-notes"></a><a id="the-backup"></a><a id="on-a-new-machine"></a><a id="bring-in-a-memory-you-already-have"></a><a id="the-panel"></a><a id="update-it"></a><a id="remove-it"></a></p>
   <nav class="pager" aria-label="Previous / Next">
-    <a class="prev" href="guard.html"><span>← Previous</span>The guard</a>
-    <a class="next" href="what-claude-may-do.html"><span>Next →</span>What Claude may do without asking you</a>
+    <a class="prev" href="where-things-live.html"><span>← Previous</span>Where everything lives</a>
+    <a class="next" href="phrases.html"><span>Next →</span>What to say to Claude</a>
   </nav>
 </main>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+  <div class="wrap wide"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

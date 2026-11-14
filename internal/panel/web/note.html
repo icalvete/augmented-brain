@@ -7,7 +7,7 @@
   <dt>{{t "f.kind"}}</dt><dd>{{.Kind}}{{if .Shared}} · {{t "shared.long"}}{{end}}</dd>
   {{if .H.Summary}}<dt>{{t "f.summary"}}</dt><dd>{{inline .H.Summary}}</dd>{{end}}
   {{if .AreaTitle}}<dt>{{t "f.area"}}</dt><dd>{{.AreaTitle}}</dd>{{end}}
-  <dt>{{t "f.dates"}}</dt><dd>{{tf "dates" .H.Created .H.Updated}}</dd>
+  <dt>{{t "f.dates"}}</dt><dd>{{tf "dates" (day .H.Created) (day .H.Updated)}}</dd>
   <dt>{{t "f.id"}}</dt><dd><code>{{.H.ID}}</code></dd>
 </dl>
 {{if .Tasks}}<h2>{{t "tasks"}}</h2><ul class="plain">{{range .Tasks}}<li><a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a> · {{.StatusLabel}}</li>{{end}}</ul>{{end}}
@@ -17,12 +17,13 @@
 {{if .Named}}<h2>{{t "person.named"}}</h2><ul class="plain">{{range .Named}}<li><a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a> · {{.StatusLabel}}</li>{{end}}</ul>{{end}}
 {{end}}
 {{if not .Person}}{{template "sections" .Sections}}{{end}}
-{{if and (eq .H.Type "area") (not .Shared)}}<details class="box">
+{{if and (eq .H.Type "area") (not .Shared)}}<details class="box"{{if $.Open "/area/update"}} open{{end}}>
   <summary>{{t "area.edit"}}</summary>
   <form method="post" action="{{$.Base}}/area/update" class="stack">
     {{template "fields" (fields $ "id" .H.ID)}}
-    <label>{{t "f.title"}} <input name="title" value="{{.H.Title}}" maxlength="200"></label>
-    <label>{{t "f.summary"}} <input name="summary" value="{{.H.Summary}}" maxlength="500"></label>
+    <label>{{t "f.title"}} <input name="title" value="{{$.Val "/area/update" "title" .H.Title}}" maxlength="200"></label>
+    <label>{{t "f.summary"}} <input name="summary" value="{{$.Val "/area/update" "summary" .H.Summary}}" maxlength="500"></label>
+    {{template "ferr" ($.FormErr "/area/update")}}
     <button type="submit">{{t "save"}}</button>
   </form>
 </details>{{end}}
@@ -45,6 +46,7 @@
     <div class="ticks"><span>{{t "person.visible"}}:</span>{{range $row.Checks}}<label class="check"><input type="checkbox" name="v{{$row.N}}" value="{{.Space}}"{{if .On}} checked{{end}}> {{.Space}}</label>{{end}}</div>
   </fieldset>{{end}}
   <p><a href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.ID}}&amp;extra={{.Extra}}">{{t "person.more"}}</a> <span class="hint">{{t "person.more.hint"}}</span></p>
+  {{template "ferr" ($.FormErr "/person/card")}}
   <button type="submit">{{t "save"}}</button>
 </form>
 {{end}}{{end}}

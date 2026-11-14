@@ -7,7 +7,8 @@
 # were open keep it until restarted, and other machines may not be updated yet. So the
 # new program writes everything it can (tasks, people, secrets' names, captures, rules,
 # what a repository is, a backup), and each old release, downloaded from GitHub, must read it all: doctor,
-# check, its MCP tools, the session start, and a restore of the backup. With no version
+# check, its MCP tools, the session start, and a restore of the backup. The other way
+# round, each old release makes a backup and the new program restores it. With no version
 # given, the last two releases. Needs git, python3, curl and tar. Linux and macOS.
 set -eu
 
@@ -145,6 +146,14 @@ cat > "$WORK/read.json" <<'EOF'
 ]
 EOF
 
+# What each old release writes before it makes its backup, for the new program to restore.
+cat > "$WORK/oldwrite.json" <<'EOF'
+[
+ ["task_new", {"title": "Knead dough", "summary": "for the shop"}],
+ ["task_journal", {"id": "task-knead-dough", "entry": "Folded it twice"}]
+]
+EOF
+
 # fetch <version> <file>: the release's archive for this system, into file. The public
 # address (github.com/…/releases/download) has answered 504 for an hour while the API
 # served the same file, so each try falls back to the API (with the token, in CI), and
@@ -208,11 +217,35 @@ for v in "$@"; do
   export HOME="$WORK/fresh-$v" XDG_CONFIG_HOME="$WORK/fresh-$v/.config"
   mkdir -p "$HOME"
   if "$OLD" restore "$WORK/backup.git" >/dev/null 2>&1; then echo "  ok   restore"; else echo "  FAIL restore"; "$OLD" restore "$WORK/backup.git" 2>&1 | sed 's/^/    /' | tail -5; fail=1; fi
+  # The other way round: a backup the old program made, the new one restores (the
+  # promise of compatibility.md: a backup of any 1.x restores with any later 1.x).
+  export HOME="$WORK/oldhome-$v" XDG_CONFIG_HOME="$WORK/oldhome-$v/.config"
+  mkdir -p "$HOME"
+  olddir="$HOME/augmented-brain/work"
+  git init -q --bare "$WORK/oldbackup-$v.git"
+  if "$OLD" init --yes >/dev/null 2>&1 && mcp "$OLD" "$olddir" "$WORK/oldwrite.json" >/dev/null &&
+    (cd "$olddir" && "$OLD" backup setup "$WORK/oldbackup-$v.git" >/dev/null && "$OLD" backup >/dev/null); then
+    echo "  ok   backup by $v"
+    export HOME="$WORK/newfresh-$v" XDG_CONFIG_HOME="$WORK/newfresh-$v/.config"
+    mkdir -p "$HOME"
+    if out=$("$NEW" restore "$WORK/oldbackup-$v.git" 2>&1); then
+      note=$(find "$HOME" -path '*/tasks/task-knead-dough.md' | head -n 1)
+      if [ -n "$note" ] && grep -q "Folded it twice" "$note" && (cd "$(dirname "$(dirname "$note")")" && "$NEW" check >/dev/null 2>&1); then
+        echo "  ok   the new program restores it"
+      else
+        echo "  FAIL the new program restored it, but the notes are not right (${note:-no task})"; fail=1
+      fi
+    else
+      echo "  FAIL the new program cannot restore it:"; printf '%s\n' "$out" | sed 's/^/    /' | tail -5; fail=1
+    fi
+  else
+    echo "  FAIL $v could not make a backup"; fail=1
+  fi
   export HOME="$WORK/home" XDG_CONFIG_HOME="$WORK/home/.config"
 done
 
 if [ "$fail" -ne 0 ]; then
-  echo "compat-check: an earlier release cannot read what this one writes."
+  echo "compat-check: an earlier release cannot read what this one writes, or this one cannot restore its backup."
   exit 1
 fi
-echo "compat-check: the earlier releases read it all."
+echo "compat-check: the earlier releases read it all, and their backups restore."

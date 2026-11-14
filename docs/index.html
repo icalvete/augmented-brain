@@ -115,6 +115,14 @@
   },
   {
    "@type": "Question",
+   "name": "What happens when I run out of Claude usage?",
+   "acceptedAnswer": {
+    "@type": "Answer",
+    "text": "Your task sessions wait and go on by themselves. On Linux, with remote access installed, augmented brain reads when the limit resets and wakes each session then, with its whole conversation. It tells you when the wait begins and when they are back."
+   }
+  },
+  {
+   "@type": "Question",
    "name": "How can I support it?",
    "acceptedAnswer": {
     "@type": "Answer",
@@ -154,10 +162,10 @@
 <header class="wrap top">
   <a class="brand" href="./"><img src="img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Main">
-    <a class="hide-sm" href="#what">What it does</a>
-    <a class="hide-sm" href="#panel">Panel</a>
-    <a class="hide-sm" href="#backup">Backup</a>
-    <a class="hide-sm" href="#start">Start</a>
+    <a href="#what">What it does</a>
+    <a href="#panel">Panel</a>
+    <a href="#backup">Backup</a>
+    <a href="#start">Start</a>
     <a href="guide/">Docs</a>
     <a href="es/" hreflang="es" data-lang="es">Español</a>
     <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
@@ -469,6 +477,7 @@ Name, email and message, sent by email.
         <details><summary>Does it work on Windows?</summary><p>Yes: Windows 10 and 11, with one PowerShell command. Claude runs its commands in Git Bash, which the installer sets up, so the guard works there too. See <a href="guide/install.html">Installing</a>.</p></details>
         <details><summary>Can I edit the notes by hand?</summary><p>Yes, they are Markdown files. Afterwards, <code>augmented-brain check</code> checks them and rebuilds the index.</p></details>
         <details><summary>Does the backup run by itself?</summary><p>Yes. Once it is set up, it runs every time a Claude session ends, in the background. If it fails, Claude tells you at the start of the next session.</p></details>
+        <details><summary>What happens when I run out of Claude usage?</summary><p>Your task sessions wait and go on by themselves. On Linux, with remote access installed, augmented brain reads when the limit resets and wakes each session then, with its whole conversation. It tells you when the wait begins and when they are back. See <a href="guide/task-sessions.html">A session per task</a>.</p></details>
         <details><summary>How can I support it?</summary><p>Sponsor it on <a href="https://github.com/sponsors/icalvete">GitHub Sponsors</a>. It pays for the time to answer issues and add features.</p></details>
         <details><summary>Is there paid support?</summary><p>Yes, on <a href="https://github.com/sponsors/icalvete">GitHub Sponsors</a>: the Support tier gets you an answer by email within two working days, and the Setup session is one hour on a video call to set it up with you.</p></details>
         <details><summary>What if I stop using it?</summary><p>Your notes stay where they are, as plain files. There is nothing to export.</p></details>
@@ -482,7 +491,7 @@ Name, email and message, sent by email.
       <div class="guides">
         <a class="guide" href="guide/getting-started.html"><h3>Get started</h3><span>What it is, installing it, and your first session, without knowing the terminal.</span></a>
         <a class="guide" href="guide/tasks.html"><h3>Concepts</h3><span>Spaces, tasks, areas and the rest of your notes, the guard, and how it works inside.</span></a>
-        <a class="guide" href="guide/phrases.html"><h3>Daily use</h3><span>What to say to Claude, the panel, the weekly review, backup, your services.</span></a>
+        <a class="guide" href="guide/phrases.html"><h3>Daily use</h3><span>What to say to Claude, the panel and the weekly review. Then make it yours: backup, your services, remote access.</span></a>
         <a class="guide" href="guide/commands.html"><h3>Reference</h3><span>Every command, MCP tool and setting, and the memory format.</span></a>
         <a class="guide" href="guide/troubleshooting.html"><h3>Troubleshooting</h3><span>Problems and fixes, and what <code>augmented-brain doctor</code> tells you.</span></a>
         <a class="guide" href="https://github.com/icalvete/augmented-brain"><h3>Source and issues</h3><span>The code, the changelog, and where to report a problem.</span></a>

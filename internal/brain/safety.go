@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 // SafetyInput is what the guard must ask the user about, on this whole machine. Its
@@ -23,11 +24,19 @@ type SafetyInput struct {
 // taken out by a tool the assistant may be talked into using; the user takes an entry
 // out by editing the configuration. A list a space kept of its own (older
 // configurations had them per space) moves into the machine-wide one.
+//
+// Adding only makes the guard ask more, so when the user had accepted the lists just
+// before (the seal matched), the new lists are sealed too: the guard does not take its
+// own addition for a change the user has not seen. Lists already changed some other way
+// stay unsealed, and so do lists that end up different from the old ones plus what was
+// added (something else wrote the file meanwhile).
 func (b *Brain) SaveSafety(in SafetyInput) (string, error) {
 	var oldProfiles, oldHosts []string
-	if c, err := config.Load(b.ConfigDir); err == nil {
+	c, err := config.Load(b.ConfigDir)
+	if err == nil {
 		oldProfiles, oldHosts = c.GuardLists()
 	}
+	expected := sealedPlus(b.ConfigDir, c, err, in)
 	before := map[string][]string{"production_aws_profiles": oldProfiles, "untouchable_hosts": oldHosts}
 	var done []string
 	for _, s := range []struct {
@@ -64,5 +73,51 @@ func (b *Brain) SaveSafety(in SafetyInput) (string, error) {
 		return "nothing to change", nil
 	}
 	_ = os.Remove(filepath.Join(b.ConfigDir, config.AskSafetyFile)) // asked and answered
+	safetyWritten()
+	resealAdded(b.ConfigDir, expected)
 	return fmt.Sprintf("saved for every space on this machine: %s", strings.Join(done, "; ")), nil
+}
+
+// safetyWritten runs between writing the lists and sealing them; tests change it.
+var safetyWritten = func() {}
+
+// sealedPlus returns the fingerprint the lists will have once in is added, but only
+// when the seal matches the lists as they are now; "" otherwise (no seal yet, a seal
+// that cannot be read, lists changed since the user last accepted them).
+func sealedPlus(cfgDir string, c *config.Config, loadErr error, in SafetyInput) string {
+	if loadErr != nil {
+		return ""
+	}
+	g, err := config.LoadGuard(cfgDir)
+	if err != nil {
+		return ""
+	}
+	seal, err := state.ReadSeal(cfgDir)
+	if err != nil || seal == "" || seal != c.GuardFingerprint(g) {
+		return ""
+	}
+	plus := *c
+	for _, v := range in.ProductionAWSProfiles {
+		plus.ProductionAWSProfiles = append(slices.Clone(plus.ProductionAWSProfiles), strings.TrimSpace(v))
+	}
+	for _, v := range in.UntouchableHosts {
+		plus.UntouchableHosts = append(slices.Clone(plus.UntouchableHosts), strings.TrimSpace(v))
+	}
+	return plus.GuardFingerprint(g)
+}
+
+// resealAdded seals the lists when they are exactly the expected ones.
+func resealAdded(cfgDir, expected string) {
+	if expected == "" {
+		return
+	}
+	c, err := config.Load(cfgDir)
+	if err != nil {
+		return
+	}
+	g, err := config.LoadGuard(cfgDir)
+	if err != nil || c.GuardFingerprint(g) != expected {
+		return
+	}
+	_ = state.WriteSeal(cfgDir, expected)
 }

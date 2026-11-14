@@ -45,6 +45,11 @@ GROUPS = [
                    "Cómo instalar augmented brain en Linux, macOS y Windows: qué hace el comando en cada sistema, dónde deja cada cosa, qué cambia en cada uno, actualizar y desinstalar."),
              line=("One command on each system: what it does, where things go, updating and removing it.",
                    "Un comando en cada sistema: qué hace, dónde deja cada cosa, actualizarlo y quitarlo.")),
+        dict(slug="import", title=("Bring in a memory you already have", "Trae una memoria que ya tienes"),
+             desc=("How to bring a memory Claude Code already wrote into augmented brain's spaces with augmented-brain import: look first, then write.",
+                   "Cómo traer a los espacios de augmented brain una memoria que Claude Code ya escribió, con augmented-brain import: primero mirar, luego escribir."),
+             line=("Claude Code's own memory, brought into your spaces.",
+                   "La memoria de Claude Code, traída a tus espacios.")),
     ]),
     (("Concepts", "Conceptos"), [
         dict(slug="spaces", title=("Spaces", "Espacios"),
@@ -62,26 +67,31 @@ GROUPS = [
                    "Las otras notas de augmented brain: áreas, referencias y lecciones, personas, el buzón, reglas, tu perfil, repositorios y el índice."),
              line=("Areas, knowledge, people, the inbox, rules and your profile.",
                    "Áreas, conocimiento, personas, el buzón, reglas y tu perfil.")),
+        dict(slug="editing-notes", title=("Editing notes by hand", "Editar las notas a mano"),
+             desc=("How to edit augmented brain's notes by hand without breaking them: before and after, the header's rules, the journal line with its long dash, the inbox, and what not to touch.",
+                   "Cómo editar a mano las notas de augmented brain sin romperlas: antes y después, las reglas de la cabecera, la línea del diario con su raya larga, el buzón y lo que no se toca."),
+             line=("Change a note with any editor and keep it readable.",
+                   "Cambia una nota con cualquier editor sin que deje de leerse.")),
+        dict(slug="what-claude-may-do", title=("What Claude may do without asking you", "Qué puede hacer Claude sin preguntarte"),
+             desc=("What Claude may do on its own and what asks you first: the guard and Claude Code's permissions side by side, the repository lists, the seal of the lists and accepting changes in the Guard page.",
+                   "Qué puede hacer Claude por su cuenta y qué te pregunta antes: el guardia y los permisos de Claude Code uno al lado del otro, las listas de repositorios, el sello de las listas y aceptar cambios en la página Guardia."),
+             line=("Stopped, asks each time, without asking: the guard and Claude Code together.",
+                   "Se para, pregunta cada vez, sin preguntar: el guardia y Claude Code juntos.")),
         dict(slug="guard", title=("The guard", "El guardia"),
              desc=("The guard of augmented brain: what it stops (pushes, root, secrets), what it asks you first (production, untouchable machines), the repository lists, root exceptions, and why it is a safety net, not a security boundary.",
                    "El guardia de augmented brain: lo que para (push, root, secretos), lo que te pregunta antes (producción, máquinas intocables), las listas de repositorios, las excepciones de root, y por qué es una red, no un muro de seguridad."),
              line=("What it stops, what it asks you first, and what it is not.",
                    "Lo que para, lo que te pregunta antes, y lo que no es.")),
-        dict(slug="how-it-works", title=("How it works inside", "Cómo funciona por dentro"),
-             desc=("How augmented brain works inside, in four layers: you and your assistant, the plugin, the program and your files. A session step by step and where every file lives.",
-                   "Cómo funciona augmented brain por dentro, en cuatro capas: tú y tu asistente, el plugin, el programa y tus ficheros. Una sesión paso a paso y dónde vive cada fichero."),
-             line=("Four layers, a session step by step, and where every file lives.",
-                   "Cuatro capas, una sesión paso a paso y dónde vive cada fichero.")),
-        dict(slug="what-claude-may-do", title=("What Claude may do without asking you", "Qué puede hacer Claude sin preguntarte"),
-             desc=("What Claude may do on its own and what asks you first: the guard and Claude Code's permissions side by side, the repository lists, the seal of the lists and accepting changes in the Guard page.",
-                   "Qué puede hacer Claude por su cuenta y qué te pregunta antes: el guardia y los permisos de Claude Code uno al lado del otro, las listas de repositorios, el sello de las listas y aceptar cambios en la página Guardia."),
-             line=("Never, always asks, without asking: the guard and Claude Code together.",
-                   "Nunca, pregunta siempre, sin preguntar: el guardia y Claude Code juntos.")),
         dict(slug="where-things-live", title=("Where everything lives", "Dónde vive cada cosa"),
              desc=("Where augmented brain keeps your notes, configuration, state and secrets' names, how each is protected, and what the backup takes and leaves.",
                    "Dónde guarda augmented brain tus notas, la configuración, el estado y los nombres de tus secretos, cómo se protege cada cosa, y qué lleva la copia de seguridad y qué deja fuera."),
              line=("Notes, configuration, state and secrets: where, and how they are kept safe.",
                    "Notas, configuración, estado y secretos: dónde, y cómo se protegen.")),
+        dict(slug="how-it-works", title=("How it works inside", "Cómo funciona por dentro"),
+             desc=("How augmented brain works inside, in four layers: you and your assistant, the plugin, the program and your files. A session step by step and where your notes live.",
+                   "Cómo funciona augmented brain por dentro, en cuatro capas: tú y tu asistente, el plugin, el programa y tus ficheros. Una sesión paso a paso y dónde viven tus notas."),
+             line=("Four layers, a session step by step, and what it does not do.",
+                   "Cuatro capas, una sesión paso a paso y lo que no hace.")),
     ]),
     (("Daily use", "Día a día"), [
         dict(slug="phrases", title=("What to say to Claude", "Qué decirle a Claude"),
@@ -94,46 +104,48 @@ GROUPS = [
                    "El panel de augmented brain: una página en tu navegador para ver y cambiar tus espacios. Hoy, tareas, recordatorios, buzón, revisión semanal, repositorios, secretos, sesiones, guardia, versiones, salud y ayuda."),
              line=("Everything at a glance, in your browser, and every page in it.",
                    "Todo de un vistazo, en tu navegador, y cada página que tiene.")),
-        dict(slug="panel-remote", title=("The panel from another device", "El panel desde otro dispositivo"),
-             desc=("How to open the panel of augmented brain from your phone or another computer with augmented-brain panel remote, through your own Tailscale network: what you need once, who can open it, and why it is always temporary.",
-                   "Cómo abrir el panel de augmented brain desde el móvil u otro ordenador con augmented-brain panel remote, a través de tu propia red de Tailscale: lo que hace falta una vez, quién puede abrirlo y por qué siempre es temporal."),
-             line=("Your panel on the phone, through your own private network.",
-                   "Tu panel en el móvil, por tu propia red privada.")),
-        dict(slug="config-history", title=("Configuration versions", "Versiones de la configuración"),
-             desc=("augmented brain keeps the last 10 versions of your configuration on this computer: see what changed and go back, from the panel's Versions page or with augmented-brain config history and config restore.",
-                   "augmented brain guarda las 10 últimas versiones de tu configuración en este ordenador: ver qué cambió y volver atrás, desde la página Versiones del panel o con augmented-brain config history y config restore."),
-             line=("See what changed in your configuration, and go back.",
-                   "Ver qué cambió en tu configuración, y volver atrás.")),
         dict(slug="weekly-review", title=("The weekly review", "La revisión semanal"),
              desc=("The weekly review of augmented brain: emptying the inbox and looking at stalled tasks, with Claude or in the panel, in about ten minutes.",
                    "La revisión semanal de augmented brain: vaciar el buzón y mirar las tareas paradas, con Claude o en el panel, en unos diez minutos."),
              line=("Ten minutes a week: the inbox empty, nothing stalled.",
                    "Diez minutos a la semana: el buzón vacío y nada parado.")),
-        dict(slug="backup", title=("Backup and restore", "Copia de seguridad y restauración"),
-             desc=("The backup of augmented brain: a private git repository per space, run by itself after every session, and how to restore everything on a new machine.",
-                   "La copia de seguridad de augmented brain: un repositorio git privado por espacio, que se hace sola después de cada sesión, y cómo recuperarlo todo en una máquina nueva."),
-             line=("A private repository per space, and a new machine in minutes.",
-                   "Un repositorio privado por espacio, y una máquina nueva en minutos.")),
+    ]),
+    (("Make it yours", "Ponlo a tu medida"), [
         dict(slug="connect-services", title=("Connect your services", "Conecta tus servicios"),
              desc=("How to give Claude Code your calendar, mail, documents and Jira through MCP connectors, alongside augmented brain.",
                    "Cómo dar a Claude Code tu calendario, tu correo, tus documentos y Jira con conectores MCP, junto a augmented brain."),
              line=("Calendar, mail, documents and Jira, through MCP.",
                    "Calendario, correo, documentos y Jira, por MCP.")),
-        dict(slug="remote", title=("Remote access", "Acceso remoto"),
-             desc=("How to keep Claude reachable from another computer or your phone, also after a reboot, with augmented-brain remote: install, the trust step, linger, connecting from claude.ai or Claude Desktop, a session per task, and the security note.",
-                   "Cómo mantener Claude accesible desde otro ordenador o el móvil, también tras reiniciar, con augmented-brain remote: instalar, el paso de confianza, el linger, conectarse desde claude.ai o Claude Desktop, una sesión por tarea y la nota de seguridad."),
-             line=("Reach Claude on this computer from anywhere, even after a reboot, with a session per task.",
-                   "Llega al Claude de este ordenador desde cualquier sitio, incluso tras reiniciar, con una sesión por tarea.")),
-        dict(slug="import", title=("Bring in a memory you already have", "Trae una memoria que ya tienes"),
-             desc=("How to bring a memory Claude Code already wrote into augmented brain's spaces with augmented-brain import: look first, then write.",
-                   "Cómo traer a los espacios de augmented brain una memoria que Claude Code ya escribió, con augmented-brain import: primero mirar, luego escribir."),
-             line=("Claude Code's own memory, brought into your spaces.",
-                   "La memoria de Claude Code, traída a tus espacios.")),
+        dict(slug="backup", title=("Backup and restore", "Copia de seguridad y restauración"),
+             desc=("The backup of augmented brain: a private git repository per space, run by itself after every session, and how to restore everything on a new machine.",
+                   "La copia de seguridad de augmented brain: un repositorio git privado por espacio, que se hace sola después de cada sesión, y cómo recuperarlo todo en una máquina nueva."),
+             line=("A private repository per space, and a new machine in minutes.",
+                   "Un repositorio privado por espacio, y una máquina nueva en minutos.")),
+        dict(slug="config-history", title=("Configuration versions", "Versiones de la configuración"),
+             desc=("augmented brain keeps the last 10 versions of your configuration on this computer: see what changed and go back, from the panel's Versions page or with augmented-brain config history and config restore.",
+                   "augmented brain guarda las 10 últimas versiones de tu configuración en este ordenador: ver qué cambió y volver atrás, desde la página Versiones del panel o con augmented-brain config history y config restore."),
+             line=("See what changed in your configuration, and go back.",
+                   "Ver qué cambió en tu configuración, y volver atrás.")),
         dict(slug="anywhere", title=("From your phone or another computer", "Desde el móvil u otro ordenador"),
              desc=("Working with augmented brain away from the computer that holds your notes: remote access and the panel from another device together, which session to use, and what to do when it stops answering.",
                    "Trabajar con augmented brain lejos del ordenador que guarda tus notas: el acceso remoto y el panel desde otro dispositivo juntos, qué sesión usar y qué hacer cuando deja de responder."),
              line=("Remote access and the panel together, and what to do when it drops.",
                    "Acceso remoto y panel juntos, y qué hacer cuando se cae.")),
+        dict(slug="remote", title=("Remote access", "Acceso remoto"),
+             desc=("How to keep Claude reachable from another computer or your phone, also after a reboot, with augmented-brain remote: install, the trust step, linger, the security note, connecting from claude.ai or Claude Desktop, and an archived session.",
+                   "Cómo mantener Claude accesible desde otro ordenador o el móvil, también tras reiniciar, con augmented-brain remote: instalar, el paso de confianza, el linger, la nota de seguridad, conectarse desde claude.ai o Claude Desktop y una sesión archivada."),
+             line=("Reach Claude on this computer from anywhere, even after a reboot.",
+                   "Llega al Claude de este ordenador desde cualquier sitio, incluso tras reiniciar.")),
+        dict(slug="task-sessions", title=("A session per task", "Una sesión por tarea"),
+             desc=("A Claude session of its own for each task, in its own folder, with augmented-brain session: opening and closing one, which folder it uses, worktrees for a bare repository, restarting after an update, waiting on a pull request, cleaning up, and what works on each system.",
+                   "Una sesión de Claude propia para cada tarea, en su propia carpeta, con augmented-brain session: abrirla y cerrarla, qué carpeta usa, worktrees para un repositorio bare, reiniciarla tras actualizar, esperar a una pull request, limpiar, y qué funciona en cada sistema."),
+             line=("Several tasks at once, each in a session and a folder of its own.",
+                   "Varias tareas a la vez, cada una en su sesión y su carpeta.")),
+        dict(slug="panel-remote", title=("The panel from another device", "El panel desde otro dispositivo"),
+             desc=("How to open the panel of augmented brain from your phone or another computer with augmented-brain panel remote, through your own Tailscale network: what you need once, who can open it, and why it is always temporary.",
+                   "Cómo abrir el panel de augmented brain desde el móvil u otro ordenador con augmented-brain panel remote, a través de tu propia red de Tailscale: lo que hace falta una vez, quién puede abrirlo y por qué siempre es temporal."),
+             line=("Your panel on the phone, through your own private network.",
+                   "Tu panel en el móvil, por tu propia red privada.")),
         dict(slug="update-and-uninstall", title=("Updating and uninstalling", "Actualizar y desinstalar"),
              desc=("Updating augmented brain and uninstalling it without losing anything: what update does step by step, the three levels of uninstall, and moving to a new computer.",
                    "Actualizar augmented brain y desinstalarlo sin perder nada: qué hace update paso a paso, los tres niveles de uninstall y pasarse a un ordenador nuevo."),
@@ -438,7 +450,7 @@ def header(lang, other):
     if other:
         o = "en" if lang == "es" else "es"
         switch = f'\n    <a href="{other}" hreflang="{o}" data-lang="{o}">{"English" if o == "en" else "Español"}</a>'
-    return f"""<header class="wrap top">
+    return f"""<header class="wrap wide top">
   <a class="brand" href="{home}"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="{u["main"]}">
     <a href="{docs}">{u["docs"]}</a>{switch}
@@ -503,7 +515,7 @@ document.querySelectorAll("[data-lang]").forEach(function (a) {
 
 def footer(lang):
     u = UI[lang]
-    return (f'<footer>\n  <div class="wrap"><span>{u["footer"]} · <a href="{CHANGELOG if lang == "en" else CHANGELOG_ES}">'
+    return (f'<footer>\n  <div class="wrap wide"><span>{u["footer"]} · <a href="{CHANGELOG if lang == "en" else CHANGELOG_ES}">'
             f'{"Changelog" if lang == "en" else "Registro de cambios"}</a></span></div>\n</footer>\n'
             + COPY.replace("{copy}", u["copy"]).replace("{copied}", u["copied"]) + "\n</body>\n</html>\n")
 
@@ -532,15 +544,18 @@ def page(p, lang):
     other = alternates.get("es" if lang == "en" else "en")
     if lang == "en" and not has_es(p):
         other = "index.es.html"
-    contents = ""
+    contents = aside = ""
     if len(toc) >= TOC_MIN and slug not in NO_TOC:
-        contents = (f'  <nav class="toc" aria-label="{u["onpage"]}"><p>{u["onpage"]}</p><ul>'
-                    + "".join(f'<li><a href="#{a}">{t}</a></li>' for a, t in toc) + "</ul></nav>")
+        items = "".join(f'<li><a href="#{a}">{t}</a></li>' for a, t in toc)
+        contents = f'  <nav class="toc" aria-label="{u["onpage"]}"><p>{u["onpage"]}</p><ul>{items}</ul></nav>'
+        # The same list beside the page on a wide screen, where it stays while you read;
+        # the stylesheet shows one or the other, never both.
+        aside = f'<aside class="pagetoc"><p>{u["onpage"]}</p><ul>{items}</ul></aside>\n'
     html_body = "\n".join(contents if b == "TOC" else b for b in body if b != "TOC" or contents)
     out = (head(lang, name, p["title"][L(lang)], p["desc"][L(lang)], p["line"][L(lang)], alternates)
            + header(lang, other)
            + '\n<div class="wrap docs">\n' + sidebar(lang, slug)
-           + '<main class="prose" id="main">\n' + html_body + "\n" + pager(lang, slug) + "\n</main>\n</div>\n\n"
+           + '<main class="prose" id="main">\n' + html_body + "\n" + pager(lang, slug) + "\n</main>\n" + aside + "</div>\n\n"
            + footer(lang))
     (G / name).write_text(out)
     print("ok", name)

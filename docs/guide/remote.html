@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Remote access · augmented brain</title>
-<meta name="description" content="How to keep Claude reachable from another computer or your phone, also after a reboot, with augmented-brain remote: install, the trust step, linger, connecting from claude.ai or Claude Desktop, a session per task, and the security note.">
+<meta name="description" content="How to keep Claude reachable from another computer or your phone, also after a reboot, with augmented-brain remote: install, the trust step, linger, the security note, connecting from claude.ai or Claude Desktop, and an archived session.">
 <link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/remote.html">
 <link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/remote.html">
 <link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/remote.es.html">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="augmented brain">
 <meta property="og:title" content="Remote access · augmented brain">
-<meta property="og:description" content="Reach Claude on this computer from anywhere, even after a reboot, with a session per task.">
+<meta property="og:description" content="Reach Claude on this computer from anywhere, even after a reboot.">
 <meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/remote.html">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Remote access · augmented brain">
-<meta name="twitter:description" content="Reach Claude on this computer from anywhere, even after a reboot, with a session per task.">
+<meta name="twitter:description" content="Reach Claude on this computer from anywhere, even after a reboot.">
 <meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
 <link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Main">
     <a href="index.html">Docs</a>
@@ -50,29 +50,34 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
   <li><a href="spaces.html">Spaces</a></li>
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
-  <li><a href="guard.html">The guard</a></li>
-  <li><a href="how-it-works.html">How it works inside</a></li>
+  <li><a href="editing-notes.html">Editing notes by hand</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
 </ul>
 <p class="docnav-group">Daily use</p>
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
-  <li><a href="remote.html" aria-current="page">Remote access</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html" aria-current="page">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -98,10 +103,13 @@
   <p><code>augmented-brain remote</code> keeps it running for you. It starts by itself, and starts again if it stops. You set it up once. It works on the three systems, each with its own way of starting programs by themselves:</p>
   <ul><li><strong>Linux</strong>: a user service of systemd (the part of Linux that starts and watches services). It can start when the computer starts, before anyone logs in. Not in a container, nor in WSL without systemd.</li><li><strong>macOS</strong>: a LaunchAgent, the way macOS starts a program when you log in.</li><li><strong>Windows</strong>: a task of the Task Scheduler that starts when you log in, with no window.</li></ul>
   <p>On macOS and Windows it starts <strong>when you log in</strong>, not before: after a reboot, log in once and it is back. Neither system lets an ordinary user start something with nobody logged in, and augmented brain never asks for an administrator.</p>
-  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#one-door-per-space">One door per space</a></li><li><a href="#install-it">Install it</a></li><li><a href="#check-it">Check it</a></li><li><a href="#connect-from-another-computer">Connect from another computer</a></li><li><a href="#a-session-per-task">A session per task</a></li><li><a href="#keep-it-safe">Keep it safe</a></li><li><a href="#good-to-know">Good to know</a></li><li><a href="#take-it-away">Take it away</a></li><li><a href="#the-settings">The settings</a></li></ul></nav>
+  <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#one-door-per-space">One door per space</a></li><li><a href="#install-it">Install it</a></li><li><a href="#keep-it-safe">Keep it safe</a></li><li><a href="#check-it">Check it</a></li><li><a href="#connect-from-another-computer">Connect from another computer</a></li><li><a href="#good-to-know">Good to know</a></li><li><a href="#take-it-away">Take it away</a></li><li><a href="#the-settings">The settings</a></li></ul></nav>
   <h2 id="one-door-per-space">One door per space</h2>
-  <p>Each space (work, personal…) gets its own door, with its own name: <code>&lt;computer name&gt;-&lt;space&gt;</code>, such as <code>my-laptop-personal</code>. A session opened through that door starts in a folder that belongs to that space, so Claude loads that space's notes and rules, and nothing crosses between spaces. By default only your default space has a door. To open one for work too, see <a href="configuration.html">Configuration</a>.</p>
-  <p>That folder is the space's first work folder, the one you named when you made the space: where you already work, so a session from your phone opens where you would open one at the computer. To start somewhere else inside the space, set <code>folders</code> in [<code>remote.toml</code>](configuration.md). Only a space with no work folder gets a folder of its own, <code>~/.config/augmented-brain/remote/&lt;space&gt;</code>.</p>
+  <p>Each space (work, personal…) gets its own door, with its own name: <code>&lt;computer name&gt;-&lt;space&gt;</code>, such as <code>my-laptop-personal</code>. A session opened through that door starts in a folder that belongs to that space, so Claude loads that space's notes and rules, and nothing crosses between spaces. By default only your default space has a door. To open one for work too, list both spaces in <code>remote.toml</code>, in the configuration folder, and run <code>augmented-brain remote install</code> again:</p>
+  <pre><code>spaces = ["personal", "work"]</code></pre>
+  <p>That folder is the space's first work folder, the one you named when you made the space: where you already work, so a session from your phone opens where you would open one at the computer. To start somewhere else inside the space, name the folder in <code>remote.toml</code>:</p>
+  <pre><code>folders = { work = "~/code/clients" }</code></pre>
+  <p>Only a space with no work folder gets a folder of its own, <code>remote/&lt;space&gt;</code> inside the configuration folder (see <a href="where-things-live.html">Where everything lives</a>). Every setting of <code>remote.toml</code> is in <a href="configuration.html#remotetoml">Configuration</a>.</p>
   <h2 id="install-it">Install it</h2>
   <pre><code>augmented-brain remote install</code></pre>
   <p>It checks that the system can keep the service, writes it and starts it. If it cannot, it says why and changes nothing. It then tells you what is missing, if anything: one thing only you can do, two on Linux.</p>
@@ -113,40 +121,42 @@
   <p>A user service normally runs only while you are logged in. To have it after a reboot with nobody logged in, the system must be told to keep your services: that is called <strong>linger</strong>, and it needs an administrator. <code>install</code> prints the exact command and does not run it:</p>
   <pre><code>sudo loginctl enable-linger your-user-name</code></pre>
   <p>macOS and Windows have no linger: there the service starts when you log in.</p>
+  <h2 id="keep-it-safe">Keep it safe</h2>
+  <p><strong>This is a permanent door to your computer.</strong> Anyone who gets into your Claude account can work on the machine through it.</p>
+  <ul><li>Claude asks before it acts, as always (permission mode <code>default</code>), and the guard stays in force: it stops pushes, root and secrets, and asks before production.</li><li>**Do not set <code>permission_mode</code> to <code>bypassPermissions</code>.** It lets whoever connects run anything with no question, and leaves the machine open.</li><li>Protect your Claude account: a strong password and two-step verification.</li><li>Remove the door whenever you do not need it: <code>augmented-brain remote uninstall</code>.</li></ul>
   <h2 id="check-it">Check it</h2>
   <pre><code>augmented-brain remote status</code></pre>
-  <p>For each space it says whether the service is running, whether Claude trusts its folder, and on Linux whether linger is on, with what to do about each problem. On Linux it also says how the watch stands (the one that brings back a service whose server archived the session, see below): whether it is running and how long ago it last looked. <code>augmented-brain doctor</code> shows the same, one line per space, and one more for the watch only when it fails.</p>
+  <p>For each space it says whether the service is running, whether Claude trusts its folder, and on Linux whether linger is on, with what to do about each problem.</p>
+  <p>On Linux, <code>install</code> also sets up a <strong>watch</strong>: a small timer that looks at the services every two minutes and brings back one whose session the server archived (see “Good to know” below). <code>status</code> says how it stands: whether it is running and how long ago it last looked. <code>augmented-brain doctor</code> shows the same, one line per space, and one more for the watch only when it fails.</p>
   <p>When a service fails, it says why. On Linux, in the system journal:</p>
   <pre><code>journalctl --user -u augmented-brain-remote-personal -n 20</code></pre>
   <p>On macOS, in <code>~/Library/Logs/augmented-brain/augmented-brain-remote-&lt;space&gt;.log</code>; on Windows, in <code>augmented-brain-remote-&lt;space&gt;.log</code> inside <code>%LOCALAPPDATA%\augmented-brain\remote</code>. <code>status</code> names the file.</p>
   <p>A service installed by an earlier version sent its errors nowhere; <code>status</code> and <code>doctor</code> tell you to run <code>augmented-brain remote install</code> again, which brings it up to date.</p>
   <h2 id="connect-from-another-computer">Connect from another computer</h2>
   <ol><li>Open <a href="https://claude.ai/code">claude.ai/code</a> or Claude Desktop, signed in to the same Claude account as on the machine.</li><li>Choose the environment named <code>&lt;computer name&gt;-&lt;space&gt;</code>, the name <code>status</code> shows.</li><li>Start a session. Start as many as you like: each one begins in that space's folder.</li></ol>
-  <h2 id="a-session-per-task">A session per task</h2>
-  <p>This part is for Linux only for now: it has been tried only there. On macOS and Windows <code>session start</code> says it is not available.</p>
-  <p>The door's own sessions all start in the space's folder. To work on a task in its own session, in its own folder, ask the session you are in: “open me a session for the website task”. Every session on Linux knows how, here or from another computer, because the start of each one tells it. It runs</p>
-  <pre><code>augmented-brain session start task-new-website</code></pre>
-  <p>and within a minute a new session, named after the task, shows up in claude.ai and Claude Desktop. It starts on its own: it reads its task, tells you where it stands and gets on with the next step. It hears only what is its task's: that task's dates, not the rest of the space's reminders, the weekly review or sessions to recover, which come up in your other sessions. When it stops, it tells the session that asked for it, in one line. The folder is the first of the task's repositories found in the space's work folders, or the one <code>--folder</code> gives; with no repository, the space's folder. For a bare repository, the task gets a git worktree of its own, on a new branch from origin's default branch. It goes away by itself when nothing would be lost: with <code>session stop</code>, when the task is closed, or, for a session that ended some other way (a reboot, closing it from Claude Desktop), at the next <code>session start</code>. One with work not committed or not pushed, or files git ignores such as a <code>.env</code>, stays, and <code>doctor</code> names it.</p>
-  <ul><li><strong>Claude must trust that folder itself.</strong> Trusting the space's folder is not enough. The first time, the command says what to do: on the machine (or through <code>ssh</code>), go to the folder, run <code>claude</code>, accept the question and close it with <code>/exit</code>. Then ask again. For a git worktree, Claude keeps the answer under its main repository: trusting either one is enough.</li><li><strong>One task per folder.</strong> Two tasks in one folder would step on each other's changes, so a folder another task's session uses is refused. Give it another one with <code>--folder</code> (a git worktree of the repository, for example).</li><li>**It ends with <code>augmented-brain session stop &lt;task&gt;</code>**, which also takes it out of Claude Desktop and claude.ai, when its task is closed (once it has finished its answer), or when the machine restarts. After a reboot only the doors come back: ask for the task sessions again. <code>augmented-brain session list</code> shows the open ones.</li><li><strong>Claude retires a session left unused for hours.</strong> It stops running, and claude.ai shows it as disconnected. <code>session list</code> calls it retired; <code>session start</code> with its task brings it back with its whole conversation, and <code>session stop</code> and closing the task close it all the same.</li><li>**It waits on a pull request with <code>augmented-brain watch pr</code>.** The session leaves [<code>watch pr</code>](commands.md#augmented-brain-watch-pr) running in the background with its task. When the checks pass or fail, or the pull request is merged, it writes the result in the task, so your other sessions hear of it even if this one is gone, and tells the session to let you know at once. It never waits for ever: 3 hours at most.</li><li><strong>A session that cannot work is not left open.</strong> <code>session start</code> checks first that Claude Code is logged in, then waits for the first answer (up to a minute). If that answer is an error, such as an expired login, it closes the session and says what to do. A session whose answer fails later shows as failed in <code>session list</code>.</li></ul>
-  <h2 id="keep-it-safe">Keep it safe</h2>
-  <p><strong>This is a permanent door to your computer.</strong> Anyone who gets into your Claude account can work on the machine through it.</p>
-  <ul><li>Claude asks before it acts, as always (permission mode <code>default</code>), and the guard stays in force: it stops pushes, root and secrets, and asks before production.</li><li>**Do not set <code>permission_mode</code> to <code>bypassPermissions</code>.** It lets whoever connects run anything with no question, and leaves the machine open.</li><li>Protect your Claude account: a strong password and two-step verification.</li><li>Remove the door whenever you do not need it: <code>augmented-brain remote uninstall</code>.</li></ul>
+  <p>The door's sessions all start in the space's folder. On Linux, a task can also get a session of its own, in its own folder: ask the session you are in, “open me a session for the website task”. See <a href="task-sessions.html">A session per task</a>.</p>
   <h2 id="good-to-know">Good to know</h2>
-  <ul><li><strong>A laptop that sleeps drops the connection.</strong> The session is back when it wakes up. The program does not change your sleep settings.</li><li><strong>On macOS and Windows, a reboot leaves it off until you log in.</strong> If the computer restarts by itself (an update, a power cut), nobody can connect until someone logs in.</li><li>If your Claude login expires, the service keeps running but nobody can connect. <code>status</code> and <code>doctor</code> say so; run <code>claude</code> once and sign in again.</li><li><strong>If the server archives the session</strong> (you archived it in claude.ai, say), on Linux the service comes back by itself with a new, empty session of the same name, in about ten minutes: a watch looks every two minutes (see [<code>remote watch</code>](commands.md#augmented-brain-remote-watch)). On macOS and Windows, run <code>augmented-brain remote install</code> again.</li><li>Sessions you start from the phone belong to the space of their folder: the work door opens work notes. To reach another space, use that space's door.</li></ul>
+  <ul><li><strong>A laptop that sleeps drops the connection.</strong> The session is back when it wakes up. The program does not change your sleep settings.</li><li><strong>On macOS and Windows, a reboot leaves it off until you log in.</strong> If the computer restarts by itself (an update, a power cut), nobody can connect until someone logs in.</li><li>If your Claude login expires, the service keeps running but nobody can connect. <code>status</code> and <code>doctor</code> say so; run <code>claude</code> once and sign in again.</li><li><strong>If the server archives the session</strong> (you archived it in claude.ai, say), the service keeps running with nobody behind it. On Linux the watch brings it back by itself, with a new, empty session of the same name, in about ten minutes (see [<code>remote watch</code>](commands.md#augmented-brain-remote-watch)).</li><li>Sessions you start from the phone belong to the space of their folder: the work door opens work notes. To reach another space, use that space's door.</li></ul>
+  <h3 id="an-archived-session-on-macos-and-windows">An archived session on macOS and Windows</h3>
+  <p>There is no watch there, and installing again is not enough: Claude keeps a note of the archived session, <code>bridge-pointer.json</code>, and a new service picks it up again and loses it at once. Set the note aside by hand:</p>
+  <ol><li>Stop the doors:<pre><code>augmented-brain remote uninstall</code></pre></li></ol>
+  <ol><li>In <code>.claude/projects</code> inside your home folder, open the folder whose name ends in the name of the door's folder (Claude names it after the whole path, with <code>-</code> in place of each separator). Rename <code>bridge-pointer.json</code> there to <code>bridge-pointer.json.archived</code>. Do not delete it.</li><li>Start the doors again:<pre><code>augmented-brain remote install</code></pre></li></ol>
+  <p>A new, empty session of the same name shows up within a few minutes: Claude's side first lets the old one go. The conversation of the archived session does not come back.</p>
   <h2 id="take-it-away">Take it away</h2>
   <pre><code>augmented-brain remote uninstall</code></pre>
-  <p>It stops and removes the services and, on Linux, the watch (on Windows, also the program they were running). The folders, and their place in the space's work folders, stay, and nothing else is deleted. Remove them by hand if you want.</p>
+  <p>It stops the services and removes them, and on Linux the watch too. On Windows it also ends the programs those services had started. The folders, and their place in the space's work folders, stay, and nothing else is deleted. Remove them by hand if you want.</p>
   <h2 id="the-settings">The settings</h2>
-  <p><code>remote.toml</code>, in the configuration folder: <code>enabled</code>, <code>spaces</code>, <code>name_prefix</code>, <code>permission_mode</code> and <code>folders</code>. See <a href="configuration.html">Configuration</a>. The commands are in <a href="commands.html">Commands</a>.</p>
+  <p><code>remote.toml</code>, in the configuration folder: <code>enabled</code>, <code>spaces</code>, <code>name_prefix</code>, <code>permission_mode</code> and <code>folders</code>. See <a href="configuration.html#remotetoml">Configuration</a>. The commands are in <a href="commands.html">Commands</a>.</p>
   <nav class="pager" aria-label="Previous / Next">
-    <a class="prev" href="connect-services.html"><span>← Previous</span>Connect your services</a>
-    <a class="next" href="import.html"><span>Next →</span>Bring in a memory you already have</a>
+    <a class="prev" href="anywhere.html"><span>← Previous</span>From your phone or another computer</a>
+    <a class="next" href="task-sessions.html"><span>Next →</span>A session per task</a>
   </nav>
 </main>
+<aside class="pagetoc"><p>On this page</p><ul><li><a href="#one-door-per-space">One door per space</a></li><li><a href="#install-it">Install it</a></li><li><a href="#keep-it-safe">Keep it safe</a></li><li><a href="#check-it">Check it</a></li><li><a href="#connect-from-another-computer">Connect from another computer</a></li><li><a href="#good-to-know">Good to know</a></li><li><a href="#take-it-away">Take it away</a></li><li><a href="#the-settings">The settings</a></li></ul></aside>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+  <div class="wrap wide"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

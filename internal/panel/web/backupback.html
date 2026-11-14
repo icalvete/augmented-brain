@@ -7,8 +7,9 @@
 {{if not .Remote}}
 <form method="post" action="{{$.Base}}/backup/back" class="stack box">
   {{template "fields" (fields $ "c" .Rev)}}
-  <label class="check"><input type="checkbox" name="confirm" value="yes" required> {{t "backup.back.confirm"}}</label>
-  <label>{{t "backup.back.type"}} <input name="name" required maxlength="100" autocomplete="off" placeholder="{{.Space}}"></label>
+  <label class="check"><input type="checkbox" name="confirm" value="yes" required{{if $.On "/backup/back" "confirm" "yes" false}} checked{{end}}> {{t "backup.back.confirm"}}</label>
+  <label>{{t "backup.back.type"}} <input name="name" required maxlength="100" autocomplete="off" placeholder="{{.Space}}" value="{{$.Val "/backup/back" "name" ""}}"></label>
+  {{template "ferr" ($.FormErr "/backup/back")}}
   <button type="submit">{{t "backup.back"}}</button>
 </form>
 {{end}}

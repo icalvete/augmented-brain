@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Main">
     <a href="index.html">Docs</a>
@@ -50,29 +50,34 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
   <li><a href="spaces.html">Spaces</a></li>
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
-  <li><a href="guard.html">The guard</a></li>
-  <li><a href="how-it-works.html">How it works inside</a></li>
+  <li><a href="editing-notes.html">Editing notes by hand</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
 </ul>
 <p class="docnav-group">Daily use</p>
 <ul>
   <li><a href="phrases.html" aria-current="page">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
-  <li><a href="remote.html">Remote access</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -97,29 +102,32 @@
   <p>You do not learn commands. You talk to Claude in your own words, in English or Spanish, and it uses augmented brain's tools behind the scenes. These are phrases that work. Any wording with the same meaning works too.</p>
   <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#tasks">Tasks</a></li><li><a href="#inbox-and-reminders">Inbox and reminders</a></li><li><a href="#knowledge-rules-and-people">Knowledge, rules and people</a></li><li><a href="#safety">Safety</a></li><li><a href="#backup-sessions-and-the-panel">Backup, sessions and the panel</a></li><li><a href="#when-claude-talks-first">When Claude talks first</a></li><li><a href="#next">Next</a></li></ul></nav>
   <h2 id="tasks">Tasks</h2>
-  <div class="table-wrap"><table><thead><tr><th>You say</th><th>What happens</th></tr></thead><tbody><tr><td>“New task: move the blog to a new host.”</td><td>Opens a task in definition, waiting on you, and asks what “done” means</td></tr><tr><td>“Where were we?”</td><td>Lists your live tasks, those waiting on you first, each with its next step</td></tr><tr><td>“Let's carry on with the blog.”</td><td>Reads the task, checks the real state, and picks it up where you left it</td></tr><tr><td>“Go on to the plan.”</td><td>Moves the task to its next phase; you approve each change. If you skip a phase, the journal says which</td></tr><tr><td>“We go with the cheaper host.”</td><td>Writes the decision in the task's journal, with the date</td></tr><tr><td>“Add a step: switch the domain.”</td><td>Adds a checkbox to the task's plan</td></tr><tr><td>“The database is copied.”</td><td>Ticks that step</td></tr><tr><td>“That part waits on Diego: make it a subtask.”</td><td>Opens a subtask with its own status and next step</td></tr><tr><td>“On the 16th, check the certificate is renewed.”</td><td>Adds a watch date to the task</td></tr><tr><td>“Park it, we carry on tomorrow.”</td><td>Writes the exact next step and the essentials, and pauses the task</td></tr><tr><td>“Leave it for some day.”</td><td>Parks it as someday: out of the daily list, kept in its area</td></tr><tr><td>“Close the task.”</td><td>Closes it with its result; it is never deleted. A closed task stays closed: closing it again is refused</td></tr><tr><td>“Reopen the blog task: the certificate failed again.”</td><td>Opens it again; the reason goes to its journal</td></tr></tbody></table></div>
+  <div class="table-wrap"><table><thead><tr><th>You say</th><th>What happens</th></tr></thead><tbody><tr><td>“New task: move the blog to a new host.”</td><td>Opens a task in definition, waiting on you, and asks what “done” means</td></tr><tr><td>“Where were we?”</td><td>Lists your live tasks, those waiting on you first, each with its next step</td></tr><tr><td>“Let's carry on with the blog.”</td><td>Reads the task, checks the real state, and picks it up where you left it</td></tr><tr><td>“Go on to the plan.”</td><td>Moves the task to its next phase; you approve each change. If you skip a phase, the journal says which</td></tr><tr><td>“We go with the cheaper host.”</td><td>Writes the decision in the task's journal, with the date</td></tr><tr><td>“Add a step: switch the domain.”</td><td>Adds a checkbox to the task's plan</td></tr><tr><td>“The database is copied.”</td><td>Ticks that step</td></tr><tr><td>“That part waits on Diego: make it a subtask.”</td><td>Opens a subtask with its own status and next step</td></tr><tr><td>“On the 16th, check the certificate is renewed.”</td><td>Adds a watch date to the task</td></tr><tr><td>“Park it, we carry on tomorrow.”</td><td>Writes the exact next step and the essentials, and pauses the task</td></tr><tr><td>“Leave it for some day.”</td><td>Parks it as someday: out of the daily list, kept in its area</td></tr><tr><td>“Close the task.”</td><td>Closes it with its result; it is never deleted. A closed task stays closed: closing it again is refused</td></tr><tr><td>“Reopen the blog task: the certificate failed again.”</td><td>Opens it again; the reason goes to its journal</td></tr><tr><td>“Open me a session for the blog task.”</td><td>Starts a Claude session of its own for that task, in its folder; it shows up in Claude Desktop and claude.ai within a minute. Linux only for now (<a href="task-sessions.html">how</a>)</td></tr></tbody></table></div>
   <h2 id="inbox-and-reminders">Inbox and reminders</h2>
-  <div class="table-wrap"><table><thead><tr><th>You say</th><th>What happens</th></tr></thead><tbody><tr><td>“Note this: look at the new hosting prices.”</td><td>One dated line in the inbox, no task opened</td></tr><tr><td>“Remind me on Thursday to call the insurance.”</td><td>A capture with a date: it comes up at the start of the session</td></tr><tr><td>“Let's do the weekly review.”</td><td>Goes through the inbox and the stalled tasks with you, one at a time</td></tr></tbody></table></div>
+  <div class="table-wrap"><table><thead><tr><th>You say</th><th>What happens</th></tr></thead><tbody><tr><td>“Note this: look at the new hosting prices.”</td><td>One dated line in the inbox, no task opened</td></tr><tr><td>“Remind me on Thursday to call the insurance.”</td><td>A capture with a date: it comes up at the start of the session</td></tr><tr><td>“Note this in work: renew the parking card.”</td><td>The capture goes to the inbox of your space “work”, marked with the space it came from. It comes up there at every session start until it is done</td></tr><tr><td>“I called the insurance, that one is done.”</td><td>Takes that capture out of the inbox without waiting for the weekly review</td></tr><tr><td>“Let's do the weekly review.”</td><td>Goes through the inbox and the stalled tasks with you, one at a time</td></tr></tbody></table></div>
   <h2 id="knowledge-rules-and-people">Knowledge, rules and people</h2>
-  <div class="table-wrap"><table><thead><tr><th>You say</th><th>What happens</th></tr></thead><tbody><tr><td>“Save that as a lesson.”</td><td>A lesson, with a title that states the conclusion</td></tr><tr><td>“Write down how the deploy works.”</td><td>A reference, in the task's area</td></tr><tr><td>“The newsletter is a new area.”</td><td>Creates the area</td></tr><tr><td>“From now on, answer in short sentences.”</td><td>A rule, loaded in every session</td></tr><tr><td>“This holds everywhere.”</td><td>Saves the rule or lesson as shared, for every space</td></tr><tr><td>“Diego runs the hosting company; I call him Dieguito.”</td><td>Saves Diego as a person, with his nickname</td></tr><tr><td>“Why did we pick the cheaper host?”</td><td>Finds the decision in your notes, with date and reason</td></tr><tr><td>“Change my profile: I prefer the recommendation first.”</td><td>Rewrites your profile</td></tr></tbody></table></div>
+  <div class="table-wrap"><table><thead><tr><th>You say</th><th>What happens</th></tr></thead><tbody><tr><td>“Save that as a lesson.”</td><td>A lesson, with a title that states the conclusion</td></tr><tr><td>“Write down how the deploy works.”</td><td>A reference, in the task's area</td></tr><tr><td>“The newsletter is a new area.”</td><td>Creates the area</td></tr><tr><td>“From now on, answer in short sentences.”</td><td>A rule, loaded in every session</td></tr><tr><td>“This holds everywhere.”</td><td>Saves the rule or lesson as shared, for every space</td></tr><tr><td>“That rule no longer holds.”</td><td>Retires it: it moves to <code>archive/</code>, with when and why, and stops reaching your sessions. Nothing is deleted. Claude asks you first</td></tr><tr><td>“Diego runs the hosting company; I call him Dieguito.”</td><td>Saves Diego as a person, with his nickname</td></tr><tr><td>“Why did we pick the cheaper host?”</td><td>Finds the decision in your notes, with date and reason</td></tr><tr><td>“Change my profile: I prefer the recommendation first.”</td><td>Rewrites your profile</td></tr><tr><td>“Which space am I in?”</td><td>Says the space of this session, its notes folder, its areas and how many tasks are live</td></tr></tbody></table></div>
   <h2 id="safety">Safety</h2>
-  <div class="table-wrap"><table><thead><tr><th>You say</th><th>What happens</th></tr></thead><tbody><tr><td>“The AWS profile shop-prod is production.”</td><td>The guard asks you before commands that use it</td></tr><tr><td>“Never touch db01 without asking me.”</td><td>The guard asks you before ssh, scp or rsync to it</td></tr><tr><td>“I stored a new secret, telegram/alerts-bot, for alerts to my phone.”</td><td>Writes down its name and what it is for, never its value</td></tr></tbody></table></div>
+  <div class="table-wrap"><table><thead><tr><th>You say</th><th>What happens</th></tr></thead><tbody><tr><td>“The AWS profile shop-prod is production.”</td><td>The guard asks you before commands that use it</td></tr><tr><td>“Never touch db01 without asking me.”</td><td>The guard asks you before ssh, scp or rsync to it</td></tr><tr><td>“I stored a new secret, telegram/alerts-bot, for alerts to my phone.”</td><td>Writes down its name and what it is for, never its value</td></tr><tr><td>“Ask me before you save a rule.”</td><td>This is not set by talking: you choose “Ask me first” on the panel's Guard page, and Claude tells you where. From then on, Claude Code asks you before a rule, your profile or the guard's lists are saved (<a href="guard.html#asking-before-claude-saves-a-rule">more</a>)</td></tr></tbody></table></div>
   <h2 id="backup-sessions-and-the-panel">Backup, sessions and the panel</h2>
   <div class="table-wrap"><table><thead><tr><th>You say</th><th>What happens</th></tr></thead><tbody><tr><td>“Set up the backup.”</td><td>Creates a private repository in your GitHub and makes the first copy</td></tr><tr><td>“Recover the session that was cut off.”</td><td>Reads what was said after the last journal entry, and writes down what is missing</td></tr><tr><td>“~/code/blog is the blog, built with Hugo.”</td><td>Writes that line for the repository, shown in the panel</td></tr><tr><td><code>/brain:panel</code></td><td>Opens the panel in your browser</td></tr></tbody></table></div>
   <h2 id="when-claude-talks-first">When Claude talks first</h2>
   <p>At the start of a session, Claude may bring things up without being asked:</p>
-  <ul><li>a watch date or reminder due in the next 7 days, or already past;</li><li>the weekly review, when the last one is a week old and there is something to go through;</li><li>a session that was cut off, to recover;</li><li>a backup that failed, or one that left files out;</li><li>a new version, to update;</li><li>notes with problems;</li><li>what another space sent to this one, until it is done;</li><li>the guard's lists, if something changed them outside the panel.</li></ul>
+  <ul><li>a watch date or reminder due in the next 7 days, or already past;</li><li>the weekly review, when the last one is a week old and there is something to go through;</li><li>a session that was cut off, to recover;</li><li>a backup that failed, or one that left files out;</li><li>a new version, to update;</li><li>notes with problems;</li><li>what another space sent to this one, until it is done;</li><li>the guard's lists, if something changed them outside the panel;</li><li>open sessions still running the program from before an update, which need restarting.</li></ul>
+  <p>And while you work:</p>
+  <ul><li>tasks that changed outside this session (another session, the panel or an edit by hand), before it answers your next message;</li><li>another model answering than the one you chose, once per session, if you set the model of your sessions on the Guard page;</li><li>the window using a lot of memory: at 2 GB, then 4 and 8 GB, once each (Linux and macOS; <a href="troubleshooting.html#the-window-uses-a-lot-of-memory">what to do</a>).</li></ul>
   <h2 id="next">Next</h2>
   <ul><li><a href="mcp-tools.html">MCP tools</a>: the tool behind each phrase, and what it takes.</li><li><a href="panel.html">The panel</a>: the same things, by clicking.</li></ul>
   <nav class="pager" aria-label="Previous / Next">
-    <a class="prev" href="where-things-live.html"><span>← Previous</span>Where everything lives</a>
+    <a class="prev" href="how-it-works.html"><span>← Previous</span>How it works inside</a>
     <a class="next" href="panel.html"><span>Next →</span>The panel</a>
   </nav>
 </main>
+<aside class="pagetoc"><p>On this page</p><ul><li><a href="#tasks">Tasks</a></li><li><a href="#inbox-and-reminders">Inbox and reminders</a></li><li><a href="#knowledge-rules-and-people">Knowledge, rules and people</a></li><li><a href="#safety">Safety</a></li><li><a href="#backup-sessions-and-the-panel">Backup, sessions and the panel</a></li><li><a href="#when-claude-talks-first">When Claude talks first</a></li><li><a href="#next">Next</a></li></ul></aside>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+  <div class="wrap wide"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

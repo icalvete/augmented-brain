@@ -482,10 +482,6 @@ var panelMessages = map[string]msg{
 		en: "To keep augmented brain to your spaces, tick the box that says you understand what the guard stops watching outside them.",
 		es: "Para que augmented brain se quede en tus espacios, marca la casilla que dice que entiendes lo que el guardia deja de vigilar fuera de ellos.",
 	},
-	"panel.guard.err.remote": {
-		en: "This change is made only from the panel on this computer, not through the network.",
-		es: "Este cambio solo se hace desde el panel de este ordenador, no a través de la red.",
-	},
 	"panel.guard.trust": {
 		en: "What the assistant saves on its own",
 		es: "Lo que el asistente guarda solo",
@@ -510,6 +506,18 @@ var panelMessages = map[string]msg{
 	"panel.guard.trust.notice.ask": {
 		en: "changed in the panel, what the assistant saves on its own: it now asks you before it saves a rule, your profile or the guard's lists.",
 		es: "cambiado en el panel, lo que el asistente guarda solo: ahora te pregunta antes de guardar una regla, tu perfil o las listas del guardia.",
+	},
+	"panel.guard.remote": {
+		en: "You are on the panel from another device: here you can see the guard's lists; changing or accepting them, the model and what the assistant saves on its own is only from this computer's panel.",
+		es: "Estás en el panel desde otro dispositivo: aquí puedes ver las listas del guardia; cambiarlas o aceptarlas, el modelo y lo que el asistente guarda por su cuenta solo se puede desde el panel de este ordenador.",
+	},
+	"panel.guard.localonly": {
+		en: "Changing the guard is only from this computer's panel.",
+		es: "Cambiar el guardia solo se puede desde el panel de este ordenador.",
+	},
+	"panel.guard.model.unset": {
+		en: "None: no check.",
+		es: "Ninguno: no se comprueba.",
 	},
 	"panel.guard.model": {
 		en: "Model of your sessions",
@@ -562,6 +570,18 @@ var panelMessages = map[string]msg{
 	"panel.f.value": {
 		en: "Value",
 		es: "Valor",
+	},
+	"panel.nav.day": {
+		en: "Day to day",
+		es: "Día a día",
+	},
+	"panel.nav.notes": {
+		en: "Notes",
+		es: "Notas",
+	},
+	"panel.nav.care": {
+		en: "Upkeep",
+		es: "Mantenimiento",
 	},
 	"panel.today": {
 		en: "Today",
@@ -1067,6 +1087,150 @@ var panelMessages = map[string]msg{
 		en: "Saved.",
 		es: "Guardado.",
 	},
+	"panel.ok.task.new": {
+		en: "Task created.",
+		es: "Tarea creada.",
+	},
+	"panel.ok.task.update": {
+		en: "Task updated.",
+		es: "Tarea actualizada.",
+	},
+	"panel.ok.task.journal": {
+		en: "Added to the journal.",
+		es: "Añadido al diario.",
+	},
+	"panel.ok.task.park": {
+		en: "Task parked.",
+		es: "Tarea aparcada.",
+	},
+	"panel.ok.task.close": {
+		en: "Task closed.",
+		es: "Tarea cerrada.",
+	},
+	"panel.ok.task.step": {
+		en: "Plan updated.",
+		es: "Plan actualizado.",
+	},
+	"panel.ok.watch.add": {
+		en: "Watch date added.",
+		es: "Fecha para mirar añadida.",
+	},
+	"panel.ok.watch.done": {
+		en: "Watch date marked done.",
+		es: "Fecha marcada como hecha.",
+	},
+	"panel.ok.inbox.capture": {
+		en: "Written down in the inbox.",
+		es: "Apuntado en el buzón.",
+	},
+	"panel.ok.inbox.done": {
+		en: "Taken out of the inbox.",
+		es: "Sacado del buzón.",
+	},
+	"panel.ok.area.new": {
+		en: "Area created.",
+		es: "Área creada.",
+	},
+	"panel.ok.area.update": {
+		en: "Area saved.",
+		es: "Área guardada.",
+	},
+	"panel.ok.person": {
+		en: "Person saved.",
+		es: "Persona guardada.",
+	},
+	"panel.ok.person.card": {
+		en: "Person saved.",
+		es: "Persona guardada.",
+	},
+	"panel.ok.secret": {
+		en: "Secret's name added.",
+		es: "Nombre del secreto añadido.",
+	},
+	"panel.ok.secret.forget": {
+		en: "Secret's name forgotten.",
+		es: "Nombre del secreto olvidado.",
+	},
+	"panel.ok.review.capture": {
+		en: "Capture sorted out.",
+		es: "Captura resuelta.",
+	},
+	"panel.ok.review.task": {
+		en: "Task reviewed.",
+		es: "Tarea revisada.",
+	},
+	"panel.ok.review.done": {
+		en: "Weekly review finished.",
+		es: "Revisión semanal terminada.",
+	},
+	"panel.ok.profile": {
+		en: "Profile saved.",
+		es: "Perfil guardado.",
+	},
+	"panel.ok.session.recover": {
+		en: "Session recovered.",
+		es: "Sesión recuperada.",
+	},
+	"panel.ok.session.reviewed": {
+		en: "Session marked as reviewed.",
+		es: "Sesión marcada como revisada.",
+	},
+	"panel.ok.session.delete": {
+		en: "Session deleted.",
+		es: "Sesión borrada.",
+	},
+	"panel.ok.repo.describe": {
+		en: "Description saved.",
+		es: "Descripción guardada.",
+	},
+	"panel.ok.guard.list.add": {
+		en: "Added to the list.",
+		es: "Añadido a la lista.",
+	},
+	"panel.ok.guard.list.remove": {
+		en: "Taken off the list.",
+		es: "Quitado de la lista.",
+	},
+	"panel.ok.guard.root.add": {
+		en: "Root exception added.",
+		es: "Excepción de root añadida.",
+	},
+	"panel.ok.guard.root.remove": {
+		en: "Root exception removed.",
+		es: "Excepción de root quitada.",
+	},
+	"panel.ok.guard.accept": {
+		en: "Lists accepted.",
+		es: "Listas aceptadas.",
+	},
+	"panel.ok.guard.model": {
+		en: "Preferred model saved.",
+		es: "Modelo preferido guardado.",
+	},
+	"panel.ok.guard.trust": {
+		en: "Setting saved.",
+		es: "Ajuste guardado.",
+	},
+	"panel.ok.versions.restore": {
+		en: "Version restored.",
+		es: "Versión recuperada.",
+	},
+	"panel.ok.backup.run": {
+		en: "Backup started.",
+		es: "Copia en marcha.",
+	},
+	"panel.ok.backup.setup": {
+		en: "Backup set up; the first copy has started.",
+		es: "Copia configurada; la primera ya está en marcha.",
+	},
+	"panel.notsaved": {
+		en: "Nothing was saved.",
+		es: "No se ha guardado nada.",
+	},
+	"panel.notsaved.see": {
+		en: "See why, next to the form.",
+		es: "Mira por qué, junto al formulario.",
+	},
 	"panel.problems": {
 		en: "%d files of this space are not valid notes; nothing writes over them until they are fixed.",
 		es: "%d ficheros de este espacio no son notas válidas; nada los sobrescribe hasta que se arreglen.",
@@ -1145,7 +1309,7 @@ var panelMessages = map[string]msg{
 	},
 	"panel.dates": {
 		en: "created %s, last changed %s",
-		es: "creada el %s, último cambio el %s",
+		es: "creada %s, último cambio %s",
 	},
 	"panel.f.id": {
 		en: "Id",
@@ -1659,6 +1823,35 @@ var panelMessages = map[string]msg{
 		en: "in %d days",
 		es: "dentro de %d días",
 	},
+	// A date as a person reads it (package panel, humanDate).
+	"panel.date.today": {
+		en: "today",
+		es: "hoy",
+	},
+	"panel.date.yesterday": {
+		en: "yesterday",
+		es: "ayer",
+	},
+	"panel.date.tomorrow": {
+		en: "tomorrow",
+		es: "mañana",
+	},
+	"panel.date.months": {
+		en: "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec",
+		es: "ene feb mar abr may jun jul ago sep oct nov dic",
+	},
+	"panel.date.day": {
+		en: "%d %s",
+		es: "%d %s",
+	},
+	"panel.date.year": {
+		en: "%d %s %d",
+		es: "%d %s %d",
+	},
+	"panel.date.time": {
+		en: "%s, %s",
+		es: "%s, %s",
+	},
 	"panel.cli.started": {
 		en: "The panel is open at:\n  %s",
 		es: "El panel está abierto en:\n  %s",
@@ -1687,6 +1880,10 @@ var panelMessages = map[string]msg{
 		en: "Open that address in your browser.",
 		es: "Abre esa dirección en tu navegador.",
 	},
+	"panel.cli.own.terminal": {
+		en: "The panel could not open in a browser from here, and its address is not shown here: it is for you, not for the assistant. Run this command in a terminal of your own (not through Claude):\n  augmented-brain panel",
+		es: "Desde aquí el panel no se ha podido abrir en un navegador, y su dirección no se enseña aquí: es para ti, no para el asistente. Lanza este comando en un terminal tuyo (no a través de Claude):\n  augmented-brain panel",
+	},
 	"panel.cli.stopped": {
 		en: "Panel stopped.",
 		es: "Panel parado.",
@@ -1699,6 +1896,10 @@ var panelMessages = map[string]msg{
 	"panel.remote.open": {
 		en: "The panel is open for your other devices at:\n  %s",
 		es: "El panel está abierto para tus otros dispositivos en:\n  %s",
+	},
+	"panel.remote.own.terminal": {
+		en: "The address that opens the panel from your other devices is not shown here: it is for you, not for the assistant. Run this command in a terminal of your own (not through Claude):\n  augmented-brain panel remote",
+		es: "La dirección que abre el panel desde tus otros dispositivos no se enseña aquí: es para ti, no para el asistente. Lanza este comando en un terminal tuyo (no a través de Claude):\n  augmented-brain panel remote",
 	},
 	"panel.remote.qr": {
 		en: "On your phone, point the camera at this code:",

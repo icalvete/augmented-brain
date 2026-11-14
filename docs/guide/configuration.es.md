@@ -3,8 +3,11 @@
 [Read in English](configuration.md)
 
 El instalador escribe la configuración por ti, y Claude le añade cosas cuando se lo pides
-("`tienda-prod` es producción"). Solo la abres para cambiar algo a mano: una carpeta de
-trabajo nueva, un repositorio donde Claude puede hacer commit, una excepción de root.
+("`tienda-prod` es producción"). Para cambiar lo que deja pasar el guardia (un
+repositorio donde Claude puede hacer commit, una excepción de root, una máquina que no se
+toca), usa la página **Guardia** del panel: explica cada lista y mantiene al guardia al
+tanto. Abre los ficheros a mano solo para lo demás, como una carpeta de trabajo nueva.
+Lo tienes en [Lo que puede cambiar Claude](#lo-que-puede-cambiar-claude).
 
 ## Dónde está
 
@@ -17,6 +20,27 @@ Hay una carpeta por ordenador, la **carpeta de configuración**:
 Dentro, `config.toml` guarda los ajustes. Es un fichero **TOML**: líneas `nombre = valor`,
 y un encabezado `[sección]` para cada espacio. Las líneas que empiezan por `#` son
 comentarios; el programa los conserva cuando cambia el fichero.
+
+## Los ficheros
+
+| Fichero | Qué guarda | Quién lo escribe | En la copia de seguridad |
+|---|---|---|---|
+| `config.toml` | Tus espacios, el idioma y las listas del guardia | El instalador, `space add`, `backup setup`, la página Guardia, `safety_save` (solo añade) | La sección de cada espacio, en la copia de ese espacio. Las listas de todo el ordenador, nunca |
+| `guard.toml` | Los repositorios que Claude nunca toca | La página Guardia | No |
+| `session.toml` | El modelo que esperas y si Claude pregunta antes de guardar una regla | La página Guardia | No |
+| `secrets.toml` | Los nombres de tus secretos, nunca sus valores | `secret_name_save`, la página Secretos | Sí, en la copia del espacio por defecto |
+| `remote.toml` | El acceso remoto | `remote install` y `remote uninstall` | No |
+| `profile.md` | Tu perfil | `profile_save`, la página Perfil | Sí, en la copia del espacio por defecto |
+
+Por qué tantos ficheros: un programa anterior al que añadió un ajuste rechaza un ajuste
+de `config.toml` que no conoce, pero no hace caso de un fichero que no conoce. Así que
+cada tipo de ajuste nuevo tiene su propio fichero, y una versión anterior sigue leyendo
+tu configuración.
+
+Las listas de todo el ordenador (perfiles de producción, máquinas intocables,
+excepciones de root) no van en las copias de seguridad, porque pueden nombrar máquinas
+de tu trabajo. Tras restaurar en un ordenador nuevo, la
+siguiente sesión se ofrece a preguntártelas otra vez.
 
 ## Un ejemplo
 
@@ -49,7 +73,8 @@ que se ejecuta, así que un cambio vale al momento.
 Van arriba, antes de cualquier encabezado `[spaces.…]`.
 
 - `language`: el idioma en el que te habla el programa, `en` o `es`: sus mensajes y los
-  motivos del guardia. Por defecto, `en`.
+  motivos del guardia. Por defecto, `en`. Lo pregunta el instalador; cámbialo aquí cuando
+  quieras. Cuenta al momento. Las carpetas y notas ya creadas no cambian de nombre ni de idioma.
 - `default_space`: el espacio que se usa fuera de todas las carpetas de trabajo, como la
   carpeta provisional en la que la app de escritorio abre una sesión nueva. Su copia de
   seguridad lleva tu perfil y las notas compartidas. Es opcional; con dos espacios o más,
@@ -58,31 +83,41 @@ Van arriba, antes de cualquier encabezado `[spaces.…]`.
   pregunta antes de cualquier comando que use uno, en todos los espacios. Lo tienes en
   [El guardia](guard.es.md).
 - `untouchable_hosts`: máquinas que no se tocan sin preguntar. El guardia pregunta antes
-  de un `ssh`, `scp`, `rsync`, `sftp` o `mosh` a ellas, en todos los espacios. Los nombres
+  de un `ssh`, `scp`, `rsync`, `sftp`, `mosh`, `sshfs` o `autossh` a ellas, en todos los
+  espacios. Los nombres
   coinciden sin mirar mayúsculas, y un nombre corto coincide con el completo (`db01` y
   `db01.example.com`).
 - `root_ask`: excepciones temporales para root, una máquina cada una, escritas
   `"<máquina> until <fecha>"`. La fecha es un día (`2026-12-31`, que dura hasta que
-  acaba, en UTC) o una hora (`2026-12-31T23:59Z`). Hasta entonces, root en esa máquina te
-  pregunta en vez de pararse. La fecha es obligatoria.
+  acaba, en UTC) o una hora (`2026-12-31T23:59Z`). Hasta entonces, el guardia te pregunta
+  antes de un comando como root en esa máquina, en vez de pararlo. La fecha es
+  obligatoria. Lo tienes en
+  [Root en una máquina, durante un tiempo](guard.es.md#root-en-una-máquina-durante-un-tiempo).
 - `format`: la versión de la carpeta de configuración. El programa la escribe cuando una
   versión nueva lo necesita; no la cambies nunca a mano. Si no está, es 1.
 
 ## Ajustes de cada espacio
 
 Cada espacio es una sección, `[spaces.<nombre>]`. Juntas son los `spaces` del fichero.
-El nombre lleva minúsculas, cifras y guiones, y empieza por una letra.
+El nombre lleva minúsculas, cifras y guiones, y empieza por una letra. Un fichero sin
+ningún espacio es un error: tiene que haber uno.
 
 - `memory`: la carpeta de notas del espacio. Obligatoria.
 - `work_folders`: las carpetas que eligen este espacio cuando abres Claude en ellas, o en
-  una carpeta dentro de ellas. Lo tienes en [Espacios](spaces.es.md).
+  una carpeta dentro de ellas. Si hay carpetas de trabajo una dentro de otra (`~/code` en
+  un espacio, `~/code/tienda` en otro), gana la más profunda. Lo tienes en
+  [Espacios](spaces.es.md).
 - `backup`: la dirección del repositorio git privado del espacio. La escribe
   `backup setup`. Sin ella, el espacio no tiene copia de seguridad.
-- `git_allowed_repos`: repositorios donde Claude puede hacer commit y push, escritos con
-  `git -C <repo>`. La última parte de una ruta puede llevar un `*`, que vale por una
-  carpeta. Un worktree de git de un repositorio de la lista cuenta como él.
-- `git_ask_repos`: lo mismo, pero Claude te pregunta cada vez. Un repositorio que está en
-  las dos listas pregunta.
+- `git_allowed_repos`: repositorios donde Claude puede hacer commit, push y merge de una
+  pull request sin preguntar. Claude tiene que nombrar el repositorio en el comando
+  (`git -C ~/code/blog push`, `cd ~/code/blog && gh pr merge 12`): la carpeta en la que
+  está la sesión no cuenta por sí sola. La última parte de una ruta puede llevar un `*`,
+  que vale por una carpeta. Un worktree de git de un repositorio de la lista cuenta como
+  él. Lo tienes en
+  [Deja que Claude haga commit en un repositorio](guard.es.md#deja-que-claude-haga-commit-en-un-repositorio).
+- `git_ask_repos`: lo mismo, pero el guardia te pregunta cada vez. Un repositorio que
+  está en las dos listas pregunta.
 - `production_aws_profiles` y `untouchable_hosts`: las versiones antiguas los guardaban
   en cada espacio. Ahí siguen funcionando, y el guardia los junta con las listas de
   arriba. Los nuevos van arriba.
@@ -92,14 +127,21 @@ lista de un espacio pasa desde una sesión de cualquiera de ellos.
 
 ## Lo que puede cambiar Claude
 
-Claude nunca edita este fichero por su cuenta: el guardia te pregunta antes. Dos
-herramientas le añaden cosas, y solo añaden:
+Claude nunca edita estos ficheros por su cuenta: el guardia te pregunta antes. Dos
+herramientas le añaden cosas a `config.toml`, y solo añaden:
 
-- `safety_save` añade perfiles de producción y máquinas intocables.
+- `safety_save` añade perfiles de producción y máquinas intocables. Añadir solo hace que
+  el guardia pregunte más, así que unas listas que habías aceptado siguen aceptadas.
 - `backup_setup` escribe el `backup` de un espacio, solo para el repositorio que crea en
   tu cuenta de GitHub, y nunca lleva a otro sitio una copia que ya existe.
 
-Para quitar cualquier cosa, edita tú el fichero.
+Para quitar algo de las listas del guardia, o para dejar que Claude haga más, usa la
+página **Guardia** del panel. También puedes editar los ficheros a mano, pero entonces el
+guardia ve unas listas que no has aceptado: te pregunta antes de cada commit, push o
+merge que dejarían pasar, y también antes de cada comando `aws` y de cada conexión a otra
+máquina, hasta que las aceptes en la página Guardia o empieces una sesión nueva. Lo
+tienes en
+[Solo tú cambias las listas del guardia](guard.es.md#solo-tú-cambias-las-listas-del-guardia).
 
 ## Cuando no se puede leer
 
@@ -112,7 +154,8 @@ nueva, un espacio sin `memory`, un `default_space` que no es un espacio. Si el p
 `language` está mal, en el del sistema.
 
 Mientras no se puede leer el fichero, el guardia no conoce tus listas. Así que te
-pregunta antes de cada `aws`, `ssh`, `scp`, `rsync`, `sftp` y `mosh`.
+pregunta antes de cada comando `aws` y de cada conexión a otra máquina (`ssh`, `scp`,
+`rsync`, `sftp`, `mosh`, `sshfs`, `autossh`).
 `augmented-brain doctor` te dice qué está mal.
 
 Para volver a una versión que funcionaba, lanza `augmented-brain config history` y
@@ -130,9 +173,8 @@ secrets = ["telegram/alerts-bot: avisos al móvil", "smtp/newsletter: envío del
 
 Cada entrada es `servicio/nombre: para qué es`. El servicio y el nombre son palabras
 sueltas, tal como los conoce el llavero. Claude le añade entradas con la herramienta
-`secret_name_save`, y la página Secretos del panel la lista. Un valor se rechaza. Es un
-fichero aparte porque las versiones anteriores a la 0.6.0 rechazan un ajuste de
-`config.toml` que no conocen. La 0.6.0 guardaba la lista en `config.toml` como `secrets`;
+`secret_name_save`, y la página Secretos del panel la lista. Un valor se rechaza. La
+0.6.0 guardaba la lista en `config.toml` como `secrets`;
 `check` y el inicio de sesión la pasan aquí.
 
 ## `guard.toml`
@@ -155,12 +197,12 @@ reach = "spaces"
   página Guardia del panel: escrito aquí a mano, cuenta solo cuando lo aceptas allí, y
   hasta entonces augmented brain actúa en todo el ordenador.
 
-La página Guardia del panel lo escribe. Si el fichero falta, nada es intocable; si no se
-puede leer, el guardia pregunta antes de cada commit y push. Es un fichero aparte por la
-misma razón que `secrets.toml`: las versiones anteriores a esta rechazan un ajuste de
-`config.toml` que no conocen, e ignoran un fichero que no conocen. Una sesión que aún
-ejecuta una de esas versiones no hace cumplir la lista. Las copias de seguridad no lo
-llevan.
+La página Guardia del panel lo escribe. Si el fichero falta, nada es intocable. Si no se
+puede leer, el guardia no sabe qué repositorios son intocables, ni si lo demás está como
+lo dejaste: te pregunta antes de cada commit, push o merge que las otras listas dejarían
+pasar, y también antes de cada comando `aws` y de cada conexión a otra máquina, hasta que
+se arregle el fichero. Una sesión que aún ejecuta una versión anterior a `guard.toml` no
+hace cumplir la lista.
 
 ## `session.toml`
 
@@ -188,8 +230,7 @@ memory_trust = "ask"
   guardar. Más en [el guardia](guard.es.md#preguntar-antes-de-que-claude-guarde-una-regla).
 
 La página Guardia del panel lo escribe, y el guardia pregunta antes de que Claude lo
-escriba. Si el fichero falta o `preferred_model` está vacío, el modelo no se comprueba. Es un fichero
-aparte por la misma razón que `guard.toml`. Las copias de seguridad no lo llevan.
+escriba. Si el fichero falta o `preferred_model` está vacío, el modelo no se comprueba.
 
 Una línea de `guard.toml` o `session.toml` que el programa no conoce no se tiene en
 cuenta, pero no se rechaza: una versión más nueva puede añadir ajustes ahí, y una anterior
@@ -200,8 +241,7 @@ si parece una errata, porque un ajuste mal escrito ahí no hace nada.
 
 Junto a `config.toml`, `remote.toml` guarda los ajustes del [acceso remoto](remote.es.md),
 que mantiene Claude accesible desde otro ordenador. Lo crea `augmented-brain remote
-install`. Es un fichero aparte porque las versiones anteriores a esta rechazan un ajuste
-de `config.toml` que no conocen, y tienen que seguir leyendo tu configuración.
+install`.
 
 ```toml
 enabled = true
@@ -242,6 +282,9 @@ servicios lo recojan.
   copia de seguridad.
 - `migrations/`: una copia completa de las notas antes de que una versión nueva las
   cambiara de formato.
+- `marketplace/`: el plugin de Claude Code de la versión instalada, que Claude Code lee
+  de aquí. El programa lo escribe cuando instala o actualiza el plugin; el guardia
+  pregunta antes de que otra cosa escriba ahí.
 - `panel.json` y `panel.lock`: dónde escucha el panel mientras está en marcha, y su
   bloqueo. El guardia nunca deja que Claude lea `panel.json`: guarda la llave del panel.
 - `remote/<espacio>/`: la carpeta donde arranca el servicio de acceso remoto de un espacio,
@@ -271,13 +314,16 @@ El instalador lee alguna más:
 - `AB_NO_DESKTOP=1`: no ofrece la app de escritorio de Claude.
 - `AB_DESKTOP_TIMEOUT`: en Linux, cuántos segundos puede tardar la descarga de la app de
   escritorio antes de que el instalador la deje y siga sin ella. Por defecto, 480 (8 minutos).
-- `AB_INSTALL_DIR`: dónde poner el programa. Por defecto, `~/.local/bin`.
+- `AB_INSTALL_DIR`: dónde poner el programa. Por defecto, `~/.local/bin`, y en Windows
+  `%USERPROFILE%\.local\bin`.
 - `AB_NO_INIT=1`: solo instala el programa, sin preparar nada.
-- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY`, `AB_MARKETPLACE` y
-  `AB_DESKTOP_URL`: para pruebas: qué versión, dónde están los ficheros de la versión
-  publicada, la API de GitHub a la que recurrir, la espera entre intentos, una carpeta o un
-  repositorio del que tomar el plugin en vez del que lleva el programa, y dónde está el
-  repositorio apt de la app de escritorio. `augmented-brain update` no hace caso de
+- `AB_VERSION`, `AB_RELEASE_URL`, `AB_API_URL`, `AB_RETRY_DELAY`, `AB_MARKETPLACE`,
+  `AB_DESKTOP_URL` y `AB_CLAUDE_STABLE_URL`: para pruebas: qué versión, dónde están los
+  ficheros de la versión publicada, la API de GitHub a la que recurrir, la espera entre
+  intentos, una carpeta o un repositorio del que tomar el plugin en vez del que lleva el
+  programa, dónde está el repositorio apt de la app de escritorio, y dónde leer la última
+  versión estable de Claude Code (el instalador se ofrece a actualizar un Claude Code
+  antiguo). `augmented-brain update` no hace caso de
   ninguna: para sus pruebas usa `--from`.
 - `AB_ALLOW_ROOT=1`: en Linux y macOS, instala aunque sea como root (`sudo`). Sin ella, el
   instalador se niega: no necesita root, y como root el programa y sus ajustes acabarían

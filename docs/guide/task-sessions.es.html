@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Una sesión por tarea · augmented brain</title>
+<meta name="description" content="Una sesión de Claude propia para cada tarea, en su propia carpeta, con augmented-brain session: abrirla y cerrarla, qué carpeta usa, worktrees para un repositorio bare, reiniciarla tras actualizar, esperar a una pull request, limpiar, y qué funciona en cada sistema.">
+<link rel="canonical" href="https://icalvete.github.io/augmented-brain/guide/task-sessions.es.html">
+<link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/guide/task-sessions.html">
+<link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/guide/task-sessions.es.html">
+<link rel="alternate" hreflang="x-default" href="https://icalvete.github.io/augmented-brain/guide/task-sessions.html">
+<meta name="theme-color" content="#143024">
+<meta name="color-scheme" content="light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="augmented brain">
+<meta property="og:title" content="Una sesión por tarea · augmented brain">
+<meta property="og:description" content="Varias tareas a la vez, cada una en su sesión y su carpeta.">
+<meta property="og:url" content="https://icalvete.github.io/augmented-brain/guide/task-sessions.es.html">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="Logo de augmented brain: un cerebro verde con el nombre encima">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Una sesión por tarea · augmented brain">
+<meta name="twitter:description" content="Varias tareas a la vez, cada una en su sesión y su carpeta.">
+<meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../site.css">
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<header class="wrap wide top">
+  <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
+  <nav aria-label="Principal">
+    <a href="index.es.html">Documentación</a>
+    <a href="task-sessions.html" hreflang="en" data-lang="en">English</a>
+    <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
+  </nav>
+</header>
+
+<div class="wrap docs">
+<nav class="docnav" aria-label="Documentación">
+<details open id="docnav"><summary>Menú de la documentación</summary>
+<p class="docnav-group">Empezar</p>
+<ul>
+  <li><a href="getting-started.es.html">Primeros pasos</a></li>
+  <li><a href="install.es.html">Instalación</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+</ul>
+<p class="docnav-group">Conceptos</p>
+<ul>
+  <li><a href="spaces.es.html">Espacios</a></li>
+  <li><a href="tasks.es.html">Tareas</a></li>
+  <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
+  <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
+  <li><a href="where-things-live.es.html">Dónde vive cada cosa</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+</ul>
+<p class="docnav-group">Día a día</p>
+<ul>
+  <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
+  <li><a href="panel.es.html">El panel</a></li>
+  <li><a href="weekly-review.es.html">La revisión semanal</a></li>
+</ul>
+<p class="docnav-group">Ponlo a tu medida</p>
+<ul>
+  <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
+  <li><a href="anywhere.es.html">Desde el móvil u otro ordenador</a></li>
+  <li><a href="remote.es.html">Acceso remoto</a></li>
+  <li><a href="task-sessions.es.html" aria-current="page">Una sesión por tarea</a></li>
+  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
+  <li><a href="update-and-uninstall.es.html">Actualizar y desinstalar</a></li>
+</ul>
+<p class="docnav-group">Referencia</p>
+<ul>
+  <li><a href="commands.es.html">Comandos</a></li>
+  <li><a href="mcp-tools.es.html">Herramientas MCP</a></li>
+  <li><a href="configuration.es.html">Configuración</a></li>
+  <li><a href="memory-format.html">Formato de la memoria (en inglés)</a></li>
+  <li><a href="compatibility.es.html">Lo que no cambia</a></li>
+</ul>
+<p class="docnav-group">Ayuda</p>
+<ul>
+  <li><a href="troubleshooting.es.html">Si algo falla</a></li>
+  <li><a href="limitations.es.html">Limitaciones conocidas</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></li>
+</ul>
+</details>
+</nav>
+<script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
+<main class="prose" id="main">
+  <h1>Una sesión por tarea</h1>
+  <p>Cada tarea puede tener una sesión de Claude propia, en su propia carpeta. La pides con palabras normales, y en menos de un minuto sale en claude.ai y Claude Desktop, ya leyendo su tarea. Con varias, trabajas en varias tareas a la vez, desde el ordenador o desde el móvil, sin que ninguna pise a otra.</p>
+  <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#dónde-funciona">Dónde funciona</a></li><li><a href="#abre-una-sesión-para-una-tarea">Abre una sesión para una tarea</a></li><li><a href="#en-qué-carpeta-se-abre">En qué carpeta se abre</a></li><li><a href="#worktrees-para-un-repositorio-bare">Worktrees, para un repositorio bare</a></li><li><a href="#verlas-y-cerrarlas">Verlas y cerrarlas</a></li><li><a href="#reinicia-una-sesión-tras-actualizar">Reinicia una sesión tras actualizar</a></li><li><a href="#esperar-a-una-pull-request">Esperar a una pull request</a></li><li><a href="#limpia-lo-que-queda">Limpia lo que queda</a></li></ul></nav>
+  <h2 id="dónde-funciona">Dónde funciona</h2>
+  <div class="table-wrap"><table><thead><tr><th>Comando</th><th>Linux</th><th>macOS</th><th>Windows</th></tr></thead><tbody><tr><td><code>session start</code>, <code>stop</code>, <code>list</code></td><td>sí</td><td>todavía no</td><td>todavía no</td></tr><tr><td><code>session restart</code></td><td>sí</td><td>sí</td><td>no</td></tr><tr><td><code>watch pr</code>, <code>clean</code></td><td>sí</td><td>sí</td><td>sí</td></tr></tbody></table></div>
+  <p><code>session start</code>, <code>stop</code> y <code>list</code> solo se han probado en Linux. En macOS y Windows <code>session start</code> dice que no está disponible, y no crea nada.</p>
+  <h2 id="abre-una-sesión-para-una-tarea">Abre una sesión para una tarea</h2>
+  <p>Pídeselo a la sesión en la que estás: «ábreme una sesión para la tarea de la web». Toda sesión en Linux sabe hacerlo, en el ordenador o <a href="remote.es.html">desde otro</a>, porque el inicio de cada sesión se lo cuenta. Lanza</p>
+  <pre><code>augmented-brain session start task-new-website</code></pre>
+  <p>y sale en claude.ai y Claude Desktop una sesión nueva, con el nombre de la tarea. Empieza sola: lee su tarea, te dice en dos o tres líneas cómo está y se pone con el siguiente paso. Solo oye lo que es de su tarea: las fechas de esa tarea, no el resto de avisos del espacio, la revisión semanal ni las sesiones por recuperar, que salen en tus otras sesiones. Cuando para (la tarea cerrada o aparcada, o esperándote), avisa en una línea a la sesión que la pidió.</p>
+  <p>El comando espera la primera respuesta de la sesión, hasta un minuto. Una sesión que no puede trabajar no se queda abierta: si Claude Code no tiene la sesión iniciada, no se abre nada, y si la primera respuesta es un error (el login caducó, el servicio está saturado), la sesión se cierra. En los dos casos el comando dice qué hacer, como <code>claude auth login</code>.</p>
+  <h2 id="en-qué-carpeta-se-abre">En qué carpeta se abre</h2>
+  <p>La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas de trabajo del espacio. <code>--folder</code> da otra, siempre que esté dentro de las carpetas de trabajo del espacio: una sesión fuera no encontraría su tarea. Una tarea que no nombra ningún repositorio se abre en la primera carpeta de trabajo del espacio.</p>
+  <pre><code>augmented-brain session start task-new-website --folder ~/projects/website</code></pre>
+  <p>Dos reglas la mantienen segura:</p>
+  <ul><li><strong>Claude tiene que confiar en esa carpeta ella misma.</strong> Que confíe en una carpeta de más arriba no basta: los ajustes y hooks propios de un repositorio no deben ejecutarse sin preguntar. La primera vez, el comando dice qué hacer: en el ordenador (o por <code>ssh</code>), entra en la carpeta, lanza <code>claude</code>, acepta la pregunta y ciérralo con <code>/exit</code>. Luego pídelo otra vez.</li><li><strong>Una tarea por carpeta.</strong> Dos tareas en una carpeta se pisarían los cambios, así que una carpeta que ya usa la sesión de otra tarea se rechaza. Dale otra con <code>--folder</code>, como un worktree (abajo).</li></ul>
+  <h2 id="worktrees-para-un-repositorio-bare">Worktrees, para un repositorio bare</h2>
+  <p>Un <strong>worktree</strong> es una segunda copia de trabajo de un repositorio git: otra carpeta, en otra rama, con la misma historia. Un <strong>repositorio bare</strong> es uno con historia pero sin copia de trabajo: hay quien guarda así cada proyecto y hace un worktree para cada trabajo.</p>
+  <p>Cuando el repositorio de la tarea es bare, <code>session start</code> le hace a la tarea un worktree propio a su lado: <code>site-new-website</code> para la tarea <code>task-new-website</code> de <code>site</code>, en una rama nueva con el nombre de la tarea, desde la rama por defecto de origin. Antes la trae, así que la rama empieza con el código de ahora; si no llega a origin, empieza con lo último que este ordenador sabía, y lo dice. Si una sesión anterior de la tarea dejó su rama, el worktree coge esa rama tal como estaba. Así dos tareas de un repositorio nunca comparten carpeta. Si se pide otra vez, usa el mismo worktree. Claude guarda la confianza de un worktree con su repositorio principal: basta con confiar en uno de los dos.</p>
+  <p>El worktree se va solo cuando no se pierde nada: con <code>session stop</code>, al cerrar la tarea o, si la sesión terminó de otra forma (un reinicio, cerrarla desde Claude Desktop), en el próximo <code>session start</code>. Uno con cambios sin commitear, commits sin subir o ficheros que git ignora y ninguna compilación rehace (un <code>.env</code>, una clave) se queda, y <code>augmented-brain doctor</code> lo nombra.</p>
+  <h2 id="verlas-y-cerrarlas">Verlas y cerrarlas</h2>
+  <pre><code>augmented-brain session list</code></pre>
+  <p>lista las sesiones de tarea abiertas en este ordenador: la tarea, si corre y su carpeta.</p>
+  <ul><li><strong>retirada</strong>: Claude para una sesión que lleva horas sin uso. claude.ai la enseña desconectada. <code>session start</code> con su tarea la trae de vuelta, con toda su conversación.</li><li><strong>fallida</strong>: su última respuesta fue un error, como un login caducado. La línea dice qué hacer.</li><li><strong>en espera</strong>: la paró el límite de uso de Claude. La línea dice a qué hora vuelve el límite. Con el acceso remoto instalado (<code>augmented-brain remote install</code>), la sesión se despierta entonces, sola, y sigue con su tarea; te avisa cuando empieza la espera y cuando las sesiones han vuelto. Sin él, escríbele cuando vuelva el límite.</li></ul>
+  <pre><code>augmented-brain session stop task-new-website</code></pre>
+  <p>cierra la sesión y la quita de Claude Desktop y claude.ai, con su worktree. Cerrar la tarea hace lo mismo, cuando la sesión termina su respuesta. Una sesión también termina al reiniciar el ordenador, y no vuelve sola: pídela otra vez.</p>
+  <h2 id="reinicia-una-sesión-tras-actualizar">Reinicia una sesión tras actualizar</h2>
+  <p>Tras <code>augmented-brain update</code>, las sesiones abiertas siguen con el programa con el que empezaron.</p>
+  <pre><code>augmented-brain session restart task-new-website
+augmented-brain session restart --old</code></pre>
+  <p>El primero reinicia una sesión, con la misma conversación; <code>--old</code> reinicia todas las que están paradas y siguen con una versión anterior, y <code>update</code> lo lanza solo. Una sesión que está respondiendo nunca se corta. Funciona en Linux y macOS; en Windows, cierra la sesión y ábrela otra vez tú. Los detalles, en [<code>session restart</code>](commands.es.md#augmented-brain-session-restart).</p>
+  <h2 id="esperar-a-una-pull-request">Esperar a una pull request</h2>
+  <p>Una sesión que abrió una pull request no se queda esperando sus checks. Deja esto en marcha en segundo plano, con su tarea:</p>
+  <pre><code>augmented-brain watch pr 104 --task task-new-website</code></pre>
+  <p>Cuando los checks pasan o fallan, la pull request se mezcla o se cierra, o choca con su rama base, apunta el resultado en la tarea, para que tus otras sesiones se enteren aunque esta ya no esté, y la sesión te avisa en el acto. Nunca espera para siempre: 3 horas como mucho. Necesita <code>gh</code>, el comando de GitHub, con tu login. Todas las opciones, en [<code>watch pr</code>](commands.es.md#augmented-brain-watch-pr).</p>
+  <h2 id="limpia-lo-que-queda">Limpia lo que queda</h2>
+  <p>Claude Code hace worktrees y carpetas temporales propias, y deja algunas atrás.</p>
+  <pre><code>augmented-brain clean</code></pre>
+  <p>enseña lo que queda de sesiones que ya terminaron, y lo quita solo si dices que sí: nunca un worktree con trabajo propio, que solo nombra. <code>doctor</code> avisa cuando hay algo que limpiar. Los detalles, en [<code>clean</code>](commands.es.md#augmented-brain-clean).</p>
+  <nav class="pager" aria-label="Anterior / Siguiente">
+    <a class="prev" href="remote.es.html"><span>← Anterior</span>Acceso remoto</a>
+    <a class="next" href="panel-remote.es.html"><span>Siguiente →</span>El panel desde otro dispositivo</a>
+  </nav>
+</main>
+<aside class="pagetoc"><p>En esta página</p><ul><li><a href="#dónde-funciona">Dónde funciona</a></li><li><a href="#abre-una-sesión-para-una-tarea">Abre una sesión para una tarea</a></li><li><a href="#en-qué-carpeta-se-abre">En qué carpeta se abre</a></li><li><a href="#worktrees-para-un-repositorio-bare">Worktrees, para un repositorio bare</a></li><li><a href="#verlas-y-cerrarlas">Verlas y cerrarlas</a></li><li><a href="#reinicia-una-sesión-tras-actualizar">Reinicia una sesión tras actualizar</a></li><li><a href="#esperar-a-una-pull-request">Esperar a una pull request</a></li><li><a href="#limpia-lo-que-queda">Limpia lo que queda</a></li></ul></aside>
+</div>
+
+<footer>
+  <div class="wrap wide"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
+</footer>
+<script>
+document.querySelectorAll(".prose pre").forEach(function (pre) {
+  var b = document.createElement("button");
+  b.className = "copy"; b.type = "button"; b.textContent = "Copiar";
+  b.addEventListener("click", function () {
+    var text = pre.querySelector("code").textContent;
+    var done = function () { b.textContent = "Copiado"; setTimeout(function () { b.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var r = document.createRange(); r.selectNodeContents(pre.querySelector("code"));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, select); } else { select(); }
+  });
+  var box = document.createElement("div"); box.className = "codebox";
+  pre.parentNode.insertBefore(box, pre); box.appendChild(pre); box.appendChild(b);
+});
+document.querySelectorAll("[data-lang]").forEach(function (a) {
+  a.addEventListener("click", function () { try { localStorage.setItem("ab-lang", a.dataset.lang); } catch (e) {} });
+});
+</script>
+</body>
+</html>

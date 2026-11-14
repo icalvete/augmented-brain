@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Main">
     <a href="index.html">Docs</a>
@@ -50,29 +50,34 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
   <li><a href="spaces.html" aria-current="page">Spaces</a></li>
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
-  <li><a href="guard.html">The guard</a></li>
-  <li><a href="how-it-works.html">How it works inside</a></li>
+  <li><a href="editing-notes.html">Editing notes by hand</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
 </ul>
 <p class="docnav-group">Daily use</p>
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
-  <li><a href="remote.html">Remote access</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -120,23 +125,32 @@ work_folders = ["~/augmented-brain/personal"]</code></pre>
   <p>To know which space a folder belongs to, run this in it:</p>
   <pre><code>augmented-brain space</code></pre>
   <h2 id="outside-every-space">Outside every space</h2>
-  <p>The desktop app starts each new session in a scratch folder of its own. That folder is in no space. Then the <strong>default space</strong> is used, <code>personal</code> unless you change it, and Claude tells you in one line, with how to switch to work.</p>
-  <p>The default space matters for one more thing: its backup carries your profile and the shared notes. Set it with <code>default_space</code> in the configuration. With a single space, it is that one.</p>
+  <p>A folder that is in no work folder is outside every space. What augmented brain does there depends on one choice, on the panel's Guard page: <strong>where augmented brain acts</strong>.</p>
+  <ul><li><strong>On the whole computer</strong> (as it comes). augmented brain works in every Claude Code session on this computer, whatever the folder: its plugin is installed for your whole user. Outside your spaces it uses the <strong>default space</strong>, <code>personal</code> unless you change it, and Claude tells you in one line, with how to switch to work.</li><li><strong>Only in my spaces.</strong> A session outside your spaces' folders gets nothing from augmented brain: no memory, no notices, no backup. The guard there only protects its own files, your home folder and what your lists name. Claude Code's own permissions still decide the rest, as they always do. This is for you if you already use Claude Code in other projects and want them left as they were.</li></ul>
+  <p>What changes, next to a session in a space:</p>
+  <div class="table-wrap"><table><thead><tr><th></th><th>In a space</th><th>Outside, on the whole computer</th><th>Outside, only in my spaces</th></tr></thead><tbody><tr><td>Profile, rules, tasks and the rest of the notes</td><td>The space's</td><td>The default space's, and Claude tells you</td><td>None</td></tr><tr><td>What Claude writes in your notes</td><td>Goes to the space</td><td>Goes to the default space</td><td>Nothing: Claude cannot write notes there</td></tr><tr><td>Tasks changed by another session, journal reminder, a session to recover</td><td>Yes</td><td>Those of the default space</td><td>No</td></tr><tr><td>Commit and push</td><td>As your lists say</td><td>As your lists say</td><td>Not watched, except in repositories of your lists</td></tr><tr><td>Root, secrets in commands, PowerShell</td><td>Stopped</td><td>Stopped</td><td>Not watched</td></tr><tr><td>Deleting your home folder</td><td>Stopped</td><td>Stopped</td><td>Stopped</td></tr><tr><td>Production profiles, untouchable machines and repositories</td><td>Asks, or stopped</td><td>Asks, or stopped</td><td>Asks, or stopped</td></tr><tr><td>The guard's files, the plugin and the program</td><td>Protected</td><td>Protected</td><td>Protected</td></tr><tr><td>Backup when the session ends</td><td>The space's</td><td>The default space's</td><td>None</td></tr><tr><td>Warnings about the window's memory and the model</td><td>Yes</td><td>Yes</td><td>No</td></tr></tbody></table></div>
+  <p>Three things to know:</p>
+  <ul><li><strong>Inside a space nothing changes</strong>, whichever you choose.</li><li><strong>A command that goes into a space is checked whole.</strong> Run from outside, <code>cd ~/work/app &amp;&amp; git commit</code> or <code>git -C ~/work/app commit</code> gets every rule, as in the space. So does a clone of a repository of your lists, found by its address.</li><li><strong>Mind the desktop app</strong> if you keep augmented brain to your spaces. It starts each new session in a scratch folder of its own, which is in no space: that session has no memory until you choose a folder. That is why “on the whole computer” is the default.</li></ul>
+  <p>Change it on the panel's Guard page; a change by hand in <code>guard.toml</code> counts only once you accept it there ([<code>reach</code>](configuration.md#guardtoml)).</p>
+  <p>The default space matters for one more thing: its backup carries your profile, the shared notes and the names of your secrets (never their values). Set it with <code>default_space</code> in the configuration. With a single space, it is that one.</p>
+  <p>To bring a folder into a space, add it to the space's <code>work_folders</code> (next).</p>
   <h2 id="your-projects-live-elsewhere">Your projects live elsewhere?</h2>
   <p>If your code is in <code>~/code</code>, add that folder to the <code>work_folders</code> of the right space, as in the example above. Then opening Claude in <code>~/code/shop</code> uses the work space.</p>
   <h2 id="add-a-space">Add a space</h2>
   <p>For a client, a side project or a volunteer job:</p>
   <pre><code>augmented-brain space add client</code></pre>
   <p>It asks for the work folder and the notes folder, suggesting <code>~/augmented-brain/client</code> and <code>~/augmented-brain/client/notes</code>. Press Enter to accept. If there was no default space yet, it sets one. The options are in <a href="commands.html#augmented-brain-space-add">Commands</a>.</p>
+  <p>Then two things:</p>
+  <ul><li><strong>Give it a backup.</strong> Open Claude in the new work folder and say “set up the backup”; each space has its own. See <a href="backup.html">Backup and restore</a>.</li><li><strong>Work in it.</strong> Open Claude in its work folder, or in a folder inside it, and the session uses the new space.</li></ul>
   <h2 id="what-each-space-has-and-what-they-share">What each space has, and what they share</h2>
   <p>Each space has its own:</p>
   <ul><li>notes: tasks, areas, knowledge, people, inbox, reviews;</li><li>rules, on top of the common ones;</li><li>backup repository.</li></ul>
   <p>Every space shares:</p>
-  <ul><li><strong>your profile</strong>: who you are and how you like to work. You are the same person at work and at home.</li><li><strong>the shared notes</strong>: rules, references and lessons that hold everywhere (below).</li><li><strong>the guard's lists</strong>: production AWS profiles, machines not to touch, the repositories where Claude may commit and those it must never touch, and the root exceptions. They hold on the whole machine. A production profile saved from the work space is guarded in the personal one too.</li></ul>
+  <ul><li><strong>your profile</strong>: who you are and how you like to work. You are the same person at work and at home.</li><li><strong>the shared notes</strong>: rules, references and lessons that hold everywhere (below).</li><li><strong>the guard's lists</strong>: production AWS profiles, machines not to touch, the repositories where Claude may commit and those it must never touch, and the root exceptions. They hold on the whole machine, whichever space you write them from. A production profile saved from the work space is guarded in the personal one too, and a repository where Claude may commit is allowed from every space.</li></ul>
   <p>Spaces never read each other's notes on their own.</p>
   <h2 id="a-task-of-another-space">A task of another space</h2>
   <p>Sometimes you decide, in one space, something about a task of another: in a personal session you settle how a work task goes on. Say so, and Claude reads or writes that task where it lives, in the other space. It can read it, list that space's live tasks to find it, add to its journal, tick a step, and change its next step, status or who it waits on.</p>
-  <ul><li>What Claude writes there ends in <code>(from personal)</code>, so whoever reads it in the other space knows where it was decided.</li><li>Nothing is copied into this space's notes: what Claude reads stays in the conversation.</li><li>Claude does it only when you ask, as with sending a capture to another space.</li><li>Closing that task is done from a session of its own space, because closing also ends the task's session and its worktree.</li><li>That space is backed up when this session ends, if it has a backup: it does not wait for a session of its own.</li></ul>
+  <ul><li>What Claude writes there ends in <code>(from personal)</code>, so whoever reads it in the other space knows where it was decided.</li><li>Nothing is copied into this space's notes: what Claude reads stays in the conversation.</li><li>Claude does it only when you ask, as with <a href="notes.html#sending-a-capture-to-another-space">sending a capture to another space</a>.</li><li>Closing that task is done from a session of its own space, because closing also ends the task's session and its worktree.</li><li>That space is backed up when this session ends, if it has a backup: it does not wait for a session of its own.</li></ul>
   <h2 id="shared-notes">Shared notes</h2>
   <p>Some things you learn hold everywhere: how git behaves, how you like answers, a lesson about a tool. Saving them once per space would leave two copies that drift apart. So they go once in the <strong>shared notes</strong>, next to your profile, in <code>shared/</code> inside the configuration folder.</p>
   <p>Only rules, references and lessons can be shared. Tasks and areas always belong to one space. A person can be in several spaces, each with its own note and only what you want visible there (see People in Notes).</p>
@@ -144,14 +158,15 @@ work_folders = ["~/augmented-brain/personal"]</code></pre>
   <h2 id="next">Next</h2>
   <ul><li><a href="tasks.html">Tasks</a>: what goes inside a space.</li><li><a href="configuration.html">Configuration</a>: every setting of a space.</li></ul>
   <nav class="pager" aria-label="Previous / Next">
-    <a class="prev" href="install.html"><span>← Previous</span>Installing</a>
+    <a class="prev" href="import.html"><span>← Previous</span>Bring in a memory you already have</a>
     <a class="next" href="tasks.html"><span>Next →</span>Tasks</a>
   </nav>
 </main>
+<aside class="pagetoc"><p>On this page</p><ul><li><a href="#the-folder-picks-the-space">The folder picks the space</a></li><li><a href="#outside-every-space">Outside every space</a></li><li><a href="#your-projects-live-elsewhere">Your projects live elsewhere?</a></li><li><a href="#add-a-space">Add a space</a></li><li><a href="#what-each-space-has-and-what-they-share">What each space has, and what they share</a></li><li><a href="#a-task-of-another-space">A task of another space</a></li><li><a href="#shared-notes">Shared notes</a></li><li><a href="#next">Next</a></li></ul></aside>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+  <div class="wrap wide"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {
