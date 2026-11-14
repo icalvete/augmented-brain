@@ -50,6 +50,10 @@ augmented-brain space
 
 ## Fuera de todos los espacios
 
+augmented brain actúa en todas las sesiones de Claude Code de este ordenador, sea cual
+sea la carpeta: su plugin está instalado para todo tu usuario. Una carpeta que no está en
+ninguna carpeta de trabajo está fuera de todos los espacios.
+
 La app de escritorio empieza cada sesión nueva en una carpeta temporal suya. Esa carpeta
 no es de ningún espacio. Entonces se usa el **espacio por defecto**, `personal` salvo que
 lo cambies, y Claude te lo dice en una línea, con cómo pasar al de trabajo.
@@ -57,6 +61,27 @@ lo cambies, y Claude te lo dice en una línea, con cómo pasar al de trabajo.
 El espacio por defecto importa para una cosa más: su copia de seguridad lleva tu perfil y
 las notas compartidas. Se elige con `default_space` en la configuración. Si tienes un solo
 espacio, es ese.
+
+Lo que cambia fuera, al lado de una sesión en un espacio:
+
+| | En un espacio | Fuera de todos los espacios |
+|---|---|---|
+| Perfil, reglas, tareas y el resto de las notas | Las del espacio | Las del espacio por defecto, y Claude te lo dice |
+| Lo que Claude escribe en tus notas | Va al espacio | Va al espacio por defecto |
+| Tareas cambiadas por otra sesión | Claude se entera | Las del espacio por defecto |
+| Recordatorio de escribir en el diario de la tarea | Sí | No |
+| Una sesión cortada, con oferta de recuperarla | Sí | No |
+| [El guardia](guard.es.md) | Entero | Entero, igual |
+| Copia de seguridad al cerrar la sesión | La del espacio | La del espacio por defecto |
+| Avisos de la memoria de la ventana y del modelo | Sí | Sí |
+
+El guardia no mira la carpeta: sus listas valen para todo el ordenador. Así que en
+cualquier proyecto, también en uno que nunca diste a augmented brain, Claude no puede
+hacer commit ni push hasta que lo
+[dejes en ese repositorio](guard.es.md#deja-que-claude-haga-commit-en-un-repositorio).
+
+Para meter una carpeta en un espacio, añádela a los `work_folders` del espacio (lo
+siguiente).
 
 ## ¿Tus proyectos viven en otro sitio?
 
