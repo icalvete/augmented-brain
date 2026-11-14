@@ -513,17 +513,16 @@ func startModeLocked(cfgDir, self string, remote bool) (info Info, started bool,
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, log, log
 	cmd.Dir = home()
 	detach.Cmd(cmd)
-	if cmd, err = detach.Start(cmd); err != nil {
+	proc, err := detach.Start(cmd)
+	if err != nil {
 		return Info{}, false, err
 	}
-	pid := cmd.Process.Pid
-	exited := make(chan error, 1)
-	go func() { exited <- cmd.Wait() }()
+	pid := proc.Pid
 	deadline := time.Now().Add(10 * time.Second)
 	for time.Now().Before(deadline) {
 		select {
-		case err := <-exited:
-			return Info{}, false, fmt.Errorf("the panel stopped as it started (%v); see %s", err, logPath)
+		case <-proc.Done():
+			return Info{}, false, fmt.Errorf("the panel stopped as it started (%v); see %s", proc.Err(), logPath)
 		case <-time.After(50 * time.Millisecond):
 		}
 		if i, ok := ReadInfo(cfgDir); ok && i.PID == pid && Alive(i) {
@@ -623,12 +622,8 @@ func OpenBrowser(cfgDir, url string) error {
 	}
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
 	detach.Cmd(cmd)
-	cmd, err := detach.Start(cmd)
-	if err != nil {
-		return err
-	}
-	go func() { _ = cmd.Wait() }()
-	return nil
+	_, err := detach.Start(cmd)
+	return err
 }
 
 // openDir is the folder of the redirect files, in the configuration folder.

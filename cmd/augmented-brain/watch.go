@@ -165,13 +165,11 @@ var watchStart = func(args []string, env []string, log string) (int, <-chan stru
 		cmd.Stdout, cmd.Stderr = f, f
 	}
 	detach.Cmd(cmd)
-	started, err := detach.Start(cmd)
+	proc, err := detach.Start(cmd)
 	if err != nil {
 		return 0, nil, err
 	}
-	done := make(chan struct{})
-	go func() { _ = started.Wait(); close(done) }()
-	return started.Process.Pid, done, nil
+	return proc.Pid, proc.Done(), nil
 }
 
 // watchKeep is the keeper: it watches, writes the task, then the result file (first

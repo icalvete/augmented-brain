@@ -198,18 +198,18 @@ func startLogin(cfgDir, gh string, wait time.Duration) (*Login, error) {
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, out, out
 	cmd.Env = append(os.Environ(), "GH_PROMPT_DISABLED=1", "GH_NO_UPDATE_NOTIFIER=1")
 	detach.Cmd(cmd)
-	cmd, err = detach.Start(cmd)
+	proc, err := detach.Start(cmd)
 	if err != nil {
 		out.Close()
 		return nil, err
 	}
 	done := make(chan struct{})
-	go func() { _ = cmd.Wait(); out.Close(); close(done) }() // never a zombie that looks alive
+	go func() { <-proc.Done(); out.Close(); close(done) }()
 	deadline := time.Now().Add(wait)
 	for {
 		said, _ := os.ReadFile(logPath)
 		if m := codeRe.FindSubmatch(said); m != nil {
-			l := &Login{Code: string(m[1]), URL: deviceURL, PID: cmd.Process.Pid, Started: time.Now()}
+			l := &Login{Code: string(m[1]), URL: deviceURL, PID: proc.Pid, Started: time.Now()}
 			if u := urlRe.Find(said); u != nil {
 				l.URL = string(u)
 			}
@@ -225,7 +225,7 @@ func startLogin(cfgDir, gh string, wait time.Duration) (*Login, error) {
 		default:
 		}
 		if time.Now().After(deadline) {
-			_ = cmd.Process.Kill()
+			_ = proc.Kill()
 			return nil, errors.New("GitHub did not answer in time; check the internet connection")
 		}
 		time.Sleep(150 * time.Millisecond)

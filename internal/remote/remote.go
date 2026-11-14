@@ -192,11 +192,8 @@ func realStartDaemon(claude string, ownScope bool) error {
 	}
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
 	detach.Cmd(cmd)
-	started, err := detach.Start(cmd)
-	if err != nil {
-		return err
-	}
-	return started.Process.Release()
+	_, err := detach.Start(cmd)
+	return err
 }
 
 func realRun(name string, args ...string) (string, error) {
