@@ -449,13 +449,20 @@ func autoMemory(e Env, c *config.Config) []Check {
 		i18n.T(c.Language, "doctor.automemory.fix", filepath.Join(dir, "settings.json"))}}
 }
 
-// guardLists reports on guard.toml (the untouchable repositories) and on whether the
-// guard's lists are the ones the user last saw.
+// guardLists reports on guard.toml (the untouchable repositories), on settings of
+// guard.toml and session.toml this program does not know, and on whether the guard's
+// lists are the ones the user last saw.
 func guardLists(c *config.Config, l string) []Check {
 	var out []Check
+	// Settings of guard.toml and session.toml this program ignores: a misspelled one
+	// does nothing, and the files are not refused for it (a newer program may add some).
+	for _, f := range config.UnknownByFile(l, config.UnknownSettings(c.Dir)) {
+		out = append(out, Check{Warning, i18n.T(l, "doctor.unknownsettings", f[0], f[1]),
+			i18n.T(l, "doctor.unknownsettings.fix", paths.Tilde(filepath.Join(c.Dir, f[0])))})
+	}
 	g, err := config.LoadGuard(c.Dir)
 	if err != nil {
-		return []Check{{Warning, i18n.T(l, "doctor.guardfile.bad", err.Error()), i18n.T(l, "doctor.guardfile.fix", filepath.Join(c.Dir, config.GuardFile))}}
+		return append(out, Check{Warning, i18n.T(l, "doctor.guardfile.bad", err.Error()), i18n.T(l, "doctor.guardfile.fix", filepath.Join(c.Dir, config.GuardFile))})
 	}
 	if len(g.UntouchableRepos) > 0 {
 		out = append(out, Check{Info, i18n.T(l, "doctor.untouchable", len(g.UntouchableRepos)), ""})

@@ -348,6 +348,9 @@ func sessionList(c *config.Config, sys remote.System, out, errOut io.Writer) int
 				key = "session.list.failed.login"
 			}
 			state = i18n.T(c.Language, key, x.Problem, task)
+			if !x.Resets.IsZero() {
+				state = i18n.T(c.Language, "session.list.quota", quotaHour(x.Resets, time.Now()))
+			}
 		}
 		fmt.Fprintln(out, i18n.T(c.Language, "session.list.line", task, state, tilde(x.Folder)))
 	}

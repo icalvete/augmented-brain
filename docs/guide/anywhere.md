@@ -25,7 +25,8 @@ On the computer that holds your notes:
    same account, then run `augmented-brain panel remote`. It prints an address and a QR
    code. Details in [The panel from another device](panel-remote.md).
 
-`augmented-brain doctor` checks both, one line each.
+`augmented-brain doctor` checks both: a line for the door of each space and, once you
+have used it, one for the panel from another device.
 
 ## Which session to use
 
@@ -43,38 +44,20 @@ folder, so Claude loads that space's notes and rules.
 
 - **The computer is asleep.** A laptop that sleeps drops the connection. It comes back when
   it wakes up.
-- **The session was archived.** Archiving a session in claude.ai, or leaving it unused
-  for long, can end it on Claude's side while the service on your computer keeps running
-  with nothing behind it. Start the service again, on the computer:
+- **The session was archived** in claude.ai, or ended on Claude's side. On Linux it comes
+  back by itself, in about ten minutes; on macOS and Windows it takes three steps by
+  hand. Both are in [Remote access](remote.md#good-to-know).
+- **Your Claude login expired.** Run `claude` once on the computer and sign in again.
 
-  ```bash
-  systemctl --user restart augmented-brain-remote-personal
-  ```
+`augmented-brain remote status` says how each door stands, and what to do. Other
+problems are in [Troubleshooting](troubleshooting.md#remote-access-does-not-work).
 
-  The new session can take up to a few minutes to appear: Claude's side first lets the
-  old one expire. The watch does this by itself within a few minutes; if you restart
-  by hand, run `augmented-brain remote watch` first, so the sessions of your tasks
-  started from there keep running.
-- **Your Claude login expired.** `augmented-brain remote status` says so. Run `claude`
-  once on the computer and sign in again.
+## A session for each task
 
-`augmented-brain remote status` says how each door stands, and what to do.
-
-## An old session with the same name
-
-When the door of a space moves to another folder (a new version starts it in your work
-folder, say), Claude's side keeps the old session too, with the same name, in another
-group of the list. Nothing answers in the old one: what you write there is lost. Use the
-one in the group named after the new folder, and archive the old one in claude.ai or
-Claude Desktop.
-
-## Starting new sessions from the phone
-
-Ask the session behind the space's door to open one for a task ("open me a session for
-the website task"). It runs `augmented-brain session start`, and a session of its own for
-that task shows up in your list within a minute, named after the task, in its folder,
-already reading it. Open as many as you have tasks. The first time in a folder it tells
-you how to make Claude trust it. See [A session per task](remote.md#a-session-per-task).
+On Linux, the session behind a space's door can open another one for a task ("open me a
+session for the website task"). It shows up in your list within a minute, named after
+the task, in its folder, already reading it. Open as many as you have tasks. On macOS
+and Windows it is not available yet. See [A session per task](task-sessions.md).
 
 ## Keep it safe
 

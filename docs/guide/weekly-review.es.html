@@ -50,12 +50,14 @@
 <ul>
   <li><a href="getting-started.es.html">Primeros pasos</a></li>
   <li><a href="install.es.html">Instalación</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
 </ul>
 <p class="docnav-group">Conceptos</p>
 <ul>
   <li><a href="spaces.es.html">Espacios</a></li>
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
   <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
@@ -65,14 +67,17 @@
 <ul>
   <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
   <li><a href="panel.es.html">El panel</a></li>
-  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
-  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="weekly-review.es.html" aria-current="page">La revisión semanal</a></li>
-  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+</ul>
+<p class="docnav-group">Ponlo a tu medida</p>
+<ul>
   <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
-  <li><a href="remote.es.html">Acceso remoto</a></li>
-  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="anywhere.es.html">Desde el móvil u otro ordenador</a></li>
+  <li><a href="remote.es.html">Acceso remoto</a></li>
+  <li><a href="task-sessions.es.html">Una sesión por tarea</a></li>
+  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
   <li><a href="update-and-uninstall.es.html">Actualizar y desinstalar</a></li>
 </ul>
 <p class="docnav-group">Referencia</p>
@@ -94,7 +99,7 @@
 <script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
 <main class="prose" id="main">
   <h1>La revisión semanal</h1>
-  <p>El lunes abres Claude. Te dice: “Toca la revisión semanal: 3 capturas en el buzón y 1 tarea sin tocar desde hace dos semanas. ¿La hacemos? Son unos diez minutos.” Dices que sí, y repasa contigo cada cosa, una a una.</p>
+  <p>Una semana después de tu última revisión, abres Claude. Te dice: “Toca la revisión semanal: 3 capturas en el buzón y 1 tarea sin tocar desde hace dos semanas. ¿La hacemos? Son unos diez minutos.” Dices que sí, y repasa contigo cada cosa, una a una.</p>
   <p>La <strong>revisión semanal</strong> mantiene el sistema al día. Sin ella, el buzón se llena y las tareas paradas se amontonan sin que nadie lo note.</p>
   <nav class="toc" aria-label="En esta página"><p>En esta página</p><ul><li><a href="#lo-que-repasa">Lo que repasa</a></li><li><a href="#cuándo-sale">Cuándo sale</a></li><li><a href="#con-claude">Con Claude</a></li><li><a href="#en-el-panel">En el panel</a></li><li><a href="#lo-que-se-guarda">Lo que se guarda</a></li><li><a href="#dos-ordenadores">Dos ordenadores</a></li></ul></nav>
   <h2 id="lo-que-repasa">Lo que repasa</h2>
@@ -104,14 +109,14 @@
   <h2 id="con-claude">Con Claude</h2>
   <p>Claude lista lo que hay y luego te pregunta por cada cosa. Tú decides; él hace el resto: abre la tarea, archiva la nota, descarta la captura. Al final guarda lo decidido y saca del buzón las capturas procesadas.</p>
   <h2 id="en-el-panel">En el panel</h2>
-  <p>El panel tiene una página <strong>Revisión semanal</strong>. Cada captura tiene sus botones: tarea, referencia, lección o descartarla. Cada tarea sin tocar sigue, o pasa a algún día (o la abres para cerrarla). Lo que decides se va apuntando, en un borrador en este ordenador, así que puedes irte y volver. Al terminar, todo queda escrito en el registro de la revisión.</p>
+  <p>El panel tiene una página <strong>Revisión semanal</strong>. Cada captura tiene sus botones: tarea, referencia, lección o descartarla. Cada tarea sin tocar sigue, o pasa a algún día (o la abres para cerrarla). Llevar una captura a un área no está entre los botones: eso se lo pides a Claude. Lo que decides se va apuntando, en un borrador en este ordenador, así que puedes irte y volver. Al terminar, todo queda escrito en el registro de la revisión.</p>
   <h2 id="lo-que-se-guarda">Lo que se guarda</h2>
   <p>Cada revisión es una nota, <code>reviews/review-&lt;fecha&gt;.md</code>, con lo decidido. Las capturas procesadas salen del buzón. Nada más se borra.</p>
   <h2 id="dos-ordenadores">Dos ordenadores</h2>
   <p>Las capturas hechas en dos ordenadores se guardan las dos. Un detalle: una captura que procesaste en un ordenador puede volver si el otro apuntó algo a la vez. Sale otra vez en la siguiente revisión, sin más.</p>
   <nav class="pager" aria-label="Anterior / Siguiente">
-    <a class="prev" href="config-history.es.html"><span>← Anterior</span>Versiones de la configuración</a>
-    <a class="next" href="backup.es.html"><span>Siguiente →</span>Copia de seguridad y restauración</a>
+    <a class="prev" href="panel.es.html"><span>← Anterior</span>El panel</a>
+    <a class="next" href="connect-services.es.html"><span>Siguiente →</span>Conecta tus servicios</a>
   </nav>
 </main>
 </div>

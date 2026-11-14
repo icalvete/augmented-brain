@@ -179,9 +179,12 @@ Hace tres cosas para que las listas sigan siendo tuyas:
   llamar a una página del panel desde un comando, se deniega, se escriba
   como se escriba la dirección: la página Guardia del panel es como tú cambias las
   listas, y funciona con esa llave. `augmented-brain panel` tampoco escribe nunca la
-  llave: escribe un enlace que sirve una vez, y lanzado por Claude no escribe ninguno.
+  llave: escribe un enlace que sirve una vez, y lanzado por Claude no escribe ninguno, ni
+  tampoco `augmented-brain panel remote`: te piden que los lances en una terminal tuya.
 - **Se da cuenta de un cambio que no vio.** El guardia guarda un sello de sus listas: se
-  toma cuando empiezas una sesión y al guardar en el panel. Si las listas difieren del
+  toma cuando empiezas una sesión y al guardar en el panel. Cuando Claude solo añade un
+  perfil de producción o una máquina a listas que ya habías aceptado, el sello las sigue:
+  añadir solo hace que el guardia pregunte más. Si las listas difieren del
   sello, algo más las cambió, y un commit, push o merge que las listas dejarían pasar
   pregunta antes, y la página Guardia y `doctor` lo dicen, hasta que las aceptes en la
   página Guardia o empieces una sesión nueva. Mientras tanto, las listas no pueden
@@ -234,7 +237,9 @@ con la herramienta `safety_save`. Valen en toda la máquina, en todos los espaci
 
 Claude solo puede añadir a estas listas. Para quitar uno, usa la página **Guardia** del
 panel, o edita tú `production_aws_profiles` y `untouchable_hosts`
-([Configuración](configuration.es.md)).
+([Configuración](configuration.es.md)). Añadir no deja las listas esperando a que las
+aceptes: si ya las habías aceptado, siguen aceptadas, y los commits y los push no empiezan
+a preguntar. Si otra cosa las había cambiado antes, siguen esperándote.
 
 Estas listas no van en ninguna copia de seguridad, porque pueden nombrar máquinas de tu
 trabajo. Después de restaurar en una máquina nueva, la siguiente sesión te ofrece volver

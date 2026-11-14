@@ -183,7 +183,7 @@ func (b *Brain) save(n *memory.Note) error {
 // nothing behind, not even its journal's archive or a copy in archive/.
 func (b *Brain) refuse(n *memory.Note) error {
 	if b.broken(n.Path) {
-		return fmt.Errorf("%s is not a valid note, so it is not written over; fix it first (`augmented-brain check` says what is wrong)", n.Path)
+		return i18n.Errorf("err.note.invalid", n.Path)
 	}
 	if err := checkHeader(n, b.Mem.Notes[n.Header.ID]); err != nil {
 		return err
@@ -216,16 +216,16 @@ func noNewSecret(n, old *memory.Note) error {
 
 // secretError is why a write with a secret in it is refused, worded as the guard's.
 func secretError(what string) error {
-	return fmt.Errorf("nothing was saved: the text has %s in it. Secrets never go into notes, and the backup would refuse the whole space: keep it in the system keychain or a secrets manager, and write down only where it is", what)
+	return i18n.Errorf("err.secret.in", what)
 }
 
 func (b *Brain) get(id, kind string) (*memory.Note, error) {
 	n, ok := b.Mem.Notes[id]
 	if !ok {
-		return nil, fmt.Errorf("there is no %s %q", kind, id)
+		return nil, i18n.Errorf("err.note.missing", kind, id)
 	}
 	if kind != "" && n.Header.Type != kind {
-		return nil, fmt.Errorf("%q is a %s, not a %s", id, n.Header.Type, kind)
+		return nil, i18n.Errorf("err.note.kind", id, n.Header.Type, kind)
 	}
 	return n, nil
 }
@@ -245,7 +245,7 @@ type NewTaskInput struct {
 // NewTask opens a task in the definition phase, waiting on the user.
 func (b *Brain) NewTask(in NewTaskInput) (*memory.Note, error) {
 	if strings.TrimSpace(in.Title) == "" {
-		return nil, errors.New("a task needs a title")
+		return nil, i18n.Errorf("err.task.title")
 	}
 	var parent *memory.Note
 	if in.Parent != "" {
@@ -294,13 +294,13 @@ func (b *Brain) NewTask(in NewTaskInput) (*memory.Note, error) {
 func (b *Brain) parent(id string) (*memory.Note, error) {
 	p, err := b.Task(id)
 	if err != nil {
-		return nil, fmt.Errorf("the parent must be an existing task: %w", err)
+		return nil, i18n.Errorf("err.task.parent", err)
 	}
 	if p.Header.Parent != "" {
-		return nil, fmt.Errorf("%q is already a subtask of %q, and subtasks go one level deep only: make this one a subtask of %q, or a step in the Plan of %q", id, p.Header.Parent, p.Header.Parent, id)
+		return nil, i18n.Errorf("err.task.deep", id, p.Header.Parent, p.Header.Parent, id)
 	}
 	if p.Header.Status == "closed" {
-		return nil, fmt.Errorf("%q is closed: a closed task takes no new subtasks", id)
+		return nil, i18n.Errorf("err.task.parentclosed", id)
 	}
 	return p, nil
 }
@@ -314,7 +314,7 @@ func (b *Brain) openChildren(id string) error {
 		}
 	}
 	if len(open) > 0 {
-		return fmt.Errorf("%q cannot be closed while its subtasks are open; close them first: %s", id, strings.Join(open, "; "))
+		return i18n.Errorf("err.task.openchildren", id, strings.Join(open, "; "))
 	}
 	return nil
 }
@@ -339,6 +339,10 @@ type UpdateInput struct {
 	// Reopen says why a closed task opens again: a closed task changes status only with
 	// it, so it never reopens by a slip.
 	Reopen string
+	// Result is what a task closed by Status "closed" achieved, as in Close. Without it
+	// the task still closes (task_update always could), with a line saying no result
+	// was given.
+	Result string
 }
 
 // phaseOrder are the phases a task goes through, in order; parked and someday pause it
@@ -385,7 +389,7 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 		case "area":
 			h.Area = ""
 		default:
-			return nil, fmt.Errorf("%q cannot be cleared", f)
+			return nil, i18n.Errorf("err.task.clear", f)
 		}
 	}
 	if in.WatchDate != "" {
@@ -393,7 +397,7 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 			return nil, err
 		}
 		if strings.TrimSpace(in.WatchWhat) == "" {
-			return nil, errors.New("a watch date needs what to look at")
+			return nil, i18n.Errorf("err.watch.what")
 		}
 		h.Watch = append(h.Watch, memory.Watch{Date: in.WatchDate, What: memory.OneLine(in.WatchWhat)})
 		sort.SliceStable(h.Watch, func(i, j int) bool { return h.Watch[i].Date < h.Watch[j].Date })
@@ -407,7 +411,7 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 			}
 		}
 		if !hit {
-			return nil, fmt.Errorf("task %s has no open watch date on %s", in.ID, in.WatchDone)
+			return nil, i18n.Errorf("err.watch.none", in.ID, in.WatchDone)
 		}
 	}
 	if h.Status == "closed" && old != "closed" {
@@ -418,6 +422,15 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 	reopen := strings.TrimSpace(in.Reopen)
 	if old == "closed" && h.Status != "closed" && slices.Contains(memory.Statuses, h.Status) && reopen == "" {
 		return nil, closedTask(n)
+	}
+	if h.Status == "closed" && old != "closed" {
+		// Closing through a change of status is closing: the same note as Close.
+		result := strings.TrimSpace(in.Result)
+		if result == "" {
+			result = b.text("closed.noresult")
+		}
+		b.closeNote(&cp, result)
+		return &cp, b.save(&cp)
 	}
 	if h.Status != old {
 		// Skipping phases is allowed (a small task may go straight to execution), and
@@ -442,9 +455,9 @@ func (b *Brain) Journal(id, entry string) (*memory.Note, error) {
 		return nil, err
 	}
 	if strings.TrimSpace(entry) == "" {
-		return nil, errors.New("the journal entry is empty")
+		return nil, i18n.Errorf("err.journal.empty")
 	}
-	if err := tooLong("journal entry", entry, maxJournal, longText); err != nil {
+	if err := tooLong("err.what.journal", entry, maxJournal, longText); err != nil {
 		return nil, err
 	}
 	cp := *n
@@ -489,7 +502,7 @@ type ParkInput struct {
 func (b *Brain) Park(in ParkInput) (*memory.Note, error) {
 	in.Next = memory.OneLine(in.Next)
 	if in.Next == "" {
-		return nil, errors.New("parking needs the next step: exactly how to resume")
+		return nil, i18n.Errorf("err.park.next")
 	}
 	n, err := b.Task(in.ID)
 	if err != nil {
@@ -530,13 +543,13 @@ func closedTask(n *memory.Note) error {
 	if n.Header.Status != "closed" {
 		return nil
 	}
-	return fmt.Errorf("task %s is closed: to open it again, say why with reopen", n.Header.ID)
+	return i18n.Errorf("err.task.closed", n.Header.ID)
 }
 
 // Close marks a task closed with its result. It is never deleted.
 func (b *Brain) Close(id, result string) (*memory.Note, error) {
 	if strings.TrimSpace(result) == "" {
-		return nil, errors.New("closing needs the result")
+		return nil, i18n.Errorf("err.close.result")
 	}
 	n, err := b.Task(id)
 	if err != nil {
@@ -544,19 +557,26 @@ func (b *Brain) Close(id, result string) (*memory.Note, error) {
 	}
 	// Closing again would write over the result it was closed with.
 	if n.Header.Status == "closed" {
-		return nil, fmt.Errorf("task %s is already closed: its result stays; to add to it, write in its journal", id)
+		return nil, i18n.Errorf("err.close.already", id)
 	}
 	if err := b.openChildren(id); err != nil {
 		return nil, err
 	}
 	cp := *n
+	b.closeNote(&cp, result)
+	return &cp, b.save(&cp)
+}
+
+// closeNote writes into a copy of a task what closing it says: the status, no next
+// step and no one to wait on, "where it is" and "next" in its first sections, and the
+// result in the journal. Close and Update (status "closed") both go through it.
+func (b *Brain) closeNote(cp *memory.Note, result string) {
 	cp.Header.Status = "closed"
 	cp.Header.Next = ""
 	cp.Header.WaitingOn = ""
 	cp.Body = setLine(cp.Body, "where", fmt.Sprintf(b.text("where.closed"), b.today(), oneLine(result)))
 	cp.Body = setLine(cp.Body, "next", b.text("next.closed"))
 	cp.Body = b.journalLine(cp.Body, fmt.Sprintf(b.text("closed"), result))
-	return &cp, b.save(&cp)
 }
 
 // setLine writes value after the first "- <label>:" line of body, with the label in
@@ -694,7 +714,7 @@ func (b *Brain) CaptureTo(space, text, remind string) (string, error) {
 		return b.Space.Name, b.Capture(text, remind)
 	}
 	if b.ConfigDir == "" {
-		return "", errors.New("no configuration to find other spaces in")
+		return "", i18n.Errorf("err.space.noconfig")
 	}
 	c, err := config.Load(b.ConfigDir)
 	if err != nil {
@@ -702,7 +722,7 @@ func (b *Brain) CaptureTo(space, text, remind string) (string, error) {
 	}
 	target, ok := c.Spaces[space]
 	if !ok {
-		return "", fmt.Errorf("there is no space %q; the spaces are: %s", space, strings.Join(c.SpaceNames(), ", "))
+		return "", i18n.Errorf("err.space.missing", space, strings.Join(c.SpaceNames(), ", "))
 	}
 	other, err := b.open(c, target)
 	if err != nil {
@@ -723,7 +743,7 @@ func (b *Brain) Other(space string) (*Brain, error) {
 		return b, nil
 	}
 	if b.ConfigDir == "" {
-		return nil, errors.New("no configuration to find other spaces in")
+		return nil, i18n.Errorf("err.space.noconfig")
 	}
 	c, err := config.Load(b.ConfigDir)
 	if err != nil {
@@ -731,7 +751,7 @@ func (b *Brain) Other(space string) (*Brain, error) {
 	}
 	target, ok := c.Spaces[space]
 	if !ok {
-		return nil, fmt.Errorf("there is no space %q; the spaces are: %s", space, strings.Join(c.SpaceNames(), ", "))
+		return nil, i18n.Errorf("err.space.missing", space, strings.Join(c.SpaceNames(), ", "))
 	}
 	other, err := b.open(c, target)
 	if err != nil {
@@ -758,9 +778,9 @@ func (b *Brain) open(c *config.Config, s *config.Space) (*Brain, error) {
 func (b *Brain) capture(text, remind, from string) error {
 	text = memory.OneLine(text)
 	if text == "" {
-		return errors.New("nothing to capture")
+		return i18n.Errorf("err.capture.empty")
 	}
-	if err := tooLong("capture", text, maxCapture, longText); err != nil {
+	if err := tooLong("err.what.capture", text, maxCapture, longText); err != nil {
 		return err
 	}
 	if from != "" {
@@ -793,7 +813,7 @@ func (b *Brain) capture(text, remind, from string) error {
 // NewArea creates an area: a responsibility with no end date.
 func (b *Brain) NewArea(title, summary string) (*memory.Note, error) {
 	if strings.TrimSpace(title) == "" {
-		return nil, errors.New("an area needs a title")
+		return nil, i18n.Errorf("err.area.title")
 	}
 	id, err := b.freshID("area", title)
 	if err != nil {
@@ -825,10 +845,10 @@ func (b *Brain) UpdateArea(id, title, summary string) (*memory.Note, error) {
 // NewKnowledge saves a reference (how something works) or a lesson (what was learned).
 func (b *Brain) NewKnowledge(kind, title, summary, area, body string) (*memory.Note, error) {
 	if kind != "reference" && kind != "lesson" {
-		return nil, fmt.Errorf("kind %q: use reference or lesson", kind)
+		return nil, i18n.Errorf("err.knowledge.kind", kind)
 	}
 	if strings.TrimSpace(title) == "" {
-		return nil, errors.New("a note needs a title")
+		return nil, i18n.Errorf("err.note.title")
 	}
 	if area != "" {
 		if _, err := b.get(area, "area"); err != nil {
@@ -854,7 +874,7 @@ func (b *Brain) NewKnowledge(kind, title, summary, area, body string) (*memory.N
 // session.
 func (b *Brain) NewRule(title, summary, body string) (*memory.Note, error) {
 	if strings.TrimSpace(title) == "" || strings.TrimSpace(body) == "" {
-		return nil, errors.New("a rule needs a title and a body: what to do, and why")
+		return nil, i18n.Errorf("err.rule.body")
 	}
 	id, err := b.freshID("rule", title)
 	if err != nil {
@@ -905,12 +925,11 @@ func Slug(title string) string {
 func (b *Brain) freshID(typ, title string) (string, error) {
 	base := memory.Types[typ].Prefix + Slug(title)
 	if old, taken := b.Mem.Notes[base]; taken {
-		how := "call again with id " + base + " to change it"
+		how := i18n.Errorf("err.note.exists.call", base)
 		if typ == "area" {
-			how = "change it in the panel's Areas page"
+			how = i18n.Errorf("err.note.exists.area")
 		}
-		return "", fmt.Errorf("%s already exists (%q): nothing was created. If it is the same thing, %s; if it is another one, use another title",
-			base, old.Header.Title, how)
+		return "", i18n.Errorf("err.note.exists", base, old.Header.Title, how)
 	}
 	return b.uniqueID(base), nil
 }

@@ -29,7 +29,7 @@ func (b *Brain) UpdateNote(id, typ, title, summary, area, body string) (*memory.
 	}
 	if area != "" {
 		if typ == "rule" {
-			return nil, errors.New("a rule has no area")
+			return nil, i18n.Errorf("err.rule.area")
 		}
 		if _, err := b.get(area, "area"); err != nil {
 			return nil, err
@@ -71,14 +71,14 @@ func (b *Brain) RetireNote(id, reason, replacedBy string) (string, error) {
 		return "", err
 	}
 	if strings.TrimSpace(reason) == "" {
-		return "", errors.New("say why it is retired: the reason stays with it")
+		return "", i18n.Errorf("err.retire.why")
 	}
 	if replacedBy != "" {
 		if replacedBy == id {
-			return "", errors.New("a note cannot replace itself")
+			return "", i18n.Errorf("err.retire.self")
 		}
 		if _, ok := b.Mem.Notes[replacedBy]; !ok {
-			return "", fmt.Errorf("there is no note %q to replace it", replacedBy)
+			return "", i18n.Errorf("err.retire.missing", replacedBy)
 		}
 	}
 	line := i18n.T(b.Language, "note.retired", b.today(), strings.TrimRight(strings.TrimSpace(reason), "."))
@@ -118,7 +118,7 @@ func (b *Brain) changeableNote(id, typ string) (*memory.Note, error) {
 			return old, nil
 		}
 	}
-	return nil, fmt.Errorf("%q is a %s: only rules, references and lessons are changed this way", id, old.Header.Type)
+	return nil, i18n.Errorf("err.note.unchangeable", id, old.Header.Type)
 }
 
 // archiveCopy keeps the file of n as it is now in archive/.

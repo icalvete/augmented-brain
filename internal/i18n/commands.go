@@ -34,6 +34,11 @@ var commandMessages = map[string]msg{
 		en: "%s: unknown settings: %s",
 		es: "%s: ajustes desconocidos: %s",
 	},
+	// One unknown setting of guard.toml or session.toml, with the known one it looks like.
+	"config.unknown.near": {
+		en: "%s (did you mean %s?)",
+		es: "%s (¿querías decir %s?)",
+	},
 	// What is wrong with the configuration file (config.toml).
 	"config.nodir": {
 		en: "the configuration folder is unknown: HOME is not set, nor AB_CONFIG_DIR",
@@ -467,7 +472,7 @@ Usage:
   augmented-brain backup setup URL   connect this folder's space to a private git repository
   augmented-brain restore URL  bring a space back from its backup, on a new machine
   augmented-brain panel        open the panel in your browser: see and edit your tasks, inbox, profile… (panel remote: from your other devices) (panel stop: stop it)
-  augmented-brain remote install    keep Claude reachable from another computer, also after a reboot (Linux)
+  augmented-brain remote install    keep Claude reachable from another computer, also after a reboot
   augmented-brain remote uninstall  stop that and remove it
   augmented-brain remote status     say whether it runs, and what is missing
   augmented-brain session start TASK   open a remote session of its own for a task, in its folder (--folder DIR) (Linux)
@@ -496,7 +501,7 @@ Uso:
   augmented-brain backup setup URL   conecta el espacio de esta carpeta a un repositorio git privado
   augmented-brain restore URL  recupera un espacio de su copia, en una máquina nueva
   augmented-brain panel        abre el panel en el navegador: ve y cambia tus tareas, buzón, perfil… (panel remote: desde tus otros dispositivos) (panel stop: lo para)
-  augmented-brain remote install    mantiene Claude accesible desde otro ordenador, también tras reiniciar (Linux)
+  augmented-brain remote install    mantiene Claude accesible desde otro ordenador, también tras reiniciar
   augmented-brain remote uninstall  lo para y lo quita
   augmented-brain remote status     dice si funciona y qué falta
   augmented-brain session start TAREA  abre una sesión remota propia para una tarea, en su carpeta (--folder DIR) (Linux)

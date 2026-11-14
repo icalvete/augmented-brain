@@ -33,7 +33,7 @@ func TestTicketOnce(t *testing.T) {
 		t.Fatalf("ticket: %d %q", w.Code, id)
 	}
 	first := s.do(t, req{path: "/t/" + id})
-	if first.Code != http.StatusSeeOther || first.Header().Get("Location") != s.base()+"/today?s=work" {
+	if first.Code != http.StatusSeeOther || first.Header().Get("Location") != s.localBase()+"/today?s=work" {
 		t.Fatalf("first visit: %d %q", first.Code, first.Header().Get("Location"))
 	}
 	again := s.do(t, req{path: "/t/" + id})
@@ -64,7 +64,7 @@ func TestTicketOnlyForTheCommand(t *testing.T) {
 	s, _ := fixture(t, "en")
 	form := url.Values{"page": {"tasks"}, "csrf": {s.csrf}}
 	// A page of the panel cannot make tickets: they would outlive its session.
-	if w := s.do(t, req{method: http.MethodPost, path: s.base() + "/ticket", origin: "http://" + host, form: form}); w.Code != http.StatusForbidden {
+	if w := s.do(t, req{method: http.MethodPost, path: s.localBase() + "/ticket", origin: "http://" + host, form: form}); w.Code != http.StatusForbidden {
 		t.Errorf("from a page: %d", w.Code)
 	}
 	if w := s.do(t, req{method: http.MethodPost, path: "/ticket", origin: "http://" + host, form: form}); w.Code != http.StatusForbidden {

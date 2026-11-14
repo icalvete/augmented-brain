@@ -50,12 +50,14 @@
 <ul>
   <li><a href="getting-started.html">Getting started</a></li>
   <li><a href="install.html" aria-current="page">Installing</a></li>
+  <li><a href="import.html">Bring in a memory you already have</a></li>
 </ul>
 <p class="docnav-group">Concepts</p>
 <ul>
   <li><a href="spaces.html">Spaces</a></li>
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
+  <li><a href="editing-notes.html">Editing notes by hand</a></li>
   <li><a href="guard.html">The guard</a></li>
   <li><a href="how-it-works.html">How it works inside</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
@@ -65,14 +67,17 @@
 <ul>
   <li><a href="phrases.html">What to say to Claude</a></li>
   <li><a href="panel.html">The panel</a></li>
-  <li><a href="panel-remote.html">The panel from another device</a></li>
-  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="weekly-review.html">The weekly review</a></li>
-  <li><a href="backup.html">Backup and restore</a></li>
+</ul>
+<p class="docnav-group">Make it yours</p>
+<ul>
   <li><a href="connect-services.html">Connect your services</a></li>
-  <li><a href="remote.html">Remote access</a></li>
-  <li><a href="import.html">Bring in a memory you already have</a></li>
+  <li><a href="backup.html">Backup and restore</a></li>
+  <li><a href="config-history.html">Configuration versions</a></li>
   <li><a href="anywhere.html">From your phone or another computer</a></li>
+  <li><a href="remote.html">Remote access</a></li>
+  <li><a href="task-sessions.html">A session per task</a></li>
+  <li><a href="panel-remote.html">The panel from another device</a></li>
   <li><a href="update-and-uninstall.html">Updating and uninstalling</a></li>
 </ul>
 <p class="docnav-group">Reference</p>
@@ -97,7 +102,7 @@
   <p>One command installs augmented brain and everything it needs, on Linux, macOS and Windows. This page says what that command does on each system, where it puts things and what is different on each one. New to the terminal? <a href="getting-started.html">Getting started</a> walks you through it.</p>
   <nav class="toc" aria-label="On this page"><p>On this page</p><ul><li><a href="#on-every-system">On every system</a></li><li><a href="#linux">Linux</a></li><li><a href="#macos">macOS</a></li><li><a href="#windows">Windows</a></li><li><a href="#check-a-download">Check a download</a></li><li><a href="#updating">Updating</a></li><li><a href="#uninstalling">Uninstalling</a></li><li><a href="#if-something-goes-wrong">If something goes wrong</a></li></ul></nav>
   <h2 id="on-every-system">On every system</h2>
-  <ul><li><strong>A paid Claude plan</strong> (Pro, Max, Team or Enterprise) or an Anthropic API key. augmented brain is free, but it works with Claude Code, and the free plan does not include Claude Code. The installer says so before installing it. Plans: <a href="https://claude.com/pricing">claude.com/pricing</a>.</li><li><strong>No administrator or root.</strong> The program goes in your own folder. Only installing something that is missing, like git, may ask for your password.</li><li><strong>The installer asks first.</strong> The language, then each missing piece, with what it is for. Press Enter to accept what it suggests.</li><li><strong>It always ends the same way:</strong> two spaces, <code>work</code> and <code>personal</code> (in Spanish, <code>trabajo</code> and <code>personal</code>), in <code>~/augmented-brain</code>, the Claude Code plugin installed, and the offer to open Claude.</li><li><strong>Every download is checked.</strong> The program comes from the project's latest release on GitHub, and its SHA-256 must match the release's list, or nothing is installed. When GitHub fails to hand it out, the installer tries three times, also through GitHub's API; if all fails, it says so and installs nothing.</li></ul>
+  <ul><li><strong>A paid Claude plan</strong> (Pro, Max, Team or Enterprise) or an Anthropic API key. augmented brain is free, but it works with Claude Code, and the free plan does not include Claude Code. The installer says so before installing it. Plans: <a href="https://claude.com/pricing">claude.com/pricing</a>.</li><li><strong>No administrator or root.</strong> The program goes in your own folder. Only installing something that is missing, like git, may ask for your password.</li><li><strong>The installer asks first.</strong> The language (your system's is suggested), then each missing piece, with what it is for. Press Enter to accept what it suggests. To change the language later, set <code>language</code> in your <a href="configuration.html#settings-for-the-whole-computer">configuration</a>.</li><li><strong>It always ends the same way:</strong> two spaces, <code>work</code> and <code>personal</code> (in Spanish, <code>trabajo</code> and <code>personal</code>), in <code>~/augmented-brain</code>, the Claude Code plugin installed, and the offer to open Claude.</li><li><strong>Every download is checked.</strong> The program comes from the project's latest release on GitHub, and its SHA-256 must match the release's list, or nothing is installed. When GitHub fails to hand it out, the installer tries three times, also through GitHub's API; if all fails, it says so and installs nothing.</li></ul>
   <h2 id="linux">Linux</h2>
   <p><strong>You need:</strong> a 64-bit PC or Arm (amd64 or arm64), <code>curl</code> or <code>wget</code>, and <code>sha256sum</code> or <code>shasum</code> (all usual distributions have them).</p>
   <p><strong>Install:</strong> open a terminal (on Ubuntu, <code>Ctrl + Alt + T</code>) and paste:</p>
@@ -151,7 +156,7 @@
   <ul><li><strong>The terminal cannot find a command</strong> (<code>command not found</code>, or “not recognized” on Windows). Open a new terminal: the one you used does not see the new PATH yet.</li><li><strong>Anything else after installing.</strong> Run <code>augmented-brain doctor</code>: it says what is missing and how to fix it. It also warns you when a space has no backup, when Claude Code keeps a second memory of its own for your spaces' folders, and when other users of the computer could read your notes. If the configuration is broken, it tells you how to go back to a version that worked.</li><li><strong>“This system is not supported yet”.</strong> It works on Linux, macOS and Windows, on 64-bit PCs and Arm.</li><li><strong>macOS: “Claude Code needs macOS 13”.</strong> Update the Mac in System Settings → General → Software Update, then paste the command again.</li><li><strong>macOS: the developer tools window did not open.</strong> Run <code>xcode-select --install</code> and then the install command again.</li><li><strong>Linux: no desktop app offered.</strong> It is only for systems with <code>apt</code> (Ubuntu, Debian and their family); use Claude in the terminal.</li><li><strong>“cannot download … from GitHub”.</strong> GitHub is having trouble. Nothing was installed: paste the command again in a while.</li><li><strong>You stopped the installer half way</strong> (Ctrl+C, a closed window). Paste the command again: it sets everything up from the start.</li><li><strong>Windows: “Git was not installed”.</strong> The installer tries winget first and then Git's own download. If both fail, install Git from <a href="https://git-scm.com/download/win">git-scm.com</a> and run the command again. The desktop app needs winget: update “App Installer” from the Microsoft Store.</li><li><strong>Claude asks whether you trust the folder.</strong> The first time you open Claude in a folder, Claude Code asks this before loading anything. Say yes in your work folder: until then, augmented brain cannot load your notes.</li><li>**Windows: accents look broken (<code>sesiÃ³n</code>).** Windows PowerShell 5.1 misreads what other programs write when it captures it (a redirection, a remote session). The text is right: in Git Bash, or in a window, it shows well.</li><li><strong>Claude asks for a paid plan.</strong> Claude Code needs Pro or above.</li><li><strong>Something else.</strong> See <a href="troubleshooting.html">Troubleshooting</a>, or tell us in <a href="https://github.com/icalvete/augmented-brain/issues">the project's issues</a>, with what showed up on screen.</li></ul>
   <nav class="pager" aria-label="Previous / Next">
     <a class="prev" href="getting-started.html"><span>← Previous</span>Getting started</a>
-    <a class="next" href="spaces.html"><span>Next →</span>Spaces</a>
+    <a class="next" href="import.html"><span>Next →</span>Bring in a memory you already have</a>
   </nav>
 </main>
 </div>
