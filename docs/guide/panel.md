@@ -262,7 +262,9 @@ session settings, profile and your secrets' names),
 kept only on this computer, newest first, with when and who changed it. **What it
 changed** shows the lines of each one; **Go back to this one** makes it the
 configuration again, keeping the one you had as a version first. It asks you to tick a
-box, and warns first when the guard's lists would change, with what. They are never in
+box, and warns first when the guard's lists would change, with what. Afterwards, Claude
+Code tells you in your open sessions what changed in the lists, and also in what
+Claude saves on its own, the model you expect or remote access. They are never in
 the backup: your notes are, with their own history. From another device
 the page only shows. See [Configuration versions](config-history.md).
 

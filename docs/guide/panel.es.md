@@ -267,7 +267,9 @@ ajustes de sesión, perfil y los nombres de tus secretos),
 guardadas solo en este ordenador, la más reciente primero, con cuándo y quién la cambió.
 **Qué cambió** enseña las líneas de cada una; **Volver a esta** la convierte otra vez en
 la configuración, guardando antes como versión la que tenías. Pide marcar una casilla, y
-avisa antes si cambiarían las listas del guardia, con qué. Nunca van en la copia de
+avisa antes si cambiarían las listas del guardia, con qué. Después, Claude Code te
+cuenta en tus sesiones abiertas qué cambió en las listas, y también en lo que Claude
+guarda solo, el modelo que esperas o el acceso remoto. Nunca van en la copia de
 seguridad: tus notas sí, con su propia historia. Desde otro dispositivo la
 página solo enseña. Mira [Versiones de la configuración](config-history.es.md).
 

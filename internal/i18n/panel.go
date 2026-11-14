@@ -278,6 +278,31 @@ var panelMessages = map[string]msg{
 		en: "Going back to a version is only from this computer's panel.",
 		es: "Volver a una versión solo se puede desde el panel de este ordenador.",
 	},
+	// Shown under "the guard's lists:" (hook.guardnotice), after going back to a version.
+	"panel.versions.notice": {
+		en: "a version brought back in the panel also changed: %s",
+		es: "una versión recuperada en el panel también cambió: %s",
+	},
+	"panel.versions.notice.trust.tell": {
+		en: "what the assistant saves on its own (now it saves rules, your profile and the guard's lists without asking, and you are told)",
+		es: "lo que el asistente guarda solo (ahora guarda reglas, tu perfil y las listas del guardia sin preguntar, y se te avisa)",
+	},
+	"panel.versions.notice.trust.ask": {
+		en: "what the assistant saves on its own (now it asks you before it saves a rule, your profile or the guard's lists)",
+		es: "lo que el asistente guarda solo (ahora te pregunta antes de guardar una regla, tu perfil o las listas del guardia)",
+	},
+	"panel.versions.notice.model": {
+		en: "the model you expect to answer (now %s)",
+		es: "el modelo que esperas que conteste (ahora %s)",
+	},
+	"panel.versions.notice.nomodel": {
+		en: "the model you expect to answer (now none: it is not checked)",
+		es: "el modelo que esperas que conteste (ahora ninguno: no se comprueba)",
+	},
+	"panel.versions.notice.remote": {
+		en: "remote access (remote.toml)",
+		es: "el acceso remoto (remote.toml)",
+	},
 	"panel.versions.gone": {
 		en: "That version is no longer kept: reload the page.",
 		es: "Esa versión ya no se guarda: recarga la página.",
