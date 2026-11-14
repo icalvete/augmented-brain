@@ -37,6 +37,11 @@ jobs:
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
       - name: Vet
         run: go vet ./...
+      # The version is fixed, as for actionlint: a new staticcheck can bring new warnings
+      # on its own, and a check that changes by itself is not one to trust.
+      - name: staticcheck
+        if: matrix.os == 'ubuntu-latest'
+        run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
       - name: Test
         run: go test -race ./...
       - name: The guard's tests cover no less than before

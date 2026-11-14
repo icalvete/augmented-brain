@@ -107,7 +107,7 @@ go build ./cmd/augmented-brain
 scripts/precheck.sh            # before every push
 ```
 
-`scripts/precheck.sh` is what CI would say, in about a minute: format, vet and test
+`scripts/precheck.sh` is what CI would say, in about a minute: format, vet, staticcheck and test
 builds for Linux, Windows and macOS, the tests, the guard's coverage floor, privacy, the
 generated guides, the changelog entries and the third-party notices. The `pre-push` hook
 runs it (`git config core.hooksPath .githooks`). Never push without it.
