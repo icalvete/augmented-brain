@@ -119,6 +119,8 @@ Claude in the terminal instead, in your work space. Next times:
 The first time, Claude introduces itself and asks six questions, one at a time, telling
 you what each one is for: who you are, what you look after, how you want answers, what
 must not be touched, which tools you use and who you work with. You can skip any of them.
+If you write code, it also asks in which repositories it may commit: you add them
+yourself, on the panel's Guard page, and Claude offers to open it.
 
 At the end it shows what it saved and offers to set up the backup. Say yes: your notes go
 to a private repository of yours, and losing the computer loses nothing. It needs a
@@ -1385,6 +1387,10 @@ The easiest way is the panel's **Guard** page. Adding a repository to the list w
 Claude commits and pushes without asking shows a warning, and you must tick a box that
 says you understand. Add only repositories where a mistake can be undone.
 
+When the guard stops a commit, Claude tells you so and where to allow it: this page,
+which opens when you type `/brain:panel`. In the first-session interview, if you write
+code, Claude asks which repositories they are and offers to open it for you.
+
 **Merging a pull request is a push too.** `gh pr merge`, `glab mr merge` and `glab mr
 accept` follow the same lists. gh and glab have no `-C`, so the command must say which
 repository it is:
@@ -2201,9 +2207,10 @@ Every list the guard answers to, in one page, to read and change:
 - **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
   warns that the other lists decide again for it (if one lets Claude commit and push
   there, it will), and asks you to type the folder's name.
-- **Repositories** each space lets Claude commit in, or ask you about, with a form to add
-  or remove. The list where Claude commits and pushes without asking carries a warning,
-  and adding to it asks you to tick that you understand.
+- **Repositories** where Claude commits and pushes without asking, and where it asks you
+  each time: one list each, with every space's repositories and the space each belongs
+  to, and a form to add (you choose the space) or remove. Adding to the first warns what
+  it allows and asks you to tick that you understand.
 - **Root exceptions**, with the date each ends (the ones that ended are marked). Adding
   one warns what it allows and asks you to type the machine's name again.
 - **Production profiles** and **untouchable machines**.
@@ -2217,6 +2224,11 @@ Every list the guard answers to, in one page, to read and change:
 
 How it behaves:
 
+- Each setting says how it is now. The forms to add or change are folded away under
+  their title (**Add a repository**, **Change**…): click it to open one. One that could
+  not be saved comes back open, with what you typed and the error.
+- A repository whose folder is not on this computer is saved anyway, and the list says
+  so next to it: most often its name was typed wrong.
 - Your comments in `config.toml` stay where they are.
 - If the lists are not the ones you last saw (something changed them outside this page),
   a notice says what was added and what was removed, list by list, compared with the
@@ -3388,7 +3400,8 @@ augmented-brain check
 Options go before or after the other arguments, with one dash or two (`--all` or
 `-all`). A command that gets an argument it does not take says so, and does nothing.
 Each section gives the command's syntax: `<…>` is something you fill in, `[…]` can be
-left out, and `|` separates choices.
+left out, and `|` separates choices. In the terminal, `augmented-brain help <command>`
+(or `<command> --help`) prints the start of its section.
 
 Some commands are started for you, not by you: Claude Code starts `mcp` and `hook`,
 `panel` starts `panel serve`, and on Linux a timer runs `remote watch`. They are here so
@@ -3725,10 +3738,12 @@ same.
 The panel itself, running in the background. `augmented-brain panel` starts it; you never
 run it by hand. It stops on its own after 30 minutes without use.
 
+Syntax: `augmented-brain panel serve`
+
 ## augmented-brain remote
 
 Keeps Claude reachable from another computer or your phone, also after a reboot. It is
-three commands, `install`, `uninstall` and `status`, each with its own section below.
+three commands, `install`, `uninstall` and `status`, each with its own section.
 It uses a `systemd` user service on Linux, a LaunchAgent on macOS and a task of the Task
 Scheduler on Windows. On Linux a fourth one, `watch`, is run by a timer, not by you.
 Without a subcommand, or with another, `remote` prints its usage.
@@ -3855,7 +3870,7 @@ in its journal.
 
 Opens a session of its own for one task, so that from another computer you can work on
 several tasks at once, each in its own session. It is four commands, `start`, `stop`,
-`restart` and `list`, each with its own section below. `start`, `stop` and `list` work
+`restart` and `list`, each with its own section. `start`, `stop` and `list` work
 on Linux only for now: they have been tried only there. `restart` works on Linux and
 macOS. Without a subcommand, or with another, `session` prints its usage. Why and how to
 use them: [A session per task](https://icalvete.github.io/augmented-brain/guide/task-sessions.html).
@@ -4024,7 +4039,7 @@ augmented-brain session list
 
 Follows something that takes a while and says how it ended, so a session can leave it
 running and get on with other work. For now it follows one thing, a pull request: see
-`watch pr` below. Without a subcommand, `watch` prints its usage.
+`watch pr`. Without a subcommand, `watch` prints its usage.
 
 ## augmented-brain watch pr
 
@@ -4069,8 +4084,7 @@ pull request was merged, and 1 otherwise.
 
 ## augmented-brain config
 
-The versions of your configuration: two commands, `history` and `restore`, each with its
-own section below. Without a subcommand, `config` prints its usage. See
+The versions of your configuration: two commands, `history` and `restore`, each with its own section. Without a subcommand, `config` prints its usage. See
 [Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html).
 
 ## augmented-brain config history
@@ -4213,6 +4227,8 @@ See [Updating and uninstalling](https://icalvete.github.io/augmented-brain/guide
 Runs the MCP server: the tools Claude uses to keep your tasks and notes. **Claude Code
 starts it**, through the plugin; you do not.
 
+Syntax: `augmented-brain mcp`
+
 It talks over its input and output. It finds the space again on every call, from the
 folder Claude works in. The tools are in [MCP tools](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html).
 
@@ -4273,16 +4289,23 @@ augmented-brain version
 
 ## augmented-brain help
 
-Prints the list of commands, in your language.
+Prints the list of commands, in your language. With a command, what that command does,
+its syntax, its options and an example.
 
-Syntax: `augmented-brain help`
+Syntax: `augmented-brain help [<command>]`
 
 ```bash
 augmented-brain help
+augmented-brain help session start
 ```
 
-`--help` and `-h` do the same. Running `augmented-brain` with nothing prints the list
-too, as an error (exit code 2).
+`--help` and `-h` do the same: alone they print the list, and after a command its help
+(`augmented-brain panel --help`). They need no configuration, so they work before
+`init` too. Running `augmented-brain` with nothing prints the list as well, as an error
+(exit code 2).
+
+What each command prints is the start of its section on this page: the first paragraph,
+the syntax, the options and the first example.
 
 ## Exit codes
 

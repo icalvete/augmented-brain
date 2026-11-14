@@ -12,6 +12,7 @@
   "config history": [],
   "config restore": [],
   "doctor": [],
+  "help": [],
   "hook": [
     "event post-compact",
     "event pre-tool-use",

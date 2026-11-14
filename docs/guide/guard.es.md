@@ -86,6 +86,10 @@ donde Claude hace commit y push sin preguntar, sale un aviso y tienes que marcar
 casilla que dice que lo entiendes. Añade solo repositorios donde un error se pueda
 deshacer.
 
+Cuando el guardia para un commit, Claude te lo dice y te cuenta dónde permitirlo: esta
+página, que se abre al escribir `/brain:panel`. En la entrevista de la primera sesión, si
+programas, Claude te pregunta qué repositorios son y se ofrece a abrírtela.
+
 **Fusionar una pull request también es un push.** `gh pr merge`, `glab mr merge` y `glab
 mr accept` van por las mismas listas. gh y glab no tienen `-C`, así que el comando tiene
 que decir qué repositorio es:

@@ -221,9 +221,10 @@ Todas las listas a las que responde el guardia, en una página, para leerlas y c
 - **Repositorios intocables**, donde Claude nunca hace commit, push ni merge. Quitar uno
   avisa de que las demás listas vuelven a decidir sobre él (si una deja a Claude hacer
   commit y push ahí, lo hará), y te pide escribir el nombre de la carpeta.
-- **Repositorios** donde cada espacio deja que Claude haga commit, o te pregunte, con un
-  formulario para añadir o quitar. La lista donde Claude hace commit y push sin preguntar
-  lleva un aviso, y añadir a ella te pide marcar que lo entiendes.
+- **Repositorios** donde Claude hace commit y push sin preguntar, y donde te pregunta
+  cada vez: una lista de cada, con los repositorios de todos tus espacios y el espacio de
+  cada uno, y un formulario para añadir (eliges el espacio) o quitar. Añadir a la primera
+  avisa de lo que permite y te pide marcar que lo entiendes.
 - **Excepciones de root**, con la fecha en que acaba cada una (las que ya acabaron se
   marcan). Añadir una avisa de lo que permite y te pide escribir otra vez el nombre de la
   máquina.
@@ -238,6 +239,11 @@ Todas las listas a las que responde el guardia, en una página, para leerlas y c
 
 Cómo se comporta:
 
+- Cada ajuste dice cómo está ahora. Los formularios para añadir o cambiar van plegados
+  bajo su título (**Añadir un repositorio**, **Cambiar**…): púlsalo para abrir uno. Si uno
+  no se pudo guardar, vuelve abierto, con lo que escribiste y el error.
+- Un repositorio cuya carpeta no está en este ordenador se guarda igual, y la lista lo
+  dice a su lado: casi siempre es que el nombre está mal escrito.
 - Tus comentarios de `config.toml` se quedan donde están.
 - Si las listas no son las que viste por última vez (algo las cambió fuera de esta
   página), un aviso dice lo añadido y lo quitado, lista por lista, frente a las listas

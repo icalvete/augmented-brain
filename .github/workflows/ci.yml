@@ -192,7 +192,7 @@ jobs:
       - name: The website's pages match the guides
         run: |
           python3 scripts/build-guides.py >/dev/null
-          git diff --exit-code -- docs || { echo 'run scripts/build-guides.py and commit what it writes'; exit 1; }
+          git diff --exit-code -- docs internal/i18n/cmdhelp.go || { echo 'run scripts/build-guides.py and commit what it writes'; exit 1; }
 
   # The workflows themselves: actionlint (each one is valid and its scripts are sound)
   # and zizmor (no permissions, credentials, caches or unpinned actions that would let

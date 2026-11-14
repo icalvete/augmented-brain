@@ -385,3 +385,35 @@ func TestGuardPageRemoteOnlyShows(t *testing.T) {
 		t.Errorf("a refused change left a notice: %q", n)
 	}
 }
+
+// A repository whose folder is not on this computer, most often a name typed wrong, is
+// still saved (the guard reads the name), and the list says so next to it. A pattern
+// with * is never missing, and a folder that is there gets no warning.
+func TestGuardPageSaysAFolderIsMissing(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	sealNow(t, cfg)
+	there := filepath.Join(filepath.Dir(cfg), "work", "there")
+	if err := os.MkdirAll(there, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	gone := filepath.Join(filepath.Dir(cfg), "work", "nowhere")
+	for _, v := range []url.Values{
+		{"list": {"untouchable"}, "value": {gone}},
+		{"list": {"untouchable"}, "value": {filepath.Join(filepath.Dir(cfg), "app-*")}},
+		{"list": {"ask"}, "space": {"work"}, "value": {there}},
+	} {
+		v.Set("s", "work")
+		v.Set("op", "add")
+		if w := s.post(t, "/guard/list", v); w.Code != http.StatusSeeOther {
+			t.Fatalf("%v: %d", v, w.Code)
+		}
+	}
+	body := s.get(t, "/guard?s=work").Body.String()
+	if n := strings.Count(body, "not on this computer"); n != 1 {
+		t.Errorf("%d warnings, want 1 (for %s):\n%s", n, gone, body[:min(len(body), 4000)])
+	}
+	i := strings.Index(body, "not on this computer")
+	if i < 0 || !strings.Contains(body[max(0, i-400):i], "nowhere") {
+		t.Error("the warning is not next to the missing folder")
+	}
+}
