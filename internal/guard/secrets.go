@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 // High-confidence secret patterns only: a token with its exact shape, never words such
@@ -15,32 +16,38 @@ import (
 // each expression walks the whole text, about 2.5 MB/s for all of them; with it, the
 // whole search runs at well over 50 MB/s. A new pattern brings its test, and
 // TestFilterAgrees in secrets_filter_test.go compares the answers with and without.
-var secretPatterns = []struct {
+// They are compiled the first time a text is searched, not when the program starts:
+// most hook calls (Read, Grep, ls) never search one (G-20).
+var secretPatterns = sync.OnceValue(func() []secretPattern {
+	return []secretPattern{
+		{regexp.MustCompile(`\bAKIA[0-9A-Z]{16}\b`), "an AWS access key", atWord("AKIA")},
+		{regexp.MustCompile(`\bASIA[0-9A-Z]{16}\b`), "an AWS temporary access key", atWord("ASIA")},
+		{regexp.MustCompile(`(?i)aws_secret_access_key\s*[=:]\s*['"]?[A-Za-z0-9/+=]{40}`), "an AWS secret key", mayAWSSecret}, // no \b: a key may end in / or +
+		{regexp.MustCompile(`\bgh[pousr]_[A-Za-z0-9]{30,}\b`), "a GitHub token", atWord("ghp_", "gho_", "ghu_", "ghs_", "ghr_")},
+		{regexp.MustCompile(`\bgithub_pat_[A-Za-z0-9_]{40,}\b`), "a GitHub token", atWord("github_pat_")},
+		{regexp.MustCompile(`\bglpat-[A-Za-z0-9_-]{20,}\b`), "a GitLab token", atWord("glpat-")},
+		{regexp.MustCompile(`\bgl(?:rt|dt|ptt|cbt|soat|ft)-[A-Za-z0-9_-]{20,}\b`), "a GitLab token", atWord("glrt-", "gldt-", "glptt-", "glcbt-", "glsoat-", "glft-")},
+		{regexp.MustCompile(`\b[rs]k_live_[0-9A-Za-z]{20,}\b`), "a Stripe secret key", atWord("rk_live_", "sk_live_")},
+		{regexp.MustCompile(`\bnpm_[A-Za-z0-9]{36}\b`), "an npm token", atWord("npm_")},
+		{regexp.MustCompile(`\bhf_[A-Za-z0-9]{30,}\b`), "a Hugging Face token", atWord("hf_")},
+		{regexp.MustCompile(`\bdckr_pat_[A-Za-z0-9_-]{20,}\b`), "a Docker Hub token", atWord("dckr_pat_")},
+		{regexp.MustCompile(`\bSG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}\b`), "a SendGrid API key", atWord("SG.")},
+		{regexp.MustCompile(`\bsk-ant-[A-Za-z0-9_-]{20,}`), "an Anthropic API key", atWord("sk-ant-")},
+		{regexp.MustCompile(`\bsk-(?:proj-)?[A-Za-z0-9_-]{40,}`), "an OpenAI API key", atWord("sk-")},
+		{regexp.MustCompile(`\bAIza[0-9A-Za-z_-]{35}`), "a Google API key", atWord("AIza")}, // no \b: a key may end in -
+		{regexp.MustCompile(`\bxox[abprs]-[A-Za-z0-9-]{10,}`), "a Slack token", atWord("xoxa-", "xoxb-", "xoxp-", "xoxr-", "xoxs-")},
+		{regexp.MustCompile(`\bAQ\.[A-Za-z0-9_-]{40,}`), "a Google AI Studio API key", atWord("AQ.")},
+		{regexp.MustCompile(`\bphx_[A-Za-z0-9]{30,}\b`), "a PostHog personal API key", atWord("phx_")}, // phc_, the project key, is public
+		{regexp.MustCompile(`\bApiKey\s+[A-Za-z0-9+/=]{30,}`), elasticKey, atWord("ApiKey")},           // without ApiKey: encodedElasticKeys
+		{regexp.MustCompile(`\b[0-9]{8,10}:[A-Za-z0-9_-]{30,}`), "a Telegram bot token", mayTelegram},
+		{regexp.MustCompile(`-----BEGIN (?:RSA |EC |OPENSSH |DSA |ENCRYPTED )?PRIVATE KEY-----`), "a private key", contains("-----BEGIN ")},
+	}
+})
+
+type secretPattern struct {
 	re   *regexp.Regexp
 	what string
 	may  func(text string) bool
-}{
-	{regexp.MustCompile(`\bAKIA[0-9A-Z]{16}\b`), "an AWS access key", atWord("AKIA")},
-	{regexp.MustCompile(`\bASIA[0-9A-Z]{16}\b`), "an AWS temporary access key", atWord("ASIA")},
-	{regexp.MustCompile(`(?i)aws_secret_access_key\s*[=:]\s*['"]?[A-Za-z0-9/+=]{40}`), "an AWS secret key", mayAWSSecret}, // no \b: a key may end in / or +
-	{regexp.MustCompile(`\bgh[pousr]_[A-Za-z0-9]{30,}\b`), "a GitHub token", atWord("ghp_", "gho_", "ghu_", "ghs_", "ghr_")},
-	{regexp.MustCompile(`\bgithub_pat_[A-Za-z0-9_]{40,}\b`), "a GitHub token", atWord("github_pat_")},
-	{regexp.MustCompile(`\bglpat-[A-Za-z0-9_-]{20,}\b`), "a GitLab token", atWord("glpat-")},
-	{regexp.MustCompile(`\bgl(?:rt|dt|ptt|cbt|soat|ft)-[A-Za-z0-9_-]{20,}\b`), "a GitLab token", atWord("glrt-", "gldt-", "glptt-", "glcbt-", "glsoat-", "glft-")},
-	{regexp.MustCompile(`\b[rs]k_live_[0-9A-Za-z]{20,}\b`), "a Stripe secret key", atWord("rk_live_", "sk_live_")},
-	{regexp.MustCompile(`\bnpm_[A-Za-z0-9]{36}\b`), "an npm token", atWord("npm_")},
-	{regexp.MustCompile(`\bhf_[A-Za-z0-9]{30,}\b`), "a Hugging Face token", atWord("hf_")},
-	{regexp.MustCompile(`\bdckr_pat_[A-Za-z0-9_-]{20,}\b`), "a Docker Hub token", atWord("dckr_pat_")},
-	{regexp.MustCompile(`\bSG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}\b`), "a SendGrid API key", atWord("SG.")},
-	{regexp.MustCompile(`\bsk-ant-[A-Za-z0-9_-]{20,}`), "an Anthropic API key", atWord("sk-ant-")},
-	{regexp.MustCompile(`\bsk-(?:proj-)?[A-Za-z0-9_-]{40,}`), "an OpenAI API key", atWord("sk-")},
-	{regexp.MustCompile(`\bAIza[0-9A-Za-z_-]{35}`), "a Google API key", atWord("AIza")}, // no \b: a key may end in -
-	{regexp.MustCompile(`\bxox[abprs]-[A-Za-z0-9-]{10,}`), "a Slack token", atWord("xoxa-", "xoxb-", "xoxp-", "xoxr-", "xoxs-")},
-	{regexp.MustCompile(`\bAQ\.[A-Za-z0-9_-]{40,}`), "a Google AI Studio API key", atWord("AQ.")},
-	{regexp.MustCompile(`\bphx_[A-Za-z0-9]{30,}\b`), "a PostHog personal API key", atWord("phx_")}, // phc_, the project key, is public
-	{regexp.MustCompile(`\bApiKey\s+[A-Za-z0-9+/=]{30,}`), elasticKey, atWord("ApiKey")},           // without ApiKey: encodedElasticKeys
-	{regexp.MustCompile(`\b[0-9]{8,10}:[A-Za-z0-9_-]{30,}`), "a Telegram bot token", mayTelegram},
-	{regexp.MustCompile(`-----BEGIN (?:RSA |EC |OPENSSH |DSA |ENCRYPTED )?PRIVATE KEY-----`), "a private key", contains("-----BEGIN ")},
 }
 
 // examples are the made-up keys AWS's own documentation uses: they open no account, and
@@ -104,7 +111,7 @@ func idChars(b []byte) bool {
 
 // FindSecret returns what kind of secret text contains, or "" if none.
 func FindSecret(text string) string {
-	for _, p := range secretPatterns {
+	for _, p := range secretPatterns() {
 		if !p.may(text) {
 			continue
 		}
@@ -128,7 +135,7 @@ func CountSecrets(text string) int {
 // RedactSecrets replaces each secret in text (AWS's examples apart) with a marker, for
 // text written by a program, such as a conversation summary, that must never hold one.
 func RedactSecrets(text string) string {
-	for _, p := range secretPatterns {
+	for _, p := range secretPatterns() {
 		if !p.may(text) {
 			continue
 		}
