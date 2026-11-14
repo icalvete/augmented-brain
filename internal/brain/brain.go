@@ -334,8 +334,14 @@ type UpdateInput struct {
 	// tool never sets it (a blank there keeps the field); the panel does, when the
 	// user empties a field. A live task still needs waiting_on and next.
 	Clear []string
+	// Title is the task's new title; its id stays, so every link to it still works.
+	Title string
 	// WatchDate and WatchWhat add a watch date; WatchDone marks those of that day done.
 	WatchDate, WatchWhat, WatchDone string
+	// WatchDrop takes out the watch dates of that day, done or not; with WatchDropWhat,
+	// only the one that says that. It runs before WatchDate, so both together move one:
+	// the journal then says it moved.
+	WatchDrop, WatchDropWhat string
 	// Reopen says why a closed task opens again: a closed task changes status only with
 	// it, so it never reopens by a slip.
 	Reopen string
@@ -360,6 +366,11 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 	h := &cp.Header
 	h.Watch = slices.Clone(h.Watch) // the note in the index stays as it was until saved
 	old := h.Status
+	var lines []string // journal lines for what the header does not show
+	if t := strings.TrimSpace(in.Title); t != "" && t != h.Title {
+		lines = append(lines, fmt.Sprintf(b.text("title"), h.Title, memory.OneLine(t)))
+		h.Title = t
+	}
 	if in.Status != "" {
 		h.Status = in.Status
 	}
@@ -392,6 +403,25 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 			return nil, i18n.Errorf("err.task.clear", f)
 		}
 	}
+	var dropped []memory.Watch
+	if in.WatchDrop != "" {
+		if err := checkDate(in.WatchDrop); err != nil {
+			return nil, err
+		}
+		what := memory.OneLine(in.WatchDropWhat)
+		kept := h.Watch[:0:0]
+		for _, w := range h.Watch {
+			if w.Date == in.WatchDrop && (what == "" || w.What == what) {
+				dropped = append(dropped, w)
+				continue
+			}
+			kept = append(kept, w)
+		}
+		if len(dropped) == 0 {
+			return nil, i18n.Errorf("err.watch.drop", in.ID, in.WatchDrop)
+		}
+		h.Watch = kept
+	}
 	if in.WatchDate != "" {
 		if err := checkDate(in.WatchDate); err != nil {
 			return nil, err
@@ -413,6 +443,16 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 		if !hit {
 			return nil, i18n.Errorf("err.watch.none", in.ID, in.WatchDone)
 		}
+	}
+	for _, w := range dropped {
+		if len(dropped) == 1 && in.WatchDate != "" && memory.OneLine(in.WatchWhat) == w.What {
+			lines = append(lines, fmt.Sprintf(b.text("watch.moved"), w.Date, in.WatchDate, w.What))
+			continue
+		}
+		lines = append(lines, fmt.Sprintf(b.text("watch.dropped"), w.Date, w.What))
+	}
+	for _, l := range lines {
+		cp.Body = b.journalLine(cp.Body, l)
 	}
 	if h.Status == "closed" && old != "closed" {
 		if err := b.openChildren(h.ID); err != nil {
@@ -776,26 +816,9 @@ func (b *Brain) open(c *config.Config, s *config.Space) (*Brain, error) {
 }
 
 func (b *Brain) capture(text, remind, from string) error {
-	text = memory.OneLine(text)
-	if text == "" {
-		return i18n.Errorf("err.capture.empty")
-	}
-	if err := tooLong("err.what.capture", text, maxCapture, longText); err != nil {
+	text, err := b.captureText(text, remind, from)
+	if err != nil {
 		return err
-	}
-	if from != "" {
-		text += fromMark(from)
-	} else {
-		text = b.ownWords(text, true)
-	}
-	if remind != "" {
-		if err := checkDate(remind); err != nil {
-			return err
-		}
-		text += " (remind: " + remind + ")"
-	}
-	if what := guard.FindSecret(text); what != "" {
-		return secretError(what)
 	}
 	// The inbox is small: it is written whole, so a crash never leaves half a line, and
 	// a last line with no newline (written by hand) keeps the capture on a line of its own.
@@ -808,6 +831,33 @@ func (b *Brain) capture(text, remind, from string) error {
 	}
 	data = append(data, memory.DatedLine(b.today(), text)...)
 	return paths.WriteAtomicNoLink(b.inboxPath(), data, 0o600)
+}
+
+// captureText is what an inbox line holds after its date: the text, the origin of a
+// capture sent from another space and the reminder, checked.
+func (b *Brain) captureText(text, remind, from string) (string, error) {
+	text = memory.OneLine(text)
+	if text == "" {
+		return "", i18n.Errorf("err.capture.empty")
+	}
+	if err := tooLong("err.what.capture", text, maxCapture, longText); err != nil {
+		return "", err
+	}
+	if from != "" {
+		text += fromMark(from)
+	} else {
+		text = b.ownWords(text, true)
+	}
+	if remind != "" {
+		if err := checkDate(remind); err != nil {
+			return "", err
+		}
+		text += " (remind: " + remind + ")"
+	}
+	if what := guard.FindSecret(text); what != "" {
+		return "", secretError(what)
+	}
+	return text, nil
 }
 
 // NewArea creates an area: a responsibility with no end date.

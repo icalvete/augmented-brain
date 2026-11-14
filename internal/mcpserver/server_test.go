@@ -647,3 +647,44 @@ func TestRuleChangeAndRetire(t *testing.T) {
 		t.Errorf("retired twice: %s", out)
 	}
 }
+
+// task_step corrects, moves and removes steps; task_update changes the title and takes
+// out or moves a watch date.
+func TestFixThroughTools(t *testing.T) {
+	cs := connect(t, space(t))
+	if out, isErr := call(t, cs, "task_new", map[string]any{"title": "Garden"}); isErr {
+		t.Fatal(out)
+	}
+	id := "task-garden"
+	for _, s := range []string{"Dig", "Plant", "Water"} {
+		call(t, cs, "task_step", map[string]any{"id": id, "add": s})
+	}
+	if out, isErr := call(t, cs, "task_step", map[string]any{"id": id, "number": 2, "edit": "Plant roses"}); isErr || !strings.Contains(out, "2. [ ] Plant roses") {
+		t.Errorf("edit: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_step", map[string]any{"id": id, "text": "Water", "move_to": 1}); isErr || !strings.Contains(out, "1. [ ] Water\n2. [ ] Dig") {
+		t.Errorf("move: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_step", map[string]any{"id": id, "number": 2, "remove": true}); isErr || strings.Contains(out, "Dig") {
+		t.Errorf("remove: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_step", map[string]any{"id": id, "number": 1, "remove": true, "edit": "x"}); !isErr {
+		t.Errorf("two changes at once: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_update", map[string]any{"id": id, "title": "Rose garden"}); isErr || !strings.Contains(out, "Rose garden") {
+		t.Errorf("title: %s", out)
+	}
+	call(t, cs, "task_update", map[string]any{"id": id, "watch_date": "2026-12-01", "watch_what": "Feed"})
+	if out, isErr := call(t, cs, "task_update", map[string]any{"id": id, "watch_drop": "2026-12-01", "watch_date": "2026-12-08", "watch_what": "Feed"}); isErr {
+		t.Errorf("move a watch date: %s", out)
+	}
+	if out, _ := call(t, cs, "task_get", map[string]any{"id": id}); !strings.Contains(out, "moved from 2026-12-01 to 2026-12-08: Feed") {
+		t.Errorf("after the move: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_update", map[string]any{"id": id, "watch_drop": "2026-12-08"}); isErr {
+		t.Errorf("drop a watch date: %s", out)
+	}
+	if out, _ := call(t, cs, "task_get", map[string]any{"id": id}); !strings.Contains(out, "taken out: 2026-12-08 · Feed") {
+		t.Errorf("after the drop: %s", out)
+	}
+}

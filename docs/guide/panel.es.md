@@ -82,8 +82,11 @@ paradas, o las que esperan a una persona. Una tarea que nadie ha cambiado en 14 
 marcada «parada N días». Al final, plegadas, las de **Algún día** y las **Cerradas**.
 
 Abre una. Primero lo esencial, después sus pasos y lo que puedes hacer con ella: escribir
-en su diario, cambiar su estado o su siguiente paso, marcar sus pasos, aparcarla o
-cerrarla. Debajo, las demás secciones plegadas, y el diario con lo último arriba. También
+en su diario, cambiar su título, su estado o su siguiente paso, marcar sus pasos,
+aparcarla o cerrarla. En **Corregir, mover o quitar pasos** cambias el texto de un paso,
+lo subes o lo bajas, o lo quitas del plan. Cada fecha para revisar se puede mover a otro
+día o quitar. El diario dice qué cambió: el título anterior, un paso quitado, una fecha
+movida. Debajo, las demás secciones plegadas, y el diario con lo último arriba. También
 puedes abrir tareas nuevas. Si un estado se salta fases, el diario las nombra. Si una
 tarea espera a una persona de la que tienes nota, «espera a» te lleva a ella.
 
@@ -96,8 +99,8 @@ elige su fase, di qué viene ahora y, si quieres, por qué. Su diario dice que s
 desde el panel, con tu motivo.
 
 Al guardar una tarea, solo se guarda lo que cambiaste en la página. Si Claude cambió otra
-cosa mientras tanto, se queda. Un paso solo se marca si sigue diciendo lo que mostraba la
-página.
+cosa mientras tanto, se queda. Un paso solo se marca, se corrige, se mueve o se
+quita si sigue diciendo lo que mostraba la página.
 
 ## Sesiones
 
@@ -114,13 +117,15 @@ Tus sesiones de Claude en este ordenador, de los últimos 30 días. Está en el 
 ## Recordatorios
 
 Las fechas para revisar de tus tareas (también de las cerradas) y los recordatorios del
-buzón: primero lo atrasado, luego los próximos 30 días. Marca uno como hecho, o añade a una tarea una fecha para revisar. Un recordatorio que no es
+buzón: primero lo atrasado, luego los próximos 30 días. Marca uno como hecho, o añade a una tarea una fecha para revisar. Para mover una fecha
+o quitarla, abre su tarea. Un recordatorio que no es
 de ninguna tarea es una captura con fecha: se crea en el [Buzón](#buzón).
 
 ## Buzón
 
 Apunta una idea, con una fecha para que te la recuerde si quieres. Márcala como resuelta,
-o conviértela en tarea.
+o conviértela en tarea. **Corregir** cambia el texto de un apunte o su recordatorio (vacío
+lo quita); su fecha se queda, y también el espacio del que vino.
 
 ## Revisión semanal
 

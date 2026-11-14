@@ -273,6 +273,14 @@ var errorMessages = map[string]msg{
 		en: "%q matches several steps: %s; give its number",
 		es: "%q coincide con varios pasos: %s; da su número",
 	},
+	"err.step.change": {
+		en: "say one change for the step: its new text, remove it, or where it moves to",
+		es: "di un solo cambio para el paso: su texto nuevo, quitarlo o adónde se mueve",
+	},
+	"err.watch.drop": {
+		en: "task %s has no watch date on %s to take out",
+		es: "la tarea %s no tiene ninguna fecha para revisar el %s que quitar",
+	},
 	"err.step.empty": {
 		en: "the step is empty",
 		es: "el paso está vacío",

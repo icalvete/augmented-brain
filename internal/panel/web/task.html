@@ -16,8 +16,10 @@
 {{if .MissingRepos}}<p class="flash warn">{{range $i, $r := .MissingRepos}}{{if $i}}, {{end}}<code>{{$r}}</code>{{end}}: {{t "repos.missing"}}</p>{{end}}
 
 {{if .Watch}}<h2>{{t "watch"}}</h2><ul class="plain">
-{{range .Watch}}<li>{{if .Done}}<s><time datetime="{{.Date}}" title="{{.Date}}">{{day .Date}}</time> · {{inline .What}}</s>{{else}}<time datetime="{{.Date}}" title="{{.Date}}">{{day .Date}}</time> · {{inline .What}}
-  <form method="post" action="{{$.Base}}/watch/done" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "date" .Date)}}<button type="submit" class="small">{{t "done"}}</button></form>{{end}}</li>
+{{range $i, $w := .Watch}}<li>{{if .Done}}<s><time datetime="{{.Date}}" title="{{.Date}}">{{day .Date}}</time> · {{inline .What}}</s>{{else}}<time datetime="{{.Date}}" title="{{.Date}}">{{day .Date}}</time> · {{inline .What}}
+  <form method="post" action="{{$.Base}}/watch/done" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "date" .Date)}}<button type="submit" class="small">{{t "done"}}</button></form>{{end}}
+  {{if $.D.Live}}{{$k := printf "/watch/move#w%d" $i}}<form method="post" action="{{$.Base}}/watch/move" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "date" .Date "what" .What "form" (printf "w%d" $i))}}<input type="date" name="to" required aria-label="{{t "watch.move"}}: {{.What}}" value="{{$.Val $k "to" .Date}}"><button type="submit" class="small">{{t "watch.move"}}</button></form>{{template "ferr" ($.FormErr $k)}}
+  <form method="post" action="{{$.Base}}/watch/drop" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "date" .Date "what" .What)}}<button type="submit" class="small" aria-label="{{t "watch.drop"}}: {{.What}}">{{t "watch.drop"}}</button></form>{{end}}</li>
 {{end}}</ul>{{end}}
 
 {{if or .Live .Steps}}<h2 id="steps">{{t "steps"}}{{if .StepCount}} <span class="hint">· {{.StepCount}}</span>{{end}}</h2>
@@ -31,6 +33,20 @@
   <input name="step" required maxlength="500" aria-label="{{t "f.step"}}" placeholder="{{t "f.step"}}" value="{{$.Val "/task/step#add" "step" ""}}">
   <button type="submit">{{t "step.add"}}</button>
 </form>{{template "ferr" ($.FormErr "/task/step#add")}}{{end}}
+{{if and .Live .Steps}}<details class="box"{{if $.Open "/task/step#fix"}} open{{end}}>
+  <summary>{{t "steps.fix"}}</summary>
+  <p class="hint">{{t "steps.fix.hint"}}</p>
+  <ol class="stack">
+  {{range .Steps}}{{$k := printf "/task/step#s%d" .N}}<li><form method="post" action="{{$.Base}}/task/step" class="row">
+    {{template "fields" (fields $ "id" $.D.H.ID "n" .N "text" .Text "form" (printf "s%d" .N))}}
+    <input name="edit" required maxlength="500" aria-label="{{t "f.step"}} {{.N}}" value="{{$.Val $k "edit" .Text}}">
+    <button type="submit" name="op" value="edit" class="small">{{t "save"}}</button>
+    <button type="submit" name="op" value="up" class="small" formnovalidate aria-label="{{t "step.up"}}: {{.Text}}" title="{{t "step.up"}}">↑</button>
+    <button type="submit" name="op" value="down" class="small" formnovalidate aria-label="{{t "step.down"}}: {{.Text}}" title="{{t "step.down"}}">↓</button>
+    <button type="submit" name="op" value="remove" class="small" formnovalidate aria-label="{{t "remove"}}: {{.Text}}">{{t "remove"}}</button>
+  </form>{{template "ferr" ($.FormErr $k)}}</li>
+  {{end}}</ol>
+</details>{{end}}
 
 {{if .Children}}<h2>{{t "subtasks"}}</h2>
 <ul class="cards">
@@ -70,7 +86,8 @@
 <details class="box"{{if $.Open "/task/update"}} open{{end}}>
   <summary>{{t "task.edit"}}</summary>
   <form method="post" action="{{$.Base}}/task/update" class="stack">
-    {{template "fields" (fields $ "id" .H.ID "orig_status" .H.Status "orig_waiting_on" .H.WaitingOn "orig_next" .H.Next "orig_summary" .H.Summary "orig_area" .H.Area)}}
+    {{template "fields" (fields $ "id" .H.ID "orig_title" .H.Title "orig_status" .H.Status "orig_waiting_on" .H.WaitingOn "orig_next" .H.Next "orig_summary" .H.Summary "orig_area" .H.Area)}}
+    <label>{{t "f.title"}} <input name="title" value="{{$.Val "/task/update" "title" .H.Title}}" required maxlength="300"></label>
     <label>{{t "f.status"}} <select name="status">{{range .Phases}}<option value="{{.Value}}"{{if $.On "/task/update" "status" .Value .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
     <label>{{t "waits"}} <input name="waiting_on" value="{{$.Val "/task/update" "waiting_on" .H.WaitingOn}}" maxlength="200"></label>
     <label>{{t "next"}} <input name="next" value="{{$.Val "/task/update" "next" .H.Next}}" maxlength="500"></label>

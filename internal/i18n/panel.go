@@ -1172,9 +1172,21 @@ var panelMessages = map[string]msg{
 		en: "Plan updated.",
 		es: "Plan actualizado.",
 	},
+	"panel.ok.task.step.remove": {
+		en: "Step taken out of the plan.",
+		es: "Paso quitado del plan.",
+	},
 	"panel.ok.watch.add": {
 		en: "Watch date added.",
 		es: "Fecha para mirar añadida.",
+	},
+	"panel.ok.watch.drop": {
+		en: "Watch date taken out.",
+		es: "Fecha para revisar quitada.",
+	},
+	"panel.ok.watch.move": {
+		en: "Watch date moved.",
+		es: "Fecha para revisar movida.",
 	},
 	"panel.ok.watch.done": {
 		en: "Watch date marked done.",
@@ -1183,6 +1195,10 @@ var panelMessages = map[string]msg{
 	"panel.ok.inbox.capture": {
 		en: "Written down in the inbox.",
 		es: "Apuntado en el buzón.",
+	},
+	"panel.ok.inbox.edit": {
+		en: "Capture corrected.",
+		es: "Apunte corregido.",
 	},
 	"panel.ok.inbox.done": {
 		en: "Taken out of the inbox.",
@@ -1468,6 +1484,34 @@ var panelMessages = map[string]msg{
 		en: "you",
 		es: "ti",
 	},
+	"panel.steps.fix": {
+		en: "Correct, move or remove steps",
+		es: "Corregir, mover o quitar pasos",
+	},
+	"panel.steps.fix.hint": {
+		en: "Each change goes into the journal. A step taken out is gone from the plan, but the journal still says what it was.",
+		es: "Cada cambio queda en el diario. Un paso quitado sale del plan, pero el diario sigue diciendo cuál era.",
+	},
+	"panel.step.up": {
+		en: "Move up",
+		es: "Subir",
+	},
+	"panel.step.down": {
+		en: "Move down",
+		es: "Bajar",
+	},
+	"panel.remove": {
+		en: "Remove",
+		es: "Quitar",
+	},
+	"panel.watch.move": {
+		en: "Move to",
+		es: "Mover al",
+	},
+	"panel.watch.drop": {
+		en: "Take out",
+		es: "Quitar",
+	},
 	"panel.save": {
 		en: "Save",
 		es: "Guardar",
@@ -1587,6 +1631,14 @@ var panelMessages = map[string]msg{
 	"panel.inbox.hint": {
 		en: "The weekly review goes through the inbox: each capture becomes a task or knowledge, or is dropped. Make one a task here, or mark it as dealt with when it is.",
 		es: "La revisión semanal repasa el buzón: cada apunte se convierte en tarea o en conocimiento, o se descarta. Aquí puedes convertirlo en tarea, o marcarlo como resuelto cuando lo esté.",
+	},
+	"panel.inbox.edit": {
+		en: "Correct",
+		es: "Corregir",
+	},
+	"panel.inbox.edit.hint": {
+		en: "Its date stays, and so does the space it came from. Leave the reminder empty to remove it.",
+		es: "Su fecha se queda, y también el espacio del que vino. Deja el recordatorio vacío para quitarlo.",
 	},
 	"panel.inbox.done": {
 		en: "Dealt with",
