@@ -206,7 +206,7 @@ func readCache(cfgDir string) cache {
 
 func writeCache(cfgDir string, c cache) {
 	if data, err := json.Marshal(c); err == nil {
-		_ = paths.WriteAtomic(filepath.Join(cfgDir, cacheFile), data, 0o644)
+		_ = paths.WriteAtomicQuick(filepath.Join(cfgDir, cacheFile), data, 0o644)
 	}
 }
 

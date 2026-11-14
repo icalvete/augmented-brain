@@ -152,7 +152,7 @@ func OldServersAtStart(cfgDir, current string, now time.Time) []Server {
 		text += strconv.Itoa(s.PID) + "\n"
 	}
 	if err := os.MkdirAll(filepath.Dir(file), 0o700); err == nil {
-		_ = paths.WriteAtomic(file, []byte(text), 0o600)
+		_ = paths.WriteAtomicQuick(file, []byte(text), 0o600)
 	}
 	return slices.Concat(out, found)
 }

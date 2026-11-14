@@ -57,7 +57,7 @@ func saveParts(cfgDir string, i input, space string, parts []string) bool {
 	if err != nil || os.MkdirAll(filepath.Dir(file), 0o700) != nil {
 		return false
 	}
-	return paths.WriteAtomic(file, data, 0o600) == nil
+	return paths.WriteAtomicQuick(file, data, 0o600) == nil
 }
 
 // waitParts waits, at most wait, for the parts part 1 builds for this start, and
