@@ -450,7 +450,7 @@ def header(lang, other):
     if other:
         o = "en" if lang == "es" else "es"
         switch = f'\n    <a href="{other}" hreflang="{o}" data-lang="{o}">{"English" if o == "en" else "Español"}</a>'
-    return f"""<header class="wrap top">
+    return f"""<header class="wrap wide top">
   <a class="brand" href="{home}"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="{u["main"]}">
     <a href="{docs}">{u["docs"]}</a>{switch}
@@ -515,7 +515,7 @@ document.querySelectorAll("[data-lang]").forEach(function (a) {
 
 def footer(lang):
     u = UI[lang]
-    return (f'<footer>\n  <div class="wrap"><span>{u["footer"]} · <a href="{CHANGELOG if lang == "en" else CHANGELOG_ES}">'
+    return (f'<footer>\n  <div class="wrap wide"><span>{u["footer"]} · <a href="{CHANGELOG if lang == "en" else CHANGELOG_ES}">'
             f'{"Changelog" if lang == "en" else "Registro de cambios"}</a></span></div>\n</footer>\n'
             + COPY.replace("{copy}", u["copy"]).replace("{copied}", u["copied"]) + "\n</body>\n</html>\n")
 
@@ -544,15 +544,18 @@ def page(p, lang):
     other = alternates.get("es" if lang == "en" else "en")
     if lang == "en" and not has_es(p):
         other = "index.es.html"
-    contents = ""
+    contents = aside = ""
     if len(toc) >= TOC_MIN and slug not in NO_TOC:
-        contents = (f'  <nav class="toc" aria-label="{u["onpage"]}"><p>{u["onpage"]}</p><ul>'
-                    + "".join(f'<li><a href="#{a}">{t}</a></li>' for a, t in toc) + "</ul></nav>")
+        items = "".join(f'<li><a href="#{a}">{t}</a></li>' for a, t in toc)
+        contents = f'  <nav class="toc" aria-label="{u["onpage"]}"><p>{u["onpage"]}</p><ul>{items}</ul></nav>'
+        # The same list beside the page on a wide screen, where it stays while you read;
+        # the stylesheet shows one or the other, never both.
+        aside = f'<aside class="pagetoc"><p>{u["onpage"]}</p><ul>{items}</ul></aside>\n'
     html_body = "\n".join(contents if b == "TOC" else b for b in body if b != "TOC" or contents)
     out = (head(lang, name, p["title"][L(lang)], p["desc"][L(lang)], p["line"][L(lang)], alternates)
            + header(lang, other)
            + '\n<div class="wrap docs">\n' + sidebar(lang, slug)
-           + '<main class="prose" id="main">\n' + html_body + "\n" + pager(lang, slug) + "\n</main>\n</div>\n\n"
+           + '<main class="prose" id="main">\n' + html_body + "\n" + pager(lang, slug) + "\n</main>\n" + aside + "</div>\n\n"
            + footer(lang))
     (G / name).write_text(out)
     print("ok", name)
