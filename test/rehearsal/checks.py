@@ -10,7 +10,7 @@ things (it spends a little usage). Exit code 1 when anything is BAD.
 
 Words a guard would stop in this file (the push verb, the root command) are split, so
 the file itself can be written from a session the guard watches."""
-import base64, json, os, random, re, shutil, string, subprocess, sys, tempfile, time
+import base64, json, os, random, re, shutil, signal, string, subprocess, sys, tempfile, time
 
 WIN = os.name == "nt"
 H = os.path.expanduser("~")
@@ -314,6 +314,33 @@ if len(names) > 1:
     report("capture_done takes it out", not e, t[:80])
 else:
     report("capture to another space (needs two spaces)", True, "skipped: one space")
+
+# ---- gh, for the backup: the installer offers it (AB_YES says yes); signing in to
+# GitHub is the person's, so only the start of the login is checked: a real code from
+# GitHub, never an account.
+print("##### gh and the GitHub login")
+ghexe = os.path.join(os.path.dirname(shutil.which("augmented-brain") or ""), "gh.exe" if WIN else "gh")
+report("the installer put gh next to the program", os.path.isfile(ghexe), ghexe)
+if os.path.isfile(ghexe):
+    v = subprocess.run([ghexe, "--version"], capture_output=True, text=True, **ENC)
+    report("gh runs", v.returncode == 0, v.stdout.strip().splitlines()[0] if v.stdout.strip() else v.stderr[:80])
+    m = MCP(work)
+    e, t = m.tool("backup_setup", {})
+    m.close()
+    got = re.search(r"\b[A-Z0-9]{4}-[A-Z0-9]{4}\b", t)
+    report("backup_setup starts the GitHub login, gives its code", not e and bool(got) and "github.com/login/device" in t, t[:140])
+    login = os.path.join(CFGDIR, "state", "gh-login.json")
+    kept = json.load(open(login, encoding="utf-8")) if os.path.isfile(login) else {}
+    report("the code is kept for the panel and other sessions", bool(got) and kept.get("code") == got.group(0), kept.get("code", ""))
+    m = MCP(work)
+    e, t2 = m.tool("backup_setup", {})
+    m.close()
+    report("asked again, the same code (gh still waits)", bool(got) and got.group(0) in t2, t2[:80])
+    if kept.get("pid"):
+        try:
+            os.kill(kept["pid"], signal.SIGTERM)
+        except OSError:
+            pass
 
 # ---- backup and restore on a new home
 print("##### backup and restore")
