@@ -1137,12 +1137,13 @@ command and stops it: pushing is for you. Claude tells you the change is ready, 
 push it yourself.
 
 That check is the **guard**. It reads every command Claude runs, and every file it writes,
-before it happens. It has three answers:
+before it happens, and gives one of three answers: go ahead, ask you, or stop. When it
+stops something, Claude gets the reason and what to do instead.
 
-- **Go ahead**: almost always. `ls`, `go test`, `aws --profile dev s3 ls`.
-- **Ask you**: Claude Code shows the command and waits for your yes. `aws --profile prod
-  …`, `ssh db01 …`.
-- **Stop**: the command does not run. Claude gets the reason, and what to do instead.
+The short version, next to Claude Code's own permissions, is
+[What Claude may do without asking you](https://icalvete.github.io/augmented-brain/guide/what-claude-may-do.html). This page tells the
+whole story; the lists of commands, one by one, are at the end, under
+[In detail](https://icalvete.github.io/augmented-brain/guide/guard.html#in-detail).
 
 The reasons are in your language, the `language` of your
 [configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html) (the system's while it cannot be read).
@@ -1152,75 +1153,38 @@ as text. It catches the mistakes an assistant makes, also hidden inside other co
 A program determined to get around it could. Read the
 [disclaimer](https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md).
 
+## In one minute
+
+**It stops**, and Claude gives you the command to run yourself:
+
+- a commit or a push, in any repository you have not listed (below);
+- anything in a repository you marked as untouchable: commit, push and merge;
+- becoming root (the administrator of the machine), unless you open an exception;
+- a password, token or key written in a command or a file;
+- wiping your home folder or the whole disk;
+- PowerShell, which it cannot read: Claude uses Bash instead.
+
+**It asks you first**, and nothing runs without your yes:
+
+- a commit, push or merge in a repository of your "ask" list;
+- a push that overwrites what is on the server, even where Claude may push, or one to
+  an address that is not one of the repository's remotes;
+- an `aws` command with a profile you marked as production;
+- `ssh` and the like to a machine you marked as untouchable;
+- starting a release (publishing a version);
+- root on a machine with an exception, each command, until its date;
+- a command it cannot read to the end, or one that changes its own settings;
+- saving a rule, your profile or a guard list, if you chose "ask first".
+
+**It lets the rest through**: reading, writing your notes, building, testing, ordinary
+commands. Then Claude Code's own permissions decide.
+
 ## Where it watches
 
 Everywhere. The guard reads every command in every Claude Code session on this computer,
 inside your spaces or not, and its lists hold for the whole computer. A repository that is
 not in them is closed to commits and pushes, in any project. What else changes outside
 your spaces is in [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
-
-## What it stops
-
-- **Commits and pushes.** `git commit`, `git push`, and what publishes like a push:
-  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`, and
-  the same through the API (`gh api` writing a file with `contents`, a GraphQL mutation
-  that merges or moves a branch). Unless you let Claude in a repository (below). Asking for help passes: `git commit
-  --help`, `gh pr merge --help`, `su --version`.
-- **Becoming root.** `sudo`, `su` (and `sudo-rs`, `su-rs`), `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
-  without `--user`, `ssh root@…` (also `-o User=root`), a container given the whole
-  machine (`docker run --privileged`, `-v /:/host`, `--pid=host`, the Docker socket or one
-  of the machine's disks; with `podman` and `nerdctl` too, and `kubectl debug node/…`), and on Windows `gsudo` and `runas`. Claude
-  gives you the exact command to run yourself. Running as another user (`sudo -u www-data …`) is fine.
-- **Secrets.** A token or key written in a command or in a file Claude writes. Secrets are
-  read from the system keychain, an environment variable or a secrets manager, never
-  typed in.
-- **Wiping your home folder or the whole disk.** `rm -r` of `~` or `/`, also after a
-  `cd` (`cd ~ && rm -rf .`) or with a pattern that takes everything in it (`rm -rf ~/*`,
-  `~/.*`), and on Windows however the path is written. Moving it away (`mv ~ …`) or
-  emptying it with `rsync --delete` too.
-- **PowerShell.** The guard reads the shell, not PowerShell, so it stops every PowerShell
-  command, and `cmd` or `powershell` started from Bash too. Claude runs it in Bash (Git
-  Bash on Windows) instead. You will see that block on Windows: it is expected.
-
-## What it asks you first
-
-- **Production.** An `aws` command with a profile you marked as production. It checks
-  every profile the command may use: `--profile`, `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`,
-  or `default` when none is set. The same for tools that call AWS on their own: `cdk`,
-  `sam`, `serverless`, `terraform`, `tofu`, `pulumi`, `eksctl`, `copilot`. And any other
-  program with a production profile set in the command itself (`AWS_PROFILE=prod bash
-  deploy.sh`): whatever it runs may reach AWS with it.
-- **Machines not to touch.** `ssh`, `scp`, `rsync`, `sftp`, `mosh`, `sshfs` and `autossh`
-  to a host you marked as untouchable, also when they only go through it (`-J`,
-  `ProxyJump`) or name it in `-o HostName`. `db01` and `db01.example.com` count as the same host.
-- **Starting a release workflow by hand** (`gh workflow run release`, or the same
-  through `gh api`). It publishes a version, so it is your call, but you do not need a
-  terminal: say yes only if you asked for that release now. If you say no, or nobody
-  answers, nothing starts. In `bypassPermissions` mode, where Claude Code may skip that
-  dialog, it is stopped instead. Other workflows go on; one named only by its number
-  asks too.
-- **Pushes that rewrite history**, even where Claude may push: `--force`, `--delete`,
-  `--mirror`, `--prune`, a refspec starting with `+` or `:`.
-- **Pushes to somewhere else.** A push from a repository where Claude may push, to an
-  address that is not one of its remotes (a URL, another folder). When that folder is a
-  repository of your lists, its own answer counts.
-- **git and gh told something the command does not show.** git settings that run a
-  command, bring an alias or point to another remote or settings file, however they are
-  given (`-c`, `GIT_CONFIG_PARAMETERS`, `git config`, `GIT_CONFIG_GLOBAL`); a GraphQL
-  mutation through `gh api graphql`; running a workflow again (`gh run rerun`) or
-  starting one with `repository_dispatch`; saving a gh or glab alias.
-- **What it cannot read.** A program given as a variable (`$TOOL deploy`), commands
-  nested too deep (more than four commands, one inside another: `sudo`, `ssh`, `bash -c`,
-  `find -exec`, a git alias), a command longer than 256 KB, `rm -rf "$DIR/"*` with a
-  variable that may be empty, an `rm -r .` after a `cd` it cannot follow, a script it
-  cannot read or larger than 64 KB, a script that the same command writes in a way it
-  cannot read and then runs (`curl -o x.sh … && sh x.sh`). And a shell fed what a
-  program writes (`curl … | sh`: save it to a file and run the file, and it is read), a
-  script that is a command's output (`source <(…)`), git, gh or glab told what to do by
-  a variable (`git $cmd`), `xargs` handing git or a shell the words it reads, and
-  `rm -r "$(…)"`.
-- **The guard's own settings.** Claude never changes augmented brain's configuration or
-  Claude Code's settings on its own, since a line there could switch a check off.
 
 ## Let Claude commit in a repository
 
@@ -1234,7 +1198,8 @@ git_ask_repos = ["~/code/shop"]                        # ask me each time
 ```
 
 - Claude must name the repository in the command: `git -C ~/code/blog push`.
-- A git worktree of a listed repository counts as it.
+- A git worktree (a second working folder of the same repository) counts as its
+  repository.
 - `~/code/blog-*` covers every `blog-<name>` folder next to `blog`.
 - A repository in both lists asks.
 - The lists of every space count together: a repository is yours, not the space's.
@@ -1287,70 +1252,6 @@ When a repository is in `git_ask_repos`, the question names the repository, the 
 and where the remote leads (the address, never a password): `Branch: feat/x. Remote:
 git.example.com/acme/app`. The same for merging a pull request.
 
-## Only you change the guard's lists
-
-The assistant works in the same account as you, so the guard cannot be a wall. It does
-three things so that the lists stay yours:
-
-- **It asks before a write to the guard's files** (`config.toml`, `guard.toml`,
-  `secrets.toml`, `remote.toml`, `session.toml`, the seal below, and Claude Code's
-  settings), or to what runs the guard: the plugin as Claude Code keeps it
-  (`~/.claude/plugins/cache/augmented-brain/`, `installed_plugins.json`) and the
-  `augmented-brain` program. Copying, unpacking or syncing into the folder that holds
-  one of them asks too (`cp -t`, `tar -C`, `rsync`).
-- **It denies reaching the panel.** Reading `panel.json` (the panel's key) with a tool
-  or a command, also by a pattern or by copying, archiving or searching its folder, and
-  calling a panel page from a command, are denied, however the address is written: the panel's Guard page is how you change the lists, and it works
-  with that key. `augmented-brain panel` never prints the key either: it prints a link
-  that works once, and run by Claude it prints none, nor does `augmented-brain panel
-  remote`: they ask you to run them in a terminal of your own.
-- **It notices a change it did not see.** The guard keeps a seal of its lists: taken
-  when you start a session and when you save in the panel. When Claude only adds a
-  production profile or a machine to lists you had accepted, the seal follows: adding
-  only makes the guard ask more. If the lists differ from the
-  seal, something else changed them, and a commit, push or merge that the lists would
-  let through asks first, and the Guard page and `doctor` say so, until you accept them
-  in the Guard page or you start a new session. Meanwhile the lists cannot soften the
-  guard: a root exception for this machine does not count, and every `aws` command
-  and every `ssh`, `scp` or `rsync` to another machine asks, since a profile or host
-  taken out may be what changed. A new session takes the lists as they
-  are, and Claude Code tells you so itself. When Claude Code compacts a conversation, or
-  after `/clear`, the seal stays: that is not you looking. If the seal cannot be read,
-  the guard asks too, and `doctor` says why. The Guard page shows what was added and
-  removed since then.
-- **It tells you what the panel changed.** A change to the lists made in the panel, or
-  lists accepted there, reaches you as a line from Claude Code itself, not from Claude,
-  after the next answer or message in your open sessions.
-
-What this does not stop: a script that Claude writes in line (`python -c`, a heredoc) can
-still edit the files, as it can anything your account can. The guard then notices the
-change and asks before a push, but it did not prevent it. It is a safety net, not a
-security boundary.
-
-## Asking before Claude saves a rule
-
-Some of what Claude saves changes how every session works from then on: a rule, your
-profile, and what it adds to the guard's lists. You choose how much it does on its own:
-
-- **Save and tell you.** Claude saves it, and Claude Code tells you in a line of its own
-  what was saved. If you did not ask for it, tell Claude to undo it. This is how it works
-  unless you choose otherwise.
-- **Ask you first.** Before a rule is saved, changed or retired, before your profile
-  changes and before anything is added to the guard's lists, Claude Code shows you what
-  would be saved and you say yes or no. If you say no, nothing is written.
-
-You choose on the panel's Guard page, under "What the assistant saves on its own"
-(`memory_trust` in [`session.toml`](https://icalvete.github.io/augmented-brain/guide/configuration.html#sessiontoml)). Claude cannot change
-it on its own: the guard asks before a write to that file. Sessions already open follow
-the new choice from their next save.
-
-Tasks, the inbox, references and lessons are always saved without asking: they are the
-work itself, and they do not tell Claude how to behave.
-
-A session that skips permission questions (`bypassPermissions`) cannot ask you. With
-"ask first", the guard refuses the save there, and Claude tells you what it wanted to
-save so you can save it from another session.
-
 ## Production profiles and untouchable machines
 
 You give them in the first-session interview, or any time: "the AWS profile `shop-prod`
@@ -1384,26 +1285,86 @@ You can also add it in the panel's **Guard** page. It asks you to type the machi
 again, and reminds you that until that date Claude may run commands as root there, after
 you confirm each one. Keep the date close.
 
-## It looks inside
+## Asking before Claude saves a rule
 
-The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh -c` (and after `--`),
-`docker exec`, `podman exec`, `kubectl exec`, `bash -c`, loops, what a pipe feeds a shell
-(`echo 'sudo …' | bash`), short scripts Claude runs (`bash deploy.sh`,
-`./deploy.sh`), also when the same command writes them first (`echo '…' > x.sh && bash
-x.sh`), a file a shell reads (`bash < x.sh`, `cat x.sh | bash`), `env -S '…'`, braces
-and `$IFS` as the shell expands them, the programs that run the rest of their line
-(`strace`, `screen`, `tmux`, `setpriv`, `sg`, `at`, and the shells `fish`, `tcsh`, `csh`
-and `mksh`), your git aliases (`git ci` when `ci` stands for `commit`) and those of gh
-and glab, and the commands git runs from its options and variables (`--upload-pack`,
-`difftool -x`, `GIT_SSH_COMMAND`, `GIT_EDITOR`). A shell that only checks a script's syntax
-(`sh -n install.sh`, `bash -o noexec`) runs nothing, so it is let through. It checks the commands Claude leaves running to watch something, and
-those of the helpers Claude starts (subagents and workflows).
+Some of what Claude saves changes how every session works from then on: a rule, your
+profile, and what it adds to the guard's lists. You choose how much it does on its own:
+
+- **Save and tell you.** Claude saves it, and Claude Code tells you in a line of its own
+  what was saved. If you did not ask for it, tell Claude to undo it. This is how it works
+  unless you choose otherwise.
+- **Ask you first.** Before a rule is saved, changed or retired, before your profile
+  changes and before anything is added to the guard's lists, Claude Code shows you what
+  would be saved and you say yes or no. If you say no, nothing is written.
+
+You choose on the panel's Guard page, under "What the assistant saves on its own"
+(`memory_trust` in [`session.toml`](https://icalvete.github.io/augmented-brain/guide/configuration.html#sessiontoml)). Claude cannot change
+it on its own: the guard asks before a write to that file. Sessions already open follow
+the new choice from their next save.
+
+Tasks, the inbox, references and lessons are always saved without asking: they are the
+work itself, and they do not tell Claude how to behave.
+
+In a session that skips Claude Code's questions (see
+[below](https://icalvete.github.io/augmented-brain/guide/guard.html#sessions-that-skip-claude-codes-questions)), "ask first" cannot ask: the guard
+refuses the save there, and Claude tells you what it wanted to save so you can save it
+from another session.
+
+## Only you change the guard's lists
+
+The assistant works in the same account as you, so the guard cannot be a wall. It does
+four things so that the lists stay yours:
+
+- **It asks before a write to the guard's files** (`config.toml`, `guard.toml`,
+  `secrets.toml`, `remote.toml`, `session.toml`, the seal below, and Claude Code's
+  settings), or to what runs the guard: the plugin as Claude Code keeps it
+  (`~/.claude/plugins/cache/augmented-brain/`, `installed_plugins.json`) and the
+  `augmented-brain` program. Copying, unpacking or syncing into the folder that holds
+  one of them asks too (`cp -t`, `tar -C`, `rsync`).
+- **It denies reaching the panel.** Reading `panel.json` (the panel's key) with a tool
+  or a command, also by a pattern or by copying, archiving or searching its folder, and
+  calling a panel page from a command, are denied, however the address is written: the panel's Guard page is how you change the lists, and it works
+  with that key. `augmented-brain panel` never prints the key either: it prints a link
+  that works once, and run by Claude it prints none, nor does `augmented-brain panel
+  remote`: they ask you to run them in a terminal of your own.
+- **It notices a change it did not see.** The guard keeps a seal of its lists: taken
+  when you start a session and when you save in the panel. When Claude only adds a
+  production profile or a machine to lists you had accepted, the seal follows: adding
+  only makes the guard ask more. If the lists differ from the
+  seal, something else changed them, and a commit, push or merge that the lists would
+  let through asks first, and the Guard page and `doctor` say so, until you accept them
+  in the Guard page or you start a new session. Meanwhile the lists cannot soften the
+  guard: a root exception for this machine does not count, and every `aws` command
+  and every `ssh`, `scp` or `rsync` to another machine asks, since a profile or host
+  taken out may be what changed. A new session takes the lists as they
+  are, and Claude Code tells you so itself. When Claude Code compacts a conversation, or
+  after `/clear`, the seal stays: that is not you looking. If the seal cannot be read,
+  the guard asks too, and `doctor` says why. The Guard page shows what was added and
+  removed since then.
+- **It tells you what the panel changed.** A change to the lists made in the panel, or
+  lists accepted there, reaches you as a line from Claude Code itself, not from Claude,
+  after the next answer or message in your open sessions.
+
+What this does not stop: a script that Claude writes in line (`python -c`, or a script
+typed into the command itself) can still edit the files, as it can anything your account can. The guard then notices the
+change and asks before a push, but it did not prevent it. It is a safety net, not a
+security boundary.
+
+## Sessions that skip Claude Code's questions
+
+Claude Code has a mode that skips its permission questions: `bypassPermissions`
+("bypass permissions"). Do not use it with the guard. The guard can still stop a
+command there, but when it asks, Claude Code may not show you the question and run the
+command anyway. The guard knows this in two cases and stops instead of asking: starting
+a release, and saving a rule, your profile or a guard list with "ask first". Everything
+else it asks about (production, untouchable machines, the "ask" list, a push that
+overwrites) depends on Claude Code showing you the question.
 
 ## When something is wrong with it
 
 - **The configuration cannot be read.** Then the guard cannot know your lists. It asks
-  you before every `aws`, `ssh`, `scp`, `rsync`, `sftp` and `mosh`, and before the tools
-  that call AWS. To go back to a version that worked, run `augmented-brain config history`
+  you before every `aws` and every `ssh` and the like (`scp`, `rsync`, `sftp`, `mosh`,
+  `sshfs`, `autossh`), and before the tools that call AWS. To go back to a version that worked, run `augmented-brain config history`
   and then `augmented-brain config restore <number>`
   ([Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html)).
 - **The program is missing or broken.** Claude Code stops every command and file change
@@ -1417,6 +1378,92 @@ those of the helpers Claude starts (subagents and workflows).
 - **`guard.toml` cannot be read.** The guard asks before every commit and push until it
   is fixed or removed.
 - `augmented-brain doctor` tries the guard for real and tells you if it is not working.
+
+## In detail
+
+The lists below say, command by command, what the guard stops, what it asks, and
+what it reads inside other commands. You do not need them to use it; they are here for
+when you want to know why a command was stopped or asked about.
+
+### What it stops
+
+- **Commits and pushes.** `git commit`, `git push`, and what publishes like a push:
+  `git subtree push`, `git send-pack`, `gh release create`, `glab release create`, and
+  the same through GitHub's API (`gh api` writing a file with `contents`, or a GraphQL
+  request, GitHub's other API, that merges or moves a branch). Unless you let Claude in a repository ([above](https://icalvete.github.io/augmented-brain/guide/guard.html#let-claude-commit-in-a-repository)). Asking for help passes: `git commit
+  --help`, `gh pr merge --help`, `su --version`.
+- **Becoming root.** `sudo`, `su` (and `sudo-rs`, `su-rs`), `doas`, `pkexec`, `run0`, `sudoedit`, `systemd-run`
+  without `--user`, `ssh root@…` (also `-o User=root`), a container given the whole
+  machine (`docker run --privileged`, `-v /:/host`, `--pid=host`, the Docker socket or one
+  of the machine's disks; with `podman` and `nerdctl` too, and `kubectl debug node/…`), and on Windows `gsudo` and `runas`. Claude
+  gives you the exact command to run yourself. Running as another user (`sudo -u www-data …`) is fine.
+- **Secrets.** A token or key written in a command or in a file Claude writes. Secrets are
+  read from the system keychain, an environment variable or a secrets manager, never
+  typed in.
+- **Wiping your home folder or the whole disk.** `rm -r` of `~` or `/`, also after a
+  `cd` (`cd ~ && rm -rf .`) or with a pattern that takes everything in it (`rm -rf ~/*`,
+  `~/.*`), and on Windows however the path is written. Moving it away (`mv ~ …`) or
+  emptying it with `rsync --delete` too.
+- **PowerShell.** The guard reads the shell, not PowerShell, so it stops every PowerShell
+  command, and `cmd` or `powershell` started from Bash too. Claude runs it in Bash (Git
+  Bash on Windows) instead. You will see that block on Windows: it is expected.
+
+### What it asks you first
+
+- **Production.** An `aws` command with a profile you marked as production. It checks
+  every profile the command may use: `--profile`, `AWS_PROFILE`, `AWS_DEFAULT_PROFILE`,
+  or `default` when none is set. The same for tools that call AWS on their own: `cdk`,
+  `sam`, `serverless`, `terraform`, `tofu`, `pulumi`, `eksctl`, `copilot`. And any other
+  program with a production profile set in the command itself (`AWS_PROFILE=prod bash
+  deploy.sh`): whatever it runs may reach AWS with it.
+- **Machines not to touch.** `ssh`, `scp`, `rsync`, `sftp`, `mosh`, `sshfs` and `autossh`
+  to a host you marked as untouchable, also when they only go through it (`-J`,
+  `ProxyJump`, which reach a machine through another) or name it in `-o HostName`. `db01` and `db01.example.com` count as the same host.
+- **Starting a release workflow by hand** (`gh workflow run release`, or the same
+  through `gh api`). It publishes a version, so it is your call, but you do not need a
+  terminal: say yes only if you asked for that release now. If you say no, or nobody
+  answers, nothing starts. In a session that
+  [skips Claude Code's questions](https://icalvete.github.io/augmented-brain/guide/guard.html#sessions-that-skip-claude-codes-questions) it is
+  stopped instead. Other workflows go on; one named only by its number
+  asks too.
+- **Pushes that rewrite history**, even where Claude may push: `--force`, `--delete`,
+  `--mirror`, `--prune`, or a branch name written with a `+` or `:` in front (git's way
+  of saying "overwrite" or "delete").
+- **Pushes to somewhere else.** A push from a repository where Claude may push, to an
+  address that is not one of its remotes (a URL, another folder). When that folder is a
+  repository of your lists, its own answer counts.
+- **git and gh told something the command does not show.** git settings that run a
+  command, bring an alias or point to another remote or settings file, however they are
+  given (`-c`, `GIT_CONFIG_PARAMETERS`, `git config`, `GIT_CONFIG_GLOBAL`); a change
+  made through `gh api graphql`; running a workflow again (`gh run rerun`) or
+  starting one with `repository_dispatch`; saving a gh or glab alias.
+- **What it cannot read.** A program given as a variable (`$TOOL deploy`), commands
+  nested too deep (more than four commands, one inside another: `sudo`, `ssh`, `bash -c`,
+  `find -exec`, a git alias), a command longer than 256 KB, `rm -rf "$DIR/"*` with a
+  variable that may be empty, an `rm -r .` after a `cd` it cannot follow, a script it
+  cannot read or larger than 64 KB, a script that the same command writes in a way it
+  cannot read and then runs (`curl -o x.sh … && sh x.sh`). And a shell fed what a
+  program writes (`curl … | sh`: save it to a file and run the file, and it is read), a
+  script that is a command's output (`source <(…)`), git, gh or glab told what to do by
+  a variable (`git $cmd`), `xargs` handing git or a shell the words it reads, and
+  `rm -r "$(…)"`.
+- **The guard's own settings.** Claude never changes augmented brain's configuration or
+  Claude Code's settings on its own, since a line there could switch a check off.
+
+### It looks inside
+
+The guard reads what runs inside other commands: `ssh host '…'`, `vagrant ssh -c` (and after `--`),
+`docker exec`, `podman exec`, `kubectl exec`, `bash -c`, loops, what a pipe feeds a shell
+(`echo 'sudo …' | bash`), short scripts Claude runs (`bash deploy.sh`,
+`./deploy.sh`), also when the same command writes them first (`echo '…' > x.sh && bash
+x.sh`), a file a shell reads (`bash < x.sh`, `cat x.sh | bash`), `env -S '…'`, braces
+and `$IFS` as the shell expands them, the programs that run the rest of their line
+(`strace`, `screen`, `tmux`, `setpriv`, `sg`, `at`, and the shells `fish`, `tcsh`, `csh`
+and `mksh`), your git aliases (`git ci` when `ci` stands for `commit`) and those of gh
+and glab, and the commands git runs from its options and variables (`--upload-pack`,
+`difftool -x`, `GIT_SSH_COMMAND`, `GIT_EDITOR`). A shell that only checks a script's syntax
+(`sh -n install.sh`, `bash -o noexec`) runs nothing, so it is let through. It checks the commands Claude leaves running to watch something, and
+those of the helpers Claude starts (subagents and workflows).
 
 ## Next
 
@@ -1582,45 +1629,65 @@ Source: https://icalvete.github.io/augmented-brain/guide/what-claude-may-do.html
 
 Claude works in your account, on your files. Two things decide what it may do on its own:
 **Claude Code's permissions** and **augmented brain's guard**. This page puts them side by
-side, so you know what happens without a question, what asks you first, and what never
-happens.
+side, so you know what is stopped, what asks you first, and what goes ahead without a
+question. The whole story, command by command, is in [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
 
 ## Two checks, one after the other
 
 1. **The guard** looks at every command and file change before it runs. It stops some
-   things, asks you about others, and lets the rest through. See [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html).
-2. **Claude Code's permissions** then decide too: the mode you run it in (it asks before
-   acting, by default) and the rules you added. Some modes have a check of their own that
+   things, asks you about others, and lets the rest through.
+2. **Claude Code's permissions** then decide too: the mode you run it in (by default it
+   asks before acting) and the rules you added. Some modes have a check of their own that
    can stop an action the guard would let through.
 
-Both must say yes. A yes from the guard never skips a question from Claude Code, and the
-other way round.
+Both must say yes. A yes from the guard never skips a question from Claude Code. The
+other way round holds too, with one exception: in the mode that skips Claude Code's
+questions (`bypassPermissions`), a question from the guard may not reach you. Do not use
+that mode with the guard; [why](https://icalvete.github.io/augmented-brain/guide/guard.html#sessions-that-skip-claude-codes-questions).
 
-## Never, whatever you say
+## Stopped
 
-- Becoming root, unless you open an exception for one machine until a date (below).
-- Writing a secret in a command or a note: a password, a token, a key.
-- Wiping your home folder or the whole disk.
-- Anything in a repository you marked as **untouchable**: no commit, push or merge there,
-  whatever the other lists say.
+The guard stops these. Claude tells you what it wanted and gives you the command, for you
+to run.
 
-Claude tells you what it wanted and gives you the command, for you to run.
+- **A commit or a push in a repository you have not listed.** By default Claude commits
+  and pushes nowhere: you open a repository to it (below).
+- **Commit, push or merge in a repository you marked as untouchable**, whatever the other
+  lists say. Other work there (reading, building, testing) goes on as anywhere else.
+- **Becoming root** (the administrator of the machine), unless you open an exception for
+  one machine until a date (below).
+- **Writing a secret** in a command or a file: a password, a token, a key.
+- **Wiping your home folder or the whole disk.**
+- **PowerShell**, which the guard cannot read. Claude runs the same in Bash instead.
+
+The first three are yours to change, with the lists; the last three are always stopped.
 
 ## It asks you each time
 
 - **Commit, push or merge in a repository of the "ask" list.**
-- **A push that rewrites what is on the remote** (`--force` and the like), even where
+- **A push that overwrites what is on the server** (`--force` and the like), even where
   Claude may push. Always, by design.
+- **A push to somewhere else**: an address that is not one of the repository's remotes.
 - **Merging with `--admin`**, which skips the branch's protection.
-- **Production:** an `aws` command with a profile you marked as production, and `ssh` to a
-  machine you marked as untouchable.
+- **Production:** an `aws` command with a profile you marked as production.
+- **Untouchable machines:** `ssh` and the like to a machine you marked as untouchable.
+- **Starting a release** (`gh workflow run release`): it publishes a version.
 - **Root on a machine with an exception**, each command, until the exception's date.
+- **A command the guard cannot read to the end**: a program given as a variable, a
+  script it cannot open, `curl … | sh`.
+- **Writing the guard's settings or Claude Code's**, since a line there could switch a
+  check off.
+- **Saving a rule, your profile or a guard list**, if you chose "ask first" (below).
 
-## Without asking, because you said so
+## Without asking
 
 - **Commit and push in a repository of the "allowed" list**, when you asked for that
   change. A merge too, when the command names the repository: `cd ~/code/blog && gh pr
   merge 12`, or, already in that folder, `gh pr merge 12 -R owner/blog`.
+- **Saving a rule, your profile or a production profile or untouchable machine** it
+  learned from you. Claude Code tells you in a line of its own what was saved; if you did
+  not ask for it, tell Claude to undo it. This is the default; to be asked first instead,
+  see [Asking before Claude saves a rule](https://icalvete.github.io/augmented-brain/guide/guard.html#asking-before-claude-saves-a-rule).
 
 Everything else Claude does on its own is reading, writing your notes, and running
 ordinary commands: the guard lets them through, and Claude Code's mode decides.
@@ -1630,7 +1697,8 @@ ordinary commands: the guard lets them through, and Claude Code's mode decides.
 The lists live in the configuration, and you change them in the panel's **Guard** page.
 Claude cannot open that page, and the guard asks before Claude writes the configuration
 files. Some pages warn on purpose: adding a repository where Claude commits and pushes
-without asking needs a box ticked, and so on.
+without asking needs a box ticked, and so on. Claude can only add to two of them, the
+production profiles and the untouchable machines, which only makes the guard ask more.
 
 ## First accept, then use
 
@@ -1642,14 +1710,20 @@ else (by hand, a script, another program), what they newly allow does not count 
   list) and a button to accept it;
 - `augmented-brain doctor` says so too.
 
-Accept in the panel, or start a new session, and the new lists apply. A command can be
-run by Claude, so `augmented-brain config restore` never accepts lists for you.
+Accept in the panel, or start a new session, and the new lists apply. When Claude only
+adds a production profile or an untouchable machine to lists you had accepted, they stay
+accepted: adding only makes the guard ask more.
+
+`augmented-brain config restore` puts back an earlier version of the configuration, but
+does not accept its lists for you: Claude could run that command too, so accepting stays
+in the panel.
 
 ## Root on one machine, for a while
 
 For a job that needs it, add an exception with an end date in the Guard page: root on that
 machine asks you for each command until the date, and is stopped again after it by
-itself. Keep the date close.
+itself. Keep the date close. More in
+[The guard](https://icalvete.github.io/augmented-brain/guide/guard.html#root-on-one-machine-for-a-while).
 
 ## When you want to change something
 
