@@ -36,8 +36,11 @@ jobs:
       - name: Vet
         run: go vet ./...
       # No -race: on Windows it needs a C compiler the runner does not set up.
+      # -timeout below the job's 10 minutes: a test that hangs then fails with the
+      # stack of every goroutine, which says where it waits, instead of the job being
+      # cancelled with nothing to go on.
       - name: Test
-        run: go test ./...
+        run: go test -timeout 7m ./...
       - name: Build
         run: go build -o augmented-brain.exe ./cmd/augmented-brain
       - name: The program runs
