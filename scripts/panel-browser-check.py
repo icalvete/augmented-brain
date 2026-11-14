@@ -53,6 +53,9 @@ CONTRAST = """() => {
 WATCH = """document.addEventListener('securitypolicyviolation', e =>
     console.error('CSP ' + e.violatedDirective + ' blocked ' + (e.blockedURI || 'inline') +
       ' at ' + (e.sourceFile || '?') + ':' + e.lineNumber + ' sample=' + (e.sample || '')))"""
+# The Guard page keeps its add and change forms folded away: open the one around a form
+# before filling it in, as a person clicks its title.
+UNFOLD = "el => { const d = el.closest('details'); if (d) d.open = true }"
 good = bad = 0
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -227,7 +230,10 @@ try:
             report(f"{engine}: saved is said once, not again on reload", said and page.locator(".flash.ok").count() == 0, page.url)
             # A form that cannot be saved comes back with what was typed and the error next to it.
             page.goto(f"{base}/guard?s=work")
+            report(f"{engine}: the Guard page opens with its forms folded away",
+                   page.locator("details.box").count() >= 8 and page.locator("details.box[open]").count() == 0, page.locator("details.box[open]").count())
             root = page.locator("form[action$='/guard/root']:has(input[name=host])")
+            root.evaluate(UNFOLD)
             root.locator("input[name=host]").fill("lab-pc")
             root.locator("input[name=until]").fill("next friday")
             root.locator("input[name=confirm]").fill("lab-pc")
@@ -248,6 +254,7 @@ try:
 
             page.goto(f"{base}/guard?s=work")
             form = page.locator("form:has(input[name=list][value=allowed]):has(input[name=op][value=add])").first
+            form.evaluate(UNFOLD)
             repo = os.path.join(work, "app-" + engine)  # one per engine: the same home serves them all
             form.locator("input[name=value]").fill(repo)
             form.locator("button[type=submit]").click()
@@ -259,10 +266,19 @@ try:
             page.wait_for_load_state("networkidle")
             cfgtext = open(os.path.join(CFG, "config.toml"), encoding="utf-8").read()
             report(f"{engine}: with the box ticked it is added", "app-" + engine in cfgtext, "")
+            # Its folder is not there: the list says so next to it, with its space.
+            item = page.locator("li", has=page.locator(f"code:text-is('{repo.replace(chr(92), chr(92) * 2)}')"))
+            report(f"{engine}: a repository whose folder is not there says so", item.locator(".badge.warn").count() == 1 and item.locator(".badge", has_text="work").count() == 1, item.count())
+            # Every box and radio button sits at the start of its line, beside its text.
+            page.locator("details.box").evaluate_all("ds => ds.forEach(d => d.open = true)")
+            off = page.evaluate("""() => [...document.querySelectorAll('label.check')].filter(l => l.offsetParent)
+                .map(l => l.querySelector('input').getBoundingClientRect().left - l.getBoundingClientRect().left)""")
+            report(f"{engine}: the Guard page's boxes sit beside their text", len(off) >= 5 and max(off) < 12, off)  # the browser's own margin; centred, it was hundreds
             # What the assistant saves on its own: choose "ask first", then back.
             for level in ("ask", "tell"):
                 page.goto(f"{base}/guard?s=work")
                 trust = page.locator("form[action$='/guard/trust']")
+                trust.evaluate(UNFOLD)
                 trust.locator(f"input[name=value][value={level}]").check()
                 trust.locator("button[type=submit]").click()
                 page.wait_for_load_state("networkidle")

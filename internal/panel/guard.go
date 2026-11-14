@@ -27,14 +27,20 @@ type guardRoot struct {
 	Expired            bool
 }
 
-type guardSpace struct {
-	Space        string
-	Allowed, Ask []string
+// guardRepo is a repository of one of the lists: Space names the space whose list it is
+// in (empty for the untouchable list, which is the machine's), and Missing says its
+// folder is not on this computer, most often a name typed wrong.
+type guardRepo struct {
+	Path, Space string
+	Missing     bool
 }
 
 type guardData struct {
-	Untouchable []string
-	Spaces      []guardSpace
+	Untouchable []guardRepo
+	Allowed     []guardRepo // every space's, in the order of the spaces
+	AskRepos    []guardRepo
+	SpaceNames  []string // for the add forms' choice of space
+	Current     string   // the space the page was opened in, chosen by default
 	Roots       []guardRoot
 	Unreadable  []string // root_ask entries that cannot be read
 	Profiles    []string // the machine-wide list, the one this page edits
@@ -61,7 +67,9 @@ func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
 	if err != nil {
 		d.Problem = err.Error()
 	}
-	d.Untouchable = g.UntouchableRepos
+	for _, x := range g.UntouchableRepos {
+		d.Untouchable = append(d.Untouchable, repoOf(x, ""))
+	}
 	d.Reach = reachOf(g)
 	d.SpaceDirs = tildeEach(v.c.SpaceDirs())
 	if ss, err := config.LoadSession(v.c.Dir); err == nil {
@@ -79,9 +87,15 @@ func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
 			d.LastStart = v.t("guard.model.last", said)
 		}
 	}
-	for _, name := range v.c.SpaceNames() {
+	d.SpaceNames, d.Current = v.c.SpaceNames(), v.b.Space.Name
+	for _, name := range d.SpaceNames {
 		sp := v.c.Spaces[name]
-		d.Spaces = append(d.Spaces, guardSpace{name, sp.GitAllowedRepos, sp.GitAskRepos})
+		for _, x := range sp.GitAllowedRepos {
+			d.Allowed = append(d.Allowed, repoOf(x, name))
+		}
+		for _, x := range sp.GitAskRepos {
+			d.AskRepos = append(d.AskRepos, repoOf(x, name))
+		}
 	}
 	_, d.Unreadable = v.c.RootExceptions()
 	for _, e := range v.c.RootAsk {
@@ -115,6 +129,29 @@ func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
 	p.D = d
 	return "guard", p, nil
 }
+
+// repoOf is one repository of a list, with whether its folder is on this computer. A
+// name with * stands for several folders and is never missing.
+func repoOf(path, space string) guardRepo {
+	r := guardRepo{Path: path, Space: space}
+	if !strings.Contains(path, "*") {
+		if a, err := paths.Resolve(path); err == nil {
+			_, err = os.Stat(a)
+			r.Missing = errors.Is(err, os.ErrNotExist)
+		}
+	}
+	return r
+}
+
+// guardList is what the Guard page's template "repos" gets: the page, which list, and
+// its repositories.
+type guardList struct {
+	P     page
+	List  string
+	Repos []guardRepo
+}
+
+func repoList(p page, list string, repos []guardRepo) guardList { return guardList{p, list, repos} }
 
 // listChange is what one of the guard's lists gained and lost since the user last saw
 // them.

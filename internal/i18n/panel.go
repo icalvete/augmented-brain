@@ -382,9 +382,45 @@ var panelMessages = map[string]msg{
 		en: "Repository folder",
 		es: "Carpeta del repositorio",
 	},
-	"panel.guard.repos": {
-		en: "Repositories in space %s",
-		es: "Repositorios del espacio %s",
+	"panel.guard.add.repo": {
+		en: "Add a repository",
+		es: "Añadir un repositorio",
+	},
+	"panel.guard.add.root": {
+		en: "Add an exception",
+		es: "Añadir una excepción",
+	},
+	"panel.guard.add.profile": {
+		en: "Add a profile",
+		es: "Añadir un perfil",
+	},
+	"panel.guard.add.host": {
+		en: "Add a machine",
+		es: "Añadir una máquina",
+	},
+	"panel.guard.now": {
+		en: "Now:",
+		es: "Ahora:",
+	},
+	"panel.guard.change": {
+		en: "Change",
+		es: "Cambiar",
+	},
+	"panel.guard.more": {
+		en: "What it means",
+		es: "Qué significa",
+	},
+	"panel.guard.protected.see": {
+		en: "See which files",
+		es: "Ver qué ficheros",
+	},
+	"panel.guard.missing": {
+		en: "not on this computer: check how it is written",
+		es: "no está en este ordenador: revisa cómo está escrita",
+	},
+	"panel.f.space": {
+		en: "Space",
+		es: "Espacio",
 	},
 	"panel.guard.allowed": {
 		en: "The assistant may commit and push",
