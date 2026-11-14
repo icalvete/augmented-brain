@@ -186,16 +186,55 @@ func Baseline(cfgDir, key, session string, sp Space, now time.Time, keepTouched 
 		return nil
 	}
 	old, had := Load(cfgDir, key)
-	cur, _ := scan(sp.Tasks, nil, time.Time{})
-	if had && keepTouched && old.Space == sp.Name {
-		for id, v := range old.Tasks {
-			if c, ok := cur[id]; ok && v.Touched {
-				c.Touched = true
-				cur[id] = c
-			}
-		}
+	var prev Seen
+	if d, ok := donor(cfgDir, sp); ok {
+		prev = d
+	}
+	cur, _ := scan(sp.Tasks, prev.Tasks, prev.Taken)
+	for id, c := range cur {
+		c.Touched = had && keepTouched && old.Space == sp.Name && old.Tasks[id].Touched
+		cur[id] = c
 	}
 	return save(cfgDir, key, Seen{Session: session, Space: sp.Name, Format: sp.Format, Taken: now, Tasks: cur})
+}
+
+// donorTries is how many of the newest seen files donor reads at most.
+const donorTries = 3
+
+// donor is the newest seen file of the space sp, of any process: Baseline takes from it
+// the versions of the tasks whose time and size have not moved since, instead of
+// reading and hashing every task again (with thousands of closed tasks, most of the
+// session start's time, with the notes lock held). The usual rule keeps it safe: a file
+// within Racy of when that seen file was taken is read again.
+func donor(cfgDir string, sp Space) (Seen, bool) {
+	entries, err := os.ReadDir(filepath.Join(cfgDir, filepath.FromSlash(Dir)))
+	if err != nil {
+		return Seen{}, false
+	}
+	type cand struct {
+		key string
+		mt  time.Time
+	}
+	var cands []cand
+	for _, e := range entries {
+		key, ok := strings.CutSuffix(e.Name(), ".json")
+		if !ok || e.IsDir() {
+			continue
+		}
+		if fi, err := e.Info(); err == nil {
+			cands = append(cands, cand{key, fi.ModTime()})
+		}
+	}
+	sort.Slice(cands, func(i, j int) bool { return cands[i].mt.After(cands[j].mt) })
+	for i, c := range cands {
+		if i == donorTries {
+			break
+		}
+		if s, ok := Load(cfgDir, c.key); ok && s.Space == sp.Name && s.Format == sp.Format && !s.Taken.IsZero() {
+			return s, true
+		}
+	}
+	return Seen{}, false
 }
 
 // Check compares the tasks with what the process last saw, returns what changed

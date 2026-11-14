@@ -436,3 +436,63 @@ func TestSpeed(t *testing.T) {
 		t.Fatalf("a check of 100 tasks took %v", per)
 	}
 }
+
+// A new process's baseline takes from another process's seen file of the same space the
+// tasks that have not moved since (it does not read them again), reads the ones that
+// changed, and inherits nothing the other session had touched.
+func TestBaselineTakesFromAnotherProcess(t *testing.T) {
+	e := newEnv(t)
+	task(t, e.sp.Tasks, "task-old", "parked", "a", "")
+	task(t, e.sp.Tasks, "task-moved", "parked", "a", "")
+	age(t, e.sp.Tasks, "task-old", time.Hour)
+	age(t, e.sp.Tasks, "task-moved", time.Hour)
+	e.baseline(t, false)
+	first, _ := Load(e.cfg, e.key)
+	// Mark the first process's versions, to tell whether the second reads them.
+	for id, v := range first.Tasks {
+		v.Hash, v.Touched = "from-the-other-process", true
+		first.Tasks[id] = v
+	}
+	if err := save(e.cfg, e.key, first); err != nil {
+		t.Fatal(err)
+	}
+	task(t, e.sp.Tasks, "task-moved", "execution", "b", "") // changed after it was seen
+
+	other := "pid-5353"
+	if err := Baseline(e.cfg, other, "sess-2", e.sp, time.Now(), true); err != nil {
+		t.Fatal(err)
+	}
+	got, _ := Load(e.cfg, other)
+	if h := got.Tasks["task-old"].Hash; h != "from-the-other-process" {
+		t.Errorf("a task that did not move was read again (hash %q)", h)
+	}
+	if h := got.Tasks["task-moved"].Hash; h == "from-the-other-process" || h == "" {
+		t.Errorf("a task changed since was not read again (hash %q)", h)
+	}
+	if !strings.Contains(got.Tasks["task-moved"].Index, "execution") {
+		t.Errorf("the changed task's index is the old one: %q", got.Tasks["task-moved"].Index)
+	}
+	for id, v := range got.Tasks {
+		if v.Touched {
+			t.Errorf("%s: touched by the other session, and inherited", id)
+		}
+	}
+	// Another space's seen file is not taken.
+	e.sp.Name = "home"
+	third := "pid-6464"
+	if err := Baseline(e.cfg, third, "sess-3", e.sp, time.Now(), false); err != nil {
+		t.Fatal(err)
+	}
+	if h := mustLoad(t, e.cfg, third).Tasks["task-old"].Hash; h == "from-the-other-process" {
+		t.Error("took the versions of another space")
+	}
+}
+
+func mustLoad(t *testing.T, cfg, key string) Seen {
+	t.Helper()
+	s, ok := Load(cfg, key)
+	if !ok {
+		t.Fatalf("no seen file %s", key)
+	}
+	return s
+}
