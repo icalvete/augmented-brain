@@ -252,6 +252,8 @@ func TestGuardFileChecks(t *testing.T) {
 		t.Errorf("unknown setting in session.toml: %+v", c)
 	}
 	_ = os.Remove(filepath.Join(cfg, config.SessionFile))
+	// SaveGuard keeps a setting it does not know: a clean file starts from none.
+	_ = os.Remove(filepath.Join(cfg, config.GuardFile))
 	_ = config.SaveGuard(cfg, config.Guard{})
 	if c := find(Run(env), "does not know"); c != nil {
 		t.Errorf("a clean guard.toml: %+v", c)
