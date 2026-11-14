@@ -11,6 +11,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -20,6 +21,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -34,6 +36,42 @@ import (
 
 // LatestVersion asks for the latest published version; tests replace it.
 var LatestVersion = update.Fetch
+
+// StartUpdateCheck asks for the latest version in a process of its own (`hook
+// update-check`) and returns at once: the session start never waits for the network,
+// and the news reaches the next session. Tests replace it.
+var StartUpdateCheck = func() error {
+	self, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command(self, "hook", "update-check")
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
+	detach.Cmd(cmd)
+	_, err = detach.Start(cmd)
+	return err
+}
+
+// UpdateCheck asks for the latest published version and keeps the answer for the next
+// session start (StartUpdateCheck runs it).
+func UpdateCheck(cfgDir string) error {
+	update.Check(cfgDir, time.Now(), LatestVersion)
+	return nil
+}
+
+// updateNote says a newer version is out, from what the last check found, and starts
+// a new check when it is due.
+func updateNote(c *config.Config, cfgDir string) string {
+	now := time.Now()
+	if update.Due(cfgDir, now) {
+		update.Mark(cfgDir, now) // before it starts: another session starting now waits for this one
+		_ = StartUpdateCheck()
+	}
+	if latest := update.Cached(cfgDir, version.Version); latest != "" {
+		return session.UpdateNote(c.Language, version.Version, latest)
+	}
+	return ""
+}
 
 type input struct {
 	Cwd       string         `json:"cwd"`
@@ -186,9 +224,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir, task string) 
 		note = session.DefaultNote(c, s, i.Cwd)
 	}
 	note += backupNote(c, s, cfgDir)
-	if latest := update.Available(cfgDir, version.Version, time.Now(), LatestVersion); latest != "" {
-		note += session.UpdateNote(c.Language, version.Version, latest)
-	}
+	note += updateNote(c, cfgDir)
 	note += migrate(c, s, cfgDir)
 	note += sessionStarted(c, s, i, cfgDir, task == "")
 	note += modelStartNote(c.Language, cfgDir, i)

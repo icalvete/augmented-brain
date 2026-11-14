@@ -186,31 +186,69 @@ func TestSessionStartBrokenConfig(t *testing.T) {
 func TestMain(m *testing.M) {
 	testenv.CleanGit()
 	LatestVersion = func() (string, error) { return "", nil }
+	StartUpdateCheck = func() error { return nil }
 	state.ScanProc = false // the Claude sessions open on the machine running the tests are not theirs
 	Processes = nil        // nor is the memory of the window running them
 	os.Exit(m.Run())
 }
 
 // A newer version out: the session asks the assistant to say so and offer to update.
+// The session start only starts the check, which runs apart; the next start tells it.
 func TestSessionStartUpdateNotice(t *testing.T) {
 	cfgDir, work := setupSpace(t)
 	t.Setenv("AB_NO_UPDATE_CHECK", "")
 	ss := func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, cfgDir) }
-	old := LatestVersion
-	t.Cleanup(func() { LatestVersion = old })
+	oldLatest, oldStart := LatestVersion, StartUpdateCheck
+	t.Cleanup(func() { LatestVersion, StartUpdateCheck = oldLatest, oldStart })
+	checks := 0
+	StartUpdateCheck = func() error { checks++; return nil }
 
 	LatestVersion = func() (string, error) { return "99.0.0", nil }
 	o := run(t, ss, map[string]any{"cwd": work})
+	if checks != 1 {
+		t.Fatalf("the first session start started %d checks, want 1", checks)
+	}
+	if text := o["additionalContext"].(string); strings.Contains(text, "is available") {
+		t.Errorf("told of a version before any check ended:\n%s", text)
+	}
+	o = run(t, ss, map[string]any{"cwd": work})
+	if checks != 1 {
+		t.Errorf("a check already started was started again (%d)", checks)
+	}
+	if err := UpdateCheck(cfgDir); err != nil {
+		t.Fatal(err)
+	}
+	o = run(t, ss, map[string]any{"cwd": work})
 	if text := o["additionalContext"].(string); !strings.Contains(text, "augmented brain 99.0.0 is available") || !strings.Contains(text, "`augmented-brain update`") {
 		t.Errorf("no update notice:\n%s", text)
 	}
+	if checks != 1 {
+		t.Errorf("checked again within the day (%d)", checks)
+	}
 
-	// Up to date (the answer is cached for a day, so start from a new configuration).
+	// Up to date.
 	cfgDir, work = setupSpace(t)
 	LatestVersion = func() (string, error) { return "0.0.0", nil }
+	if err := UpdateCheck(cfgDir); err != nil {
+		t.Fatal(err)
+	}
 	o = run(t, func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStart(in, out, cfgDir) }, map[string]any{"cwd": work})
 	if strings.Contains(o["additionalContext"].(string), "is available") {
 		t.Error("an up-to-date install must not hear about updates")
+	}
+}
+
+// Part 1 never waits for GitHub, even when the last answer is old and GitHub is slow.
+func TestSessionStartDoesNotWaitForTheNetwork(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	t.Setenv("AB_NO_UPDATE_CHECK", "")
+	old := LatestVersion
+	t.Cleanup(func() { LatestVersion = old })
+	LatestVersion = func() (string, error) { time.Sleep(time.Second); return "99.0.0", nil }
+	start := time.Now()
+	run(t, func(in *bytes.Reader, out *bytes.Buffer) error { return SessionStartPart(in, out, cfgDir, 1) }, map[string]any{"cwd": work})
+	if took := time.Since(start); took > 500*time.Millisecond {
+		t.Errorf("part 1 took %v with a slow GitHub, want it not to wait for it", took)
 	}
 }
 

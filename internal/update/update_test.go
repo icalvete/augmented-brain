@@ -97,3 +97,29 @@ func TestAvailableOffline(t *testing.T) {
 		t.Errorf("back online: %q after %d calls", got, calls)
 	}
 }
+
+// Mark notes a check that started elsewhere: it is not due again within the hour, and
+// the version known before stays told until the check answers.
+func TestMarkAndCheck(t *testing.T) {
+	t.Setenv("AB_NO_UPDATE_CHECK", "")
+	dir := t.TempDir()
+	now := time.Date(2026, 11, 14, 9, 0, 0, 0, time.UTC)
+	if !Due(dir, now) {
+		t.Fatal("never checked: not due")
+	}
+	Check(dir, now, func() (string, error) { return "2.0.0", nil })
+	if Due(dir, now.Add(23*time.Hour)) || !Due(dir, now.Add(25*time.Hour)) {
+		t.Error("an answer is kept for a day")
+	}
+	later := now.Add(25 * time.Hour)
+	Mark(dir, later)
+	if Due(dir, later.Add(30*time.Minute)) {
+		t.Error("a check just started is due again")
+	}
+	if !Due(dir, later.Add(61*time.Minute)) {
+		t.Error("a check that never answered is not tried again after an hour")
+	}
+	if got := Cached(dir, "1.0.0"); got != "2.0.0" {
+		t.Errorf("Cached after Mark = %q, want the version known before", got)
+	}
+}

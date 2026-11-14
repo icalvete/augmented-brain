@@ -896,6 +896,9 @@ The events:
   `archive/sessions/` and points the task's journal at it.
 - `session-end`: the session ends. It notes that it ended well, and starts the backup in
   the background.
+- `update-check`: not a call of Claude Code. Once a day, `session-start` runs it in the
+  background to ask GitHub for the latest version, so no session waits for the network.
+  A new version is told at the next session start.
 
 ## augmented-brain version
 

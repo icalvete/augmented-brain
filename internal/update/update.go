@@ -1,6 +1,7 @@
 // Package update knows the latest published version of augmented brain and whether this
-// one is older. The session hook asks it at most once a day, so a new version reaches
-// people who installed it once and never think about it again.
+// one is older. The session start asks for it at most once a day, in a process of its
+// own, so a new version reaches people who installed it once and never think about it
+// again, and no session waits for the network.
 package update
 
 import (
@@ -12,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 // Repo is where releases are published.
@@ -139,33 +142,76 @@ func Available(cfgDir, current string, now time.Time, fetch func() (string, erro
 	if os.Getenv("AB_NO_UPDATE_CHECK") == "1" {
 		return ""
 	}
-	path := filepath.Join(cfgDir, cacheFile)
-	var c cache
-	if data, err := os.ReadFile(path); err == nil {
-		_ = json.Unmarshal(data, &c)
+	if Due(cfgDir, now) {
+		Check(cfgDir, now, fetch)
 	}
-	wait := checkEvery
-	if c.Failed {
-		wait = retryEvery
+	return Cached(cfgDir, current)
+}
+
+// Cached returns the latest version the last check found, when it is newer than
+// current, without asking anyone: the session start must not wait for the network.
+func Cached(cfgDir, current string) string {
+	if os.Getenv("AB_NO_UPDATE_CHECK") == "1" {
+		return ""
 	}
-	if c.Checked.IsZero() || now.Sub(c.Checked) > wait {
-		if latest, err := fetch(); err == nil && latest != "" {
-			c = cache{Checked: now, Latest: latest}
-		} else {
-			// Remember the attempt too: offline, every session would wait for it again.
-			c.Checked, c.Failed = now, true
-		}
-		if data, err := json.Marshal(c); err == nil {
-			_ = os.WriteFile(path, data, 0o644)
-		}
-	}
-	if Newer(c.Latest, current) {
+	if c := readCache(cfgDir); Newer(c.Latest, current) {
 		return c.Latest
 	}
 	return ""
 }
 
-// Fetch is Latest with a short timeout, for the session hook: the session must not wait.
+// Due says whether it is time to ask for the latest version again: a day after the
+// last answer, an hour after a check that got none.
+func Due(cfgDir string, now time.Time) bool {
+	if os.Getenv("AB_NO_UPDATE_CHECK") == "1" {
+		return false
+	}
+	c := readCache(cfgDir)
+	wait := checkEvery
+	if c.Failed {
+		wait = retryEvery
+	}
+	return c.Checked.IsZero() || now.Sub(c.Checked) > wait
+}
+
+// Mark notes a check about to start somewhere else, as one that got no answer yet: two
+// sessions starting at once start one check, and a check that never ends is tried
+// again an hour later. The version known so far stays.
+func Mark(cfgDir string, now time.Time) {
+	c := readCache(cfgDir)
+	c.Checked, c.Failed = now, true
+	writeCache(cfgDir, c)
+}
+
+// Check asks for the latest version and keeps the answer in cfgDir; without one it
+// keeps the attempt, so nobody waits for it again within the hour.
+func Check(cfgDir string, now time.Time, fetch func() (string, error)) {
+	c := readCache(cfgDir)
+	if latest, err := fetch(); err == nil && latest != "" {
+		c = cache{Checked: now, Latest: latest}
+	} else {
+		// Remember the attempt too: offline, every session would wait for it again.
+		c.Checked, c.Failed = now, true
+	}
+	writeCache(cfgDir, c)
+}
+
+func readCache(cfgDir string) cache {
+	var c cache
+	if data, err := os.ReadFile(filepath.Join(cfgDir, cacheFile)); err == nil {
+		_ = json.Unmarshal(data, &c)
+	}
+	return c
+}
+
+func writeCache(cfgDir string, c cache) {
+	if data, err := json.Marshal(c); err == nil {
+		_ = paths.WriteAtomic(filepath.Join(cfgDir, cacheFile), data, 0o644)
+	}
+}
+
+// Fetch is Latest with a short timeout: the check runs apart from the session start,
+// but a process left waiting for a network that does not answer is of no use either.
 func Fetch() (string, error) {
-	return Latest(&http.Client{Timeout: 2 * time.Second})
+	return Latest(&http.Client{Timeout: 10 * time.Second})
 }

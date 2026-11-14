@@ -485,7 +485,7 @@ Usage:
   augmented-brain update       update augmented brain and its Claude Code plugin
   augmented-brain uninstall    remove the program and the plugin (your notes stay; --all: start from scratch)
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
-  augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use, user-prompt-submit, stop, post-compact, session-end
+  augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use, user-prompt-submit, stop, post-compact, session-end, update-check
   augmented-brain version      show the version
   augmented-brain help COMMAND what a command does, its options and an example (also: COMMAND --help)
 `,
@@ -515,7 +515,7 @@ Uso:
   augmented-brain update       actualiza augmented brain y su plugin de Claude Code
   augmented-brain uninstall    quita el programa y el plugin (tus notas se quedan; --all: empezar de cero)
   augmented-brain mcp          arranca el servidor MCP (lo arranca tu asistente, no tú)
-  augmented-brain hook EVENTO  responde a un hook del asistente: session-start, pre-tool-use, user-prompt-submit, stop, post-compact, session-end
+  augmented-brain hook EVENTO  responde a un hook del asistente: session-start, pre-tool-use, user-prompt-submit, stop, post-compact, session-end, update-check
   augmented-brain version      muestra la versión
   augmented-brain help COMANDO qué hace un comando, sus opciones y un ejemplo (también: COMANDO --help)
 `,
