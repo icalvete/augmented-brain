@@ -103,6 +103,30 @@ var noteMessages = map[string]msg{
 		en: "Step added to the plan: %s",
 		es: "Paso añadido al plan: %s",
 	},
+	"step.edited": {
+		en: "Step %d corrected: %s → %s",
+		es: "Paso %d corregido: %s → %s",
+	},
+	"step.removed": {
+		en: "Step %d taken out of the plan: %s",
+		es: "Paso %d quitado del plan: %s",
+	},
+	"step.reordered": {
+		en: "Step moved in the plan: %s (from %d to %d)",
+		es: "Paso movido en el plan: %s (del %d al %d)",
+	},
+	"note.title": {
+		en: "Title changed: %s → %s",
+		es: "Título cambiado: %s → %s",
+	},
+	"note.watch.dropped": {
+		en: "Watch date taken out: %s · %s",
+		es: "Fecha para revisar quitada: %s · %s",
+	},
+	"note.watch.moved": {
+		en: "Watch date moved from %s to %s: %s",
+		es: "Fecha para revisar movida del %s al %s: %s",
+	},
 	"step.noplan": {
 		en: "task %q has no Plan section (a line \"## Plan\") to keep its steps in",
 		es: "la tarea %q no tiene sección Plan (una línea \"## Plan\") donde guardar sus pasos",

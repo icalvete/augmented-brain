@@ -130,8 +130,11 @@
   "task_step": [
     "add: string",
     "done: boolean",
+    "edit: string",
     "id: string",
+    "move_to: integer",
     "number: integer",
+    "remove: boolean",
     "required id",
     "space: string",
     "text: string"
@@ -146,9 +149,11 @@
     "space: string",
     "status: string",
     "summary: string",
+    "title: string",
     "waiting_on: string",
     "watch_date: string",
     "watch_done: string",
+    "watch_drop: string",
     "watch_what: string"
   ],
   "task_worktree": [

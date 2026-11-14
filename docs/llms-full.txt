@@ -2095,7 +2095,10 @@ A task nobody has changed for 14 days is marked "untouched N days". At the end, 
 the tasks left for **Someday** and the **Closed** ones.
 
 Open one. Its essentials come first, then its steps and what you can do with it: write in
-its journal, change its status or next step, tick its steps, park it or close it. Below,
+its journal, change its title, status or next step, tick its steps, park it or close it.
+Under **Correct, move or remove steps**, fix a step's text, move it up or down, or take it
+out of the plan. Each watch date can move to another day or go. The journal says what
+changed: an old title, a step taken out, a date moved. Below,
 the other sections folded, and the journal newest first. You can open new tasks too. If a
 status skips phases, the journal names them. When a task waits on a person you have a
 note of, "waits on" leads to them.
@@ -2109,8 +2112,8 @@ choose its phase, say what comes next and, if you like, why. Its journal says it
 reopened from the panel, with your reason.
 
 When you save a task, only what you changed on the page is saved. If Claude changed
-something else in the meantime, that stays. A step is ticked only if it still says what
-the page showed.
+something else in the meantime, that stays. A step is ticked, corrected, moved or
+removed only if it still says what the page showed.
 
 ## Sessions
 
@@ -2127,7 +2130,8 @@ Your Claude sessions on this computer, from the last 30 days. It is in the menu,
 ## Reminders
 
 The watch dates of your tasks (closed ones too) and the inbox reminders: overdue first,
-then the next 30 days. Mark one done, or add a watch date to a task. A reminder that
+then the next 30 days. Mark one done, or add a watch date to a task. To move a date or
+take it out, open its task. A reminder that
 belongs to no task is a capture with a date: make it in the [Inbox](https://icalvete.github.io/augmented-brain/guide/panel.html#inbox).
 
 ## Inbox
@@ -4482,6 +4486,8 @@ still closes, with a line saying no result was given, and Claude writes the resu
 the journal.
 
 - `id`: the task's id.
+- `title` (optional): a new title. The id stays, so every link to the task still works.
+  The journal says what it was.
 - `status` (optional): `definition`, `analysis`, `plan`, `execution`, `validation`,
   `closed`, `parked` or `someday`.
 - `waiting_on` (optional): `me`, `nobody`, a person, or another task's id.
@@ -4491,6 +4497,9 @@ the journal.
 - `watch_date` (optional): add a date to look at something again. Needs `watch_what`.
 - `watch_what` (optional): what to look at on `watch_date`, in one line.
 - `watch_done` (optional): mark the watch date of this day as done.
+- `watch_drop` (optional): take out the watch dates of this day, done or not. With
+  `watch_date` and `watch_what` in the same call, it moves one to another day. The
+  journal says what was taken out or moved.
 - `reopen` (optional): only to open a closed task again, with a new `status`: why, in a
   few words. It goes to the journal. Claude asks you first.
 - `result` (optional): with `status` `closed`, what the task achieved, as in
@@ -4507,7 +4516,7 @@ At least one field besides `id` and `space` is needed.
 **You say:** "that step is done."
 
 Steps are the small parts of a task: checkboxes (`- [ ] text`) in its Plan. This tool adds
-one, or ticks or unticks one. Each change writes a short journal line, and the answer
+one, ticks or unticks one, or corrects, removes or moves one. Each change writes a short journal line, and the answer
 lists the steps. A closed task's steps stay as they were closed.
 
 - `id`: the task's id.
@@ -4517,6 +4526,12 @@ lists the steps. A closed task's steps stay as they were closed.
 - `text` (optional): the step to tick or untick, by its text (or a part only it holds),
   when `number` is not given.
 - `done` (optional): `true` to tick the step, `false` to untick it. Left out, it unticks.
+- `edit` (optional): new text for the step given by `number` or `text`, instead of
+  ticking it. Its mark stays.
+- `remove` (optional): `true` takes the step given by `number` or `text` out of the
+  Plan.
+- `move_to` (optional): move the step given by `number` or `text` to this place in the
+  Plan, 1 for the first.
 - `space` (optional): another of your spaces, whose task this is. Claude uses it only
   when you ask to work on a task of that space from here. See
   [A task of another space](https://icalvete.github.io/augmented-brain/guide/spaces.html#a-task-of-another-space).

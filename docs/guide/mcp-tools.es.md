@@ -117,6 +117,8 @@ también, con una línea que dice que no se dio resultado, y Claude escribe el r
 el diario.
 
 - `id`: el id de la tarea.
+- `title` (opcional): un título nuevo. El id no cambia, así que los enlaces a la tarea
+  siguen funcionando. El diario dice cuál era.
 - `status` (opcional): `definition`, `analysis`, `plan`, `execution`, `validation`,
   `closed`, `parked` o `someday`.
 - `waiting_on` (opcional): `me`, `nobody`, una persona, o el id de otra tarea.
@@ -127,6 +129,9 @@ el diario.
   `watch_what`.
 - `watch_what` (opcional): qué mirar en `watch_date`, en una línea.
 - `watch_done` (opcional): marca como hecha la fecha para revisar de este día.
+- `watch_drop` (opcional): quita las fechas para revisar de este día, hechas o no. Con
+  `watch_date` y `watch_what` en la misma llamada, mueve una a otro día. El diario dice
+  qué se quitó o se movió.
 - `reopen` (opcional): solo para volver a abrir una tarea cerrada, con un `status` nuevo:
   por qué, en pocas palabras. Va al diario. Claude te lo pregunta antes.
 - `result` (opcional): con `status` `closed`, lo que logró la tarea, como en
@@ -143,7 +148,7 @@ Hace falta al menos un campo además de `id` y `space`.
 **Dices:** "ese paso ya está".
 
 Los pasos son las partes pequeñas de una tarea: casillas (`- [ ] texto`) en su Plan. Esta
-herramienta añade una, o la marca o la desmarca. Cada cambio escribe una línea corta en
+herramienta añade una, la marca o la desmarca, o corrige, quita o mueve una. Cada cambio escribe una línea corta en
 el diario, y la respuesta lista los pasos. Los pasos de una tarea cerrada se quedan como
 se cerró.
 
@@ -155,6 +160,11 @@ se cerró.
   tenga él), cuando no se da `number`.
 - `done` (opcional): `true` para marcar el paso, `false` para desmarcarlo. Si no se da,
   lo desmarca.
+- `edit` (opcional): texto nuevo para el paso que dicen `number` o `text`, en vez de
+  marcarlo. Su marca se queda como estaba.
+- `remove` (opcional): `true` quita del Plan el paso que dicen `number` o `text`.
+- `move_to` (opcional): mueve el paso que dicen `number` o `text` a este puesto del
+  Plan, 1 para el primero.
 - `space` (opcional): otro de tus espacios, del que es la tarea. Claude solo lo usa
   cuando le pides trabajar desde aquí en una tarea de ese espacio. Mira
   [Una tarea de otro espacio](spaces.es.md#una-tarea-de-otro-espacio).

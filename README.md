@@ -13,7 +13,8 @@ All in plain text files of yours, backed up to your own git.</p>
 <a href="https://github.com/icalvete/augmented-brain/actions/workflows/vuln.yml?query=branch%3Amain"><img alt="vulnerabilities" src="https://img.shields.io/github/actions/workflow/status/icalvete/augmented-brain/vuln.yml?branch=main&amp;label=vulnerabilities"></a>
 <a href="https://github.com/icalvete/augmented-brain/releases"><img alt="release" src="https://img.shields.io/github/v/release/icalvete/augmented-brain?include_prereleases&amp;sort=semver&amp;label=release"></a>
 <a href="go.mod"><img alt="Go" src="https://img.shields.io/github/go-mod/go-version/icalvete/augmented-brain"></a>
-<a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/icalvete/augmented-brain?label=license"></a></p>
+<a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/icalvete/augmented-brain?label=license"></a>
+<a href="https://scorecard.dev/viewer/?uri=github.com/icalvete/augmented-brain"><img alt="OpenSSF Scorecard" src="https://api.scorecard.dev/projects/github.com/icalvete/augmented-brain/badge"></a></p>
 
 <p align="center"><a href="https://github.com/sponsors/icalvete"><img alt="Sponsor" src="https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white"></a></p>
 

@@ -217,8 +217,10 @@ for v in "$@"; do
     0.*) outside="deny" ;;
     *) outside="" ;;
   esac
+  # Inside a space every release applies every rule, whether it knows reach or not.
   if [ "$(guard "$OLD" "$HOME" "git -C $WORKDIR/code/site push")" = "deny" ] &&
-     [ "$(guard "$OLD" "$HOME" "$su id")" = "$outside" ]; then
+     [ "$(guard "$OLD" "$HOME" "$su id")" = "$outside" ] &&
+     [ "$(guard "$OLD" "$WORKDIR" "$su id")" = "deny" ]; then
     echo "  ok   guard"
   else
     echo "  FAIL guard: guard.toml with reach is not read as before"; fail=1

@@ -160,7 +160,7 @@ func TestSavedSaysWhat(t *testing.T) {
 // Every change the panel makes says what it did, in both languages.
 func TestSavedMessages(t *testing.T) {
 	s, _ := fixture(t, "en")
-	for _, p := range []string{"task/new", "task/update", "task/journal", "task/park", "task/close", "task/step", "watch/add", "watch/done",
+	for _, p := range []string{"task/new", "task/update", "task/journal", "task/park", "task/close", "task/step", "watch/add", "watch/done", "watch/drop", "watch/move",
 		"inbox/capture", "inbox/done", "inbox/edit", "area/new", "area/update", "person", "person/card", "secret", "secret/forget",
 		"review/capture", "review/task", "review/done", "profile", "session/recover", "session/reviewed", "session/delete",
 		"repo/describe", "guard/list/add", "guard/list/remove", "guard/root/add", "guard/root/remove", "guard/accept",

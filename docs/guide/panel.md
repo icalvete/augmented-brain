@@ -80,7 +80,10 @@ A task nobody has changed for 14 days is marked "untouched N days". At the end, 
 the tasks left for **Someday** and the **Closed** ones.
 
 Open one. Its essentials come first, then its steps and what you can do with it: write in
-its journal, change its status or next step, tick its steps, park it or close it. Below,
+its journal, change its title, status or next step, tick its steps, park it or close it.
+Under **Correct, move or remove steps**, fix a step's text, move it up or down, or take it
+out of the plan. Each watch date can move to another day or go. The journal says what
+changed: an old title, a step taken out, a date moved. Below,
 the other sections folded, and the journal newest first. You can open new tasks too. If a
 status skips phases, the journal names them. When a task waits on a person you have a
 note of, "waits on" leads to them.
@@ -94,8 +97,8 @@ choose its phase, say what comes next and, if you like, why. Its journal says it
 reopened from the panel, with your reason.
 
 When you save a task, only what you changed on the page is saved. If Claude changed
-something else in the meantime, that stays. A step is ticked only if it still says what
-the page showed.
+something else in the meantime, that stays. A step is ticked, corrected, moved or
+removed only if it still says what the page showed.
 
 ## Sessions
 
@@ -112,7 +115,8 @@ Your Claude sessions on this computer, from the last 30 days. It is in the menu,
 ## Reminders
 
 The watch dates of your tasks (closed ones too) and the inbox reminders: overdue first,
-then the next 30 days. Mark one done, or add a watch date to a task. A reminder that
+then the next 30 days. Mark one done, or add a watch date to a task. To move a date or
+take it out, open its task. A reminder that
 belongs to no task is a capture with a date: make it in the [Inbox](#inbox).
 
 ## Inbox
