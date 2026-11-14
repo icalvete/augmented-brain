@@ -116,3 +116,72 @@ func (b *Brain) AddStep(id, text string) (*memory.Note, error) {
 	cp.Body = b.journalLine(body, fmt.Sprintf(b.stepText("added"), text))
 	return &cp, b.save(&cp)
 }
+
+// StepChange corrects, removes or moves one step of a task's Plan, found as Step finds
+// it: by number (with Expect, the text it must still have) or by text. Exactly one of
+// Edit (the new text), Remove or MoveTo (the place it goes, 1 for the first) is given.
+type StepChange struct {
+	ID     string
+	Number int
+	Text   string
+	Expect string
+	Edit   string
+	Remove bool
+	MoveTo int
+}
+
+// ChangeStep corrects, removes or moves a step. Each change writes one short line in
+// the journal, as ticking one does; a change that leaves the step as it was changes
+// nothing.
+func (b *Brain) ChangeStep(in StepChange) (*memory.Note, error) {
+	edit := memory.OneLine(in.Edit)
+	asked := 0
+	for _, on := range []bool{edit != "", in.Remove, in.MoveTo != 0} {
+		if on {
+			asked++
+		}
+	}
+	if asked != 1 {
+		return nil, i18n.Errorf("err.step.change")
+	}
+	n, err := b.Task(in.ID)
+	if err != nil {
+		return nil, err
+	}
+	if err := closedTask(n); err != nil {
+		return nil, err
+	}
+	steps := memory.Steps(n.Body)
+	if want := strings.TrimSpace(in.Expect); in.Number != 0 && want != "" &&
+		(in.Number < 1 || in.Number > len(steps) || steps[in.Number-1].Text != want) {
+		return nil, fmt.Errorf(b.stepText("moved"), in.Number, want)
+	}
+	s, err := findStep(steps, in.Number, in.Text)
+	if err != nil {
+		return nil, err
+	}
+	cp := *n
+	var line string
+	switch {
+	case edit != "":
+		if edit == s.Text {
+			return n, nil
+		}
+		cp.Body = memory.SetStepText(cp.Body, s.Line, edit)
+		line = fmt.Sprintf(b.stepText("edited"), s.N, s.Text, edit)
+	case in.Remove:
+		cp.Body = memory.RemoveStep(cp.Body, s.Line)
+		line = fmt.Sprintf(b.stepText("removed"), s.N, s.Text)
+	default:
+		if in.MoveTo < 1 || in.MoveTo > len(steps) {
+			return nil, i18n.Errorf("err.step.number", in.MoveTo, len(steps))
+		}
+		if in.MoveTo == s.N {
+			return n, nil
+		}
+		cp.Body = memory.MoveStep(cp.Body, s.Line, steps[in.MoveTo-1].Line)
+		line = fmt.Sprintf(b.stepText("reordered"), s.Text, s.N, in.MoveTo)
+	}
+	cp.Body = b.journalLine(cp.Body, line)
+	return &cp, b.save(&cp)
+}

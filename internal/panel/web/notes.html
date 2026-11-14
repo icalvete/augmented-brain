@@ -6,6 +6,36 @@
 {{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{if .Space}}{{.Space}}{{else}}{{$.Space}}{{end}}&amp;id={{.ID}}">{{.Title}}</a>
   <div class="meta">{{range .Badges}}<span class="badge">{{.}}</span>{{end}}{{if .Kind}}<span class="badge">{{.Kind}}</span>{{end}}{{if .Shared}}<span class="badge">{{t "shared"}}</span>{{end}}{{if .Summary}}<span>{{inline .Summary}}</span>{{end}}</div></li>{{end}}
 </ul>{{else}}<p class="empty">{{.Empty}}</p>{{end}}
+{{if eq .New "rule"}}<details class="box"{{if $.Open "/rule/new"}} open{{end}}>
+  <summary>{{t "rule.new"}}</summary>
+  <form method="post" action="{{$.Base}}/rule/new" class="stack">
+    {{template "fields" (fields $)}}
+    <label>{{t "f.title"}} <input name="title" required maxlength="300" value="{{$.Val "/rule/new" "title" ""}}"></label>
+    <label>{{t "f.summary"}} <input name="summary" maxlength="1000" value="{{$.Val "/rule/new" "summary" ""}}"></label>
+    <label>{{t "f.body"}} <textarea name="body" rows="8" required maxlength="64000">{{$.Val "/rule/new" "body" ""}}</textarea></label>
+    <label class="check"><input type="checkbox" name="shared" value="1"{{if $.On "/rule/new" "shared" "1" false}} checked{{end}}> {{t "f.shared"}}</label>
+    <p class="hint">{{t "rule.new.hint"}}</p>
+    {{if .Ask}}<label class="check"><input type="checkbox" name="confirm" value="1" required{{if $.On "/rule/new" "confirm" "1" false}} checked{{end}}> {{t "rule.confirm"}}</label>
+    {{template "ferr" ($.Err "/rule/new" "confirm")}}{{end}}
+    {{template "ferr" ($.FormErr "/rule/new")}}
+    <button type="submit">{{t "create"}}</button>
+  </form>
+</details>{{end}}
+{{if eq .New "knowledge"}}<details class="box"{{if $.Open "/knowledge/new"}} open{{end}}>
+  <summary>{{t "knowledge.new"}}</summary>
+  <form method="post" action="{{$.Base}}/knowledge/new" class="stack">
+    {{template "fields" (fields $)}}
+    <label>{{t "f.kind"}} <select name="kind"><option value="reference"{{if $.On "/knowledge/new" "kind" "reference" true}} selected{{end}}>{{t "kind.reference"}}</option><option value="lesson"{{if $.On "/knowledge/new" "kind" "lesson" false}} selected{{end}}>{{t "kind.lesson"}}</option></select></label>
+    <label>{{t "f.title"}} <input name="title" required maxlength="300" value="{{$.Val "/knowledge/new" "title" ""}}"></label>
+    <label>{{t "f.summary"}} <input name="summary" maxlength="1000" value="{{$.Val "/knowledge/new" "summary" ""}}"></label>
+    <label>{{t "f.body"}} <textarea name="body" rows="8" maxlength="64000">{{$.Val "/knowledge/new" "body" ""}}</textarea></label>
+    <label>{{t "f.area"}} <select name="area">{{range .Areas}}<option value="{{.Value}}"{{if $.On "/knowledge/new" "area" .Value .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+    <label class="check"><input type="checkbox" name="shared" value="1"{{if $.On "/knowledge/new" "shared" "1" false}} checked{{end}}> {{t "f.shared"}}</label>
+    <p class="hint">{{t "knowledge.new.hint"}}</p>
+    {{template "ferr" ($.FormErr "/knowledge/new")}}
+    <button type="submit">{{t "create"}}</button>
+  </form>
+</details>{{end}}
 {{if .NewPerson}}<details class="box"{{if $.Open "/person"}} open{{end}}>
   <summary>{{t "person.new"}}</summary>
   <form method="post" action="{{$.Base}}/person" class="stack">

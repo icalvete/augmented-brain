@@ -43,7 +43,7 @@ abierto, enseña cada bloque en dos columnas, y una sombra al pie dice que sigue
 | [Recordatorios](#recordatorios) | Fechas para revisar y recordatorios del buzón | un espacio |
 | [Buzón](#buzón) | Ideas sueltas, para más tarde | un espacio |
 | [Revisión semanal](#revisión-semanal) | Vaciar el buzón, mirar las tareas paradas | un espacio |
-| [Áreas, conocimiento, reglas](#áreas-conocimiento-reglas-y-personas) | Leerlas; crear áreas | un espacio, más las notas compartidas |
+| [Áreas, conocimiento, reglas](#áreas-conocimiento-reglas-y-personas) | Leerlas y escribirlas; crear áreas | un espacio, más las notas compartidas |
 | [Personas](#áreas-conocimiento-reglas-y-personas) | Quién es quién | todos los espacios |
 | [Repositorios](#repositorios) | Trabajo que solo está en este ordenador | todos los espacios |
 | [Secretos](#secretos) | Los nombres de tus secretos | la misma lista en todos los espacios |
@@ -82,8 +82,11 @@ paradas, o las que esperan a una persona. Una tarea que nadie ha cambiado en 14 
 marcada «parada N días». Al final, plegadas, las de **Algún día** y las **Cerradas**.
 
 Abre una. Primero lo esencial, después sus pasos y lo que puedes hacer con ella: escribir
-en su diario, cambiar su estado o su siguiente paso, marcar sus pasos, aparcarla o
-cerrarla. Debajo, las demás secciones plegadas, y el diario con lo último arriba. También
+en su diario, cambiar su título, su estado o su siguiente paso, marcar sus pasos,
+aparcarla o cerrarla. En **Corregir, mover o quitar pasos** cambias el texto de un paso,
+lo subes o lo bajas, o lo quitas del plan. Cada fecha para revisar se puede mover a otro
+día o quitar. El diario dice qué cambió: el título anterior, un paso quitado, una fecha
+movida. Debajo, las demás secciones plegadas, y el diario con lo último arriba. También
 puedes abrir tareas nuevas. Si un estado se salta fases, el diario las nombra. Si una
 tarea espera a una persona de la que tienes nota, «espera a» te lleva a ella.
 
@@ -96,8 +99,8 @@ elige su fase, di qué viene ahora y, si quieres, por qué. Su diario dice que s
 desde el panel, con tu motivo.
 
 Al guardar una tarea, solo se guarda lo que cambiaste en la página. Si Claude cambió otra
-cosa mientras tanto, se queda. Un paso solo se marca si sigue diciendo lo que mostraba la
-página.
+cosa mientras tanto, se queda. Un paso solo se marca, se corrige, se mueve o se
+quita si sigue diciendo lo que mostraba la página.
 
 ## Sesiones
 
@@ -114,13 +117,15 @@ Tus sesiones de Claude en este ordenador, de los últimos 30 días. Está en el 
 ## Recordatorios
 
 Las fechas para revisar de tus tareas (también de las cerradas) y los recordatorios del
-buzón: primero lo atrasado, luego los próximos 30 días. Marca uno como hecho, o añade a una tarea una fecha para revisar. Un recordatorio que no es
+buzón: primero lo atrasado, luego los próximos 30 días. Marca uno como hecho, o añade a una tarea una fecha para revisar. Para mover una fecha
+o quitarla, abre su tarea. Un recordatorio que no es
 de ninguna tarea es una captura con fecha: se crea en el [Buzón](#buzón).
 
 ## Buzón
 
 Apunta una idea, con una fecha para que te la recuerde si quieres. Márcala como resuelta,
-o conviértela en tarea.
+o conviértela en tarea. **Corregir** cambia el texto de un apunte o su recordatorio (vacío
+lo quita); su fecha se queda, y también el espacio del que vino.
 
 ## Revisión semanal
 
@@ -132,8 +137,20 @@ en el registro de la revisión al terminar.
 ## Áreas, conocimiento, reglas y personas
 
 Conocimiento y reglas enseñan las del espacio y las compartidas, marcadas «compartida».
-Aquí se leen; no se escriben. Una referencia o una lección la crea Claude, o sale de una
-captura en la [revisión semanal](#revisión-semanal); una regla, Claude. Puedes crear áreas y cambiar el título y el resumen de un área.
+También se escriben aquí. **Regla nueva** y **Referencia o lección nueva** crean una, en
+este espacio o compartida por todos. En la página de una regla, referencia o lección,
+**Editar** cambia su título, su resumen, su área y su texto (Markdown); la versión que
+sustituye se guarda en `archive/`. Si la nota ha cambiado desde que se mostró la página,
+no se sobrescribe nada: vuelve a cargarla y repite. **Retirar** la pasa a `archive/` con
+el porqué, y ya no se carga nunca: una regla retirada deja de llegar a tus sesiones. No se
+borra nada.
+
+Una regla cambia lo que sigue cada sesión. Si elegiste que se te pregunte antes
+(`memory_trust = "ask"`, en la página [Guardia](#guardia)), estos formularios enseñan una
+casilla que hay que marcar antes de guardar, cambiar o retirar una regla. Funciona también
+desde el [panel remoto](panel-remote.es.md), con su propia entrada.
+
+Puedes crear áreas y cambiar el título y el resumen de un área.
 
 Las personas salen una sola vez, con una etiqueta por cada espacio en el que están. Una
 persona nueva empieza en el espacio en el que estás. La página de una persona es un solo
