@@ -118,7 +118,8 @@ Two folders are never loaded:
 
 Every note is plain Markdown. Open it with any editor and change it. Afterwards, run
 `augmented-brain check` in a folder of the space: it checks every note and rebuilds the
-index.
+index. [Editing notes by hand](editing-notes.md) says what to keep so the note stays
+readable.
 
 ## Next
 
