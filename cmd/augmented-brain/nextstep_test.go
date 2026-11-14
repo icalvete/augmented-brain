@@ -22,3 +22,25 @@ func TestNextStepSaysNewTerminal(t *testing.T) {
 		}
 	}
 }
+
+// Whatever the last message suggests, it says the first time Claude asks who you are:
+// it is the one place the installer tells it (with the desktop app too).
+func TestNextStepTellsTheInterview(t *testing.T) {
+	want := map[string]string{"en": "who you are", "es": "quién eres"}
+	cases := map[string][3]string{ // AB_DESKTOP, AB_LAUNCH, AB_NEW_TERMINAL
+		"desktop": {"1", "", ""},
+		"launch":  {"", "1", ""},
+		"newterm": {"", "", "1"},
+		"now":     {"", "", ""},
+	}
+	for name, env := range cases {
+		t.Setenv("AB_DESKTOP", env[0])
+		t.Setenv("AB_LAUNCH", env[1])
+		t.Setenv("AB_NEW_TERMINAL", env[2])
+		for lang, w := range want {
+			if got := nextStep(lang, "~/augmented-brain/work"); !strings.Contains(got, w) {
+				t.Errorf("%s (%s): %q says nothing of the first-session questions", name, lang, got)
+			}
+		}
+	}
+}

@@ -586,16 +586,16 @@ if [ "$desktop" = 1 ]; then
   # and closes. Then say so, instead of seeming to open one.
   if { [ "$os" = darwin ] && pgrep -x Claude >/dev/null 2>&1; } ||
      { [ "$os" = linux ] && pgrep -f claude-desktop >/dev/null 2>&1; }; then
-    say "The Claude app is already open. Close it completely and open it again, so it loads augmented brain; then the Code tab and + New." \
-        "La app de Claude ya está abierta. Ciérrala del todo y vuelve a abrirla, para que cargue augmented brain; luego, pestaña Code y + New."
+    say "The Claude app is already open. Close it completely and open it again, so it loads augmented brain." \
+        "La app de Claude ya está abierta. Ciérrala del todo y vuelve a abrirla, para que cargue augmented brain."
   elif ask "$(say "Open the Claude app now?" "¿Abro ahora la app de Claude?") $(yn)"; then
+    # What to do in it was said just above, by init: said once.
+    say "Opening the Claude app…" "Abriendo la app de Claude…"
     if [ "$os" = darwin ]; then
       open -a Claude
     else
       nohup claude-desktop >/dev/null 2>&1 &
     fi
-    say "In the app, sign in, open the Code tab and click + New: without choosing a folder you work in your personal space; for work, pick $(tilde "$work") with Choose…" \
-        "En la app, entra con tu cuenta, abre la pestaña Code y pulsa + New: sin elegir carpeta trabajas en tu espacio personal; para el de trabajo, elige $(tilde "$work") con Choose…"
   fi
 elif ask "$(say "Open Claude now in your work space?" "¿Abro Claude ahora en tu espacio de trabajo?") $(yn)"; then
   cd "$work" && exec claude </dev/tty >/dev/tty 2>&1
