@@ -157,6 +157,8 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Every guide in the sidebar and in both READMEs | `cmd` `TestGuidesInTheSidebar`, `TestReadmesLinkEveryGuide` |
 | Every example is a real command with real flags | `cmd` `TestDocExamples` |
 | The website's pages match the guides | CI, `privacy` job |
+| The help skill carries every guide in both languages, its links lead to files it carries, its description fits | `internal/claudecode` `TestHelpSkillCarriesTheGuides`; CI, `privacy` job (generated copy up to date) |
+| Claude uses the help skill by itself for a question, and `/brain:help` proposes one step | by hand: `claude -p --plugin-dir plugin --allowedTools Skill "<question>"`; in Claude Desktop, by the user before a release |
 | What the guides claim is true | by hand: a page-by-page review against the code before a release |
 
 ## The pass on a real Mac

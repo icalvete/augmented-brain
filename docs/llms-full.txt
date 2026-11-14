@@ -146,6 +146,9 @@ Talk to it as usual. These phrases pay off from day one:
 
 More phrases, grouped by what you want: [What to say to Claude](https://icalvete.github.io/augmented-brain/guide/phrases.html).
 
+Any doubt about augmented brain itself, ask Claude too ("how do I back up my notes?"): it
+answers with these guides. Not sure what to do next? Type `/brain:help`.
+
 ## Words you will hear
 
 - **Space:** a separate drawer, with its own notes and rules. There are two, `work` and
@@ -1786,7 +1789,7 @@ fit. To use it, you do not need any of this.
 | Layer | What it is | Where it lives |
 |---|---|---|
 | **3 · You and your assistant** | You talk to Claude Code as usual. No new commands to learn. | Your terminal or the Claude app |
-| **2 · The plugin** | The doors Claude uses to reach the program: a few hooks and an MCP server. | Inside Claude Code, which installs it |
+| **2 · The plugin** | The doors Claude uses to reach the program: a few hooks, an MCP server, and the guides, so Claude can answer your questions about augmented brain. | Inside Claude Code, which installs it |
 | **1 · The program** | `augmented-brain`, a single file. It guards commands, keeps tasks, rebuilds the index and runs the backup. | `~/.local/bin/augmented-brain` |
 | **0 · Your files** | Plain text: the configuration, your notes and, if you want, their backup. | `~/.config/augmented-brain/`, `~/augmented-brain/` and your git repository |
 
@@ -1969,6 +1972,8 @@ wording with the same meaning works too.
 | "Recover the session that was cut off." | Reads what was said after the last journal entry, and writes down what is missing |
 | "~/code/blog is the blog, built with Hugo." | Writes that line for the repository, shown in the panel |
 | `/brain:panel` | Opens the panel in your browser |
+| "How do I see the panel on my phone?" | Answers any question about augmented brain with the guides of the version you have, no internet needed |
+| `/brain:help` | With no question, proposes one next step: the one you are missing |
 
 ## When Claude talks first
 
@@ -2275,7 +2280,11 @@ the page only shows. See [Configuration versions](https://icalvete.github.io/aug
 
 ## Help
 
-Links to the answers on this website, in your language. And a way to tell us about a
+First, a reminder that you can ask Claude: in a session, ask in your own words how to do
+something, and it answers with the guides of the version you have installed. With
+`/brain:help` and no question, it proposes your next step.
+
+Then links to the answers on this website, in your language. And a way to tell us about a
 problem or propose an idea on GitHub (the website where the project lives; you need a
 free account there).
 
@@ -3424,8 +3433,9 @@ Some commands are started for you, not by you: Claude Code starts `mcp` and `hoo
 `panel` starts `panel serve`, and on Linux a timer runs `remote watch`. They are here so
 you know what they are.
 
-Inside Claude Code there is one slash command: `/brain:panel` opens the panel, as
-`augmented-brain panel` does.
+Inside Claude Code there are two slash commands: `/brain:panel` opens the panel, as
+`augmented-brain panel` does, and `/brain:help` answers a question about augmented brain
+with these guides, or with no question proposes your next step.
 
 ## I want to…
 
@@ -5869,6 +5879,9 @@ augmented-brain doctor
 It checks the whole setup and says what is missing and how to fix it. Each line starts
 with a mark: `✓` fine, `·` for your information, `!` a warning, `✗` something that
 fails. Under a line that needs work, `→` says what to do.
+
+You can also ask Claude, in your own words: it knows these guides, the ones of the version
+you have installed, and runs `doctor` itself when something fails.
 
 If you have the panel open, its **Help** page has links to these answers and a button to
 report a problem on GitHub, with the health check filled in and what is personal taken

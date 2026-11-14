@@ -1,0 +1,458 @@
+# MCP tools
+
+
+You say "park it". Claude calls the tool `task_park`, with the task's id and the next
+step. The program writes the task file. You never call these tools yourself: Claude does,
+behind your words.
+
+**MCP** (Model Context Protocol) is an open standard to give tools to an assistant. The
+program serves these tools with `augmented-brain mcp`, which Claude Code starts through
+the plugin. In Claude Code they show up as `mcp__plugin_brain_augmented-brain__<tool>`.
+
+Each tool below opens with what you might say to have Claude call it. Your words do not
+need to match: Claude picks the tool by what you mean.
+
+A few things hold for every tool:
+
+- It works on **the space of the folder Claude is in**, found again on every call.
+- Tools run one at a time, and wait for the panel, so two never write at once.
+- **No secrets.** A tool refuses to write a password, a token or a key into a note.
+- **Nothing is deleted.** Tasks are closed, not removed.
+- **Titles, summaries, next steps and names are one line.** Line breaks in them become
+  spaces, so text copied from outside can never open a section of its own in what
+  every session reads at the start. Each field has a generous limit (a next step, 2,000
+  characters; a journal entry, 32,000): past it, nothing is saved and the error says
+  where the long text goes. The [memory format](memory-format.md#file-header)
+  lists them all.
+- Dates are written `YYYY-MM-DD`.
+- A parameter is required unless it says optional.
+
+## Tools by purpose
+
+- **Where things are**: [`where_am_i`](#where_am_i), [`pending`](#pending).
+- **Tasks**: [`task_new`](#task_new), [`task_get`](#task_get),
+  [`task_update`](#task_update), [`task_step`](#task_step),
+  [`task_journal`](#task_journal), [`task_park`](#task_park), [`task_close`](#task_close),
+  [`task_worktree`](#task_worktree).
+- **Inbox and the weekly review**: [`capture`](#capture),
+  [`capture_done`](#capture_done), [`weekly_review`](#weekly_review), [`review_done`](#review_done).
+- **Notes that last**: [`area_new`](#area_new), [`knowledge_new`](#knowledge_new),
+  [`rule_new`](#rule_new), [`note_retire`](#note_retire), [`person_save`](#person_save),
+  [`repo_describe`](#repo_describe).
+- **You and this machine**: [`profile_save`](#profile_save),
+  [`safety_save`](#safety_save), [`secret_name_save`](#secret_name_save),
+  [`backup_setup`](#backup_setup), [`session_recover`](#session_recover).
+
+## `where_am_i`
+
+**You say:** "which space is this?" Claude also calls it on its own when it needs the space's folders.
+
+Which space this session works in, its notes folder, its areas, and how many tasks are
+live. It takes no parameters.
+
+## `pending`
+
+**You say:** "where were we?"
+
+The live tasks, those waiting on you first, each with its status, steps done, who it
+waits on and its next step (cut at 300 characters: `task_get` gives it whole). Then the
+watch dates that are due. Claude uses it for "where were we?".
+
+- `within_days` (optional): also list watch dates due within this many days. Default 7.
+- `space` (optional): another of your spaces, to list its live tasks instead, read
+  only: to find the task you mean there.
+
+## `task_new`
+
+**You say:** "let's move the blog to a new server."
+
+Opens a new task, in the definition phase and waiting on you. With a parent, it is a
+subtask.
+
+- `title`: a short name for the task.
+- `summary` (optional): one line on what it is.
+- `area` (optional): the id of its area. Default: the parent's area, or `area-general`
+  when that area exists.
+- `parent` (optional): the id of the task this one is a part of. One level only: the
+  parent cannot be a subtask, nor closed.
+- `goal` (optional): one line on what the task is for. It goes into the Definition.
+- `done_when` (optional): one line on how we will know it worked. It goes into the
+  Definition.
+
+## `task_get`
+
+**You say:** "let's go on with the blog move." Claude also calls it before resuming any task.
+
+Reads a task: its header, its whole body with the journal, and its subtasks. It also says
+which task it is part of, and whether a repository it names is missing from this
+computer. Claude reads a task before resuming it. Old journal entries moved to
+`archive/journals/` are named by a line of the journal (see
+[A long journal](tasks.md#a-long-journal)); a task still too long for one answer, written
+by hand or by an earlier version, is read without its oldest entries, and a line says
+where they are.
+
+- `id`: the task's id, such as `task-move-the-blog`.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. See
+  [A task of another space](spaces.md#a-task-of-another-space).
+
+## `task_update`
+
+**You say:** "the definition is fine, go on", or "this waits on Ana now."
+
+Changes a task. Only the fields given change. A change of status is written in the
+journal, and when it skips phases (straight from `definition` to `execution`, say), the
+line names the ones skipped: skipping is allowed, and it is seen. A closed task opens
+again only with `reopen`.
+
+`status` `closed` closes the task exactly as [`task_close`](#task_close) does: open
+subtasks keep it from closing, the result goes to the note, open watch dates are named,
+and the task's session and worktrees are dealt with the same way. Without `result` it
+still closes, with a line saying no result was given, and Claude writes the result in
+the journal.
+
+- `id`: the task's id.
+- `status` (optional): `definition`, `analysis`, `plan`, `execution`, `validation`,
+  `closed`, `parked` or `someday`.
+- `waiting_on` (optional): `me`, `nobody`, a person, or another task's id.
+- `next` (optional): the single next action, in one line.
+- `summary` (optional): one line on what it is.
+- `area` (optional): the id of its area.
+- `watch_date` (optional): add a date to look at something again. Needs `watch_what`.
+- `watch_what` (optional): what to look at on `watch_date`, in one line.
+- `watch_done` (optional): mark the watch date of this day as done.
+- `reopen` (optional): only to open a closed task again, with a new `status`: why, in a
+  few words. It goes to the journal. Claude asks you first.
+- `result` (optional): with `status` `closed`, what the task achieved, as in
+  `task_close`. With any other status it is refused.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. Closing it is left to a
+  session of that space. See
+  [A task of another space](spaces.md#a-task-of-another-space).
+
+At least one field besides `id` and `space` is needed.
+
+## `task_step`
+
+**You say:** "that step is done."
+
+Steps are the small parts of a task: checkboxes (`- [ ] text`) in its Plan. This tool adds
+one, or ticks or unticks one. Each change writes a short journal line, and the answer
+lists the steps. A closed task's steps stay as they were closed.
+
+- `id`: the task's id.
+- `add` (optional): add this step, unticked, at the end of the Plan, instead of ticking
+  one.
+- `number` (optional): the step to tick or untick, 1 for the first checkbox.
+- `text` (optional): the step to tick or untick, by its text (or a part only it holds),
+  when `number` is not given.
+- `done` (optional): `true` to tick the step, `false` to untick it. Left out, it unticks.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. See
+  [A task of another space](spaces.md#a-task-of-another-space).
+
+## `task_journal`
+
+**Claude calls it** on its own, the moment something is done or decided.
+
+Adds a dated entry to a task's journal. Claude writes one at the moment something is
+done or decided.
+
+- `id`: the task's id.
+- `entry`: what was done, what came out, what was decided.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. The entry ends in
+  `(from <this space>)`. See
+  [A task of another space](spaces.md#a-task-of-another-space).
+
+## `task_park`
+
+**You say:** "park it, I'll go on tomorrow."
+
+Pauses a task without losing anything, before switching to other work. A closed task is
+refused: it opens again only with `task_update` and `reopen`, so its result stays.
+
+- `id`: the task's id.
+- `next`: exactly how to resume: a command, a file or a decision.
+- `waiting_on` (optional): who it waits on now.
+- `essentials` (optional, but Claude should pass it): three to six lines that are enough to
+  resume without the journal. They replace the task's first section. Without it, only
+  "where it is" and "next" are updated there.
+- `someday` (optional): `true` when it will not be touched for weeks. The task leaves
+  the daily list.
+
+## `task_close`
+
+**You say:** "done, close it."
+
+Closes a finished task with its result. It is kept, never deleted.
+
+- A task with open subtasks cannot close. A task already closed is refused, so its
+  result is never written over.
+- Watch dates not marked done are named. They still come up at the start of the session
+  from a week before their day: closing is often when you write down what to check
+  later.
+- The task's git worktrees (made by `session start` or noted with
+  [`task_worktree`](#task_worktree)) are removed, with the branch made for them, when
+  they hold nothing that is not on the remote, nor a file git ignores that no build
+  makes again (a `.env`). Otherwise the answer says why one stays.
+- When the task's own session still runs (often the one closing it), a process of its
+  own closes that session once it has finished its answer, takes it out of Claude
+  Desktop and claude.ai, and then removes its worktree the same way. A session Claude
+  retired after hours unused is closed at once.
+
+- `id`: the task's id.
+- `result`: what was achieved, in one or two lines.
+
+## `task_worktree`
+
+**You say:** "work on this in a worktree of its own." `session start` also makes one for a bare repository.
+
+Makes a git worktree for a task, or notes one already made, so closing the task removes
+it. A worktree is a second folder of a repository, on a branch of its own, so a task can
+change code without touching the main folder.
+
+- Made here, it is `<repo>-<task>`, next to the repository, on a new branch named after
+  the task, from origin's default branch as it is now. Asked again, it returns the same
+  one.
+- When the task is closed, each worktree with nothing not committed, nothing not pushed
+  and no ignored file of its own (a `.env`) is removed. One made here goes with its
+  branch; a noted one keeps its branch. One with work of its own stays, and so does the
+  one the closing session works in; the answer says why.
+- Both paths must lie inside the space's work folders. A closed task is refused.
+
+- `id`: the task's id.
+- `repo` (optional): a git repository: makes the task's worktree of it.
+- `folder` (optional): a worktree already made for the task: notes it. Give `repo` or
+  `folder`, one of the two.
+
+## `capture`
+
+**You say:** "remind me on Thursday to call the bank" → `capture` with `remind_on`.
+
+Notes something in the inbox without opening a task, optionally with a day to be
+reminded. The weekly review processes it.
+
+- `text`: the idea, link or loose end, in one line.
+- `remind_on` (optional): a date. It comes up at the start of the session from a week
+  before, until it is dealt with.
+- `space` (optional): another of your spaces, to send it there instead. It lands in
+  that space's inbox marked with where it came from, `(from personal)`, and comes up at
+  the start of every session there until it is done. For something decided in one space
+  that has to be done in another. Claude only does it when you ask: what goes to a
+  space is seen there and goes into its backup.
+
+## `capture_done`
+
+**You say:** "that one in the inbox is done."
+
+Takes one capture out of the inbox once it is done, or once it has become a task,
+without waiting for the weekly review. Above all for what another space sent, which
+otherwise comes up at every session start.
+
+- `date`: the day it was captured, as listed.
+- `text`: its text exactly as listed, with or without its origin. Another capture with
+  the same text stays.
+
+## `weekly_review`
+
+**You say:** "let's do the weekly review."
+
+Lists what the weekly review goes through: the inbox, live tasks untouched for 14 days
+or more, and the dates due in the next 7 days. Claude then goes through it with you, one
+item at a time. It takes no parameters.
+
+## `review_done`
+
+**Claude calls it** at the end of the weekly review.
+
+Finishes the weekly review. It saves what was decided in `reviews/`, with the captures
+it takes out of the inbox (each with its date), and only then takes them out. A review
+that cannot be saved (an empty summary, something that looks like a secret) leaves the
+inbox as it was, so no capture is lost.
+
+- `summary`: what was decided, in a few lines.
+- `processed` (optional): the text of each capture dealt with, exactly as `weekly_review`
+  listed it. They leave the inbox. One that is not found is left as it was, and named.
+
+## `area_new`
+
+**You say:** "open an area for the house."
+
+Creates an area: a responsibility with no end date that groups tasks and knowledge.
+
+- `title`: the area's name.
+- `summary` (optional): one line on what it looks after.
+
+## `knowledge_new`
+
+**You say:** "write down how we fixed this."
+
+Saves a reference or a lesson worth keeping beyond one task: in this space, or shared by
+every space. A title that already exists creates nothing: Claude is told its id, to change
+that one or choose another title. Nothing is ever saved twice without anyone knowing.
+
+- `id` (optional): to change a reference or lesson that exists. What is sent replaces
+  what it had, what is left out stays, and the version it replaces is kept in
+  `archive/`.
+- `kind`: `reference` (how something works) or `lesson` (what was learned).
+- `title`: for a lesson, a title that already states the conclusion. Needed also with
+  `id`; empty there, the title stays as it was.
+- `summary` (optional): one line.
+- `area` (optional): the id of its area.
+- `body` (optional): the text, in Markdown.
+- `shared` (optional): `true` when it holds in every space. It then has no area.
+
+## `rule_new`
+
+**You say:** "from now on, always answer in short sentences."
+
+Saves a rule you give on how to work. Every session loads it. A title that already exists
+creates nothing: Claude is told its id. Claude Code tells you, once, which rule was saved
+or changed, in a message of its own at the end of the answer: if you did not ask for it,
+tell Claude to undo it. If you chose to be asked first
+([`memory_trust`](configuration.md#sessiontoml)), Claude Code asks you before it is
+saved.
+
+- `id` (optional): to change a rule that exists. What is sent replaces what it had, what
+  is left out stays, and the version it replaces is kept in `archive/`.
+- `title`: the rule in a few words.
+- `summary` (optional): one line that says what to do.
+- `body`: what to do, and why, in Markdown.
+- `shared` (optional): `true` when it applies in every space, not only this one.
+
+`title` and `body` are needed also with `id`; empty there, they stay as they were.
+
+## `note_retire`
+
+**You say:** "that rule no longer holds."
+
+Retires a rule, reference or lesson that no longer holds, without deleting it. It moves
+to `archive/`, which is never loaded, so a retired rule stops reaching the session start.
+A line at its end says when, why and what replaces it. For a duplicate or an old
+version; Claude asks you first. When it retires a rule, Claude Code tells you, once; or
+asks you first, if you chose that ([`memory_trust`](configuration.md#sessiontoml)).
+
+- `id`: the rule, reference or lesson.
+- `reason`: why, in a few words. It stays with the note.
+- `replaced_by` (optional): the id of the note that replaces it.
+- `shared` (optional): `true` when the note is in the shared layer.
+
+## `person_save`
+
+**You say:** "Ana is my manager."
+
+Remembers someone you work or deal with, so a first name leads to the right person.
+Saving a name that exists updates that person.
+
+A person can be in several spaces: the same person, with the role and notes each space
+may show. Claude asks you where it should be visible (for instance, a note about a friend
+should not land in your work space) and passes your answer in `spaces`. With only one
+space, there is nothing to ask. Without `spaces` and with several, nothing is saved: the
+answer lists your spaces and asks. What is saved in a space is seen in that space only.
+
+- `name`: the full name, or how you know them.
+- `aliases` (optional): other names you use for them, such as a nickname.
+- `role` (optional): who they are to you, in a few words: "my manager", "runs the
+  hosting company".
+- `notes` (optional): anything else worth remembering.
+- `spaces` (optional with one space, needed with several): the names of the spaces where
+  this is visible. The role, other names and notes are written in those spaces only.
+
+## `repo_describe`
+
+**You say:** "the `shop` repository is the online store."
+
+Writes down, in one line, what one of your git repositories is, for the panel's
+Repositories page. Only repositories inside this space's work folders. The line goes to
+the reference `ref-repositories`, one line per repository; a new one replaces the old.
+
+- `repo`: the repository: its path (`~/…` or absolute), or its name as a task's `repos:`
+  writes it, relative to a work folder.
+- `text`: what it is, in one line, in your words. Empty takes the line out.
+
+## `profile_save`
+
+**You say:** "call me Lucía", or answer the first-session interview.
+
+Saves who you are, how you like to work, and the name and personality you give Claude.
+Every space shares it, and every session starts by reading it. Claude sends only the
+parts that change: a part left out keeps what it has, and an empty one is cleared.
+Claude Code tells you, once, which parts changed; or asks you first, if you chose that
+([`memory_trust`](configuration.md#sessiontoml)).
+
+- `name` (needed the first time): what you want to be called.
+- `about` (optional): what you do and work on, in short lines starting with `- `.
+- `work_style` (optional): how you like to work with Claude: language, length of
+  answers, how much to ask before acting. Short lines starting with `- `.
+- `assistant_name` (optional): the name you give Claude. It signs with it the emails it
+  writes in your name, always followed by a line that says it is an AI (see
+  [Panel, Profile](panel.md#profile)).
+- `assistant_personality` (optional): how you want Claude to be, in your words. Style
+  only: it never changes the rules, the guard or its honesty.
+
+## `safety_save`
+
+**You say:** "the AWS profile `shop-prod` is production."
+
+Adds to what the guard asks you about. The lists hold on this whole machine, in every
+space. It only adds: to take one out, use the panel's Guard page (the answer names the
+configuration file too). Claude Code tells you, once, what was added; or asks you first, if you chose that
+([`memory_trust`](configuration.md#sessiontoml)).
+
+Adding only makes the guard ask more, so lists you had accepted stay accepted: commits,
+pushes and other machines do not start asking after it. If something else had changed
+the lists first, they still wait for you to accept them (see
+[the guard](guard.md#only-you-change-the-guards-lists)).
+
+- `production_aws_profiles` (optional): AWS CLI profiles that reach production. The guard
+  asks before commands that use them.
+- `untouchable_hosts` (optional): machines not to touch without asking, as you type them
+  for ssh.
+
+## `secret_name_save`
+
+**You say:** "the alerts bot's token is in the keychain as `telegram/alerts-bot`."
+
+Writes down the name of a secret you keep in the system keychain, and what it is for.
+Never its value: a value is refused. That covers the tokens of known services, a long
+run of letters and digits, a password said with its label (`password=…`, "the password
+is …"), an address with a password in it, a JWT and a PIN or CVV with its number. The
+list is the same in every space; the panel shows it. Saving a name that is listed changes
+what it is for.
+
+- `service`: the service the secret is kept under in the keychain, such as `telegram`.
+- `name`: its name under that service, such as `alerts-bot`.
+- `what` (optional): what it is for, in a few words: 160 characters at most.
+
+## `backup_setup`
+
+**You say:** "back up my notes."
+
+Sets up the backup of this space: a private git repository that keeps its notes, pushed
+by itself every time a session ends.
+
+It creates `augmented-brain-<space>`, a private repository in your GitHub account, with
+the `gh` command line, and makes the first copy right away. When `gh` is missing or not
+logged in, it returns the steps to guide you through.
+
+- `repo_url` (optional): leave it out. It is kept so that calls from earlier versions
+  still work, and an address in it is always refused. A backup somewhere else (GitLab, your company's git) is yours to
+  set up, with `augmented-brain backup setup <url>` or the panel's Backup page: an
+  address Claude passes on could come from anything it read, and one call would send
+  every note there.
+
+If the space already has a backup, it says where it goes and how the last one went; it
+never moves it elsewhere: only you do, with `augmented-brain backup setup <url>`.
+
+## `session_recover`
+
+**You say:** "yes, recover it", when the session start offers it.
+
+Reads what you and Claude said in an earlier session of this space that did not end
+well, after the last journal entry of its task. Only the messages, no tool output, at
+most the last 20,000 characters, from Claude Code's record on this computer (kept 30
+days). Claude then writes in the journal what is missing.
+
+- `session_id` (optional): the session to recover. Without it, the one the session start
+  offered.

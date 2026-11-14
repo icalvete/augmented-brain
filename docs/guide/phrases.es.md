@@ -67,6 +67,8 @@ forma de decir lo mismo también.
 | "Recupera la sesión que se cortó." | Lee lo que se dijo después de la última entrada del diario, y apunta lo que falte |
 | "~/code/blog es el blog, hecho con Hugo." | Apunta esa línea para el repositorio, que sale en el panel |
 | `/brain:panel` | Abre el panel en tu navegador |
+| "¿Cómo veo el panel en el móvil?" | Responde cualquier duda sobre augmented brain con las guías de la versión que tienes, sin necesitar internet |
+| `/brain:help` | Sin pregunta, te propone un siguiente paso: el que te falta |
 
 ## Cuando Claude habla primero
 

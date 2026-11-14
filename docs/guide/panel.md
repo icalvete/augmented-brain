@@ -270,7 +270,11 @@ the page only shows. See [Configuration versions](config-history.md).
 
 ## Help
 
-Links to the answers on this website, in your language. And a way to tell us about a
+First, a reminder that you can ask Claude: in a session, ask in your own words how to do
+something, and it answers with the guides of the version you have installed. With
+`/brain:help` and no question, it proposes your next step.
+
+Then links to the answers on this website, in your language. And a way to tell us about a
 problem or propose an idea on GitHub (the website where the project lives; you need a
 free account there).
 

@@ -141,6 +141,10 @@ Háblale como siempre. Estas frases te sacan partido desde el primer día:
 
 Más frases, agrupadas por lo que quieres hacer: [Qué decirle a Claude](phrases.es.md).
 
+Cualquier duda sobre el propio augmented brain, pregúntasela también a Claude («¿cómo hago
+copia de mis notas?»): responde con estas guías. ¿No sabes qué hacer ahora? Escribe
+`/brain:help`.
+
 ## Palabras que vas a oír
 
 - **Espacio:** un cajón separado, con sus notas y sus reglas. Vienen dos, `trabajo` y

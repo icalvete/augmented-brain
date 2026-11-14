@@ -67,6 +67,8 @@ wording with the same meaning works too.
 | "Recover the session that was cut off." | Reads what was said after the last journal entry, and writes down what is missing |
 | "~/code/blog is the blog, built with Hugo." | Writes that line for the repository, shown in the panel |
 | `/brain:panel` | Opens the panel in your browser |
+| "How do I see the panel on my phone?" | Answers any question about augmented brain with the guides of the version you have, no internet needed |
+| `/brain:help` | With no question, proposes one next step: the one you are missing |
 
 ## When Claude talks first
 
