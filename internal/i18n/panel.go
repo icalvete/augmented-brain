@@ -1612,6 +1612,86 @@ var panelMessages = map[string]msg{
 		en: "New area",
 		es: "Área nueva",
 	},
+	"panel.rule.new": {
+		en: "New rule",
+		es: "Regla nueva",
+	},
+	"panel.rule.new.hint": {
+		en: "A rule is how Claude must work. Every session reads it at the start: in this space, or in every space when shared.",
+		es: "Una regla es cómo debe trabajar Claude. Cada sesión la lee al empezar: en este espacio, o en todos si es compartida.",
+	},
+	"panel.rule.confirm": {
+		en: "Yes: change what every session follows. (You chose to be asked: memory_trust is \"ask\".)",
+		es: "Sí: cambiar lo que sigue cada sesión. (Elegiste que se te pregunte: memory_trust es \"ask\".)",
+	},
+	"panel.rule.confirm.missing": {
+		en: "Tick the box to say yes: a rule changes what every session follows.",
+		es: "Marca la casilla para decir que sí: una regla cambia lo que sigue cada sesión.",
+	},
+	"panel.knowledge.new": {
+		en: "New reference or lesson",
+		es: "Referencia o lección nueva",
+	},
+	"panel.knowledge.new.hint": {
+		en: "A reference is how something works; a lesson is what was learned, with a title that says it. Shared, it belongs to every space and has no area.",
+		es: "Una referencia es cómo funciona algo; una lección es lo aprendido, con un título que lo dice. Compartida, es de todos los espacios y no tiene área.",
+	},
+	"panel.note.edit": {
+		en: "Edit",
+		es: "Editar",
+	},
+	"panel.note.edit.hint": {
+		en: "The text is Markdown. The version it replaces is kept in archive/. An empty summary keeps the one it had.",
+		es: "El texto es Markdown. La versión que sustituye se guarda en archive/. Un resumen vacío deja el que tenía.",
+	},
+	"panel.note.stale": {
+		en: "This note changed since the page was shown. Reload it, and make your change again.",
+		es: "Esta nota ha cambiado desde que se mostró la página. Vuelve a cargarla y haz otra vez tu cambio.",
+	},
+	"panel.note.retire": {
+		en: "Retire",
+		es: "Retirar",
+	},
+	"panel.note.retire.hint": {
+		en: "It is not deleted: it moves to archive/, which is never loaded, with a line that says when and why. A rule stops reaching the sessions.",
+		es: "No se borra: pasa a archive/, que nunca se carga, con una línea que dice cuándo y por qué. Una regla deja de llegar a las sesiones.",
+	},
+	"panel.note.retire.do": {
+		en: "Retire it",
+		es: "Retirarla",
+	},
+	"panel.f.body": {
+		en: "Text",
+		es: "Texto",
+	},
+	"panel.f.shared": {
+		en: "Shared by every space",
+		es: "Compartida por todos los espacios",
+	},
+	"panel.f.reason": {
+		en: "Why",
+		es: "Por qué",
+	},
+	"panel.f.replaced_by": {
+		en: "Replaced by (id of a note, optional)",
+		es: "Sustituida por (id de una nota, opcional)",
+	},
+	"panel.ok.rule.new": {
+		en: "Rule saved.",
+		es: "Regla guardada.",
+	},
+	"panel.ok.knowledge.new": {
+		en: "Saved.",
+		es: "Guardada.",
+	},
+	"panel.ok.note.update": {
+		en: "Note updated; the old version is in archive/.",
+		es: "Nota actualizada; la versión anterior está en archive/.",
+	},
+	"panel.ok.note.retire": {
+		en: "Retired to archive/.",
+		es: "Retirada a archive/.",
+	},
 	"panel.create": {
 		en: "Create",
 		es: "Crear",

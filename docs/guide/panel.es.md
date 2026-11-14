@@ -43,7 +43,7 @@ abierto, enseña cada bloque en dos columnas, y una sombra al pie dice que sigue
 | [Recordatorios](#recordatorios) | Fechas para revisar y recordatorios del buzón | un espacio |
 | [Buzón](#buzón) | Ideas sueltas, para más tarde | un espacio |
 | [Revisión semanal](#revisión-semanal) | Vaciar el buzón, mirar las tareas paradas | un espacio |
-| [Áreas, conocimiento, reglas](#áreas-conocimiento-reglas-y-personas) | Leerlas; crear áreas | un espacio, más las notas compartidas |
+| [Áreas, conocimiento, reglas](#áreas-conocimiento-reglas-y-personas) | Leerlas y escribirlas; crear áreas | un espacio, más las notas compartidas |
 | [Personas](#áreas-conocimiento-reglas-y-personas) | Quién es quién | todos los espacios |
 | [Repositorios](#repositorios) | Trabajo que solo está en este ordenador | todos los espacios |
 | [Secretos](#secretos) | Los nombres de tus secretos | la misma lista en todos los espacios |
@@ -132,8 +132,20 @@ en el registro de la revisión al terminar.
 ## Áreas, conocimiento, reglas y personas
 
 Conocimiento y reglas enseñan las del espacio y las compartidas, marcadas «compartida».
-Aquí se leen; no se escriben. Una referencia o una lección la crea Claude, o sale de una
-captura en la [revisión semanal](#revisión-semanal); una regla, Claude. Puedes crear áreas y cambiar el título y el resumen de un área.
+También se escriben aquí. **Regla nueva** y **Referencia o lección nueva** crean una, en
+este espacio o compartida por todos. En la página de una regla, referencia o lección,
+**Editar** cambia su título, su resumen, su área y su texto (Markdown); la versión que
+sustituye se guarda en `archive/`. Si la nota ha cambiado desde que se mostró la página,
+no se sobrescribe nada: vuelve a cargarla y repite. **Retirar** la pasa a `archive/` con
+el porqué, y ya no se carga nunca: una regla retirada deja de llegar a tus sesiones. No se
+borra nada.
+
+Una regla cambia lo que sigue cada sesión. Si elegiste que se te pregunte antes
+(`memory_trust = "ask"`, en la página [Guardia](#guardia)), estos formularios enseñan una
+casilla que hay que marcar antes de guardar, cambiar o retirar una regla. Funciona también
+desde el [panel remoto](panel-remote.es.md), con su propia entrada.
+
+Puedes crear áreas y cambiar el título y el resumen de un área.
 
 Las personas salen una sola vez, con una etiqueta por cada espacio en el que están. Una
 persona nueva empieza en el espacio en el que estás. La página de una persona es un solo
