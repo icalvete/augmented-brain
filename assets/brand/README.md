@@ -3,7 +3,7 @@
 Logo, icons and palette for augmented brain. Everything in `out/` is generated
 from the sources below, so edit those and rebuild instead of touching the outputs.
 To see every asset in place (README, browser tab, phone, social card), open
-[`docs/brand.html`](../../docs/brand.html).
+[`preview.html`](preview.html) (open the file in a browser).
 
 ## Sources
 
