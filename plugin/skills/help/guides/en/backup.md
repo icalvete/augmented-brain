@@ -23,6 +23,12 @@ then say "done", or press the button again. The code works for about 15 minutes.
 No GitHub account? Create one for free at [github.com/signup](https://github.com/signup),
 or keep the copy somewhere else, as below.
 
+Already a repository called `augmented-brain-<space>` in your account, with notes in it?
+That is most likely the backup of another computer, so it is left alone: using it would
+mix this computer's notes with those. This copy goes to `augmented-brain-<space>-<computer>`
+instead, and Claude or the page tells you. To bring that backup's notes to this computer,
+that is [restore](#on-a-new-machine), not a new backup.
+
 Rather somewhere else (GitLab, your company's git)? Do it yourself, in a folder of the
 space:
 

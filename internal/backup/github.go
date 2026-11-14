@@ -42,56 +42,152 @@ func (e *ErrNoGitHub) Error() string { return e.Steps }
 // types in the browser. GHLogin is the real one.
 type LoginStarter func() (*Login, error)
 
-// GitHubRepo creates, or finds, the private repository augmented-brain-<space> in the
-// user's GitHub account with gh, lets git use gh's login for it, and returns its URL.
-// A public repository with that name is refused: the notes are private. When gh is
-// not logged in and login is given, it starts the login, so the person only has to
-// accept it in the browser, and answers with the code (ErrNoGitHub with Login).
-func GitHubRepo(space string, run Runner, login LoginStarter) (string, error) {
+// Repo is the private repository GitHubRepo made for a space's backup. Taken, when set,
+// is the repository with the usual name that already existed in the account and was
+// left alone: most likely the backup of another computer.
+type Repo struct {
+	URL   string // the address to give git, ending in .git
+	Taken string // the repository augmented-brain-<space> that was there already
+}
+
+// ErrRepoTaken means every name GitHubRepo may use is already a repository with
+// something in it: none is touched. Taken lists their addresses.
+type ErrRepoTaken struct{ Taken []string }
+
+func (e *ErrRepoTaken) Error() string {
+	return "these repositories already exist in the user's GitHub account and hold something, so augmented brain does not use them: " +
+		strings.Join(e.Taken, ", ") + ". Starting a backup in one would mix this computer's notes with another's. " +
+		"To bring the notes of one of them to this computer, the user runs `augmented-brain restore <its address>` instead. " +
+		"To start a new backup, the user deletes or renames one of them on GitHub, or runs `augmented-brain backup setup <url>` with another private repository"
+}
+
+// hostname is this computer's name, for the second name GitHubRepo tries. Tests
+// replace it.
+var hostname = os.Hostname
+
+// repoNames are the names GitHubRepo tries for a space: augmented-brain-<space>, then
+// augmented-brain-<space>-<computer>, so two computers that each start a backup of a
+// space with the same name never share one by chance.
+func repoNames(space string) []string {
+	base := "augmented-brain-" + space
+	h, err := hostname()
+	if err != nil {
+		return []string{base}
+	}
+	var b strings.Builder
+	for _, r := range strings.ToLower(h) {
+		switch {
+		case r >= 'a' && r <= 'z', r >= '0' && r <= '9':
+			b.WriteRune(r)
+		case r == '-' || r == '_' || r == '.':
+			b.WriteRune('-')
+		}
+	}
+	host := strings.Trim(b.String(), "-")
+	if len(host) > 30 {
+		host = strings.Trim(host[:30], "-")
+	}
+	if host == "" {
+		return []string{base}
+	}
+	return []string{base, base + "-" + host}
+}
+
+// GitHubRepo creates the private repository augmented-brain-<space> in the user's
+// GitHub account with gh, lets git use gh's login for it, and returns it. A repository
+// that already has that name is never used for a new backup unless it is private and
+// empty: one with something in it is most likely another computer's backup, and
+// using it would mix the two (bringing those notes here is what restore is for). Then
+// it tries augmented-brain-<space>-<computer>, and says so in Taken. When gh is not
+// logged in and login is given, it starts the login, so the person only has to accept
+// it in the browser, and answers with the code (ErrNoGitHub with Login).
+func GitHubRepo(space string, run Runner, login LoginStarter) (Repo, error) {
 	gh := ghCommand()
 	if gh == "" {
-		return "", &ErrNoGitHub{Steps: GitHubSteps(false)}
+		return Repo{}, &ErrNoGitHub{Steps: GitHubSteps(false)}
 	}
 	if _, err := run(gh, "auth", "status"); err != nil {
 		if login != nil {
 			l, lerr := login()
 			if lerr == nil {
-				return "", &ErrNoGitHub{Steps: LoginSteps(l), Login: l}
+				return Repo{}, &ErrNoGitHub{Steps: LoginSteps(l), Login: l}
 			}
-			return "", &ErrNoGitHub{Steps: "The GitHub login could not be started (" + lerr.Error() + "). " + GitHubSteps(true), Reason: lerr.Error()}
+			return Repo{}, &ErrNoGitHub{Steps: "The GitHub login could not be started (" + lerr.Error() + "). " + GitHubSteps(true), Reason: lerr.Error()}
 		}
-		return "", &ErrNoGitHub{Steps: GitHubSteps(true)}
+		return Repo{}, &ErrNoGitHub{Steps: GitHubSteps(true)}
 	}
-	name := "augmented-brain-" + space
-	var url string
-	if out, err := run(gh, "repo", "view", name, "--json", "url,visibility"); err == nil {
-		var repo struct{ URL, Visibility string }
-		if err := json.Unmarshal([]byte(out), &repo); err != nil {
-			return "", fmt.Errorf("reading %s: %v", name, err)
-		}
-		if !strings.EqualFold(repo.Visibility, "private") {
-			return "", fmt.Errorf("the repository %s already exists and is not private: make it private on GitHub, or use another one", repo.URL)
-		}
-		url = repo.URL
-	} else {
-		out, err := run(gh, "repo", "create", name, "--private", "--disable-issues", "--disable-wiki",
-			"--description", "augmented brain backup of the "+space+" space (private)")
+	var got Repo
+	var taken []string
+	for _, name := range repoNames(space) {
+		found, err := viewRepo(gh, name, run)
 		if err != nil {
-			return "", fmt.Errorf("creating %s on GitHub: %v: %s", name, err, strings.TrimSpace(out))
+			return Repo{}, err
 		}
-		for _, line := range strings.Fields(out) {
-			if strings.HasPrefix(line, "https://") {
-				url = line
+		if found == nil {
+			url, err := createRepo(gh, name, space, run)
+			if err != nil {
+				return Repo{}, err
 			}
+			got.URL = url
+			break
 		}
-		if url == "" {
-			return "", errors.New("GitHub did not say where the new repository is")
+		if found.private && found.empty {
+			got.URL = found.url // made for this and never used: nothing to mix
+			break
 		}
+		taken = append(taken, found.url)
+	}
+	if got.URL == "" {
+		return Repo{}, &ErrRepoTaken{Taken: taken}
+	}
+	if len(taken) > 0 {
+		got.Taken = taken[0]
 	}
 	if out, err := run(gh, "auth", "setup-git"); err != nil {
-		return "", fmt.Errorf("letting git use your GitHub login: %v: %s", err, strings.TrimSpace(out))
+		return Repo{}, fmt.Errorf("letting git use your GitHub login: %v: %s", err, strings.TrimSpace(out))
 	}
-	return strings.TrimSuffix(url, "/") + ".git", nil
+	got.URL = strings.TrimSuffix(got.URL, "/") + ".git"
+	return got, nil
+}
+
+type ghRepo struct {
+	url            string
+	private, empty bool
+}
+
+// viewRepo is the repository of the user's account with this name, or nil when there
+// is none. An earlier gh that does not know isEmpty is asked again without it, and the
+// repository then counts as not empty.
+func viewRepo(gh, name string, run Runner) (*ghRepo, error) {
+	out, err := run(gh, "repo", "view", name, "--json", "url,visibility,isEmpty")
+	if err != nil && strings.Contains(out, "isEmpty") {
+		out, err = run(gh, "repo", "view", name, "--json", "url,visibility")
+	}
+	if err != nil {
+		return nil, nil // not there (or not readable): creating it says which
+	}
+	var repo struct {
+		URL, Visibility string
+		IsEmpty         bool
+	}
+	if err := json.Unmarshal([]byte(out), &repo); err != nil {
+		return nil, fmt.Errorf("reading %s: %v", name, err)
+	}
+	return &ghRepo{url: repo.URL, private: strings.EqualFold(repo.Visibility, "private"), empty: repo.IsEmpty}, nil
+}
+
+func createRepo(gh, name, space string, run Runner) (string, error) {
+	out, err := run(gh, "repo", "create", name, "--private", "--disable-issues", "--disable-wiki",
+		"--description", "augmented brain backup of the "+space+" space (private)")
+	if err != nil {
+		return "", fmt.Errorf("creating %s on GitHub: %v: %s", name, err, strings.TrimSpace(out))
+	}
+	for _, line := range strings.Fields(out) {
+		if strings.HasPrefix(line, "https://") {
+			return line, nil
+		}
+	}
+	return "", errors.New("GitHub did not say where the new repository is")
 }
 
 // ghCommand is how gh is run: "gh" when it is on the PATH, or its full path when it is
