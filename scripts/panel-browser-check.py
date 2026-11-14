@@ -241,6 +241,10 @@ try:
             page.click("text=Bake bread")
             page.wait_for_load_state("networkidle")
             report(f"{engine}: a task opens from the list", "two loaves for Sunday" in page.content(), page.url)
+            # What can be done with it (park, close) comes before its body, not after the journal.
+            above = page.evaluate("""() => { const c = document.querySelector("form[action$='/task/close']"), b = document.querySelector('.doc:has(.journal)');
+                return !!c && !!b && c.closest('details').getBoundingClientRect().top < b.getBoundingClientRect().top }""")
+            report(f"{engine}: a task's actions come before its body", above, "")
 
             page.goto(f"{base}/guard?s=work")
             form = page.locator("form:has(input[name=list][value=allowed]):has(input[name=op][value=add])").first

@@ -4,7 +4,7 @@
 {{if .Remote}}<p class="flash warn" role="note">{{t "versions.remote"}}</p>{{end}}
 {{if .Changed}}<p class="flash warn" role="note">{{t "versions.changed"}}</p>{{end}}
 {{if .Versions}}<ul class="cards">{{range .Versions}}<li class="card">
-  <div class="title">{{.N}}. {{.When}} {{if .Current}}<span class="badge you">{{t "versions.current"}}</span>{{end}}</div>
+  <div class="title">{{.N}}. <time datetime="{{.When}}" title="{{.When}}">{{day .When}}</time> {{if .Current}}<span class="badge you">{{t "versions.current"}}</span>{{end}}</div>
   <div class="meta">{{.Who}}</div>
   {{if .Oldest}}<p class="hint">{{t "versions.oldest"}}</p>{{else}}
   <details class="said"><summary>{{t "versions.what"}}</summary>

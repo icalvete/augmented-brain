@@ -1277,7 +1277,7 @@ var panelMessages = map[string]msg{
 	},
 	"panel.dates": {
 		en: "created %s, last changed %s",
-		es: "creada el %s, último cambio el %s",
+		es: "creada %s, último cambio %s",
 	},
 	"panel.f.id": {
 		en: "Id",

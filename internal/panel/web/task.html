@@ -9,14 +9,14 @@
   {{if .H.Next}}<dt>{{t "next"}}</dt><dd>{{inline .H.Next}}</dd>{{end}}
   {{if .H.Summary}}<dt>{{t "f.summary"}}</dt><dd>{{inline .H.Summary}}</dd>{{end}}
   {{if .AreaTitle}}<dt>{{t "f.area"}}</dt><dd>{{.AreaTitle}}</dd>{{end}}
-  <dt>{{t "f.dates"}}</dt><dd>{{tf "dates" .H.Created .H.Updated}}</dd>
+  <dt>{{t "f.dates"}}</dt><dd>{{tf "dates" (day .H.Created) (day .H.Updated)}}</dd>
   <dt>{{t "f.id"}}</dt><dd><code>{{.H.ID}}</code></dd>
 </dl>
 {{template "sections" .Essentials}}
 {{if .MissingRepos}}<p class="flash warn">{{range $i, $r := .MissingRepos}}{{if $i}}, {{end}}<code>{{$r}}</code>{{end}}: {{t "repos.missing"}}</p>{{end}}
 
 {{if .Watch}}<h2>{{t "watch"}}</h2><ul class="plain">
-{{range .Watch}}<li>{{if .Done}}<s>{{.Date}} · {{inline .What}}</s>{{else}}{{.Date}} · {{inline .What}}
+{{range .Watch}}<li>{{if .Done}}<s><time datetime="{{.Date}}" title="{{.Date}}">{{day .Date}}</time> · {{inline .What}}</s>{{else}}<time datetime="{{.Date}}" title="{{.Date}}">{{day .Date}}</time> · {{inline .What}}
   <form method="post" action="{{$.Base}}/watch/done" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "date" .Date)}}<button type="submit" class="small">{{t "done"}}</button></form>{{end}}</li>
 {{end}}</ul>{{end}}
 
@@ -45,8 +45,7 @@
 {{end}}
 </ul>{{end}}
 
-{{template "sections" .Sections}}
-
+{{/* What can be done with the task comes before its body: a long body would push it far down. */}}
 {{if .Live}}
 <details class="box" open>
   <summary>{{t "task.journal"}}</summary>
@@ -116,4 +115,6 @@
   </form>
 </details>
 {{end}}
+
+{{template "sections" .Sections}}
 {{end}}{{end}}
