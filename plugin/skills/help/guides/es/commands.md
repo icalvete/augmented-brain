@@ -581,7 +581,8 @@ augmented-brain session stop task-new-website
   sesión que espera un permiso cuenta como respondiendo, y una que siga respondiendo
   entonces se queda abierta. Cerrar la tarea lo lanza así solo, para que una sesión pueda
   cerrar su propia tarea sin cortar su respuesta. Lo que hizo queda en
-  `state/session-stop.log`, en la carpeta de la configuración.
+  `state/session-stop.log`, en la carpeta de la configuración, con una línea cada 5
+  minutos mientras espera.
 
 **El worktree de la tarea** (el que creó `session start`, mira arriba) también se va, con
 su rama, siempre que no se pierda nada. Se queda, y el comando lo dice, si tiene:

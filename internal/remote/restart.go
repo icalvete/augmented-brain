@@ -420,11 +420,12 @@ func (s System) serversOf(t Session) []int {
 // end. It waits at most max (ErrStillBusy).
 func (s System) RestartWhenIdle(claude string, t Session, max time.Duration) RestartResult {
 	idle := 0
-	for waited := time.Duration(0); idle < 2; waited += 2 * time.Second {
-		if waited > max {
+	p := s.newPace(max, idleSpacing)
+	for idle < 2 {
+		if p.over() {
 			return RestartResult{Session: t, Outcome: Busy, Err: ErrStillBusy}
 		}
-		s.sleep(2 * time.Second)
+		p.sleep(idle > 0)
 		now, err := s.Sessions(claude)
 		if err != nil {
 			continue

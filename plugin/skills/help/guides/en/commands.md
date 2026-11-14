@@ -568,7 +568,7 @@ augmented-brain session stop task-new-website
   session waiting for a permission counts as answering, and one still answering by then
   stays open. Closing the task runs it this way by itself, so a session can close its own
   task without cutting its answer off. What it did goes to `state/session-stop.log` in
-  the configuration folder.
+  the configuration folder, with a line every 5 minutes while it waits.
 
 **The task's worktree** (the one `session start` made, see above) goes too, with its
 branch, as long as nothing would be lost. It stays, and the command says so, when it

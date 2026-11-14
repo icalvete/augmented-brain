@@ -84,6 +84,10 @@ type System struct {
 	ClaudeDir string
 	// Sleep waits between looks at a launched session; nil is time.Sleep.
 	Sleep func(time.Duration)
+	// Waiting hears, every WaitNote, how long a wait for a session's answer to end has
+	// lasted (StopWhenIdle, RestartWhenIdle), so the detached process says in its log
+	// that it is still there; nil says nothing.
+	Waiting func(passed time.Duration)
 	// StartDaemon starts Claude's daemon in the background and returns at once; nil
 	// never starts it.
 	StartDaemon func(claude string) error
