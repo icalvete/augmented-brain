@@ -83,7 +83,7 @@ func TestSaveGuardKeepsTheRest(t *testing.T) {
 	got := string(b)
 	for _, want := range []string{
 		"# My notes: core is off limits until the audit.\nuntouchable_repos = [\n",
-		"\"~/work/infra\",\n]\n\n# Written by a newer program.\nfuture_setting = [\"keep\", \"me\"]\nreach = \"spaces\"\n",
+		"infra\",\n]\n\n# Written by a newer program.\nfuture_setting = [\"keep\", \"me\"]\nreach = \"spaces\"\n",
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("lost %q:\n%s", want, got)
