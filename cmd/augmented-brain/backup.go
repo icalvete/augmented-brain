@@ -156,12 +156,15 @@ func cmdRestore(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
+	lang := i18n.FromEnv()
+	if c, err := config.Load(dir); err == nil {
+		lang = c.Language
+	}
 	s, err := backup.Restore(dir, *o)
 	if err != nil {
-		fmt.Fprintln(errOut, err)
+		fmt.Fprintln(errOut, backup.Localize(err, lang))
 		return 1
 	}
-	lang := i18n.FromEnv()
 	if c, err := config.Load(dir); err == nil {
 		lang = c.Language
 	}
