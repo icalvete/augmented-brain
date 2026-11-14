@@ -59,8 +59,8 @@ var panelMessages = map[string]msg{
 		es: "En un ordenador nuevo, instala augmented brain y después ejecuta esto en una terminal. Recuperar nunca se hace desde aquí: es para un ordenador que aún no tiene estas notas.",
 	},
 	"panel.backup.github.hint": {
-		en: "Makes a private repository named augmented-brain-%s in your GitHub account, with the GitHub command line (gh) already logged in, and makes the first copy.",
-		es: "Crea un repositorio privado llamado augmented-brain-%s en tu cuenta de GitHub, con la línea de comandos de GitHub (gh) ya conectada, y hace la primera copia.",
+		en: "Makes a private repository named augmented-brain-%s in your GitHub account, with GitHub's program (gh), and makes the first copy. If gh has not entered your account yet, you get a code to type in your browser.",
+		es: "Crea un repositorio privado llamado augmented-brain-%s en tu cuenta de GitHub, con el programa de GitHub (gh), y hace la primera copia. Si gh aún no ha entrado en tu cuenta, te da un código para escribir en tu navegador.",
 	},
 	"panel.backup.github": {
 		en: "Set it up on my GitHub",
@@ -171,8 +171,32 @@ var panelMessages = map[string]msg{
 		es: "Tus notas vuelven a estar como en la copia del %s. Lo que tenías queda guardado en la copia anterior; el resultado se está enviando a la copia de seguridad.",
 	},
 	"panel.backup.err.gh": {
-		en: "The GitHub command line (gh) is not installed, or not logged in. Install it from https://cli.github.com, run `gh auth login` in a terminal, and try again. Or ask your assistant: it guides you step by step.",
-		es: "La línea de comandos de GitHub (gh) no está instalada, o no está conectada. Instálala desde https://cli.github.com, ejecuta `gh auth login` en una terminal y vuelve a probar. O pídeselo a tu asistente: te guía paso a paso.",
+		en: "GitHub's program, gh, is not on this computer, and the copy in GitHub needs it. Run the augmented brain installer again: it offers to install gh, with no password. Or ask your assistant: it guides you step by step.",
+		es: "El programa de GitHub, gh, no está en este ordenador, y la copia en GitHub lo necesita. Vuelve a lanzar el instalador de augmented brain: te ofrece instalar gh, sin contraseña. O pídeselo a tu asistente: te guía paso a paso.",
+	},
+	"panel.backup.err.login": {
+		en: "The GitHub login could not be started (%s). Check the internet connection and try again.",
+		es: "No se pudo empezar la entrada en GitHub (%s). Mira la conexión a internet y vuelve a probar.",
+	},
+	"panel.backup.login.title": {
+		en: "One step in your browser: let augmented brain into your GitHub account.",
+		es: "Un paso en tu navegador: deja entrar a augmented brain en tu cuenta de GitHub.",
+	},
+	"panel.backup.login.open": {
+		en: "Open GitHub's page, and sign in if it asks:",
+		es: "Abre la página de GitHub, y entra si te lo pide:",
+	},
+	"panel.backup.login.code": {
+		en: "Type this code there and accept:",
+		es: "Escribe allí este código y acepta:",
+	},
+	"panel.backup.login.then": {
+		en: "Back here, press the button below again: it makes your private repository and the first copy. The code works for about 15 minutes.",
+		es: "De vuelta aquí, pulsa otra vez el botón de abajo: crea tu repositorio privado y la primera copia. El código vale unos 15 minutos.",
+	},
+	"panel.backup.login.account": {
+		en: "No GitHub account? Create one for free at github.com/signup; it takes two minutes. Or keep the copy somewhere else, below.",
+		es: "¿No tienes cuenta de GitHub? Crea una gratis en github.com/signup; son dos minutos. O guarda la copia en otro sitio, abajo.",
 	},
 	"panel.intro.guide": {
 		en: "More in the guide ↗",

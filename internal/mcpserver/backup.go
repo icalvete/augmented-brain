@@ -16,7 +16,7 @@ import (
 // given is refused: that backup is the user's to set up, in a terminal or the panel.
 // When GitHub is not ready, it answers with the steps, as text: the assistant guides the
 // user through them.
-func setupBackup(b *brain.Brain, url string, run backup.Runner) (string, error) {
+func setupBackup(b *brain.Brain, url string, run backup.Runner, login backup.LoginStarter) (string, error) {
 	c, err := config.Load(b.ConfigDir)
 	if err != nil {
 		return "", err
@@ -49,7 +49,7 @@ func setupBackup(b *brain.Brain, url string, run backup.Runner) (string, error) 
 		}
 		return msg, nil
 	}
-	url, err = backup.GitHubRepo(s.Name, run)
+	url, err = backup.GitHubRepo(s.Name, run, login)
 	var steps *backup.ErrNoGitHub
 	if errors.As(err, &steps) {
 		return steps.Steps, nil

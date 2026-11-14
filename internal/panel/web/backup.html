@@ -37,6 +37,15 @@
   {{else}}
   <ul class="health"><li class="bad">{{t "backup.none"}}</li></ul>
   {{if not $.D.Remote}}
+  {{with .Login}}<div class="flash login" id="login" role="status">
+    <p><strong>{{t "backup.login.title"}}</strong></p>
+    <ol>
+      <li>{{t "backup.login.open"}} <a href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{.URL}}</a></li>
+      <li>{{t "backup.login.code"}} <code class="ghcode">{{.Code}}</code></li>
+      <li>{{t "backup.login.then"}}</li>
+    </ol>
+    <p class="hint">{{t "backup.login.account"}}</p>
+  </div>{{end}}
   <form method="post" action="{{$.Base}}/backup/setup" class="stack box">
     <input type="hidden" name="csrf" value="{{$.CSRF}}"><input type="hidden" name="s" value="{{$sp}}"><input type="hidden" name="form" value="github {{$sp}}">
     <p class="hint">{{tf "backup.github.hint" $sp}}</p>

@@ -647,9 +647,9 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 	type backupIn struct {
 		RepoURL string `json:"repo_url,omitempty" jsonschema:"leave it out: the tool creates the repository in the user's GitHub account. An address is refused; a backup somewhere else is set up by the user with augmented-brain backup setup <url>"`
 	}
-	tool(s, unlockedFile, "backup_setup", "Set up the backup of this space: a private git repository that keeps its notes, pushed by itself every time a session ends. It creates augmented-brain-<space> in the user's GitHub account with the gh command line; when gh is missing or not logged in, it returns the steps to guide the user through. For a repository somewhere else, the user runs augmented-brain backup setup <url> in a terminal: the tool takes no address.",
+	tool(s, unlockedFile, "backup_setup", "Set up the backup of this space: a private git repository that keeps its notes, pushed by itself every time a session ends. It creates augmented-brain-<space> in the user's GitHub account with the gh command line. When gh is not logged in, it starts the GitHub login and returns a short code for the user to type in their browser; when gh is missing, it returns the steps to guide the user through. For a repository somewhere else, the user runs augmented-brain backup setup <url> in a terminal: the tool takes no address.",
 		func(b *brain.Brain, in backupIn) (string, error) {
-			return setupBackup(b, in.RepoURL, backup.Exec)
+			return setupBackup(b, in.RepoURL, backup.Exec, backup.GHLogin(b.ConfigDir))
 		})
 
 	type profileIn struct {

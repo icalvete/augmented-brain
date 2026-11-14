@@ -256,6 +256,10 @@ form.row button { flex: none; }
 .flash.warn { background: var(--warn-bg); color: var(--warn); }
 .flash.err { background: var(--bad-bg); color: var(--bad); }
 .flash.ferr { margin: .35rem 0 .75rem; }
+.flash.login { background: var(--warn-bg); color: var(--text); border: 1px solid var(--line); }
+.flash.login ol { margin: .5rem 0; padding-left: 1.4rem; }
+.flash.login p { margin: .25rem 0; }
+code.ghcode { display: inline-block; font-size: 1.35em; font-weight: 700; letter-spacing: .12em; color: inherit; padding: .1rem .5rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); user-select: all; }
 
 /* Health */
 .health { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
