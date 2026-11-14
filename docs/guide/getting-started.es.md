@@ -112,7 +112,9 @@ abrir Claude en la terminal, en tu espacio de trabajo. Las próximas veces:
 
 La primera vez, Claude se presenta y te hace seis preguntas, una cada vez, diciéndote
 para qué sirve cada una: quién eres, qué cuidas, cómo quieres las respuestas, qué no se
-toca, qué herramientas usas y con quién trabajas. Puedes saltarte cualquiera.
+toca, qué herramientas usas y con quién trabajas. Puedes saltarte cualquiera. Si
+programas, también te pregunta en qué repositorios puede hacer commit: los añades tú, en la
+página Guardia del panel, y Claude se ofrece a abrírtela.
 
 Al final te enseña lo que ha guardado y te ofrece configurar la copia de seguridad. Dile que
 sí: tus notas quedan en un repositorio privado tuyo, y si pierdes el ordenador no pierdes

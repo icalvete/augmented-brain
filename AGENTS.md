@@ -178,12 +178,15 @@ Heavier checks, before a release or when you touch what they cover:
   guide has its `.es` twin with the same headings and examples, sits in `GROUPS` and is
   linked from both READMEs, and every `augmented-brain …` example is a real command with
   flags it reads. CI also checks the generated pages match the guides.
-- **The docs follow the code.** A new command or flag goes in `commands` (`cmd/augmented-brain/commands.go`) and in the usage text; a new command, flag, MCP tool, tool parameter or `config.toml` setting also goes in its reference page, in both languages, or `go test` fails (`TestCommandsDocumented`, `TestToolsDocumented`, `TestSettingsDocumented`). A change people notice also updates the guide that tells it.
+- **The docs follow the code.** A new command or flag goes in `commands` (`cmd/augmented-brain/commands.go`) and in the usage text; its help is its section of the reference (`TestEveryCommandHasHelp`); a new command, flag, MCP tool, tool parameter or `config.toml` setting also goes in its reference page, in both languages, or `go test` fails (`TestCommandsDocumented`, `TestToolsDocumented`, `TestSettingsDocumented`). A change people notice also updates the guide that tells it.
 - **Generated files are not edited by hand.** Change the source and regenerate:
   `docs/img/*.svg` from `docs/img/diagrams.py`; every `docs/guide/*.html`,
   `docs/sitemap.xml` and `docs/llms-full.txt` from the `.md` sources with
-  `scripts/build-guides.py` (its `GROUPS` list is the sidebar: a new page goes there); a space's
-  `MEMORY.md` is written by the program.
+  `scripts/build-guides.py` (its `GROUPS` list is the sidebar: a new page goes there), which
+  also writes `internal/i18n/cmdhelp.go`, what `augmented-brain help <command>` prints, from
+  each command's section of `docs/guide/commands.md` and its twin (first paragraph,
+  `Syntax:`, the items of its arguments and options, first example); a space's `MEMORY.md` is written
+  by the program.
 - **The memory format is a contract.** `docs/spec/memory-format.md` describes it; a change
   to folders, header fields or note types updates the spec, the index and their tests.
   A change that older notes do not already follow adds a step to

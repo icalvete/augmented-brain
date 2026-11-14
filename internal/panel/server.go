@@ -224,6 +224,7 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 			"day":    func(s string) string { return humanDate(l, s, time.Now()) },
 			"fields": fields,
 			"intro":  intro,
+			"repos":  repoList,
 		}
 		out[l] = map[string]*template.Template{}
 		for _, n := range names {
