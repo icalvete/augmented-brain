@@ -15,7 +15,7 @@ encajan las piezas. Para usarlo, no te hace falta nada de esto.
 | Capa | Qué es | Dónde vive |
 |---|---|---|
 | **3 · Tú y tu asistente** | Hablas con Claude Code como siempre. No hay comandos nuevos que aprender. | Tu terminal o la app de Claude |
-| **2 · El plugin** | Las puertas por las que Claude entra al programa: varios hooks y un servidor MCP. | Dentro de Claude Code, que lo instala |
+| **2 · El plugin** | Las puertas por las que Claude entra al programa: varios hooks, un servidor MCP y las guías, para que Claude responda tus dudas sobre augmented brain. | Dentro de Claude Code, que lo instala |
 | **1 · El programa** | `augmented-brain`, un solo fichero. Vigila los comandos, lleva las tareas, rehace el índice y hace la copia de seguridad. | `~/.local/bin/augmented-brain` |
 | **0 · Tus ficheros** | Texto normal: la configuración, tus notas y, si quieres, su copia de seguridad. | `~/.config/augmented-brain/`, `~/augmented-brain/` y tu repositorio git |
 

@@ -12,6 +12,9 @@ Revisa toda la instalación y te dice qué falta y cómo arreglarlo. Cada línea
 una marca: `✓` bien, `·` para que lo sepas, `!` un aviso, `✗` algo que falla. Debajo de
 una línea que pide arreglo, `→` dice qué hacer.
 
+También puedes preguntar a Claude, con tus palabras: conoce estas guías, las de la versión
+que tienes instalada, y lanza `doctor` él mismo cuando algo falla.
+
 Si tienes el panel abierto, su página **Ayuda** tiene enlaces a estas respuestas y un
 botón para avisar de un problema en GitHub, con la revisión de salud ya puesta y sin lo
 que es personal. Lo tienes en [El panel](panel.es.md#ayuda).

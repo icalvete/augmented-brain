@@ -113,6 +113,8 @@ still closes, with a line saying no result was given, and Claude writes the resu
 the journal.
 
 - `id`: the task's id.
+- `title` (optional): a new title. The id stays, so every link to the task still works.
+  The journal says what it was.
 - `status` (optional): `definition`, `analysis`, `plan`, `execution`, `validation`,
   `closed`, `parked` or `someday`.
 - `waiting_on` (optional): `me`, `nobody`, a person, or another task's id.
@@ -122,6 +124,9 @@ the journal.
 - `watch_date` (optional): add a date to look at something again. Needs `watch_what`.
 - `watch_what` (optional): what to look at on `watch_date`, in one line.
 - `watch_done` (optional): mark the watch date of this day as done.
+- `watch_drop` (optional): take out the watch dates of this day, done or not. With
+  `watch_date` and `watch_what` in the same call, it moves one to another day. The
+  journal says what was taken out or moved.
 - `reopen` (optional): only to open a closed task again, with a new `status`: why, in a
   few words. It goes to the journal. Claude asks you first.
 - `result` (optional): with `status` `closed`, what the task achieved, as in
@@ -138,7 +143,7 @@ At least one field besides `id` and `space` is needed.
 **You say:** "that step is done."
 
 Steps are the small parts of a task: checkboxes (`- [ ] text`) in its Plan. This tool adds
-one, or ticks or unticks one. Each change writes a short journal line, and the answer
+one, ticks or unticks one, or corrects, removes or moves one. Each change writes a short journal line, and the answer
 lists the steps. A closed task's steps stay as they were closed.
 
 - `id`: the task's id.
@@ -148,6 +153,12 @@ lists the steps. A closed task's steps stay as they were closed.
 - `text` (optional): the step to tick or untick, by its text (or a part only it holds),
   when `number` is not given.
 - `done` (optional): `true` to tick the step, `false` to untick it. Left out, it unticks.
+- `edit` (optional): new text for the step given by `number` or `text`, instead of
+  ticking it. Its mark stays.
+- `remove` (optional): `true` takes the step given by `number` or `text` out of the
+  Plan.
+- `move_to` (optional): move the step given by `number` or `text` to this place in the
+  Plan, 1 for the first.
 - `space` (optional): another of your spaces, whose task this is. Claude uses it only
   when you ask to work on a task of that space from here. See
   [A task of another space](spaces.md#a-task-of-another-space).

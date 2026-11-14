@@ -1,6 +1,7 @@
 package panel
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
@@ -53,6 +54,35 @@ func (s *Server) watchAdd(v *view, r *http.Request) (string, error) {
 		return "", onField("date", err)
 	}
 	if _, err := v.b.AddWatch(id, field(r, "date"), field(r, "what")); err != nil {
+		return "", err
+	}
+	return back(r, id), nil
+}
+
+// watchDrop takes out one watch date of a task: the one of that day ("date") that says
+// "what", done or not.
+func (s *Server) watchDrop(v *view, r *http.Request) (string, error) {
+	id := field(r, "id")
+	if _, err := v.b.Update(brain.UpdateInput{ID: id, WatchDrop: field(r, "date"), WatchDropWhat: r.PostForm.Get("what")}); err != nil {
+		return "", err
+	}
+	return back(r, id), nil
+}
+
+// watchMove moves one watch date of a task ("date", "what") to another day ("to").
+func (s *Server) watchMove(v *view, r *http.Request) (string, error) {
+	if field(r, "to") == "" {
+		return "", onField("to", errors.New(v.t("err.required", v.t("f.date"))))
+	}
+	if err := brain.CheckDate(field(r, "to")); err != nil {
+		return "", onField("to", err)
+	}
+	id, what := field(r, "id"), r.PostForm.Get("what")
+	if field(r, "to") == field(r, "date") {
+		return back(r, id), nil
+	}
+	if _, err := v.b.Update(brain.UpdateInput{ID: id, WatchDrop: field(r, "date"), WatchDropWhat: what,
+		WatchDate: field(r, "to"), WatchWhat: what}); err != nil {
 		return "", err
 	}
 	return back(r, id), nil

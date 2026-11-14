@@ -27,6 +27,35 @@
     <button type="submit">{{t "save"}}</button>
   </form>
 </details>{{end}}
+{{if .Changeable}}<details class="box"{{if $.Open "/note/update"}} open{{end}}>
+  <summary>{{t "note.edit"}}</summary>
+  <form method="post" action="{{$.Base}}/note/update" class="stack">
+    {{template "fields" (fields $ "id" .H.ID "stamp" .EditStamp "shared" (sharedFlag .Shared))}}
+    <label>{{t "f.title"}} <input name="title" required maxlength="300" value="{{$.Val "/note/update" "title" .H.Title}}"></label>
+    <label>{{t "f.summary"}} <input name="summary" maxlength="1000" value="{{$.Val "/note/update" "summary" .H.Summary}}"></label>
+    {{if and (ne .H.Type "rule") (not .Shared)}}<label>{{t "f.area"}} <select name="area">{{range .Areas}}<option value="{{.Value}}"{{if $.On "/note/update" "area" .Value .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>{{end}}
+    <label>{{t "f.body"}} <textarea name="body" rows="14" maxlength="512000"{{if eq .H.Type "rule"}} required{{end}}>{{$.Val "/note/update" "body" .Body}}</textarea></label>
+    {{template "ferr" ($.Err "/note/update" "body")}}
+    <p class="hint">{{t "note.edit.hint"}}</p>
+    {{if .Ask}}<label class="check"><input type="checkbox" name="confirm" value="1" required{{if $.On "/note/update" "confirm" "1" false}} checked{{end}}> {{t "rule.confirm"}}</label>
+    {{template "ferr" ($.Err "/note/update" "confirm")}}{{end}}
+    {{template "ferr" ($.FormErr "/note/update")}}
+    <button type="submit">{{t "save"}}</button>
+  </form>
+</details>
+<details class="box"{{if $.Open "/note/retire"}} open{{end}}>
+  <summary>{{t "note.retire"}}</summary>
+  <form method="post" action="{{$.Base}}/note/retire" class="stack">
+    {{template "fields" (fields $ "id" .H.ID "shared" (sharedFlag .Shared))}}
+    <label>{{t "f.reason"}} <input name="reason" required maxlength="500" value="{{$.Val "/note/retire" "reason" ""}}"></label>
+    <label>{{t "f.replaced_by"}} <input name="replaced_by" maxlength="200" value="{{$.Val "/note/retire" "replaced_by" ""}}"></label>
+    <p class="hint">{{t "note.retire.hint"}}</p>
+    {{if .Ask}}<label class="check"><input type="checkbox" name="confirm" value="1" required{{if $.On "/note/retire" "confirm" "1" false}} checked{{end}}> {{t "rule.confirm"}}</label>
+    {{template "ferr" ($.Err "/note/retire" "confirm")}}{{end}}
+    {{template "ferr" ($.FormErr "/note/retire")}}
+    <button type="submit">{{t "note.retire.do"}}</button>
+  </form>
+</details>{{end}}
 {{with .Person}}{{with .Card}}
 <h2>{{t "person.edit"}}</h2>
 <form method="post" action="{{$.Base}}/person/card" class="stack personcard">

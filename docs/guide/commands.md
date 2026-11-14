@@ -25,8 +25,9 @@ Some commands are started for you, not by you: Claude Code starts `mcp` and `hoo
 `panel` starts `panel serve`, and on Linux a timer runs `remote watch`. They are here so
 you know what they are.
 
-Inside Claude Code there is one slash command: `/brain:panel` opens the panel, as
-`augmented-brain panel` does.
+Inside Claude Code there are two slash commands: `/brain:panel` opens the panel, as
+`augmented-brain panel` does, and `/brain:help` answers a question about augmented brain
+with these guides, or with no question proposes your next step.
 
 ## I want to…
 

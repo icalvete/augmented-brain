@@ -254,18 +254,24 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Text   string `json:"text,omitempty" jsonschema:"the step to tick or untick, by its text (or a part only it contains), when number is not given"`
 		Done   bool   `json:"done,omitempty" jsonschema:"true to tick the step; false or left out unticks it"`
 		Add    string `json:"add,omitempty" jsonschema:"add this step, unticked, at the end of the Plan, instead of ticking one"`
+		Edit   string `json:"edit,omitempty" jsonschema:"new text for the step given by number or text, instead of ticking it; its mark stays"`
+		Remove bool   `json:"remove,omitempty" jsonschema:"take the step given by number or text out of the Plan, instead of ticking it"`
+		MoveTo int    `json:"move_to,omitempty" jsonschema:"move the step given by number or text to this place in the Plan (1 for the first), instead of ticking it"`
 		Space  string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	tool(s, locked, "task_step", "Steps are the small parts of a task: checkboxes (- [ ] text) in its Plan section. Add one (add), or tick or untick one by number or text (done). Each change writes a short journal line. "+otherSpace,
+	tool(s, locked, "task_step", "Steps are the small parts of a task: checkboxes (- [ ] text) in its Plan section. Add one (add), tick or untick one by number or text (done), or correct (edit), remove or move (move_to) one. Each change writes a short journal line. "+otherSpace,
 		func(b0 *brain.Brain, in stepIn) (string, error) {
 			b, err := b0.Other(in.Space)
 			if err != nil {
 				return "", err
 			}
 			var n *memory.Note
-			if in.Add != "" {
+			switch {
+			case in.Add != "":
 				n, err = b.AddStep(in.ID, in.Add)
-			} else {
+			case in.Edit != "" || in.Remove || in.MoveTo != 0:
+				n, err = b.ChangeStep(brain.StepChange{ID: in.ID, Number: in.Number, Text: in.Text, Edit: in.Edit, Remove: in.Remove, MoveTo: in.MoveTo})
+			default:
 				n, err = b.Step(brain.StepInput{ID: in.ID, Number: in.Number, Text: in.Text, Done: in.Done})
 			}
 			if err != nil {
@@ -294,16 +300,18 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		WatchDate string `json:"watch_date,omitempty" jsonschema:"add a date (YYYY-MM-DD) to look at something again; needs watch_what"`
 		WatchWhat string `json:"watch_what,omitempty" jsonschema:"what to look at on watch_date, one line"`
 		WatchDone string `json:"watch_done,omitempty" jsonschema:"mark the watch date on this day (YYYY-MM-DD) as done"`
+		WatchDrop string `json:"watch_drop,omitempty" jsonschema:"take out the watch dates on this day (YYYY-MM-DD), done or not; with watch_date and watch_what, it moves one"`
+		Title     string `json:"title,omitempty" jsonschema:"a new title; the id stays, so links to the task still work"`
 		Reopen    string `json:"reopen,omitempty" jsonschema:"only to open a closed task again, with a new status: why, in a few words; it goes to the journal. Ask the user first"`
 		Result    string `json:"result,omitempty" jsonschema:"with status closed: what was achieved, as in task_close"`
 		Space     string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
+	tool(s, locked, "task_update", "Change a task's title, status, who it waits on, its next step, summary or area, or add, close, take out or move a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
 		func(b0 *brain.Brain, in updateIn) (string, error) {
 			u := brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn, Next: in.Next,
 				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone,
-				Reopen: in.Reopen, Result: in.Result}
-			if in.Status+in.WaitingOn+in.Next+in.Summary+in.Area+in.WatchDate+in.WatchDone == "" {
+				WatchDrop: in.WatchDrop, Title: in.Title, Reopen: in.Reopen, Result: in.Result}
+			if in.Status+in.WaitingOn+in.Next+in.Summary+in.Area+in.WatchDate+in.WatchDone+in.WatchDrop+in.Title == "" {
 				return "", errors.New("nothing to change: give at least one field")
 			}
 			if in.Result != "" && in.Status != "closed" {

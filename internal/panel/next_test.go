@@ -97,10 +97,11 @@ func TestSearch(t *testing.T) {
 	s, _ := fixture(t, "es")
 	saved(t, s.post(t, "/task/new", url.Values{"s": {"work"}, "title": {"Revisión del horno"}, "summary": {"<i>pan</i> de centeno"}}), "new task")
 	page := s.get(t, "/search?s=work&q=revision+centeno").Body.String()
-	if !strings.Contains(page, "Revisión del horno") || strings.Contains(page, "<i>pan</i>") {
+	if !strings.Contains(page, "<mark>Revisión</mark> del horno") || !strings.Contains(page, "de <mark>centeno</mark>") ||
+		strings.Contains(page, "<i>pan</i>") || !strings.Contains(page, "1 resultado tiene") {
 		t.Fatalf("search:\n%s", page)
 	}
-	if page := s.get(t, "/search?s=work&q=nada+de+esto").Body.String(); !strings.Contains(page, "Ninguna nota") {
+	if page := s.get(t, "/search?s=work&q=nada+de+esto").Body.String(); !strings.Contains(page, "Nada tiene") {
 		t.Error("an empty search says nothing")
 	}
 }
