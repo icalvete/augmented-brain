@@ -11,6 +11,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 )
 
 // twoFiles writes Lucia Prado the way today's two files look: the same id, a paragraph
@@ -212,5 +213,31 @@ func TestPeopleWithASpaceThatDoesNotOpen(t *testing.T) {
 	page := r.Body.String()
 	if !strings.Contains(page, ">Lucia Prado</a>") || !strings.Contains(page, "The people of home are not here") {
 		t.Errorf("page:\n%s", page)
+	}
+}
+
+// Saving a card is a write like any other: a change made outside before it is kept as
+// a version of its own, and a space that gets a new file for the person lists it in
+// its index.
+func TestPersonCardKeepsVersionAndIndex(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	saved(t, s.post(t, "/person", url.Values{"s": {"home"}, "name": {"Only Home"}}), "home only")
+	before, _ := confighistory.List(cfg)
+	f, err := os.OpenFile(filepath.Join(cfg, config.FileName), os.O_APPEND|os.O_WRONLY, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = f.WriteString("\n# changed by hand\n")
+	_ = f.Close()
+	form := url.Values{"s": {"work"}, "id": {"person-only-home"}, "n": {"1"}, "role.work": {"supplier"}, "aliases.work": {""},
+		"role.home": {""}, "aliases.home": {""}, "t0": {"Brings the paper on Mondays"}, "v0": {"work"}}
+	saved(t, s.post(t, "/person/card", form), "card into work")
+	after, _ := confighistory.List(cfg)
+	if len(after) != len(before)+1 || after[0].By != confighistory.ByOutside {
+		t.Errorf("versions: %d before, %d after, newest %+v", len(before), len(after), after[0])
+	}
+	idx, _ := os.ReadFile(filepath.Join(filepath.Dir(cfg), "brain-work", "MEMORY.md"))
+	if !strings.Contains(string(idx), "Only Home") {
+		t.Errorf("work index lacks the new person:\n%s", idx)
 	}
 }

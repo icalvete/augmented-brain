@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
 
@@ -204,6 +205,11 @@ func (s *Server) personCard(w http.ResponseWriter, r *http.Request) {
 	var bad *brain.CardError
 	func() {
 		defer release()
+		// As every other write (write in pages.go): a change made outside is kept as a
+		// version of its own first, and what this one changed after it. Each note is
+		// written by brain, which writes its space's index too.
+		_, _ = confighistory.Record(s.cfgDir, confighistory.ByOutside, "")
+		defer func() { _, _ = confighistory.Record(s.cfgDir, confighistory.ByPanel, r.URL.Path) }()
 		if redirect, err = v.saveCard(r); errors.As(err, &bad) {
 			v.cardErr = bad
 			name, p, err = s.note(v, r) // the same page, with what was typed
