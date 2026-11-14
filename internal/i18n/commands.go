@@ -487,6 +487,7 @@ Usage:
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
   augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use, user-prompt-submit, stop, post-compact, session-end
   augmented-brain version      show the version
+  augmented-brain help COMMAND what a command does, its options and an example (also: COMMAND --help)
 `,
 		es: `augmented brain: memoria, método y un guardia para asistentes de programación con IA.
 
@@ -516,7 +517,28 @@ Uso:
   augmented-brain mcp          arranca el servidor MCP (lo arranca tu asistente, no tú)
   augmented-brain hook EVENTO  responde a un hook del asistente: session-start, pre-tool-use, user-prompt-submit, stop, post-compact, session-end
   augmented-brain version      muestra la versión
+  augmented-brain help COMANDO qué hace un comando, sus opciones y un ejemplo (también: COMANDO --help)
 `,
+	},
+	"cmdhelp.syntax": {
+		en: "Syntax:",
+		es: "Sintaxis:",
+	},
+	"cmdhelp.options": {
+		en: "Options:",
+		es: "Opciones:",
+	},
+	"cmdhelp.example": {
+		en: "Example:",
+		es: "Ejemplo:",
+	},
+	"cmdhelp.commands": {
+		en: "Its commands (augmented-brain help <command> for each):",
+		es: "Sus comandos (augmented-brain help <comando> para cada uno):",
+	},
+	"cmdhelp.more": {
+		en: "More: %s",
+		es: "Más: %s",
 	},
 	"usage.unknown": {
 		en: "unknown command %q",

@@ -68,6 +68,7 @@ row here with the test that covers it.
 | `mcp` | `internal/mcpserver` |
 | `hook` | `internal/hook` (34 tests), `test/rehearsal/checks.py` |
 | `version`, `help`, nothing, an unknown command, extra words | `cmd` `TestNoArguments`, `TestExtraWordsAreRefused`, `TestUsageListsEveryCommand` |
+| `help <command>` and `--help` after each command, with no configuration | `cmd` `TestEveryCommandHasHelp`, `TestHelpAsked`, `TestWantsHelp`, `TestHelpLayout` |
 | Every command and flag documented | `cmd` `TestCommandsDocumented` |
 
 ## The guard

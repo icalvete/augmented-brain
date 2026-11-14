@@ -18,7 +18,8 @@ augmented-brain check
 Las opciones van antes o después del resto de argumentos, con uno o dos guiones (`--all`
 o `-all`). Si un comando recibe un argumento que no admite, lo dice y no hace nada. Cada
 apartado da la sintaxis del comando: `<…>` es algo que pones tú, `[…]` se puede quitar y
-`|` separa opciones que se excluyen.
+`|` separa opciones que se excluyen. En la terminal, `augmented-brain help <comando>`
+(o `<comando> --help`) escribe el principio de su apartado.
 
 Algunos comandos los lanza otro, no tú: Claude Code lanza `mcp` y `hook`, `panel` lanza
 `panel serve`, y en Linux un temporizador lanza `remote watch`. Están aquí para que sepas
@@ -362,6 +363,8 @@ Dice si había un panel en marcha. El enlace al pie de cada página del panel ha
 El propio panel, en marcha por detrás. Lo arranca `augmented-brain panel`; nunca lo
 lanzas a mano. Se para solo después de 30 minutos sin usarse.
 
+Sintaxis: `augmented-brain panel serve`
+
 ## augmented-brain remote
 
 Mantiene a Claude al alcance desde otro ordenador o el móvil, también después de
@@ -495,7 +498,7 @@ Cada tarea despertada recibe una línea en su diario.
 
 Abre una sesión propia para una tarea, para que desde otro ordenador puedas trabajar en
 varias tareas a la vez, cada una en su sesión. Son cuatro comandos, `start`, `stop`,
-`restart` y `list`, cada uno con su apartado abajo. `start`, `stop` y `list` funcionan
+`restart` y `list`, cada uno con su apartado. `start`, `stop` y `list` funcionan
 por ahora solo en Linux: solo se han probado ahí. `restart` funciona en Linux y macOS.
 Sin subcomando, o con otro, `session` muestra su uso. Para qué sirven y cómo usarlos:
 [Una sesión por tarea](task-sessions.es.md).
@@ -711,8 +714,7 @@ mezcló, y con 1 en cualquier otro caso.
 
 ## augmented-brain config
 
-Las versiones de tu configuración: dos comandos, `history` y `restore`, cada uno con su
-apartado abajo. Sin subcomando, `config` muestra su uso. Mira
+Las versiones de tu configuración: dos comandos, `history` y `restore`, cada uno con su apartado. Sin subcomando, `config` muestra su uso. Mira
 [Versiones de la configuración](config-history.es.md).
 
 ## augmented-brain config history
@@ -858,6 +860,8 @@ Lo tienes en [Instalar](install.es.md#desinstalar).
 Lanza el servidor MCP: las herramientas con las que Claude lleva tus tareas y notas.
 **Lo arranca Claude Code**, a través del plugin; tú no.
 
+Sintaxis: `augmented-brain mcp`
+
 Habla por su entrada y su salida. Vuelve a buscar el espacio en cada llamada, a partir de
 la carpeta en la que trabaja Claude. Las herramientas están en
 [Herramientas MCP](mcp-tools.es.md).
@@ -920,16 +924,23 @@ augmented-brain version
 
 ## augmented-brain help
 
-Escribe la lista de comandos, en tu idioma.
+Escribe la lista de comandos, en tu idioma. Con un comando, qué hace ese comando, su
+sintaxis, sus opciones y un ejemplo.
 
-Sintaxis: `augmented-brain help`
+Sintaxis: `augmented-brain help [<comando>]`
 
 ```bash
 augmented-brain help
+augmented-brain help session start
 ```
 
-`--help` y `-h` hacen lo mismo. Lanzar `augmented-brain` sin nada también escribe la
-lista, como error (código de salida 2).
+`--help` y `-h` hacen lo mismo: solos escriben la lista, y detrás de un comando su ayuda
+(`augmented-brain panel --help`). No necesitan configuración, así que también funcionan
+antes de `init`. Lanzar `augmented-brain` sin nada también escribe la lista, como error
+(código de salida 2).
+
+Lo que escribe cada comando es el principio de su apartado en esta página: el primer
+párrafo, la sintaxis, las opciones y el primer ejemplo.
 
 ## Códigos de salida
 
