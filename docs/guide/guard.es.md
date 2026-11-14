@@ -21,6 +21,14 @@ como texto. Pilla los errores que comete un asistente, también escondidos dentr
 comandos. Un programa empeñado en saltárselo podría hacerlo. Lee el
 [aviso legal](../../DISCLAIMER.md#aviso-legal).
 
+## Dónde vigila
+
+En todas partes. El guardia lee cada comando de cada sesión de Claude Code de este
+ordenador, dentro de tus espacios o no, y sus listas valen para todo el ordenador. Un
+repositorio que no está en ellas queda cerrado a commit y push, en cualquier proyecto. Lo
+demás que cambia fuera de tus espacios está en
+[Espacios](spaces.es.md#fuera-de-todos-los-espacios).
+
 ## Lo que para
 
 - **Commits y pushes.** `git commit`, `git push`, y lo que publica como un push:
@@ -174,7 +182,9 @@ Hace tres cosas para que las listas sigan siendo tuyas:
   llave: escribe un enlace que sirve una vez, y lanzado por Claude no escribe ninguno, ni
   tampoco `augmented-brain panel remote`: te piden que los lances en una terminal tuya.
 - **Se da cuenta de un cambio que no vio.** El guardia guarda un sello de sus listas: se
-  toma cuando empiezas una sesión y al guardar en el panel. Si las listas difieren del
+  toma cuando empiezas una sesión y al guardar en el panel. Cuando Claude solo añade un
+  perfil de producción o una máquina a listas que ya habías aceptado, el sello las sigue:
+  añadir solo hace que el guardia pregunte más. Si las listas difieren del
   sello, algo más las cambió, y un commit, push o merge que las listas dejarían pasar
   pregunta antes, y la página Guardia y `doctor` lo dicen, hasta que las aceptes en la
   página Guardia o empieces una sesión nueva. Mientras tanto, las listas no pueden
@@ -227,7 +237,9 @@ con la herramienta `safety_save`. Valen en toda la máquina, en todos los espaci
 
 Claude solo puede añadir a estas listas. Para quitar uno, usa la página **Guardia** del
 panel, o edita tú `production_aws_profiles` y `untouchable_hosts`
-([Configuración](configuration.es.md)).
+([Configuración](configuration.es.md)). Añadir no deja las listas esperando a que las
+aceptes: si ya las habías aceptado, siguen aceptadas, y los commits y los push no empiezan
+a preguntar. Si otra cosa las había cambiado antes, siguen esperándote.
 
 Estas listas no van en ninguna copia de seguridad, porque pueden nombrar máquinas de tu
 trabajo. Después de restaurar en una máquina nueva, la siguiente sesión te ofrece volver

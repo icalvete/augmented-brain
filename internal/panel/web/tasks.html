@@ -21,13 +21,14 @@
 </ul>
 {{end}}{{else}}<p class="empty">{{t "tasks.none"}}</p>{{end}}
 
-<details class="box">
+<details class="box"{{if $.Open "/task/new"}} open{{end}}>
   <summary>{{t "task.new"}}</summary>
   <form method="post" action="{{$.Base}}/task/new" class="stack">
     {{template "fields" (fields $)}}
-    <label>{{t "f.title"}} <input name="title" required maxlength="200"></label>
-    <label>{{t "f.summary"}} <input name="summary" maxlength="500"></label>
-    <label>{{t "f.area"}} <select name="area">{{range .Areas}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+    <label>{{t "f.title"}} <input name="title" required maxlength="200" value="{{$.Val "/task/new" "title" ""}}"></label>
+    <label>{{t "f.summary"}} <input name="summary" maxlength="500" value="{{$.Val "/task/new" "summary" ""}}"></label>
+    <label>{{t "f.area"}} <select name="area">{{range .Areas}}<option value="{{.Value}}"{{if $.On "/task/new" "area" .Value .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+    {{template "ferr" ($.FormErr "/task/new")}}
     <button type="submit">{{t "task.open"}}</button>
   </form>
 </details>

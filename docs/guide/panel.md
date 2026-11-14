@@ -79,10 +79,11 @@ show only those waiting on you, under way, parked, untouched, or waiting on one 
 A task nobody has changed for 14 days is marked "untouched N days". At the end, folded,
 the tasks left for **Someday** and the **Closed** ones.
 
-Open one. Its essentials come first, the other sections folded, and the journal newest
-first. Write in its journal, change its status or next step, tick its steps, park it or
-close it. You can open new tasks too. If a status skips phases, the journal names them.
-When a task waits on a person you have a note of, "waits on" leads to them.
+Open one. Its essentials come first, then its steps and what you can do with it: write in
+its journal, change its status or next step, tick its steps, park it or close it. Below,
+the other sections folded, and the journal newest first. You can open new tasks too. If a
+status skips phases, the journal names them. When a task waits on a person you have a
+note of, "waits on" leads to them.
 
 Closing a task here does what closing it in a session does: if the task has a session of
 its own, that session ends once it finishes its answer, and its worktree goes when it

@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Saltar al contenido</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Principal">
     <a href="index.es.html">Documentación</a>
@@ -58,10 +58,10 @@
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
   <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
-  <li><a href="guard.es.html">El guardia</a></li>
-  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="where-things-live.es.html">Dónde vive cada cosa</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
 </ul>
 <p class="docnav-group">Día a día</p>
 <ul>
@@ -165,7 +165,7 @@
   <h2 id="copia-de-seguridad-y-restauración">Copia de seguridad y restauración</h2>
   <h3 id="ha-fallado-la-copia-de-seguridad">Ha fallado la copia de seguridad</h3>
   <p>Claude te lo dice al empezar la siguiente sesión. Escribe <code>augmented-brain backup</code> en una carpeta del espacio para ver por qué:</p>
-  <ul><li><strong>No hay red, o no hay acceso.</strong> Comprueba que llegas al repositorio. En GitHub, entra con <code>gh auth login</code>.</li><li><strong>“Stopped after 3m0s without an answer”</strong> (se paró tras 3 minutos sin respuesta). La red o el repositorio no respondían, así que la copia se rindió en vez de esperar para siempre. Vuelve a probar cuando haya red; la siguiente copia no espera detrás de esta.</li><li><strong>“Another backup has been running for over 10m0s”</strong> (otra copia lleva más de 10 minutos). Estorba una copia que ya no responde. Vuelve a probar más tarde.</li><li><strong>Un secreto en una nota.</strong> Dice qué fichero es. Quita el secreto y vuelve a hacer la copia. <code>augmented-brain check</code> también nombra esos ficheros.</li><li><strong>Dos máquinas cambiaron la misma nota.</strong> Nombra las notas, y la carpeta donde juntarlas a mano. Cuando cada máquina solo añadió entradas al diario, se juntan solas.</li><li><strong>Un fichero de más de 50 MB.</strong> Se queda fuera, y el resto se copia. Sácalo de la carpeta de notas.</li></ul>
+  <ul><li><strong>No hay red, o no hay acceso.</strong> Comprueba que llegas al repositorio. En GitHub, entra con <code>gh auth login</code>.</li><li><strong>«parada tras 3m0s sin respuesta».</strong> La red o el repositorio no respondían, así que la copia se rindió en vez de esperar para siempre. Vuelve a probar cuando haya red; la siguiente copia no espera detrás de esta.</li><li><strong>«otra copia lleva más de 10m0s en marcha».</strong> Estorba una copia que ya no responde. Vuelve a probar más tarde.</li><li><strong>Un secreto en una nota.</strong> Dice qué fichero es. Quita el secreto y vuelve a hacer la copia. <code>augmented-brain check</code> también nombra esos ficheros.</li><li><strong>Dos máquinas cambiaron la misma nota.</strong> Nombra las notas, y la carpeta donde juntarlas a mano. Cuando cada máquina solo añadió entradas al diario, se juntan solas.</li><li><strong>Un fichero de más de 50 MB.</strong> Se queda fuera, y el resto se copia. Sácalo de la carpeta de notas.</li></ul>
   <h3 id="doctor-avisa-de-una-copia"><code>doctor</code> avisa de una copia</h3>
   <ul><li><strong>«Empezó … y no terminó».</strong> Se apagó el ordenador, o la copia se paró a medias. Lanza <code>augmented-brain backup</code> en una carpeta del espacio: hace la copia ahora, o dice qué lo impide.</li><li><strong>«La copia automática no se está haciendo».</strong> Las notas cambiaron después de la última copia buena. Lanza <code>augmented-brain backup</code> de la misma forma. Si tienes <code>AB_NO_AUTO_BACKUP</code> en tu entorno, la copia automática está apagada.</li><li><strong>«Lleva una contraseña o un token».</strong> La dirección del repositorio lleva escrito tu acceso, así que queda guardado en la configuración y dentro de la copia. Deja que git guarde el acceso (en GitHub, <code>gh auth setup-git</code>, o una dirección ssh), vuelve a configurar la copia con la dirección limpia y cambia esa contraseña o token: las copias anteriores lo siguen teniendo.</li></ul>
   <h3 id="doctor-dice-que-un-espacio-no-tiene-copia-de-seguridad"><code>doctor</code> dice que un espacio no tiene copia de seguridad</h3>
@@ -213,10 +213,11 @@
     <a class="next" href="limitations.es.html"><span>Siguiente →</span>Limitaciones conocidas</a>
   </nav>
 </main>
+<aside class="pagetoc"><p>En esta página</p><ul><li><a href="#claude-y-tus-notas">Claude y tus notas</a></li><li><a href="#instalar-y-actualizar">Instalar y actualizar</a></li><li><a href="#el-guardia">El guardia</a></li><li><a href="#guardar-reglas">Guardar reglas</a></li><li><a href="#copia-de-seguridad-y-restauración">Copia de seguridad y restauración</a></li><li><a href="#el-panel-y-el-acceso-remoto">El panel y el acceso remoto</a></li><li><a href="#el-ordenador">El ordenador</a></li><li><a href="#preguntas">Preguntas</a></li><li><a href="#sigues-atascado">¿Sigues atascado?</a></li></ul></aside>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
+  <div class="wrap wide"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

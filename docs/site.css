@@ -1,5 +1,5 @@
-/* Layout: one calm column on white. A hero with the logo card and the three install
-   steps, a real conversation as the proof, then what you get, commands and guides. */
+/* Layout: one calm column on white. The landing pages (index.html, es/index.html) and the
+   guides (docs/guide/, built by scripts/build-guides.py) share this file. */
 :root {
   color-scheme: light;
   --ink: #143024; --sage: #6B9A82; --mint: #9CC9AF; --soft: #E1EBE2;
@@ -34,6 +34,12 @@ code { font-family: var(--mono); font-size: 0.9em; background: var(--code); padd
 .cmd { display: flex; align-items: center; gap: 8px; min-width: 0; background: var(--ink); color: #EAF3EE; border-radius: 10px; padding: 9px 10px 9px 14px; }
 .cmd code { background: none; color: inherit; padding: 0; font-size: 0.86rem; white-space: nowrap; overflow-x: auto; flex: 1; min-width: 0; }
 .copy { flex: none; font: 500 0.75rem var(--body); color: var(--ink); background: var(--mint); border: 0; border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+/* On a touch screen, every link and button is at least 44 px high: a finger, not a pointer. */
+@media (pointer: coarse) {
+  .copy { min-height: 44px; min-width: 56px; padding: 8px 12px; }
+  .top nav a { display: inline-flex; align-items: center; min-height: 44px; }
+  .docnav a { display: flex; align-items: center; min-height: 44px; }
+}
 .copy:hover { background: #B3D7C2; }
 .note { font-size: 0.9rem; color: var(--muted); margin-top: 14px; }
 
@@ -42,16 +48,8 @@ section { padding-block: 52px; border-top: 1px solid var(--line); }
 .head { display: grid; gap: 10px; margin-bottom: 26px; }
 .head p { color: var(--muted); }
 
-/* the conversation */
-.chat { display: grid; gap: 12px; max-width: 720px; }
-.msg { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; align-items: start; }
-.who { font: 700 0.8rem var(--display); color: var(--muted); padding-top: 11px; text-transform: lowercase; letter-spacing: 0.04em; }
+/* chat bubbles (the demo and the with/without comparison) */
 .bubble { border-radius: 14px; padding: 10px 14px; background: var(--code); }
-.msg.ai .bubble { background: var(--soft); }
-.msg.ai .who { color: var(--ink); }
-.gap { font-size: 0.9rem; color: var(--muted); font-style: italic; padding-left: 84px; }
-.day { font: 700 0.78rem var(--display); color: var(--sage); text-transform: uppercase; letter-spacing: 0.12em; padding-left: 84px; margin-top: 8px; }
-.proof { margin-top: 18px; color: var(--muted); max-width: 64ch; }
 
 /* commands */
 .table-wrap { overflow-x: auto; }
@@ -59,7 +57,6 @@ table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
 th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
 th { font: 600 0.8rem var(--body); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
 td:first-child { white-space: nowrap; }
-.plain { margin-top: 16px; color: var(--muted); }
 
 /* guides */
 .guides { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
@@ -72,9 +69,6 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 
 @media (max-width: 820px) {
   .guides { grid-template-columns: 1fr; }
-  .msg { grid-template-columns: 1fr; gap: 2px; }
-  .who { padding-top: 0; }
-  .gap, .day { padding-left: 0; }
   /* The menu goes under the brand, whole: hiding links lost the way around the page. */
   .top { flex-wrap: wrap; row-gap: 6px; padding-block: 14px; }
   .top nav { width: 100%; flex-wrap: wrap; gap: 4px 16px; }
@@ -88,12 +82,19 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 .prose p, .prose ul, .prose ol { margin: 0 0 14px; }
 .prose ul, .prose ol { padding-left: 1.3em; }
 .prose li { margin-bottom: 6px; }
-.prose pre { background: var(--ink); color: #EAF3EE; border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 0.88rem/1.5 var(--mono); }
+/* A code block wider than its box scrolls, and a light edge shows on the side where there
+   is more (the covers move with the text, the edges stay with the box). */
+.prose pre { color: #EAF3EE; border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 0.88rem/1.5 var(--mono);
+  background:
+    linear-gradient(to right, var(--ink) 40%, rgba(20, 48, 36, 0)) left center / 36px 100% no-repeat local,
+    linear-gradient(to left, var(--ink) 40%, rgba(20, 48, 36, 0)) right center / 36px 100% no-repeat local,
+    linear-gradient(to right, rgba(156, 201, 175, 0.45), rgba(156, 201, 175, 0)) left center / 14px 100% no-repeat scroll,
+    linear-gradient(to left, rgba(156, 201, 175, 0.45), rgba(156, 201, 175, 0)) right center / 14px 100% no-repeat scroll,
+    var(--ink); }
 .prose pre code { background: none; color: inherit; padding: 0; }
 .prose .codebox { display: flex; align-items: flex-start; gap: 8px; min-width: 0; margin: 0 0 14px; background: var(--ink); border-radius: 10px; }
-.prose .codebox pre { flex: 1; min-width: 0; margin: 0; background: none; padding-right: 0; }
+.prose .codebox pre { flex: 1; min-width: 0; margin: 0; border-radius: 10px 0 0 10px; }
 .prose .codebox .copy { margin: 10px 10px 0 0; }
-.back { display: inline-block; margin-top: 8px; font-size: 0.95rem; }
 
 /* questions, skip link, anchors below the top edge */
 .faq { display: grid; gap: 10px; max-width: 760px; }
@@ -106,7 +107,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 section[id] { scroll-margin-top: 16px; }
 
 /* beta notice, on top of every page */
-.beta { background: #F3E2B0; color: #4D3A06; font-size: 0.9rem; padding-block: 8px; }
+.beta { background: #F3E2B0; color: #4D3A06; font-size: 0.9rem; padding-block: 8px; text-align: center; }
 .beta a { color: #4D3A06; text-decoration-color: #4D3A06; }
 
 /* diagrams in the guides: generated SVGs drawn at the size they are shown; <picture>
@@ -125,10 +126,12 @@ section[id] { scroll-margin-top: 16px; }
 
 /* documentation: a sidebar with every page by group, the page beside it. On a narrow
    screen the sidebar folds into a menu above the page. */
-.docs { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 40px; max-width: 1120px; }
+.docs, .wrap.wide { max-width: 1120px; }
+.docs { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 40px; }
 .docs .prose { max-width: 720px; min-width: 0; }
 .docnav { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding-block: 24px 40px; font-size: 0.93rem; }
 .docnav summary { display: none; }
+.pagetoc { display: none; }
 .docnav-group { font: 700 0.74rem var(--display); text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage); margin: 14px 0 4px 10px; }
 .docnav-group:first-of-type { margin-top: 0; }
 .docnav ul { list-style: none; margin: 0; padding: 0; }
@@ -137,6 +140,7 @@ section[id] { scroll-margin-top: 16px; }
 .docnav a[aria-current="page"] { color: var(--ink); background: var(--soft); font-weight: 600; }
 .prose h2[id], .prose h3[id] { scroll-margin-top: 16px; }
 .prose h3 { margin: 26px 0 10px; }
+.prose .guide h3 { margin: 0; }
 .toc { margin: 4px 0 26px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 12px; font-size: 0.93rem; }
 .toc p { font: 700 0.74rem var(--display); text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage); margin: 0 0 6px; }
 .toc ul { margin: 0; padding-left: 1.1em; columns: 2; column-gap: 28px; }
@@ -151,10 +155,29 @@ section[id] { scroll-margin-top: 16px; }
 @media (max-width: 820px) {
   .docs { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .docnav { position: static; max-height: none; overflow: visible; padding-block: 4px 0; border-bottom: 1px solid var(--line); }
-  .docnav summary { display: block; cursor: pointer; font-weight: 600; color: var(--ink); padding: 10px 0; }
-  .docnav details[open] { padding-bottom: 14px; }
+  /* The folded menu looks like a button: a box, a label and an arrow that turns. */
+  .docnav { border-bottom: 0; padding-block: 8px 4px; }
+  .docnav summary { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; cursor: pointer;
+    font-weight: 600; color: var(--ink); padding: 8px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--code); list-style: none; }
+  .docnav summary::-webkit-details-marker { display: none; }
+  .docnav summary::after { content: ""; width: 8px; height: 8px; border: solid var(--ink); border-width: 0 2px 2px 0; transform: rotate(45deg) translateY(-2px); transition: transform 0.15s; }
+  .docnav details[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+  .docnav summary:hover { border-color: var(--mint); }
+  .docnav details[open] { padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .docnav details[open] summary { margin-bottom: 12px; }
   .toc ul { columns: 1; }
   .docs-index .guides { grid-template-columns: minmax(0, 1fr); }
+}
+/* On a wide screen, a long guide keeps its contents beside it while you read. */
+@media (min-width: 1280px) {
+  .docs, .wrap.wide { max-width: 1290px; }
+  .docs { grid-template-columns: 230px minmax(0, 720px) minmax(0, 1fr); }
+  .docs:has(.pagetoc) .toc { display: none; }
+  .pagetoc { display: block; position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding-block: 24px 40px; font-size: 0.88rem; }
+  .pagetoc p { font: 700 0.74rem var(--display); text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage); margin: 0 0 8px 10px; }
+  .pagetoc ul { list-style: none; margin: 0; padding: 0; border-left: 1px solid var(--line); }
+  .pagetoc a { display: block; padding: 3px 10px; color: var(--muted); text-decoration: none; line-height: 1.4; }
+  .pagetoc a:hover { color: var(--ink); }
 }
 @media (max-width: 600px) {
   .pager { grid-template-columns: minmax(0, 1fr); }
@@ -321,7 +344,6 @@ section[id] { scroll-margin-top: 16px; }
 .os > span { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
 .tabbed .os[hidden] { display: none; }
 .tabbed .os > span { display: none; }
-.home .copy { min-height: 36px; padding: 6px 12px; }
 
 /* And also: one line each, with its page. */
 .also { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 32px; max-width: 980px; }
@@ -358,11 +380,13 @@ section[id] { scroll-margin-top: 16px; }
   .say { max-width: 90%; }
   .home section { padding-block: 44px; }
 }
-/* On a touch screen, the menu's links are a finger high. */
-@media (pointer: coarse) {
-  .home .top nav a { display: inline-flex; align-items: center; min-height: 44px; }
-}
 @media (prefers-reduced-motion: reduce) {
   .demo [data-step].shown, .typing i { animation: none; }
   .note-file .fl { transition: none; }
 }
+
+/* The page for an address that does not exist (404.html), in both languages. */
+.notfound { padding-block: 14vh 80px; display: grid; gap: 12px; }
+.notfound h1, .notfound h2 { font-size: clamp(1.6rem, 4vw, 2.2rem); }
+.notfound h2 { margin-top: 28px; }
+.notfound p { color: var(--muted); }

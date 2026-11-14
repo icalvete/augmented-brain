@@ -83,7 +83,7 @@ func runGitAs(notes bool, env []string, args ...string) (string, error) {
 	cmd.Env = append(cmd.Env, env...)
 	out, err := cmd.CombinedOutput()
 	if ctx.Err() == context.DeadlineExceeded {
-		err = fmt.Errorf("stopped after %s without an answer: is the network or the repository down? (%v)", GitTimeout, err)
+		err = &NoAnswerError{After: GitTimeout, Err: err}
 	}
 	return string(out), err
 }
@@ -93,6 +93,42 @@ func runGitAs(notes bool, env []string, args ...string) (string, error) {
 // is a repository of the user's, so their settings apply: hooks run (Git LFS fills a
 // new worktree through one), commits are signed as they set.
 func Git(dir string, args ...string) (string, error) { return gitAs(false, dir, args...) }
+
+// NoAnswerError is a git call stopped after GitTimeout: the network or the repository
+// did not answer. Its text is in English: Localize puts it in the user's language.
+type NoAnswerError struct {
+	After time.Duration
+	Err   error
+}
+
+func (e *NoAnswerError) Error() string { return e.in("en") }
+
+func (e *NoAnswerError) in(lang string) string {
+	return i18n.T(lang, "backup.noanswer", e.After, e.Err)
+}
+
+func (e *NoAnswerError) Unwrap() error { return e.Err }
+
+// Localize puts the errors of this package that a person reads in lang. A git call that
+// got no answer can come from deep inside a backup or a restore, where the language is
+// not known, and the errors that wrap it have their text already written: its English
+// words are replaced in that text. The result still wraps err.
+func Localize(err error, lang string) error {
+	var na *NoAnswerError
+	if !errors.As(err, &na) || i18n.Known(lang) == "en" {
+		return err
+	}
+	return &localized{msg: strings.Replace(err.Error(), na.Error(), na.in(lang), 1), err: err}
+}
+
+// localized is an error with its text in the user's language.
+type localized struct {
+	msg string
+	err error
+}
+
+func (e *localized) Error() string { return e.msg }
+func (e *localized) Unwrap() error { return e.err }
 
 // GitTimeout is the longest a single git call of a backup or restore may take.
 var GitTimeout = 3 * time.Minute
@@ -111,7 +147,7 @@ func git(dir string, args ...string) (string, error) { return gitAs(true, dir, a
 func gitAs(notes bool, dir string, args ...string) (string, error) {
 	out, err := runGitAs(notes, []string{ceiling(dir)}, append([]string{"-C", dir}, args...)...)
 	if err != nil {
-		return out, fmt.Errorf("git %s: %v: %s", strings.Join(args, " "), err, strings.TrimSpace(out))
+		return out, fmt.Errorf("git %s: %w: %s", strings.Join(args, " "), err, strings.TrimSpace(out))
 	}
 	return out, nil
 }
@@ -192,6 +228,11 @@ func links(dir, rev string) ([]string, error) {
 // Setup makes the space's memory folder a git repository that backs up to url, and
 // saves url in the configuration.
 func Setup(c *config.Config, s *config.Space, url string) error {
+	return Localize(setupSpace(c, s, url), c.Language)
+}
+
+// setupSpace is Setup; Setup gives its errors the user's language.
+func setupSpace(c *config.Config, s *config.Space, url string) error {
 	if err := checkURL(url); err != nil {
 		return err
 	}
@@ -240,12 +281,18 @@ func (r *Result) Warning(lang string) string {
 // backups never share a repository, and the notes lock while it reads and merges the
 // notes, so it never meets a half-done write of the assistant.
 func Run(c *config.Config, s *config.Space, host string) (*Result, error) {
+	res, err := run(c, s, host)
+	return res, Localize(err, c.Language)
+}
+
+// run is Run; Run gives the errors that come from deep inside it the user's language.
+func run(c *config.Config, s *config.Space, host string) (*Result, error) {
 	if s.Backup == "" {
-		return nil, fmt.Errorf("space %s has no backup yet: run `augmented-brain backup setup <url of a private repository>`", s.Name)
+		return nil, errors.New(i18n.T(c.Language, "backup.none.setup", s.Name))
 	}
 	unlock, err := filelock.LockWithin(filepath.Join(c.Dir, backupLock), LockWait)
 	if errors.Is(err, filelock.ErrBusy) {
-		return nil, fmt.Errorf("another backup has been running for over %s and did not finish: try again later", LockWait)
+		return nil, errors.New(i18n.T(c.Language, "backup.busy", LockWait))
 	}
 	if err != nil {
 		return nil, err
@@ -573,7 +620,7 @@ func cloneBackup(url, dir string) (string, *config.Space, bool, error) {
 		if heads, lerr := runGit("ls-remote", "--heads", "--", url); lerr == nil && !strings.Contains(heads, "refs/heads/main") {
 			return "", nil, false, fmt.Errorf("the repository %s has no branch main, where augmented brain keeps its backups: it is not a backup, or it is empty", url)
 		}
-		return "", nil, false, fmt.Errorf("cloning %s: %v: %s", url, err, strings.TrimSpace(out))
+		return "", nil, false, fmt.Errorf("cloning %s: %w: %s", url, err, strings.TrimSpace(out))
 	}
 	if found, err := links(dir, "HEAD"); err != nil {
 		return "", nil, false, err
@@ -712,7 +759,7 @@ func swapIn(clone, mem, url string) (*swap, error) {
 	staging := filepath.Join(filepath.Dir(mem), "."+filepath.Base(mem)+".restoring")
 	_ = os.RemoveAll(staging)
 	if out, err := runGit("-c", "core.symlinks=false", "clone", "-q", "--", clone, staging); err != nil {
-		return nil, fmt.Errorf("copying the backup next to %s: %v: %s", mem, err, strings.TrimSpace(out))
+		return nil, fmt.Errorf("copying the backup next to %s: %w: %s", mem, err, strings.TrimSpace(out))
 	}
 	if _, err := git(staging, "remote", "set-url", "origin", url); err != nil {
 		os.RemoveAll(staging)
