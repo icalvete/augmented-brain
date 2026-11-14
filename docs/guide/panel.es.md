@@ -81,11 +81,11 @@ Los filtros enseñan solo las que te esperan, las que están en marcha, las apar
 paradas, o las que esperan a una persona. Una tarea que nadie ha cambiado en 14 días sale
 marcada «parada N días». Al final, plegadas, las de **Algún día** y las **Cerradas**.
 
-Abre una. Primero lo esencial, las demás secciones plegadas, y el diario con lo último
-arriba. Escribe en su diario, cambia su estado o su siguiente paso, marca sus pasos,
-apárcala o ciérrala. También puedes abrir tareas nuevas. Si un estado se salta fases, el
-diario las nombra. Si una tarea espera a una persona de la que tienes nota, «espera a» te
-lleva a ella.
+Abre una. Primero lo esencial, después sus pasos y lo que puedes hacer con ella: escribir
+en su diario, cambiar su estado o su siguiente paso, marcar sus pasos, aparcarla o
+cerrarla. Debajo, las demás secciones plegadas, y el diario con lo último arriba. También
+puedes abrir tareas nuevas. Si un estado se salta fases, el diario las nombra. Si una
+tarea espera a una persona de la que tienes nota, «espera a» te lleva a ella.
 
 Cerrar una tarea aquí hace lo mismo que cerrarla en una sesión: si la tarea tiene una
 sesión propia, esa sesión acaba cuando termina su respuesta, y su worktree se quita cuando

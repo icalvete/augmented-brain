@@ -1277,7 +1277,7 @@ var panelMessages = map[string]msg{
 	},
 	"panel.dates": {
 		en: "created %s, last changed %s",
-		es: "creada el %s, último cambio el %s",
+		es: "creada %s, último cambio %s",
 	},
 	"panel.f.id": {
 		en: "Id",
@@ -1790,6 +1790,35 @@ var panelMessages = map[string]msg{
 	"panel.days.in": {
 		en: "in %d days",
 		es: "dentro de %d días",
+	},
+	// A date as a person reads it (package panel, humanDate).
+	"panel.date.today": {
+		en: "today",
+		es: "hoy",
+	},
+	"panel.date.yesterday": {
+		en: "yesterday",
+		es: "ayer",
+	},
+	"panel.date.tomorrow": {
+		en: "tomorrow",
+		es: "mañana",
+	},
+	"panel.date.months": {
+		en: "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec",
+		es: "ene feb mar abr may jun jul ago sep oct nov dic",
+	},
+	"panel.date.day": {
+		en: "%d %s",
+		es: "%d %s",
+	},
+	"panel.date.year": {
+		en: "%d %s %d",
+		es: "%d %s %d",
+	},
+	"panel.date.time": {
+		en: "%s, %s",
+		es: "%s, %s",
 	},
 	"panel.cli.started": {
 		en: "The panel is open at:\n  %s",
