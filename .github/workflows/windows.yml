@@ -36,16 +36,12 @@ jobs:
       - name: Vet
         run: go vet ./...
       # No -race: on Windows it needs a C compiler the runner does not set up.
-      # -timeout below the job's 10 minutes: a test that hangs then fails with the
-      # stack of every goroutine, which says where it waits, instead of the job being
-      # cancelled with nothing to go on.
-      # Diagnosis of the internal/hook hang (to be taken out): which test runs last.
-      - name: Test internal/hook, verbose
-        timeout-minutes: 4
-        continue-on-error: true
-        run: go test -count=1 -v -timeout 3m ./internal/hook/
+      # -timeout well below the job's 10 minutes (a package's binary may start minutes
+      # after go test, once one of the runner's few slots frees): a test that hangs then
+      # fails with the stack of every goroutine, which says where it waits, instead of
+      # the job being cancelled with nothing to go on. The slowest package takes 2.
       - name: Test
-        run: go test -timeout 7m ./...
+        run: go test -timeout 4m ./...
       - name: Build
         run: go build -o augmented-brain.exe ./cmd/augmented-brain
       - name: The program runs
