@@ -6,11 +6,12 @@
 {{range .Spaces}}{{$sp := .Name}}
 <section class="space-block">
   <h2>{{tf "today.space" .Name}} <span class="hint">· {{tf "today.counts" .Live (tc "today.parked" .Parked)}}</span></h2>
-  <ul class="pills">
+  {{if .Empty}}<p class="hint">{{t "today.space.empty"}}</p>{{end}}
+  {{if or .Inbox .ReviewDue .Problems}}<ul class="pills">
     {{if .Inbox}}<li><a href="{{$.Base}}/inbox?s={{$sp}}">{{tf "today.inbox" .Inbox}}</a></li>{{end}}
     {{if .ReviewDue}}<li class="warn"><a href="{{$.Base}}/review?s={{$sp}}">{{tf "today.review" .ReviewDays}}</a></li>{{end}}
     {{if .Problems}}<li class="bad"><a href="{{$.Base}}/space?s={{$sp}}">{{tf "problems" .Problems}}</a></li>{{end}}
-  </ul>
+  </ul>{{end}}
   {{if .DeadRows}}<h3>{{if eq .Dead 1}}{{t "today.dead1"}}{{else}}{{tf "today.dead" .Dead}}{{end}}</h3>
   <p class="hint">{{t "sessions.dead.hint"}} <a href="{{$.Base}}/sessions?s={{$sp}}">{{t "today.dead.see"}}</a></p>
   <ul class="cards">

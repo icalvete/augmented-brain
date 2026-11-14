@@ -14,8 +14,9 @@ abrir y leer.
 
 **Cómo se protegen:**
 
-- **Solo tú puedes leerlas.** La carpeta es privada de tu usuario; `augmented-brain check`
-  la vuelve a cerrar si alguien la abrió.
+- **Solo tú puedes leerlas**, en Linux y macOS. La carpeta es privada de tu usuario;
+  `augmented-brain check` la vuelve a cerrar si alguien la abrió. En Windows el programa
+  no la toca: se queda con los permisos de la carpeta en la que está.
 - **Sin secretos dentro.** Las herramientas de Claude se niegan a escribir una contraseña,
   un token o una clave en una nota.
 - **Nunca a medio escribir.** Cada cambio se comprueba antes y se escribe de una vez, así
@@ -34,9 +35,10 @@ abrir y leer.
 | `config.toml` | Los espacios y las listas del guardia de todo el ordenador. |
 | `guard.toml` | Los repositorios que nada puede tocar. |
 | `secrets.toml` | Los **nombres** de tus secretos y para qué es cada uno. Nunca un valor. |
-| `session.toml` | El modelo que deben usar tus sesiones. |
+| `session.toml` | Dos elecciones tuyas: el modelo que deben usar tus sesiones, y si Claude [pregunta antes de guardar una regla](guard.es.md#preguntar-antes-de-que-claude-guarde-una-regla), tu perfil o las listas del guardia. |
 | `remote.toml` | El acceso remoto: qué espacios tienen puerta. |
 | `profile.md` | Quién eres y cómo te gusta trabajar. |
+| `shared/` | Las reglas, referencias y lecciones para todos los espacios. |
 
 **Cómo se protege:**
 
@@ -73,7 +75,7 @@ el llavero de este ordenador.
 |---|---|
 | Todas las notas del espacio | El valor de tus secretos |
 | Los ajustes del propio espacio: sus carpetas y sus listas | Las listas de todo el ordenador: perfiles de producción, máquinas y repositorios intocables, excepciones de root |
-| Solo en el espacio por defecto: tu perfil, las notas compartidas y los nombres de tus secretos | Las versiones de la configuración, `state/` y `panel.json` |
+| Solo en el espacio por defecto: tu perfil, las notas compartidas y los nombres de tus secretos | `guard.toml`, `session.toml` y `remote.toml`; las versiones de la configuración, `state/` y `panel.json` |
 
 Las listas de todo el ordenador se quedan fuera porque pueden nombrar las máquinas de tu
 trabajo. Los repositorios donde Claude puede hacer commit o push viajan con el espacio,

@@ -9,28 +9,28 @@
   {{if .H.Next}}<dt>{{t "next"}}</dt><dd>{{inline .H.Next}}</dd>{{end}}
   {{if .H.Summary}}<dt>{{t "f.summary"}}</dt><dd>{{inline .H.Summary}}</dd>{{end}}
   {{if .AreaTitle}}<dt>{{t "f.area"}}</dt><dd>{{.AreaTitle}}</dd>{{end}}
-  <dt>{{t "f.dates"}}</dt><dd>{{tf "dates" .H.Created .H.Updated}}</dd>
+  <dt>{{t "f.dates"}}</dt><dd>{{tf "dates" (day .H.Created) (day .H.Updated)}}</dd>
   <dt>{{t "f.id"}}</dt><dd><code>{{.H.ID}}</code></dd>
 </dl>
 {{template "sections" .Essentials}}
 {{if .MissingRepos}}<p class="flash warn">{{range $i, $r := .MissingRepos}}{{if $i}}, {{end}}<code>{{$r}}</code>{{end}}: {{t "repos.missing"}}</p>{{end}}
 
 {{if .Watch}}<h2>{{t "watch"}}</h2><ul class="plain">
-{{range .Watch}}<li>{{if .Done}}<s>{{.Date}} · {{inline .What}}</s>{{else}}{{.Date}} · {{inline .What}}
+{{range .Watch}}<li>{{if .Done}}<s><time datetime="{{.Date}}" title="{{.Date}}">{{day .Date}}</time> · {{inline .What}}</s>{{else}}<time datetime="{{.Date}}" title="{{.Date}}">{{day .Date}}</time> · {{inline .What}}
   <form method="post" action="{{$.Base}}/watch/done" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "date" .Date)}}<button type="submit" class="small">{{t "done"}}</button></form>{{end}}</li>
 {{end}}</ul>{{end}}
 
-<h2 id="steps">{{t "steps"}}{{if .StepCount}} <span class="hint">· {{.StepCount}}</span>{{end}}</h2>
-<p class="hint">{{t "steps.hint"}}</p>
+{{if or .Live .Steps}}<h2 id="steps">{{t "steps"}}{{if .StepCount}} <span class="hint">· {{.StepCount}}</span>{{end}}</h2>
+<p class="hint">{{t "steps.hint"}}</p>{{end}}
 {{if .Steps}}<ul class="steps">
 {{range .Steps}}<li>{{if $.D.Live}}<form method="post" action="{{$.Base}}/task/step" class="inline">{{template "fields" (fields $ "id" $.D.H.ID "n" .N "text" .Text "done" .Next)}}<button type="submit" class="tick{{if .Done}} on{{end}}" title="{{if .Done}}{{t "step.untick"}}{{else}}{{t "step.tick"}}{{end}}" aria-label="{{if .Done}}{{t "step.untick"}}{{else}}{{t "step.tick"}}{{end}}: {{.Text}}">{{if .Done}}☑{{else}}☐{{end}}</button></form>{{else}}<span class="tick">{{if .Done}}☑{{else}}☐{{end}}</span>{{end}}
   {{if .Done}}<s>{{inline .Text}}</s>{{else}}{{inline .Text}}{{end}}</li>
 {{end}}</ul>{{end}}
 {{if .Live}}<form method="post" action="{{$.Base}}/task/step" class="row">
-  {{template "fields" (fields $ "id" .H.ID)}}
-  <input name="step" required maxlength="500" aria-label="{{t "f.step"}}" placeholder="{{t "f.step"}}">
+  {{template "fields" (fields $ "id" .H.ID "form" "add")}}
+  <input name="step" required maxlength="500" aria-label="{{t "f.step"}}" placeholder="{{t "f.step"}}" value="{{$.Val "/task/step#add" "step" ""}}">
   <button type="submit">{{t "step.add"}}</button>
-</form>{{end}}
+</form>{{template "ferr" ($.FormErr "/task/step#add")}}{{end}}
 
 {{if .Children}}<h2>{{t "subtasks"}}</h2>
 <ul class="cards">
@@ -45,68 +45,90 @@
 {{end}}
 </ul>{{end}}
 
-{{template "sections" .Sections}}
-
+{{/* What can be done with the task comes before its body: a long body would push it far down. */}}
 {{if .Live}}
 <details class="box" open>
   <summary>{{t "task.journal"}}</summary>
   <form method="post" action="{{$.Base}}/task/journal" class="stack">
     {{template "fields" (fields $ "id" .H.ID)}}
-    <label>{{t "f.entry"}} <textarea name="entry" rows="3" required maxlength="4000"></textarea></label>
+    <label>{{t "f.entry"}} <textarea name="entry" rows="3" required maxlength="4000">{{$.Val "/task/journal" "entry" ""}}</textarea></label>
+    {{template "ferr" ($.FormErr "/task/journal")}}
     <button type="submit">{{t "add"}}</button>
   </form>
 </details>
-{{if .CanHaveSubs}}<details class="box">
+{{if .CanHaveSubs}}<details class="box"{{if $.Open "/task/new"}} open{{end}}>
   <summary>{{t "subtask.new"}}</summary>
   <form method="post" action="{{$.Base}}/task/new" class="stack">
     {{template "fields" (fields $ "parent" .H.ID "area" .H.Area)}}
-    <label>{{t "f.title"}} <input name="title" required maxlength="200"></label>
-    <label>{{t "f.summary"}} <input name="summary" maxlength="500"></label>
+    <label>{{t "f.title"}} <input name="title" required maxlength="200" value="{{$.Val "/task/new" "title" ""}}"></label>
+    <label>{{t "f.summary"}} <input name="summary" maxlength="500" value="{{$.Val "/task/new" "summary" ""}}"></label>
     <p class="hint">{{t "subtask.hint"}}</p>
+    {{template "ferr" ($.FormErr "/task/new")}}
     <button type="submit">{{t "subtask.open"}}</button>
   </form>
 </details>{{end}}
-<details class="box">
+<details class="box"{{if $.Open "/task/update"}} open{{end}}>
   <summary>{{t "task.edit"}}</summary>
   <form method="post" action="{{$.Base}}/task/update" class="stack">
     {{template "fields" (fields $ "id" .H.ID "orig_status" .H.Status "orig_waiting_on" .H.WaitingOn "orig_next" .H.Next "orig_summary" .H.Summary "orig_area" .H.Area)}}
-    <label>{{t "f.status"}} <select name="status">{{range .Phases}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
-    <label>{{t "waits"}} <input name="waiting_on" value="{{.H.WaitingOn}}" maxlength="200"></label>
-    <label>{{t "next"}} <input name="next" value="{{.H.Next}}" maxlength="500"></label>
-    <label>{{t "f.summary"}} <input name="summary" value="{{.H.Summary}}" maxlength="500"></label>
-    <label>{{t "f.area"}} <select name="area">{{range .Areas}}<option value="{{.Value}}"{{if .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+    <label>{{t "f.status"}} <select name="status">{{range .Phases}}<option value="{{.Value}}"{{if $.On "/task/update" "status" .Value .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+    <label>{{t "waits"}} <input name="waiting_on" value="{{$.Val "/task/update" "waiting_on" .H.WaitingOn}}" maxlength="200"></label>
+    <label>{{t "next"}} <input name="next" value="{{$.Val "/task/update" "next" .H.Next}}" maxlength="500"></label>
+    <label>{{t "f.summary"}} <input name="summary" value="{{$.Val "/task/update" "summary" .H.Summary}}" maxlength="500"></label>
+    <label>{{t "f.area"}} <select name="area">{{range .Areas}}<option value="{{.Value}}"{{if $.On "/task/update" "area" .Value .Selected}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
     <p class="hint">{{t "task.edit.hint"}}</p>
+    {{template "ferr" ($.FormErr "/task/update")}}
     <button type="submit">{{t "save"}}</button>
   </form>
 </details>
-<details class="box">
+<details class="box"{{if $.Open "/watch/add"}} open{{end}}>
   <summary>{{t "watch.add"}}</summary>
   <form method="post" action="{{$.Base}}/watch/add" class="stack">
     {{template "fields" (fields $ "id" .H.ID)}}
-    <label>{{t "f.date"}} <input type="date" name="date" required></label>
-    <label>{{t "f.what"}} <input name="what" required maxlength="500"></label>
+    <label>{{t "f.date"}} <input type="date" name="date" required value="{{$.Val "/watch/add" "date" ""}}"></label>
+    {{template "ferr" ($.Err "/watch/add" "date")}}
+    <label>{{t "f.what"}} <input name="what" required maxlength="500" value="{{$.Val "/watch/add" "what" ""}}"></label>
+    {{template "ferr" ($.FormErr "/watch/add")}}
     <button type="submit">{{t "add"}}</button>
   </form>
 </details>
-<details class="box">
+<details class="box"{{if $.Open "/task/park"}} open{{end}}>
   <summary>{{t "task.park"}}</summary>
   <form method="post" action="{{$.Base}}/task/park" class="stack">
     {{template "fields" (fields $ "id" .H.ID)}}
-    <label>{{t "f.resume"}} <input name="next" required maxlength="500"></label>
-    <label>{{t "waits"}} <input name="waiting_on" value="{{.H.WaitingOn}}" maxlength="200"></label>
-    <label>{{t "f.essentials"}} <textarea name="essentials" rows="4" maxlength="4000"></textarea></label>
-    <label class="check"><input type="checkbox" name="someday" value="1"> {{t "f.someday"}}</label>
+    <label>{{t "f.resume"}} <input name="next" required maxlength="500" value="{{$.Val "/task/park" "next" ""}}"></label>
+    <label>{{t "waits"}} <input name="waiting_on" value="{{$.Val "/task/park" "waiting_on" .H.WaitingOn}}" maxlength="200"></label>
+    <label>{{t "f.essentials"}} <textarea name="essentials" rows="4" maxlength="4000">{{$.Val "/task/park" "essentials" ""}}</textarea></label>
+    <label class="check"><input type="checkbox" name="someday" value="1"{{if $.On "/task/park" "someday" "1" false}} checked{{end}}> {{t "f.someday"}}</label>
+    {{template "ferr" ($.FormErr "/task/park")}}
     <button type="submit">{{t "park"}}</button>
   </form>
 </details>
-<details class="box">
+<details class="box"{{if $.Open "/task/close"}} open{{end}}>
   <summary>{{t "task.close"}}</summary>
   <form method="post" action="{{$.Base}}/task/close" class="stack">
     {{template "fields" (fields $ "id" .H.ID)}}
-    <label>{{t "f.result"}} <textarea name="result" rows="2" required maxlength="2000"></textarea></label>
+    <label>{{t "f.result"}} <textarea name="result" rows="2" required maxlength="2000">{{$.Val "/task/close" "result" ""}}</textarea></label>
     <p class="hint">{{t "task.close.hint"}}</p>
+    {{template "ferr" ($.FormErr "/task/close")}}
     <button type="submit">{{t "close"}}</button>
   </form>
 </details>
+{{else}}
+<details class="box" open>
+  <summary>{{t "task.reopen"}}</summary>
+  <form method="post" action="{{$.Base}}/task/update" class="stack">
+    {{template "fields" (fields $ "id" .H.ID "orig_status" .H.Status)}}
+    <label>{{t "f.status"}} <select name="status">{{range .Phases}}{{if ne .Value "closed"}}<option value="{{.Value}}"{{if $.On "/task/update" "status" .Value false}} selected{{end}}>{{.Label}}</option>{{end}}{{end}}</select></label>
+    <label>{{t "next"}} <input name="next" value="{{$.Val "/task/update" "next" .H.Next}}" required maxlength="500"></label>
+    <label>{{t "waits"}} <input name="waiting_on" value="{{$.Val "/task/update" "waiting_on" (or .H.WaitingOn "me")}}" required maxlength="200"></label>
+    <label>{{t "f.why"}} <input name="why" value="{{$.Val "/task/update" "why" ""}}" maxlength="300"></label>
+    <p class="hint">{{t "task.reopen.hint"}}</p>
+    {{template "ferr" ($.FormErr "/task/update")}}
+    <button type="submit">{{t "reopen"}}</button>
+  </form>
+</details>
 {{end}}
+
+{{template "sections" .Sections}}
 {{end}}{{end}}

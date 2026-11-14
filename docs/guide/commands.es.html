@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Saltar al contenido</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Principal">
     <a href="index.es.html">Documentación</a>
@@ -57,10 +57,11 @@
   <li><a href="spaces.es.html">Espacios</a></li>
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
-  <li><a href="guard.es.html">El guardia</a></li>
-  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="where-things-live.es.html">Dónde vive cada cosa</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
 </ul>
 <p class="docnav-group">Día a día</p>
 <ul>
@@ -222,6 +223,7 @@ augmented-brain check</code></pre>
   <p>Lo que hace en cada vuelta:</p>
   <ul><li><strong>Un servicio sin sesión.</strong> Cuando el servidor archiva una sesión (por ejemplo, la archivaste en claude.ai), su proceso de Claude termina y el servicio sigue en marcha sin sesión: nadie puede conectarse, y systemd no ve nada raro. Tras dos vueltas seguidas así, el vigilante reinicia el servicio.</li><li><strong>Sigue sin sesión.</strong> Entonces Claude intentaba reabrir la sesión archivada. El vigilante renombra lo que Claude apunta de ella (<code>bridge-pointer.json</code> pasa a <code>bridge-pointer.json.archived</code>, en el proyecto de la carpeta en <code>~/.claude/projects</code>) y reinicia otra vez el servicio, para que empiece una sesión nueva: unos diez minutos en total. La conversación de la sesión archivada no vuelve.</li><li><strong>Las sesiones de tareas, a salvo.</strong> Parar un servicio para todo lo que se arrancó dentro de él. La sesión de una tarea abierta desde una sesión remota puede arrancar allí el servicio en segundo plano de Claude, del que dependen todas las sesiones de tareas. Así que el vigilante saca de cada servicio lo que no arrancó su propio servidor a un grupo propio, <code>augmented-brain-kept-&lt;número&gt;</code>. <code>remote install</code> y <code>remote uninstall</code> hacen lo mismo antes de reiniciar o parar un servicio; si no se puede, se detienen y lo dicen, y el vigilante no reinicia ese servicio.</li></ul>
   <p>Lo que hace queda en el diario del sistema (<code>journalctl --user -u augmented-brain-watch-remote</code>).</p>
+  <p>También despierta las sesiones de tarea que paró el límite de uso de Claude. Cuando se acaba el uso de tu plan, Claude Code rechaza el turno y dice a qué hora vuelve el límite. Una sesión que tienes abierta en un terminal sigue sola a esa hora; una sesión de tarea corre en segundo plano y no: se queda ahí, sin hacer nada, hasta que alguien le escribe. El vigilante lee esa hora de la última respuesta de la sesión y, cuando ha pasado, para la sesión y la reanuda con un mensaje que le dice que lea su tarea y siga. Vuelve como la misma sesión, con su conversación, en Claude Desktop y claude.ai. Despierta una sesión en cada mirada, así que vuelven con dos minutos entre ellas y no gastan el uso nuevo de golpe. Solo se despiertan las sesiones abiertas con <code>augmented-brain session start</code>, nunca otras. Te avisa dos veces, en la siguiente sesión que uses: cuando empieza la espera, con la hora, y cuando ha vuelto la última. Cada tarea despertada recibe una línea en su diario.</p>
   <h2 id="augmented-brain-session">augmented-brain session</h2>
   <p>Abre una sesión propia para una tarea, para que desde otro ordenador puedas trabajar en varias tareas a la vez, cada una en su sesión. Son cuatro comandos, <code>start</code>, <code>stop</code>, <code>restart</code> y <code>list</code>, cada uno con su apartado abajo. <code>start</code>, <code>stop</code> y <code>list</code> funcionan por ahora solo en Linux: solo se han probado ahí. <code>restart</code> funciona en Linux y macOS. Sin subcomando, o con otro, <code>session</code> muestra su uso. Para qué sirven y cómo usarlos: <a href="task-sessions.es.html">Una sesión por tarea</a>.</p>
   <h2 id="augmented-brain-session-start">augmented-brain session start</h2>
@@ -258,7 +260,7 @@ augmented-brain session restart --old</code></pre>
   <p>Lista las sesiones de tareas abiertas en este ordenador: la tarea, si está en marcha y su carpeta.</p>
   <p>Sintaxis: <code>augmented-brain session list</code></p>
   <pre><code>augmented-brain session list</code></pre>
-  <ul><li><strong>retirada</strong> quiere decir que Claude la paró, tras horas sin uso o al reiniciarse su servicio en segundo plano. claude.ai la enseña como desconectada, y <code>session start</code> con su tarea la trae de vuelta con toda su conversación.</li><li><strong>fallida</strong> quiere decir que su última respuesta fue un error, como un login caducado: no hace nada hasta que alguien le escriba. La línea da el error y qué hacer.</li></ul>
+  <ul><li><strong>retirada</strong> quiere decir que Claude la paró, tras horas sin uso o al reiniciarse su servicio en segundo plano. claude.ai la enseña como desconectada, y <code>session start</code> con su tarea la trae de vuelta con toda su conversación.</li><li><strong>fallida</strong> quiere decir que su última respuesta fue un error, como un login caducado: no hace nada hasta que alguien le escriba. La línea da el error y qué hacer.</li><li><strong>en espera</strong> quiere decir que la paró el límite de uso de Claude. La línea da la hora a la que vuelve el límite, que es cuando el vigilante la despierta (mira <code>remote watch</code> arriba).</li></ul>
   <h2 id="augmented-brain-watch">augmented-brain watch</h2>
   <p>Sigue algo que tarda y dice cómo acabó, para que una sesión pueda dejarlo en marcha y seguir con otra cosa. Por ahora sigue una sola cosa, una pull request: mira <code>watch pr</code> abajo. Sin subcomando, <code>watch</code> muestra su uso.</p>
   <h2 id="augmented-brain-watch-pr">augmented-brain watch pr</h2>
@@ -340,10 +342,11 @@ augmented-brain config history 3</code></pre>
     <a class="next" href="mcp-tools.es.html"><span>Siguiente →</span>Herramientas MCP</a>
   </nav>
 </main>
+<aside class="pagetoc"><p>En esta página</p><ul><li><a href="#quiero">Quiero…</a></li><li><a href="#augmented-brain-init">augmented-brain init</a></li><li><a href="#augmented-brain-space">augmented-brain space</a></li><li><a href="#augmented-brain-space-add">augmented-brain space add</a></li><li><a href="#augmented-brain-check">augmented-brain check</a></li><li><a href="#augmented-brain-doctor">augmented-brain doctor</a></li><li><a href="#augmented-brain-import">augmented-brain import</a></li><li><a href="#augmented-brain-backup">augmented-brain backup</a></li><li><a href="#augmented-brain-backup-setup">augmented-brain backup setup</a></li><li><a href="#augmented-brain-restore">augmented-brain restore</a></li><li><a href="#augmented-brain-panel">augmented-brain panel</a></li><li><a href="#augmented-brain-panel-remote">augmented-brain panel remote</a></li><li><a href="#augmented-brain-panel-stop">augmented-brain panel stop</a></li><li><a href="#augmented-brain-panel-serve">augmented-brain panel serve</a></li><li><a href="#augmented-brain-remote">augmented-brain remote</a></li><li><a href="#augmented-brain-remote-install">augmented-brain remote install</a></li><li><a href="#augmented-brain-remote-uninstall">augmented-brain remote uninstall</a></li><li><a href="#augmented-brain-remote-status">augmented-brain remote status</a></li><li><a href="#augmented-brain-remote-watch">augmented-brain remote watch</a></li><li><a href="#augmented-brain-session">augmented-brain session</a></li><li><a href="#augmented-brain-session-start">augmented-brain session start</a></li><li><a href="#augmented-brain-session-stop">augmented-brain session stop</a></li><li><a href="#augmented-brain-session-restart">augmented-brain session restart</a></li><li><a href="#augmented-brain-session-list">augmented-brain session list</a></li><li><a href="#augmented-brain-watch">augmented-brain watch</a></li><li><a href="#augmented-brain-watch-pr">augmented-brain watch pr</a></li><li><a href="#augmented-brain-config">augmented-brain config</a></li><li><a href="#augmented-brain-config-history">augmented-brain config history</a></li><li><a href="#augmented-brain-config-restore">augmented-brain config restore</a></li><li><a href="#augmented-brain-clean">augmented-brain clean</a></li><li><a href="#augmented-brain-update">augmented-brain update</a></li><li><a href="#augmented-brain-uninstall">augmented-brain uninstall</a></li><li><a href="#augmented-brain-mcp">augmented-brain mcp</a></li><li><a href="#augmented-brain-hook">augmented-brain hook</a></li><li><a href="#augmented-brain-version">augmented-brain version</a></li><li><a href="#augmented-brain-help">augmented-brain help</a></li><li><a href="#códigos-de-salida">Códigos de salida</a></li></ul></aside>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
+  <div class="wrap wide"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

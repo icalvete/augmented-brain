@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Saltar al contenido</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Principal">
     <a href="index.es.html">Documentación</a>
@@ -57,10 +57,11 @@
   <li><a href="spaces.es.html" aria-current="page">Espacios</a></li>
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
-  <li><a href="guard.es.html">El guardia</a></li>
-  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="where-things-live.es.html">Dónde vive cada cosa</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
 </ul>
 <p class="docnav-group">Día a día</p>
 <ul>
@@ -124,23 +125,30 @@ work_folders = ["~/augmented-brain/personal"]</code></pre>
   <p>Para saber de qué espacio es una carpeta, lanza esto en ella:</p>
   <pre><code>augmented-brain space</code></pre>
   <h2 id="fuera-de-todos-los-espacios">Fuera de todos los espacios</h2>
+  <p>augmented brain actúa en todas las sesiones de Claude Code de este ordenador, sea cual sea la carpeta: su plugin está instalado para todo tu usuario. Una carpeta que no está en ninguna carpeta de trabajo está fuera de todos los espacios.</p>
   <p>La app de escritorio empieza cada sesión nueva en una carpeta temporal suya. Esa carpeta no es de ningún espacio. Entonces se usa el <strong>espacio por defecto</strong>, <code>personal</code> salvo que lo cambies, y Claude te lo dice en una línea, con cómo pasar al de trabajo.</p>
-  <p>El espacio por defecto importa para una cosa más: su copia de seguridad lleva tu perfil y las notas compartidas. Se elige con <code>default_space</code> en la configuración. Si tienes un solo espacio, es ese.</p>
+  <p>El espacio por defecto importa para una cosa más: su copia de seguridad lleva tu perfil, las notas compartidas y los nombres de tus secretos (nunca sus valores). Se elige con <code>default_space</code> en la configuración. Si tienes un solo espacio, es ese.</p>
+  <p>Lo que cambia fuera, al lado de una sesión en un espacio:</p>
+  <div class="table-wrap"><table><thead><tr><th></th><th>En un espacio</th><th>Fuera de todos los espacios</th></tr></thead><tbody><tr><td>Perfil, reglas, tareas y el resto de las notas</td><td>Las del espacio</td><td>Las del espacio por defecto, y Claude te lo dice</td></tr><tr><td>Lo que Claude escribe en tus notas</td><td>Va al espacio</td><td>Va al espacio por defecto</td></tr><tr><td>Tareas cambiadas por otra sesión</td><td>Claude se entera</td><td>Las del espacio por defecto</td></tr><tr><td>Recordatorio de escribir en el diario de la tarea</td><td>Sí</td><td>No</td></tr><tr><td>Una sesión cortada, con oferta de recuperarla</td><td>Sí</td><td>No</td></tr><tr><td><a href="guard.es.html">El guardia</a></td><td>Entero</td><td>Entero, igual</td></tr><tr><td>Copia de seguridad al cerrar la sesión</td><td>La del espacio</td><td>La del espacio por defecto</td></tr><tr><td>Avisos de la memoria de la ventana y del modelo</td><td>Sí</td><td>Sí</td></tr></tbody></table></div>
+  <p>El guardia no mira la carpeta: sus listas valen para todo el ordenador. Así que en cualquier proyecto, también en uno que nunca diste a augmented brain, Claude no puede hacer commit ni push hasta que lo <a href="guard.es.html#deja-que-claude-haga-commit-en-un-repositorio">dejes en ese repositorio</a>.</p>
+  <p>Para meter una carpeta en un espacio, añádela a los <code>work_folders</code> del espacio (lo siguiente).</p>
   <h2 id="tus-proyectos-viven-en-otro-sitio">¿Tus proyectos viven en otro sitio?</h2>
   <p>Si tu código está en <code>~/code</code>, añade esa carpeta a <code>work_folders</code> del espacio que toque, como en el ejemplo de arriba. Así, abrir Claude en <code>~/code/tienda</code> usa el espacio de trabajo.</p>
   <h2 id="añade-un-espacio">Añade un espacio</h2>
   <p>Para un cliente, un proyecto aparte o un voluntariado:</p>
   <pre><code>augmented-brain space add cliente</code></pre>
   <p>Te pide la carpeta de trabajo y la carpeta de notas, y te propone <code>~/augmented-brain/cliente</code> y <code>~/augmented-brain/cliente/notas</code>. Pulsa Enter para aceptar. Si aún no había espacio por defecto, lo fija. Las opciones están en <a href="commands.es.html#augmented-brain-space-add">Comandos</a>.</p>
+  <p>Después, dos cosas:</p>
+  <ul><li><strong>Dale una copia de seguridad.</strong> Abre Claude en la carpeta de trabajo nueva y di “configura la copia de seguridad”; cada espacio tiene la suya. Mira <a href="backup.es.html">Copia de seguridad y restauración</a>.</li><li><strong>Trabaja en él.</strong> Abre Claude en su carpeta de trabajo, o en una carpeta dentro de ella, y la sesión usa el espacio nuevo.</li></ul>
   <h2 id="qué-tiene-cada-espacio-y-qué-comparten">Qué tiene cada espacio, y qué comparten</h2>
   <p>Cada espacio tiene lo suyo:</p>
   <ul><li>notas: tareas, áreas, conocimiento, personas, buzón, revisiones;</li><li>reglas, además de las comunes;</li><li>repositorio de copia de seguridad.</li></ul>
   <p>Todos los espacios comparten:</p>
-  <ul><li><strong>tu perfil</strong>: quién eres y cómo te gusta trabajar. Eres la misma persona en el trabajo y en casa.</li><li><strong>las notas compartidas</strong>: reglas, referencias y lecciones que valen en todas partes (abajo).</li><li><strong>las listas del guardia</strong>: los perfiles de AWS de producción, las máquinas que no se tocan, los repositorios donde Claude puede hacer commit y los que no debe tocar nunca, y las excepciones de root. Valen en toda la máquina. Un perfil de producción guardado desde el espacio de trabajo también se vigila en el personal.</li></ul>
+  <ul><li><strong>tu perfil</strong>: quién eres y cómo te gusta trabajar. Eres la misma persona en el trabajo y en casa.</li><li><strong>las notas compartidas</strong>: reglas, referencias y lecciones que valen en todas partes (abajo).</li><li><strong>las listas del guardia</strong>: los perfiles de AWS de producción, las máquinas que no se tocan, los repositorios donde Claude puede hacer commit y los que no debe tocar nunca, y las excepciones de root. Valen en toda la máquina, las escribas desde el espacio que sea. Un perfil de producción guardado desde el espacio de trabajo también se vigila en el personal, y un repositorio donde Claude puede hacer commit vale desde todos los espacios.</li></ul>
   <p>Un espacio nunca lee las notas de otro por su cuenta.</p>
   <h2 id="una-tarea-de-otro-espacio">Una tarea de otro espacio</h2>
   <p>A veces decides, en un espacio, algo de una tarea de otro: en una sesión personal dejas claro cómo sigue una tarea del trabajo. Díselo a Claude y leerá o escribirá esa tarea donde vive, en el otro espacio. Puede leerla, listar las tareas vivas de ese espacio para encontrarla, añadir a su diario, marcar un paso y cambiar su siguiente paso, su estado o a quién espera.</p>
-  <ul><li>Lo que Claude escribe allí acaba en <code>(from personal)</code>, para que quien lo lea en el otro espacio sepa dónde se decidió.</li><li>Nada se copia en las notas de este espacio: lo que Claude lee se queda en la conversación.</li><li>Claude solo lo hace cuando se lo pides, igual que al mandar una captura a otro espacio.</li><li>Esa tarea se cierra desde una sesión de su propio espacio, porque cerrarla también cierra la sesión de la tarea y su worktree.</li><li>Ese espacio se copia cuando termina esta sesión, si tiene copia de seguridad: no espera a una sesión suya.</li></ul>
+  <ul><li>Lo que Claude escribe allí acaba en <code>(from personal)</code>, para que quien lo lea en el otro espacio sepa dónde se decidió.</li><li>Nada se copia en las notas de este espacio: lo que Claude lee se queda en la conversación.</li><li>Claude solo lo hace cuando se lo pides, igual que al <a href="notes.es.html#mandar-una-captura-a-otro-espacio">mandar una captura a otro espacio</a>.</li><li>Esa tarea se cierra desde una sesión de su propio espacio, porque cerrarla también cierra la sesión de la tarea y su worktree.</li><li>Ese espacio se copia cuando termina esta sesión, si tiene copia de seguridad: no espera a una sesión suya.</li></ul>
   <h2 id="notas-compartidas">Notas compartidas</h2>
   <p>Algunas cosas que aprendes valen en todas partes: cómo se porta git, cómo te gustan las respuestas, una lección sobre una herramienta. Guardarlas una vez por espacio dejaría dos copias que acaban siendo distintas. Por eso van una sola vez en las <strong>notas compartidas</strong>, junto a tu perfil, en <code>shared/</code> dentro de la carpeta de configuración.</p>
   <p>Solo se pueden compartir reglas, referencias y lecciones. Las tareas y las áreas son siempre de un espacio. Una persona puede estar en varios, cada uno con su nota y solo lo que quieres ver allí (mira Personas en Notas).</p>
@@ -152,10 +160,11 @@ work_folders = ["~/augmented-brain/personal"]</code></pre>
     <a class="next" href="tasks.es.html"><span>Siguiente →</span>Tareas</a>
   </nav>
 </main>
+<aside class="pagetoc"><p>En esta página</p><ul><li><a href="#la-carpeta-elige-el-espacio">La carpeta elige el espacio</a></li><li><a href="#fuera-de-todos-los-espacios">Fuera de todos los espacios</a></li><li><a href="#tus-proyectos-viven-en-otro-sitio">¿Tus proyectos viven en otro sitio?</a></li><li><a href="#añade-un-espacio">Añade un espacio</a></li><li><a href="#qué-tiene-cada-espacio-y-qué-comparten">Qué tiene cada espacio, y qué comparten</a></li><li><a href="#una-tarea-de-otro-espacio">Una tarea de otro espacio</a></li><li><a href="#notas-compartidas">Notas compartidas</a></li><li><a href="#por-dónde-seguir">Por dónde seguir</a></li></ul></aside>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
+  <div class="wrap wide"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

@@ -472,7 +472,7 @@ Usage:
   augmented-brain backup setup URL   connect this folder's space to a private git repository
   augmented-brain restore URL  bring a space back from its backup, on a new machine
   augmented-brain panel        open the panel in your browser: see and edit your tasks, inbox, profile… (panel remote: from your other devices) (panel stop: stop it)
-  augmented-brain remote install    keep Claude reachable from another computer, also after a reboot (Linux)
+  augmented-brain remote install    keep Claude reachable from another computer, also after a reboot
   augmented-brain remote uninstall  stop that and remove it
   augmented-brain remote status     say whether it runs, and what is missing
   augmented-brain session start TASK   open a remote session of its own for a task, in its folder (--folder DIR) (Linux)
@@ -501,7 +501,7 @@ Uso:
   augmented-brain backup setup URL   conecta el espacio de esta carpeta a un repositorio git privado
   augmented-brain restore URL  recupera un espacio de su copia, en una máquina nueva
   augmented-brain panel        abre el panel en el navegador: ve y cambia tus tareas, buzón, perfil… (panel remote: desde tus otros dispositivos) (panel stop: lo para)
-  augmented-brain remote install    mantiene Claude accesible desde otro ordenador, también tras reiniciar (Linux)
+  augmented-brain remote install    mantiene Claude accesible desde otro ordenador, también tras reiniciar
   augmented-brain remote uninstall  lo para y lo quita
   augmented-brain remote status     dice si funciona y qué falta
   augmented-brain session start TAREA  abre una sesión remota propia para una tarea, en su carpeta (--folder DIR) (Linux)
@@ -563,6 +563,22 @@ Uso:
 	"init.language": {
 		en: "language %q: use en or es",
 		es: "idioma %q: usa en o es",
+	},
+	"backup.noanswer": {
+		en: "stopped after %s without an answer: is the network or the repository down? (%v)",
+		es: "parada tras %s sin respuesta: ¿falla la red o el repositorio? (%v)",
+	},
+	"backup.busy": {
+		en: "another backup has been running for over %s and did not finish: try again later",
+		es: "otra copia lleva más de %s en marcha y no ha terminado: vuelve a probar más tarde",
+	},
+	"backup.none": {
+		en: "space %s has no backup",
+		es: "el espacio %s no tiene copia de seguridad",
+	},
+	"backup.none.setup": {
+		en: "space %s has no backup yet: run `augmented-brain backup setup <url of a private repository>`",
+		es: "el espacio %s aún no tiene copia de seguridad: lanza `augmented-brain backup setup <dirección de un repositorio privado>`",
 	},
 	"backup.warning": {
 		en: "these files are bigger than %d MB and were left out of the backup: %s. Move them out of the notes folder (or make them smaller); the rest is backed up",

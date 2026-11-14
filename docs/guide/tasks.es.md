@@ -16,6 +16,7 @@ carpeta `tasks/` del espacio.
 id: task-mudar-el-blog
 type: task
 title: Mudar el blog
+summary: El blog se muda a un hosting más barato
 area: area-blog
 status: parked
 waiting_on: me
@@ -58,6 +59,11 @@ Claude trabaja sin preguntarte a cada paso.
 5. **Validación**: demostrar el criterio de "hecho".
 6. **Cerrada**: terminada. Se guarda, no se borra nunca.
 
+El fichero de la tarea tiene una sección numerada por cada fase en la que hay algo que
+apuntar (1. Definición, 2. Análisis, 3. Plan, 4. Validación, 5. Cierre). La ejecución no
+tiene sección propia: lo que se hace va al diario. Por eso, de la validación en adelante,
+los números de las secciones y los de las fases no coinciden.
+
 La fase es el `status` de la tarea. Dos estados más pausan una tarea sin perder nada:
 
 - **parked**: aparcada, para retomarla pronto. `next` dice exactamente cómo.
@@ -96,13 +102,17 @@ Cada decisión o paso terminado va al diario en el momento, no solo al aparcar. 
 puede acabar en cualquier momento, y lo que no está en la nota se pierde.
 
 Si la sesión tiene una tarea abierta y en 20 minutos no se ha escrito nada en ella, Claude
-recibe un recordatorio al final de su respuesta, una vez. Cada sesión tiene su propia
-tarea: con dos ventanas en tareas distintas, a cada una se le recuerda la suya. Cuando una conversación larga se compacta
-(Claude Code cambia los detalles por un resumen), el resumen se guarda en
-`archive/sessions/`, y el diario apunta a él. El resumen puede estar mal, así que a
-Claude se le pide que no lo tome como un hecho, que compruebe antes de afirmar algo de
-antes, y que te diga que la sesión se ha compactado y te proponga aparcar la tarea y
-seguir en una sesión nueva, que empieza desde las notas.
+recibe un recordatorio al final de su respuesta, una vez.
+
+Cada sesión lleva la cuenta de su propia tarea. Con dos ventanas en tareas distintas, a
+cada una se le recuerda la suya.
+
+Una conversación larga se puede compactar: Claude Code cambia los detalles por un resumen.
+Ese resumen se guarda en `archive/sessions/`, y el diario apunta a él. El resumen puede
+estar mal, así que a Claude se le piden tres cosas: que no lo tome como un hecho, que
+compruebe antes de afirmar algo de antes y que te diga que la sesión se ha compactado.
+También te propone aparcar la tarea y seguir en una sesión nueva, que empieza desde las
+notas.
 
 ### Un diario largo
 
@@ -133,6 +143,13 @@ su cabecera: `parent: task-mudar-el-blog`.
 Regla práctica: si espera a alguien o lleva su propio ritmo, es una subtarea. Si no, es un
 paso.
 
+## Una sesión propia
+
+Una tarea puede tener una sesión de Claude propia, abierta en segundo plano en la carpeta
+de la tarea: dices "abre una sesión para la tarea del blog" y sigues con otra cosa. La
+sesión lee la tarea y se pone con ella. En Linux lo hace `augmented-brain session start`;
+mira [Una sesión por tarea](task-sessions.es.md).
+
 ## Fechas para volver a mirar algo
 
 Algunas comprobaciones son de un día: "el 16, ¿se ha renovado el certificado?". Díselo a
@@ -150,6 +167,13 @@ buzón: mira [Áreas, conocimiento y lo demás](notes.es.md#buzón).
 
 Di "cierra la tarea". Claude apunta el resultado, y la tarea se queda en su carpeta,
 marcada como cerrada. Nunca se borra nada.
+
+- Una tarea con subtareas abiertas no se puede cerrar: ciérralas antes.
+- Si la tarea tiene una sesión propia, cerrar la tarea también cierra esa sesión, cuando
+  termina su respuesta.
+- Si se hizo un worktree de git para la tarea (una segunda carpeta de trabajo del mismo
+  repositorio), cerrar lo quita, pero solo si no guarda nada que no esté en otro sitio.
+  Si no, se queda, y Claude te dice por qué.
 
 Una tarea que nadie ha cambiado en 14 días sale en la
 [revisión semanal](weekly-review.es.md), para que nada se pare en silencio.

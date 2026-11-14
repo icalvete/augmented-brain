@@ -11,11 +11,11 @@ their spaces.
 2. Otherwise run `augmented-brain panel` with the Bash tool. It starts the panel (or finds
    the one already running), opens it in the browser and returns at once. If the command
    is not found, run `~/.local/bin/augmented-brain panel`.
-3. If it says the panel is open in the browser, tell the user so. If it printed an
-   address instead (the browser could not open), give it to them whole, as a link they
-   can click, and say it opens the panel once, within 2 minutes. Either way, say in one
-   short line that it only works on this computer and stops by itself after 30 minutes
-   without use.
+3. If it says the panel is open in the browser, tell the user so, and say in one short
+   line that it only works on this computer and stops by itself after 30 minutes without
+   use. If it says the browser could not open from here, tell the user to run
+   `augmented-brain panel` in a terminal of their own: the address is for them, and the
+   program does not show it to you.
 
 Answer in the user's language. Never open, fetch or test the address yourself: it
 works once, and if you used it, the user's browser would say it was already used.

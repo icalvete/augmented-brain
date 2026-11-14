@@ -72,9 +72,11 @@ trabajo.
 
 Cuando el repositorio de la tarea es bare, `session start` le hace a la tarea un worktree
 propio a su lado: `site-new-website` para la tarea `task-new-website` de `site`, en una
-rama nueva con el nombre de la tarea, desde la rama por defecto de origin tal como está
-ahora (antes la trae). Así dos tareas de un repositorio nunca comparten carpeta, y una
-sesión nunca empieza con código viejo. Si se pide otra vez, usa el mismo worktree.
+rama nueva con el nombre de la tarea, desde la rama por defecto de origin. Antes la
+trae, así que la rama empieza con el código de ahora; si no llega a origin, empieza con
+lo último que este ordenador sabía, y lo dice. Si una sesión anterior de la tarea dejó
+su rama, el worktree coge esa rama tal como estaba. Así dos tareas de un repositorio
+nunca comparten carpeta. Si se pide otra vez, usa el mismo worktree.
 Claude guarda la confianza de un worktree con su repositorio principal: basta con
 confiar en uno de los dos.
 
@@ -97,6 +99,10 @@ lista las sesiones de tarea abiertas en este ordenador: la tarea, si corre y su 
   conversación.
 - **fallida**: su última respuesta fue un error, como un login caducado. La línea dice
   qué hacer.
+- **en espera**: la paró el límite de uso de Claude. La línea dice a qué hora vuelve el
+  límite. Con el acceso remoto instalado (`augmented-brain remote install`), la sesión
+  se despierta entonces, sola, y sigue con su tarea; te avisa cuando empieza la espera
+  y cuando las sesiones han vuelto. Sin él, escríbele cuando vuelva el límite.
 
 ```bash
 augmented-brain session stop task-new-website

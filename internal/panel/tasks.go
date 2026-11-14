@@ -12,6 +12,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/memory"
+	"github.com/icalvete/augmented-brain/internal/remote"
 )
 
 // phases a task can be moved to from the panel; parking and closing have their own
@@ -304,6 +305,9 @@ func (s *Server) taskUpdate(v *view, r *http.Request) (string, error) {
 		if n.Header.Status == "closed" {
 			// From the panel the user chose it on purpose: that is saying so.
 			in.Reopen = v.t("task.reopened.panel")
+			if why := field(r, "why"); why != "" {
+				in.Reopen += ": " + why
+			}
 		}
 	}
 	for _, f := range textFields {
@@ -359,7 +363,24 @@ func (s *Server) taskClose(v *view, r *http.Request) (string, error) {
 		return "", err
 	}
 	v.b.Released(id)
+	closedTask(v.b.ConfigDir, id)
 	return taskPage(id), nil
+}
+
+// newRemoteSystem and stopWhenIdle are what closing a task from the panel uses to end
+// its session and remove its worktrees, as task_close does; tests replace them.
+var (
+	newRemoteSystem = remote.NewSystem
+	stopWhenIdle    = remote.StopWhenIdle
+)
+
+// closedTask ends a task's own session and removes its worktrees, the way task_close
+// does (remote.System.ClosedTask). What it did is for an assistant; the task's page
+// is what the user sees.
+func closedTask(cfgDir, id string) {
+	if sys, err := newRemoteSystem(); err == nil {
+		_ = sys.ClosedTask(cfgDir, id, stopWhenIdle)
+	}
 }
 
 // taskStep adds a step to the task's Plan (field "step", its text), or ticks or unticks

@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Saltar al contenido</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../es/"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Principal">
     <a href="index.es.html">Documentación</a>
@@ -57,10 +57,11 @@
   <li><a href="spaces.es.html">Espacios</a></li>
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
-  <li><a href="guard.es.html">El guardia</a></li>
-  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
+  <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="where-things-live.es.html">Dónde vive cada cosa</a></li>
+  <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
 </ul>
 <p class="docnav-group">Día a día</p>
 <ul>
@@ -98,14 +99,14 @@
 <script>if (window.matchMedia("(max-width: 820px)").matches) document.getElementById("docnav").removeAttribute("open");</script>
 <main class="prose" id="main">
   <h1>Versiones de la configuración</h1>
-  <p>Tu configuración es lo que augmented brain sabe de este ordenador y de ti: tus espacios, las listas del guardia, el acceso remoto, tu perfil y los nombres de tus secretos. Un cambio equivocado ahí (una lista vaciada sin querer, un espacio que apunta a la carpeta que no es) no tenía vuelta atrás. Ahora cada cambio se guarda como una <strong>versión</strong>, y puedes ver qué cambió y volver atrás.</p>
+  <p>Tu configuración es lo que augmented brain sabe de este ordenador y de ti: tus espacios, las listas del guardia, el acceso remoto, tus ajustes de sesión, tu perfil y los nombres de tus secretos. Cada cambio se guarda como una <strong>versión</strong>, así que un cambio equivocado (una lista vaciada sin querer, un espacio que apunta a la carpeta que no es) se puede ver y deshacer.</p>
   <h2 id="qué-se-guarda">Qué se guarda</h2>
-  <p>Una versión es una copia de estos ficheros de la carpeta de configuración, tal como estaban en un momento: <code>config.toml</code>, <code>guard.toml</code>, <code>remote.toml</code>, <code>session.toml</code>, <code>profile.md</code> y <code>secrets.toml</code> (solo los nombres de tus secretos, nunca un valor). Dice también quién hizo el cambio: el panel, un comando, el asistente (y con qué herramienta), una vuelta a una versión anterior, o a mano.</p>
+  <p>Una versión es una copia de estos ficheros de la carpeta de configuración, tal como estaban en un momento: <code>config.toml</code>, <code>guard.toml</code>, <code>remote.toml</code>, <code>session.toml</code>, <code>profile.md</code> y <code>secrets.toml</code> (solo los nombres de tus secretos, nunca un valor). <code>session.toml</code> guarda el modelo que quieres para tus sesiones y lo que el asistente guarda solo (mira <a href="guard.es.html#preguntar-antes-de-que-claude-guarde-una-regla">El guardia</a>). Dice también quién hizo el cambio: el panel, un comando, el asistente (y con qué herramienta), una vuelta a una versión anterior, o a mano.</p>
   <ul><li>Se guarda una versión nueva cada vez que cambia la configuración. Un cambio hecho a mano, o con un programa anterior, se guarda la próxima vez que augmented brain mira: al empezar una sesión, al lanzar un comando, cuando el asistente usa una herramienta o cuando guardas algo en el panel.</li><li>Se guardan las <strong>10</strong> últimas. Cuando hay una más, se va la más antigua.</li><li>Se quedan <strong>solo en este ordenador</strong>, en la carpeta <code>history</code> de la carpeta de configuración. Nunca van a la copia de seguridad: las listas del guardia pueden nombrar máquinas del trabajo, y la copia las deja fuera a propósito.</li><li>Tus notas no están aquí. Tareas, reglas, conocimiento y personas (también las compartidas) tienen su propia historia en la <a href="backup.es.html">copia de seguridad</a>.</li></ul>
   <h2 id="en-el-panel">En el panel</h2>
   <p>La página <strong>Versiones</strong> del panel las lista, la más reciente primero, con cuándo y quién. Debajo de cada una, <strong>Qué cambió</strong> enseña las líneas que cambiaron respecto a la anterior: en verde lo que se añadió y en rojo lo que se quitó. <strong>Volver a esta</strong> la convierte otra vez en la configuración: primero se despliega, dice qué hace volver y, si cambiarían las listas del guardia, qué ganaría o perdería cada una. Marca la casilla para confirmar y vuelve.</p>
   <p>Volver guarda antes como versión la configuración que tenías, así que se puede deshacer igual. Una versión que dejaría un fichero que el programa no puede leer se rechaza, y no cambia nada. Si cambian las listas del guardia, volver desde el panel cuenta como que las aceptas, igual que cualquier cambio en la página <a href="guard.es.html">Guardia</a>.</p>
-  <p>Desde otro dispositivo (<a href="panel-remote.es.html">el panel desde otro dispositivo</a>) la página solo enseña las versiones: volver a una solo se puede desde el panel de este ordenador, porque puede cambiar lo que el guardia deja pasar.</p>
+  <p>Desde otro dispositivo (<a href="panel-remote.es.html">el panel desde otro dispositivo</a>) la página solo enseña las versiones. Volver atrás puede cambiar las listas del guardia, y esas deciden lo que Claude puede hacer en este ordenador: así que, como en la página Guardia, solo se cambian desde el panel de este ordenador. La lista entera de lo que solo puede hacer este ordenador está en <a href="panel-remote.es.html#lo-que-solo-puede-hacer-este-ordenador">el panel desde otro dispositivo</a>.</p>
   <h2 id="con-comandos">Con comandos</h2>
   <pre><code>augmented-brain config history
 augmented-brain config history 3
@@ -121,7 +122,7 @@ augmented-brain config restore 3</code></pre>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
+  <div class="wrap wide"><span>augmented brain · licencia MIT · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md">Registro de cambios</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

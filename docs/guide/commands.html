@@ -34,7 +34,7 @@
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="wrap top">
+<header class="wrap wide top">
   <a class="brand" href="../"><img src="../img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Main">
     <a href="index.html">Docs</a>
@@ -57,10 +57,11 @@
   <li><a href="spaces.html">Spaces</a></li>
   <li><a href="tasks.html">Tasks</a></li>
   <li><a href="notes.html">Areas, knowledge and the rest</a></li>
-  <li><a href="guard.html">The guard</a></li>
-  <li><a href="how-it-works.html">How it works inside</a></li>
+  <li><a href="editing-notes.html">Editing notes by hand</a></li>
   <li><a href="what-claude-may-do.html">What Claude may do without asking you</a></li>
+  <li><a href="guard.html">The guard</a></li>
   <li><a href="where-things-live.html">Where everything lives</a></li>
+  <li><a href="how-it-works.html">How it works inside</a></li>
 </ul>
 <p class="docnav-group">Daily use</p>
 <ul>
@@ -222,6 +223,7 @@ augmented-brain check</code></pre>
   <p>What it does on each look:</p>
   <ul><li><strong>A service with no session.</strong> When the server archives a session (for example, you archived it in claude.ai), its Claude process ends and the service goes on running with no session: nobody can connect, and systemd sees nothing wrong. After two looks in a row like that, the watch restarts the service.</li><li><strong>Still no session.</strong> Then Claude was trying to reopen the archived session. The watch renames Claude's record of it (<code>bridge-pointer.json</code> becomes <code>bridge-pointer.json.archived</code>, in the folder's project in <code>~/.claude/projects</code>) and restarts the service again, so a new session starts: about ten minutes in all. The conversation of the archived session does not come back.</li><li><strong>Task sessions kept safe.</strong> Stopping a service stops everything started inside it. A task session started from a remote session can start Claude's background service there, which runs every task session. So the watch moves out of each service whatever its server did not start itself into a group of its own, <code>augmented-brain-kept-&lt;number&gt;</code>. <code>remote install</code> and <code>remote uninstall</code> do the same before they restart or stop a service; when it cannot be done, they stop and say so, and the watch does not restart that service.</li></ul>
   <p>What it does goes to the system journal (<code>journalctl --user -u augmented-brain-watch-remote</code>).</p>
+  <p>It also wakes the task sessions that Claude's usage limit stopped. When your plan's usage runs out, Claude Code refuses the turn and says when the limit resets. A session you have open in a terminal goes on by itself at that hour; a task session runs in the background and does not: it stays there, doing nothing, until someone writes to it. The watch reads that hour from the session's last answer and, once it has passed, stops the session and resumes it with a message that tells it to read its task and go on. It comes back as the same session, with its conversation, in Claude Desktop and claude.ai. It wakes one session on each look, so they come back two minutes apart and do not spend the new usage all at once. Only sessions opened with <code>augmented-brain session start</code> are woken, never any other. You are told twice, in the next session you use: when the wait begins, with the hour, and when the last one is back. Each woken task gets a line in its journal.</p>
   <h2 id="augmented-brain-session">augmented-brain session</h2>
   <p>Opens a session of its own for one task, so that from another computer you can work on several tasks at once, each in its own session. It is four commands, <code>start</code>, <code>stop</code>, <code>restart</code> and <code>list</code>, each with its own section below. <code>start</code>, <code>stop</code> and <code>list</code> work on Linux only for now: they have been tried only there. <code>restart</code> works on Linux and macOS. Without a subcommand, or with another, <code>session</code> prints its usage. Why and how to use them: <a href="task-sessions.html">A session per task</a>.</p>
   <h2 id="augmented-brain-session-start">augmented-brain session start</h2>
@@ -258,7 +260,7 @@ augmented-brain session restart --old</code></pre>
   <p>Lists the task sessions open on this computer: the task, whether it runs, and its folder.</p>
   <p>Syntax: <code>augmented-brain session list</code></p>
   <pre><code>augmented-brain session list</code></pre>
-  <ul><li><strong>retired</strong> means Claude stopped it, after hours unused or when its background service restarted. claude.ai shows it as disconnected, and <code>session start</code> with its task brings it back with its whole conversation.</li><li><strong>failed</strong> means its last answer was an error, such as an expired login: it does nothing until someone writes to it. The line gives the error and what to do.</li></ul>
+  <ul><li><strong>retired</strong> means Claude stopped it, after hours unused or when its background service restarted. claude.ai shows it as disconnected, and <code>session start</code> with its task brings it back with its whole conversation.</li><li><strong>failed</strong> means its last answer was an error, such as an expired login: it does nothing until someone writes to it. The line gives the error and what to do.</li><li><strong>waiting</strong> means Claude's usage limit stopped it. The line gives the hour the limit resets, which is when the watch wakes it (see <code>remote watch</code> above).</li></ul>
   <h2 id="augmented-brain-watch">augmented-brain watch</h2>
   <p>Follows something that takes a while and says how it ended, so a session can leave it running and get on with other work. For now it follows one thing, a pull request: see <code>watch pr</code> below. Without a subcommand, <code>watch</code> prints its usage.</p>
   <h2 id="augmented-brain-watch-pr">augmented-brain watch pr</h2>
@@ -340,10 +342,11 @@ augmented-brain config history 3</code></pre>
     <a class="next" href="mcp-tools.html"><span>Next →</span>MCP tools</a>
   </nav>
 </main>
+<aside class="pagetoc"><p>On this page</p><ul><li><a href="#i-want-to">I want to…</a></li><li><a href="#augmented-brain-init">augmented-brain init</a></li><li><a href="#augmented-brain-space">augmented-brain space</a></li><li><a href="#augmented-brain-space-add">augmented-brain space add</a></li><li><a href="#augmented-brain-check">augmented-brain check</a></li><li><a href="#augmented-brain-doctor">augmented-brain doctor</a></li><li><a href="#augmented-brain-import">augmented-brain import</a></li><li><a href="#augmented-brain-backup">augmented-brain backup</a></li><li><a href="#augmented-brain-backup-setup">augmented-brain backup setup</a></li><li><a href="#augmented-brain-restore">augmented-brain restore</a></li><li><a href="#augmented-brain-panel">augmented-brain panel</a></li><li><a href="#augmented-brain-panel-remote">augmented-brain panel remote</a></li><li><a href="#augmented-brain-panel-stop">augmented-brain panel stop</a></li><li><a href="#augmented-brain-panel-serve">augmented-brain panel serve</a></li><li><a href="#augmented-brain-remote">augmented-brain remote</a></li><li><a href="#augmented-brain-remote-install">augmented-brain remote install</a></li><li><a href="#augmented-brain-remote-uninstall">augmented-brain remote uninstall</a></li><li><a href="#augmented-brain-remote-status">augmented-brain remote status</a></li><li><a href="#augmented-brain-remote-watch">augmented-brain remote watch</a></li><li><a href="#augmented-brain-session">augmented-brain session</a></li><li><a href="#augmented-brain-session-start">augmented-brain session start</a></li><li><a href="#augmented-brain-session-stop">augmented-brain session stop</a></li><li><a href="#augmented-brain-session-restart">augmented-brain session restart</a></li><li><a href="#augmented-brain-session-list">augmented-brain session list</a></li><li><a href="#augmented-brain-watch">augmented-brain watch</a></li><li><a href="#augmented-brain-watch-pr">augmented-brain watch pr</a></li><li><a href="#augmented-brain-config">augmented-brain config</a></li><li><a href="#augmented-brain-config-history">augmented-brain config history</a></li><li><a href="#augmented-brain-config-restore">augmented-brain config restore</a></li><li><a href="#augmented-brain-clean">augmented-brain clean</a></li><li><a href="#augmented-brain-update">augmented-brain update</a></li><li><a href="#augmented-brain-uninstall">augmented-brain uninstall</a></li><li><a href="#augmented-brain-mcp">augmented-brain mcp</a></li><li><a href="#augmented-brain-hook">augmented-brain hook</a></li><li><a href="#augmented-brain-version">augmented-brain version</a></li><li><a href="#augmented-brain-help">augmented-brain help</a></li><li><a href="#exit-codes">Exit codes</a></li></ul></aside>
 </div>
 
 <footer>
-  <div class="wrap"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
+  <div class="wrap wide"><span>augmented brain · MIT license · <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></span></div>
 </footer>
 <script>
 document.querySelectorAll(".prose pre").forEach(function (pre) {

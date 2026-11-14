@@ -108,14 +108,14 @@ func (s *Server) do(t *testing.T, r req) *httptest.ResponseRecorder {
 
 // get is a page read by the browser, at the panel's address of this run.
 func (s *Server) get(t *testing.T, path string) *httptest.ResponseRecorder {
-	return s.do(t, req{path: s.base() + path})
+	return s.do(t, req{path: s.localBase() + path})
 }
 
 // post is a form sent by one of the panel's own pages.
 func (s *Server) post(t *testing.T, path string, form url.Values) *httptest.ResponseRecorder {
 	t.Helper()
 	form.Set("csrf", s.csrf)
-	return s.do(t, req{method: http.MethodPost, path: s.base() + path, origin: "http://" + host, form: form})
+	return s.do(t, req{method: http.MethodPost, path: s.localBase() + path, origin: "http://" + host, form: form})
 }
 
 func TestAccess(t *testing.T) {
@@ -130,34 +130,34 @@ func TestAccess(t *testing.T) {
 	}
 	// The session's address: its root goes to today, and no cookie is ever set
 	// (cookies of 127.0.0.1 would reach every other local port).
-	if w := s.do(t, req{path: s.base()}); w.Code != http.StatusSeeOther || w.Header().Get("Location") != s.base()+"/" {
+	if w := s.do(t, req{path: s.localBase()}); w.Code != http.StatusSeeOther || w.Header().Get("Location") != s.localBase()+"/" {
 		t.Errorf("bare session: %d %q", w.Code, w.Header().Get("Location"))
 	}
-	w := s.do(t, req{path: s.base() + "/"})
-	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != s.base()+"/today" {
+	w := s.do(t, req{path: s.localBase() + "/"})
+	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != s.localBase()+"/today" {
 		t.Fatalf("root: %d %q", w.Code, w.Header().Get("Location"))
 	}
 	w = s.get(t, "/tasks?s=home")
 	if w.Code != http.StatusOK || len(w.Result().Cookies()) != 0 {
 		t.Fatalf("tasks: %d, cookies %v", w.Code, w.Result().Cookies())
 	}
-	if strings.Contains(w.Body.String(), s.token) || !strings.Contains(w.Body.String(), `href="`+s.base()+`/static/style.css"`) {
+	if strings.Contains(w.Body.String(), s.token) || !strings.Contains(w.Body.String(), `href="`+s.localBase()+`/static/style.css"`) {
 		t.Error("the page leaks the token, or its links are not under the session")
 	}
 	if s.session == s.token || len(s.session) != 32 {
 		t.Error("the session must not be the token")
 	}
-	if (Info{Port: port, Token: s.token}).URL() != "http://127.0.0.1:45678"+s.base()+"/" {
+	if (Info{Port: port, Token: s.token}).URL() != "http://127.0.0.1:45678"+s.localBase()+"/" {
 		t.Errorf("URL: %s", Info{Port: port, Token: s.token}.URL())
 	}
 
 	// DNS rebinding: any other Host is refused.
 	for _, h := range []string{"evil.example:45678", "127.0.0.1:1", "127.0.0.1", "localhost", "x127.0.0.1:45678", "[::1]:45678"} {
-		if w := s.do(t, req{path: s.base() + "/tasks", host: h}); w.Code != http.StatusForbidden {
+		if w := s.do(t, req{path: s.localBase() + "/tasks", host: h}); w.Code != http.StatusForbidden {
 			t.Errorf("Host %s: %d", h, w.Code)
 		}
 	}
-	if w := s.do(t, req{path: s.base() + "/tasks", host: "localhost:45678"}); w.Code != http.StatusOK {
+	if w := s.do(t, req{path: s.localBase() + "/tasks", host: "localhost:45678"}); w.Code != http.StatusOK {
 		t.Errorf("Host localhost: %d", w.Code)
 	}
 
@@ -205,7 +205,7 @@ func TestAccess(t *testing.T) {
 func TestRemoteAccess(t *testing.T) {
 	s, cfg := fixture(t, "en")
 	const rhost, owner = "box.example.ts.net:8443", "lucia@example.com"
-	tasks := s.base() + "/tasks"
+	tasks := s.netBase() + "/tasks"
 	// Not published: the network's name is refused like any other.
 	if w := s.do(t, req{path: tasks, host: rhost, owner: owner}); w.Code != http.StatusForbidden {
 		t.Errorf("not published: %d", w.Code)
@@ -235,8 +235,8 @@ func TestRemoteAccess(t *testing.T) {
 		t.Errorf("local: %d", w.Code)
 	}
 	// Writes through the network need its https origin.
-	path := s.base() + "/inbox/capture"
-	form := url.Values{"s": {"work"}, "text": {"From the phone"}, "csrf": {s.csrf}}
+	path := s.netBase() + "/inbox/capture"
+	form := url.Values{"s": {"work"}, "text": {"From the phone"}, "csrf": {s.netCSRF}}
 	if w := s.do(t, req{method: "POST", path: path, host: rhost, owner: owner, form: form, origin: "http://" + rhost}); w.Code != http.StatusForbidden {
 		t.Errorf("http origin through the network: %d", w.Code)
 	}
@@ -248,7 +248,7 @@ func TestRemoteAccess(t *testing.T) {
 		t.Error("the capture did not land")
 	}
 	i := Info{Port: port, Token: s.token, Remote: s.remote.Load()}
-	if i.RemoteURL() != "https://"+rhost+s.base()+"/" {
+	if i.RemoteURL() != "https://"+rhost+s.netBase()+"/" {
 		t.Errorf("remote URL: %s", i.RemoteURL())
 	}
 	if (Info{Port: port, Token: s.token}).RemoteURL() != "" {
@@ -264,7 +264,7 @@ func TestWritesNeedTheirOrigin(t *testing.T) {
 	}
 	form := func() url.Values { return url.Values{"s": {"work"}, "text": {"Call Ana"}, "csrf": {s.csrf}} }
 	own := "http://" + host
-	path := s.base() + "/inbox/capture"
+	path := s.localBase() + "/inbox/capture"
 	refused := []req{
 		{method: "POST", path: path, form: form()},                                      // no Origin, no Referer
 		{method: "POST", path: path, form: form(), origin: "null"},                      // a sandboxed or no-referrer page
@@ -302,7 +302,7 @@ func TestWritesNeedTheirOrigin(t *testing.T) {
 	}
 	f := form()
 	f.Set("text", "Buy flour")
-	if w := s.do(t, req{method: "POST", path: path, form: f, referer: own + s.base() + "/inbox"}); w.Code != http.StatusSeeOther {
+	if w := s.do(t, req{method: "POST", path: path, form: f, referer: own + s.localBase() + "/inbox"}); w.Code != http.StatusSeeOther {
 		t.Fatalf("capture by Referer: %d", w.Code)
 	}
 	if got := inbox(); !strings.Contains(got, "Call Ana") || !strings.Contains(got, "Buy flour") {
@@ -319,7 +319,7 @@ func TestPagesAndChanges(t *testing.T) {
 			t.Fatalf("%s: %d %s", what, w.Code, w.Body)
 		}
 		loc := w.Header().Get("Location")
-		if !strings.Contains(loc, "ok=1") || !strings.Contains(loc, "s=work") {
+		if !strings.Contains(loc, "ok=") || !strings.Contains(loc, "s=work") {
 			t.Errorf("%s: redirect %q", what, loc)
 		}
 		return loc
@@ -602,14 +602,14 @@ func TestSubtasksAndSteps(t *testing.T) {
 
 	tick := url.Values{"s": {"work"}, "id": {parent}, "n": {"1"}, "text": {"Dig the beds"}, "done": {"1"}}
 	// No csrf token, or another site's Origin: refused, nothing written.
-	if w := s.do(t, req{method: http.MethodPost, path: s.base() + "/task/step", origin: "http://" + host, form: tick}); w.Code != http.StatusForbidden {
+	if w := s.do(t, req{method: http.MethodPost, path: s.localBase() + "/task/step", origin: "http://" + host, form: tick}); w.Code != http.StatusForbidden {
 		t.Errorf("tick without the csrf token: %d", w.Code)
 	}
 	bad := url.Values{"csrf": {s.csrf}}
 	for k, v := range tick {
 		bad[k] = v
 	}
-	if w := s.do(t, req{method: http.MethodPost, path: s.base() + "/task/step", origin: "http://evil.example", form: bad}); w.Code != http.StatusForbidden {
+	if w := s.do(t, req{method: http.MethodPost, path: s.localBase() + "/task/step", origin: "http://evil.example", form: bad}); w.Code != http.StatusForbidden {
 		t.Errorf("tick from another origin: %d", w.Code)
 	}
 	if strings.Contains(s.get(t, "/task?s=work&id="+parent).Body.String(), "1/2 steps") {
@@ -800,3 +800,7 @@ func TestInboxShowsOrigin(t *testing.T) {
 		t.Errorf("inbox:\n%s", data)
 	}
 }
+
+// localBase is base for a request on 127.0.0.1; netBase, through the network's socket.
+func (s *Server) localBase() string { return "/s/" + s.session }
+func (s *Server) netBase() string   { return "/s/" + s.netSession }

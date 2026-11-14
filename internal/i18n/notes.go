@@ -63,6 +63,10 @@ var noteMessages = map[string]msg{
 		en: "parked on %s.",
 		es: "aparcada el %s.",
 	},
+	"note.closed.noresult": {
+		en: "no result given (closed by changing its status)",
+		es: "sin resultado (cerrada al cambiar su estado)",
+	},
 	"note.where.closed": {
 		en: "closed on %s: %s",
 		es: "cerrada el %s: %s",

@@ -35,6 +35,11 @@ minutos.
   trabaja con Claude Code, y Claude Code no entra en el plan gratuito. Los planes, en
   [claude.com/pricing](https://claude.com/pricing).
 - **La contraseña de tu ordenador**, por si hay que instalar algo que falta.
+- **Una cuenta de GitHub, solo para la copia de seguridad.** Para instalar no hace falta.
+  Al final de la primera sesión, Claude te ofrece copiar tus notas en un repositorio
+  privado de tu cuenta de GitHub (basta con una gratuita). Créala en
+  [github.com](https://github.com/) antes de empezar, o di que no entonces y prepara la
+  copia más adelante.
 
 ## 1. Abre la terminal
 
@@ -59,14 +64,15 @@ O esta, en Windows:
 irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex
 ```
 
-Pégala en la terminal (`Cmd + V` en Mac, `Ctrl + Shift + V` en Ubuntu, clic derecho en
-Windows) y pulsa Enter.
+Pégala en la terminal (`Cmd + V` en Mac, `Ctrl + Shift + V` en Ubuntu, `Ctrl + V` o clic
+derecho en Windows) y pulsa Enter.
 
 ## 3. Contesta al instalador
 
 Te hace unas pocas preguntas. Para aceptar lo que te propone, basta con pulsar Enter.
 
-1. **El idioma.** Español o inglés.
+1. **El idioma.** Español o inglés; te propone el del sistema. Puedes cambiarlo más tarde
+   en la [configuración](configuration.es.md#ajustes-de-todo-el-ordenador).
 2. **Lo que falte**, si falta algo: git (guarda el historial de tus notas), Claude Code
    y la app de escritorio de Claude. Te dice para qué es cada cosa antes de instalarla. Si
    ya tenías Claude Code pero está atrasado, te ofrece actualizarlo. Si falta Claude Code,
@@ -94,9 +100,13 @@ Sin elegir carpeta, trabajas en tu espacio personal. Para el de trabajo, elige c
 **Choose…** la carpeta `~/augmented-brain/trabajo`. Un **espacio** es un cajón separado
 de notas: te lo cuenta [Espacios](spaces.es.md).
 
+**Si Claude te pregunta si confías en la carpeta, di que sí.** Claude Code lo pregunta la
+primera vez que se abre en una carpeta, antes de cargar nada: hasta que digas que sí,
+augmented brain no puede cargar tus notas.
+
 ¿Sin app de escritorio (en Linux sin `apt`, o si dijiste que no)? El instalador te ofrece
 abrir Claude en la terminal, en tu espacio de trabajo. Las próximas veces:
-`cd ~/augmented-brain/trabajo && claude`.
+`cd ~/augmented-brain/trabajo && claude`, o la carpeta `personal` para el otro espacio.
 
 ## 5. Contesta a la entrevista
 
@@ -106,7 +116,9 @@ toca, qué herramientas usas y con quién trabajas. Puedes saltarte cualquiera.
 
 Al final te enseña lo que ha guardado y te ofrece configurar la copia de seguridad. Dile que
 sí: tus notas quedan en un repositorio privado tuyo, y si pierdes el ordenador no pierdes
-nada.
+nada. Necesita una cuenta de GitHub; si no la tienes, di que no por ahora y pide «prepara
+la copia de seguridad» cuando la tengas. [Copia de seguridad y restauración](backup.es.md)
+cuenta el resto, también otros servidores de git.
 
 ## Tu primera semana
 
@@ -143,8 +155,8 @@ Más frases, agrupadas por lo que quieres hacer: [Qué decirle a Claude](phrases
 
 ## Si algo falla
 
-- **Claude no se presenta ni te hace la entrevista.** Empieza una sesión nueva. Si sigue
-  igual, abre la terminal y escribe `augmented-brain doctor`: te dice qué falta y cómo
+- **Claude no se presenta ni te hace la entrevista.** Empieza una sesión nueva y, si te
+  pregunta si confías en la carpeta, di que sí. Si sigue igual, abre la terminal y escribe `augmented-brain doctor`: te dice qué falta y cómo
   arreglarlo.
 - **La terminal dice que no encuentra una orden** (`command not found`, o "no se reconoce"
   en Windows). Cierra la terminal y abre otra: la nueva ya encuentra los programas recién

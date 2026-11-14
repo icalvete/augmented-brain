@@ -19,32 +19,32 @@ import (
 func (s *Server) routes() *http.ServeMux {
 	m := http.NewServeMux()
 	m.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, s.base()+"/today", http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+"/today", http.StatusSeeOther)
 	})
 	m.Handle("GET /static/", s.static)
-	m.HandleFunc("GET /today", s.read("today", s.today))
-	m.HandleFunc("GET /tasks", s.read("tasks", s.tasks))
-	m.HandleFunc("GET /task", s.read("tasks", s.task))
-	m.HandleFunc("GET /reminders", s.read("reminders", s.reminders))
-	m.HandleFunc("GET /inbox", s.read("inbox", s.inbox))
-	m.HandleFunc("GET /areas", s.read("areas", s.areas))
-	m.HandleFunc("GET /knowledge", s.read("knowledge", s.knowledge))
-	m.HandleFunc("GET /rules", s.read("rules", s.rules))
-	m.HandleFunc("GET /people", s.read("people", s.people))
-	m.HandleFunc("GET /note", s.read("", s.note))
+	s.page(m, "/today", "today", s.today)
+	s.page(m, "/tasks", "tasks", s.tasks)
+	s.page(m, "/task", "tasks", s.task)
+	s.page(m, "/reminders", "reminders", s.reminders)
+	s.page(m, "/inbox", "inbox", s.inbox)
+	s.page(m, "/areas", "areas", s.areas)
+	s.page(m, "/knowledge", "knowledge", s.knowledge)
+	s.page(m, "/rules", "rules", s.rules)
+	s.page(m, "/people", "people", s.people)
+	s.page(m, "/note", "", s.note)
 	m.HandleFunc("GET /stamp", s.stamp)
-	m.HandleFunc("GET /search", s.read("search", s.search))
-	m.HandleFunc("GET /review", s.read("review", s.review))
-	m.HandleFunc("GET /secrets", s.read("secrets", s.secrets))
-	m.HandleFunc("GET /profile", s.read("profile", s.profile))
-	m.HandleFunc("GET /space", s.read("space", s.space))
-	m.HandleFunc("GET /backup", s.read("backup", s.backupPage))
-	m.HandleFunc("GET /backup/back", s.read("backup", s.backupBackPage))
-	m.HandleFunc("GET /sessions", s.read("sessions", s.sessions))
-	m.HandleFunc("GET /repos", s.read("repos", s.repos))
-	m.HandleFunc("GET /guard", s.read("guard", s.guardPage))
-	m.HandleFunc("GET /versions", s.read("versions", s.versionsPage))
-	m.HandleFunc("GET /help", s.read("help", s.help))
+	s.page(m, "/search", "search", s.search)
+	s.page(m, "/review", "review", s.review)
+	s.page(m, "/secrets", "secrets", s.secrets)
+	s.page(m, "/profile", "profile", s.profile)
+	s.page(m, "/space", "space", s.space)
+	s.page(m, "/backup", "backup", s.backupPage)
+	s.page(m, "/backup/back", "backup", s.backupBackPage)
+	s.page(m, "/sessions", "sessions", s.sessions)
+	s.page(m, "/repos", "repos", s.repos)
+	s.page(m, "/guard", "guard", s.guardPage)
+	s.page(m, "/versions", "versions", s.versionsPage)
+	s.page(m, "/help", "help", s.help)
 	m.HandleFunc("GET /help/report", s.helpReport)
 
 	m.HandleFunc("POST /task/new", s.write(s.taskNew))
@@ -92,6 +92,23 @@ func (s *Server) routes() *http.ServeMux {
 
 type link struct{ Path, Label string }
 
+// navGroup is one block of the menu: a heading and its sections.
+type navGroup struct {
+	Label string
+	Links []link
+}
+
+// menu is the panel's menu, in blocks: what a day brings, the notes, and looking after
+// the panel and its copies. Each name is a page's address and its "panel.<name>" label.
+var menu = []struct {
+	key      string
+	sections []string
+}{
+	{"nav.day", []string{"today", "tasks", "sessions", "reminders", "inbox", "review"}},
+	{"nav.notes", []string{"areas", "knowledge", "rules", "people", "repos", "secrets"}},
+	{"nav.care", []string{"backup", "space", "guard", "versions", "help"}},
+}
+
 type option struct {
 	Value, Label string
 	Selected     bool
@@ -101,9 +118,11 @@ type page struct {
 	Lang, Title, Section, Space, CSRF string
 	Base                              string // the start of every address: /s/<session>
 	Spaces                            []string
-	Nav                               []link
-	OK                                bool
-	Remote                            bool // also open through the user's Tailscale network
+	Nav                               []navGroup
+	Where                             string     // the menu button's text on a phone: this page's name
+	OK                                string     // what the change just made did ("Task updated.")
+	Form                              *formState // a form that could not be saved, shown again
+	Remote                            bool       // also open through the user's Tailscale network
 	Problems                          int
 	Hints                             hints  // which introductions the person hid
 	Here                              string // this page's address after Base, to come back to
@@ -111,6 +130,84 @@ type page struct {
 }
 
 type message struct{ Heading, Text, Back string }
+
+// formState is a form that could not be saved, on the page it was sent from: what was
+// typed goes back into it, and the error next to the field it is about.
+type formState struct {
+	ID     string     // the form's action after Base, then "#" and its "form" input when it has one
+	Field  string     // the field the error is about; "" for the form as a whole
+	Text   string     // the error, in the panel's language
+	Values url.Values // what was sent
+	shown  bool       // a template put the error next to its form
+	Top    bool       // no template did: it goes at the top of the page
+}
+
+// fieldError is an error about one field of a form.
+type fieldError struct {
+	Field string
+	Err   error
+}
+
+func (e *fieldError) Error() string { return e.Err.Error() }
+func (e *fieldError) Unwrap() error { return e.Err }
+
+// onField says err is about the field name of the form, unless it already names one.
+func onField(name string, err error) error {
+	var fe *fieldError
+	if err == nil || errors.As(err, &fe) {
+		return err
+	}
+	return &fieldError{name, err}
+}
+
+func (p page) failed(form string) bool { return p.Form != nil && p.Form.ID == form }
+
+// Val is what a field of the form shows: what was typed, when this form could not be
+// saved, and def otherwise.
+func (p page) Val(form, name string, def any) any {
+	if p.failed(form) {
+		return p.Form.Values.Get(name)
+	}
+	return def
+}
+
+// On says whether a choice of the form (a box, a radio button, an option) is on: as it
+// was sent, when this form could not be saved, and def otherwise.
+func (p page) On(form, name, value string, def bool) bool {
+	if p.failed(form) {
+		for _, v := range p.Form.Values[name] {
+			if v == value {
+				return true
+			}
+		}
+		return false
+	}
+	return def
+}
+
+// Err is the error of the form, for name "", or of one of its fields; "" when there is
+// none there. The form's own place takes an error about a field no template shows.
+func (p page) Err(form, name string) string {
+	if !p.failed(form) || p.Form.Field != name {
+		return ""
+	}
+	p.Form.shown = true
+	return p.Form.Text
+}
+
+// FormErr is the error of the form as a whole, written at its end: its own, or one
+// about a field no Err of the form has shown.
+func (p page) FormErr(form string) string {
+	if !p.failed(form) || p.Form.shown {
+		return ""
+	}
+	p.Form.shown = true
+	return p.Form.Text
+}
+
+// Open says whether a form that may be folded away (in a <details>) shows open: when
+// it could not be saved, so its error is in sight.
+func (p page) Open(form string) bool { return p.failed(form) }
 
 // hidden is one hidden input of a form.
 type hidden struct {
@@ -151,23 +248,55 @@ func (s *Server) lang() string {
 	return i18n.FromEnv()
 }
 
-func (s *Server) render(w http.ResponseWriter, status int, name string, p page) {
+func (s *Server) render(w http.ResponseWriter, r *http.Request, status int, name string, p page) {
 	if _, ok := s.pages[p.Lang]; !ok {
 		p.Lang = "en"
 	}
-	p.CSRF, p.Base, p.Remote = s.csrf, s.base(), s.remote.Load() != nil
+	p.CSRF, p.Base, p.Remote = s.csrfFor(r), s.base(r), s.remote.Load() != nil
 	p.Hints = loadHints(s.cfgDir)
-	for _, sec := range []string{"today", "tasks", "reminders", "inbox", "review", "areas", "knowledge", "rules", "people", "repos", "secrets", "backup", "space", "guard", "versions", "help"} {
-		p.Nav = append(p.Nav, link{sec, i18n.T(p.Lang, "panel."+sec)})
+	p.Nav, p.Where = nil, ""
+	for _, g := range menu {
+		group := navGroup{Label: i18n.T(p.Lang, "panel."+g.key)}
+		for _, sec := range g.sections {
+			group.Links = append(group.Links, link{sec, i18n.T(p.Lang, "panel."+sec)})
+		}
+		p.Nav = append(p.Nav, group)
 	}
+	p.Where = whereLabel(p.Lang, p.Section)
 	var buf bytes.Buffer
 	if err := s.pages[p.Lang][name].ExecuteTemplate(&buf, "layout", p); err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
+	if p.Form != nil && !p.Form.shown {
+		// The page has no place for this form's error: it goes at the top.
+		p.Form.Top = true
+		buf.Reset()
+		if err := s.pages[p.Lang][name].ExecuteTemplate(&buf, "layout", p); err != nil {
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 	_, _ = w.Write(buf.Bytes())
+}
+
+// whereLabel is the name of the page a section belongs to, as the menu button shows it
+// on a phone, or "" for a page outside the menu (the button then just says Menu).
+func whereLabel(lang, section string) string {
+	switch section {
+	case "profile", "search":
+		return i18n.T(lang, "panel."+section)
+	}
+	for _, g := range menu {
+		for _, sec := range g.sections {
+			if sec == section {
+				return i18n.T(lang, "panel."+sec)
+			}
+		}
+	}
+	return ""
 }
 
 // view is one space, open under the notes lock for the length of a request.
@@ -244,7 +373,7 @@ func (s *Server) fail(w http.ResponseWriter, r *http.Request, v *view, status in
 			p.Space = v.b.Space.Name
 		}
 	}
-	text := err.Error()
+	text := i18n.Message(lang, err)
 	if errors.Is(err, errNoSpace) {
 		text = i18n.T(lang, "panel.err.space", r.FormValue("s"))
 	}
@@ -254,36 +383,113 @@ func (s *Server) fail(w http.ResponseWriter, r *http.Request, v *view, status in
 		back = strings.TrimPrefix(ref, own)
 	}
 	p.D = message{Heading: p.Title, Text: text, Back: back}
-	s.render(w, status, "message", p)
+	s.render(w, r, status, "message", p)
+}
+
+// readRoute is a page: its section and the handler that fills it in.
+type readRoute struct {
+	section string
+	h       func(*view, *http.Request) (string, page, error)
+}
+
+// page serves a page at path, and keeps it so a form sent from it that cannot be
+// saved can show it again (again).
+func (s *Server) page(m *http.ServeMux, path, section string, h func(*view, *http.Request) (string, page, error)) {
+	if s.reads == nil {
+		s.reads = map[string]readRoute{}
+	}
+	s.reads[path] = readRoute{section, h}
+	m.HandleFunc("GET "+path, s.read(section, h))
 }
 
 // read serves a page: the handler fills it in from the open space.
 func (s *Server) read(section string, h func(*view, *http.Request) (string, page, error)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		v, release, err := s.open(r)
-		if err != nil {
-			s.fail(w, r, v, http.StatusBadRequest, err)
-			return
-		}
-		var name string
-		var p page
-		func() {
-			defer release() // a handler that fails half way never keeps the notes locked
-			name, p, err = h(v, r)
-		}()
-		if err != nil {
-			s.fail(w, r, v, http.StatusNotFound, err)
-			return
-		}
-		if p.Section == "" {
-			p.Section = section
-		}
-		p.OK = r.URL.Query().Get("ok") == "1"
-		q := r.URL.Query()
-		q.Del("ok")
-		p.Here = (&url.URL{Path: r.URL.Path, RawQuery: q.Encode()}).String()
-		s.render(w, http.StatusOK, name, p)
+	return func(w http.ResponseWriter, r *http.Request) { s.servePage(w, r, readRoute{section, h}, nil) }
+}
+
+// servePage fills in a page and sends it. form, when not nil, is a form of the page that
+// could not be saved: the page goes back with what was typed and the error.
+func (s *Server) servePage(w http.ResponseWriter, r *http.Request, rt readRoute, form *formState) {
+	v, release, err := s.open(r)
+	if err != nil {
+		s.fail(w, r, v, http.StatusBadRequest, err)
+		return
 	}
+	var name string
+	var p page
+	func() {
+		defer release() // a handler that fails half way never keeps the notes locked
+		name, p, err = rt.h(v, r)
+	}()
+	if err != nil {
+		s.fail(w, r, v, http.StatusNotFound, err)
+		return
+	}
+	if p.Section == "" {
+		p.Section = rt.section
+	}
+	status := http.StatusOK
+	if form != nil {
+		p.Form, status = form, http.StatusBadRequest
+	}
+	if ok := r.URL.Query().Get("ok"); ok != "" && form == nil {
+		p.OK = savedLine(v.lang, ok)
+	}
+	q := r.URL.Query()
+	q.Del("ok")
+	p.Here = (&url.URL{Path: r.URL.Path, RawQuery: q.Encode()}).String()
+	s.render(w, r, status, name, p)
+}
+
+// failForm answers a form that could not be saved: its page again when there is one
+// (again), a page of its own otherwise (fail). v may be nil.
+func (s *Server) failForm(w http.ResponseWriter, r *http.Request, v *view, err error) {
+	lang := s.lang()
+	if v != nil {
+		lang = v.lang
+	}
+	if !s.again(w, r, lang, err) {
+		s.fail(w, r, v, http.StatusBadRequest, err)
+	}
+}
+
+// again answers a form that could not be saved with the page it was sent from, again:
+// what was typed stays in the form, and the error, in the panel's language, goes next
+// to the field it is about. False when the page is not one of this panel's (no Referer,
+// or another address): the error then gets a page of its own (fail).
+func (s *Server) again(w http.ResponseWriter, r *http.Request, lang string, err error) bool {
+	if errors.Is(err, errNoSpace) {
+		return false
+	}
+	ref, own := r.Header.Get("Referer"), s.origin(r)+s.base(r)
+	if !strings.HasPrefix(ref, own+"/") {
+		return false
+	}
+	u, perr := url.Parse(strings.TrimPrefix(ref, own))
+	if perr != nil {
+		return false
+	}
+	rt, ok := s.reads[u.Path]
+	if !ok {
+		return false
+	}
+	q := u.Query()
+	q.Del("ok")
+	g := r.Clone(r.Context())
+	g.Method, g.Body, g.ContentLength = http.MethodGet, http.NoBody, 0
+	g.URL = &url.URL{Path: u.Path, RawQuery: q.Encode()}
+	g.Form, g.PostForm = nil, nil
+	id := r.URL.Path
+	if k := r.PostForm.Get("form"); k != "" {
+		id += "#" + k
+	}
+	f := &formState{ID: id, Text: i18n.Message(lang, err), Values: r.PostForm}
+	var fe *fieldError
+	if errors.As(err, &fe) {
+		f.Field = fe.Field
+	}
+	s.servePage(w, g, rt, f)
+	return true
 }
 
 // write runs a change and sends the browser to the page it returns, which then shows
@@ -308,16 +514,35 @@ func (s *Server) write(h func(*view, *http.Request) (string, error)) http.Handle
 			}
 		}()
 		if err != nil {
-			s.fail(w, r, v, http.StatusBadRequest, err)
+			s.failForm(w, r, v, err)
 			return
 		}
 		u, _ := url.Parse(to)
 		q := u.Query()
 		q.Set("s", v.b.Space.Name)
-		q.Set("ok", "1")
+		q.Set("ok", doneKey(r))
 		u.RawQuery = q.Encode()
-		http.Redirect(w, r, s.base()+u.String(), http.StatusSeeOther)
+		http.Redirect(w, r, s.base(r)+u.String(), http.StatusSeeOther)
 	}
+}
+
+// doneKey names what a change did, for the page it goes to: its address, and add or
+// remove when the form says which ("task.update", "guard.root.add").
+func doneKey(r *http.Request) string {
+	k := strings.ReplaceAll(strings.Trim(r.URL.Path, "/"), "/", ".")
+	if op := r.PostForm.Get("op"); op == "add" || op == "remove" {
+		k += "." + op
+	}
+	return k
+}
+
+// savedLine is the line that says what a change did. An address with ok=1, or one the
+// catalogue does not know, gets the plain "Saved.".
+func savedLine(lang, key string) string {
+	if k := "panel.ok." + key; i18n.Has(k) {
+		return i18n.T(lang, k)
+	}
+	return i18n.T(lang, "panel.saved")
 }
 
 func field(r *http.Request, name string) string { return strings.TrimSpace(r.PostForm.Get(name)) }
@@ -326,7 +551,7 @@ func field(r *http.Request, name string) string { return strings.TrimSpace(r.Pos
 func required(v *view, r *http.Request, names ...string) error {
 	for _, n := range names {
 		if field(r, n) == "" {
-			return errors.New(v.t("err.required", v.t("f."+n)))
+			return &fieldError{n, errors.New(v.t("err.required", v.t("f."+n)))}
 		}
 	}
 	return nil

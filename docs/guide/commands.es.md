@@ -478,6 +478,19 @@ Lo que hace en cada vuelta:
 Lo que hace queda en el diario del sistema
 (`journalctl --user -u augmented-brain-watch-remote`).
 
+También despierta las sesiones de tarea que paró el límite de uso de Claude. Cuando se
+acaba el uso de tu plan, Claude Code rechaza el turno y dice a qué hora vuelve el
+límite. Una sesión que tienes abierta en un terminal sigue sola a esa hora; una sesión
+de tarea corre en segundo plano y no: se queda ahí, sin hacer nada, hasta que alguien
+le escribe. El vigilante lee esa hora de la última respuesta de la sesión y, cuando ha
+pasado, para la sesión y la reanuda con un mensaje que le dice que lea su tarea y siga.
+Vuelve como la misma sesión, con su conversación, en Claude Desktop y claude.ai.
+Despierta una sesión en cada mirada, así que vuelven con dos minutos entre ellas y no
+gastan el uso nuevo de golpe. Solo se despiertan las sesiones abiertas con
+`augmented-brain session start`, nunca otras. Te avisa dos veces, en la siguiente
+sesión que uses: cuando empieza la espera, con la hora, y cuando ha vuelto la última.
+Cada tarea despertada recibe una línea en su diario.
+
 ## augmented-brain session
 
 Abre una sesión propia para una tarea, para que desde otro ordenador puedas trabajar en
@@ -645,6 +658,9 @@ augmented-brain session list
   su tarea la trae de vuelta con toda su conversación.
 - **fallida** quiere decir que su última respuesta fue un error, como un login caducado:
   no hace nada hasta que alguien le escriba. La línea da el error y qué hacer.
+- **en espera** quiere decir que la paró el límite de uso de Claude. La línea da la hora
+  a la que vuelve el límite, que es cuando el vigilante la despierta (mira `remote
+  watch` arriba).
 
 ## augmented-brain watch
 
