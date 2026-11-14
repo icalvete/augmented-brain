@@ -2,6 +2,7 @@ package panel
 
 import (
 	"errors"
+	"maps"
 	"net/http"
 	"net/url"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
+	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
 
@@ -51,16 +53,41 @@ func (s *Server) areaUpdate(v *view, r *http.Request) (string, error) {
 
 // stamp says when a note last changed on disk, so an open page can tell it is behind.
 // It is what the page's script asks for now and then; asking does not count as using
-// the panel (see ServeHTTP), so an open tab never keeps it running.
+// the panel (see ServeHTTP), so an open tab never keeps it running. Every open tab
+// asks every 15 seconds, so it only looks at the one file: no notes lock, no loading
+// the space (P-10).
 func (s *Server) stamp(w http.ResponseWriter, r *http.Request) {
-	v, release, err := s.open(r)
+	c, err := config.Load(s.cfgDir)
 	if err != nil {
 		http.Error(w, "not found", http.StatusNotFound)
 		return
 	}
-	defer release()
+	sp, ok := c.Spaces[spaceName(c, r)]
+	if !ok {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	_, _ = w.Write([]byte(v.stampOf(r.FormValue("id"))))
+	_, _ = w.Write([]byte(stampAt(sp.Memory, r.FormValue("id"))))
+}
+
+// stampAt is stampOf without loading the space: a valid note lives at the path of its
+// type (memory.PathFor), which its id's prefix tells; a note with an id of another
+// shape is looked for in each type's folder.
+func stampAt(memDir, id string) string {
+	if id == "" || id != filepath.Base(id) || strings.ContainsAny(id, `/\`) || strings.HasPrefix(id, ".") {
+		return ""
+	}
+	typs := []string{memory.TypeOfID(id)}
+	if typs[0] == "" {
+		typs = slices.Sorted(maps.Keys(memory.Types))
+	}
+	for _, typ := range typs {
+		if info, err := os.Stat(filepath.Join(memDir, filepath.FromSlash(memory.PathFor(typ, id)))); err == nil && info.Mode().IsRegular() {
+			return strconv.FormatInt(info.ModTime().UnixNano(), 10)
+		}
+	}
+	return ""
 }
 
 // stampOf is the time a note of the space was last written, in nanoseconds; "" when

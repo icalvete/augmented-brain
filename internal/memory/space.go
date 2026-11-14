@@ -50,6 +50,9 @@ type Memory struct {
 	// Shared is set for the shared notes, which have no areas, people or tasks: their
 	// index lists rules and knowledge instead.
 	Shared bool
+	// SharedNotes are the shared notes LoadSpace read with the space, for whoever needs
+	// them too without reading them again; nil from Load.
+	SharedNotes *Memory
 }
 
 // Load reads every note of the memory in dir, except archive/ and docs/ (a task's long
@@ -210,7 +213,11 @@ func LoadSpace(dir, sharedDir string) (*Memory, []Problem, error) {
 	if err != nil {
 		shared = &Memory{Dir: sharedDir, Notes: map[string]*Note{}}
 	}
-	return Load(dir, shared)
+	m, problems, err := Load(dir, shared)
+	if m != nil {
+		m.SharedNotes = shared
+	}
+	return m, problems, err
 }
 
 // checkLinks reports areas, parents and related notes that do not exist. These are
@@ -285,12 +292,29 @@ func (m *Memory) ParentOf(n *Note) *Note {
 // a subtask is never listed twice, under its parent and on its own.
 func (m *Memory) Children(id string) []*Note {
 	var out []*Note
-	for _, n := range m.OfType("task") {
-		if n.Header.Parent == id && m.ParentOf(n) != nil {
+	for _, n := range m.Notes {
+		if n.Header.Type == "task" && n.Header.Parent == id && m.ParentOf(n) != nil {
 			out = append(out, n)
 		}
 	}
+	sortByID(out)
 	return out
+}
+
+// children returns the subtasks of every task at once, each list sorted by id, as
+// Children would: for whoever asks for the subtasks of many tasks in a row.
+func (m *Memory) children() map[string][]*Note {
+	out := map[string][]*Note{}
+	for _, n := range m.OfType("task") {
+		if m.ParentOf(n) != nil {
+			out[n.Header.Parent] = append(out[n.Header.Parent], n)
+		}
+	}
+	return out
+}
+
+func sortByID(ns []*Note) {
+	sort.Slice(ns, func(i, j int) bool { return ns[i].Header.ID < ns[j].Header.ID })
 }
 
 // IDs returns every note id, sorted.
@@ -306,10 +330,11 @@ func (m *Memory) IDs() []string {
 // OfType returns the notes of one type, sorted by id.
 func (m *Memory) OfType(t string) []*Note {
 	var out []*Note
-	for _, id := range m.IDs() {
-		if n := m.Notes[id]; n.Header.Type == t {
+	for _, n := range m.Notes {
+		if n.Header.Type == t {
 			out = append(out, n)
 		}
 	}
+	sortByID(out)
 	return out
 }
