@@ -163,27 +163,21 @@ func realRunIn(dir string, name string, args ...string) (string, error) {
 	defer cancel()
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
-	for _, e := range os.Environ() {
-		if !strings.HasPrefix(e, TaskEnv+"=") {
-			cmd.Env = append(cmd.Env, e)
-		}
-	}
+	// claude --bg starts the daemon when none runs, with this environment (daemonenv.go).
+	cmd.Env = daemonEnv(os.Environ())
 	out, err := cmd.CombinedOutput()
 	return string(out), err
 }
 
 // realStartDaemon starts Claude's daemon as `claude --bg` does when none runs: transient,
 // so it exits on its own about a minute after its last client. Every session Claude
-// starts later comes from it and gets its environment, so it gets neither TaskEnv nor
-// AB_CONFIG_DIR (the folder of whoever closed a task, maybe a test's).
+// starts later comes from it and gets its environment, so it gets only what daemonEnv
+// lets pass: neither TaskEnv nor AB_CONFIG_DIR (the folder of whoever closed a task,
+// maybe a test's), nor any other AB_* or token.
 func realStartDaemon(claude string, ownScope bool) error {
 	name, args := System{OwnScope: ownScope}.scoped(claude, "daemon", "run", "--origin", "transient")
 	cmd := exec.Command(name, args...)
-	for _, e := range os.Environ() {
-		if !strings.HasPrefix(e, TaskEnv+"=") && !strings.HasPrefix(e, "AB_CONFIG_DIR=") {
-			cmd.Env = append(cmd.Env, e)
-		}
-	}
+	cmd.Env = daemonEnv(os.Environ())
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
 	detach.Cmd(cmd)
 	started, err := detach.Start(cmd)
