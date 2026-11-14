@@ -851,7 +851,7 @@ más.
   o que no tiene notas, se queda entera. Tus copias de seguridad no se tocan.
 - `--yes`: no pregunta.
 
-Lo tienes en [Instalar](install.es.md#desinstalar).
+Lo tienes en [Actualizar y desinstalar](update-and-uninstall.es.md#desinstalar).
 
 ## augmented-brain mcp
 
