@@ -26,32 +26,43 @@
     <input type="search" name="q" aria-label="{{t "search"}}" placeholder="{{t "search.side"}}" maxlength="200">
   </form>
   <details class="menu">
-    <summary>{{$here := ""}}{{range .Nav}}{{if eq .Path $.Section}}{{$here = .Label}}{{end}}{{end}}{{if $here}}{{$here}}{{else}}{{t "menu"}}{{end}}</summary>
+    <summary>{{if .Where}}{{.Where}}{{else}}{{t "menu"}}{{end}}</summary>
     <div class="menu-list">
       <form method="get" action="{{$.Base}}/search" role="search">
         <input type="hidden" name="s" value="{{.Space}}">
         <input type="search" name="q" aria-label="{{t "search"}}" placeholder="{{t "search.side"}}" maxlength="200">
       </form>
-      <nav>{{range .Nav}}<a href="{{$.Base}}/{{.Path}}?s={{$.Space}}"{{if eq .Path $.Section}} aria-current="page"{{end}}>{{.Label}}</a>{{end}}
-      <a href="{{$.Base}}/profile?s={{.Space}}"{{if eq .Section "profile"}} aria-current="page"{{end}}>{{t "profile"}}</a></nav>
+      <nav>{{template "nav" .}}
+      <a class="nav-me" href="{{$.Base}}/profile?s={{.Space}}"{{if eq .Section "profile"}} aria-current="page"{{end}}>{{t "profile"}}</a></nav>
     </div>
   </details>
-  <nav class="sections">
-    {{range .Nav}}<a href="{{$.Base}}/{{.Path}}?s={{$.Space}}"{{if eq .Path $.Section}} aria-current="page"{{end}}>{{.Label}}</a>{{end}}
-  </nav>
+  <nav class="sections">{{template "nav" .}}</nav>
   <footer>
     <span>{{if .Remote}}{{t "footer.remote"}}{{else}}{{t "footer"}}{{end}}</span>
     <form method="post" action="{{$.Base}}/stop"><input type="hidden" name="csrf" value="{{.CSRF}}"><button type="submit" class="link">{{t "stop"}}</button></form>
   </footer>
 </aside>
 <main>
-{{if .OK}}<p class="flash ok" role="status">{{t "saved"}}</p>{{end}}
+{{with .OK}}<p class="flash ok" role="status">{{.}}</p>{{end}}
+{{with .Form}}{{if .Top}}{{template "ferr" .Text}}{{else}}<p class="flash err">{{t "notsaved"}} <a href="#form-error">{{t "notsaved.see"}}</a></p>{{end}}{{end}}
 {{if .Problems}}<p class="flash warn">{{tf "problems" .Problems}} <a href="{{$.Base}}/space?s={{.Space}}">{{t "see"}}</a></p>{{end}}
 {{template "content" .}}
 </main>
 </div>
 </body>
 </html>{{end}}
+
+{{/* ferr writes the error of a form that could not be saved, where it is called:
+     {{template "ferr" ($.Err "/watch/add" "date")}} next to a field, and
+     {{template "ferr" ($.FormErr "/watch/add")}} at the end of the form, for the rest.
+     The browser takes the person to it (autofocus). */}}
+{{define "ferr"}}{{with .}}<p class="flash err ferr" role="alert" id="form-error" tabindex="-1" autofocus>{{.}}</p>{{end}}{{end}}
+
+{{/* nav writes the menu's blocks, each a heading and its sections; the sidebar and the
+   phone's menu share it. */}}
+{{define "nav"}}{{range .Nav}}<div class="nav-group"><p class="nav-head">{{.Label}}</p>
+{{range .Links}}<a href="{{$.Base}}/{{.Path}}?s={{$.Space}}"{{if eq .Path $.Section}} aria-current="page"{{end}}>{{.Label}}</a>{{end}}</div>
+{{end}}{{end}}
 
 {{/* fields writes the hidden inputs of a form: {{template "fields" (fields $ "id" .ID)}}.
      Every form sends the CSRF token and the space; the rest are the form's own. */}}

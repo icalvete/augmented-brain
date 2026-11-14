@@ -132,7 +132,7 @@ func (s *Server) hintsChange(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	http.Redirect(w, r, s.base()+backTo(r.PostForm.Get("back")), http.StatusSeeOther)
+	http.Redirect(w, r, s.base(r)+backTo(r.PostForm.Get("back")), http.StatusSeeOther)
 }
 
 // backTo is the page to go back to: a path of the panel with its query, never an

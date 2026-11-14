@@ -157,21 +157,22 @@ Está toda en **[icalvete.github.io/augmented-brain/guide](https://icalvete.gith
 y en inglés:
 
 - **Empezar**: [Primeros pasos](https://icalvete.github.io/augmented-brain/guide/getting-started.es.html),
-  [Instalación](https://icalvete.github.io/augmented-brain/guide/install.es.html).
+  [Instalación](https://icalvete.github.io/augmented-brain/guide/install.es.html),
+  [Trae una memoria que ya tienes](https://icalvete.github.io/augmented-brain/guide/import.es.html).
 - **Conceptos**: [Espacios](https://icalvete.github.io/augmented-brain/guide/spaces.es.html), [Tareas](https://icalvete.github.io/augmented-brain/guide/tasks.es.html),
-  [Áreas, conocimiento y lo demás](https://icalvete.github.io/augmented-brain/guide/notes.es.html), [El guardia](https://icalvete.github.io/augmented-brain/guide/guard.es.html),
+  [Áreas, conocimiento y lo demás](https://icalvete.github.io/augmented-brain/guide/notes.es.html), [Editar las notas a mano](https://icalvete.github.io/augmented-brain/guide/editing-notes.es.html), [El guardia](https://icalvete.github.io/augmented-brain/guide/guard.es.html),
   [Cómo funciona por dentro](https://icalvete.github.io/augmented-brain/guide/how-it-works.es.html),
   [Qué puede hacer Claude sin preguntarte](https://icalvete.github.io/augmented-brain/guide/what-claude-may-do.es.html),
   [Dónde vive cada cosa](https://icalvete.github.io/augmented-brain/guide/where-things-live.es.html).
 - **Día a día**: [Qué decirle a Claude](https://icalvete.github.io/augmented-brain/guide/phrases.es.html), [El panel](https://icalvete.github.io/augmented-brain/guide/panel.es.html),
-  [La revisión semanal](https://icalvete.github.io/augmented-brain/guide/weekly-review.es.html),
+  [La revisión semanal](https://icalvete.github.io/augmented-brain/guide/weekly-review.es.html).
+- **Ponlo a tu medida**: [Conecta tus servicios](https://icalvete.github.io/augmented-brain/guide/connect-services.es.html),
   [Copia de seguridad y restauración](https://icalvete.github.io/augmented-brain/guide/backup.es.html),
-  [Conecta tus servicios](https://icalvete.github.io/augmented-brain/guide/connect-services.es.html),
-  [Trae una memoria que ya tienes](https://icalvete.github.io/augmented-brain/guide/import.es.html),
-  [El panel desde otro dispositivo](https://icalvete.github.io/augmented-brain/guide/panel-remote.es.html),
-  [Acceso remoto](https://icalvete.github.io/augmented-brain/guide/remote.es.html),
   [Versiones de la configuración](https://icalvete.github.io/augmented-brain/guide/config-history.es.html),
   [Desde el móvil u otro ordenador](https://icalvete.github.io/augmented-brain/guide/anywhere.es.html),
+  [Acceso remoto](https://icalvete.github.io/augmented-brain/guide/remote.es.html),
+  [Una sesión por tarea](https://icalvete.github.io/augmented-brain/guide/task-sessions.es.html),
+  [El panel desde otro dispositivo](https://icalvete.github.io/augmented-brain/guide/panel-remote.es.html),
   [Actualizar y desinstalar](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.es.html).
 - **Referencia**: [Comandos](https://icalvete.github.io/augmented-brain/guide/commands.es.html), [Herramientas MCP](https://icalvete.github.io/augmented-brain/guide/mcp-tools.es.html),
   [Configuración](https://icalvete.github.io/augmented-brain/guide/configuration.es.html),

@@ -50,10 +50,11 @@ type guardData struct {
 	LastStart   string // what the last session start said about its model
 	Ask         bool   // memory_trust of session.toml is "ask" (or a value not known)
 	Language    string
+	Remote      bool // through the network: the page only shows
 }
 
 func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
-	d := guardData{Language: v.lang}
+	d := guardData{Language: v.lang, Remote: s.viaRemote(r)}
 	g, err := config.LoadGuard(v.c.Dir)
 	if err != nil {
 		d.Problem = err.Error()
@@ -269,6 +270,18 @@ func without(list []string, x string) ([]string, bool) {
 	return slices.Delete(slices.Clone(list), i, i+1), true
 }
 
+// localGuard refuses a change of the Guard page that comes through the network: the
+// lists decide what the assistant may do on this computer, so they change only from its
+// own panel, as going back to a version does (versionsRestore).
+func (s *Server) localGuard(h func(*view, *http.Request) (string, error)) func(*view, *http.Request) (string, error) {
+	return func(v *view, r *http.Request) (string, error) {
+		if s.viaRemote(r) {
+			return "", errors.New(v.t("guard.localonly"))
+		}
+		return h(v, r)
+	}
+}
+
 // guardList adds to or removes from one list. Removing an untouchable repository asks
 // for its folder's name: the one change that takes a protection away.
 func (s *Server) guardList(v *view, r *http.Request) (string, error) {
@@ -362,15 +375,18 @@ func (s *Server) guardRootAsk(v *view, r *http.Request) (string, error) {
 		switch field(r, "op") {
 		case "add":
 			host, until := field(r, "host"), field(r, "until")
-			if host == "" || until == "" {
-				return errors.New(v.t("err.required", v.t("f.host")))
+			if host == "" {
+				return &fieldError{"host", errors.New(v.t("err.required", v.t("f.host")))}
+			}
+			if until == "" {
+				return &fieldError{"until", errors.New(v.t("err.required", v.t("guard.until")))}
 			}
 			if field(r, "confirm") != host {
-				return errors.New(v.t("guard.err.typename", host))
+				return &fieldError{"confirm", errors.New(v.t("guard.err.typename", host))}
 			}
 			entry := host + " until " + until
 			if _, err := config.ParseRootAsk(v.lang, entry); err != nil {
-				return err
+				return &fieldError{"until", err}
 			}
 			if !slices.Contains(cur, entry) {
 				cur = append(slices.Clone(cur), entry)

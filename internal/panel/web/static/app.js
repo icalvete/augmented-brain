@@ -6,6 +6,17 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   document.querySelectorAll(".nojs").forEach(function (b) { b.hidden = true; });
 
+  // "Saved" is said once: the address loses its ok= at once, so reloading the page or
+  // coming back to it later does not say it again.
+  if (window.history && history.replaceState && window.URLSearchParams) {
+    var q = new URLSearchParams(location.search);
+    if (q.has("ok")) {
+      q.delete("ok");
+      var rest = q.toString();
+      history.replaceState(history.state, "", location.pathname + (rest ? "?" + rest : "") + location.hash);
+    }
+  }
+
   // A note's page asks now and then whether the note changed on disk (Claude, another
   // tab): if it did, it says so, so what you read and save is not behind. Only while
   // the tab is in view; the asking does not keep the panel running.

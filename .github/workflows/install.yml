@@ -24,6 +24,8 @@ concurrency:
 
 jobs:
   install:
+    # macOS runners are few: a pull request leaves this to main, which runs it after every merge.
+    if: github.event_name != 'pull_request'
     timeout-minutes: 10   # a stuck runner fails here instead of waiting six hours
     strategy:
       fail-fast: false

@@ -74,6 +74,38 @@ func TestParseErrors(t *testing.T) {
 	}
 }
 
+// A field this program does not know is said as one a newer version may have written,
+// in the user's language, top level or inside a watch date; a header that is not YAML
+// still gets the decoder's words.
+func TestParseUnknownField(t *testing.T) {
+	ok := "---\nid: task-x\ntype: task\ntitle: X\nstatus: plan\nwaiting_on: me\nnext: Do it\n"
+	cases := []struct{ data, field string }{
+		{ok + "priority: high\n---\n", "priority"},
+		{ok + "watch:\n  - date: 2026-11-20\n    what: x\n    snooze: 2\n---\n", "watch.snooze"},
+	}
+	for _, c := range cases {
+		_, err := Parse("tasks/task-x.md", []byte(c.data))
+		p := Problem{Path: "tasks/task-x.md", Err: err}
+		field, newer := p.Newer()
+		if !newer || field != c.field {
+			t.Fatalf("%q: error %v, want the unknown field %q", c.data, err, c.field)
+		}
+		if en := p.Text("en"); !strings.Contains(en, c.field) || !strings.Contains(en, "augmented-brain update") {
+			t.Errorf("in English: %s", en)
+		}
+		if es := p.Text("es"); !strings.Contains(es, "versión más nueva") {
+			t.Errorf("in Spanish: %s", es)
+		}
+	}
+	_, err := Parse("tasks/task-x.md", []byte(ok+"title: [\n---\n"))
+	if p := (Problem{Path: "tasks/task-x.md", Err: err}); err == nil || p.Text("en") != p.Error() {
+		t.Errorf("broken YAML must keep the decoder's error: %v", err)
+	}
+	if _, newer := (Problem{Err: ErrNoHeader}).Newer(); newer {
+		t.Error("a missing header is not a newer note")
+	}
+}
+
 func TestLoad(t *testing.T) {
 	dir := t.TempDir()
 	files := map[string]string{

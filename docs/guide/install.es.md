@@ -15,8 +15,9 @@ llevan de la mano.
   [claude.com/pricing](https://claude.com/pricing).
 - **Sin administrador ni root.** El programa va a tu propia carpeta. Solo si hay que
   instalar algo que falta, como git, puede pedirte la contraseña.
-- **El instalador pregunta antes.** El idioma y, después, cada pieza que falte, con para
-  qué sirve. Pulsa Enter para aceptar lo que propone.
+- **El instalador pregunta antes.** El idioma (te propone el del sistema) y, después, cada
+  pieza que falte, con para qué sirve. Pulsa Enter para aceptar lo que propone. Para cambiar
+  el idioma más tarde, pon `language` en tu [configuración](configuration.es.md#ajustes-de-todo-el-ordenador).
 - **Siempre acaba igual:** dos espacios, `trabajo` y `personal` (en inglés, `work` y
   `personal`), en `~/augmented-brain`, el plugin de Claude Code instalado y la oferta de
   abrir Claude.
