@@ -22,7 +22,6 @@ import (
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/detach"
-	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -189,16 +188,22 @@ func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 	case s == nil:
 		text = session.NoSpace(c, i.Cwd)
 	case n > 1:
-		// Part 1 may be moving the notes to a new format: wait for it, briefly.
-		if unlock, err := filelock.LockWithin(filepath.Join(cfgDir, backup.NotesLock), LockWait); err == nil {
-			unlock()
+		// Part 1 builds every part once it has done its work behind the notes (it may be
+		// moving them to a new format): wait for it, briefly, and take this part.
+		var ok bool
+		if text, ok = waitParts(cfgDir, i, s.Name, n, Now(), LockWait); !ok {
+			text = session.Part(c, s, "", n)
 		}
-		text = session.Part(c, s, "", n)
 	case n == 1:
 		task := launchedTask(cfgDir, i)
 		note := startNote(c, s, i, cfgDir, task)
 		freshBaseline(c, s, i, cfgDir)
-		text = session.PartFor(c, s, note, task, 1)
+		if all := session.AllParts(c, s, note, task); saveParts(cfgDir, i, s.Name, all) {
+			text = all[0]
+		} else {
+			// The others build their own parts: part 1 must count them as they will.
+			text = session.PartFor(c, s, note, task, 1)
+		}
 	default:
 		task := launchedTask(cfgDir, i)
 		note := startNote(c, s, i, cfgDir, task)
