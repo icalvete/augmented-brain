@@ -139,6 +139,10 @@ section[id] { scroll-margin-top: 16px; }
 .docnav a { display: block; padding: 4px 10px; border-radius: 8px; color: var(--muted); text-decoration: none; line-height: 1.4; }
 .docnav a:hover { color: var(--ink); background: var(--code); }
 .docnav a[aria-current="page"] { color: var(--ink); background: var(--soft); font-weight: 600; }
+/* The version last released, beside the changelog: a dot and the number, like a release tag. */
+.docnav-version { display: inline-flex; align-items: center; gap: 5px; margin-left: 8px; padding: 1px 7px; border-radius: 6px;
+  background: var(--soft); color: var(--ink); font: 500 0.76rem var(--mono); white-space: nowrap; vertical-align: 1px; }
+.docnav-version::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--sage); }
 .prose h2[id], .prose h3[id] { scroll-margin-top: 16px; }
 .prose h3 { margin: 26px 0 10px; }
 .prose .guide h3 { margin: 0; }
