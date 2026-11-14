@@ -92,7 +92,7 @@
 <ul>
   <li><a href="troubleshooting.html">Troubleshooting</a></li>
   <li><a href="limitations.html">Known limitations</a></li>
-  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog <span class="docnav-version">v0.26.1-beta</span></a></li>
 </ul>
 </details>
 </nav>
@@ -121,6 +121,7 @@ git_allowed_repos = ["~/code/blog", "~/code/blog-*"]   # commit and push freely
 git_ask_repos = ["~/code/shop"]                        # ask me each time</code></pre>
   <ul><li>Claude must name the repository in the command: <code>git -C ~/code/blog push</code>.</li><li>A git worktree (a second working folder of the same repository) counts as its repository.</li><li><code>~/code/blog-*</code> covers every <code>blog-&lt;name&gt;</code> folder next to <code>blog</code>.</li><li>A repository in both lists asks.</li><li>The lists of every space count together: a repository is yours, not the space's.</li></ul>
   <p>The easiest way is the panel's <strong>Guard</strong> page. Adding a repository to the list where Claude commits and pushes without asking shows a warning, and you must tick a box that says you understand. Add only repositories where a mistake can be undone.</p>
+  <p>When the guard stops a commit, Claude tells you so and where to allow it: this page, which opens when you type <code>/brain:panel</code>. In the first-session interview, if you write code, Claude asks which repositories they are and offers to open it for you.</p>
   <p><strong>Merging a pull request is a push too.</strong> <code>gh pr merge</code>, <code>glab mr merge</code> and <code>glab mr accept</code> follow the same lists. gh and glab have no <code>-C</code>, so the command must say which repository it is:</p>
   <ul><li><code>cd ~/code/blog &amp;&amp; gh pr merge 12</code>: the folder in the <code>cd</code> is the repository.</li><li>In the repository's own folder, Claude Code removes that <code>cd</code> before the guard sees it. There, Claude names the repository: <code>gh pr merge 12 -R owner/name</code>, or the pull request's address.</li><li>A repository named that way must be one of the folder's remotes, or the merge is stopped.</li><li>The folder the session is in does not count on its own.</li></ul>
   <p><code>gh pr merge --admin</code>, which skips the branch's protection, always asks. Only the command itself counts: <code>gh pr merge</code> written in a pull request's body or a commit message is not a merge, and neither is an address or <code>--admin</code> in the text given to <code>--body</code> or <code>--subject</code>.</p>

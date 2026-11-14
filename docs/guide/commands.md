@@ -18,7 +18,8 @@ augmented-brain check
 Options go before or after the other arguments, with one dash or two (`--all` or
 `-all`). A command that gets an argument it does not take says so, and does nothing.
 Each section gives the command's syntax: `<…>` is something you fill in, `[…]` can be
-left out, and `|` separates choices.
+left out, and `|` separates choices. In the terminal, `augmented-brain help <command>`
+(or `<command> --help`) prints the start of its section.
 
 Some commands are started for you, not by you: Claude Code starts `mcp` and `hook`,
 `panel` starts `panel serve`, and on Linux a timer runs `remote watch`. They are here so
@@ -60,7 +61,7 @@ Sets everything up: the spaces, the configuration and the Claude Code plugin. Th
 installer runs it for you the first time.
 
 Syntax: `augmented-brain init [--custom] [--language en|es] [--space <name>]
-[--work <folder>] [--memory <folder>] [--yes] [--no-plugin]`
+[--work <folder>] [--memory <folder>] [--reach machine|spaces] [--yes] [--no-plugin]`
 
 ```bash
 augmented-brain init
@@ -81,6 +82,10 @@ If there is a configuration already, it stops and changes nothing. To add a spac
 - `--work`: its work folder. Default: `~/augmented-brain/<space>`.
 - `--memory`: its notes folder. Default: `~/augmented-brain/<space>/notes`, also when
   `--work` names another folder.
+- `--reach`: where augmented brain acts, `machine` (the default) or `spaces`
+  ([Outside every space](spaces.md#outside-every-space)). The installer passes it when
+  Claude Code was already on the computer. Only for the first setup: with a
+  configuration already, it is refused, and the choice changes on the panel's Guard page.
 - `--yes`: do not ask; take the options given and the defaults.
 - `--no-plugin`: do not install the Claude Code plugin.
 
@@ -355,10 +360,12 @@ same.
 The panel itself, running in the background. `augmented-brain panel` starts it; you never
 run it by hand. It stops on its own after 30 minutes without use.
 
+Syntax: `augmented-brain panel serve`
+
 ## augmented-brain remote
 
 Keeps Claude reachable from another computer or your phone, also after a reboot. It is
-three commands, `install`, `uninstall` and `status`, each with its own section below.
+three commands, `install`, `uninstall` and `status`, each with its own section.
 It uses a `systemd` user service on Linux, a LaunchAgent on macOS and a task of the Task
 Scheduler on Windows. On Linux a fourth one, `watch`, is run by a timer, not by you.
 Without a subcommand, or with another, `remote` prints its usage.
@@ -485,7 +492,7 @@ in its journal.
 
 Opens a session of its own for one task, so that from another computer you can work on
 several tasks at once, each in its own session. It is four commands, `start`, `stop`,
-`restart` and `list`, each with its own section below. `start`, `stop` and `list` work
+`restart` and `list`, each with its own section. `start`, `stop` and `list` work
 on Linux only for now: they have been tried only there. `restart` works on Linux and
 macOS. Without a subcommand, or with another, `session` prints its usage. Why and how to
 use them: [A session per task](task-sessions.md).
@@ -654,7 +661,7 @@ augmented-brain session list
 
 Follows something that takes a while and says how it ended, so a session can leave it
 running and get on with other work. For now it follows one thing, a pull request: see
-`watch pr` below. Without a subcommand, `watch` prints its usage.
+`watch pr`. Without a subcommand, `watch` prints its usage.
 
 ## augmented-brain watch pr
 
@@ -699,8 +706,7 @@ pull request was merged, and 1 otherwise.
 
 ## augmented-brain config
 
-The versions of your configuration: two commands, `history` and `restore`, each with its
-own section below. Without a subcommand, `config` prints its usage. See
+The versions of your configuration: two commands, `history` and `restore`, each with its own section. Without a subcommand, `config` prints its usage. See
 [Configuration versions](config-history.md).
 
 ## augmented-brain config history
@@ -843,6 +849,8 @@ See [Updating and uninstalling](update-and-uninstall.md#uninstalling).
 Runs the MCP server: the tools Claude uses to keep your tasks and notes. **Claude Code
 starts it**, through the plugin; you do not.
 
+Syntax: `augmented-brain mcp`
+
 It talks over its input and output. It finds the space again on every call, from the
 folder Claude works in. The tools are in [MCP tools](mcp-tools.md).
 
@@ -903,16 +911,23 @@ augmented-brain version
 
 ## augmented-brain help
 
-Prints the list of commands, in your language.
+Prints the list of commands, in your language. With a command, what that command does,
+its syntax, its options and an example.
 
-Syntax: `augmented-brain help`
+Syntax: `augmented-brain help [<command>]`
 
 ```bash
 augmented-brain help
+augmented-brain help session start
 ```
 
-`--help` and `-h` do the same. Running `augmented-brain` with nothing prints the list
-too, as an error (exit code 2).
+`--help` and `-h` do the same: alone they print the list, and after a command its help
+(`augmented-brain panel --help`). They need no configuration, so they work before
+`init` too. Running `augmented-brain` with nothing prints the list as well, as an error
+(exit code 2).
+
+What each command prints is the start of its section on this page: the first paragraph,
+the syntax, the options and the first example.
 
 ## Exit codes
 

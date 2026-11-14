@@ -17,6 +17,10 @@ walks you through it.
 - **The installer asks first.** The language (your system's is suggested), then each
   missing piece, with what it is for. Press Enter to accept what it suggests. To change the
   language later, set `language` in your [configuration](configuration.md#settings-for-the-whole-computer).
+- **If you already use Claude Code**, a new installation also asks where augmented brain
+  acts: on the whole computer (the default) or only in its spaces, leaving your other
+  projects as they were. See [Outside every space](spaces.md#outside-every-space). Without
+  Claude Code beforehand it does not ask: it acts on the whole computer.
 - **No GitHub account.** The program downloads from GitHub without one. The backup does
   use one, or another git server, and you set it up later: see [Backup and restore](backup.md).
 - **A new installation ends the same way:** two spaces, `work` and `personal` (in Spanish,
@@ -152,6 +156,21 @@ configuration in `%APPDATA%\augmented-brain`; your notes in
   winget does not always have the very latest one. Click **Update**.
 - To work without the app: `cd ~\augmented-brain\work; claude` (Windows PowerShell has no
   `&&`).
+
+## Only the plugin, from Claude Code
+
+augmented brain is two pieces: a program on your computer, which does the work, and a
+Claude Code plugin, which plugs it into Claude. The install command puts in both. Claude
+Code can also add the plugin by itself, from its plugin menu (`/plugin`) or with
+`claude plugin install`, and then the program is missing.
+
+In that case, every new session starts with a message saying the program is missing and
+the command to install it, and Claude tells you the same in your language. Until you
+install it, there are no notes, the tools for tasks do not work, and Claude Code may stop
+the commands Claude tries, because the [guard](guard.md) cannot check them. Claude
+cannot install it for you: paste the install command of your system (above) in a
+terminal of your own, then open Claude again. The installer keeps the plugin you added
+and puts it on the program's version.
 
 ## Updating
 

@@ -224,6 +224,7 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 			"day":    func(s string) string { return humanDate(l, s, time.Now()) },
 			"fields": fields,
 			"intro":  intro,
+			"repos":  repoList,
 		}
 		out[l] = map[string]*template.Template{}
 		for _, n := range names {
@@ -412,7 +413,8 @@ func (s *Server) ping(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("X-Augmented-Brain", "panel")
+	// No header saying what answers: the proof is how the command knows its panel, and
+	// whatever else on this machine probes the port learns nothing more than a number.
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	_, _ = w.Write([]byte(proof(s.token, c) + "\n"))
 }

@@ -609,13 +609,16 @@ func firstSession(lang string) string {
 		"Fit the examples to what they told you in 1: to someone technical, AWS profiles that reach production and servers by name; to anyone else, " +
 		"things like a live website or a client's files. Why: the guard will stop and ask them before anything that touches those. " +
 		"Save any AWS profiles and hosts with safety_save: they apply on this whole machine, in every space.\n" +
+		"   If they write code, also ask in which of their git repositories you may commit and push on your own, and in which they want to be asked each time. " +
+		"Why: until they say so, the guard stops every commit and push in a repository not on its lists. You cannot add repositories yourself, and safety_save does not take them: " +
+		"note their answer and, at the end, offer to open the panel (run `augmented-brain panel`, or they type /brain:panel), where they add them on its Guard page.\n" +
 		"5. The tools they use (calendar, mail, documents, Jira…). Why: some can be connected to you; if they want, point them to the guide " +
 		"https://icalvete.github.io/augmented-brain/guide/connect-services.html. Now save the profile once with profile_save: name, what they do and their tools in about, " +
 		"answers and autonomy in work_style.\n" +
 		"6. The people they deal with most, and what they call them. Why: so a first name like \"Marcos\" leads to the right person. " +
 		"Save each one with person_save, with their nicknames as aliases.\n\n" +
 		"At the end, show a short summary of what you saved and where, tell them they can change any of it just by asking, " +
-		"and offer two things: to set up the backup of their notes (backup_setup: a private repository, so losing the machine loses nothing), " +
+		"and offer two things (three if they named repositories in 4: the panel's Guard page to add them): to set up the backup of their notes (backup_setup: a private repository, so losing the machine loses nothing), " +
 		"and to open their first task.\n"
 }
 

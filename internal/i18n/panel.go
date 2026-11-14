@@ -278,6 +278,31 @@ var panelMessages = map[string]msg{
 		en: "Going back to a version is only from this computer's panel.",
 		es: "Volver a una versión solo se puede desde el panel de este ordenador.",
 	},
+	// Shown under "the guard's lists:" (hook.guardnotice), after going back to a version.
+	"panel.versions.notice": {
+		en: "a version brought back in the panel also changed: %s",
+		es: "una versión recuperada en el panel también cambió: %s",
+	},
+	"panel.versions.notice.trust.tell": {
+		en: "what the assistant saves on its own (now it saves rules, your profile and the guard's lists without asking, and you are told)",
+		es: "lo que el asistente guarda solo (ahora guarda reglas, tu perfil y las listas del guardia sin preguntar, y se te avisa)",
+	},
+	"panel.versions.notice.trust.ask": {
+		en: "what the assistant saves on its own (now it asks you before it saves a rule, your profile or the guard's lists)",
+		es: "lo que el asistente guarda solo (ahora te pregunta antes de guardar una regla, tu perfil o las listas del guardia)",
+	},
+	"panel.versions.notice.model": {
+		en: "the model you expect to answer (now %s)",
+		es: "el modelo que esperas que conteste (ahora %s)",
+	},
+	"panel.versions.notice.nomodel": {
+		en: "the model you expect to answer (now none: it is not checked)",
+		es: "el modelo que esperas que conteste (ahora ninguno: no se comprueba)",
+	},
+	"panel.versions.notice.remote": {
+		en: "remote access (remote.toml)",
+		es: "el acceso remoto (remote.toml)",
+	},
 	"panel.versions.gone": {
 		en: "That version is no longer kept: reload the page.",
 		es: "Esa versión ya no se guarda: recarga la página.",
@@ -382,9 +407,45 @@ var panelMessages = map[string]msg{
 		en: "Repository folder",
 		es: "Carpeta del repositorio",
 	},
-	"panel.guard.repos": {
-		en: "Repositories in space %s",
-		es: "Repositorios del espacio %s",
+	"panel.guard.add.repo": {
+		en: "Add a repository",
+		es: "Añadir un repositorio",
+	},
+	"panel.guard.add.root": {
+		en: "Add an exception",
+		es: "Añadir una excepción",
+	},
+	"panel.guard.add.profile": {
+		en: "Add a profile",
+		es: "Añadir un perfil",
+	},
+	"panel.guard.add.host": {
+		en: "Add a machine",
+		es: "Añadir una máquina",
+	},
+	"panel.guard.now": {
+		en: "Now:",
+		es: "Ahora:",
+	},
+	"panel.guard.change": {
+		en: "Change",
+		es: "Cambiar",
+	},
+	"panel.guard.more": {
+		en: "What it means",
+		es: "Qué significa",
+	},
+	"panel.guard.protected.see": {
+		en: "See which files",
+		es: "Ver qué ficheros",
+	},
+	"panel.guard.missing": {
+		en: "not on this computer: check how it is written",
+		es: "no está en este ordenador: revisa cómo está escrita",
+	},
+	"panel.f.space": {
+		en: "Space",
+		es: "Espacio",
 	},
 	"panel.guard.allowed": {
 		en: "The assistant may commit and push",

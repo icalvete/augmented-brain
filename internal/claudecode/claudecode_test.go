@@ -98,7 +98,7 @@ func TestMarketplaceIsLocal(t *testing.T) {
 	if strings.Contains(strings.Join(f.calls, "\n"), GitHubMarketplace) {
 		t.Errorf("the plugin still comes from GitHub: %v", f.calls)
 	}
-	for _, name := range []string{".claude-plugin/marketplace.json", "plugin/hooks/hooks.json", "plugin/.mcp.json", "plugin/.claude-plugin/plugin.json", "plugin/commands/panel.md"} {
+	for _, name := range []string{".claude-plugin/marketplace.json", "plugin/hooks/hooks.json", "plugin/hooks/missing.sh", "plugin/.mcp.json", "plugin/.claude-plugin/plugin.json", "plugin/commands/panel.md"} {
 		if _, err := os.Stat(filepath.Join(dir, filepath.FromSlash(name))); err != nil {
 			t.Errorf("%s not written: %v", name, err)
 		}

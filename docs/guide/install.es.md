@@ -18,6 +18,10 @@ llevan de la mano.
 - **El instalador pregunta antes.** El idioma (te propone el del sistema) y, después, cada
   pieza que falte, con para qué sirve. Pulsa Enter para aceptar lo que propone. Para cambiar
   el idioma más tarde, pon `language` en tu [configuración](configuration.es.md#ajustes-de-todo-el-ordenador).
+- **Si ya usas Claude Code**, una instalación nueva te pregunta también dónde actúa
+  augmented brain: en todo el ordenador (por defecto) o solo en sus espacios, dejando tus
+  otros proyectos como estaban. Mira [Fuera de todos los espacios](spaces.es.md#fuera-de-todos-los-espacios).
+  Si no tenías Claude Code antes, no pregunta: actúa en todo el ordenador.
 - **Sin cuenta de GitHub.** El programa se descarga de GitHub sin ella. La copia de
   seguridad sí la usa, u otro servidor de git, y se prepara después: mira
   [Copia de seguridad y restauración](backup.es.md).
@@ -155,6 +159,21 @@ configuración en `%APPDATA%\augmented-brain`; tus notas en
   winget no siempre tiene la última. Pulsa **Update**.
 - Para trabajar sin la app: `cd ~\augmented-brain\trabajo; claude` (el PowerShell de
   Windows no tiene `&&`).
+
+## Solo el plugin, desde Claude Code
+
+augmented brain son dos piezas: un programa en tu ordenador, que hace el trabajo, y un
+plugin de Claude Code, que lo conecta con Claude. El comando de instalación pone las dos.
+Claude Code también puede añadir el plugin por su cuenta, desde su menú de plugins
+(`/plugin`) o con `claude plugin install`, y entonces falta el programa.
+
+En ese caso, cada sesión nueva empieza con un mensaje que dice que falta el programa y el
+comando para instalarlo, y Claude te lo cuenta en tu idioma. Hasta que lo instales no hay
+notas, las herramientas de tareas no funcionan y Claude Code puede parar los comandos que
+intente Claude, porque el [guardia](guard.es.md) no puede revisarlos. Claude no puede
+instalarlo por ti: pega el comando de instalación de tu sistema (arriba) en una terminal
+tuya y vuelve a abrir Claude. El instalador conserva el plugin que añadiste y lo pone en
+la versión del programa.
 
 ## Actualizar
 

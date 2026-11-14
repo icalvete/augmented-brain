@@ -92,7 +92,7 @@
 <ul>
   <li><a href="troubleshooting.html">Troubleshooting</a></li>
   <li><a href="limitations.html">Known limitations</a></li>
-  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog</a></li>
+  <li><a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">Changelog <span class="docnav-version">v0.26.1-beta</span></a></li>
 </ul>
 </details>
 </nav>
@@ -119,7 +119,7 @@
   <p>Paste it into the terminal (<code>Cmd + V</code> on a Mac, <code>Ctrl + Shift + V</code> on Ubuntu, <code>Ctrl + V</code> or a right click on Windows) and press Enter.</p>
   <h2 id="3-answer-the-installer">3. Answer the installer</h2>
   <p>It asks a few questions. To accept what it suggests, just press Enter.</p>
-  <ol><li><strong>The language.</strong> English or Spanish; it suggests your system's. You can change it later in the <a href="configuration.html#settings-for-the-whole-computer">configuration</a>.</li><li><strong>Whatever is missing</strong>, if anything: git (keeps the history of your notes), Claude Code and the Claude desktop app. It tells you what each one is for before installing it. If you already had Claude Code but it is behind, it offers to update it. If Claude Code is missing, it also asks whether you have a paid plan; a no does not stop it.</li><li><strong>Open the Claude app now?</strong> Say yes.</li></ol>
+  <ol><li><strong>The language.</strong> English or Spanish; it suggests your system's. You can change it later in the <a href="configuration.html#settings-for-the-whole-computer">configuration</a>.</li><li><strong>Whatever is missing</strong>, if anything: git (keeps the history of your notes), Claude Code and the Claude desktop app. It tells you what each one is for before installing it. If you already had Claude Code but it is behind, it offers to update it. If Claude Code is missing, it also asks whether you have a paid plan; a no does not stop it.</li><li><strong>Where augmented brain acts</strong>, only if you already had Claude Code: on the whole computer, or only in its spaces, so your other projects stay as they were. Enter keeps the whole computer; <a href="spaces.html#outside-every-space">Outside every space</a> tells the difference, and the panel's Guard page changes it later.</li><li><strong>Open the Claude app now?</strong> Say yes.</li></ol>
   <p>If it asks for your password, type it even though you see nothing: the terminal does not show it, not even as asterisks. Press Enter when done.</p>
   <p>On a Mac, if git is missing, a window opens to install Apple's developer tools. Click <strong>Install</strong> and accept. It takes a few minutes; the installer waits and carries on by itself.</p>
   <p>On Windows there is no password to type: when Git is installed, Windows shows a window asking for permission. Click <strong>Yes</strong>.</p>
@@ -130,7 +130,7 @@
   <p><strong>If Claude asks whether you trust the folder, say yes.</strong> Claude Code asks this the first time it opens in a folder, before loading anything: until you say yes, augmented brain cannot load your notes.</p>
   <p>No desktop app (on Linux without <code>apt</code>, or if you said no)? The installer offers to open Claude in the terminal instead, in your work space. Next times: <code>cd ~/augmented-brain/work &amp;&amp; claude</code>, or the <code>personal</code> folder for the other space.</p>
   <h2 id="5-answer-the-interview">5. Answer the interview</h2>
-  <p>The first time, Claude introduces itself and asks six questions, one at a time, telling you what each one is for: who you are, what you look after, how you want answers, what must not be touched, which tools you use and who you work with. You can skip any of them.</p>
+  <p>The first time, Claude introduces itself and asks six questions, one at a time, telling you what each one is for: who you are, what you look after, how you want answers, what must not be touched, which tools you use and who you work with. You can skip any of them. If you write code, it also asks in which repositories it may commit: you add them yourself, on the panel's Guard page, and Claude offers to open it.</p>
   <p>At the end it shows what it saved and offers to set up the backup. Say yes: your notes go to a private repository of yours, and losing the computer loses nothing. It needs a GitHub account; without one, say no for now and ask “set up the backup” whenever you have it. <a href="backup.html">Backup and restore</a> tells the rest, other git servers included.</p>
   <h2 id="your-first-week">Your first week</h2>
   <p>Talk to it as usual. These phrases pay off from day one:</p>

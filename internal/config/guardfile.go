@@ -44,41 +44,99 @@ func (g Guard) OnlySpaces() bool { return g.Reach == ReachSpaces }
 // LoadGuard reads guard.toml in the configuration folder. A missing file is an empty
 // Guard; a file that cannot be read is an error, so the caller can say so.
 func LoadGuard(cfgDir string) (Guard, error) {
-	var g Guard
 	path := filepath.Join(cfgDir, GuardFile)
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		return g, nil
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return Guard{}, nil
 	}
-	if _, err := toml.DecodeFile(path, &g); err != nil {
+	if err != nil {
 		return Guard{}, fmt.Errorf("%s: %w", path, err)
+	}
+	g, err := parseGuard(string(data))
+	if err != nil {
+		return Guard{}, fmt.Errorf("%s: %w", path, err)
+	}
+	return g, nil
+}
+
+// parseGuard reads the text of guard.toml with every check LoadGuard makes.
+func parseGuard(text string) (Guard, error) {
+	var g Guard
+	if _, err := toml.Decode(text, &g); err != nil {
+		return Guard{}, err
 	}
 	g.UntouchableRepos = unique(g.UntouchableRepos)
 	if err := absAll(g.UntouchableRepos); err != nil { // as the lists of config.toml: absolute, ~ expanded
-		return Guard{}, fmt.Errorf("%s: %w", path, err)
+		return Guard{}, err
 	}
 	switch g.Reach {
 	case "", ReachMachine, ReachSpaces:
 	default:
 		// Unknown: the guard cannot tell how far it should act, so it reads the file
 		// as broken and asks, rather than guess either way.
-		return Guard{}, fmt.Errorf("%s: reach = %q: it must be %q or %q", path, g.Reach, ReachMachine, ReachSpaces)
+		return Guard{}, fmt.Errorf("reach = %q: it must be %q or %q", g.Reach, ReachMachine, ReachSpaces)
 	}
 	return g, nil
 }
 
-// SaveGuard writes guard.toml (0600, replacing the file in one step).
+// SaveGuard writes the settings of g into guard.toml (0600, replacing the file in one
+// step). An existing file is changed one setting at a time, as config.toml is: the
+// user's comments and any setting this program does not know (one a newer program
+// wrote, say) stay as they were, so a panel left open from before an update never
+// takes away a protection it cannot see. The setting changed is written whole again
+// (a comment inside its list goes). The result is loaded back before it stays.
 func SaveGuard(cfgDir string, g Guard) error {
-	var b strings.Builder
-	b.WriteString("# What the guard never allows. The panel's Guard page writes this file.\n")
-	b.WriteString("# untouchable_repos: no commit, push or merge there, whatever the other lists say.\n")
-	b.WriteString("untouchable_repos = [\n")
-	for _, r := range tildeAll(unique(g.UntouchableRepos)) {
-		b.WriteString("  " + fmt.Sprintf("%q", r) + ",\n")
-	}
-	b.WriteString("]\n")
+	path := filepath.Join(cfgDir, GuardFile)
+	repos := guardReposLines(g.UntouchableRepos)
+	reach := ""
 	if g.Reach != "" {
-		b.WriteString("# reach: \"machine\" acts in every Claude Code session; \"spaces\" only in the spaces' folders.\n")
-		b.WriteString("reach = " + fmt.Sprintf("%q", g.Reach) + "\n")
+		reach = "reach = " + fmt.Sprintf("%q", g.Reach)
 	}
-	return paths.WriteAtomic(filepath.Join(cfgDir, GuardFile), []byte(b.String()), 0o600)
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		var b strings.Builder
+		b.WriteString("# What the guard never allows. The panel's Guard page writes this file.\n")
+		b.WriteString(reposComment + "\n")
+		b.WriteString(strings.Join(repos, "\n") + "\n")
+		if reach != "" {
+			b.WriteString(reachComment + "\n" + reach + "\n")
+		}
+		return saveGuardText(path, b.String())
+	}
+	if err != nil {
+		return err
+	}
+	f := &lineEditor{dir: cfgDir, path: path, old: string(data), lines: strings.Split(string(data), "\n"),
+		check: func(text string) error { _, err := parseGuard(text); return err }}
+	f.setTop("untouchable_repos", repos, reposComment)
+	if reach == "" {
+		f.setTop("reach", nil, "")
+	} else {
+		f.setTop("reach", []string{reach}, reachComment)
+	}
+	return saveGuardText(path, strings.Join(f.lines, "\n"))
+}
+
+// The lines that explain each setting, written with it.
+const (
+	reposComment = "# untouchable_repos: no commit, push or merge there, whatever the other lists say."
+	reachComment = "# reach: \"machine\" acts in every Claude Code session; \"spaces\" only in the spaces' folders."
+)
+
+// guardReposLines is untouchable_repos as the file keeps it: one repository a line.
+func guardReposLines(repos []string) []string {
+	out := []string{"untouchable_repos = ["}
+	for _, r := range tildeAll(unique(repos)) {
+		out = append(out, "  "+fmt.Sprintf("%q", r)+",")
+	}
+	return append(out, "]")
+}
+
+// saveGuardText checks that text loads as guard.toml and only then replaces the file:
+// the guard reads it at every command.
+func saveGuardText(path, text string) error {
+	if _, err := parseGuard(text); err != nil {
+		return fmt.Errorf("%s: %w", path, err)
+	}
+	return paths.WriteAtomic(path, []byte(text), 0o600)
 }

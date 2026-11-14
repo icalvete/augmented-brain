@@ -19,12 +19,14 @@ import (
 	"github.com/icalvete/augmented-brain/internal/version"
 )
 
-// The Help page: links to the website's answers, and a problem report or an idea for
-// GitHub, written here first. Nothing leaves the computer until the person clicks the
-// link to GitHub, and then only the text they see on the page, as they left it.
+// The Help page: links to the website's answers, and links to GitHub's forms for a
+// problem or an idea. Nothing leaves the computer until the person clicks one: the
+// idea link opens its empty form; the problem link runs the health check then and
+// opens the problem form with it filled in, redacted, for the person to read and
+// change on GitHub before sending anything.
 
-// maxIssueURL is the longest address the page builds for GitHub's "new issue": GitHub
-// refuses much longer ones (about 8 KB). web/static/app.js keeps to the same length.
+// maxIssueURL is the longest address the panel builds for GitHub's "new issue": GitHub
+// refuses much longer ones (about 8 KB), so the health check is cut to fit.
 const maxIssueURL = 8000
 
 // maxCheckText is how much of each check of the health report goes into a report.

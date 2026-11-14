@@ -38,6 +38,7 @@ row here with the test that covers it.
 | Windows: PowerShell's policy, no winget | by hand | Windows VM rehearsal |
 | The installer's Spanish on Windows | `cmd` `TestInstallPs1IsASCII` | Go |
 | The plugin comes from the program, never from GitHub's `main`: written to the configuration folder with this version's hooks, an installation that follows GitHub moved there on update (plugin and data kept), the folder gone on uninstall | `internal/claudecode` `TestMarketplaceIsLocal`, `TestFilesAreTheRepositorys`, `TestWriteLocal`, `TestUpdate`, `TestUninstall`; `install-check.sh` steps 3, 4 and 8, `install-check.ps1`; `test/rehearsal/checks.py` | Go, CI, rehearsal |
+| The plugin added from Claude Code without the program: the session start says so and gives the install command (English and Spanish), the other hooks end quietly, a program that fails keeps its exit code, the guard still fails closed | `cmd` `TestHooksWithoutTheProgram`; on 14-nov, a real Claude Code 2.1.322 isolated, plugin from GitHub with `claude plugin install`, no program: the nine start hooks failed with `not found` before, part 1 told it after; `init` over it moved the plugin to the program's copy. What Claude does with commands then (PreToolUse without the program) is not tried yet: it needs a logged-in Claude | Go; by hand |
 | The hooks find the program in `~/.local/bin` before the inherited PATH; on Windows the MCP server keeps the user's PATH | `internal/claudecode` `TestInstallFolderFirst`, `TestMCPOnWindows`; the MCP server connects in `install-check.ps1` | Go, CI: Windows |
 
 ## Commands
@@ -68,6 +69,7 @@ row here with the test that covers it.
 | `mcp` | `internal/mcpserver` |
 | `hook` | `internal/hook` (34 tests), `test/rehearsal/checks.py` |
 | `version`, `help`, nothing, an unknown command, extra words | `cmd` `TestNoArguments`, `TestExtraWordsAreRefused`, `TestUsageListsEveryCommand` |
+| `help <command>` and `--help` after each command, with no configuration | `cmd` `TestEveryCommandHasHelp`, `TestHelpAsked`, `TestWantsHelp`, `TestHelpLayout` |
 | Every command and flag documented | `cmd` `TestCommandsDocumented` |
 
 ## The guard
@@ -77,6 +79,7 @@ row here with the test that covers it.
 | What it stops: push, root, secrets, production, untouchable hosts and repositories | `internal/guard` (one test file per subject), `internal/hook` `TestPreToolUse`; `checks.py` | Go, rehearsal |
 | A panel address however the host is written; a bare `*` only in the configuration folder | `internal/guard` `TestPanelAccessShapes`, `TestPanelAccessBareNames`; `testdata/innocent-commands.txt` | Go |
 | `reach = "spaces"`: outside the spaces only its own files and what the lists name; a line that reaches into a space is read whole; every pinned row in both modes; hooks quiet outside; unaccepted reach counts as the whole machine; the Guard page and doctor | `internal/guard` `TestOutsideVerdicts`, `TestOutsideWrite`, `TestOutsideEveryRule`, `checkOutside` (every `checkPinned` row); `internal/hook` `TestOutsideIsQuiet`, `TestOutsideGuard`, `TestOutsideNeedsTheSeal`; `internal/reach`; `internal/panel` `TestGuardPageReach`; `internal/doctor` `TestGuardFileChecks` | Go |
+| The installer asks where augmented brain acts only when Claude Code was already there; `AB_REACH`, `AB_YES` and Enter; `init --reach` only the first time, sealed | `cmd` `TestInitReach`, `TestInitReachRefused`; `install-check.sh` (the question through a pseudo-terminal, Linux), `install-check.ps1` (`AB_REACH`; the question itself only by hand on Windows) | Go, CI |
 | The seal: kept on compaction, /clear, resume and fork; one that cannot be read asks | `internal/hook` `TestSessionStartCompactKeepsAsking`, `TestSealUnreadableAsks` | Go |
 | What it must let through: everyday commands, in the shapes of real sessions (reading git, `sh -n`, `go test`, `gh pr checks`, pipelines, heredocs, loops, `$((…))`) | `internal/hook` `TestInnocentCommands`, over `internal/hook/testdata/innocent-commands.txt` | Go, every pull request |
 

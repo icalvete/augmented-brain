@@ -241,7 +241,7 @@ func Alive(i Info) bool {
 	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 256))
-	return resp.StatusCode == http.StatusOK && resp.Header.Get("X-Augmented-Brain") == "panel" &&
+	return resp.StatusCode == http.StatusOK &&
 		hmac.Equal([]byte(strings.TrimSpace(string(body))), []byte(proof(i.Token, c)))
 }
 

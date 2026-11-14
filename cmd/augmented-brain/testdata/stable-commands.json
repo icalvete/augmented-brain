@@ -12,6 +12,7 @@
   "config history": [],
   "config restore": [],
   "doctor": [],
+  "help": [],
   "hook": [
     "event post-compact",
     "event pre-tool-use",
@@ -30,6 +31,7 @@
     "language",
     "memory",
     "no-plugin",
+    "reach",
     "space",
     "work",
     "yes"

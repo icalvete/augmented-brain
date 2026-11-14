@@ -77,7 +77,11 @@ Te hace unas pocas preguntas. Para aceptar lo que te propone, basta con pulsar E
    y la app de escritorio de Claude. Te dice para qué es cada cosa antes de instalarla. Si
    ya tenías Claude Code pero está atrasado, te ofrece actualizarlo. Si falta Claude Code,
    también te pregunta si tienes un plan de pago; un no no lo para.
-3. **¿Abro ahora la app de Claude?** Di que sí.
+3. **Dónde actúa augmented brain**, solo si ya tenías Claude Code: en todo el ordenador,
+   o solo en sus espacios, para que tus otros proyectos sigan como estaban. Enter deja
+   todo el ordenador; [Fuera de todos los espacios](spaces.es.md#fuera-de-todos-los-espacios)
+   cuenta la diferencia, y la página Guardia del panel lo cambia después.
+4. **¿Abro ahora la app de Claude?** Di que sí.
 
 Si te pide la contraseña, escríbela aunque no veas nada: la terminal no la enseña, ni
 siquiera con asteriscos. Pulsa Enter al acabar.
@@ -112,7 +116,9 @@ abrir Claude en la terminal, en tu espacio de trabajo. Las próximas veces:
 
 La primera vez, Claude se presenta y te hace seis preguntas, una cada vez, diciéndote
 para qué sirve cada una: quién eres, qué cuidas, cómo quieres las respuestas, qué no se
-toca, qué herramientas usas y con quién trabajas. Puedes saltarte cualquiera.
+toca, qué herramientas usas y con quién trabajas. Puedes saltarte cualquiera. Si
+programas, también te pregunta en qué repositorios puede hacer commit: los añades tú, en la
+página Guardia del panel, y Claude se ofrece a abrírtela.
 
 Al final te enseña lo que ha guardado y te ofrece configurar la copia de seguridad. Dile que
 sí: tus notas quedan en un repositorio privado tuyo, y si pierdes el ordenador no pierdes

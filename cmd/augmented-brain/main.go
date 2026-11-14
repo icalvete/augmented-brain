@@ -53,6 +53,13 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprintf(errOut, "%s\n\n%s", i18n.T(l, "usage.unknown", args[0]), i18n.T(l, "usage"))
 		return 2
 	}
+	// `panel stop --help` prints the command's help: nothing runs, and no configuration
+	// is needed.
+	if wantsHelp(rest) {
+		name, _ := helpName(append(strings.Fields(c.name), rest...))
+		fmt.Fprint(out, commandHelp(userLanguage(), name))
+		return 0
+	}
 	if !keepsHistory(c.name) {
 		return c.run(rest, in, out, errOut)
 	}

@@ -31,13 +31,15 @@ var (
 	reWiki     = regexp.MustCompile(`\[\[([^\[\]|\x00]+?)(?:\|([^\[\]]+?))?\]\]`)
 	// Neither a link's address nor a bare address can take in a token (\x00): what a
 	// token stands for is finished HTML, which must never land inside an attribute.
-	reLink      = regexp.MustCompile(`\[([^\[\]]+)\]\(([^()\s\x00]+)\)`)
-	reURL       = regexp.MustCompile(`https?://(?:[^\s<>()"'&\x00]|&amp;)*[^\s<>()"'&.,;:!?\x00]`)
-	reBold      = regexp.MustCompile(`\*\*([^*]+?)\*\*`)
-	reItalic    = regexp.MustCompile(`(^|[^*\w])\*([^*\s][^*]*?)\*`)
-	reStrike    = regexp.MustCompile(`~~([^~]+?)~~`)
-	reToken     = regexp.MustCompile("\x00(\\d+)\x00")
-	reSafeHref  = regexp.MustCompile(`^(https?://|/|#)`)
+	reLink   = regexp.MustCompile(`\[([^\[\]]+)\]\(([^()\s\x00]+)\)`)
+	reURL    = regexp.MustCompile(`https?://(?:[^\s<>()"'&\x00]|&amp;)*[^\s<>()"'&.,;:!?\x00]`)
+	reBold   = regexp.MustCompile(`\*\*([^*]+?)\*\*`)
+	reItalic = regexp.MustCompile(`(^|[^*\w])\*([^*\s][^*]*?)\*`)
+	reStrike = regexp.MustCompile(`~~([^~]+?)~~`)
+	reToken  = regexp.MustCompile("\x00(\\d+)\x00")
+	// A path of this site, never "//host" or "/\host", which browsers read as another
+	// site (and they drop tabs and newlines first, so no control character either).
+	reSafeHref  = regexp.MustCompile(`^(https?://|/(?:[^/\\]|$)|#)[^\x00-\x1f\x7f]*$`)
 	reTaskCheck = regexp.MustCompile(`^\[([ xX])\]\s+`)
 )
 
@@ -269,7 +271,7 @@ func (r *mdRenderer) inline(s string) string {
 	t = reLink.ReplaceAllStringFunc(t, func(m string) string {
 		g := reLink.FindStringSubmatch(m)
 		href := html.UnescapeString(g[2])
-		if !reSafeHref.MatchString(href) || strings.ContainsRune(href, 0) {
+		if !reSafeHref.MatchString(href) {
 			return m
 		}
 		return hold(`<a href="` + html.EscapeString(href) + `" rel="noreferrer noopener">` + marks(g[1]) + `</a>`)
