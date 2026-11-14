@@ -1,7 +1,6 @@
 package brain
 
 import (
-	"errors"
 	"slices"
 	"strings"
 
@@ -38,7 +37,7 @@ func (b *Brain) SavePerson(in PersonInput) (*memory.Note, error) {
 func (b *Brain) buildPerson(in PersonInput, id, newTitle string) (*memory.Note, error) {
 	name := strings.TrimSpace(in.Name)
 	if name == "" {
-		return nil, errors.New("a person needs a name")
+		return nil, i18n.Errorf("err.person.name")
 	}
 	var old *memory.Note
 	byAlias := false

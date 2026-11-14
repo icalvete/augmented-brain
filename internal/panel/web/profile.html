@@ -3,17 +3,18 @@
 {{template "intro" (intro $ "profile" (tf "profile.hint" .Path))}}
 <form method="post" action="{{$.Base}}/profile" class="stack box">
   {{template "fields" (fields $)}}
-  <label>{{t "f.name"}} <input name="name" value="{{.P.Name}}" required maxlength="200"></label>
-  <label>{{t "f.about"}} <textarea name="about" rows="6" maxlength="8000">{{.P.About}}</textarea></label>
-  <label>{{t "f.style"}} <textarea name="work_style" rows="6" maxlength="8000">{{.P.WorkStyle}}</textarea></label>
+  <label>{{t "f.name"}} <input name="name" value="{{$.Val "/profile" "name" .P.Name}}" required maxlength="200"></label>
+  <label>{{t "f.about"}} <textarea name="about" rows="6" maxlength="8000">{{$.Val "/profile" "about" .P.About}}</textarea></label>
+  <label>{{t "f.style"}} <textarea name="work_style" rows="6" maxlength="8000">{{$.Val "/profile" "work_style" .P.WorkStyle}}</textarea></label>
   <p class="hint">{{t "profile.lines"}}</p>
   <h2>{{t "profile.assistant"}}</h2>
   <p class="hint">{{t "profile.assistant.hint"}}</p>
-  <label>{{t "f.assistant"}} <input name="assistant" value="{{.P.Assistant}}" maxlength="80"></label>
-  <label>{{t "f.personality"}} <textarea name="personality" rows="4" maxlength="2000">{{.P.Personality}}</textarea></label>
+  <label>{{t "f.assistant"}} <input name="assistant" value="{{$.Val "/profile" "assistant" .P.Assistant}}" maxlength="80"></label>
+  <label>{{t "f.personality"}} <textarea name="personality" rows="4" maxlength="2000">{{$.Val "/profile" "personality" .P.Personality}}</textarea></label>
   {{if .Signature}}<p class="hint">{{t "profile.signature"}}</p>
   <pre class="signature">{{.P.Assistant}}
 {{.Signature}}</pre>{{end}}
+  {{template "ferr" ($.FormErr "/profile")}}
   <button type="submit">{{t "save"}}</button>
 </form>
 {{end}}{{end}}

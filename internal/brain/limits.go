@@ -1,10 +1,11 @@
 package brain
 
 import (
-	"fmt"
 	"strings"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/icalvete/augmented-brain/internal/i18n"
 
 	"github.com/icalvete/augmented-brain/internal/memory"
 )
@@ -28,14 +29,14 @@ const (
 
 // Where the text that does not fit goes, said in every error about a long field.
 const (
-	longOneLine = "keep it to one line here, and put the rest in the note's body or, for a task, in its journal (task_journal) or a file under docs/<task>/ that the journal names"
-	longText    = "put the long text in a file under docs/<task>/ in the notes folder, and write here a line that names it"
+	longOneLine i18n.Word = "err.toolong.oneline"
+	longText    i18n.Word = "err.toolong.text"
 )
 
 // tooLong is the error for a field longer than max characters; nil when it fits.
-func tooLong(what, text string, max int, where string) error {
+func tooLong(what i18n.Word, text string, max int, where i18n.Word) error {
 	if n := utf8.RuneCountInString(text); n > max {
-		return fmt.Errorf("nothing was saved: the %s is %d characters long, and the most is %d; %s", what, n, max, where)
+		return i18n.Errorf("err.toolong", what, n, max, where)
 	}
 	return nil
 }
@@ -51,14 +52,14 @@ func checkHeader(n, old *memory.Note) error {
 	}
 	h := &n.Header
 	for _, f := range []struct {
-		what     string
+		what     i18n.Word
 		now, was string
 		max      int
 	}{
-		{"title", h.Title, was.Title, maxTitle},
-		{"summary", h.Summary, was.Summary, maxSummary},
-		{"next step", h.Next, was.Next, maxNext},
-		{"waiting_on", h.WaitingOn, was.WaitingOn, maxWaitingOn},
+		{"err.what.title", h.Title, was.Title, maxTitle},
+		{"err.what.summary", h.Summary, was.Summary, maxSummary},
+		{"err.what.next", h.Next, was.Next, maxNext},
+		{"err.what.waiting", h.WaitingOn, was.WaitingOn, maxWaitingOn},
 	} {
 		if f.now == f.was {
 			continue
@@ -69,13 +70,13 @@ func checkHeader(n, old *memory.Note) error {
 	}
 	for _, w := range h.Watch {
 		if !hasWatch(was.Watch, w) {
-			if err := tooLong("watch date's what", w.What, maxWatchWhat, longOneLine); err != nil {
+			if err := tooLong("err.what.watch", w.What, maxWatchWhat, longOneLine); err != nil {
 				return err
 			}
 		}
 	}
 	if old == nil || len(n.Body) > len(old.Body) {
-		if err := tooLong("note", n.Body, maxBody, longText); err != nil {
+		if err := tooLong("err.what.note", n.Body, maxBody, longText); err != nil {
 			return err
 		}
 	}

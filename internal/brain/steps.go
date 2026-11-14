@@ -1,7 +1,6 @@
 package brain
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -30,17 +29,17 @@ type StepInput struct {
 // the only step that contains it, ignoring case).
 func findStep(steps []memory.Step, number int, text string) (memory.Step, error) {
 	if len(steps) == 0 {
-		return memory.Step{}, errors.New("this task has no steps: they are the checkboxes (- [ ] text) of its Plan")
+		return memory.Step{}, i18n.Errorf("err.step.none")
 	}
 	if number != 0 {
 		if number < 1 || number > len(steps) {
-			return memory.Step{}, fmt.Errorf("there is no step %d: the plan has %d", number, len(steps))
+			return memory.Step{}, i18n.Errorf("err.step.number", number, len(steps))
 		}
 		return steps[number-1], nil
 	}
 	text = strings.TrimSpace(text)
 	if text == "" {
-		return memory.Step{}, errors.New("say which step: its number or its text")
+		return memory.Step{}, i18n.Errorf("err.step.which")
 	}
 	var found []memory.Step
 	for _, s := range steps {
@@ -55,13 +54,13 @@ func findStep(steps []memory.Step, number int, text string) (memory.Step, error)
 	case 1:
 		return found[0], nil
 	case 0:
-		return memory.Step{}, fmt.Errorf("no step says %q", text)
+		return memory.Step{}, i18n.Errorf("err.step.notext", text)
 	}
 	var n []string
 	for _, s := range found {
 		n = append(n, fmt.Sprintf("%d (%s)", s.N, s.Text))
 	}
-	return memory.Step{}, fmt.Errorf("%q matches several steps: %s; give its number", text, strings.Join(n, ", "))
+	return memory.Step{}, i18n.Errorf("err.step.several", text, strings.Join(n, ", "))
 }
 
 // Step ticks or unticks a step of a task's Plan. A change writes one short line in the
@@ -100,7 +99,7 @@ func (b *Brain) Step(in StepInput) (*memory.Note, error) {
 func (b *Brain) AddStep(id, text string) (*memory.Note, error) {
 	text = memory.OneLine(text)
 	if text == "" {
-		return nil, errors.New("the step is empty")
+		return nil, i18n.Errorf("err.step.empty")
 	}
 	n, err := b.Task(id)
 	if err != nil {

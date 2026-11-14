@@ -3,8 +3,10 @@
 {{template "intro" (intro $ "inbox" (t "inbox.hint"))}}
 <form method="post" action="{{$.Base}}/inbox/capture" class="stack box">
   {{template "fields" (fields $)}}
-  <label>{{t "f.capture"}} <input name="text" required maxlength="1000"></label>
-  <label>{{t "f.remind"}} <input type="date" name="remind_on"></label>
+  <label>{{t "f.capture"}} <input name="text" required maxlength="1000" value="{{$.Val "/inbox/capture" "text" ""}}"></label>
+  <label>{{t "f.remind"}} <input type="date" name="remind_on" value="{{$.Val "/inbox/capture" "remind_on" ""}}"></label>
+  {{template "ferr" ($.Err "/inbox/capture" "remind_on")}}
+  {{template "ferr" ($.FormErr "/inbox/capture")}}
   <button type="submit">{{t "capture"}}</button>
 </form>
 {{if .Entries}}<ul class="cards">

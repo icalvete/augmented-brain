@@ -49,7 +49,8 @@ que se ejecuta, así que un cambio vale al momento.
 Van arriba, antes de cualquier encabezado `[spaces.…]`.
 
 - `language`: el idioma en el que te habla el programa, `en` o `es`: sus mensajes y los
-  motivos del guardia. Por defecto, `en`.
+  motivos del guardia. Por defecto, `en`. Lo pregunta el instalador; cámbialo aquí cuando
+  quieras. Cuenta al momento. Las carpetas y notas ya creadas no cambian de nombre ni de idioma.
 - `default_space`: el espacio que se usa fuera de todas las carpetas de trabajo, como la
   carpeta provisional en la que la app de escritorio abre una sesión nueva. Su copia de
   seguridad lleva tu perfil y las notas compartidas. Es opcional; con dos espacios o más,

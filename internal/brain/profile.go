@@ -47,10 +47,13 @@ func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
 	// heading of its own into the profile, which every session reads.
 	name, assistant := memory.OneLine(in.Name), memory.OneLine(in.Assistant)
 	if name == "" {
-		return nil, errors.New("the profile needs the user's name")
+		return nil, i18n.Errorf("err.profile.name")
 	}
-	for _, f := range []struct{ what, text string }{{"user's name", name}, {"assistant's name", assistant}} {
-		if err := tooLong(f.what, f.text, maxName, "a name goes here; the rest goes in about or in the personality"); err != nil {
+	for _, f := range []struct {
+		what i18n.Word
+		text string
+	}{{"err.what.username", name}, {"err.what.assistant", assistant}} {
+		if err := tooLong(f.what, f.text, maxName, "err.toolong.name"); err != nil {
 			return nil, err
 		}
 	}
@@ -102,7 +105,7 @@ func (b *Brain) SaveProfile(in ProfileInput) (*memory.Note, error) {
 			Created: created, Updated: b.today()},
 		Body: body.String(),
 	}
-	if err := tooLong("profile", n.Body, maxProfile, "keep in the profile who the user is and how they like to work, and put the rest in knowledge notes (knowledge_new)"); err != nil {
+	if err := tooLong("err.what.profile", n.Body, maxProfile, "err.toolong.profile"); err != nil {
 		return nil, err
 	}
 	if what := guard.FindSecret(n.Body); what != "" {
