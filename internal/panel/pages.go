@@ -57,6 +57,7 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /watch/done", s.write(s.watchDone))
 	m.HandleFunc("POST /inbox/capture", s.write(s.capture))
 	m.HandleFunc("POST /inbox/done", s.write(s.inboxDone))
+	m.HandleFunc("POST /inbox/edit", s.write(s.inboxEdit))
 	m.HandleFunc("POST /area/new", s.write(s.areaNew))
 	m.HandleFunc("POST /area/update", s.write(s.areaUpdate))
 	m.HandleFunc("POST /person", s.write(s.personSave))

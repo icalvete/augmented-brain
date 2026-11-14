@@ -776,26 +776,9 @@ func (b *Brain) open(c *config.Config, s *config.Space) (*Brain, error) {
 }
 
 func (b *Brain) capture(text, remind, from string) error {
-	text = memory.OneLine(text)
-	if text == "" {
-		return i18n.Errorf("err.capture.empty")
-	}
-	if err := tooLong("err.what.capture", text, maxCapture, longText); err != nil {
+	text, err := b.captureText(text, remind, from)
+	if err != nil {
 		return err
-	}
-	if from != "" {
-		text += fromMark(from)
-	} else {
-		text = b.ownWords(text, true)
-	}
-	if remind != "" {
-		if err := checkDate(remind); err != nil {
-			return err
-		}
-		text += " (remind: " + remind + ")"
-	}
-	if what := guard.FindSecret(text); what != "" {
-		return secretError(what)
 	}
 	// The inbox is small: it is written whole, so a crash never leaves half a line, and
 	// a last line with no newline (written by hand) keeps the capture on a line of its own.
@@ -808,6 +791,33 @@ func (b *Brain) capture(text, remind, from string) error {
 	}
 	data = append(data, memory.DatedLine(b.today(), text)...)
 	return paths.WriteAtomicNoLink(b.inboxPath(), data, 0o600)
+}
+
+// captureText is what an inbox line holds after its date: the text, the origin of a
+// capture sent from another space and the reminder, checked.
+func (b *Brain) captureText(text, remind, from string) (string, error) {
+	text = memory.OneLine(text)
+	if text == "" {
+		return "", i18n.Errorf("err.capture.empty")
+	}
+	if err := tooLong("err.what.capture", text, maxCapture, longText); err != nil {
+		return "", err
+	}
+	if from != "" {
+		text += fromMark(from)
+	} else {
+		text = b.ownWords(text, true)
+	}
+	if remind != "" {
+		if err := checkDate(remind); err != nil {
+			return "", err
+		}
+		text += " (remind: " + remind + ")"
+	}
+	if what := guard.FindSecret(text); what != "" {
+		return "", secretError(what)
+	}
+	return text, nil
 }
 
 // NewArea creates an area: a responsibility with no end date.

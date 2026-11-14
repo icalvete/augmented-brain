@@ -1184,6 +1184,10 @@ var panelMessages = map[string]msg{
 		en: "Written down in the inbox.",
 		es: "Apuntado en el buzón.",
 	},
+	"panel.ok.inbox.edit": {
+		en: "Capture corrected.",
+		es: "Apunte corregido.",
+	},
 	"panel.ok.inbox.done": {
 		en: "Taken out of the inbox.",
 		es: "Sacado del buzón.",
@@ -1587,6 +1591,14 @@ var panelMessages = map[string]msg{
 	"panel.inbox.hint": {
 		en: "The weekly review goes through the inbox: each capture becomes a task or knowledge, or is dropped. Make one a task here, or mark it as dealt with when it is.",
 		es: "La revisión semanal repasa el buzón: cada apunte se convierte en tarea o en conocimiento, o se descarta. Aquí puedes convertirlo en tarea, o marcarlo como resuelto cuando lo esté.",
+	},
+	"panel.inbox.edit": {
+		en: "Correct",
+		es: "Corregir",
+	},
+	"panel.inbox.edit.hint": {
+		en: "Its date stays, and so does the space it came from. Leave the reminder empty to remove it.",
+		es: "Su fecha se queda, y también el espacio del que vino. Deja el recordatorio vacío para quitarlo.",
 	},
 	"panel.inbox.done": {
 		en: "Dealt with",

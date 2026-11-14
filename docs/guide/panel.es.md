@@ -120,7 +120,8 @@ de ninguna tarea es una captura con fecha: se crea en el [Buzón](#buzón).
 ## Buzón
 
 Apunta una idea, con una fecha para que te la recuerde si quieres. Márcala como resuelta,
-o conviértela en tarea.
+o conviértela en tarea. **Corregir** cambia el texto de un apunte o su recordatorio (vacío
+lo quita); su fecha se queda, y también el espacio del que vino.
 
 ## Revisión semanal
 

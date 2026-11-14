@@ -161,7 +161,7 @@ func TestSavedSaysWhat(t *testing.T) {
 func TestSavedMessages(t *testing.T) {
 	s, _ := fixture(t, "en")
 	for _, p := range []string{"task/new", "task/update", "task/journal", "task/park", "task/close", "task/step", "watch/add", "watch/done",
-		"inbox/capture", "inbox/done", "area/new", "area/update", "person", "person/card", "secret", "secret/forget",
+		"inbox/capture", "inbox/done", "inbox/edit", "area/new", "area/update", "person", "person/card", "secret", "secret/forget",
 		"review/capture", "review/task", "review/done", "profile", "session/recover", "session/reviewed", "session/delete",
 		"repo/describe", "guard/list/add", "guard/list/remove", "guard/root/add", "guard/root/remove", "guard/accept",
 		"guard/model", "guard/trust", "versions/restore", "backup/run", "backup/setup"} {
