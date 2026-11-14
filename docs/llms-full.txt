@@ -2331,9 +2331,12 @@ both fields empty for no name and no personality.
 
 ## Search and reading notes
 
-The **search** box at the side looks through the notes of the space and the shared ones:
-titles, summaries and text. A note shows up when it holds every word, in any case, with
-accents or without.
+The **search** box at the side looks through the notes of every space and the shared
+ones (titles, summaries and text), each space's inbox, and the journals moved out of long
+tasks into `archive/journals/`. Something shows up when it holds every word, in any case,
+with accents or without, and the words are marked. A result from another space says which
+space; one from an archived journal leads to its task. What matches in its title comes
+first, then what is in the space you are in.
 
 Notes read as text, not as raw Markdown (the plain-text format notes are
 written in): headings, lists, tables, code and links. A

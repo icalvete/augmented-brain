@@ -207,8 +207,8 @@ var panelMessages = map[string]msg{
 		es: "Una nota de tu memoria: un fichero Markdown en tu carpeta de notas, tuyo. Tu asistente la lee cuando el trabajo la necesita.",
 	},
 	"panel.search.intro": {
-		en: "Looks for words in every note of this space and in the shared ones: tasks, areas, knowledge, rules and people.",
-		es: "Busca palabras en todas las notas de este espacio y en las compartidas: tareas, áreas, conocimiento, reglas y personas.",
+		en: "Looks for words in every note of every space and in the shared ones (tasks, areas, knowledge, rules and people), in each inbox and in the journals archived from tasks. What it found is marked.",
+		es: "Busca palabras en todas las notas de todos los espacios y en las compartidas (tareas, áreas, conocimiento, reglas y personas), en cada buzón y en los diarios archivados de las tareas. Lo encontrado sale resaltado.",
 	},
 	"panel.space.intro": {
 		en: "Whether this space is well: its notes can be read, its index is up to date, its backup works and the weekly review is not overdue. Red means something to fix, with how.",
@@ -880,17 +880,33 @@ var panelMessages = map[string]msg{
 		en: "Search",
 		es: "Buscar",
 	},
-	"panel.search.found": {
-		en: "%d notes hold every word.",
-		es: "%d notas tienen todas las palabras.",
+	"panel.search.found.1": {
+		en: "1 result holds every word.",
+		es: "1 resultado tiene todas las palabras.",
+	},
+	"panel.search.found.n": {
+		en: "%d results hold every word.",
+		es: "%d resultados tienen todas las palabras.",
 	},
 	"panel.search.more": {
 		en: "And %d more: add a word to narrow it.",
 		es: "Y %d más: añade una palabra para afinar.",
 	},
 	"panel.search.none": {
-		en: "No note holds every word.",
-		es: "Ninguna nota tiene todas las palabras.",
+		en: "Nothing holds every word.",
+		es: "Nada tiene todas las palabras.",
+	},
+	"panel.search.kind.inbox": {
+		en: "inbox",
+		es: "buzón",
+	},
+	"panel.search.kind.journal": {
+		en: "archived journal",
+		es: "diario archivado",
+	},
+	"panel.search.unread": {
+		en: "These spaces could not be opened, so they were not searched: %s. Health says why.",
+		es: "Estos espacios no se pudieron abrir, así que no se ha buscado en ellos: %s. Salud dice por qué.",
 	},
 	"panel.review": {
 		en: "Weekly review",

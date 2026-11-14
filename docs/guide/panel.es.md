@@ -324,9 +324,12 @@ Deja los dos campos vacíos si no quieres ni nombre ni personalidad.
 
 ## Búsqueda y lectura de notas
 
-El cuadro de **búsqueda** del lateral busca en las notas del espacio y en las
-compartidas: títulos, resúmenes y texto. Sale una nota cuando tiene todas las palabras,
-en mayúsculas o minúsculas, con tildes o sin ellas.
+El cuadro de **búsqueda** del lateral busca en las notas de todos los espacios y en las
+compartidas (títulos, resúmenes y texto), en el buzón de cada espacio y en los diarios
+que salieron de las tareas largas a `archive/journals/`. Sale algo cuando tiene todas las
+palabras, en mayúsculas o minúsculas, con tildes o sin ellas, y las palabras salen
+resaltadas. Un resultado de otro espacio dice de cuál; uno de un diario archivado lleva a
+su tarea. Primero va lo que coincide en el título, luego lo del espacio en el que estás.
 
 Las notas se leen como texto, no como Markdown en crudo (el formato de texto
 en que se escriben las notas): títulos, listas, tablas, código y
