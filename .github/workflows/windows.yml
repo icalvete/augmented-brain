@@ -39,6 +39,11 @@ jobs:
       # -timeout below the job's 10 minutes: a test that hangs then fails with the
       # stack of every goroutine, which says where it waits, instead of the job being
       # cancelled with nothing to go on.
+      # Diagnosis of the internal/hook hang (to be taken out): which test runs last.
+      - name: Test internal/hook, verbose
+        timeout-minutes: 4
+        continue-on-error: true
+        run: go test -count=1 -v -timeout 3m ./internal/hook/
       - name: Test
         run: go test -timeout 7m ./...
       - name: Build
