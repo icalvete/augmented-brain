@@ -2,6 +2,39 @@
 
 ## Unreleased
 
+## 1.0.0-rc.2
+
+Released 2026-11-14.
+
+- **Setting up the backup no longer sends you to a terminal.** The installer offers `gh`,
+  GitHub's program, which the backup is made with: no password, checked, next to
+  augmented brain. When you then ask for the backup, Claude or the panel's Backup page
+  starts the GitHub sign-in for you and shows a short code: open
+  github.com/login/device, type it and accept. With no GitHub account, it says how to
+  make one for free, or how to keep the copy somewhere else.
+- **The panel's search looks everywhere and marks what it found.** It now searches
+  every space, not only the one you are in, and also each inbox and the journals
+  archived from long tasks. The words found are highlighted, and each result says
+  which space it is from.
+- **Rules and knowledge can be written from the panel.** The Rules and Knowledge pages
+  create one, in the space or shared by every space. A note's page edits it, keeping
+  the old version in `archive/`, or retires it with why. Until now they could only be
+  read there. With `memory_trust = "ask"`, a rule is saved only after you tick a box
+  saying yes.
+- **A capture in the inbox can be corrected.** In the panel's Inbox, **Correct** changes
+  a capture's text or its reminder. Its date stays, and so does the space it came from.
+  Until now a typo meant taking the capture out and writing it again.
+- **Steps, titles and watch dates can be corrected, not only added.** In the panel, a
+  task's page now changes its title, corrects, moves or removes a step of its plan, and
+  moves a watch date to another day or takes it out. Claude can do the same through
+  `task_step` (`edit`, `remove`, `move_to`) and `task_update` (`title`, `watch_drop`).
+  Each change goes into the task's journal.
+- **Ask Claude about augmented brain itself.** The plugin now carries every guide of the
+  version you have installed, so a question like "how do I see the panel on my phone?"
+  gets an answer from the documentation, in your language and with no internet. Type
+  `/brain:help` with no question and it proposes one next step: a first task, the backup
+  or the panel. The panel's Help page says so.
+
 ## 1.0.0-rc.1
 
 Released 2026-11-14.

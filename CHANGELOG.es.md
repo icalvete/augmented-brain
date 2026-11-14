@@ -2,6 +2,39 @@
 
 ## Sin publicar
 
+## 1.0.0-rc.2
+
+Publicada el 2026-11-14.
+
+- **Preparar la copia de seguridad ya no te manda a una terminal.** El instalador te
+  ofrece `gh`, el programa de GitHub con el que se hace la copia: sin contraseña,
+  comprobado, junto a augmented brain. Cuando después pides la copia, Claude o la página
+  Copia del panel empiezan por ti la entrada en GitHub y te enseñan un código corto: abre
+  github.com/login/device, escríbelo y acepta. Sin cuenta de GitHub, te dice cómo crear
+  una gratis, o cómo guardar la copia en otro sitio.
+- **La búsqueda del panel mira en todas partes y resalta lo que encuentra.** Ahora busca
+  en todos los espacios, no solo en el que estás, y también en cada buzón y en los
+  diarios archivados de las tareas largas. Las palabras encontradas salen resaltadas, y
+  cada resultado dice de qué espacio es.
+- **Las reglas y el conocimiento se escriben desde el panel.** Las páginas Reglas y
+  Conocimiento crean una, en el espacio o compartida por todos. La página de una nota la
+  edita, guardando la versión anterior en `archive/`, o la retira con el porqué. Hasta
+  ahora allí solo se leían. Con `memory_trust = "ask"`, una regla solo se guarda después
+  de marcar una casilla que dice que sí.
+- **Un apunte del buzón se puede corregir.** En el Buzón del panel, **Corregir** cambia
+  el texto de un apunte o su recordatorio. Su fecha se queda, y también el espacio del
+  que vino. Hasta ahora, una errata obligaba a quitar el apunte y escribirlo de nuevo.
+- **Los pasos, los títulos y las fechas para revisar se pueden corregir, no solo
+  añadir.** En el panel, la página de una tarea cambia ahora su título, corrige, mueve o
+  quita un paso de su plan, y mueve una fecha para revisar a otro día o la quita. Claude
+  puede hacer lo mismo con `task_step` (`edit`, `remove`, `move_to`) y `task_update`
+  (`title`, `watch_drop`). Cada cambio queda en el diario de la tarea.
+- **Pregunta a Claude por el propio augmented brain.** El plugin lleva ahora todas las
+  guías de la versión que tienes instalada, así que a una pregunta como «¿cómo veo el
+  panel en el móvil?» responde con la documentación, en tu idioma y sin internet. Escribe
+  `/brain:help` sin pregunta y te propone un siguiente paso: una primera tarea, la copia
+  de seguridad o el panel. La página Ayuda del panel lo cuenta.
+
 ## 1.0.0-rc.1
 
 Publicada el 2026-11-14.
