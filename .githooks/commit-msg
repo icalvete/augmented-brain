@@ -1,0 +1,3 @@
+#!/bin/sh
+# Blocks the commit if its message would publish personal data or secrets. See scripts/privacy-check.sh.
+exec "$(git rev-parse --show-toplevel)/scripts/privacy-check.sh" --message "$1"

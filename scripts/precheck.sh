@@ -63,6 +63,9 @@ fi
 step "privacy"
 if out=$(scripts/privacy-check.sh --all 2>&1); then ok; else bad "$out"; fi
 
+step "privacy fingerprints (selftest)"
+if out=$(python3 -I scripts/privacy-hashed.py selftest 2>&1); then ok; else bad "$out"; fi
+
 # What regenerating changes, not what you changed by hand and have not committed yet.
 step "guides up to date"
 docs_sum() { find docs internal/i18n/cmdhelp.go plugin/skills -type f | LC_ALL=C sort | xargs cat | cksum; }

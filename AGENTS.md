@@ -142,7 +142,7 @@ heavier checks, the VMs and the real-Claude runs are in [dev/checks.md](dev/chec
 The full text, with the reasons, is in [dev/rules.md](dev/rules.md).
 
 - **Nothing personal, no secrets.** The repo is public; `scripts/privacy-check.sh` runs
-  as the pre-commit hook and in CI. Never bypass it. Made-up data in examples.
+  as the pre-commit and commit-msg hooks and in CI. Never bypass it. Made-up data in examples.
 - **Two languages, always in step.** Everything a person reads exists in English and
   Spanish, and changing one changes the other. Only `dev/`, code and commits are English
   alone.
