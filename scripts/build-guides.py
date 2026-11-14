@@ -30,6 +30,21 @@ REPO = "https://github.com/icalvete/augmented-brain/blob/main/"
 CHANGELOG = REPO + "CHANGELOG.md"
 CHANGELOG_ES = REPO + "CHANGELOG.es.md"
 
+
+def released_version():
+    """The newest version CHANGELOG.md says was released: the first "## <version>"
+    section with its "Released <date>." line. scripts/changelog.py release writes both
+    and regenerates the guides, so the sidebar's pill follows each release."""
+    lines = (ROOT / "CHANGELOG.md").read_text().split("\n")
+    for i, line in enumerate(lines):
+        m = re.fullmatch(r"## (\d+\.\d+\.\d+\S*)", line)
+        if m and any(x.startswith("Released ") for x in lines[i + 1:i + 4]):
+            return m.group(1)
+    return None
+
+
+VERSION = released_version()
+
 # The sidebar, in order. Each page: slug, title (en, es), description (en, es) for
 # search engines, a short line (en, es) for sharing and for the index. A page with no
 # Spanish twin says es=False; its source may live elsewhere (src).
@@ -467,7 +482,9 @@ def sidebar(lang, current):
         out.append(f'<p class="docnav-group">{g[L(lang)]}</p>\n<ul>')
         for p in pages:
             cur = ' aria-current="page"' if p.get("slug") == current else ""
-            out.append(f'  <li><a href="{href(p, lang)}"{cur}>{esc(label(p, lang))}</a></li>')
+            pill = (f' <span class="docnav-version">v{esc(VERSION)}</span>'
+                    if p.get("slug") == "changelog" and VERSION else "")
+            out.append(f'  <li><a href="{href(p, lang)}"{cur}>{esc(label(p, lang))}{pill}</a></li>')
         out.append("</ul>")
     out.append("</details>\n</nav>")
     # On a narrow screen the menu starts folded above the page, so the page comes first.
