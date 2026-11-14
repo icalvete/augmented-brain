@@ -162,10 +162,11 @@ func TestGitDeniedSaysHowToNameTheRepository(t *testing.T) {
 	}
 	ci := "com" + "mit"
 	p := Policy{Cwd: home, GitAllowedRepos: []string{filepath.Join(home, "code", "app-*")}}
-	named := "git -C " + repo + " "
+	slashed := filepath.ToSlash(repo) // C:/x on Windows: a shell would eat the backslashes
+	named := "git -C " + slashed + " "
 	cases := []struct{ cmd, key string }{
 		{"cd ~/code/app-fix && git " + ci + " -m x", "guard.git.named"},
-		{"cd " + repo + " && git push", "guard.git.named"},
+		{"cd " + slashed + " && git push", "guard.git.named"},
 		{"W=~/code/app-fix; cd $W && git " + ci + " -m x", "guard.git.unknown"},
 		{"git -C \"$W\" " + ci + " -m x", "guard.git.unknown"},
 		{"git -C $(pwd) push", "guard.git.unknown"},

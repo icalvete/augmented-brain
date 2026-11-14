@@ -1150,7 +1150,7 @@ func (p Policy) gitDenied(sub, dir string, elsewhere bool) Decision {
 		switch {
 		case dir == "" && !p.lost && p.Cwd != "":
 			if d, err := p.resolve(p.Cwd); err == nil && p.repoVerdict(d) != Deny {
-				return Decision{Deny, i18n.T(p.Lang, "guard.git.named", sub, paths.Tilde(d), d)}
+				return Decision{Deny, i18n.T(p.Lang, "guard.git.named", sub, paths.Tilde(d), filepath.ToSlash(d))} // C:/x, as Git Bash takes it
 			}
 		case dir == "" && p.lost, strings.ContainsAny(dir, "$`") || strings.ContainsRune(dir, subst):
 			return Decision{Deny, i18n.T(p.Lang, "guard.git.unknown", sub)}
