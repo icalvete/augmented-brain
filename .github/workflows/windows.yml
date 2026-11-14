@@ -48,16 +48,24 @@ jobs:
         run: |
           $p = Start-Process go -ArgumentList 'test','-x','-timeout','3m','./...' -NoNewWindow -PassThru -RedirectStandardError D:\gotest-x.txt
           $null = $p.Handle  # so ExitCode is read after the process ends
+          function Show-Defender {
+            Write-Output "Defender, last events:"
+            Get-WinEvent -LogName 'Microsoft-Windows-Windows Defender/Operational' -MaxEvents 40 -ErrorAction SilentlyContinue |
+              ForEach-Object { "{0:HH:mm:ss} {1} {2}" -f $_.TimeCreated, $_.Id, ($_.Message -replace '\s+', ' ').Substring(0, [Math]::Min(300, ($_.Message -replace '\s+', ' ').Length)) } | Write-Output
+            Get-MpComputerStatus -ErrorAction SilentlyContinue | Select-Object RealTimeProtectionEnabled, IsTamperProtected, AMServiceEnabled | Format-List | Out-String | Write-Output
+          }
           if (-not $p.WaitForExit(420000)) {
             Write-Output "go test still running after 7 minutes; processes:"
             Get-CimInstance Win32_Process | Sort-Object ParentProcessId |
               ForEach-Object { "{0,6} {1,6} {2}" -f $_.ProcessId, $_.ParentProcessId, $_.CommandLine } | Write-Output
             Write-Output "test binaries run, folders removed (go test -x):"
             Select-String -Path D:\gotest-x.txt -Pattern '\.test\.exe |^rm -rf |^cd ' | ForEach-Object { "{0,6} {1}" -f $_.LineNumber, $_.Line } | Write-Output
+            Show-Defender
             Stop-Process -Id $p.Id -Force
             exit 1
           }
           Select-String -Path D:\gotest-x.txt -Pattern 'FAIL|panic' | Write-Output
+          Show-Defender
           exit $p.ExitCode
       - name: Build
         run: go build -o augmented-brain.exe ./cmd/augmented-brain
