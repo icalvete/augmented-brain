@@ -227,7 +227,7 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 	// Last, the program itself, if it has its own name (not a test binary or go run).
 	if b := filepath.Base(self); self != "" && (b == "augmented-brain" || b == "augmented-brain.exe") {
 		if pluginGone {
-			fail(removeSelf(self))
+			fail(removeSelf(self, lang))
 		} else {
 			fmt.Fprintln(errOut, i18n.T(lang, "uninstall.keptself", self))
 		}
