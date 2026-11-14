@@ -58,3 +58,34 @@ func TestNotedWorktrees(t *testing.T) {
 		t.Errorf("still noted: %+v", got)
 	}
 }
+
+// Closing a task removes its worktrees without the notes locked (N-08), so a worktree
+// noted for the task while git removes another stays noted.
+func TestNotedWhileRemoving(t *testing.T) {
+	w := newGitWorld(t)
+	w.git(w.repo, "fetch", "-q", "origin")
+	first := filepath.Join(w.root, "site-first")
+	w.git(w.repo, "worktree", "add", "-q", "-b", "first", first, "origin/main")
+	second := filepath.Join(w.root, "site-second")
+	w.git(w.repo, "worktree", "add", "-q", "-b", "second", second, "origin/main")
+	if err := NoteTaskWorktree(w.cfgDir, "task-site", first); err != nil {
+		t.Fatal(err)
+	}
+	old := GitRun
+	t.Cleanup(func() { GitRun = old })
+	GitRun = func(dir string, args ...string) (string, error) {
+		if args[0] == "worktree" && args[1] == "remove" {
+			if err := NoteTaskWorktree(w.cfgDir, "task-site", second); err != nil {
+				t.Error(err)
+			}
+		}
+		return old(dir, args...)
+	}
+	removed, _ := RemoveNotedWorktrees(w.cfgDir, "task-site")
+	if len(removed) != 1 || removed[0] != first {
+		t.Fatalf("removed %v", removed)
+	}
+	if got := readNoted(w.cfgDir, "task-site"); len(got) != 1 || got[0].folder != second {
+		t.Errorf("still noted: %+v", got)
+	}
+}

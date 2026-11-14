@@ -74,6 +74,19 @@ type Resolver func() (*brain.Brain, error)
 // opener opens the brain and returns the function that releases it.
 type opener func() (*brain.Brain, func(), error)
 
+// LockWait is the most a tool waits for the notes: a backup, an import or another
+// session may hold them for long (N-08), and a tool that hangs leaves the assistant
+// with nothing to tell the user. Tests shorten it.
+var LockWait = 20 * time.Second
+
+// errBusy is what a tool answers when the notes stayed held all LockWait.
+var errBusy = errors.New("the notes are busy (a backup, an import or another session is writing them); nothing was changed: try again in a moment")
+
+// then is work a tool does after it releases the notes: git, which may take minutes
+// with the network down, never runs with the notes locked (N-08). What it returns goes
+// at the end of the tool's answer.
+type then func() (string, error)
+
 // Option changes how New builds the server.
 type Option func(*options)
 
@@ -100,7 +113,10 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 	// run one at a time: each call sees every change made by the calls before it.
 	w := filelock.NewWriter(lockFile)
 	locked := func() (*brain.Brain, func(), error) {
-		release, err := w.Lock()
+		release, err := w.LockWithin(LockWait)
+		if errors.Is(err, filelock.ErrBusy) {
+			return nil, nil, errBusy
+		}
 		if err != nil {
 			return nil, nil, err
 		}
@@ -306,24 +322,24 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Result    string `json:"result,omitempty" jsonschema:"with status closed: what was achieved, as in task_close"`
 		Space     string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	tool(s, locked, "task_update", "Change a task's title, status, who it waits on, its next step, summary or area, or add, close, take out or move a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
-		func(b0 *brain.Brain, in updateIn) (string, error) {
+	toolThen(s, locked, "task_update", "Change a task's title, status, who it waits on, its next step, summary or area, or add, close, take out or move a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
+		func(b0 *brain.Brain, in updateIn) (string, then, error) {
 			u := brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn, Next: in.Next,
 				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone,
 				WatchDrop: in.WatchDrop, Title: in.Title, Reopen: in.Reopen, Result: in.Result}
 			if in.Status+in.WaitingOn+in.Next+in.Summary+in.Area+in.WatchDate+in.WatchDone+in.WatchDrop+in.Title == "" {
-				return "", errors.New("nothing to change: give at least one field")
+				return "", nil, errors.New("nothing to change: give at least one field")
 			}
 			if in.Result != "" && in.Status != "closed" {
-				return "", errors.New("result goes with status closed")
+				return "", nil, errors.New("result goes with status closed")
 			}
 			b, err := b0.Other(in.Space)
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 			if b != b0 && in.Status == "closed" {
 				// Closing also ends the task's session and worktree, which belong to that space.
-				return "", fmt.Errorf("a task of space %s is closed from a session of that space, not from %s; write here what was decided (task_journal with space) and close it there", b.Space.Name, b0.Space.Name)
+				return "", nil, fmt.Errorf("a task of space %s is closed from a session of that space, not from %s; write here what was decided (task_journal with space) and close it there", b.Space.Name, b0.Space.Name)
 			}
 			wasClosed := false
 			if before, err := b.Task(in.ID); err == nil {
@@ -331,7 +347,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			}
 			n, err := b.Update(u)
 			if err != nil {
-				return "", err
+				return "", nil, err
 			}
 			if n.Header.Status == "closed" || n.Header.Status == "parked" || n.Header.Status == "someday" {
 				b.Released(in.ID)
@@ -339,14 +355,17 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				b.Touched(in.ID, true)
 			}
 			out, _ := header(n, nil)
+			var after then
 			if n.Header.Status == "closed" && !wasClosed {
-				// Closed now: the rest of what task_close does.
-				out += openWatches(n) + closedWorktree(b, in.ID)
+				// Closed now: the rest of what task_close does, the worktrees once the
+				// notes are released.
+				out += openWatches(n)
 				if strings.TrimSpace(in.Result) == "" {
 					out += "\nIt was closed with no result: write what it achieved in its journal (task_journal)."
 				}
+				after = func() (string, error) { return closedWorktree(b.ConfigDir, in.ID), nil }
 			}
-			return out + fromOther(b), nil
+			return out + fromOther(b), after, nil
 		})
 
 	type journalIn struct {
@@ -392,17 +411,17 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		ID     string `json:"id" jsonschema:"task id, e.g. task-backup"`
 		Result string `json:"result" jsonschema:"what was achieved, in one or two lines"`
 	}
-	tool(s, locked, "task_close", "Close a finished task with its result. It is kept, never deleted. A task already closed is refused: its result stays.",
-		func(b *brain.Brain, in closeIn) (string, error) {
+	toolThen(s, locked, "task_close", "Close a finished task with its result. It is kept, never deleted. A task already closed is refused: its result stays.",
+		func(b *brain.Brain, in closeIn) (string, then, error) {
 			n, err := b.Close(in.ID, in.Result)
 			if err == nil {
 				b.Released(in.ID)
 			}
 			out, err := header(n, err)
 			if err != nil {
-				return out, err
+				return out, nil, err
 			}
-			return out + openWatches(n) + closedWorktree(b, in.ID), nil
+			return out + openWatches(n), func() (string, error) { return closedWorktree(b.ConfigDir, in.ID), nil }, nil
 		})
 
 	type worktreeIn struct {
@@ -410,9 +429,10 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Repo   string `json:"repo,omitempty" jsonschema:"path of a git repository in the space's work folders: makes the task's own worktree of it, <repo>-<task>, on a new branch from origin's default branch"`
 		Folder string `json:"folder,omitempty" jsonschema:"a git worktree already made for the task: noted, so closing the task removes it. Give repo or folder, not both"`
 	}
-	tool(s, locked, "task_worktree", "Make a git worktree for a task, or note one already made, so closing the task removes it (when it holds nothing not committed or not pushed). Use it for every worktree a task needs.",
-		func(b *brain.Brain, in worktreeIn) (string, error) {
-			return taskWorktree(b, in.ID, in.Repo, in.Folder)
+	toolThen(s, locked, "task_worktree", "Make a git worktree for a task, or note one already made, so closing the task removes it (when it holds nothing not committed or not pushed). Use it for every worktree a task needs.",
+		func(b *brain.Brain, in worktreeIn) (string, then, error) {
+			after, err := taskWorktree(b, in.ID, in.Repo, in.Folder)
+			return "", after, err
 		})
 
 	type captureIn struct {
@@ -733,38 +753,59 @@ func recoverSession(b *brain.Brain, id string, now time.Time) (string, error) {
 // for every call, and returns text for the assistant. Errors come back as tool errors,
 // which the assistant reads and can act on.
 func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.Brain, In) (string, error)) {
+	toolThen(s, open, name, desc, func(b *brain.Brain, in In) (string, then, error) {
+		text, err := h(b, in)
+		return text, nil, err
+	})
+}
+
+// toolThen is tool for a handler that has work to do once the notes are released
+// (then); it runs only when the handler did not fail.
+func toolThen[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.Brain, In) (string, then, error)) {
 	mcp.AddTool(s, &mcp.Tool{Name: name, Description: desc},
 		func(_ context.Context, _ *mcp.CallToolRequest, in In) (*mcp.CallToolResult, any, error) {
 			b, release, err := open()
 			if err != nil {
 				return nil, nil, err
 			}
-			defer release()
+			released := false
+			defer func() {
+				if !released {
+					release()
+				}
+			}()
 			_, _ = confighistory.Record(b.ConfigDir, confighistory.ByOutside, "")
-			text, err := h(b, in)
+			text, after, err := h(b, in)
 			_, _ = confighistory.Record(b.ConfigDir, confighistory.ByTool, name)
+			// What goes at the end of the answer, or of the error.
+			var notes []string
 			if b.Fresh != "" {
 				// Check already counted these as seen: they go with the answer either way.
-				if err != nil {
-					err = fmt.Errorf("%w\n\n%s", err, strings.TrimRight(b.Fresh, "\n"))
-				} else {
-					text = strings.TrimRight(text, "\n") + "\n\n" + strings.TrimRight(b.Fresh, "\n")
-				}
+				notes = append(notes, strings.TrimRight(b.Fresh, "\n"))
 			}
 			if err == nil && b.IndexProblem != nil {
 				// The note is saved; only the index is behind. Said, so it is not written again.
-				text = strings.TrimRight(text, "\n") + "\n\nSaved, but the index (MEMORY.md) could not be written: " + b.IndexProblem.Error() + ". Do not repeat the change; the next one writes the index again, and `augmented-brain doctor` says what is wrong."
+				notes = append(notes, "Saved, but the index (MEMORY.md) could not be written: "+b.IndexProblem.Error()+". Do not repeat the change; the next one writes the index again, and `augmented-brain doctor` says what is wrong.")
 			}
 			if note := brain.ProblemsNote(b.Problems, 3); note != "" {
 				// Files that are not valid notes do not stop the tools; the user hears about them.
-				if err != nil {
-					err = fmt.Errorf("%w\n\n%s", err, note)
-				} else {
-					text = strings.TrimRight(text, "\n") + "\n\n" + note
-				}
+				notes = append(notes, note)
+			}
+			if err == nil && after != nil {
+				release()
+				released = true
+				var more string
+				more, err = after()
+				text += more
 			}
 			if err != nil {
+				for _, n := range notes {
+					err = fmt.Errorf("%w\n\n%s", err, n)
+				}
 				return nil, nil, err
+			}
+			for _, n := range notes {
+				text = strings.TrimRight(text, "\n") + "\n\n" + n
 			}
 			return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: text}}}, nil, nil
 		})
@@ -789,31 +830,34 @@ var StopSessionWhenIdle = remote.StopWhenIdle
 
 // closedWorktree ends the session of a closed task and removes its worktrees
 // (remote.System.ClosedTask), but the one this session works in.
-func closedWorktree(b *brain.Brain, task string) string {
+// It runs once the notes are released: removing a worktree runs git.
+func closedWorktree(cfgDir, task string) string {
 	sys, err := NewRemoteSystem()
 	if err != nil {
 		return ""
 	}
 	here, _ := os.Getwd()
-	return sys.ClosedTask(b.ConfigDir, task, StopSessionWhenIdle, here)
+	return sys.ClosedTask(cfgDir, task, StopSessionWhenIdle, here)
 }
 
-// taskWorktree makes the task's worktree of repo, or notes folder, for task_worktree.
-// Both must lie inside the space's work folders.
-func taskWorktree(b *brain.Brain, task, repo, folder string) (string, error) {
+// taskWorktree checks, with the notes locked, what task_worktree was given, and returns
+// the work that makes the task's worktree of repo, or notes folder, once they are
+// released: git fetch may take minutes with the network down (N-08). Both must lie
+// inside the space's work folders.
+func taskWorktree(b *brain.Brain, task, repo, folder string) (then, error) {
 	if (repo == "") == (folder == "") {
-		return "", errors.New("give repo (to make the task's worktree of it) or folder (a worktree already made), one of the two")
+		return nil, errors.New("give repo (to make the task's worktree of it) or folder (a worktree already made), one of the two")
 	}
 	n, err := b.Task(task)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if n.Header.Status == "closed" {
-		return "", fmt.Errorf("%s is closed", task)
+		return nil, fmt.Errorf("%s is closed", task)
 	}
 	p, err := paths.Resolve(repo + folder)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	within := false
 	for _, wf := range b.Space.WorkFolders {
@@ -822,26 +866,31 @@ func taskWorktree(b *brain.Brain, task, repo, folder string) (string, error) {
 		}
 	}
 	if !within {
-		return "", fmt.Errorf("%s is not inside the work folders of space %s", paths.Tilde(p), b.Space.Name)
+		return nil, fmt.Errorf("%s is not inside the work folders of space %s", paths.Tilde(p), b.Space.Name)
 	}
+	cfgDir := b.ConfigDir
 	if folder != "" {
-		if err := remote.NoteTaskWorktree(b.ConfigDir, task, p); err != nil {
+		return func() (string, error) {
+			if err := remote.NoteTaskWorktree(cfgDir, task, p); err != nil {
+				return "", err
+			}
+			return i18n.T("en", "task.worktree.noted", paths.Tilde(p), task), nil
+		}, nil
+	}
+	return func() (string, error) {
+		wt, branch, base, made, fetched, err := remote.MakeTaskWorktree(cfgDir, p, task)
+		if err != nil {
 			return "", err
 		}
-		return i18n.T("en", "task.worktree.noted", paths.Tilde(p), task), nil
-	}
-	wt, branch, base, made, fetched, err := remote.MakeTaskWorktree(b.ConfigDir, p, task)
-	if err != nil {
-		return "", err
-	}
-	if !made {
-		return i18n.T("en", "task.worktree.again", paths.Tilde(wt), branch), nil
-	}
-	out := i18n.T("en", "task.worktree.made", paths.Tilde(wt), branch, base)
-	if !fetched {
-		out += " " + i18n.T("en", "session.worktree.offline", base)
-	}
-	return out, nil
+		if !made {
+			return i18n.T("en", "task.worktree.again", paths.Tilde(wt), branch), nil
+		}
+		out := i18n.T("en", "task.worktree.made", paths.Tilde(wt), branch, base)
+		if !fetched {
+			out += " " + i18n.T("en", "session.worktree.offline", base)
+		}
+		return out, nil
+	}, nil
 }
 
 func openWatches(n *memory.Note) string {

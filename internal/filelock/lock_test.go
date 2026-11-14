@@ -129,3 +129,41 @@ func TestWriterError(t *testing.T) {
 	}
 	w.LockProcess()() // would block forever if the mutex was kept
 }
+
+// Writer.LockWithin gives up with ErrBusy when another process holds the lock file, or
+// another call of this process holds the mutex, and gives the mutex back when it does.
+func TestWriterLockWithin(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "notes.lock")
+	w := NewWriter(path)
+
+	held, err := Lock(path) // as another process would
+	if err != nil {
+		t.Fatal(err)
+	}
+	began := time.Now()
+	if _, err := w.LockWithin(100 * time.Millisecond); !errors.Is(err, ErrBusy) {
+		t.Fatalf("with the file held: %v, want ErrBusy", err)
+	}
+	if took := time.Since(began); took > time.Second {
+		t.Errorf("gave up after %v", took)
+	}
+	held()
+
+	unlock := w.LockProcess() // another call of this process
+	if _, err := w.LockWithin(50 * time.Millisecond); !errors.Is(err, ErrBusy) {
+		t.Fatalf("with the mutex held: %v, want ErrBusy", err)
+	}
+	unlock()
+
+	release, err := w.LockWithin(time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	release()
+	w.LockProcess()() // would block forever if a failed LockWithin kept the mutex
+	if u, err := NewWriter("").LockWithin(0); err != nil {
+		t.Fatal(err)
+	} else {
+		u()
+	}
+}
