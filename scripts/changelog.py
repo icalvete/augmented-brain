@@ -158,6 +158,10 @@ def release(version, date):
             os.remove(os.path.join(DIR, f"{n}.{lang}.md"))
     print(f"changelog: {len(names)} entr{'y' if len(names) == 1 else 'ies'} gathered "
           f"under ## {version}; changelog.d/ emptied")
+    # The guides' sidebar shows the version last released (build-guides.py reads it
+    # from CHANGELOG.md): regenerate them so the release's pull request carries it.
+    subprocess.run([sys.executable, "-I", os.path.join(ROOT, "scripts", "build-guides.py")],
+                   check=True, stdout=subprocess.DEVNULL)
     return 0
 
 

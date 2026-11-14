@@ -244,7 +244,7 @@ Heavier checks, before a release or when you touch what they cover:
 - A release: on a branch, set `VERSION`, run `python3 -I scripts/changelog.py release
   <version>` (it writes `## <version>` with its date, `Released <date>.` and `Publicada el
   <date>.`, in `CHANGELOG.md` and `CHANGELOG.es.md` with every entry of `changelog.d/`,
-  and empties the folder), commit, open a pull request and merge it when CI is green.
+  and empties the folder, then regenerates the guides, whose sidebar shows the version last released), commit, open a pull request and merge it when CI is green.
   `release.yml` refuses a release while `changelog.d/` still holds entries. Publishing is then the maintainer's one gesture: Run workflow on
   `release` in GitHub's Actions tab (or `gh workflow run release -R icalvete/augmented-brain`).
   `release.yml` takes the version from `VERSION` on `main` and the commit that last set it
