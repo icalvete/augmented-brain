@@ -791,7 +791,9 @@ Mira en cada carpeta en la que se abrió Claude Code, y en su carpeta temporal:
   olvida. Sus ramas se quedan.
 - **Carpetas temporales de sesiones que acabaron** (`/tmp/claude-<número>` en Linux), sin
   tocar desde hace más de un día. Las de sesiones en marcha se quedan, y todo lo demás
-  que haya ahí también.
+  que haya ahí también. En Linux eso incluye las sesiones de otra carpeta de Claude
+  (`CLAUDE_CONFIG_DIR`); en otros sistemas solo cuentan las de tu carpeta de Claude de
+  siempre, y el comando te lo recuerda.
 
 Antes de quitar cada cosa vuelve a mirar, así que una sesión que haya empezado entretanto
 conserva sus carpetas. `doctor` avisa cuando hay algo que limpiar.

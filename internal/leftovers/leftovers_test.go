@@ -213,3 +213,25 @@ func TestHumanSize(t *testing.T) {
 		}
 	}
 }
+
+// A claude of another profile (CLAUDE_CONFIG_DIR) runs in /p: its session is not in
+// ClaudeDir's sessions, but its scratch folder, in the TempRoot every profile shares,
+// is not called left over (R-19 of the November 2026 review).
+func TestOtherProfileScratchStays(t *testing.T) {
+	tmp := t.TempDir()
+	claudeDir := filepath.Join(tmp, "claude")
+	if err := os.MkdirAll(filepath.Join(claudeDir, "sessions"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	root := filepath.Join(tmp, "t")
+	theirs := filepath.Join(root, "-p", "aaaaaaaa-2222-3333-4444-555555555555", "x")
+	gone := filepath.Join(root, "-q", "bbbbbbbb-2222-3333-4444-555555555555", "x")
+	write(t, theirs, "x")
+	write(t, gone, "x")
+	env := Env{ClaudeDir: claudeDir, TempRoot: root, Now: time.Now().Add(30 * time.Hour),
+		Folders: func() ([]string, bool) { return []string{"/p"}, true }}
+	r := Find(env)
+	if len(r.Scratch) != 1 || !strings.Contains(r.Scratch[0].Path, "bbbbbbbb") || !r.AllProfiles {
+		t.Fatalf("scratch: %+v", r)
+	}
+}

@@ -4236,7 +4236,9 @@ It looks in every folder Claude Code was opened in, and in its scratch folder:
 - **Worktrees git remembers whose folder is gone**: `git worktree prune` forgets them.
   Their branches stay.
 - **Scratch folders of sessions that ended** (`/tmp/claude-<number>` on Linux), untouched
-  for over a day. Those of running sessions stay, and so does anything else there.
+  for over a day. Those of running sessions stay, and so does anything else there. On
+  Linux that includes sessions of another Claude folder (`CLAUDE_CONFIG_DIR`); elsewhere
+  only those of your usual Claude folder count, and the command reminds you.
 
 Before removing each thing it looks again, so a session that started meanwhile keeps its
 folders. `doctor` says when there is something to clean.
