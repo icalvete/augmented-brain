@@ -55,8 +55,8 @@ func TestFixStepsAndTitle(t *testing.T) {
 	if w := post(url.Values{"n": {"3"}, "text": {"Sand"}, "op": {"remove"}}); w.Code != http.StatusBadRequest {
 		t.Fatalf("stale remove: %d", w.Code)
 	}
-	if w := post(url.Values{"n": {"3"}, "text": {"Paint"}, "op": {"remove"}}); w.Code != http.StatusSeeOther {
-		t.Fatalf("remove: %d %s", w.Code, w.Body)
+	if w := post(url.Values{"n": {"3"}, "text": {"Paint"}, "op": {"remove"}}); w.Code != http.StatusSeeOther || !strings.Contains(w.Header().Get("Location"), "ok=task.step.remove") {
+		t.Fatalf("remove: %d %s %s", w.Code, w.Header().Get("Location"), w.Body)
 	}
 	if got := steps(); got != "Prime twice|Sand" {
 		t.Errorf("after remove: %s", got)

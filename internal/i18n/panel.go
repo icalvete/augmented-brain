@@ -1172,6 +1172,10 @@ var panelMessages = map[string]msg{
 		en: "Plan updated.",
 		es: "Plan actualizado.",
 	},
+	"panel.ok.task.step.remove": {
+		en: "Step taken out of the plan.",
+		es: "Paso quitado del plan.",
+	},
 	"panel.ok.watch.add": {
 		en: "Watch date added.",
 		es: "Fecha para mirar añadida.",
