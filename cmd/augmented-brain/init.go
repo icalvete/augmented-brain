@@ -264,16 +264,34 @@ func nextStep(lang, work string, pick bool) string {
 		next = "newterm"
 	}
 	text := fmt.Sprintf(msg(lang, next), work)
-	if next != "newterm" && os.Getenv("AB_NEW_TERMINAL") == "1" {
-		// The terminal that ran the installer does not see the new PATH: said plainly, or
-		// the first augmented-brain typed there looks like a failed install.
-		text += "\n" + msg(lang, "newterm.note")
+	if os.Getenv("AB_NEW_TERMINAL") == "1" {
+		text += newTerminalNote(lang, next)
 	}
 	if runtime.GOOS == "windows" {
 		// Windows PowerShell 5.1, the one that comes with Windows, has no &&.
 		text = strings.ReplaceAll(text, " && claude", "; claude")
 	}
 	return text
+}
+
+// newTerminalNote is what init adds when the installer changed the PATH: the terminal
+// that ran it does not see the change, and the first augmented-brain typed there would
+// look like a failed install. install.sh says, in AB_RELOAD, the line that reads the
+// change in this terminal (source ~/.bashrc, say). On Windows, install.ps1 already gave
+// its own window the new PATH: only the windows open before miss it.
+func newTerminalNote(lang, next string) string {
+	reload := strings.TrimSpace(os.Getenv("AB_RELOAD"))
+	switch {
+	case runtime.GOOS == "windows":
+		return "\n" + msg(lang, "newterm.windows")
+	case next == "newterm" && reload != "":
+		return "\n" + fmt.Sprintf(msg(lang, "newterm.or"), reload)
+	case next == "newterm":
+		return "" // its own text already says to open a new terminal
+	case reload != "":
+		return "\n" + fmt.Sprintf(msg(lang, "newterm.reload"), reload)
+	}
+	return "\n" + msg(lang, "newterm.note")
 }
 
 // installPlugin offers to install the Claude Code plugin and reports whether it is
