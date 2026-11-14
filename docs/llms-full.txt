@@ -119,6 +119,8 @@ Claude in the terminal instead, in your work space. Next times:
 The first time, Claude introduces itself and asks six questions, one at a time, telling
 you what each one is for: who you are, what you look after, how you want answers, what
 must not be touched, which tools you use and who you work with. You can skip any of them.
+If you write code, it also asks in which repositories it may commit: you add them
+yourself, on the panel's Guard page, and Claude offers to open it.
 
 At the end it shows what it saved and offers to set up the backup. Say yes: your notes go
 to a private repository of yours, and losing the computer loses nothing. It needs a
@@ -1384,6 +1386,10 @@ git_ask_repos = ["~/code/shop"]                        # ask me each time
 The easiest way is the panel's **Guard** page. Adding a repository to the list where
 Claude commits and pushes without asking shows a warning, and you must tick a box that
 says you understand. Add only repositories where a mistake can be undone.
+
+When the guard stops a commit, Claude tells you so and where to allow it: this page,
+which opens when you type `/brain:panel`. In the first-session interview, if you write
+code, Claude asks which repositories they are and offers to open it for you.
 
 **Merging a pull request is a push too.** `gh pr merge`, `glab mr merge` and `glab mr
 accept` follow the same lists. gh and glab have no `-C`, so the command must say which
