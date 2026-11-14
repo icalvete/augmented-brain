@@ -29,6 +29,26 @@ EXE = ".exe" if WIN else ""
 ENGINES = [a for a in sys.argv[1:] if not a.startswith("-")] or ["chromium"]
 PAGES = ["today", "tasks", "reminders", "inbox", "areas", "knowledge", "rules", "people", "search?q=bread",
          "review", "secrets", "backup", "profile", "space", "sessions", "repos", "guard", "versions", "help"]
+# The lowest contrast of any text on the page (WCAG's ratio): for each element with a
+# text of its own, its color against the first background behind it, with opacity.
+# Answers [ratio, "what"] for the worst one.
+CONTRAST = """() => {
+  const lum = c => { const v = c.match(/[\\d.]+/g).map(Number); return v.slice(0, 3).map(x => x / 255)
+    .map(x => x <= .03928 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4).reduce((s, x, i) => s + x * [.2126, .7152, .0722][i], 0) };
+  const alpha = c => { const v = c.match(/[\\d.]+/g).map(Number); return v.length > 3 ? v[3] : 1 };
+  const behind = el => { for (let e = el; e; e = e.parentElement) { const b = getComputedStyle(e).backgroundColor; if (alpha(b) > 0) return b } return 'rgb(255,255,255)' };
+  let worst = [99, ''];
+  for (const el of document.querySelectorAll('body *')) {
+    if (![...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) continue;
+    const st = getComputedStyle(el), r = el.getBoundingClientRect();
+    if (st.visibility === 'hidden' || st.display === 'none' || !r.width || !r.height || el.closest('[hidden], option')) continue;
+    let fg = lum(st.color), bg = lum(behind(el)), op = 1;
+    for (let e = el; e; e = e.parentElement) op *= Number(getComputedStyle(e).opacity);
+    fg = fg * op + bg * (1 - op);
+    const ratio = (Math.max(fg, bg) + .05) / (Math.min(fg, bg) + .05);
+    if (ratio < worst[0]) worst = [Math.round(ratio * 100) / 100, el.tagName.toLowerCase() + (el.className ? '.' + el.className : '') + ' "' + el.textContent.trim().slice(0, 30) + '"'];
+  }
+  return worst }"""
 # Each blocked resource says what and where, so a report names the culprit.
 WATCH = """document.addEventListener('securitypolicyviolation', e =>
     console.error('CSP ' + e.violatedDirective + ' blocked ' + (e.blockedURI || 'inline') +
@@ -153,6 +173,9 @@ try:
                     errors[:] = [e for e in errors if same(e) not in known]
                     ok = resp is not None and resp.status == 200 and not errors and not failed
                     report(f"{engine} {size}: {path.split('?')[0]} loads clean", ok, [e for e in errors if e.startswith('CSP')][:1] + (errors + failed)[:1] or (resp.status if resp else "no answer"))
+                    if size == "desktop":
+                        low, what = page.evaluate(CONTRAST)
+                        report(f"{engine}: {path.split('?')[0]} text has 4.5:1 contrast or more", low >= 4.5, f"{low}:1 {what}")
                     if size == "phone":
                         wide = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
                         report(f"{engine} phone: {path.split('?')[0]} fits the screen", wide <= 1, f"{wide}px wider")
