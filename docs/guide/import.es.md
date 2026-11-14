@@ -5,14 +5,36 @@
 Si Claude Code ya te guarda una memoria, no empiezas de cero. Claude Code la escribe en
 `~/.claude/projects/<carpeta>/memory/`. Puedes traerla a tus espacios.
 
-## Primero, mira
+## Busca la carpeta
+
+Claude Code guarda una carpeta por cada carpeta en la que lo abriste, dentro de
+`~/.claude/projects`. Su nombre es esa ruta con cada `/` cambiada por `-`: para
+`/home/lucia/code/blog`, es `-home-lucia-code-blog`. Para verlas todas:
 
 ```bash
-augmented-brain import ~/.claude/projects/<carpeta>/memory
+ls ~/.claude/projects
 ```
 
-Con un solo espacio, ya está. Con más (una instalación normal tiene dos), primero te pide
-a qué espacio va cada nota: mira [Más de un espacio](#más-de-un-espacio) y añade `--map`.
+La memoria es la carpeta `memory` de la que quieras. En los comandos de abajo, pon ese
+nombre donde dice `<carpeta>`.
+
+## Primero, mira
+
+Una instalación normal tiene dos espacios, así que primero di a qué espacio van las
+notas. Basta un fichero de una línea. Crea un fichero `mapa.txt` con:
+
+```text
+* = personal
+```
+
+Manda todo a tu espacio "personal". Para repartir las notas entre espacios, mira
+[Más de un espacio](#más-de-un-espacio). Luego:
+
+```bash
+augmented-brain import ~/.claude/projects/<carpeta>/memory --map mapa.txt
+```
+
+Con un solo espacio, quita `--map`. Con más y sin `--map`, se para y te pide el fichero.
 
 Eso no escribe nada. Enseña adónde iría cada nota, y lo que no ha podido decidir:
 
@@ -25,10 +47,11 @@ La carpeta de la que importas solo se lee, ahora y después.
 
 ## Luego, escribe
 
-Cuando la lista esté bien, vuelve a lanzarlo con `--apply`:
+Al final, imprime el comando exacto que lo escribe: el mismo con `--apply`. Cuando la
+lista esté bien, lánzalo:
 
 ```bash
-augmented-brain import ~/.claude/projects/<carpeta>/memory --apply
+augmented-brain import ~/.claude/projects/<carpeta>/memory --map mapa.txt --apply
 ```
 
 Nunca escribe encima de una nota que ya existe.

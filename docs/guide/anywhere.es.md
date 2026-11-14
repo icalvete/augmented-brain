@@ -26,7 +26,8 @@ En el ordenador que guarda tus notas:
    lanza `augmented-brain panel remote`. Escribe una dirección y un código QR. Detalles en
    [El panel desde otro dispositivo](panel-remote.es.md).
 
-`augmented-brain doctor` comprueba las dos cosas, una línea cada una.
+`augmented-brain doctor` comprueba las dos: una línea para la puerta de cada espacio y,
+en cuanto lo has usado, otra para el panel desde otro dispositivo.
 
 ## Qué sesión usar
 
@@ -46,38 +47,21 @@ reglas de ese espacio.
 
 - **El ordenador está dormido.** Un portátil que se duerme corta la conexión. Vuelve cuando
   se despierta.
-- **La sesión se archivó.** Archivar una sesión en claude.ai, o dejarla mucho tiempo sin
-  usar, puede terminarla en el lado de Claude mientras el servicio de tu ordenador sigue
-  en marcha sin nada detrás. Vuelve a arrancar el servicio, en el ordenador:
+- **La sesión se archivó** en claude.ai, o terminó en el lado de Claude. En Linux vuelve
+  sola, en unos diez minutos; en macOS y Windows son tres pasos a mano. Los dos casos
+  están en [Acceso remoto](remote.es.md#conviene-saber).
+- **Ha caducado tu sesión de Claude.** Lanza `claude` una vez en el ordenador y vuelve a
+  entrar.
 
-  ```bash
-  systemctl --user restart augmented-brain-remote-personal
-  ```
+`augmented-brain remote status` dice cómo está cada puerta, y qué hacer. Otros problemas
+están en [Si algo falla](troubleshooting.es.md#el-acceso-remoto-no-funciona).
 
-  La sesión nueva puede tardar unos minutos en aparecer: el lado de Claude deja antes que
-  caduque la vieja. El vigilante lo hace solo en unos minutos; si reinicias a mano,
-  lanza antes `augmented-brain remote watch`, para que las sesiones de tus tareas
-  abiertas desde allí sigan en marcha.
-- **Ha caducado tu sesión de Claude.** `augmented-brain remote status` lo dice. Lanza
-  `claude` una vez en el ordenador y vuelve a entrar.
+## Una sesión para cada tarea
 
-`augmented-brain remote status` dice cómo está cada puerta, y qué hacer.
-
-## Una sesión vieja con el mismo nombre
-
-Cuando la puerta de un espacio se cambia de carpeta (por ejemplo, porque una versión nueva
-la arranca en tu carpeta de trabajo), el lado de Claude conserva también la sesión vieja,
-con el mismo nombre, en otro grupo de la lista. En la vieja no contesta nadie: lo que
-escribas ahí se pierde. Usa la del grupo con el nombre de la carpeta nueva, y archiva la
-vieja en claude.ai o Claude Desktop.
-
-## Empezar sesiones nuevas desde el móvil
-
-Pídele a la sesión de la puerta del espacio que abra una para una tarea («ábreme una
-sesión para la tarea de la web»). Lanza `augmented-brain session start`, y en menos de un
-minuto sale en tu lista una sesión propia para esa tarea, con su nombre, en su carpeta y
-ya leyéndola. Abre tantas como tareas tengas. La primera vez en una carpeta te dice cómo
-hacer que Claude confíe en ella. Mira [Una sesión por tarea](remote.es.md#una-sesión-por-tarea).
+En Linux, la sesión de la puerta de un espacio puede abrir otra para una tarea («ábreme
+una sesión para la tarea de la web»). En menos de un minuto sale en tu lista, con el
+nombre de la tarea, en su carpeta y ya leyéndola. Abre tantas como tareas tengas. En
+macOS y Windows todavía no está. Mira [Una sesión por tarea](task-sessions.es.md).
 
 ## Con seguridad
 

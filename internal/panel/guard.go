@@ -50,10 +50,11 @@ type guardData struct {
 	LastStart   string // what the last session start said about its model
 	Ask         bool   // memory_trust of session.toml is "ask" (or a value not known)
 	Language    string
+	Remote      bool // through the network: the page only shows
 }
 
 func (s *Server) guardPage(v *view, r *http.Request) (string, page, error) {
-	d := guardData{Language: v.lang}
+	d := guardData{Language: v.lang, Remote: s.viaRemote(r)}
 	g, err := config.LoadGuard(v.c.Dir)
 	if err != nil {
 		d.Problem = err.Error()
@@ -267,6 +268,18 @@ func without(list []string, x string) ([]string, bool) {
 		return list, false
 	}
 	return slices.Delete(slices.Clone(list), i, i+1), true
+}
+
+// localGuard refuses a change of the Guard page that comes through the network: the
+// lists decide what the assistant may do on this computer, so they change only from its
+// own panel, as going back to a version does (versionsRestore).
+func (s *Server) localGuard(h func(*view, *http.Request) (string, error)) func(*view, *http.Request) (string, error) {
+	return func(v *view, r *http.Request) (string, error) {
+		if s.viaRemote(r) {
+			return "", errors.New(v.t("guard.localonly"))
+		}
+		return h(v, r)
+	}
 }
 
 // guardList adds to or removes from one list. Removing an untouchable repository asks

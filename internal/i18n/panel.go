@@ -475,6 +475,18 @@ var panelMessages = map[string]msg{
 		en: "changed in the panel, what the assistant saves on its own: it now asks you before it saves a rule, your profile or the guard's lists.",
 		es: "cambiado en el panel, lo que el asistente guarda solo: ahora te pregunta antes de guardar una regla, tu perfil o las listas del guardia.",
 	},
+	"panel.guard.remote": {
+		en: "You are on the panel from another device: here you can see the guard's lists; changing or accepting them, the model and what the assistant saves on its own is only from this computer's panel.",
+		es: "Estás en el panel desde otro dispositivo: aquí puedes ver las listas del guardia; cambiarlas o aceptarlas, el modelo y lo que el asistente guarda por su cuenta solo se puede desde el panel de este ordenador.",
+	},
+	"panel.guard.localonly": {
+		en: "Changing the guard is only from this computer's panel.",
+		es: "Cambiar el guardia solo se puede desde el panel de este ordenador.",
+	},
+	"panel.guard.model.unset": {
+		en: "None: no check.",
+		es: "Ninguno: no se comprueba.",
+	},
 	"panel.guard.model": {
 		en: "Model of your sessions",
 		es: "Modelo de tus sesiones",
@@ -526,6 +538,18 @@ var panelMessages = map[string]msg{
 	"panel.f.value": {
 		en: "Value",
 		es: "Valor",
+	},
+	"panel.nav.day": {
+		en: "Day to day",
+		es: "Día a día",
+	},
+	"panel.nav.notes": {
+		en: "Notes",
+		es: "Notas",
+	},
+	"panel.nav.care": {
+		en: "Upkeep",
+		es: "Mantenimiento",
 	},
 	"panel.today": {
 		en: "Today",
@@ -1651,6 +1675,10 @@ var panelMessages = map[string]msg{
 		en: "Open that address in your browser.",
 		es: "Abre esa dirección en tu navegador.",
 	},
+	"panel.cli.own.terminal": {
+		en: "The panel could not open in a browser from here, and its address is not shown here: it is for you, not for the assistant. Run this command in a terminal of your own (not through Claude):\n  augmented-brain panel",
+		es: "Desde aquí el panel no se ha podido abrir en un navegador, y su dirección no se enseña aquí: es para ti, no para el asistente. Lanza este comando en un terminal tuyo (no a través de Claude):\n  augmented-brain panel",
+	},
 	"panel.cli.stopped": {
 		en: "Panel stopped.",
 		es: "Panel parado.",
@@ -1663,6 +1691,10 @@ var panelMessages = map[string]msg{
 	"panel.remote.open": {
 		en: "The panel is open for your other devices at:\n  %s",
 		es: "El panel está abierto para tus otros dispositivos en:\n  %s",
+	},
+	"panel.remote.own.terminal": {
+		en: "The address that opens the panel from your other devices is not shown here: it is for you, not for the assistant. Run this command in a terminal of your own (not through Claude):\n  augmented-brain panel remote",
+		es: "La dirección que abre el panel desde tus otros dispositivos no se enseña aquí: es para ti, no para el asistente. Lanza este comando en un terminal tuyo (no a través de Claude):\n  augmented-brain panel remote",
 	},
 	"panel.remote.qr": {
 		en: "On your phone, point the camera at this code:",

@@ -99,9 +99,9 @@ func TestSessions(t *testing.T) {
 	if w.Code != http.StatusSeeOther || !strings.Contains(w.Header().Get("Location"), "/today?") {
 		t.Fatalf("reviewed from Today: %d %q", w.Code, w.Header().Get("Location"))
 	}
-	// Sessions is no longer in the menu: Health leads to it.
-	if strings.Contains(today, `aria-current="page">Sessions</a>`) || strings.Contains(today, `/sessions?s=home">Sessions</a>`) {
-		t.Error("Sessions is still in the menu")
+	// Sessions is in the menu, in its first block, and Health also leads to it.
+	if !strings.Contains(today, `/sessions?s=home">Sessions</a>`) {
+		t.Error("Sessions is not in the menu")
 	}
 	if h := s.get(t, "/space?s=work").Body.String(); !strings.Contains(h, "/sessions?s=work") {
 		t.Error("Health does not lead to the Sessions page")
