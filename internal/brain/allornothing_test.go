@@ -241,3 +241,37 @@ func TestTOMLString(t *testing.T) {
 		}
 	}
 }
+
+// Closing through a change of status writes what Close writes: the result, or a line
+// saying none was given, and no next step (P6 of the documentation review).
+func TestUpdateClosesLikeClose(t *testing.T) {
+	b := open(t, "en")
+	n, _ := b.NewTask(NewTaskInput{Title: "x"})
+	got, err := b.Update(UpdateInput{ID: n.Header.ID, Status: "closed", Result: "shipped in v2", Summary: "new summary"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Header.Status != "closed" || got.Header.Next != "" || got.Header.WaitingOn != "" || got.Header.Summary != "new summary" {
+		t.Errorf("header: %+v", got.Header)
+	}
+	if !strings.Contains(got.Body, "Closed: shipped in v2") || !strings.Contains(got.Body, "nothing: it is closed.") {
+		t.Errorf("body:\n%s", got.Body)
+	}
+	m, _ := b.NewTask(NewTaskInput{Title: "y"})
+	got, err = b.Update(UpdateInput{ID: m.Header.ID, Status: "closed"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got.Body, "Closed: no result given") {
+		t.Errorf("no result:\n%s", got.Body)
+	}
+	// Already closed: nothing changes, the result stays.
+	p := filepath.Join(b.Mem.Dir, n.Path)
+	before, _ := os.ReadFile(p)
+	if _, err := b.Update(UpdateInput{ID: n.Header.ID, Status: "closed", Result: "other"}); err != nil {
+		t.Fatal(err)
+	}
+	if after, _ := os.ReadFile(p); string(after) != string(before) {
+		t.Errorf("closing again changed it:\n%s", after)
+	}
+}

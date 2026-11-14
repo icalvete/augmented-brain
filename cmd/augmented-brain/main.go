@@ -199,7 +199,7 @@ func cmdCheck(out, errOut io.Writer) int {
 		return 1
 	}
 	for _, p := range problems {
-		fmt.Fprintln(out, "  ✗", p.Error())
+		fmt.Fprintln(out, "  ✗", p.Text(c.Language))
 	}
 	// Every file the backup takes, docs/ and the archive too, not only the notes.
 	if found, err := backup.Secrets(s.Memory); err == nil {
@@ -255,7 +255,7 @@ func checkShared(c *config.Config, out, errOut io.Writer) (*memory.Memory, bool)
 		return nil, false
 	}
 	for _, p := range problems {
-		fmt.Fprintln(out, "  ✗", p.Error())
+		fmt.Fprintln(out, "  ✗", p.Text(c.Language))
 	}
 	fmt.Fprintln(out, i18n.T(c.Language, "check.shared", paths.Tilde(dir),
 		i18n.Count(c.Language, "notes", len(m.Notes)), i18n.Count(c.Language, "problems", len(problems))))

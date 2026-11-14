@@ -27,10 +27,19 @@ mañana?", "resúmeme las incidencias abiertas de esta épica").
 
 Si usas Claude Code con una API key (un código de la consola de Anthropic en vez
 de tu cuenta de claude.ai), los conectores de claude.ai no están disponibles.
-Puedes añadir servidores MCP tú mismo:
+Puedes añadir servidores MCP tú mismo. Un servidor que corre en tu ordenador se arranca
+con un comando:
 
 ```bash
 claude mcp add --scope user <nombre> -- <comando que arranca el servidor>
+```
+
+Un servidor que corre en internet tiene, en cambio, una dirección. Se añade con
+`--transport http`; Claude Code abre la página del servicio para entrar la primera vez que
+lo usas:
+
+```bash
+claude mcp add --scope user --transport http <nombre> <dirección del servidor>
 ```
 
 Muchos servicios publican un servidor MCP oficial; usa esos cuando existan. Lee qué puede
@@ -40,8 +49,8 @@ hacer un servidor antes de añadirlo: actúa con tu cuenta.
 
 - **Conecta solo lo que uses.** Cada conector añade herramientas entre las que tu
   asistente tiene que elegir.
-- **Tus reglas de seguridad siguen valiendo.** El guardia de augmented brain vigila los
-  comandos y las escrituras de ficheros. Las acciones dentro de un conector (enviar un
+- **El guardia no ve los conectores.** El guardia de augmented brain vigila los comandos
+  y las escrituras de ficheros. Las acciones dentro de un conector (enviar un
   correo, editar un ticket) se confirman con los avisos de permiso de Claude Code: léelos
   antes de aceptar.
 - **Nunca pegues una contraseña o un token en el chat** para conectar un servicio. Cada

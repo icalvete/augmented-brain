@@ -49,7 +49,8 @@ runs, so a change counts at once.
 These go at the top, before any `[spaces.…]` heading.
 
 - `language`: the language the program speaks to you, `en` or `es`: its messages and the
-  guard's reasons. Default `en`.
+  guard's reasons. Default `en`. The installer asks it; change it here whenever you like.
+  It counts at once. Folders and notes already made keep their names and language.
 - `default_space`: the space used outside every work folder, such as the scratch folder
   the desktop app opens a new session in. Its backup carries your profile and the shared
   notes. Optional; with two spaces or more, `init` and `space add` set it.
@@ -176,6 +177,11 @@ memory_trust = "ask"
 The panel's Guard page writes it, and the guard asks before Claude writes it. If the file
 is missing or `preferred_model` is empty, the model is not checked. It is a file of its own for the
 same reason as `guard.toml`. It is not carried by backups.
+
+A line of `guard.toml` or `session.toml` the program does not know is ignored, not
+refused: a newer version may add settings there, and an earlier one keeps working.
+`doctor` and the start of a session name it, with the right name when it looks like a
+typo, because a misspelled setting there does nothing.
 
 ## `remote.toml`
 

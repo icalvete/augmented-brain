@@ -32,7 +32,7 @@ func TestIntroHideAndShow(t *testing.T) {
 	}
 
 	w := s.post(t, "/hints", url.Values{"do": {"hide"}, "key": {"tasks"}, "back": {"/tasks?s=work&f=mine"}})
-	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != s.base()+"/tasks?s=work&f=mine" {
+	if w.Code != http.StatusSeeOther || w.Header().Get("Location") != s.localBase()+"/tasks?s=work&f=mine" {
 		t.Fatalf("hide: %d %q", w.Code, w.Header().Get("Location"))
 	}
 	if b := s.get(t, "/tasks?s=work").Body.String(); strings.Contains(b, `class="intro"`) || !strings.Contains(b, `value="show"`) {

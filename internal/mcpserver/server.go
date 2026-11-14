@@ -9,19 +9,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/confighistory"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
-	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/fresh"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -54,7 +53,7 @@ as Markdown files. Use these tools instead of editing those files by hand.
 - Ideas and loose ends that are not a task go to the inbox (capture). "Remind me on
   Thursday" is a capture with remind_on; a date to check on a task is a watch date
   (task_update with watch_date and watch_what). Both come up at the start of the
-  session on their day.
+  session from a week before their day.
 - The weekly review empties the inbox and looks at stalled tasks: weekly_review lists
   what to go through; go through it with the user one item at a time (each capture
   becomes a task, goes to an area or knowledge, or is dropped), then call review_done
@@ -250,10 +249,10 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		})
 
 	type stepIn struct {
-		ID     string `json:"id"`
+		ID     string `json:"id" jsonschema:"task id, e.g. task-backup"`
 		Number int    `json:"number,omitempty" jsonschema:"the step to tick or untick, 1 for the first checkbox of the Plan"`
 		Text   string `json:"text,omitempty" jsonschema:"the step to tick or untick, by its text (or a part only it contains), when number is not given"`
-		Done   bool   `json:"done,omitempty" jsonschema:"true to tick the step, false to untick it"`
+		Done   bool   `json:"done,omitempty" jsonschema:"true to tick the step; false or left out unticks it"`
 		Add    string `json:"add,omitempty" jsonschema:"add this step, unticked, at the end of the Plan, instead of ticking one"`
 		Space  string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
@@ -286,25 +285,29 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		})
 
 	type updateIn struct {
-		ID        string `json:"id"`
+		ID        string `json:"id" jsonschema:"task id, e.g. task-backup"`
 		Status    string `json:"status,omitempty" jsonschema:"definition, analysis, plan, execution, validation, closed, parked or someday"`
 		WaitingOn string `json:"waiting_on,omitempty" jsonschema:"me, nobody, a person, or another task id"`
 		Next      string `json:"next,omitempty" jsonschema:"the single next action, one line"`
-		Summary   string `json:"summary,omitempty"`
+		Summary   string `json:"summary,omitempty" jsonschema:"one line: what it is"`
 		Area      string `json:"area,omitempty" jsonschema:"id of the area"`
 		WatchDate string `json:"watch_date,omitempty" jsonschema:"add a date (YYYY-MM-DD) to look at something again; needs watch_what"`
 		WatchWhat string `json:"watch_what,omitempty" jsonschema:"what to look at on watch_date, one line"`
 		WatchDone string `json:"watch_done,omitempty" jsonschema:"mark the watch date on this day (YYYY-MM-DD) as done"`
 		Reopen    string `json:"reopen,omitempty" jsonschema:"only to open a closed task again, with a new status: why, in a few words; it goes to the journal. Ask the user first"`
+		Result    string `json:"result,omitempty" jsonschema:"with status closed: what was achieved, as in task_close"`
 		Space     string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
+	tool(s, locked, "task_update", "Change a task's status, who it waits on, its next step, summary or area, or add or close a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
 		func(b0 *brain.Brain, in updateIn) (string, error) {
 			u := brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn, Next: in.Next,
 				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone,
-				Reopen: in.Reopen}
+				Reopen: in.Reopen, Result: in.Result}
 			if in.Status+in.WaitingOn+in.Next+in.Summary+in.Area+in.WatchDate+in.WatchDone == "" {
 				return "", errors.New("nothing to change: give at least one field")
+			}
+			if in.Result != "" && in.Status != "closed" {
+				return "", errors.New("result goes with status closed")
 			}
 			b, err := b0.Other(in.Space)
 			if err != nil {
@@ -313,6 +316,10 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			if b != b0 && in.Status == "closed" {
 				// Closing also ends the task's session and worktree, which belong to that space.
 				return "", fmt.Errorf("a task of space %s is closed from a session of that space, not from %s; write here what was decided (task_journal with space) and close it there", b.Space.Name, b0.Space.Name)
+			}
+			wasClosed := false
+			if before, err := b.Task(in.ID); err == nil {
+				wasClosed = before.Header.Status == "closed"
 			}
 			n, err := b.Update(u)
 			if err != nil {
@@ -324,11 +331,18 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				b.Touched(in.ID, true)
 			}
 			out, _ := header(n, nil)
+			if n.Header.Status == "closed" && !wasClosed {
+				// Closed now: the rest of what task_close does.
+				out += openWatches(n) + closedWorktree(b, in.ID)
+				if strings.TrimSpace(in.Result) == "" {
+					out += "\nIt was closed with no result: write what it achieved in its journal (task_journal)."
+				}
+			}
 			return out + fromOther(b), nil
 		})
 
 	type journalIn struct {
-		ID    string `json:"id"`
+		ID    string `json:"id" jsonschema:"task id, e.g. task-backup"`
 		Entry string `json:"entry" jsonschema:"what was done, what came out, what was decided"`
 		Space string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
@@ -350,9 +364,9 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		})
 
 	type parkIn struct {
-		ID         string `json:"id"`
+		ID         string `json:"id" jsonschema:"task id, e.g. task-backup"`
 		Next       string `json:"next" jsonschema:"exactly how to resume: a command, a file or a decision"`
-		WaitingOn  string `json:"waiting_on,omitempty"`
+		WaitingOn  string `json:"waiting_on,omitempty" jsonschema:"me, nobody, a person, or another task id; left out, it stays as it was"`
 		Essentials string `json:"essentials,omitempty" jsonschema:"pass it: 3 to 6 lines that are enough to resume the task without its journal (what it is, where it is, what was decided, the next step); replaces its first section. Without it only 'where it is' and 'next' are updated"`
 		Someday    bool   `json:"someday,omitempty" jsonschema:"true when it will not be touched for weeks"`
 	}
@@ -367,7 +381,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		})
 
 	type closeIn struct {
-		ID     string `json:"id"`
+		ID     string `json:"id" jsonschema:"task id, e.g. task-backup"`
 		Result string `json:"result" jsonschema:"what was achieved, in one or two lines"`
 	}
 	tool(s, locked, "task_close", "Close a finished task with its result. It is kept, never deleted. A task already closed is refused: its result stays.",
@@ -384,7 +398,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		})
 
 	type worktreeIn struct {
-		ID     string `json:"id"`
+		ID     string `json:"id" jsonschema:"task id, e.g. task-backup"`
 		Repo   string `json:"repo,omitempty" jsonschema:"path of a git repository in the space's work folders: makes the task's own worktree of it, <repo>-<task>, on a new branch from origin's default branch"`
 		Folder string `json:"folder,omitempty" jsonschema:"a git worktree already made for the task: noted, so closing the task removes it. Give repo or folder, not both"`
 	}
@@ -395,7 +409,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 
 	type captureIn struct {
 		Text     string `json:"text" jsonschema:"the idea, link or loose end, in one line"`
-		RemindOn string `json:"remind_on,omitempty" jsonschema:"YYYY-MM-DD: bring it up again at the start of the session on that day"`
+		RemindOn string `json:"remind_on,omitempty" jsonschema:"YYYY-MM-DD: the day to be reminded; it comes up at the start of every session from a week before that day, and after it until the capture is dealt with"`
 		Space    string `json:"space,omitempty" jsonschema:"another space to send it to (its name, as in where_am_i or the configuration); only when the user asks for it to go there. Leave it out for this space's inbox"`
 	}
 	tool(s, locked, "capture", "Note something in the inbox without opening a task, optionally with a day to be reminded. The weekly review processes it. "+
@@ -479,7 +493,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		})
 
 	type areaIn struct {
-		Title   string `json:"title"`
+		Title   string `json:"title" jsonschema:"short name of the area"`
 		Summary string `json:"summary,omitempty" jsonschema:"one line: what this area looks after"`
 	}
 	tool(s, locked, "area_new", "Create an area: a responsibility with no end date that groups tasks and knowledge.",
@@ -492,8 +506,8 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		ID      string `json:"id,omitempty" jsonschema:"to change a reference or lesson that exists, its id; leave it out to create one"`
 		Kind    string `json:"kind" jsonschema:"reference (how something works) or lesson (what was learned)"`
 		Title   string `json:"title" jsonschema:"for a lesson, a title that already states the conclusion"`
-		Summary string `json:"summary,omitempty"`
-		Area    string `json:"area,omitempty"`
+		Summary string `json:"summary,omitempty" jsonschema:"one line: what it says"`
+		Area    string `json:"area,omitempty" jsonschema:"id of its area; not used when shared"`
 		Body    string `json:"body,omitempty" jsonschema:"Markdown"`
 		Shared  bool   `json:"shared,omitempty" jsonschema:"true when it holds in every space, whatever part of the user's life (it then has no area)"`
 	}
@@ -512,11 +526,11 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 	type ruleIn struct {
 		ID      string `json:"id,omitempty" jsonschema:"to change a rule that exists, its id; leave it out to create one"`
 		Title   string `json:"title" jsonschema:"the rule in a few words"`
-		Summary string `json:"summary,omitempty"`
+		Summary string `json:"summary,omitempty" jsonschema:"one line: what it asks"`
 		Body    string `json:"body" jsonschema:"Markdown: what to do, and why"`
 		Shared  bool   `json:"shared,omitempty" jsonschema:"true when it applies in every space, not only this one"`
 	}
-	tool(s, locked, "rule_new", "Save a rule the user gives on how to work, loaded at the start of every session: in this space, or shared by every space. With id, change that rule instead: what you send replaces what it had, what you leave out stays, and the old version is kept in archive/. A title that already exists creates nothing and says its id. To take a rule out, use note_retire.",
+	tool(s, locked, "rule_new", "Save a rule the user gives on how to work, loaded at the start of every session: in this space, or shared by every space. With id, change that rule instead: what you send replaces what it had, what you leave out stays, and the old version is kept in archive/. A title that already exists creates nothing and says its id. To take a rule out, use note_retire. When the user chose to be asked (memory_trust = \"ask\" in session.toml), they are asked first, and the call is refused in a session that skips permission questions.",
 		func(b *brain.Brain, in ruleIn) (string, error) {
 			b, err := where(b, in.Shared)
 			if err != nil {
@@ -542,7 +556,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		ReplacedBy string `json:"replaced_by,omitempty" jsonschema:"the id of the note that replaces it, if any"`
 		Shared     bool   `json:"shared,omitempty" jsonschema:"true when the note is in the shared layer, not in this space"`
 	}
-	tool(s, locked, "note_retire", "Retire a rule, reference or lesson that no longer holds, without deleting it: it moves to archive/, which is never loaded (a rule stops reaching the session start), with a line that says when, why and what replaces it. Use it for a duplicate or an old version; ask the user first.",
+	tool(s, locked, "note_retire", "Retire a rule, reference or lesson that no longer holds, without deleting it: it moves to archive/, which is never loaded (a rule stops reaching the session start), with a line that says when, why and what replaces it. Use it for a duplicate or an old version; ask the user first. For a rule, when the user chose to be asked (memory_trust = \"ask\" in session.toml), they are asked first, and the call is refused in a session that skips permission questions.",
 		func(b *brain.Brain, in retireIn) (string, error) {
 			b, err := where(b, in.Shared)
 			if err != nil {
@@ -594,7 +608,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		ProductionAWSProfiles []string `json:"production_aws_profiles,omitempty" jsonschema:"AWS CLI profiles that reach production, to add; the guard asks before commands that use them"`
 		UntouchableHosts      []string `json:"untouchable_hosts,omitempty" jsonschema:"hosts that must not be touched without asking (ssh names as the user types them), to add"`
 	}
-	tool(s, locked, "safety_save", "Add to what the guard must ask the user about: production AWS profiles and hosts not to touch. They apply on this whole machine, in every space and outside them. Use it in the first session and when the user names a new one. It only adds: to take one out, the user edits the configuration file themselves (the answer says where).",
+	tool(s, locked, "safety_save", "Add to what the guard must ask the user about: production AWS profiles and hosts not to touch. They apply on this whole machine, in every space and outside them. Use it in the first session and when the user names a new one. It only adds: to take one out, the user edits the configuration file themselves (the answer says where). When the user chose to be asked (memory_trust = \"ask\" in session.toml), they are asked first, and the call is refused in a session that skips permission questions.",
 		func(b *brain.Brain, in safetyIn) (string, error) {
 			added := safetyAdded(b.ConfigDir, in.ProductionAWSProfiles, in.UntouchableHosts)
 			out, err := b.SaveSafety(brain.SafetyInput{ProductionAWSProfiles: in.ProductionAWSProfiles, UntouchableHosts: in.UntouchableHosts})
@@ -607,7 +621,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 	type secretIn struct {
 		Service string `json:"service" jsonschema:"the service the secret is kept under in the system keychain, e.g. telegram"`
 		Name    string `json:"name" jsonschema:"its name under that service, e.g. alerts-bot"`
-		What    string `json:"what,omitempty" jsonschema:"what it is for, in a few words"`
+		What    string `json:"what,omitempty" jsonschema:"what it is for, in a few words: one line of plain text, up to 160 characters"`
 	}
 	tool(s, locked, "secret_name_save", "Write down the name of a secret the user keeps in the system keychain (service and name) and what it is for, so they and a new machine know which secrets there are. Never its value: a value is refused. Use it when the user stores a new secret. Saving a name that is listed changes what it is for. The list is the same in every space; the panel shows it.",
 		func(b *brain.Brain, in secretIn) (string, error) {
@@ -645,7 +659,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Assistant   *string `json:"assistant_name,omitempty" jsonschema:"the name the user gives you, their assistant"`
 		Personality *string `json:"assistant_personality,omitempty" jsonschema:"the personality the user wants you to have, in their words: style only, never above the rules"`
 	}
-	tool(s, locked, "profile_save", "Save who the user is, how they like to work, and the name and personality they give you. Every space shares it, and every session starts by reading it. Use it in the first session, and whenever the user asks to change it. Send only the parts that change: a part left out keeps what it has, and an empty one is cleared. The name is needed the first time.",
+	tool(s, locked, "profile_save", "Save who the user is, how they like to work, and the name and personality they give you. Every space shares it, and every session starts by reading it. Use it in the first session, and whenever the user asks to change it. Send only the parts that change: a part left out keeps what it has, and an empty one is cleared. The name is needed the first time. When the user chose to be asked (memory_trust = \"ask\" in session.toml), they are asked first, and the call is refused in a session that skips permission questions.",
 		func(b *brain.Brain, in profileIn) (string, error) {
 			p, err := brain.LoadProfile(b.ConfigDir)
 			if err != nil {
@@ -755,87 +769,25 @@ func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.B
 // replace it.
 var NewRemoteSystem = remote.NewSystem
 
-// StopLog is where the detached `session stop --when-idle` writes how it went, in the
-// configuration's state folder: nobody reads its output otherwise.
-const StopLog = "session-stop.log"
-
-// StopDetached is set in the environment of the detached `session stop --when-idle`,
-// which does the waiting: without it the command starts that copy and returns, so a
-// session can close itself from its own Bash (issue #99: waiting there, it kept itself
-// busy, and the two waited for each other).
-const StopDetached = "AB_STOP_DETACHED"
+// StopLog and StopDetached: see the remote package, where closing a task's session lives.
+const (
+	StopLog      = remote.StopLog
+	StopDetached = remote.StopDetached
+)
 
 // StopSessionWhenIdle starts, detached, the process that closes a task's session once
-// it has finished its answer (`session stop <task> --when-idle`), its output appended
-// to StopLog (started afresh past 64 KB). Tests replace it.
-var StopSessionWhenIdle = func(cfgDir, task string) error {
-	self, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	cmd := exec.Command(self, "session", "stop", task, "--when-idle")
-	cmd.Env = append(os.Environ(), "AB_CONFIG_DIR="+cfgDir, StopDetached+"=1")
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
-	logPath := filepath.Join(cfgDir, state.Dir, StopLog)
-	if fi, err := os.Stat(logPath); err == nil && fi.Size() > 64<<10 {
-		_ = os.Remove(logPath)
-	}
-	if err := os.MkdirAll(filepath.Dir(logPath), 0o700); err == nil {
-		if f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o600); err == nil {
-			defer f.Close() // the child keeps its own copy
-			cmd.Stdout, cmd.Stderr = f, f
-		}
-	}
-	detach.Cmd(cmd)
-	_, err = detach.Start(cmd)
-	return err
-}
+// it has finished its answer (remote.StopWhenIdle). Tests replace it.
+var StopSessionWhenIdle = remote.StopWhenIdle
 
-// closedWorktree removes the worktree session start made for a closed task, when its
-// session no longer runs and it holds nothing of its own, and says what it did (in
-// English, like every tool's answer: the assistant tells the user in their language).
+// closedWorktree ends the session of a closed task and removes its worktrees
+// (remote.System.ClosedTask), but the one this session works in.
 func closedWorktree(b *brain.Brain, task string) string {
 	sys, err := NewRemoteSystem()
 	if err != nil {
 		return ""
 	}
-	// The task has a session of its own: often the one closing it, in the middle of its
-	// answer. A process of its own closes it once it is idle, worktrees and all.
-	if sys.LaunchRunning(b.ConfigDir, task) {
-		if err := StopSessionWhenIdle(b.ConfigDir, task); err == nil {
-			return "\n" + i18n.T("en", "session.closing")
-		}
-		return ""
-	}
-	var out string
-	// One Claude retired after hours unused answers nothing: closed now, so it leaves
-	// Claude Desktop and claude.ai and its worktree can go below.
-	if remote.HasLaunch(b.ConfigDir, task) {
-		var left *remote.LeftInClaude
-		switch err := sys.Stop(b.ConfigDir, task); {
-		case err == nil:
-			out += "\n" + i18n.T("en", "session.closed.retired")
-		case errors.As(err, &left):
-			out += "\n" + i18n.T("en", "session.left", task, left.ID)
-		}
-	}
-	folder, removed, why := sys.CloseTaskWorktree(b.ConfigDir, task)
-	switch {
-	case removed:
-		out += "\n" + i18n.T("en", "session.worktree.closed", paths.Tilde(folder))
-	case why != "":
-		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(folder), i18n.T("en", "session.worktree.why."+why))
-	}
-	// The worktrees the task's sessions made, but the one this session works in.
 	here, _ := os.Getwd()
-	gone, kept := remote.RemoveNotedWorktrees(b.ConfigDir, task, here)
-	for _, f := range gone {
-		out += "\n" + i18n.T("en", "session.worktree.closed", paths.Tilde(f))
-	}
-	for _, k := range kept {
-		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(k.Folder), i18n.T("en", "session.worktree.why."+k.Why))
-	}
-	return out
+	return sys.ClosedTask(b.ConfigDir, task, StopSessionWhenIdle, here)
 }
 
 // taskWorktree makes the task's worktree of repo, or notes folder, for task_worktree.
@@ -895,7 +847,7 @@ func openWatches(n *memory.Note) string {
 		return ""
 	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "\nIt keeps %d open watch date(s). They still come up at the start of the session on their day, until marked done (task_update with watch_done); tell the user:\n", len(open))
+	fmt.Fprintf(&b, "\nIt keeps %d open watch date(s). They still come up at the start of the session from a week before their day, until marked done (task_update with watch_done); tell the user:\n", len(open))
 	for _, w := range open {
 		fmt.Fprintf(&b, "- %s: %s\n", w.Date, w.What)
 	}

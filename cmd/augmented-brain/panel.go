@@ -30,7 +30,9 @@ const panelNoBrowser = "no-browser"
 
 // cmdPanel opens the panel: it starts the server in a detached process (or finds the
 // one running), prints its address, opens the browser, and returns at once.
-// AB_NO_BROWSER=1 or --no-browser only prints the address.
+// AB_NO_BROWSER=1 or --no-browser only prints the address. Run by the assistant
+// (CLAUDECODE set), it never prints one: without a browser it says to run it in a
+// terminal of the user's own.
 func cmdPanel(args []string, out, errOut io.Writer) int {
 	c, ok := loadConfig(errOut)
 	if !ok {
@@ -105,6 +107,13 @@ func cmdPanel(args []string, out, errOut io.Writer) int {
 		}
 		return 0
 	}
+	byAssistant := os.Getenv("CLAUDECODE") != ""
+	if byAssistant && noBrowser {
+		// Run by the assistant with no browser to open: an address it printed would be
+		// one the assistant reads. None is made; the user runs it in a terminal of theirs.
+		fmt.Fprintln(out, i18n.T(l, "panel.cli.own.terminal"))
+		return 0
+	}
 	self, err := os.Executable()
 	if err != nil {
 		fmt.Fprintln(errOut, err)
@@ -131,9 +140,14 @@ func cmdPanel(args []string, out, errOut io.Writer) int {
 		}
 	}
 	address := info.TicketURL(t)
-	opened := !noBrowser && panel.OpenBrowser(address) == nil
+	opened := !noBrowser && panel.OpenBrowser(dir, address) == nil
 	switch {
-	case opened && os.Getenv("CLAUDECODE") != "":
+	case byAssistant && !opened:
+		// The browser could not open (no desktop, a session in the background): the
+		// ticket goes unused and expires; the address is never printed for the assistant.
+		fmt.Fprintln(out, i18n.T(l, "panel.cli.own.terminal"))
+		return 0
+	case byAssistant:
 		// Run by the assistant (/brain:panel): the browser has the link, and the
 		// assistant does not need it. It never sees an address that opens the panel.
 		if started {
@@ -186,6 +200,12 @@ func panelRemote(c *config.Config, out, errOut io.Writer) int {
 	if err != nil {
 		fmt.Fprintln(errOut, explainTailnet(l, err))
 		return 1
+	}
+	if os.Getenv("CLAUDECODE") != "" {
+		// Run by the assistant: the address and its QR code would be printed where the
+		// assistant reads them. Nothing is published; the user runs it in a terminal.
+		fmt.Fprintln(out, i18n.T(l, "panel.remote.own.terminal"))
+		return 0
 	}
 	self, err := os.Executable()
 	if err != nil {

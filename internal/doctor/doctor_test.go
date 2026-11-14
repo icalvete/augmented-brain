@@ -90,6 +90,19 @@ func TestHealthyAndBroken(t *testing.T) {
 	if c := find(checks, "not valid"); c == nil || c.Status != Failed || Worst(checks) != Failed {
 		t.Errorf("broken note not reported: %+v", checks)
 	}
+	if c := find(checks, "not valid"); c != nil && strings.Contains(c.Fix, "augmented-brain update") {
+		t.Errorf("a note with no header does not ask to update: %+v", c)
+	}
+
+	// A field only a newer version knows asks to update.
+	newer := "---\nid: area-new\ntype: area\ntitle: New\ncolour: blue\n---\n"
+	if err := os.WriteFile(filepath.Join(home, "brain", "areas", "area-new.md"), []byte(newer), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	checks = Run(Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: yes, Hook: denies})
+	if c := find(checks, "not valid"); c == nil || !strings.Contains(c.Fix, "augmented-brain update") || !strings.Contains(c.Fix, "1 of them") {
+		t.Errorf("a newer note must ask to update: %+v", c)
+	}
 }
 
 // Two spaces and no default one (a configuration from before 0.2.9): no backup keeps the
@@ -225,7 +238,24 @@ func TestGuardFileChecks(t *testing.T) {
 	if c := find(Run(env), "guard.toml cannot be read"); c == nil || c.Status != Warning {
 		t.Error("a broken guard.toml is not a warning")
 	}
+	// A misspelled setting is ignored, not refused: doctor names it and the right name.
+	if err := os.WriteFile(filepath.Join(cfg, config.GuardFile), []byte("untouchable_repo = [\"~/work/core\"]\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if c := find(Run(env), "guard.toml has settings this version does not know, and ignores them: untouchable_repo (did you mean untouchable_repos?)"); c == nil || c.Status != Warning || !strings.Contains(c.Fix, "guard.toml") {
+		t.Errorf("unknown setting in guard.toml: %+v", c)
+	}
+	if err := os.WriteFile(filepath.Join(cfg, config.SessionFile), []byte("memory_trus = \"ask\"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if c := find(Run(env), "session.toml has settings"); c == nil || !strings.Contains(c.What, "memory_trust?") {
+		t.Errorf("unknown setting in session.toml: %+v", c)
+	}
+	_ = os.Remove(filepath.Join(cfg, config.SessionFile))
 	_ = config.SaveGuard(cfg, config.Guard{})
+	if c := find(Run(env), "does not know"); c != nil {
+		t.Errorf("a clean guard.toml: %+v", c)
+	}
 	if err := state.WriteSeal(cfg, "not-the-current-one"); err != nil {
 		t.Fatal(err)
 	}

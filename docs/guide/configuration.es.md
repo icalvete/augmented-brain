@@ -49,7 +49,8 @@ que se ejecuta, así que un cambio vale al momento.
 Van arriba, antes de cualquier encabezado `[spaces.…]`.
 
 - `language`: el idioma en el que te habla el programa, `en` o `es`: sus mensajes y los
-  motivos del guardia. Por defecto, `en`.
+  motivos del guardia. Por defecto, `en`. Lo pregunta el instalador; cámbialo aquí cuando
+  quieras. Cuenta al momento. Las carpetas y notas ya creadas no cambian de nombre ni de idioma.
 - `default_space`: el espacio que se usa fuera de todas las carpetas de trabajo, como la
   carpeta provisional en la que la app de escritorio abre una sesión nueva. Su copia de
   seguridad lleva tu perfil y las notas compartidas. Es opcional; con dos espacios o más,
@@ -182,6 +183,11 @@ memory_trust = "ask"
 La página Guardia del panel lo escribe, y el guardia pregunta antes de que Claude lo
 escriba. Si el fichero falta o `preferred_model` está vacío, el modelo no se comprueba. Es un fichero
 aparte por la misma razón que `guard.toml`. Las copias de seguridad no lo llevan.
+
+Una línea de `guard.toml` o `session.toml` que el programa no conoce no se tiene en
+cuenta, pero no se rechaza: una versión más nueva puede añadir ajustes ahí, y una anterior
+sigue funcionando. `doctor` y el inicio de una sesión la nombran, con el nombre correcto
+si parece una errata, porque un ajuste mal escrito ahí no hace nada.
 
 ## `remote.toml`
 

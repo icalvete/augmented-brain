@@ -27,13 +27,25 @@ Cada espacio (trabajo, personal…) tiene su propia puerta, con su propio nombre
 `<nombre del ordenador>-<espacio>`, como `mi-portatil-personal`. Una sesión abierta por esa
 puerta empieza en una carpeta que es de ese espacio, así que Claude carga las notas y las
 reglas de ese espacio, y nada se cruza entre espacios. Por defecto solo tu espacio por
-defecto tiene puerta. Para abrir otra para trabajo, mira [Configuración](configuration.es.md).
+defecto tiene puerta. Para abrir otra para trabajo, pon los dos espacios en `remote.toml`,
+en la carpeta de configuración, y vuelve a lanzar `augmented-brain remote install`:
+
+```toml
+spaces = ["personal", "work"]
+```
 
 Esa carpeta es la primera carpeta de trabajo del espacio, la que pusiste al crearlo: donde
 ya trabajas, así que una sesión abierta desde el móvil empieza donde la abrirías delante
-del ordenador. Para que empiece en otra carpeta dentro del espacio, usa `folders` en
-[`remote.toml`](configuration.es.md). Solo un espacio sin carpetas de trabajo tiene una
-carpeta propia, `~/.config/augmented-brain/remote/<espacio>`.
+del ordenador. Para que empiece en otra carpeta dentro del espacio, nómbrala en
+`remote.toml`:
+
+```toml
+folders = { work = "~/code/clients" }
+```
+
+Solo un espacio sin carpetas de trabajo tiene una carpeta propia, `remote/<espacio>`
+dentro de la carpeta de configuración (mira [Dónde vive cada cosa](where-things-live.es.md)).
+Todos los ajustes de `remote.toml` están en [Configuración](configuration.es.md#remotetoml).
 
 ## Instálalo
 
@@ -74,6 +86,19 @@ sudo loginctl enable-linger tu-usuario
 
 macOS y Windows no tienen linger: ahí el servicio arranca cuando entras en tu sesión.
 
+## Mantenlo seguro
+
+**Es una puerta permanente a tu ordenador.** Quien entre en tu cuenta de Claude puede
+trabajar en la máquina por ella.
+
+- Claude pregunta antes de actuar, como siempre (modo de permisos `default`), y el
+  guardia sigue vigente: frena los push, root y los secretos, y pregunta antes de
+  producción.
+- **No pongas `permission_mode` en `bypassPermissions`.** Deja que quien se conecte
+  ejecute lo que quiera sin preguntar, y deja la máquina abierta.
+- Protege tu cuenta de Claude: una contraseña fuerte y verificación en dos pasos.
+- Quita la puerta cuando no la necesites: `augmented-brain remote uninstall`.
+
 ## Compruébalo
 
 ```bash
@@ -81,11 +106,13 @@ augmented-brain remote status
 ```
 
 Para cada espacio dice si el servicio está en marcha, si Claude confía en su carpeta y,
-en Linux, si el linger está activado, con lo que hacer con cada problema. En Linux
-también dice cómo está el vigilante (el que trae de vuelta un servicio cuyo servidor
-archivó la sesión, mira abajo): si está en marcha y cuánto hace que miró por última vez.
-`augmented-brain doctor` enseña lo mismo, una línea por espacio, y una más para el
-vigilante solo cuando falla.
+en Linux, si el linger está activado, con lo que hacer con cada problema.
+
+En Linux, `install` prepara también un **vigilante**: un temporizador pequeño que mira
+los servicios cada dos minutos y trae de vuelta uno cuya sesión archivó el servidor (mira
+«Conviene saber», abajo). `status` dice cómo está: si está en marcha y cuánto hace que
+miró por última vez. `augmented-brain doctor` enseña lo mismo, una línea por espacio, y
+una más para el vigilante solo cuando falla.
 
 Cuando un servicio falla, dice por qué. En Linux, en el registro del sistema (el journal):
 
@@ -110,73 +137,10 @@ pone al día.
 3. Empieza una sesión. Empieza las que quieras: cada una arranca en la carpeta de ese
    espacio.
 
-## Una sesión por tarea
-
-Esta parte es solo para Linux por ahora: solo se ha probado ahí. En macOS y Windows
-`session start` dice que no está disponible.
-
-Las sesiones de la puerta empiezan todas en la carpeta del espacio. Para trabajar en una
-tarea en su propia sesión, en su carpeta, pídeselo a la sesión en la que estás: «ábreme una
-sesión para la tarea de la web». Toda sesión en Linux sabe hacerlo, aquí o desde otro
-ordenador, porque el inicio de cada una se lo cuenta. Lanza
-
-```bash
-augmented-brain session start task-new-website
-```
-
-y en menos de un minuto sale en claude.ai y Claude Desktop una sesión nueva, con el nombre
-de la tarea. Empieza sola: lee su tarea, te dice cómo está y se pone con el siguiente
-paso. Solo oye lo que es de su tarea: las fechas de esa tarea, no el resto de avisos del
-espacio, la revisión semanal ni las sesiones por recuperar, que salen en tus otras
-sesiones. Cuando para, avisa en una línea a la sesión que la pidió. La carpeta es la del primer repositorio de la tarea que encuentra en
-las carpetas de trabajo del espacio, o la que diga `--folder`; sin repositorio, la carpeta
-del espacio. Para un repositorio bare, la
-tarea recibe un worktree de git propio, en una rama nueva desde la rama por defecto de
-origin. Se va solo cuando no se pierde nada: con `session stop`, al cerrar la tarea o, si
-la sesión terminó de otra forma (un reinicio, cerrarla desde Claude Desktop), en el
-próximo `session start`. Uno con cambios sin commitear o sin subir, o con ficheros que git
-ignora como un `.env`, se queda, y `doctor` lo nombra.
-
-- **Claude tiene que confiar en esa carpeta ella misma.** Que confíe en la carpeta del
-  espacio no basta. La primera vez, el comando dice qué hacer: en la máquina (o por
-  `ssh`), entra en la carpeta, lanza `claude`, acepta la pregunta y ciérralo con `/exit`.
-  Luego pídelo otra vez. En un worktree de git, Claude guarda la respuesta con su
-  repositorio principal: basta con confiar en uno de los dos.
-- **Una tarea por carpeta.** Dos tareas en una carpeta se pisarían los cambios, así que
-  una carpeta que ya usa la sesión de otra tarea se rechaza. Dale otra con `--folder`
-  (un worktree de git del repositorio, por ejemplo).
-- **Termina con `augmented-brain session stop <tarea>`**, que también la quita de Claude
-  Desktop y claude.ai, al cerrar su tarea (cuando termina su respuesta) o al reiniciar la
-  máquina. Tras un reinicio solo vuelven las
-  puertas: pide otra vez las sesiones de las tareas. `augmented-brain session list`
-  enseña las abiertas.
-- **Claude retira una sesión que lleva horas sin uso.** Deja de correr, y claude.ai la
-  enseña desconectada. `session list` la llama retirada; `session start` con su tarea
-  la trae de vuelta con toda su conversación, y `session stop` y cerrar la tarea la
-  cierran igual.
-- **Espera a una pull request con `augmented-brain watch pr`.** La sesión deja
-  [`watch pr`](commands.es.md#augmented-brain-watch-pr) en marcha en segundo plano con su
-  tarea. Cuando los checks pasan o fallan, o la pull request se mezcla, apunta el
-  resultado en la tarea, para que tus otras sesiones se enteren aunque esta ya no esté, y
-  le pide a la sesión que te avise en el acto. Nunca espera para siempre: 3 horas como mucho.
-- **Una sesión que no puede trabajar no se queda abierta.** `session start` comprueba
-  antes que Claude Code tiene la sesión iniciada, y luego espera la primera respuesta
-  (hasta un minuto). Si esa respuesta es un error, como un login caducado, cierra la
-  sesión y dice qué hacer. Una sesión cuya respuesta falla más tarde sale como fallida
-  en `session list`.
-
-## Mantenlo seguro
-
-**Es una puerta permanente a tu ordenador.** Quien entre en tu cuenta de Claude puede
-trabajar en la máquina por ella.
-
-- Claude pregunta antes de actuar, como siempre (modo de permisos `default`), y el
-  guardia sigue vigente: frena los push, root y los secretos, y pregunta antes de
-  producción.
-- **No pongas `permission_mode` en `bypassPermissions`.** Deja que quien se conecte
-  ejecute lo que quiera sin preguntar, y deja la máquina abierta.
-- Protege tu cuenta de Claude: una contraseña fuerte y verificación en dos pasos.
-- Quita la puerta cuando no la necesites: `augmented-brain remote uninstall`.
+Las sesiones de la puerta empiezan todas en la carpeta del espacio. En Linux, una tarea
+puede tener además una sesión propia, en su propia carpeta: pídeselo a la sesión en la
+que estás, «ábreme una sesión para la tarea de la web». Mira
+[Una sesión por tarea](task-sessions.es.md).
 
 ## Conviene saber
 
@@ -187,14 +151,38 @@ trabajar en la máquina por ella.
   alguien entra en la sesión.
 - Si caduca tu acceso a Claude, el servicio sigue en marcha pero nadie puede conectarse.
   `status` y `doctor` lo dicen; lanza `claude` una vez e inicia sesión otra vez.
-- **Si el servidor archiva la sesión** (porque la archivaste en claude.ai, por ejemplo), en
-  Linux el servicio vuelve solo con una sesión nueva y vacía del mismo nombre, en unos
-  diez minutos: un vigilante mira cada dos minutos (mira
-  [`remote watch`](commands.es.md#augmented-brain-remote-watch)). En macOS y Windows,
-  vuelve a lanzar `augmented-brain remote install`.
+- **Si el servidor archiva la sesión** (porque la archivaste en claude.ai, por ejemplo),
+  el servicio sigue en marcha sin nadie detrás. En Linux el vigilante lo trae de vuelta
+  solo, con una sesión nueva y vacía del mismo nombre, en unos diez minutos (mira
+  [`remote watch`](commands.es.md#augmented-brain-remote-watch)).
 - Las sesiones que empieces desde el móvil son del espacio de su carpeta: la puerta de
   trabajo abre las notas de trabajo. Para llegar a otro espacio, usa la puerta de ese
   espacio.
+
+### Una sesión archivada en macOS y Windows
+
+Ahí no hay vigilante, y volver a instalar no basta: Claude guarda una nota de la sesión
+archivada, `bridge-pointer.json`, y un servicio nuevo la vuelve a coger y la pierde al
+momento. Aparta esa nota a mano:
+
+1. Para las puertas:
+
+   ```bash
+   augmented-brain remote uninstall
+   ```
+
+2. En `.claude/projects`, dentro de tu carpeta personal, abre la carpeta cuyo nombre
+   acaba en el nombre de la carpeta de la puerta (Claude la nombra con la ruta entera,
+   con `-` en lugar de cada separador). Cambia el nombre de `bridge-pointer.json` a
+   `bridge-pointer.json.archived`. No lo borres.
+3. Arranca otra vez las puertas:
+
+   ```bash
+   augmented-brain remote install
+   ```
+
+En pocos minutos sale una sesión nueva y vacía del mismo nombre: antes, el lado de Claude
+suelta la vieja. La conversación de la sesión archivada no vuelve.
 
 ## Quitarlo
 
@@ -202,12 +190,13 @@ trabajar en la máquina por ella.
 augmented-brain remote uninstall
 ```
 
-Para y quita los servicios y, en Linux, el vigilante (en Windows, también el programa que tenían en marcha). Las
-carpetas, y su sitio entre las carpetas de trabajo del
-espacio, se quedan, y no se borra nada más. Bórralas a mano si quieres.
+Para los servicios y los quita, y en Linux también el vigilante. En Windows, además,
+cierra los programas que esos servicios habían arrancado. Las carpetas, y su sitio entre
+las carpetas de trabajo del espacio, se quedan, y no se borra nada más. Bórralas a mano
+si quieres.
 
 ## Los ajustes
 
 `remote.toml`, en la carpeta de configuración: `enabled`, `spaces`, `name_prefix`,
-`permission_mode` y `folders`. Mira [Configuración](configuration.es.md). Los comandos están en
-[Comandos](commands.es.md).
+`permission_mode` y `folders`. Mira [Configuración](configuration.es.md#remotetoml). Los
+comandos están en [Comandos](commands.es.md).
