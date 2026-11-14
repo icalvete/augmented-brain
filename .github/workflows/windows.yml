@@ -36,37 +36,19 @@ jobs:
       - name: Vet
         run: go vet ./...
       # No -race: on Windows it needs a C compiler the runner does not set up.
-      # -timeout well below the job's 10 minutes (a package's binary may start minutes
-      # after go test, once one of the runner's few slots frees): a test that hangs then
-      # fails with the stack of every goroutine, which says where it waits, instead of
-      # the job being cancelled with nothing to go on. internal/hook starts some 5
-      # minutes in; the slowest package (internal/backup) takes 2.
+      # -timeout well below the job's 10 minutes, so a test that hangs fails with every
+      # goroutine's stack instead of the job being cancelled with nothing to go on.
+      #
+      # internal/hook runs on its own, before the rest. Run among all the packages at
+      # once, Windows sometimes never starts its test binary: go test -x printed the
+      # command, no process of it existed minutes later, and -timeout cannot fire before
+      # the process starts (14-nov-2026, #228). On its own it started in every run tried.
+      - name: Test internal/hook
+        timeout-minutes: 4
+        run: go test -timeout 3m ./internal/hook/
       - name: Test
-        shell: pwsh
-        # Diagnosis (to be taken out): when go test has not ended after 7 minutes, list
-        # every process with its parent and command line, to see what keeps it waiting.
-        run: |
-          $p = Start-Process go -ArgumentList 'test','-x','-timeout','3m','./...' -NoNewWindow -PassThru -RedirectStandardError D:\gotest-x.txt
-          $null = $p.Handle  # so ExitCode is read after the process ends
-          function Show-Defender {
-            Write-Output "Defender, last events:"
-            Get-WinEvent -LogName 'Microsoft-Windows-Windows Defender/Operational' -MaxEvents 40 -ErrorAction SilentlyContinue |
-              ForEach-Object { "{0:HH:mm:ss} {1} {2}" -f $_.TimeCreated, $_.Id, ($_.Message -replace '\s+', ' ').Substring(0, [Math]::Min(300, ($_.Message -replace '\s+', ' ').Length)) } | Write-Output
-            Get-MpComputerStatus -ErrorAction SilentlyContinue | Select-Object RealTimeProtectionEnabled, IsTamperProtected, AMServiceEnabled | Format-List | Out-String | Write-Output
-          }
-          if (-not $p.WaitForExit(420000)) {
-            Write-Output "go test still running after 7 minutes; processes:"
-            Get-CimInstance Win32_Process | Sort-Object ParentProcessId |
-              ForEach-Object { "{0,6} {1,6} {2}" -f $_.ProcessId, $_.ParentProcessId, $_.CommandLine } | Write-Output
-            Write-Output "test binaries run, folders removed (go test -x):"
-            Select-String -Path D:\gotest-x.txt -Pattern '\.test\.exe |^rm -rf |^cd ' | ForEach-Object { "{0,6} {1}" -f $_.LineNumber, $_.Line } | Write-Output
-            Show-Defender
-            Stop-Process -Id $p.Id -Force
-            exit 1
-          }
-          Select-String -Path D:\gotest-x.txt -Pattern 'FAIL|panic' | Write-Output
-          Show-Defender
-          exit $p.ExitCode
+        shell: bash
+        run: go test -timeout 3m $(go list ./... | grep -v '/internal/hook$')
       - name: Build
         run: go build -o augmented-brain.exe ./cmd/augmented-brain
       - name: The program runs
