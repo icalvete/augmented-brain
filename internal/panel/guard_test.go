@@ -285,7 +285,7 @@ func TestGuardPageRemoteOnlyShows(t *testing.T) {
 	}
 	const rhost, owner = "box.example.ts.net:8443", "lucia@example.com"
 	s.remote.Store(&Remote{Host: rhost, Owner: owner})
-	w := s.do(t, req{path: s.base() + "/guard?s=work", host: rhost, owner: owner})
+	w := s.do(t, req{path: s.netBase() + "/guard?s=work", host: rhost, owner: owner})
 	body := w.Body.String()
 	if w.Code != http.StatusOK || !strings.Contains(body, "from another device") {
 		t.Fatalf("remote page: %d, no note: %.300s", w.Code, body)
@@ -314,8 +314,8 @@ func TestGuardPageRemoteOnlyShows(t *testing.T) {
 		"/guard/trust":  {"value": {"ask"}},
 	} {
 		form.Set("s", "work")
-		form.Set("csrf", s.csrf)
-		w := s.do(t, req{method: http.MethodPost, path: s.base() + path, host: rhost, owner: owner, origin: "https://" + rhost, form: form})
+		form.Set("csrf", s.netCSRF)
+		w := s.do(t, req{method: http.MethodPost, path: s.netBase() + path, host: rhost, owner: owner, origin: "https://" + rhost, form: form})
 		if w.Code != http.StatusBadRequest || !strings.Contains(w.Body.String(), "only from this computer") {
 			t.Errorf("remote %s: %d", path, w.Code)
 		}

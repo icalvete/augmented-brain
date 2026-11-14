@@ -156,23 +156,23 @@ func (s *Server) backupRun(v *view, r *http.Request) (string, error) {
 func (s *Server) backupSetup(w http.ResponseWriter, r *http.Request) {
 	lang := s.lang()
 	if s.viaRemote(r) {
-		s.fail(w, r, nil, http.StatusBadRequest, errors.New(i18n.T(lang, "panel.backup.localonly")))
+		s.failForm(w, r, nil, errors.New(i18n.T(lang, "panel.backup.localonly")))
 		return
 	}
 	if strings.TrimSpace(r.PostForm.Get("url")) == "" {
 		c, err := config.Load(s.cfgDir)
 		if err != nil {
-			s.fail(w, r, nil, http.StatusBadRequest, err)
+			s.failForm(w, r, nil, err)
 			return
 		}
 		name := r.PostForm.Get("s")
 		sp, ok := c.Spaces[name]
 		if !ok {
-			s.fail(w, r, nil, http.StatusBadRequest, errNoSpace)
+			s.failForm(w, r, nil, errNoSpace)
 			return
 		}
 		if sp.Backup != "" {
-			s.fail(w, r, nil, http.StatusBadRequest, errors.New(i18n.T(lang, "panel.backup.err.has", backup.WithoutPassword(sp.Backup))))
+			s.failForm(w, r, nil, errors.New(i18n.T(lang, "panel.backup.err.has", backup.WithoutPassword(sp.Backup))))
 			return
 		}
 		made, err := s.gitHubRepo(name)
@@ -181,7 +181,7 @@ func (s *Server) backupSetup(w http.ResponseWriter, r *http.Request) {
 			err = errors.New(i18n.T(lang, "panel.backup.err.gh"))
 		}
 		if err != nil {
-			s.fail(w, r, nil, http.StatusBadRequest, err)
+			s.failForm(w, r, nil, err)
 			return
 		}
 		r.PostForm.Set("url", made)
@@ -250,7 +250,7 @@ func (s *Server) goBack(c *config.Config, sp *config.Space, rev string) error {
 // then it starts a copy, which sends the result to the backup.
 func (s *Server) backupBack(w http.ResponseWriter, r *http.Request) {
 	lang := s.lang()
-	fail := func(err error) { s.fail(w, r, nil, http.StatusBadRequest, err) }
+	fail := func(err error) { s.failForm(w, r, nil, err) }
 	if s.viaRemote(r) {
 		fail(errors.New(i18n.T(lang, "panel.backup.back.localonly")))
 		return
@@ -315,5 +315,5 @@ func (s *Server) backupBack(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	q := url.Values{"started": {name}, "back": {when}, "s": {name}}
-	http.Redirect(w, r, s.base()+"/backup?"+q.Encode(), http.StatusSeeOther)
+	http.Redirect(w, r, s.base(r)+"/backup?"+q.Encode(), http.StatusSeeOther)
 }

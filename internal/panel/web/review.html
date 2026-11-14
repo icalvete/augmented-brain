@@ -5,21 +5,22 @@
 
 <h2>{{t "inbox"}} <span class="hint">· {{len .Inbox}}</span></h2>
 {{if .Inbox}}<ul class="cards">
-{{range .Inbox}}<li class="card">
+{{range .Inbox}}{{$f := print "/review/capture#" .Date " " .Text}}<li class="card">
   <div class="title">{{inline .Text}}</div>
   <div class="meta"><span>{{.Date}}</span>{{if .Remind}}<span class="badge">{{t "f.remind"}}: {{.Remind}}</span>{{end}}{{if .From}}<span class="badge">{{t "f.from"}} {{.From}}</span>{{end}}</div>
   <form method="post" action="{{$.Base}}/review/capture" class="row wrap">
-    {{template "fields" (fields $ "date" .Date "text" .Text)}}
+    {{template "fields" (fields $ "date" .Date "text" .Text "form" (print .Date " " .Text))}}
     <select name="as" aria-label="{{t "f.as"}}">
-      <option value="task">{{t "review.as.task"}}</option>
-      <option value="reference">{{t "review.as.reference"}}</option>
-      <option value="lesson">{{t "review.as.lesson"}}</option>
-      <option value="drop">{{t "review.as.drop"}}</option>
+      <option value="task"{{if $.On $f "as" "task" false}} selected{{end}}>{{t "review.as.task"}}</option>
+      <option value="reference"{{if $.On $f "as" "reference" false}} selected{{end}}>{{t "review.as.reference"}}</option>
+      <option value="lesson"{{if $.On $f "as" "lesson" false}} selected{{end}}>{{t "review.as.lesson"}}</option>
+      <option value="drop"{{if $.On $f "as" "drop" false}} selected{{end}}>{{t "review.as.drop"}}</option>
     </select>
-    <select name="area" aria-label="{{t "f.area"}}">{{range $.D.Areas}}<option value="{{.Value}}">{{.Label}}</option>{{end}}</select>
-    <input name="title" maxlength="200" aria-label="{{t "f.title"}}" placeholder="{{t "review.title.hint"}}">
+    <select name="area" aria-label="{{t "f.area"}}">{{range $.D.Areas}}<option value="{{.Value}}"{{if $.On $f "area" .Value false}} selected{{end}}>{{.Label}}</option>{{end}}</select>
+    <input name="title" maxlength="200" aria-label="{{t "f.title"}}" placeholder="{{t "review.title.hint"}}" value="{{$.Val $f "title" ""}}">
     <button type="submit" class="small">{{t "review.do"}}</button>
   </form>
+  {{template "ferr" ($.FormErr $f)}}
 </li>{{end}}
 </ul>{{else}}<p class="empty">{{t "inbox.none"}}</p>{{end}}
 
@@ -46,7 +47,8 @@
 {{if .Draft}}<p class="hint">{{t "review.draft"}}</p><pre class="body">{{.Draft}}</pre>{{end}}
 <form method="post" action="{{$.Base}}/review/done" class="stack">
   {{template "fields" (fields $)}}
-  <label>{{t "review.summary"}} <textarea name="summary" rows="3" maxlength="4000"></textarea></label>
+  <label>{{t "review.summary"}} <textarea name="summary" rows="3" maxlength="4000">{{$.Val "/review/done" "summary" ""}}</textarea></label>
+  {{template "ferr" ($.FormErr "/review/done")}}
   <button type="submit">{{t "review.done"}}</button>
 </form>
 {{end}}{{end}}

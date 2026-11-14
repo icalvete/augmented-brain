@@ -10,13 +10,15 @@
 </li>{{end}}
 </ul>{{else}}<p class="empty">{{t "reminders.none"}}</p>{{end}}
 
-{{if .Tasks}}<details class="box">
+{{if .Tasks}}<details class="box"{{if $.Open "/watch/add"}} open{{end}}>
   <summary>{{t "watch.add"}}</summary>
   <form method="post" action="{{$.Base}}/watch/add" class="stack">
     {{template "fields" (fields $ "back" "reminders")}}
-    <label>{{t "f.task"}} <select name="id">{{range .Tasks}}<option value="{{.Value}}">{{.Label}}</option>{{end}}</select></label>
-    <label>{{t "f.date"}} <input type="date" name="date" required></label>
-    <label>{{t "f.what"}} <input name="what" required maxlength="500"></label>
+    <label>{{t "f.task"}} <select name="id">{{range .Tasks}}<option value="{{.Value}}"{{if $.On "/watch/add" "id" .Value false}} selected{{end}}>{{.Label}}</option>{{end}}</select></label>
+    <label>{{t "f.date"}} <input type="date" name="date" required value="{{$.Val "/watch/add" "date" ""}}"></label>
+    {{template "ferr" ($.Err "/watch/add" "date")}}
+    <label>{{t "f.what"}} <input name="what" required maxlength="500" value="{{$.Val "/watch/add" "what" ""}}"></label>
+    {{template "ferr" ($.FormErr "/watch/add")}}
     <button type="submit">{{t "add"}}</button>
   </form>
 </details>{{end}}

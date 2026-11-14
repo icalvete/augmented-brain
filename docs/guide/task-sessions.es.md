@@ -99,6 +99,10 @@ lista las sesiones de tarea abiertas en este ordenador: la tarea, si corre y su 
   conversación.
 - **fallida**: su última respuesta fue un error, como un login caducado. La línea dice
   qué hacer.
+- **en espera**: la paró el límite de uso de Claude. La línea dice a qué hora vuelve el
+  límite. Con el acceso remoto instalado (`augmented-brain remote install`), la sesión
+  se despierta entonces, sola, y sigue con su tarea; te avisa cuando empieza la espera
+  y cuando las sesiones han vuelto. Sin él, escríbele cuando vuelva el límite.
 
 ```bash
 augmented-brain session stop task-new-website

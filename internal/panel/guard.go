@@ -375,15 +375,18 @@ func (s *Server) guardRootAsk(v *view, r *http.Request) (string, error) {
 		switch field(r, "op") {
 		case "add":
 			host, until := field(r, "host"), field(r, "until")
-			if host == "" || until == "" {
-				return errors.New(v.t("err.required", v.t("f.host")))
+			if host == "" {
+				return &fieldError{"host", errors.New(v.t("err.required", v.t("f.host")))}
+			}
+			if until == "" {
+				return &fieldError{"until", errors.New(v.t("err.required", v.t("guard.until")))}
 			}
 			if field(r, "confirm") != host {
-				return errors.New(v.t("guard.err.typename", host))
+				return &fieldError{"confirm", errors.New(v.t("guard.err.typename", host))}
 			}
 			entry := host + " until " + until
 			if _, err := config.ParseRootAsk(v.lang, entry); err != nil {
-				return err
+				return &fieldError{"until", err}
 			}
 			if !slices.Contains(cur, entry) {
 				cur = append(slices.Clone(cur), entry)

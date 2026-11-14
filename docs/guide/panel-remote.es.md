@@ -17,11 +17,6 @@ Arranca el panel, lo publica en tu red de Tailscale y escribe su dirección, com
 móvil al código, o abre la dirección en el otro ordenador. La dirección abre el panel
 una vez, en los próximos 10 minutos: vuelve a lanzar el comando para tener otra.
 
-Si el panel ya está abierto en este ordenador, no se para: el mismo panel empieza a
-responder también por la red, y las páginas que tienes abiertas siguen funcionando. Si
-ese panel era de una versión anterior, tiene que arrancar de nuevo: el comando lo dice, y
-recargas esas páginas. Si publicarlo falla, el panel sigue solo en este ordenador.
-
 ## Lo que hace falta, una vez
 
 El comando comprueba cada cosa y, si falta alguna, dice exactamente qué hacer. Nunca
@@ -56,16 +51,33 @@ Cuatro cosas hacen que sea solo tuyo:
   cuenta con la que entraste, con su contraseña y su segundo factor), y el panel solo
   deja entrar al dueño del ordenador. Otra persona de tu red, o alguien con quien
   compartes un dispositivo, recibe «forbidden» aunque tenga la dirección.
-- **La red tiene su propia puerta.** Lo que trae Tailscale llega a un puerto del panel
-  que solo usa él, y se trata como venido de la red diga lo que diga de sí mismo: desde
-  ahí no se puede hacer nada de lo que es solo de este ordenador. Desde otro dispositivo
-  puedes mirarlo todo, pero no hacer una copia ahora, configurar una copia de seguridad,
-  volver a una copia o a una configuración anterior, ni cambiar nada en la página
-  Guardia (sus listas, el modelo de tus sesiones, lo que el asistente guarda solo).
+- **Lo que llega de otro dispositivo se trata siempre como tal.** Tailscale le pasa
+  al panel sus visitas por una entrada propia, y el panel las reconoce por esa entrada,
+  no por lo que la visita diga de sí misma. Así, una visita no puede hacerse pasar por
+  este ordenador, y lo que solo puede hacer este ordenador se queda aquí (mira abajo).
 - **La dirección sirve una vez**, y las páginas que abre llevan una llave que cambia
-  cada vez que arranca el panel.
+  cada vez que arranca el panel. Esa llave es solo del otro dispositivo: no abre el
+  panel en este ordenador, y la llave de las páginas de este ordenador no lo abre desde
+  otro dispositivo. Así, quien se hiciera con la dirección del otro dispositivo seguiría
+  sin poder hacer aquí lo que solo puede este ordenador.
+  La dirección es para ti, no para Claude: lanzado por Claude, el comando no publica
+  nada y te pide que lo lances en una terminal tuya.
 
 No hay otra contraseña que teclear: tu cuenta de Tailscale es la entrada.
+
+## Lo que solo puede hacer este ordenador
+
+Desde otro dispositivo puedes leer todas las páginas y hacer casi todo: tareas, buzón,
+recordatorios, personas, tu perfil. Unas pocas cosas cambian tu copia de seguridad o lo
+que Claude puede hacer, así que el panel solo las hace en este ordenador, y desde otro
+dispositivo la página solo enseña:
+
+- hacer una copia ahora;
+- configurar una copia de seguridad;
+- volver a una copia de tus notas;
+- volver a una configuración anterior, en la página Versiones;
+- cambiar cualquier cosa de la página Guardia: sus listas, el modelo de tus sesiones y
+  lo que el asistente guarda solo.
 
 ## Siempre es temporal
 
@@ -87,3 +99,11 @@ augmented brain no la toca y te lo dice. Solo retira la dirección que publicó 
 `augmented-brain doctor` tiene una línea sobre el panel remoto en cuanto lo has usado: si
 Tailscale sigue instalado, conectado y con HTTPS, y si quedó publicada una dirección del
 panel.
+
+## Si el panel ya estaba abierto
+
+Si el panel ya está abierto en este ordenador cuando lanzas
+`augmented-brain panel remote`, no se para: el mismo panel empieza a responder también por la red, y las páginas
+que tienes abiertas siguen funcionando. Si ese panel era de una versión anterior, tiene
+que arrancar de nuevo: el comando lo dice, y recargas esas páginas. Si publicarlo falla,
+el panel sigue solo en este ordenador.

@@ -16,87 +16,96 @@ Si tienes el panel abierto, su página **Ayuda** tiene enlaces a estas respuesta
 botón para avisar de un problema en GitHub, con la revisión de salud ya puesta y sin lo
 que es personal. Lo tienes en [El panel](panel.es.md#ayuda).
 
-## Problemas y arreglos
+Esta página dice qué ves y qué haces. Lo que augmented brain no sabe hacer está en
+[Limitaciones conocidas](limitations.es.md). Los problemas van agrupados por tema, y en
+cada grupo, lo más frecuente primero.
+
+## Claude y tus notas
 
 ### Claude no conoce mis tareas, o se salta la entrevista
 
+- **La sesión empezó antes de instalar.** Empieza una sesión nueva.
 - **Claude Code te preguntó si confías en la carpeta.** La primera vez que abres Claude
   en una carpeta, Claude Code lo pregunta antes de cargar nada. Di que sí en tus carpetas
   de trabajo. Hasta entonces, augmented brain no puede cargar tus notas.
-- **La sesión empezó antes de instalar.** Empieza una sesión nueva.
 - **Estás en otro espacio.** Escribe `augmented-brain space` en esa carpeta. Fuera de las
   carpetas de tus espacios, se usa el espacio por defecto. Para que una carpeta cuente
   para un espacio, añádela a sus `work_folders` (lo tienes en [Espacios](spaces.es.md)).
+- **El plugin no está instalado.** `doctor` dice «plugin de Claude Code: no instalado».
+  El plugin es la pieza que conecta augmented brain con Claude Code. Lanza
+  `augmented-brain update --plugin` y empieza una sesión nueva.
+- **La carpeta de notas no existe.** `doctor` dice «carpeta de la memoria» y el error al
+  lado de un espacio. Se movió o se borró, o está en un disco que no está montado.
+  Devuélvela a su sitio, o corrige la ruta en la configuración, como dice `doctor`.
+- **No hay espacio por defecto.** `doctor` dice «no hay espacio por defecto». Entonces una
+  sesión fuera de las carpetas de tus espacios no carga nada. Añade a `config.toml` la
+  línea que da `doctor`.
+- **No se puede leer la configuración.** `doctor` dice «configuración:» y el error. Sin
+  ella, ninguna sesión carga nada. Vuelve a una versión que funcionaba: mira
+  [Claude pregunta antes de cada comando aws o ssh](#claude-pregunta-antes-de-cada-comando-aws-o-ssh).
+
+### Una nota no es válida
+
+`augmented-brain check` en una carpeta del espacio lista cada problema con su fichero.
+Hasta que se arregle, esa nota se queda fuera: Claude no la ve, y no sale en el índice.
+Las demás notas funcionan como siempre. Arregla a mano la cabecera (entre las líneas
+`---`) y vuelve a lanzar `check`. [Editar las notas a mano](editing-notes.es.md) dice qué
+puede llevar una cabecera.
+
+Cuando `check` dice que no conoce un campo, lo más probable es que lo escribiera una
+versión más nueva, en otro ordenador o en una sesión abierta después de actualizar.
+Actualiza con `augmented-brain update` y no quites el campo. Si es una errata de un
+campo que conoces, corrígela.
+
+Un fichero que no se puede leer (por sus permisos, o un enlace roto que dejó una
+sincronización) sale de la misma forma: arregla sus permisos o sácalo de la carpeta de
+notas. Un fichero cuyo nombre empieza por punto, como el de bloqueo que deja Emacs
+mientras editas una nota, se salta.
+
+### "Lo escribió un augmented brain más nuevo"
+
+Una versión más nueva, en otro ordenador, pasó las notas a un formato nuevo. Actualiza
+también este ordenador: `augmented-brain update`. El programa antiguo rechaza las notas
+en vez de romperlas.
+
+### Una sesión se cortó
+
+La ventana se cerró a la fuerza, o el ordenador se apagó. La siguiente sesión te ofrece
+recuperarla. Di que sí, o usa el panel: Hoy la enseña. Claude Code guarda cada
+conversación 30 días.
+
+### Un repositorio "no está en este ordenador"
+
+Una tarea nombra en `repos:` un repositorio que no está en ninguna carpeta de trabajo del
+espacio. Se movió, se cambió de nombre o se borró, o este ordenador nunca lo tuvo. Dile a
+Claude dónde está ahora, o quítalo de la tarea.
+
+### Claude Code guarda una segunda memoria
+
+`doctor` avisa de que Claude Code guarda una memoria propia para tus carpetas. Se desvía
+de la del espacio. Añade `"autoMemoryEnabled": false` al fichero de ajustes que nombra
+`doctor`. Lo que ya tiene se queda, y puedes [traerlo](import.es.md).
+
+### Otros usuarios pueden leer mis notas
+
+`doctor` te avisa. Escribe `augmented-brain check` en una carpeta del espacio: deja las
+notas solo para ti.
+
+## Instalar y actualizar
 
 ### La terminal no encuentra un comando
 
-`command not found`, o "no se reconoce" en Windows. Cierra la terminal y abre otra: la que
-usabas aún no ve el PATH nuevo.
-
-### Claude Code para todos los comandos y cambios de ficheros
-
-El guardia no puede ejecutarse, así que Claude Code lo para todo en vez de dejarlo pasar.
-Falta el programa o está roto. Escribe `augmented-brain doctor`. Comprueba que
-`augmented-brain` está en tu PATH o en `~/.local/bin`. Volver a instalar lo arregla.
-
-### Todos los comandos de PowerShell se paran
-
-Es lo esperado, en Windows. El guardia lee la shell, no PowerShell, así que para los
-comandos de PowerShell y Claude los lanza en Git Bash.
-
-### Claude pregunta antes de cada comando aws o ssh
-
-No se puede leer la configuración, así que el guardia no conoce tus listas y pregunta por
-si acaso. `augmented-brain doctor` nombra el problema. Si dice "ajustes desconocidos", el
-fichero tiene una línea que esta versión no conoce: una errata, o un ajuste de una versión
-más nueva. Si es un ajuste de una versión más nueva, actualiza con
-`augmented-brain update`. Si es una errata, o un cambio que lo rompió, vuelve a una
-versión que funcionaba: `augmented-brain config history` y después
-`augmented-brain config restore <número>`. Los dos funcionan aunque el fichero esté roto.
-Lo tienes en [Configuración](configuration.es.md) y en
-[Versiones de la configuración](config-history.es.md).
-
-### Claude no puede hacer push, aunque se lo pida
-
-Si dice que un repositorio es **intocable**, es a propósito: solo tú puedes cambiarlo, en
-la página Guardia del panel (mira [El guardia](guard.es.md#repositorios-que-claude-nunca-debe-tocar)).
-
-El guardia para `git commit` y `git push` salvo que el repositorio esté en la lista. Haz
-tú el push, o añade el repositorio a `git_allowed_repos` (o a `git_ask_repos`) y pide a
-Claude que use `git -C <repo>`. Lo tienes en
-[El guardia](guard.es.md#deja-que-claude-haga-commit-en-un-repositorio).
-
-### Claude pregunta antes de un push que antes hacía
-
-Las listas del guardia cambiaron fuera del panel desde que las aceptaste (a mano, con un
-comando o al volver a una versión). Hasta que las aceptes en la página Guardia o empiece
-una sesión nueva, un commit, push o merge que permiten pregunta antes. `doctor` lo dice.
-Abre la página Guardia del panel, mira qué cambió y acéptalo. Lo tienes en
-[El guardia](guard.es.md#solo-tú-cambias-las-listas-del-guardia).
-
-### "Ajustes que esta versión no conoce" en `guard.toml` o `session.toml`
-
-`doctor` y el inicio de una sesión lo dicen cuando uno de estos ficheros tiene una línea
-que el programa no conoce. Esa línea no se tiene en cuenta: un `untouchable_repo` mal
-escrito no protege ningún repositorio, y un `memory_trust` mal escrito deja a Claude
-guardando sin preguntar. Si parece una errata, el mensaje dice el nombre correcto.
-Corrige el nombre en el fichero. Si esa línea la escribió una versión más nueva,
-actualiza con `augmented-brain update`. Lo tienes en
-[Configuración](configuration.es.md#guardtoml).
-
-### Claude necesita root en una máquina
-
-Claude te da el comando exacto para que lo lances tú. Para una migración que necesita
-muchos comandos, añade una excepción con fecha, `root_ask = ["db01 until 2026-12-31"]`.
-Así root en esa máquina te pregunta cada vez, hasta esa fecha.
+`command not found`, o "no se reconoce" en Windows. Cierra la terminal y abre otra. El
+PATH es la lista de carpetas donde la terminal busca los programas; el instalador le
+añadió una, y una terminal abierta antes aún no la ve.
 
 ### Las herramientas de augmented brain fallan después de actualizar
 
 Una sesión que estaba abierta sigue con el programa antiguo. `augmented-brain session
 restart --old` reinicia las que están quietas, con la misma conversación; una de Claude
 Desktop sigue abierta y solo se reinicia su augmented brain (en Windows, ciérrala y vuelve
-a abrirla). `augmented-brain doctor` dice cuántas sesiones
-siguen con la versión antigua.
+a abrirla). `augmented-brain doctor` dice cuántas sesiones siguen con la versión
+antigua.
 
 ### El instalador o la actualización no pueden descargar
 
@@ -113,7 +122,10 @@ Cómo puede acabar `augmented-brain update`:
 - **"el programa sigue siendo la X, no la Y"**: el instalador se ejecutó pero el programa
   no cambió. No ha cambiado nada más; vuelve a lanzar `augmented-brain update` más tarde.
 - **"La copia de seguridad ha fallado, así que no se ha actualizado nada"**: arregla la
-  copia (más abajo) y vuelve a actualizar, o lanza `augmented-brain update --force`.
+  copia (mira [Ha fallado la copia de seguridad](#ha-fallado-la-copia-de-seguridad)) y
+  vuelve a actualizar. `augmented-brain update --force` actualiza de todas formas, pero
+  entonces no tienes una copia reciente de tus notas a la que volver si la versión nueva
+  falla.
 
 Lo tienes en [Instalación](install.es.md#actualizar).
 
@@ -122,11 +134,109 @@ Lo tienes en [Instalación](install.es.md#actualizar).
 Vuelve a lanzar el comando de instalación (o `augmented-brain init`): hasta que acaba no
 hay configuración, así que empieza de nuevo. Lo tienes en [Instalación](install.es.md).
 
-### "Lo escribió un augmented brain más nuevo"
+### macOS: no se abrió la ventana de las herramientas de desarrollo
 
-Una versión más nueva, en otro ordenador, pasó las notas a un formato nuevo. Actualiza
-también este ordenador: `augmented-brain update`. El programa antiguo rechaza las notas
-en vez de romperlas.
+Escribe `xcode-select --install`, y después otra vez el comando de instalación.
+
+### Windows: los acentos salen mal (`sesiÃ³n`)
+
+Windows PowerShell 5.1 lee mal lo que escriben otros programas cuando lo captura. El texto
+está bien: en Git Bash, o en una ventana, se ve bien.
+
+Más problemas del instalador, en cada sistema: [Instalación](install.es.md#si-algo-falla).
+
+## El guardia
+
+### Claude no puede hacer push, aunque se lo pida
+
+El guardia para `git commit` y `git push` salvo que el repositorio esté en una de sus
+listas. Haz tú el push, o añade el repositorio en la página **Guardia** del panel, en «El
+asistente puede hacer commit y push» o en «El asistente te pregunta cada vez», y pide a
+Claude que use `git -C <repo>`. Lo tienes en
+[El guardia](guard.es.md#deja-que-claude-haga-commit-en-un-repositorio).
+
+Si dice que un repositorio es **intocable**, es a propósito: solo tú puedes cambiarlo, en
+la misma página Guardia (mira
+[El guardia](guard.es.md#repositorios-que-claude-nunca-debe-tocar)).
+
+### Claude pregunta antes de un push que antes hacía
+
+Las listas del guardia cambiaron fuera del panel desde que las aceptaste (a mano, con un
+comando o al volver a una versión). Hasta que las aceptes en la página Guardia o empiece
+una sesión nueva, un commit, push o merge que permiten pregunta antes. `doctor` lo dice.
+Abre la página Guardia del panel, mira qué cambió y acéptalo. Lo tienes en
+[El guardia](guard.es.md#solo-tú-cambias-las-listas-del-guardia).
+
+### Claude pregunta antes de cada comando aws o ssh
+
+No se puede leer la configuración, así que el guardia no conoce tus listas y pregunta por
+si acaso. `augmented-brain doctor` nombra el problema. Si dice "ajustes desconocidos", el
+fichero tiene una línea que esta versión no conoce: una errata, o un ajuste de una versión
+más nueva. Si es un ajuste de una versión más nueva, actualiza con
+`augmented-brain update`. Si es una errata, o un cambio que lo rompió, vuelve a una
+versión que funcionaba: `augmented-brain config history` y después
+`augmented-brain config restore <número>`. Los dos funcionan aunque el fichero esté roto.
+Lo tienes en [Configuración](configuration.es.md) y en
+[Versiones de la configuración](config-history.es.md).
+
+### "Ajustes que esta versión no conoce" en `guard.toml` o `session.toml`
+
+`doctor` y el inicio de una sesión lo dicen cuando uno de estos ficheros tiene una línea
+que el programa no conoce. Esa línea no se tiene en cuenta: un `untouchable_repo` mal
+escrito no protege ningún repositorio, y un `memory_trust` mal escrito deja a Claude
+guardando sin preguntar. Si parece una errata, el mensaje dice el nombre correcto.
+Corrige el nombre en el fichero. Si esa línea la escribió una versión más nueva,
+actualiza con `augmented-brain update`. Lo tienes en
+[Configuración](configuration.es.md#guardtoml).
+
+### Claude Code para todos los comandos y cambios de ficheros
+
+El guardia no puede ejecutarse, así que Claude Code lo para todo en vez de dejarlo pasar.
+Falta el programa o está roto. Escribe `augmented-brain doctor`. Comprueba que
+`augmented-brain` está en tu PATH o en `~/.local/bin`. Volver a instalar lo arregla.
+
+Esto necesita Claude Code 2.1.295 o posterior. Uno anterior deja pasar sin revisar todos
+los comandos cuando el guardia no puede ejecutarse, y `doctor` avisa: actualiza Claude
+Code con `claude update`.
+
+### Todos los comandos de PowerShell se paran
+
+Es lo esperado, en Windows. El guardia lee la shell, no PowerShell, así que para los
+comandos de PowerShell y Claude los lanza en Git Bash.
+
+### Claude necesita root en una máquina
+
+Claude te da el comando exacto para que lo lances tú. Para una migración que necesita
+muchos comandos, añade una excepción con fecha en la página Guardia del panel, o a mano en
+`config.toml`: `root_ask = ["db01 until 2026-12-31"]`. Así root en esa máquina te pregunta
+cada vez, hasta esa fecha. Lo tienes en
+[El guardia](guard.es.md#root-en-una-máquina-durante-un-tiempo).
+
+## Guardar reglas
+
+Hay cosas que siguen todas las sesiones siguientes: una regla, tu perfil, una máquina
+para el guardia. El ajuste `memory_trust` de `session.toml` decide si Claude te pregunta
+antes de guardarlas. Lo tienes en
+[El guardia](guard.es.md#preguntar-antes-de-que-claude-guarde-una-regla).
+
+### Claude ya no me pregunta antes de guardar una regla
+
+- **Una máquina nueva, o después de recuperar una copia.** Las copias no llevan
+  `session.toml`, así que el ajuste vuelve a avisarte después de guardar. Elige otra vez
+  «Preguntarme antes» en la página Guardia del panel.
+- **El ajuste está mal escrito.** Una línea de `session.toml` con un nombre que el
+  programa no conoce no se tiene en cuenta. `doctor` la nombra, con el nombre correcto.
+  Mira
+  ["Ajustes que esta versión no conoce"](#ajustes-que-esta-versión-no-conoce-en-guardtoml-o-sessiontoml).
+
+### Claude dice que no puede guardar una regla
+
+La sesión se salta las preguntas de permiso de Claude Code (`bypassPermissions`), así que
+no hay a quién preguntar, y con «preguntar» se rechaza el guardado. Claude te dice qué
+quería guardar. Empieza una sesión en un modo normal para guardarlo, o elige «Guardar y
+avisarme» en la página Guardia.
+
+## Copia de seguridad y restauración
 
 ### Ha fallado la copia de seguridad
 
@@ -147,6 +257,20 @@ carpeta del espacio para ver por qué:
 - **Un fichero de más de 50 MB.** Se queda fuera, y el resto se copia. Sácalo de la
   carpeta de notas.
 
+### `doctor` avisa de una copia
+
+- **«Empezó … y no terminó».** Se apagó el ordenador, o la copia se paró a medias. Lanza
+  `augmented-brain backup` en una carpeta del espacio: hace la copia ahora, o dice qué lo
+  impide.
+- **«La copia automática no se está haciendo».** Las notas cambiaron después de la última
+  copia buena. Lanza `augmented-brain backup` de la misma forma. Si tienes
+  `AB_NO_AUTO_BACKUP` en tu entorno, la copia automática está apagada.
+- **«Lleva una contraseña o un token».** La dirección del repositorio lleva escrito tu
+  acceso, así que queda guardado en la configuración y dentro de la copia. Deja que git
+  guarde el acceso (en GitHub, `gh auth setup-git`, o una dirección ssh), vuelve a
+  configurar la copia con la dirección limpia y cambia esa contraseña o token: las copias
+  anteriores lo siguen teniendo.
+
 ### `doctor` dice que un espacio no tiene copia de seguridad
 
 Si pierdes este ordenador, pierdes las notas de ese espacio. Pide a Claude «configura la
@@ -154,38 +278,24 @@ copia de seguridad» en una carpeta del espacio. O lanza allí `augmented-brain 
 <dirección de un repositorio privado>`, y después `augmented-brain backup`. Lo tienes en
 [Copia de seguridad y restauración](backup.es.md).
 
-### Una nota no es válida
+### Después de recuperar una copia, nada pregunta antes de tocar producción, o Claude no puede hacer push
 
-`augmented-brain check` en una carpeta del espacio lista cada problema con su fichero.
-Arregla a mano la cabecera (entre las líneas `---`) y vuelve a lanzar `check`. Hasta
-entonces, el índice no se rehace, pero las herramientas siguen funcionando.
+Las copias de seguridad no llevan las listas del guardia. Abre una sesión de Claude: se
+ofrece a preguntarte los perfiles de producción y las máquinas intocables. Los
+repositorios donde Claude puede hacer commit y push (`git_allowed_repos` y
+`git_ask_repos`) tampoco vuelven: `restore` los nombra, y los añades otra vez en la página
+Guardia del panel si todavía los quieres. Lo tienes en
+[Copia de seguridad y restauración](backup.es.md#lo-que-no-trae-una-restauración).
 
-Cuando `check` dice que no conoce un campo, lo más probable es que lo escribiera una
-versión más nueva, en otro ordenador o en una sesión abierta después de actualizar.
-Actualiza con `augmented-brain update` y no quites el campo. Si es una errata de un
-campo que conoces, corrígela.
+### Después de recuperar, hay secretos que "no se ha podido comprobar"
 
-Un fichero que no se puede leer (por sus permisos, o un enlace roto que dejó una
-sincronización) sale de la misma forma: arregla sus permisos o sácalo de la carpeta de
-notas. Un fichero cuyo nombre empieza por punto, como el de bloqueo que deja Emacs
-mientras editas una nota, se salta.
+No se pudo preguntar al llavero: un Linux sin sesión de escritorio, un llavero de macOS
+bloqueado, o Windows, donde no se le puede preguntar. Puede que los secretos estén. Abre
+una sesión de escritorio o desbloquea el llavero, y mira la página Secretos del panel.
+Guarda los que falten con el comando que sale. Lo tienes en
+[Copia de seguridad y restauración](backup.es.md).
 
-### Un repositorio "no está en este ordenador"
-
-Una tarea nombra en `repos:` un repositorio que no está en ninguna carpeta de trabajo del
-espacio. Se movió, se cambió de nombre o se borró, o este ordenador nunca lo tuvo. Dile a
-Claude dónde está ahora, o quítalo de la tarea.
-
-### Claude Code guarda una segunda memoria
-
-`doctor` avisa de que Claude Code guarda una memoria propia para tus carpetas. Se desvía
-de la del espacio. Añade `"autoMemoryEnabled": false` al fichero de ajustes que nombra
-`doctor`. Lo que ya tiene se queda, y puedes [traerlo](import.es.md).
-
-### Otros usuarios pueden leer mis notas
-
-`doctor` te avisa. Escribe `augmented-brain check` en una carpeta del espacio: deja las
-notas solo para ti.
+## El panel y el acceso remoto
 
 ### El panel no se abre, o su dirección ha dejado de funcionar
 
@@ -204,11 +314,22 @@ quedó publicada después de parar el panel (te da el comando para quitarla). Lo
 
 ### El acceso remoto no funciona
 
-Lanza `augmented-brain remote status`: debajo de cada problema, `→` dice qué hacer. Lo
-normal es que Claude aún no confíe en la carpeta (lanza una vez `cd <carpeta> && claude`)
-o que el linger esté apagado. `remote install` se para, sin cambiar nada, en una máquina
-sin servicios de usuario de systemd (un contenedor, WSL sin systemd). Lo tienes en
-[Acceso remoto](remote.es.md).
+Lanza `augmented-brain remote status`: debajo de cada problema, `→` dice qué hacer. Las
+causas de siempre:
+
+- **Claude aún no confía en la carpeta.** Lanza una vez `cd <carpeta> && claude` y di que
+  sí.
+- **El ordenador se reinició y nadie ha entrado.** En un Mac y en Windows, el acceso
+  remoto arranca cuando entras en tu sesión. En Windows, además, se para cuando la
+  cierras.
+- **Linux: el «linger» está apagado.** El linger es el ajuste que deja funcionar tus
+  servicios sin que nadie haya entrado. Sin él, el acceso remoto se para cuando cierras
+  la sesión y no arranca tras reiniciar. `remote install` escribe el comando para
+  activarlo; lo lanza un administrador.
+- **Linux sin servicios de usuario de systemd** (un contenedor, WSL sin systemd).
+  `remote install` se para ahí, sin cambiar nada.
+
+Lo tienes en [Acceso remoto](remote.es.md).
 
 ### Dos sesiones remotas con el mismo nombre
 
@@ -218,11 +339,7 @@ con el mismo nombre, en otro grupo de la lista. En la vieja no contesta nadie: l
 escribas ahí se pierde. Usa la del grupo con el nombre de la carpeta nueva, y archiva la
 vieja en claude.ai o Claude Desktop.
 
-### Una sesión se cortó
-
-La ventana se cerró a la fuerza, o el ordenador se apagó. La siguiente sesión te ofrece
-recuperarla. Di que sí, o usa el panel: Hoy la enseña. Claude Code guarda cada
-conversación 30 días.
+## El ordenador
 
 ### La ventana usa mucha memoria
 
@@ -256,31 +373,6 @@ Ejecuta `augmented-brain clean`. Enseña lo que quitaría y pregunta antes. Un w
 cambios, commits o ficheros ignorados (un `.env`) propios nunca se quita: solo lo nombra,
 para que lo mires tú.
 
-### Después de recuperar una copia, nada pregunta antes de tocar producción
-
-Las copias de seguridad no llevan las listas del guardia. Abre una sesión de Claude: se
-ofrece a preguntártelas. O añade tú `production_aws_profiles` y `untouchable_hosts` a la
-configuración.
-
-### Después de recuperar, hay secretos que "no se ha podido comprobar"
-
-No se pudo preguntar al llavero: un Linux sin sesión de escritorio, un llavero de macOS
-bloqueado, o Windows, donde no se le puede preguntar. Puede que los secretos estén. Abre
-una sesión de escritorio o desbloquea el llavero, y mira la página Secretos del panel.
-Guarda los que falten con el comando que sale. Lo tienes en
-[Copia de seguridad y restauración](backup.es.md).
-
-### Windows: los acentos salen mal (`sesiÃ³n`)
-
-Windows PowerShell 5.1 lee mal lo que escriben otros programas cuando lo captura. El texto
-está bien: en Git Bash, o en una ventana, se ve bien.
-
-### macOS: no se abrió la ventana de las herramientas de desarrollo
-
-Escribe `xcode-select --install`, y después otra vez el comando de instalación.
-
-Más problemas del instalador, en cada sistema: [Instalación](install.es.md#si-algo-falla).
-
 ## Preguntas
 
 ### ¿Es gratis?
@@ -290,13 +382,15 @@ trabaja con Claude Code, que necesita un plan de pago de Claude (Pro o superior)
 
 ### ¿Mis notas salen de mi ordenador?
 
-augmented brain no las manda a ningún sitio. Pero tu asistente las lee para trabajar,
-como cualquier fichero que abre, así que viajan con la conversación a su proveedor. Con
-copia de seguridad, van también al repositorio privado que elegiste.
+augmented brain no las manda a ningún sitio, salvo a tus propios dispositivos si abres el
+panel desde ellos ([`panel remote`](panel-remote.es.md)). Pero tu asistente las lee para
+trabajar, como cualquier fichero que abre, así que viajan con la conversación a su
+proveedor. Con copia de seguridad, van también al repositorio privado que elegiste.
 
 ### ¿Puedo editar las notas a mano?
 
-Sí, son ficheros Markdown. Después, escribe `augmented-brain check`.
+Sí, son ficheros Markdown. [Editar las notas a mano](editing-notes.es.md) dice qué tener
+en cuenta. Después, escribe `augmented-brain check`.
 
 ### ¿Con qué asistentes funciona?
 
@@ -315,5 +409,4 @@ con lo que salió en pantalla y lo que dice `augmented-brain doctor`. La página
 panel lo rellena por ti.
 
 Lo que cambia en cada versión está en el
-[registro de cambios](https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md)
-(en inglés).
+[registro de cambios](https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.es.md).

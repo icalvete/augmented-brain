@@ -97,6 +97,10 @@ folder.
   conversation.
 - **failed**: its last answer was an error, such as an expired login. The line says what
   to do.
+- **waiting**: Claude's usage limit stopped it. The line says when the limit resets.
+  With remote access installed (`augmented-brain remote install`), the session is woken
+  then, by itself, and goes on with its task; you are told when the wait begins and
+  when the sessions are back. Without it, write to the session once the limit resets.
 
 ```bash
 augmented-brain session stop task-new-website

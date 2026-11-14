@@ -10,7 +10,9 @@ one. For each page: it loads, the browser's console has no error, nothing on the
 fails to load, and on the phone nothing is wider than the screen. Then a few things a
 person does: send a capture from the inbox, open a task, and on the Guard page see that
 adding a repository where the assistant commits and pushes without asking needs its box
-ticked, and that a change made outside the page is shown. One line per check, "ok " or
+ticked, and that a change made outside the page is shown. And the menu: on a 1366×768
+window, at the foot of a long page, its last entry and "Stop the panel" can be reached,
+and so can the last entry of the phone's open menu. One line per check, "ok " or
 "BAD"; exit code 1 when anything is BAD.
 
 Needs Playwright for Python and its browsers (pip install playwright; python -m
@@ -99,7 +101,9 @@ try:
     tools(work, [("task_new", {"title": "Bake bread", "summary": "two loaves for Sunday"}),
                  ("capture", {"text": "buy flour"}),
                  ("knowledge_new", {"type": "lesson", "title": "Let the dough rest", "summary": "an hour at least", "body": "It rises better."}),
-                 ("person_save", {"name": "Lucía", "summary": "runs the bakery"})])
+                 ("person_save", {"name": "Lucía", "summary": "runs the bakery"})]
+          # A long page: the task's journal, for the menu checks below.
+          + [("task_journal", {"id": "task-bake-bread", "entry": f"Day {i}: fed the starter, weighed the flour, wrote down how it rose."}) for i in range(60)])
     r = ab("panel", "--no-browser", cwd=work)
     base = spend_ticket(r.stdout + r.stderr)
     if not base:
@@ -154,6 +158,32 @@ try:
                         report(f"{engine} phone: {path.split('?')[0]} fits the screen", wide <= 1, f"{wide}px wider")
                 ctx.close()
 
+            # The menu can be reached on a low window, at the foot of a long page: the
+            # sidebar scrolls on its own. Each element is scrolled into view the way a
+            # person would get there, then must be on screen and the one under its middle.
+            reach = """el => { el.scrollIntoView({block: 'nearest'}); const r = el.getBoundingClientRect();
+                const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+                const ok = r.bottom <= innerHeight + 1 && r.top >= -1 && !!top && (top === el || el.contains(top));
+                return [ok, `bottom ${Math.round(r.bottom)} of ${innerHeight}, under it: ${top ? top.tagName + '.' + top.className : 'nothing'}`] }"""
+            ctx = browser.new_context(viewport={"width": 1366, "height": 768})
+            page = ctx.new_page()
+            page.goto(f"{base}/task?id=task-bake-bread&s=work")
+            page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+            long = page.evaluate("document.documentElement.scrollHeight > 2 * innerHeight")
+            report(f"{engine} 1366x768: the task's page is long", long, "")
+            for what, sel in (("the menu's last entry", ".sections a >> nth=-1"), ("Stop the panel", ".side footer button")):
+                report(f"{engine} 1366x768: {what} can be reached", *page.locator(sel).evaluate(reach))
+            ctx.close()
+            ctx = browser.new_context(viewport={"width": 375, "height": 600})
+            page = ctx.new_page()
+            page.goto(f"{base}/profile?s=work")
+            label = page.locator(".menu summary").inner_text().strip()
+            report(f"{engine} phone: the menu button names Profile there", label == "Profile", label)
+            page.click(".menu summary")
+            report(f"{engine} phone: the open menu's last entry can be reached",
+                   *page.locator(".menu-list nav a >> nth=-1").evaluate(reach))
+            ctx.close()
+
             # What a person does.
             ctx = browser.new_context()
             page = ctx.new_page()
@@ -162,6 +192,22 @@ try:
             page.click("form[action$='/inbox/capture'] button[type=submit]")
             page.wait_for_load_state("networkidle")
             report(f"{engine}: a capture from the inbox page", "call the miller" in page.content(), "")
+            said = page.locator(".flash.ok").count() == 1 and "ok=" not in page.url
+            page.reload()
+            page.wait_for_load_state("networkidle")
+            report(f"{engine}: saved is said once, not again on reload", said and page.locator(".flash.ok").count() == 0, page.url)
+            # A form that cannot be saved comes back with what was typed and the error next to it.
+            page.goto(f"{base}/guard?s=work")
+            root = page.locator("form[action$='/guard/root']:has(input[name=host])")
+            root.locator("input[name=host]").fill("lab-pc")
+            root.locator("input[name=until]").fill("next friday")
+            root.locator("input[name=confirm]").fill("lab-pc")
+            root.locator("button[type=submit]").click()
+            page.wait_for_load_state("networkidle")
+            root = page.locator("form[action$='/guard/root']:has(input[name=host])")
+            err = root.locator(".ferr")
+            report(f"{engine}: a form that fails keeps what was typed, with the error next to it",
+                   err.count() == 1 and "next friday" in err.inner_text() and root.locator("input[name=until]").input_value() == "next friday", page.url)
             page.goto(f"{base}/tasks?s=work")
             page.click("text=Bake bread")
             page.wait_for_load_state("networkidle")

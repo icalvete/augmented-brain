@@ -54,6 +54,29 @@ fi
 PATH="$(printf '%s' "$PATH" | awk -v RS=: -v ORS=: -v d="$HOME/.local/bin" '$0 != d && $0 != d "/"' | sed 's/:$//')"
 export PATH
 
+# With a terminal, the installer asks the language first, the system's as the default.
+# Answered through a pseudo-terminal (util-linux's script; macOS's takes other options,
+# and the question is the same shell there), with AB_NO_INIT=1 so it stops after
+# installing the program; the beta line tells which language it went on in.
+if script --version 2>/dev/null | grep -q util-linux; then
+  echo "1b. the installer asks the language"
+  # lang_run <name> <LANG> <answer>: the installer's output, answering the question
+  lang_run() {
+    mkdir -p "$TMP/lang-$1"
+    printf '%s\n' "$3" | env HOME="$TMP/lang-$1" XDG_CONFIG_HOME="$TMP/lang-$1/.config" \
+      LANG="$2" LC_ALL= LC_MESSAGES= AB_YES= AB_LANGUAGE= AB_NO_INIT=1 \
+      AB_RELEASE_URL="file://$TMP/release" \
+      script -qec "sh '$ROOT/install.sh'" /dev/null >"$TMP/lang-$1.log" 2>&1 || true
+  }
+  lang_run es C es
+  check "it asks" grep -q 'Language / Idioma' "$TMP/lang-es.log"
+  check "es on an English system goes on in Spanish" grep -q 'Es una versión beta' "$TMP/lang-es.log"
+  lang_run en es_ES.UTF-8 en
+  check "en on a Spanish system goes on in English" grep -q 'This is a beta version' "$TMP/lang-en.log"
+  lang_run enter es_ES.UTF-8 ""
+  check "Enter keeps the system's" grep -q 'Es una versión beta' "$TMP/lang-enter.log"
+fi
+
 # A desktop download that stalls must give up with its message and let the install go
 # on (on 11-nov-2026 Anthropic's apt repository stalled and the installer waited until CI
 # stopped it). A local server gives the key at once and the repository a byte every two

@@ -57,6 +57,7 @@
   <li><a href="spaces.es.html" aria-current="page">Espacios</a></li>
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
   <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
@@ -124,8 +125,13 @@ work_folders = ["~/augmented-brain/personal"]</code></pre>
   <p>Para saber de qué espacio es una carpeta, lanza esto en ella:</p>
   <pre><code>augmented-brain space</code></pre>
   <h2 id="fuera-de-todos-los-espacios">Fuera de todos los espacios</h2>
+  <p>augmented brain actúa en todas las sesiones de Claude Code de este ordenador, sea cual sea la carpeta: su plugin está instalado para todo tu usuario. Una carpeta que no está en ninguna carpeta de trabajo está fuera de todos los espacios.</p>
   <p>La app de escritorio empieza cada sesión nueva en una carpeta temporal suya. Esa carpeta no es de ningún espacio. Entonces se usa el <strong>espacio por defecto</strong>, <code>personal</code> salvo que lo cambies, y Claude te lo dice en una línea, con cómo pasar al de trabajo.</p>
   <p>El espacio por defecto importa para una cosa más: su copia de seguridad lleva tu perfil y las notas compartidas. Se elige con <code>default_space</code> en la configuración. Si tienes un solo espacio, es ese.</p>
+  <p>Lo que cambia fuera, al lado de una sesión en un espacio:</p>
+  <div class="table-wrap"><table><thead><tr><th></th><th>En un espacio</th><th>Fuera de todos los espacios</th></tr></thead><tbody><tr><td>Perfil, reglas, tareas y el resto de las notas</td><td>Las del espacio</td><td>Las del espacio por defecto, y Claude te lo dice</td></tr><tr><td>Lo que Claude escribe en tus notas</td><td>Va al espacio</td><td>Va al espacio por defecto</td></tr><tr><td>Tareas cambiadas por otra sesión</td><td>Claude se entera</td><td>Las del espacio por defecto</td></tr><tr><td>Recordatorio de escribir en el diario de la tarea</td><td>Sí</td><td>No</td></tr><tr><td>Una sesión cortada, con oferta de recuperarla</td><td>Sí</td><td>No</td></tr><tr><td><a href="guard.es.html">El guardia</a></td><td>Entero</td><td>Entero, igual</td></tr><tr><td>Copia de seguridad al cerrar la sesión</td><td>La del espacio</td><td>La del espacio por defecto</td></tr><tr><td>Avisos de la memoria de la ventana y del modelo</td><td>Sí</td><td>Sí</td></tr></tbody></table></div>
+  <p>El guardia no mira la carpeta: sus listas valen para todo el ordenador. Así que en cualquier proyecto, también en uno que nunca diste a augmented brain, Claude no puede hacer commit ni push hasta que lo <a href="guard.es.html#deja-que-claude-haga-commit-en-un-repositorio">dejes en ese repositorio</a>.</p>
+  <p>Para meter una carpeta en un espacio, añádela a los <code>work_folders</code> del espacio (lo siguiente).</p>
   <h2 id="tus-proyectos-viven-en-otro-sitio">¿Tus proyectos viven en otro sitio?</h2>
   <p>Si tu código está en <code>~/code</code>, añade esa carpeta a <code>work_folders</code> del espacio que toque, como en el ejemplo de arriba. Así, abrir Claude en <code>~/code/tienda</code> usa el espacio de trabajo.</p>
   <h2 id="añade-un-espacio">Añade un espacio</h2>
