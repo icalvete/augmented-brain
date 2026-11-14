@@ -1,12 +1,14 @@
 // Package repostat says, of a git repository on this computer, what is not yet safe
 // elsewhere: files changed and not committed, and commits not pushed. It only reads:
 // git runs with no optional locks (so a repository in use is never blocked), never
-// waits for a password, and never starts a filesystem monitor a repository's own
-// configuration may name.
+// waits for a password, and never starts a program a repository's own configuration
+// names for what status does: no filesystem monitor, and no clean filter (a folder
+// unpacked from an archive brings its .git/config with it).
 package repostat
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -27,7 +29,7 @@ type Status struct {
 	Remote   bool   // whether the repository has any remote to push to
 	Origin   string // where it pushes, as host/owner/name (CleanRemote): origin, or else the first remote
 	NotRepo  bool   // the folder is not a git repository: nothing to say about it
-	Err      string // git could not read it: it took too long, or failed
+	Err      string // git could not read it: "timeout", "failed", or "config" (its settings could not be read)
 }
 
 // Pending says whether there is anything to do: changes, or commits that are only here.
@@ -44,8 +46,10 @@ func Read(path string) Status {
 	st := Status{Path: path}
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
+	var extra []string // settings that blank the repository's own filters, once known
 	git := func(args ...string) (string, error) {
-		cmd := exec.CommandContext(ctx, "git", append([]string{"-c", "core.fsmonitor=false", "-C", path}, args...)...)
+		pre := append([]string{"-c", "core.fsmonitor=false"}, extra...)
+		cmd := exec.CommandContext(ctx, "git", append(append(pre, "-C", path), args...)...)
 		cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0", "GIT_OPTIONAL_LOCKS=0", "LC_ALL=C")
 		out, err := cmd.Output()
 		return string(out), err
@@ -71,6 +75,15 @@ func Read(path string) Status {
 		raw, _ := git("config", "--get", "remote."+name+".url")
 		st.Origin = CleanRemote(raw)
 	}
+	extra, err = ownFilters(git)
+	if ctx.Err() != nil {
+		st.Err = "timeout"
+		return st
+	}
+	if err != nil {
+		st.Err = "config"
+		return st
+	}
 	out, err := git("status", "--porcelain=v2", "--branch", "--untracked-files=normal")
 	if ctx.Err() != nil {
 		st.Err = "timeout"
@@ -82,6 +95,42 @@ func Read(path string) Status {
 	}
 	parse(&st, out)
 	return st
+}
+
+// ownFilters returns the settings that blank every filter the repository's own
+// configuration defines (its .git/config, a worktree's, and any file they include),
+// so status never runs one. Reading the names runs nothing. Filters of the user's own
+// configuration, such as git-lfs, stay.
+func ownFilters(git func(...string) (string, error)) ([]string, error) {
+	out, err := git("config", "--show-scope", "--name-only", "--get-regexp", `^filter\.`)
+	if err != nil {
+		var ee *exec.ExitError
+		if errors.As(err, &ee) && ee.ExitCode() == 1 {
+			return nil, nil // no filter at all
+		}
+		return nil, err
+	}
+	var extra []string
+	seen := map[string]bool{}
+	for _, l := range strings.Split(out, "\n") {
+		scope, key, ok := strings.Cut(l, "\t")
+		if !ok || (scope != "local" && scope != "worktree") {
+			continue
+		}
+		// filter.<name>.<setting>; the name may hold dots.
+		name := strings.TrimPrefix(key, "filter.")
+		i := strings.LastIndex(name, ".")
+		if i <= 0 || seen[name[:i]] {
+			continue
+		}
+		name = name[:i]
+		seen[name] = true
+		for _, k := range []string{"clean", "smudge", "process"} {
+			extra = append(extra, "-c", "filter."+name+"."+k+"=")
+		}
+		extra = append(extra, "-c", "filter."+name+".required=false")
+	}
+	return extra, nil
 }
 
 // samePath says whether git's top folder is the one asked for, links resolved.
