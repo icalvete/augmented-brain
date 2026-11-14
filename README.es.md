@@ -9,6 +9,12 @@ Todo queda en ficheros de texto tuyos, con copia en tu propio git.</p>
 <p align="center"><a href="https://icalvete.github.io/augmented-brain/es/">Web</a> ·
 <a href="https://icalvete.github.io/augmented-brain/guide/index.es.html">Documentación</a> · <a href="README.md">Read in English</a></p>
 
+<p align="center"><a href="https://github.com/icalvete/augmented-brain/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/icalvete/augmented-brain/ci.yml?branch=main&amp;label=CI"></a>
+<a href="https://github.com/icalvete/augmented-brain/actions/workflows/vuln.yml?query=branch%3Amain"><img alt="vulnerabilidades" src="https://img.shields.io/github/actions/workflow/status/icalvete/augmented-brain/vuln.yml?branch=main&amp;label=vulnerabilidades"></a>
+<a href="https://github.com/icalvete/augmented-brain/releases"><img alt="versión" src="https://img.shields.io/github/v/release/icalvete/augmented-brain?include_prereleases&amp;sort=semver&amp;label=versi%C3%B3n"></a>
+<a href="go.mod"><img alt="Go" src="https://img.shields.io/github/go-mod/go-version/icalvete/augmented-brain"></a>
+<a href="LICENSE"><img alt="licencia" src="https://img.shields.io/github/license/icalvete/augmented-brain?label=licencia"></a></p>
+
 <p align="center"><a href="https://github.com/sponsors/icalvete"><img alt="Patrocina" src="https://img.shields.io/badge/Patrocina-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white"></a></p>
 
 > [!WARNING]
