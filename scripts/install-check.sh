@@ -135,7 +135,8 @@ fi
 echo "2. run the installer, hands-off"
 [ "${AB_CHECK_DESKTOP:-}" = 1 ] || AB_NO_DESKTOP=1
 # No AB_MARKETPLACE: the plugin must come from the program itself.
-AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP="${AB_NO_DESKTOP:-}" \
+# AB_GH_ABSENT=1: GitHub's runners have gh, a newcomer does not; the offer must run.
+AB_YES=1 AB_LANGUAGE=es AB_NO_DESKTOP="${AB_NO_DESKTOP:-}" AB_GH_ABSENT=1 \
   AB_RELEASE_URL="file://$TMP/release" \
   sh "$ROOT/install.sh" </dev/null >"$TMP/install.log" 2>&1 &
 installer=$!
@@ -157,6 +158,13 @@ check "program in ~/.local/bin" test -x "$AB"
 case "$(basename "${SHELL:-sh}")" in zsh) rc="$HOME/.zshrc" ;; bash) rc="$HOME/.bashrc" ;; *) rc="$HOME/.profile" ;; esac
 check "PATH line in $(basename "$rc")" grep -q '\.local/bin' "$rc"
 check "Claude Code installed" test -x "$HOME/.local/bin/claude"
+# gh, for the backup: GitHub's release next to the program, or Homebrew's on a Mac with it
+if [ "$(uname -s)" = Darwin ] && command -v brew >/dev/null 2>&1; then
+  check "gh installed (Homebrew)" sh -c "brew list gh"
+else
+  check "gh installed next to the program, and it runs" "$HOME/.local/bin/gh" --version
+fi
+check "the installer said what gh is for" grep -q 'repositorio privado de tu cuenta de GitHub' "$TMP/install.log"
 cfg="$HOME/.config/augmented-brain/config.toml"
 check "configuration in Spanish" grep -q '^language = "es"' "$cfg"
 check "default space is personal" grep -q '^default_space = "personal"' "$cfg"

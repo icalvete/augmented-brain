@@ -13,8 +13,15 @@ Say "set up the backup". Claude offers it at the end of the first-session interv
 
 It creates a private repository in your GitHub account, `augmented-brain-<space>`,
 connects it and makes the first copy. For that it uses `gh`, GitHub's official command
-line. If you do not have it, Claude tells you how to install it, and walks you through
-the one step that needs your browser: logging in.
+line, which the installer offers (if you said no, Claude tells you how to get it).
+
+The first time, `gh` has to enter your GitHub account, and that is the one step that is
+yours: Claude, or the panel's Backup page, gives you a short code. Open
+[github.com/login/device](https://github.com/login/device), type the code and accept;
+then say "done", or press the button again. The code works for about 15 minutes.
+
+No GitHub account? Create one for free at [github.com/signup](https://github.com/signup),
+or keep the copy somewhere else, as below.
 
 Rather somewhere else (GitLab, your company's git)? Do it yourself, in a folder of the
 space:
@@ -91,7 +98,8 @@ again, take the line out (on Windows, `setx AB_NO_AUTO_BACKUP ""`).
 1. Install augmented brain with the usual command. It creates the spaces, empty. If
    Claude opens at the end, close it without doing the interview: your profile comes in
    the backup.
-2. If the repository is on GitHub, log in once with `gh auth login`, so git has access.
+2. If the repository is on GitHub, log in once with `gh auth login`, so git has access
+   (the installer offers `gh`).
 3. Bring each space back from its backup:
    ```bash
    augmented-brain restore https://github.com/lucia/augmented-brain-work.git

@@ -1,6 +1,7 @@
 package panel
 
 import (
+	"encoding/json"
 	"html"
 	"net/http"
 	"net/url"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -113,7 +115,7 @@ func TestBackupSetupWithoutGitHub(t *testing.T) {
 	s.backupNow = func(string) error { return nil }
 	s.github = func(string) (string, error) { return "", &backup.ErrNoGitHub{Steps: "steps"} }
 	w := s.post(t, "/backup/setup", url.Values{"s": {"work"}})
-	if w.Code != http.StatusBadRequest || !strings.Contains(html.UnescapeString(w.Body.String()), "gh auth login") {
+	if w.Code != http.StatusBadRequest || !strings.Contains(html.UnescapeString(w.Body.String()), "Vuelve a lanzar el instalador") {
 		t.Errorf("no steps: %d", w.Code)
 	}
 	if c, _ := config.Load(cfg); c.Spaces["work"].Backup != "" {
@@ -214,5 +216,49 @@ func TestBackupGoBack(t *testing.T) {
 	page = html.UnescapeString(s.get(t, strings.TrimPrefix(loc, s.localBase())).Body.String())
 	if !strings.Contains(page, "Your notes are back as in the copy of") || !strings.Contains(page, "went back to the copy of") {
 		t.Error("the page does not say the notes went back")
+	}
+}
+
+// gh there but not logged in: the login is started, and the page shows its code and
+// GitHub's address, so the person only accepts in the browser and presses the button
+// again. A login that could not start says why.
+func TestBackupSetupGitHubLogin(t *testing.T) {
+	s, cfg := fixture(t, "es")
+	s.backupNow = func(string) error { return nil }
+	l := &backup.Login{Code: "QWER-5678", URL: "https://github.com/login/device", PID: os.Getpid(), Started: time.Now()}
+	s.github = func(string) (string, error) { return "", &backup.ErrNoGitHub{Steps: "steps", Login: l} }
+	w := s.post(t, "/backup/setup", url.Values{"s": {"work"}})
+	loc := w.Header().Get("Location")
+	if w.Code != http.StatusSeeOther || !strings.Contains(loc, "login=work") {
+		t.Fatalf("login started: %d %q", w.Code, loc)
+	}
+	// The page reads the login gh waits on, as every session does.
+	data, _ := json.Marshal(l)
+	if err := os.MkdirAll(filepath.Join(cfg, "state"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(cfg, "state", "gh-login.json"), data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	at, _, _ := strings.Cut(strings.TrimPrefix(loc, s.localBase()), "#") // a browser keeps the fragment to itself
+	page := html.UnescapeString(s.get(t, at).Body.String())
+	for _, want := range []string{"QWER-5678", `href="https://github.com/login/device"`, "github.com/signup", "pulsa otra vez el botón"} {
+		if !strings.Contains(page, want) {
+			t.Errorf("the page lacks %q", want)
+		}
+	}
+	// Without the login in the address, or once gh is gone, no code is shown.
+	if strings.Contains(s.get(t, "/backup").Body.String(), "QWER-5678") {
+		t.Error("the code shows without asking")
+	}
+	if c, _ := config.Load(cfg); c.Spaces["work"].Backup != "" {
+		t.Error("a backup was set up before the login")
+	}
+	s.github = func(string) (string, error) {
+		return "", &backup.ErrNoGitHub{Steps: "steps", Reason: "GitHub did not answer in time"}
+	}
+	w = s.post(t, "/backup/setup", url.Values{"s": {"work"}})
+	if w.Code != http.StatusBadRequest || !strings.Contains(html.UnescapeString(w.Body.String()), "No se pudo empezar la entrada en GitHub (GitHub did not answer in time)") {
+		t.Errorf("failed login: %d", w.Code)
 	}
 }

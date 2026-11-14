@@ -72,8 +72,9 @@ Te hace unas pocas preguntas. Para aceptar lo que te propone, basta con pulsar E
 
 1. **El idioma.** Español o inglés; te propone el del sistema. Puedes cambiarlo más tarde
    en la [configuración](configuration.md#ajustes-de-todo-el-ordenador).
-2. **Lo que falte**, si falta algo: git (guarda el historial de tus notas), Claude Code
-   y la app de escritorio de Claude. Te dice para qué es cada cosa antes de instalarla. Si
+2. **Lo que falte**, si falta algo: git (guarda el historial de tus notas), Claude Code,
+   la app de escritorio de Claude y `gh` (el programa de GitHub, para la copia; sin
+   contraseña). Te dice para qué es cada cosa antes de instalarla. Si
    ya tenías Claude Code pero está atrasado, te ofrece actualizarlo. Si falta Claude Code,
    también te pregunta si tienes un plan de pago; un no no lo para.
 3. **Dónde actúa augmented brain**, solo si ya tenías Claude Code: en todo el ordenador,
@@ -122,7 +123,8 @@ página Guardia del panel, y Claude se ofrece a abrírtela.
 Al final te enseña lo que ha guardado y te ofrece configurar la copia de seguridad. Dile que
 sí: tus notas quedan en un repositorio privado tuyo, y si pierdes el ordenador no pierdes
 nada. Necesita una cuenta de GitHub; si no la tienes, di que no por ahora y pide «prepara
-la copia de seguridad» cuando la tengas. [Copia de seguridad y restauración](backup.md)
+la copia de seguridad» cuando la tengas. La primera vez, Claude te da un código corto:
+abre github.com/login/device, escríbelo y acepta. Nada más. [Copia de seguridad y restauración](backup.md)
 cuenta el resto, también otros servidores de git.
 
 ## Tu primera semana

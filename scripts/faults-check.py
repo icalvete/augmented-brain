@@ -42,6 +42,23 @@ CFG = os.path.join(HOME, "cfg")
 REAL = {n: shutil.which(n) for n in ("git", "gh", "claude", "tailscale", "systemctl", "secret-tool", "security")}
 
 
+# Fake gh programs (sh, cmd), never logged in. Its login says a code and waits, as the
+# real one does with no terminal, or fails at once as it does with no network.
+FAKE_GH = {
+    "fake-gh-login": (
+        '#!/bin/sh\n[ "$1 $2" = "auth login" ] || exit 1\n'
+        'echo "! First copy your one-time code: FAKE-1234" >&2\n'
+        'echo "Open this URL to continue in your web browser: https://github.com/login/device" >&2\nexec sleep 20\n',
+        '@echo off\r\nif not "%1 %2"=="auth login" exit /b 1\r\n'
+        'echo ! First copy your one-time code: FAKE-1234 1>&2\r\n'
+        'echo Open this URL to continue in your web browser: https://github.com/login/device 1>&2\r\n'
+        'ping -n 20 127.0.0.1 >nul\r\n'),
+    "fake-gh-offline": (
+        '#!/bin/sh\n[ "$1 $2" = "auth login" ] && echo "error connecting to github.com" >&2\nexit 1\n',
+        '@echo off\r\nif "%1 %2"=="auth login" echo error connecting to github.com 1>&2\r\nexit /b 1\r\n'),
+}
+
+
 def tools(*names):
     """A folder with wrappers for the named programs (those this machine has), so the
     program finds those and no others."""
@@ -57,6 +74,16 @@ def tools(*names):
                 p = os.path.join(d, "claude")
                 with open(p, "w") as f:
                     f.write("#!/bin/sh\nexit 0\n")
+                os.chmod(p, 0o755)
+            continue
+        if n in FAKE_GH:  # a gh that is not logged in: its login gives a code, or fails as offline
+            if WIN:
+                with open(os.path.join(d, "gh.cmd"), "w") as f:
+                    f.write(FAKE_GH[n][1])
+            else:
+                p = os.path.join(d, "gh")
+                with open(p, "w") as f:
+                    f.write(FAKE_GH[n][0])
                 os.chmod(p, 0o755)
             continue
         if not real:
@@ -151,6 +178,12 @@ try:
     print("##### no gh")
     r = mcp(work, [("backup_setup", {})], tools_=("git",))
     report("backup_setup without gh returns the steps", len(r) == 1 and has(r[0][1], "gh"), r[0][1][:160] if r else "no answer")
+
+    print("##### gh not logged in")
+    r = mcp(work, [("backup_setup", {})], tools_=("git", "fake-gh-offline"))
+    report("backup_setup with no network says the GitHub login could not start", len(r) == 1 and has(r[0][1], "could not be started", "error connecting"), r[0][1][:160] if r else "no answer")
+    r = mcp(work, [("backup_setup", {})], tools_=("git", "fake-gh-login"))
+    report("backup_setup starts the GitHub login and gives its code", len(r) == 1 and has(r[0][1], "FAKE-1234", "github.com/login/device"), r[0][1][:160] if r else "no answer")
 
     print("##### no git")
     remote = os.path.join(TMP, "remote.git")

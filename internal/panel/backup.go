@@ -35,10 +35,11 @@ type backupSpace struct {
 	Known, OK            bool
 	Time, Error, Warning string
 	Copies               []backupCopy
-	Started              bool   // a copy was just started from here
-	WentBack             string // the notes just went back to the copy of this date
-	Profile              bool   // this space's backup carries the profile
-	NoGit                bool   // set up, but the notes folder is not a repository (yet)
+	Started              bool          // a copy was just started from here
+	WentBack             string        // the notes just went back to the copy of this date
+	Profile              bool          // this space's backup carries the profile
+	NoGit                bool          // set up, but the notes folder is not a repository (yet)
+	Login                *backup.Login // the GitHub login gh waits on, to accept in the browser
 }
 
 type backupData struct {
@@ -81,6 +82,9 @@ func (s *Server) backupPage(v *view, r *http.Request) (string, page, error) {
 		}
 		if sp.Backup == "" {
 			d.None++
+			if r.URL.Query().Get("login") == name {
+				bs.Login = backup.CurrentLogin(v.c.Dir)
+			}
 		}
 		d.Spaces = append(d.Spaces, bs)
 		spaces = append(spaces, where{name, sp.Memory})
@@ -122,7 +126,7 @@ func (s *Server) gitHubRepo(space string) (string, error) {
 	if s.github != nil {
 		return s.github(space)
 	}
-	return backup.GitHubRepo(space, backup.Exec)
+	return backup.GitHubRepo(space, backup.Exec, backup.GHLogin(s.cfgDir))
 }
 
 // backupStarted is where the browser goes after a copy was started.
@@ -178,7 +182,16 @@ func (s *Server) backupSetup(w http.ResponseWriter, r *http.Request) {
 		made, err := s.gitHubRepo(name)
 		var steps *backup.ErrNoGitHub
 		if errors.As(err, &steps) {
-			err = errors.New(i18n.T(lang, "panel.backup.err.gh"))
+			switch {
+			case steps.Login != nil:
+				// The login is started: the page shows its code until GitHub has it.
+				http.Redirect(w, r, s.base(r)+"/backup?"+url.Values{"login": {name}}.Encode()+"#login", http.StatusSeeOther)
+				return
+			case steps.Reason != "":
+				err = errors.New(i18n.T(lang, "panel.backup.err.login", steps.Reason))
+			default:
+				err = errors.New(i18n.T(lang, "panel.backup.err.gh"))
+			}
 		}
 		if err != nil {
 			s.failForm(w, r, nil, err)

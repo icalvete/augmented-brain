@@ -15,7 +15,8 @@
 #
 # Settings: AB_YES=1 answers yes to every question, AB_LANGUAGE=en|es sets the language,
 # AB_REACH=machine|spaces where augmented brain acts (asked only when Claude Code was
-# there), AB_NO_DESKTOP=1 does not offer the desktop app. For testing: AB_VERSION, AB_RELEASE_URL,
+# there), AB_NO_DESKTOP=1 does not offer the desktop app, AB_NO_GH=1 does not offer gh,
+# GitHub's program, used to make the backup. For testing: AB_VERSION, AB_RELEASE_URL,
 # AB_MARKETPLACE, AB_NO_INIT=1, AB_API_URL and AB_RETRY_DELAY, as in install.sh.
 # AB_EXIT_CODE=1 (set by `augmented-brain update`) ends with exit 1 when it fails.
 #
@@ -331,6 +332,54 @@ try {
     Remove-Item -Recurse -Force $tmp -ErrorAction SilentlyContinue
   }
   Say "+ augmented brain $v installed in $(Tilde $Dir)" "+ augmented brain $v instalado en $(Tilde $Dir)"
+
+  # --- gh, GitHub's program, for the backup -------------------------------------------
+  # The backup goes to a private repository in the person's GitHub account, made with gh.
+  # Offered here with no administrator: GitHub's own release, checked against its
+  # checksums and put next to augmented-brain. It never stops the installation, and it
+  # never signs in: that comes when the person asks for the backup, as a code to type in
+  # the browser. AB_NO_GH=1 does not offer it.
+  # AB_GH_ABSENT=1, for tests, takes a gh elsewhere on the PATH (CI runners have one) as missing.
+  function HasGh { (Test-Path (Join-Path $Dir 'gh.exe')) -or ($env:AB_GH_ABSENT -ne '1' -and [bool](Get-Command gh -ErrorAction SilentlyContinue)) }
+  function GhInstall {
+    $t = Join-Path ([IO.Path]::GetTempPath()) ("ab-gh-" + [Guid]::NewGuid().ToString('N'))
+    try {
+      New-Item -ItemType Directory -Path $t | Out-Null
+      $rel = Invoke-RestMethod -Uri 'https://api.github.com/repos/cli/cli/releases/latest' -TimeoutSec 30 -ErrorAction Stop
+      $ver = ([string]$rel.tag_name).TrimStart('v')
+      if ($ver -notmatch '^[0-9][0-9.]*$') { return $false }
+      $name = "gh_${ver}_windows_$arch.zip"
+      $web = New-Object Net.WebClient
+      $web.Headers.Add('User-Agent', 'augmented-brain-installer')
+      $from = "https://github.com/cli/cli/releases/download/v$ver"
+      $web.DownloadFile("$from/gh_${ver}_checksums.txt", "$t\sums.txt")
+      $web.DownloadFile("$from/$name", "$t\$name")
+      $line = Get-Content "$t\sums.txt" | Where-Object { $_ -match " $([regex]::Escape($name))$" } | Select-Object -First 1
+      if (-not $line -or (Get-FileHash -Algorithm SHA256 "$t\$name").Hash -ine ($line -split '\s+')[0]) { return $false }
+      Expand-Archive -Path "$t\$name" -DestinationPath "$t\gh" -Force
+      $bin = Get-ChildItem -Path "$t\gh" -Recurse -Filter 'gh.exe' | Select-Object -First 1
+      if (-not $bin) { return $false }
+      $null = & $bin.FullName --version 2>$null
+      if ($LASTEXITCODE -ne 0) { return $false }
+      Copy-Item $bin.FullName (Join-Path $Dir 'gh.exe') -Force -ErrorAction Stop
+      return $true
+    } catch { return $false }
+    finally { Remove-Item -Recurse -Force $t -ErrorAction SilentlyContinue }
+  }
+  if ($env:AB_NO_INIT -ne '1' -and $env:AB_NO_GH -ne '1' -and -not (HasGh) -and ($interactive -or $env:AB_YES -eq '1')) {
+    Write-Host ''
+    Say "The backup of your notes goes to a private repository in your GitHub account, made with GitHub's program, gh. It is not on this computer yet." `
+        "La copia de seguridad de tus notas va a un repositorio privado de tu cuenta de GitHub, que se crea con el programa de GitHub, gh. A\u00fan no est\u00e1 en este ordenador."
+    if (Ask (Text 'Install gh too? No administrator needed; you sign in to GitHub later, only if you want the backup.' '\u00bfInstalo gh tambi\u00e9n? No hace falta ser administrador; entras en GitHub m\u00e1s tarde, solo si quieres la copia.')) {
+      Say "Installing gh..." "Instalando gh..."
+      if ((GhInstall) -and (HasGh)) {
+        Say "+ gh installed" "+ gh instalado"
+      } else {
+        Say "gh was not installed. The backup can wait: when you ask Claude for it, Claude tells you how." `
+            "gh no se ha instalado. La copia puede esperar: cuando se la pidas a Claude, te dir\u00e1 c\u00f3mo."
+      }
+    }
+  }
 
   # --- 3. PATH ------------------------------------------------------------------------
   # The plugin runs `augmented-brain` by name, so Claude Code must find it in the PATH.

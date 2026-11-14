@@ -80,7 +80,7 @@ It asks a few questions. To accept what it suggests, just press Enter.
 1. **The language.** English or Spanish; it suggests your system's. You can change it
    later in the [configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html#settings-for-the-whole-computer).
 2. **Whatever is missing**, if anything: git (keeps the history of your notes), Claude
-   Code and the Claude desktop app. It tells you what each one is for before installing it.
+   Code, the Claude desktop app and `gh` (GitHub's program, for the backup; no password). It tells you what each one is for before installing it.
    If you already had Claude Code but it is behind, it offers to update it. If Claude Code
    is missing, it also asks whether you have a paid plan; a no does not stop it.
 3. **Where augmented brain acts**, only if you already had Claude Code: on the whole
@@ -129,7 +129,8 @@ yourself, on the panel's Guard page, and Claude offers to open it.
 At the end it shows what it saved and offers to set up the backup. Say yes: your notes go
 to a private repository of yours, and losing the computer loses nothing. It needs a
 GitHub account; without one, say no for now and ask "set up the backup" whenever you
-have it. [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html) tells the rest, other git servers included.
+have it. The first time, Claude gives you a short code: open github.com/login/device,
+type it and accept. That is all. [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html) tells the rest, other git servers included.
 
 ## Your first week
 
@@ -217,6 +218,7 @@ walks you through it.
   Claude Code beforehand it does not ask: it acts on the whole computer.
 - **No GitHub account.** The program downloads from GitHub without one. The backup does
   use one, or another git server, and you set it up later: see [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html).
+  The installer offers `gh`, GitHub's program, for it; it never asks you to sign in.
 - **A new installation ends the same way:** two spaces, `work` and `personal` (in Spanish,
   `trabajo` and `personal`), in `~/augmented-brain`, the Claude Code plugin installed, and
   the offer to open Claude. Run over one you already have, it keeps your spaces and
@@ -248,9 +250,13 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    Anthropic's apt repository, which it adds for you; it asks for your password. On other
    distributions you use Claude in the terminal.
 4. **The program**, into `~/.local/bin/augmented-brain`.
-5. **The PATH:** it adds `~/.local/bin` to `~/.bashrc` with bash, `~/.zshrc` with zsh, or
+5. **gh**, GitHub's program, if missing and you want it: the backup of your notes is made
+   with it. It comes from GitHub's own release, checked, into `~/.local/bin` next to the
+   program, with no password. It does not sign in to GitHub: that waits until you
+   ask for the backup.
+6. **The PATH:** it adds `~/.local/bin` to `~/.bashrc` with bash, `~/.zshrc` with zsh, or
    `~/.profile` otherwise, unless it is already there.
-6. **The setup**, and the offer to open Claude.
+7. **The setup**, and the offer to open Claude.
 
 **Where things go:** the program and Claude Code in `~/.local/bin`; the configuration in
 `~/.config/augmented-brain` (or `$XDG_CONFIG_HOME/augmented-brain`); your notes in
@@ -290,10 +296,14 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    straight from Anthropic, with its signature checked. It goes to `/Applications`, or to
    `~/Applications` if you cannot write there.
 5. **The program**, into `~/.local/bin/augmented-brain`.
-6. **The PATH:** with zsh, the Mac's usual shell, in `~/.zshrc`. With bash, in
+6. **gh**, GitHub's program, if missing and you want it: the backup of your notes is made
+   with it. It comes from GitHub's own release, checked, into `~/.local/bin` next to the
+   program, with no password (with Homebrew when you have it). It does not sign in to GitHub: that waits until you
+   ask for the backup.
+7. **The PATH:** with zsh, the Mac's usual shell, in `~/.zshrc`. With bash, in
    `~/.bash_profile`, or in `~/.bash_login` or `~/.profile` if you already have one of them:
    the Mac's Terminal reads those, not `~/.bashrc`.
-7. **The setup**, and the offer to open the Claude app.
+8. **The setup**, and the offer to open the Claude app.
 
 **Where things go:** as on Linux: `~/.local/bin`, `~/.config/augmented-brain` and
 `~/augmented-brain`.
@@ -331,9 +341,12 @@ irm https://github.com/icalvete/augmented-brain/releases/latest/download/install
 3. **The Claude desktop app**, if you want it, with winget (without winget, it is not
    offered: get it from [claude.ai/download](https://claude.ai/download)).
 4. **The program**, into `%USERPROFILE%\.local\bin\augmented-brain.exe`.
-5. **The PATH:** it adds that folder to your user's PATH. Claude Code's own installer leaves
+5. **gh**, GitHub's program, if missing and you want it: the backup of your notes is made
+   with it. It comes from GitHub's own release, checked, into the same folder, with no
+   administrator. It does not sign in to GitHub: that waits until you ask for the backup.
+6. **The PATH:** it adds that folder to your user's PATH. Claude Code's own installer leaves
    that to you; this one does it.
-6. **The setup**, and the offer to open the Claude app.
+7. **The setup**, and the offer to open the Claude app.
 
 **Where things go:** the program and Claude Code in `%USERPROFILE%\.local\bin`; the
 configuration in `%APPDATA%\augmented-brain`; your notes in
@@ -2227,7 +2240,9 @@ survive if this computer breaks. A space with no backup says so in red.
   to a copy](https://icalvete.github.io/augmented-brain/guide/backup.html#go-back-to-a-copy).
 - For a space with none: **Set it up on my GitHub** makes a private repository called
   `augmented-brain-<space>` in your GitHub account and the first copy. It needs the
-  GitHub command line, `gh`, installed and logged in; the page says how if it is not.
+  GitHub command line, `gh`, which the installer offers. If `gh` has not entered your
+  account yet, the page gives you a short code to type at github.com/login/device; then
+  press the button again.
   **I already have a private repository** takes its address instead.
 - **Bring the notes back on another computer** shows the command to run there. Restoring
   is never done from the panel: it is for a computer that does not have the notes yet.
@@ -2511,8 +2526,15 @@ Say "set up the backup". Claude offers it at the end of the first-session interv
 
 It creates a private repository in your GitHub account, `augmented-brain-<space>`,
 connects it and makes the first copy. For that it uses `gh`, GitHub's official command
-line. If you do not have it, Claude tells you how to install it, and walks you through
-the one step that needs your browser: logging in.
+line, which the installer offers (if you said no, Claude tells you how to get it).
+
+The first time, `gh` has to enter your GitHub account, and that is the one step that is
+yours: Claude, or the panel's Backup page, gives you a short code. Open
+[github.com/login/device](https://github.com/login/device), type the code and accept;
+then say "done", or press the button again. The code works for about 15 minutes.
+
+No GitHub account? Create one for free at [github.com/signup](https://github.com/signup),
+or keep the copy somewhere else, as below.
 
 Rather somewhere else (GitLab, your company's git)? Do it yourself, in a folder of the
 space:
@@ -2589,7 +2611,8 @@ again, take the line out (on Windows, `setx AB_NO_AUTO_BACKUP ""`).
 1. Install augmented brain with the usual command. It creates the spaces, empty. If
    Claude opens at the end, close it without doing the interview: your profile comes in
    the backup.
-2. If the repository is on GitHub, log in once with `gh auth login`, so git has access.
+2. If the repository is on GitHub, log in once with `gh auth login`, so git has access
+   (the installer offers `gh`).
 3. Bring each space back from its backup:
    ```bash
    augmented-brain restore https://github.com/lucia/augmented-brain-work.git
@@ -4841,8 +4864,10 @@ Sets up the backup of this space: a private git repository that keeps its notes,
 by itself every time a session ends.
 
 It creates `augmented-brain-<space>`, a private repository in your GitHub account, with
-the `gh` command line, and makes the first copy right away. When `gh` is missing or not
-logged in, it returns the steps to guide you through.
+the `gh` command line, and makes the first copy right away. When `gh` has not entered
+your GitHub account yet, it starts that and returns a short code for you to type at
+github.com/login/device; call it again once you accept. When `gh` is missing, it
+returns the steps to guide you through.
 
 - `repo_url` (optional): leave it out. It is kept so that calls from earlier versions
   still work, and an address in it is always refused. A backup somewhere else (GitLab, your company's git) is yours to

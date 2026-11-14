@@ -72,7 +72,7 @@ It asks a few questions. To accept what it suggests, just press Enter.
 1. **The language.** English or Spanish; it suggests your system's. You can change it
    later in the [configuration](configuration.md#settings-for-the-whole-computer).
 2. **Whatever is missing**, if anything: git (keeps the history of your notes), Claude
-   Code and the Claude desktop app. It tells you what each one is for before installing it.
+   Code, the Claude desktop app and `gh` (GitHub's program, for the backup; no password). It tells you what each one is for before installing it.
    If you already had Claude Code but it is behind, it offers to update it. If Claude Code
    is missing, it also asks whether you have a paid plan; a no does not stop it.
 3. **Where augmented brain acts**, only if you already had Claude Code: on the whole
@@ -121,7 +121,8 @@ yourself, on the panel's Guard page, and Claude offers to open it.
 At the end it shows what it saved and offers to set up the backup. Say yes: your notes go
 to a private repository of yours, and losing the computer loses nothing. It needs a
 GitHub account; without one, say no for now and ask "set up the backup" whenever you
-have it. [Backup and restore](backup.md) tells the rest, other git servers included.
+have it. The first time, Claude gives you a short code: open github.com/login/device,
+type it and accept. That is all. [Backup and restore](backup.md) tells the rest, other git servers included.
 
 ## Your first week
 

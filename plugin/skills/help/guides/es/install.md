@@ -24,6 +24,7 @@ llevan de la mano.
 - **Sin cuenta de GitHub.** El programa se descarga de GitHub sin ella. La copia de
   seguridad sí la usa, u otro servidor de git, y se prepara después: mira
   [Copia de seguridad y restauración](backup.md).
+  El instalador te ofrece `gh`, el programa de GitHub, para ella; nunca te pide entrar.
 - **Una instalación nueva acaba siempre igual:** dos espacios, `trabajo` y `personal` (en
   inglés, `work` y `personal`), en `~/augmented-brain`, el plugin de Claude Code instalado
   y la oferta de abrir Claude. Si lo lanzas sobre una que ya tienes, conserva tus espacios
@@ -55,9 +56,13 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    repositorio apt de Anthropic, que añade por ti; te pide la contraseña. En otras
    distribuciones usas Claude en la terminal.
 4. **El programa**, en `~/.local/bin/augmented-brain`.
-5. **El PATH:** añade `~/.local/bin` a `~/.bashrc` con bash, a `~/.zshrc` con zsh, o a
+5. **gh**, el programa de GitHub, si falta y lo quieres: con él se hace la copia de
+   seguridad de tus notas. Viene de la versión publicada por el propio GitHub, comprobada,
+   a `~/.local/bin` junto al programa, sin contraseña. No entra en GitHub: eso espera
+   a que pidas la copia.
+6. **El PATH:** añade `~/.local/bin` a `~/.bashrc` con bash, a `~/.zshrc` con zsh, o a
    `~/.profile` en otro caso, salvo que ya esté.
-6. **La configuración**, y la oferta de abrir Claude.
+7. **La configuración**, y la oferta de abrir Claude.
 
 **Dónde queda cada cosa:** el programa y Claude Code en `~/.local/bin`; la configuración en
 `~/.config/augmented-brain` (o `$XDG_CONFIG_HOME/augmented-brain`); tus notas en
@@ -99,10 +104,14 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
    directamente de Anthropic, comprobando su firma. Va a `/Applications`, o a
    `~/Applications` si no puedes escribir allí.
 5. **El programa**, en `~/.local/bin/augmented-brain`.
-6. **El PATH:** con zsh, la shell normal del Mac, en `~/.zshrc`. Con bash, en
+6. **gh**, el programa de GitHub, si falta y lo quieres: con él se hace la copia de
+   seguridad de tus notas. Viene de la versión publicada por el propio GitHub, comprobada,
+   a `~/.local/bin` junto al programa, sin contraseña (con Homebrew si lo tienes). No entra en GitHub: eso espera
+   a que pidas la copia.
+7. **El PATH:** con zsh, la shell normal del Mac, en `~/.zshrc`. Con bash, en
    `~/.bash_profile`, o en `~/.bash_login` o `~/.profile` si ya tienes uno de ellos: la
    Terminal del Mac lee esos, no `~/.bashrc`.
-7. **La configuración**, y la oferta de abrir la app de Claude.
+8. **La configuración**, y la oferta de abrir la app de Claude.
 
 **Dónde queda cada cosa:** como en Linux: `~/.local/bin`, `~/.config/augmented-brain` y
 `~/augmented-brain`.
@@ -139,9 +148,13 @@ irm https://github.com/icalvete/augmented-brain/releases/latest/download/install
 3. **La app de escritorio de Claude**, si la quieres, con winget (sin winget no te la
    ofrece: descárgala de [claude.ai/download](https://claude.ai/download)).
 4. **El programa**, en `%USERPROFILE%\.local\bin\augmented-brain.exe`.
-5. **El PATH:** añade esa carpeta al PATH de tu usuario. El instalador de Claude Code lo
+5. **gh**, el programa de GitHub, si falta y lo quieres: con él se hace la copia de
+   seguridad de tus notas. Viene de la versión publicada por el propio GitHub, comprobada,
+   a la misma carpeta, sin ser administrador. No entra en GitHub: eso espera a que pidas la
+   copia.
+6. **El PATH:** añade esa carpeta al PATH de tu usuario. El instalador de Claude Code lo
    deja en tus manos; este lo hace.
-6. **La configuración**, y la oferta de abrir la app de Claude.
+7. **La configuración**, y la oferta de abrir la app de Claude.
 
 **Dónde queda cada cosa:** el programa y Claude Code en `%USERPROFILE%\.local\bin`; la
 configuración en `%APPDATA%\augmented-brain`; tus notas en
