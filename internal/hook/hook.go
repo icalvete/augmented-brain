@@ -191,13 +191,12 @@ func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 		// Part 1 builds every part once it has done its work behind the notes (it may be
 		// moving them to a new format): wait for it, briefly, and take this part.
 		var ok bool
-		if text, ok = waitParts(cfgDir, i, s.Name, n, Now(), LockWait); !ok {
+		if text, ok = waitParts(cfgDir, i, s.Name, n, Now(), PartWait); !ok {
 			text = session.Part(c, s, "", n)
 		}
 	case n == 1:
 		task := launchedTask(cfgDir, i)
 		note := startNote(c, s, i, cfgDir, task)
-		freshBaseline(c, s, i, cfgDir)
 		if all := session.AllParts(c, s, note, task); saveParts(cfgDir, i, s.Name, all) {
 			text = all[0]
 		} else {
@@ -207,7 +206,6 @@ func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 	default:
 		task := launchedTask(cfgDir, i)
 		note := startNote(c, s, i, cfgDir, task)
-		freshBaseline(c, s, i, cfgDir)
 		text = session.ContextFor(c, s, note, task)
 	}
 	o := output{HookSpecificOutput: specific{HookEventName: "SessionStart", AdditionalContext: text}}
@@ -230,7 +228,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir, task string) 
 	}
 	note += backupNote(c, s, cfgDir)
 	note += updateNote(c, cfgDir)
-	note += migrate(c, s, cfgDir)
+	note += startWork(c, s, i, cfgDir)
 	note += sessionStarted(c, s, i, cfgDir, task == "")
 	note += modelStartNote(c.Language, cfgDir, i)
 	note += askSafety(c, cfgDir)

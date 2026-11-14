@@ -19,16 +19,12 @@ var FreshWait = 500 * time.Millisecond
 // freshBaseline records every task of the space as seen by this Claude process, right
 // before the session is given the index (package fresh). A resumed or compacted
 // session keeps the tasks it had touched; a new, cleared or forked one starts afresh.
-func freshBaseline(c *config.Config, s *config.Space, i input, cfgDir string) {
+// The caller holds the notes lock (startWork).
+func freshBaseline(s *config.Space, i input, cfgDir string) {
 	key := fresh.HookKey(Getenv)
 	if key == "" || s == nil {
 		return
 	}
-	unlock, err := filelock.LockWithin(filepath.Join(cfgDir, backup.NotesLock), LockWait)
-	if err != nil {
-		return // the next check takes one
-	}
-	defer unlock()
 	now := Now()
 	fresh.Prune(cfgDir, now)
 	keep := i.Source == "resume" || i.Source == "compact"

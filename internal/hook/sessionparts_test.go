@@ -79,9 +79,9 @@ func TestSessionPartsAtOnce(t *testing.T) {
 // earlier start of the same one: it waits, and then builds its own.
 func TestSessionPartsOfAnotherStart(t *testing.T) {
 	cfgDir, work := setupSpace(t)
-	old := LockWait
-	LockWait = 50 * time.Millisecond
-	t.Cleanup(func() { LockWait = old })
+	old := PartWait
+	PartWait = 50 * time.Millisecond
+	t.Cleanup(func() { PartWait = old })
 	bogus := make([]string, session.Parts)
 	for i := range bogus {
 		bogus[i] = "not this start's"
