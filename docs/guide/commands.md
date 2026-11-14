@@ -61,7 +61,7 @@ Sets everything up: the spaces, the configuration and the Claude Code plugin. Th
 installer runs it for you the first time.
 
 Syntax: `augmented-brain init [--custom] [--language en|es] [--space <name>]
-[--work <folder>] [--memory <folder>] [--yes] [--no-plugin]`
+[--work <folder>] [--memory <folder>] [--reach machine|spaces] [--yes] [--no-plugin]`
 
 ```bash
 augmented-brain init
@@ -82,6 +82,10 @@ If there is a configuration already, it stops and changes nothing. To add a spac
 - `--work`: its work folder. Default: `~/augmented-brain/<space>`.
 - `--memory`: its notes folder. Default: `~/augmented-brain/<space>/notes`, also when
   `--work` names another folder.
+- `--reach`: where augmented brain acts, `machine` (the default) or `spaces`
+  ([Outside every space](spaces.md#outside-every-space)). The installer passes it when
+  Claude Code was already on the computer. Only for the first setup: with a
+  configuration already, it is refused, and the choice changes on the panel's Guard page.
 - `--yes`: do not ask; take the options given and the defaults.
 - `--no-plugin`: do not install the Claude Code plugin.
 

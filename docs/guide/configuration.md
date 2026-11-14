@@ -25,7 +25,7 @@ program keeps them when it changes the file.
 | File | What it holds | Who writes it | In the backup |
 |---|---|---|---|
 | `config.toml` | Your spaces, the language and the guard's lists | The installer, `space add`, `backup setup`, the Guard page, `safety_save` (only adds) | Each space's own section, in that space's backup. The lists for the whole computer, never |
-| `guard.toml` | Repositories Claude never touches | The Guard page | No |
+| `guard.toml` | Repositories Claude never touches, and where augmented brain acts | The Guard page, and the installer the first time (`reach`) | No |
 | `session.toml` | The model you expect and whether Claude asks before saving a rule | The Guard page | No |
 | `secrets.toml` | The names of your secrets, never their values | `secret_name_save`, the Secrets page | Yes, in the default space's backup |
 | `remote.toml` | Remote access | `remote install` and `remote uninstall` | No |
@@ -290,6 +290,8 @@ Set these in your shell to change how the program behaves:
 The installer reads a few more:
 
 - `AB_YES=1`: answer yes to every question.
+- `AB_REACH`: `machine` or `spaces`, where augmented brain acts, instead of asking (it
+  asks only when Claude Code was already there). Only for a new installation.
 - `AB_NO_DESKTOP=1`: do not offer the Claude desktop app.
 - `AB_DESKTOP_TIMEOUT`: on Linux, how many seconds the desktop app's download may take
   before the installer gives up and goes on without it. Default 480 (8 minutes).

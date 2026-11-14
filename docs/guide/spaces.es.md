@@ -91,8 +91,10 @@ Tres cosas que saber:
   sesión no tiene memoria hasta que eliges carpeta. Por eso «en todo el ordenador» es lo
   que viene.
 
-Se cambia en la página Guardia del panel; un cambio a mano en `guard.toml` cuenta solo
-cuando lo aceptas allí ([`reach`](configuration.es.md#guardtoml)).
+Si Claude Code ya estaba en tu ordenador, el instalador te lo pregunta una vez, la
+primera; si solo pulsas Intro, queda «en todo el ordenador». Después se cambia en la
+página Guardia del panel; un cambio a mano en `guard.toml` cuenta solo cuando lo aceptas
+allí ([`reach`](configuration.es.md#guardtoml)).
 
 El espacio por defecto importa para una cosa más: su copia de seguridad lleva tu perfil,
 las notas compartidas y los nombres de tus secretos (nunca sus valores). Se elige con

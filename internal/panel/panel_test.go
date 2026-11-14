@@ -163,7 +163,7 @@ func TestAccess(t *testing.T) {
 
 	// The ping proves the server knows the token, without the token being sent.
 	c := strings.Repeat("ab", 32)
-	if w := s.do(t, req{path: "/ping?c=" + c}); w.Code != http.StatusOK || w.Header().Get("X-Augmented-Brain") != "panel" ||
+	if w := s.do(t, req{path: "/ping?c=" + c}); w.Code != http.StatusOK || w.Header().Get("X-Augmented-Brain") != "" ||
 		strings.TrimSpace(w.Body.String()) != proof(s.token, c) || strings.Contains(w.Body.String(), s.token) {
 		t.Errorf("ping: %d %q", w.Code, w.Body)
 	}

@@ -14,6 +14,7 @@
 #    open Claude right away: the desktop app if it is there, otherwise in this terminal.
 #
 # Settings: AB_YES=1 answers yes to every question, AB_LANGUAGE=en|es sets the language,
+# AB_REACH=machine|spaces where augmented brain acts (asked only when Claude Code was there),
 # AB_NO_DESKTOP=1 does not offer the desktop app (servers, tests), AB_DESKTOP_TIMEOUT sets
 # how long its download may take on Linux, in seconds (default 480). For testing:
 # AB_DESKTOP_URL (where Anthropic's apt repository of the desktop app is),
@@ -209,6 +210,10 @@ plan_notice() {
 # Claude Code's own installer also uses ~/.local/bin; it may be there but not yet in
 # this terminal's PATH.
 has_claude() { command -v claude >/dev/null 2>&1 || [ -x "$HOME/.local/bin/claude" ]; }
+# Whether Claude Code was here before this installer: only then does it ask where
+# augmented brain acts (step 4), since only then are there other projects to change.
+had_claude=0
+has_claude && had_claude=1
 claude_bin() { command -v claude 2>/dev/null || echo "$HOME/.local/bin/claude"; }
 
 # older <a> <b>: true when version a is older than b. Only the numbers count.
@@ -571,13 +576,44 @@ if [ -f "$cfg/config.toml" ]; then
   "$DIR/augmented-brain" update --plugin </dev/null || true
   exit 0
 fi
+# Where augmented brain acts (reach in guard.toml): asked only of someone who already had
+# Claude Code, whose other projects it would otherwise change too. AB_REACH answers it;
+# without a terminal, with AB_YES=1 or with Enter, the whole computer, as for everyone.
+reach=machine
+case "${AB_REACH:-}" in
+  "" | machine) ;;
+  spaces) reach=spaces ;;
+  *) fail "AB_REACH=$AB_REACH: $(say "use machine or spaces." "usa machine o spaces.")" ;;
+esac
+if [ -z "${AB_REACH:-}" ] && [ "$had_claude" = 1 ] && [ "${AB_YES:-}" != 1 ] && (exec </dev/tty) 2>/dev/null; then
+  echo
+  say "You already use Claude Code. Where should augmented brain act?" \
+      "Ya usas Claude Code. ¿Dónde quieres que actúe augmented brain?"
+  say "  1) On the whole computer: your notes and the guard in every Claude Code session." \
+      "  1) En todo el ordenador: tus notas y el guardia en cada sesión de Claude Code."
+  say "  2) Only in its spaces: outside their folders, your other projects stay as they were." \
+      "  2) Solo en sus espacios: fuera de sus carpetas, tus otros proyectos siguen como estaban."
+  say "You can change it later on the panel's Guard page." \
+      "Puedes cambiarlo después en la página Guardia del panel."
+  while :; do
+    printf '%s ' "$(say "[1/2] (1)" "[1/2] (1)")" >/dev/tty
+    read -r answer </dev/tty || answer=""
+    case "$answer" in
+      "" | 1) break ;;
+      2) reach=spaces; break ;;
+    esac
+    say "Answer 1 or 2." "Contesta 1 o 2." >/dev/tty
+  done
+fi
+set -- --language "$lang"
+[ "$reach" = spaces ] && set -- "$@" --reach spaces
 # Offer to open Claude right here: this terminal cannot pick up the new PATH, so the
 # installer opens it with the right one. init then talks about the next times.
 launch=0
 (exec </dev/tty) 2>/dev/null && launch=1
 desktop=0
 has_desktop && desktop=1
-AB_NEW_TERMINAL="$new_terminal" AB_LAUNCH="$launch" AB_DESKTOP="$desktop" "$DIR/augmented-brain" init --language "$lang" </dev/null
+AB_NEW_TERMINAL="$new_terminal" AB_LAUNCH="$launch" AB_DESKTOP="$desktop" "$DIR/augmented-brain" init "$@" </dev/null
 [ "$launch" = 1 ] || exit 0
 if [ "$lang" = es ]; then work="$HOME/augmented-brain/trabajo"; else work="$HOME/augmented-brain/work"; fi
 echo

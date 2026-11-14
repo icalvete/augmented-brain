@@ -4,9 +4,15 @@ import (
 	"errors"
 	"maps"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/confighistory"
+	"github.com/icalvete/augmented-brain/internal/remote"
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 // The Versions page: the last versions of the configuration (confighistory), what each
@@ -73,11 +79,52 @@ func (s *Server) versionsRestore(v *view, r *http.Request) (string, error) {
 		return "", errors.New(v.t("err.confirm"))
 	}
 	id := field(r, "id")
+	before := sessionAndRemote(v.c.Dir)
 	err := v.sealed(func(*config.Guard) error {
 		return confighistory.Restore(v.c.Dir, id, func() error { return confighistory.Check(v.c.Dir) })
 	})
 	if errors.Is(err, confighistory.ErrNotFound) {
 		err = errors.New(v.t("versions.gone"))
 	}
+	if err == nil {
+		// The lists have their notice from sealed. What the guard does not seal but
+		// decides how sessions behave (what the assistant saves on its own, the model
+		// expected, remote access) gets one too, as when it changes on the Guard page.
+		if what := otherChanges(v, before, sessionAndRemote(v.c.Dir)); what != "" {
+			_ = state.AddGuardNotice(v.c.Dir, v.t("versions.notice", what), time.Now())
+		}
+	}
 	return "/versions", err
+}
+
+// sessionSettings is what a restore may change outside the guard's lists that the user
+// is told about: session.toml as read, and remote.toml as it is on disk.
+type sessionSettings struct {
+	session config.Session
+	remote  string
+}
+
+func sessionAndRemote(dir string) sessionSettings {
+	ss, _ := config.LoadSession(dir)
+	b, _ := os.ReadFile(filepath.Join(dir, remote.SettingsFile))
+	return sessionSettings{session: ss, remote: string(b)}
+}
+
+// otherChanges says in one line what changed from a to b, or "".
+func otherChanges(v *view, a, b sessionSettings) string {
+	var parts []string
+	if a.session.Trust() != b.session.Trust() {
+		parts = append(parts, v.t("versions.notice.trust."+b.session.Trust()))
+	}
+	if a.session.PreferredModel != b.session.PreferredModel {
+		if b.session.PreferredModel == "" {
+			parts = append(parts, v.t("versions.notice.nomodel"))
+		} else {
+			parts = append(parts, v.t("versions.notice.model", b.session.PreferredModel))
+		}
+	}
+	if a.remote != b.remote {
+		parts = append(parts, v.t("versions.notice.remote"))
+	}
+	return strings.Join(parts, "; ")
 }

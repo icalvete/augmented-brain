@@ -9,6 +9,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/confighistory"
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 // A change in the panel keeps a version (and the configuration before it); the
@@ -81,5 +82,53 @@ func TestVersionsPage(t *testing.T) {
 	}
 	if after, _ := confighistory.List(cfg); len(after) != len(before) {
 		t.Error("a refused restore changed something")
+	}
+}
+
+// Going back to a version that changes what the guard does not seal, but that decides
+// how sessions behave (memory_trust, the model expected, remote.toml), leaves a notice
+// for the next hook too, as the same change on the Guard page does.
+func TestVersionsRestoreTellsSessionChanges(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	sealNow(t, cfg)
+	if w := s.post(t, "/guard/trust", url.Values{"s": {"work"}, "value": {"ask"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("trust: %d", w.Code)
+	}
+	if w := s.post(t, "/guard/model", url.Values{"s": {"work"}, "value": {"opus"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("model: %d", w.Code)
+	}
+	vs, err := confighistory.List(cfg)
+	if err != nil || len(vs) < 2 {
+		t.Fatalf("versions: %d %v", len(vs), err)
+	}
+	_ = state.TakeGuardNotice(cfg) // what the Guard page said
+	if w := s.post(t, "/versions/restore", url.Values{"s": {"work"}, "id": {vs[len(vs)-1].ID}, "confirm": {"yes"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("restore: %d %s", w.Code, w.Body.String())
+	}
+	if ss, _ := config.LoadSession(cfg); ss.Trust() != config.TrustTell {
+		t.Fatalf("not gone back: %+v", ss)
+	}
+	got := state.TakeGuardNotice(cfg)
+	for _, want := range []string{"a version brought back in the panel also changed", "without asking", "now none"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("notice lacks %q: %q", want, got)
+		}
+	}
+
+	// Going back to a version with the same settings says nothing of them.
+	vs, _ = confighistory.List(cfg)
+	if w := s.post(t, "/versions/restore", url.Values{"s": {"work"}, "id": {vs[1].ID}, "confirm": {"yes"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("restore: %d", w.Code)
+	}
+	if ss, _ := config.LoadSession(cfg); ss.Trust() != config.TrustAsk {
+		t.Fatalf("not forward again: %+v", ss)
+	}
+	_ = state.TakeGuardNotice(cfg)
+	vs, _ = confighistory.List(cfg)
+	if w := s.post(t, "/versions/restore", url.Values{"s": {"work"}, "id": {vs[0].ID}, "confirm": {"yes"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("restore same: %d", w.Code)
+	}
+	if got := state.TakeGuardNotice(cfg); strings.Contains(got, "also changed") {
+		t.Errorf("a restore that changes nothing told: %q", got)
 	}
 }

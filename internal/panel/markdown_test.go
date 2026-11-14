@@ -114,6 +114,22 @@ func TestMarkdownIsSafe(t *testing.T) {
 	}
 }
 
+// A link that starts with "//" or "/\\" (or hides one behind a tab or a newline,
+// which browsers drop) looks like a path of the panel but goes to another site: it
+// stays text. A real path of the panel is still a link.
+func TestMarkdownNoOtherSiteAsPath(t *testing.T) {
+	for _, src := range []string{"[x](//other.example)", "[x](/\\other.example)", "[x](/\t/other.example)"} {
+		if got := md(src); strings.Contains(got, "<a ") {
+			t.Errorf("%q is a link: %q", src, got)
+		}
+	}
+	for _, src := range []string{"[x](/tasks?s=work)", "[x](/)", "[x](#top)", "[x](https://example.com/a)"} {
+		if got := md(src); !strings.Contains(got, "<a href=") {
+			t.Errorf("%q is not a link: %q", src, got)
+		}
+	}
+}
+
 func TestNewestFirst(t *testing.T) {
 	in := []string{"intro", "- 2026-01-01 — one", "  more of one", "- 2026-01-02 — two"}
 	got, n := newestFirst(in)

@@ -14,7 +14,8 @@
 #    Claude right away: the desktop app if it is there, otherwise in this terminal.
 #
 # Settings: AB_YES=1 answers yes to every question, AB_LANGUAGE=en|es sets the language,
-# AB_NO_DESKTOP=1 does not offer the desktop app. For testing: AB_VERSION, AB_RELEASE_URL,
+# AB_REACH=machine|spaces where augmented brain acts (asked only when Claude Code was
+# there), AB_NO_DESKTOP=1 does not offer the desktop app. For testing: AB_VERSION, AB_RELEASE_URL,
 # AB_MARKETPLACE, AB_NO_INIT=1, AB_API_URL and AB_RETRY_DELAY, as in install.sh.
 # AB_EXIT_CODE=1 (set by `augmented-brain update`) ends with exit 1 when it fails.
 #
@@ -132,6 +133,9 @@ try {
   $claudeDir = Join-Path $env:USERPROFILE '.local\bin'
   function HasGit { [bool](Get-Command git -ErrorAction SilentlyContinue) -or (Test-Path (Join-Path $gitCmd 'git.exe')) }
   function HasClaude { [bool](Get-Command claude -ErrorAction SilentlyContinue) -or (Test-Path (Join-Path $claudeDir 'claude.exe')) }
+  # Whether Claude Code was here before this installer: only then does it ask where
+  # augmented brain acts (step 4), since only then are there other projects to change.
+  $hadClaude = HasClaude
   function ClaudeExe {
     $c = Get-Command claude -ErrorAction SilentlyContinue
     if ($c) { $c.Source } else { Join-Path $claudeDir 'claude.exe' }
@@ -352,11 +356,33 @@ try {
     & $exe update --plugin
     return
   }
+  # Where augmented brain acts (reach in guard.toml): asked only of someone who already
+  # had Claude Code, whose other projects it would otherwise change too. AB_REACH answers
+  # it; with nobody to ask, with AB_YES=1 or with Enter, the whole computer, as for everyone.
+  $reach = 'machine'
+  if ($env:AB_REACH) {
+    if ($env:AB_REACH -notin @('machine', 'spaces')) { Fail "AB_REACH=$($env:AB_REACH): $(Text 'use machine or spaces.' 'usa machine o spaces.')" }
+    $reach = $env:AB_REACH
+  } elseif ($hadClaude -and $interactive -and $env:AB_YES -ne '1') {
+    Write-Host ''
+    Say "You already use Claude Code. Where should augmented brain act?" "Ya usas Claude Code. \u00bfD\u00f3nde quieres que act\u00fae augmented brain?"
+    Say "  1) On the whole computer: your notes and the guard in every Claude Code session." "  1) En todo el ordenador: tus notas y el guardia en cada sesi\u00f3n de Claude Code."
+    Say "  2) Only in its spaces: outside their folders, your other projects stay as they were." "  2) Solo en sus espacios: fuera de sus carpetas, tus otros proyectos siguen como estaban."
+    Say "You can change it later on the panel's Guard page." "Puedes cambiarlo despu\u00e9s en la p\u00e1gina Guardia del panel."
+    while ($true) {
+      $a = (Read-Host '[1/2] (1)').Trim()
+      if ($a -eq '' -or $a -eq '1') { break }
+      if ($a -eq '2') { $reach = 'spaces'; break }
+      Say "Answer 1 or 2." "Contesta 1 o 2."
+    }
+  }
+  $initArgs = @('init', '--language', $lang)
+  if ($reach -eq 'spaces') { $initArgs += @('--reach', 'spaces') }
   $app = DesktopApp
   $env:AB_NEW_TERMINAL = if ($changed) { '1' } else { '' }
   $env:AB_LAUNCH = if ($interactive) { '1' } else { '' }
   $env:AB_DESKTOP = if ($app) { '1' } else { '' }
-  & $exe init --language $lang
+  & $exe @initArgs
   if (-not $interactive) { return }
   $work = Join-Path $env:USERPROFILE ('augmented-brain\' + $(if ($lang -eq 'es') { 'trabajo' } else { 'work' }))
   Write-Host ''

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -176,6 +177,9 @@ type lineEditor struct {
 	dir, path string
 	old       string // the text as read, kept whole for an edit that adds to the end
 	lines     []string
+	// check says whether the edited text still loads, before it reaches the disk:
+	// the configuration's own parse for config.toml, LoadGuard's checks for guard.toml.
+	check func(text string) error
 }
 
 // openLines reads the configuration file in dir for editing.
@@ -185,7 +189,8 @@ func openLines(dir string) (*lineEditor, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &lineEditor{dir: dir, path: path, old: string(data), lines: strings.Split(string(data), "\n")}, nil
+	return &lineEditor{dir: dir, path: path, old: string(data), lines: strings.Split(string(data), "\n"),
+		check: func(text string) error { _, err := parse(text, dir); return err }}, nil
 }
 
 // table returns the lines [start, end) that hold the settings of a space's table, or of
@@ -224,6 +229,74 @@ func (f *lineEditor) find(start, end int, key string) int {
 	return -1
 }
 
+// setTop puts lines in place of a top-level setting (before any table), however many
+// lines its value takes, or adds them, after the line that explains it (comment, when
+// not empty), at the end of the top settings; nil takes the setting out, with the
+// comment right above it when that one is ours ("# key: ..."). Everything else stays
+// as it was.
+func (f *lineEditor) setTop(key string, lines []string, comment string) {
+	_, end, _ := f.table("")
+	i := f.find(0, end, key)
+	if i < 0 {
+		if lines == nil {
+			return
+		}
+		if comment != "" {
+			lines = append([]string{comment}, lines...)
+		}
+		// After the last line that is not blank, so a file's trailing newline stays last.
+		at := end
+		for at > 0 && strings.TrimSpace(f.lines[at-1]) == "" {
+			at--
+		}
+		f.insert(at, lines...)
+		return
+	}
+	j := valueEnd(f.lines, i)
+	if lines == nil && i > 0 && strings.HasPrefix(strings.TrimSpace(f.lines[i-1]), "# "+key+":") {
+		i--
+	}
+	rest := append(slices.Clone(lines), f.lines[j:]...)
+	f.lines = append(f.lines[:i], rest...)
+}
+
+// valueEnd is the line after the last one of the setting that starts on line i: an
+// array may take several lines. It follows brackets outside strings and comments.
+func valueEnd(lines []string, i int) int {
+	depth := 0
+	_, value, _ := strings.Cut(lines[i], "=")
+	for n := i; n < len(lines); n++ {
+		text := lines[n]
+		if n == i {
+			text = value
+		}
+		var quote byte
+		for k := 0; k < len(text); k++ {
+			c := text[k]
+			switch {
+			case quote != 0:
+				if c == '\\' && quote == '"' {
+					k++
+				} else if c == quote {
+					quote = 0
+				}
+			case c == '"' || c == '\'':
+				quote = c
+			case c == '#':
+				k = len(text)
+			case c == '[':
+				depth++
+			case c == ']':
+				depth--
+			}
+		}
+		if depth <= 0 {
+			return n + 1
+		}
+	}
+	return len(lines)
+}
+
 // insert puts lines before line at.
 func (f *lineEditor) insert(at int, lines ...string) {
 	f.lines = append(f.lines[:at], append(lines, f.lines[at:]...)...)
@@ -236,7 +309,7 @@ func (f *lineEditor) save() error { return f.write(strings.Join(f.lines, "\n")) 
 // with it, so a bad edit never reaches the disk, not even for a moment: the guard
 // reads this file at every command.
 func (f *lineEditor) write(text string) error {
-	if _, err := parse(text, f.dir); err != nil {
+	if err := f.check(text); err != nil {
 		return fmt.Errorf("%s: %w", i18n.T(langOf(f.dir), "config.wouldbreak", f.path), err)
 	}
 	return writeAtomic(f.path, text)

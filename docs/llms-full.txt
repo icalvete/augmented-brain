@@ -83,7 +83,11 @@ It asks a few questions. To accept what it suggests, just press Enter.
    Code and the Claude desktop app. It tells you what each one is for before installing it.
    If you already had Claude Code but it is behind, it offers to update it. If Claude Code
    is missing, it also asks whether you have a paid plan; a no does not stop it.
-3. **Open the Claude app now?** Say yes.
+3. **Where augmented brain acts**, only if you already had Claude Code: on the whole
+   computer, or only in its spaces, so your other projects stay as they were. Enter
+   keeps the whole computer; [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space) tells
+   the difference, and the panel's Guard page changes it later.
+4. **Open the Claude app now?** Say yes.
 
 If it asks for your password, type it even though you see nothing: the terminal does not
 show it, not even as asterisks. Press Enter when done.
@@ -204,6 +208,10 @@ walks you through it.
 - **The installer asks first.** The language (your system's is suggested), then each
   missing piece, with what it is for. Press Enter to accept what it suggests. To change the
   language later, set `language` in your [configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html#settings-for-the-whole-computer).
+- **If you already use Claude Code**, a new installation also asks where augmented brain
+  acts: on the whole computer (the default) or only in its spaces, leaving your other
+  projects as they were. See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space). Without
+  Claude Code beforehand it does not ask: it acts on the whole computer.
 - **No GitHub account.** The program downloads from GitHub without one. The backup does
   use one, or another git server, and you set it up later: see [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html).
 - **A new installation ends the same way:** two spaces, `work` and `personal` (in Spanish,
@@ -339,6 +347,21 @@ configuration in `%APPDATA%\augmented-brain`; your notes in
   winget does not always have the very latest one. Click **Update**.
 - To work without the app: `cd ~\augmented-brain\work; claude` (Windows PowerShell has no
   `&&`).
+
+## Only the plugin, from Claude Code
+
+augmented brain is two pieces: a program on your computer, which does the work, and a
+Claude Code plugin, which plugs it into Claude. The install command puts in both. Claude
+Code can also add the plugin by itself, from its plugin menu (`/plugin`) or with
+`claude plugin install`, and then the program is missing.
+
+In that case, every new session starts with a message saying the program is missing and
+the command to install it, and Claude tells you the same in your language. Until you
+install it, there are no notes, the tools for tasks do not work, and Claude Code may stop
+the commands Claude tries, because the [guard](https://icalvete.github.io/augmented-brain/guide/guard.html) cannot check them. Claude
+cannot install it for you: paste the install command of your system (above) in a
+terminal of your own, then open Claude again. The installer keeps the plugin you added
+and puts it on the program's version.
 
 ## Updating
 
@@ -636,8 +659,10 @@ Three things to know:
   new session in a scratch folder of its own, which is in no space: that session has no
   memory until you choose a folder. That is why "on the whole computer" is the default.
 
-Change it on the panel's Guard page; a change by hand in `guard.toml` counts only once you
-accept it there ([`reach`](https://icalvete.github.io/augmented-brain/guide/configuration.html#guardtoml)).
+If Claude Code was already on your computer, the installer asks you once, the first
+time; "on the whole computer" is the answer when you just press Enter. After that,
+change it on the panel's Guard page; a change by hand in `guard.toml` counts only once
+you accept it there ([`reach`](https://icalvete.github.io/augmented-brain/guide/configuration.html#guardtoml)).
 
 The default space matters for one more thing: its backup carries your profile, the shared
 notes and the names of your secrets (never their values). Set it with `default_space` in
@@ -2252,7 +2277,9 @@ session settings, profile and your secrets' names),
 kept only on this computer, newest first, with when and who changed it. **What it
 changed** shows the lines of each one; **Go back to this one** makes it the
 configuration again, keeping the one you had as a version first. It asks you to tick a
-box, and warns first when the guard's lists would change, with what. They are never in
+box, and warns first when the guard's lists would change, with what. Afterwards, Claude
+Code tells you in your open sessions what changed in the lists, and also in what
+Claude saves on its own, the model you expect or remote access. They are never in
 the backup: your notes are, with their own history. From another device
 the page only shows. See [Configuration versions](https://icalvete.github.io/augmented-brain/guide/config-history.html).
 
@@ -3443,7 +3470,7 @@ Sets everything up: the spaces, the configuration and the Claude Code plugin. Th
 installer runs it for you the first time.
 
 Syntax: `augmented-brain init [--custom] [--language en|es] [--space <name>]
-[--work <folder>] [--memory <folder>] [--yes] [--no-plugin]`
+[--work <folder>] [--memory <folder>] [--reach machine|spaces] [--yes] [--no-plugin]`
 
 ```bash
 augmented-brain init
@@ -3464,6 +3491,10 @@ If there is a configuration already, it stops and changes nothing. To add a spac
 - `--work`: its work folder. Default: `~/augmented-brain/<space>`.
 - `--memory`: its notes folder. Default: `~/augmented-brain/<space>/notes`, also when
   `--work` names another folder.
+- `--reach`: where augmented brain acts, `machine` (the default) or `spaces`
+  ([Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space)). The installer passes it when
+  Claude Code was already on the computer. Only for the first setup: with a
+  configuration already, it is refused, and the choice changes on the panel's Guard page.
 - `--yes`: do not ask; take the options given and the defaults.
 - `--no-plugin`: do not install the Claude Code plugin.
 
@@ -4826,7 +4857,7 @@ program keeps them when it changes the file.
 | File | What it holds | Who writes it | In the backup |
 |---|---|---|---|
 | `config.toml` | Your spaces, the language and the guard's lists | The installer, `space add`, `backup setup`, the Guard page, `safety_save` (only adds) | Each space's own section, in that space's backup. The lists for the whole computer, never |
-| `guard.toml` | Repositories Claude never touches | The Guard page | No |
+| `guard.toml` | Repositories Claude never touches, and where augmented brain acts | The Guard page, and the installer the first time (`reach`) | No |
 | `session.toml` | The model you expect and whether Claude asks before saving a rule | The Guard page | No |
 | `secrets.toml` | The names of your secrets, never their values | `secret_name_save`, the Secrets page | Yes, in the default space's backup |
 | `remote.toml` | Remote access | `remote install` and `remote uninstall` | No |
@@ -5091,6 +5122,8 @@ Set these in your shell to change how the program behaves:
 The installer reads a few more:
 
 - `AB_YES=1`: answer yes to every question.
+- `AB_REACH`: `machine` or `spaces`, where augmented brain acts, instead of asking (it
+  asks only when Claude Code was already there). Only for a new installation.
 - `AB_NO_DESKTOP=1`: do not offer the Claude desktop app.
 - `AB_DESKTOP_TIMEOUT`: on Linux, how many seconds the desktop app's download may take
   before the installer gives up and goes on without it. Default 480 (8 minutes).

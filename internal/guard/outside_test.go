@@ -21,7 +21,7 @@ var generalOnly = []string{"guard.root", "guard.root.admin", "guard.root.changed
 
 // generalAny are every reason a general rule may give, including those that hold
 // outside for a repository of the lists.
-var generalAny = append(slices2(generalOnly), "guard.git.deny", "guard.git.publish", "guard.publish",
+var generalAny = append(slices2(generalOnly), "guard.git.deny", "guard.git.named", "guard.git.unknown", "guard.git.publish", "guard.publish",
 	"guard.merge.cd", "guard.merge.remote", "guard.merge.unread", "guard.merge.admin", "guard.dispatch",
 	"guard.dispatch.bypass", "guard.dispatch.id", "guard.api", "guard.api.dispatch", "guard.api.graphql",
 	"guard.gh.alias", "guard.gh.rerun")
@@ -38,7 +38,7 @@ var (
 func reasonIs(reason string, keys []string) bool {
 	reasonOnce.Do(func() {
 		reasonRe = map[string][]*regexp.Regexp{}
-		verbs := regexp.MustCompile(`%[-+# 0-9.]*[svdqx]`)
+		verbs := regexp.MustCompile(`%(\[[0-9]+\])?[-+# 0-9.]*[svdqx]`)
 		for _, k := range generalAny {
 			for _, tpl := range i18n.All(k) {
 				parts := verbs.Split(tpl, -1)

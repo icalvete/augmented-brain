@@ -6,47 +6,47 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 1",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 1; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" session-start 1",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 2",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 2; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" session-start 2",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 3",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 3; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" session-start 3",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 4",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 4; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" session-start 4",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 5",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 5; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" session-start 5",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 6",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 6; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" session-start 6",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 7",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 7; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" session-start 7",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 8",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 8; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" session-start 8",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 9",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-start 9; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" session-start 9",
             "timeout": 10
           }
         ]
@@ -92,7 +92,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook stop",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook stop; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" stop",
             "timeout": 10
           }
         ]
@@ -103,7 +103,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook post-compact",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook post-compact; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" post-compact",
             "timeout": 10
           }
         ]
@@ -114,7 +114,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-end",
+            "command": "PATH=\"$HOME/.local/bin:$PATH\" augmented-brain hook session-end; s=$?; [ $s -ne 127 ] && exit $s; exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/missing.sh\" session-end",
             "timeout": 10
           }
         ]
