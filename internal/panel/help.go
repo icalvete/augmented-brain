@@ -3,10 +3,12 @@ package panel
 import (
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -113,6 +115,14 @@ type replacement struct{ from, to string }
 
 var emailRe = regexp.MustCompile(`[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(\.[A-Za-z0-9\-]+)+`)
 
+// tailnetRe is a machine's name in a Tailscale network ("laptop.acme-corp.ts.net"):
+// it often carries the name of a person or a company.
+var tailnetRe = regexp.MustCompile(`(?i)\b[a-z0-9-]+(\.[a-z0-9-]+)*\.ts\.net\b`)
+
+// placeholderRe is a token standing for a replacement already made, so that the words
+// never replace inside it ("[work folder]" with a space called "work").
+var placeholderRe = regexp.MustCompile("\x00(\\d+)\x00")
+
 // newRedactor knows what to take out from the configuration c (nil: only the home
 // folder, e-mails and secrets).
 func newRedactor(lang string, c *config.Config) *redactor {
@@ -127,6 +137,7 @@ func newRedactor(lang string, c *config.Config) *redactor {
 	if c == nil {
 		return r
 	}
+	host, _ := os.Hostname()
 	addPath := func(p, to string) {
 		if strings.TrimSpace(p) == "" {
 			return
@@ -167,6 +178,13 @@ func newRedactor(lang string, c *config.Config) *redactor {
 	for _, b := range bad { // an entry the program cannot read still names a host
 		if f := strings.Fields(b); len(f) > 0 {
 			hosts = append(hosts, f[0])
+		}
+	}
+	// This computer's own name: its short name, and the whole one when it has dots.
+	if host = strings.TrimSpace(host); host != "" && host != "localhost" {
+		hosts = append(hosts, host)
+		if short, _, ok := strings.Cut(host, "."); ok && short != "" {
+			hosts = append(hosts, short)
 		}
 	}
 	for _, h := range hosts {
@@ -246,15 +264,28 @@ func (r *redactor) line(s string) (string, bool) {
 	if guard.FindSecret(s) != "" {
 		return "", false
 	}
+	var made []string // what each placeholder stands for
+	hold := func(to string) string {
+		made = append(made, to)
+		return "\x00" + strconv.Itoa(len(made)-1) + "\x00"
+	}
+	s = strings.ReplaceAll(s, "\x00", "")
 	for _, e := range r.exact {
-		s = strings.ReplaceAll(s, e.from, e.to)
+		if strings.Contains(s, e.from) {
+			s = strings.ReplaceAll(s, e.from, hold(e.to))
+		}
 	}
 	for _, h := range r.homes {
 		s = strings.ReplaceAll(s, h, "~")
 		s = strings.ReplaceAll(s, filepath.ToSlash(h), "~")
 	}
-	s = emailRe.ReplaceAllString(s, i18n.T(r.lang, "panel.help.redact.email"))
-	return r.replaceWords(s), true
+	s = emailRe.ReplaceAllStringFunc(s, func(string) string { return hold(i18n.T(r.lang, "panel.help.redact.email")) })
+	s = tailnetRe.ReplaceAllStringFunc(s, func(string) string { return hold(i18n.T(r.lang, "panel.help.redact.host")) })
+	s = r.replaceWords(s)
+	return placeholderRe.ReplaceAllStringFunc(s, func(m string) string {
+		n, _ := strconv.Atoi(m[1 : len(m)-1])
+		return made[n]
+	}), true
 }
 
 // text redacts every line of s; a line left out leaves a note in its place.

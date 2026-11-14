@@ -1956,6 +1956,10 @@ var panelMessages = map[string]msg{
 		en: "That did not work",
 		es: "No ha funcionado",
 	},
+	"panel.err.toolong": {
+		en: "What you sent is too long to save at once: the panel takes up to 1 MiB. Go back (the browser usually keeps what you typed), shorten it and save again.",
+		es: "Lo que has enviado es demasiado largo para guardarlo de una vez: el panel admite hasta 1 MiB. Vuelve atrás (el navegador suele conservar lo escrito), acórtalo y guarda otra vez.",
+	},
 	"panel.err.space": {
 		en: "There is no space called %q.",
 		es: "No hay ningún espacio llamado %q.",

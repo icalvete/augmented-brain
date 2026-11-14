@@ -63,6 +63,11 @@ func (s *Server) stamp(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(v.stampOf(r.FormValue("id"))))
 }
 
+// alive answers a page where someone is typing. It does nothing else: any request but
+// /stamp counts as using the panel (ServeHTTP), and this one keeps it running while a
+// long text is written without changing page.
+func alive(w http.ResponseWriter, _ *http.Request) { w.WriteHeader(http.StatusNoContent) }
+
 // stampOf is the time a note of the space was last written, in nanoseconds; "" when
 // there is no such note.
 func (v *view) stampOf(id string) string {
