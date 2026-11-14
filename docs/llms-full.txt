@@ -2242,7 +2242,9 @@ survive if this computer breaks. A space with no backup says so in red.
   `augmented-brain-<space>` in your GitHub account and the first copy. It needs the
   GitHub command line, `gh`, which the installer offers. If `gh` has not entered your
   account yet, the page gives you a short code to type at github.com/login/device; then
-  press the button again.
+  press the button again. A repository of that name with notes in it (another computer's
+  backup) is left alone: the copy goes to one named after this computer, and the page says
+  so.
   **I already have a private repository** takes its address instead.
 - **Bring the notes back on another computer** shows the command to run there. Restoring
   is never done from the panel: it is for a computer that does not have the notes yet.
@@ -2535,6 +2537,12 @@ then say "done", or press the button again. The code works for about 15 minutes.
 
 No GitHub account? Create one for free at [github.com/signup](https://github.com/signup),
 or keep the copy somewhere else, as below.
+
+Already a repository called `augmented-brain-<space>` in your account, with notes in it?
+That is most likely the backup of another computer, so it is left alone: using it would
+mix this computer's notes with those. This copy goes to `augmented-brain-<space>-<computer>`
+instead, and Claude or the page tells you. To bring that backup's notes to this computer,
+that is [restore](https://icalvete.github.io/augmented-brain/guide/backup.html#on-a-new-machine), not a new backup.
 
 Rather somewhere else (GitLab, your company's git)? Do it yourself, in a folder of the
 space:
@@ -4875,7 +4883,9 @@ It creates `augmented-brain-<space>`, a private repository in your GitHub accoun
 the `gh` command line, and makes the first copy right away. When `gh` has not entered
 your GitHub account yet, it starts that and returns a short code for you to type at
 github.com/login/device; call it again once you accept. When `gh` is missing, it
-returns the steps to guide you through.
+returns the steps to guide you through. A repository of that name with something in it
+(most likely another computer's backup) is never used: the backup goes to
+`augmented-brain-<space>-<computer>`, and when that is taken too, nothing is set up.
 
 - `repo_url` (optional): leave it out. It is kept so that calls from earlier versions
   still work, and an address in it is always refused. A backup somewhere else (GitLab, your company's git) is yours to

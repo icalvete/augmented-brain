@@ -10,6 +10,7 @@
   {{if .URL}}
   <ul class="health">
     {{if .WentBack}}<li class="good" role="status">{{tf "backup.back.done" .WentBack}}</li>{{else if .Started}}<li class="good" role="status">{{t "backup.started"}}</li>{{end}}
+    {{if .Taken}}<li class="warn" role="status">{{tf "backup.taken" .Taken}}</li>{{end}}
     {{if .Known}}<li class="{{if .OK}}good{{else}}bad{{end}}">{{if .OK}}{{tf "space.backup.ok" (day .Time)}}{{else}}{{tf "space.backup.failed" (day .Time) .Error}}{{end}}</li>
     {{else}}<li class="warn">{{t "space.backup.never"}}</li>{{end}}
     {{if .Warning}}<li class="warn sub">{{.Warning}}</li>{{end}}

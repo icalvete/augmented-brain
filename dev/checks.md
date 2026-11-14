@@ -7,12 +7,15 @@ Go 1.26 or later (`go.mod`; an older `go` fetches it by itself).
 ```bash
 gofmt -l .                 # must print nothing
 go vet ./...
+go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
 go test -race ./...
 go build ./cmd/augmented-brain
 ```
 
 `scripts/precheck.sh` runs all of that and more before every push (the `pre-push` hook,
 with `git config core.hooksPath .githooks`): vet compiled for Linux, Windows and macOS,
+`staticcheck` (a fixed version, the same as CI's, so a new release does not bring
+warnings about code nobody changed),
 the tests compiled for Windows and macOS, the guard's test coverage (`scripts/guard-coverage.sh`:
 never below `internal/guard/coverage-floor`; raise the floor when a change raises it),
 the privacy check, the generated guides, the changelog entries and the third-party
