@@ -125,8 +125,8 @@ func TestHelpPage(t *testing.T) {
 	}
 	for _, want := range []string{"Ayuda", "https://icalvete.github.io/augmented-brain/es/#faq",
 		"https://icalvete.github.io/augmented-brain/guide/getting-started.es.html", `rel="noopener noreferrer"`, `target="_blank"`,
-		"https://github.com/sponsors/icalvete", `href="` + s.base() + `/help/report"`, "Avisa de un problema en GitHub",
-		"https://github.com/icalvete/augmented-brain/issues/new?template=idea.yml", `href="` + s.base() + `/help?s=work"`} {
+		"https://github.com/sponsors/icalvete", `href="` + s.localBase() + `/help/report"`, "Avisa de un problema en GitHub",
+		"https://github.com/icalvete/augmented-brain/issues/new?template=idea.yml", `href="` + s.localBase() + `/help?s=work"`} {
 		if !strings.Contains(body, want) {
 			t.Errorf("no %q", want)
 		}
@@ -166,7 +166,7 @@ func TestHelpPage(t *testing.T) {
 	if w := s.do(t, req{path: "/help/report"}); w.Code != http.StatusForbidden || ran != 1 {
 		t.Errorf("without the session: %d, doctor ran %d times", w.Code, ran)
 	}
-	if w := s.do(t, req{path: s.base() + "/help/report", host: "evil.example:45678"}); w.Code != http.StatusForbidden || ran != 1 {
+	if w := s.do(t, req{path: s.localBase() + "/help/report", host: "evil.example:45678"}); w.Code != http.StatusForbidden || ran != 1 {
 		t.Errorf("another host: %d, doctor ran %d times", w.Code, ran)
 	}
 }

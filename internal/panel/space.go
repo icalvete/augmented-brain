@@ -16,7 +16,7 @@ func (s *Server) space(v *view, _ *http.Request) (string, page, error) {
 	sp := v.b.Space
 	var problems []string
 	for _, pr := range v.b.Problems {
-		problems = append(problems, pr.Error())
+		problems = append(problems, pr.Text(v.lang))
 	}
 	current, _ := os.ReadFile(filepath.Join(sp.Memory, memory.IndexFile))
 	due, _ := v.b.ReviewDue()

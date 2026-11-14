@@ -50,12 +50,14 @@
 <ul>
   <li><a href="getting-started.es.html">Primeros pasos</a></li>
   <li><a href="install.es.html">Instalación</a></li>
+  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
 </ul>
 <p class="docnav-group">Conceptos</p>
 <ul>
   <li><a href="spaces.es.html">Espacios</a></li>
   <li><a href="tasks.es.html">Tareas</a></li>
   <li><a href="notes.es.html">Áreas, conocimiento y lo demás</a></li>
+  <li><a href="editing-notes.es.html">Editar las notas a mano</a></li>
   <li><a href="guard.es.html">El guardia</a></li>
   <li><a href="how-it-works.es.html">Cómo funciona por dentro</a></li>
   <li><a href="what-claude-may-do.es.html">Qué puede hacer Claude sin preguntarte</a></li>
@@ -65,14 +67,17 @@
 <ul>
   <li><a href="phrases.es.html">Qué decirle a Claude</a></li>
   <li><a href="panel.es.html">El panel</a></li>
-  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
-  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="weekly-review.es.html">La revisión semanal</a></li>
-  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+</ul>
+<p class="docnav-group">Ponlo a tu medida</p>
+<ul>
   <li><a href="connect-services.es.html">Conecta tus servicios</a></li>
-  <li><a href="remote.es.html">Acceso remoto</a></li>
-  <li><a href="import.es.html">Trae una memoria que ya tienes</a></li>
+  <li><a href="backup.es.html">Copia de seguridad y restauración</a></li>
+  <li><a href="config-history.es.html">Versiones de la configuración</a></li>
   <li><a href="anywhere.es.html">Desde el móvil u otro ordenador</a></li>
+  <li><a href="remote.es.html">Acceso remoto</a></li>
+  <li><a href="task-sessions.es.html">Una sesión por tarea</a></li>
+  <li><a href="panel-remote.es.html">El panel desde otro dispositivo</a></li>
   <li><a href="update-and-uninstall.es.html">Actualizar y desinstalar</a></li>
 </ul>
 <p class="docnav-group">Referencia</p>
@@ -150,6 +155,7 @@ backup = "https://github.com/lucia/augmented-brain-personal.git"</code></pre>
 memory_trust = "ask"</code></pre>
   <ul><li><code>preferred_model</code>: el modelo que esperas que responda (<code>opus</code>, <code>sonnet</code>, <code>haiku</code> o un nombre completo como <code>claude-opus-5-5</code>). Si una sesión responde con otro modelo, Claude te lo dice. Lo mira al empezar, si Claude Code dice con qué modelo arranca. Si no, lo mira después de una respuesta: en una sesión nueva, como tarde la segunda. Y otra vez si el modelo cambia. Una vez por sesión y modelo. Nunca cambia el modelo por su cuenta: lo cambias tú, con <code>/model</code> o con el selector de modelo.</li><li><code>memory_trust</code>: qué hace Claude antes de guardar algo que siguen todas las sesiones: una regla (nueva, cambiada o retirada), tu perfil, o algo que se añade a las listas del guardia. <code>"tell"</code>: Claude lo guarda y Claude Code te dice qué se ha guardado. Es lo que pasa si el ajuste falta. <code>"ask"</code>: Claude Code te pregunta antes, enseñando lo que se guardaría, y si dices que no, no se escribe nada. Un valor que el programa no conoce cuenta como <code>"ask"</code>. Las tareas, el buzón, las referencias y las lecciones se guardan siempre sin preguntar. En una sesión que se salta las preguntas de permiso (<code>bypassPermissions</code>), <code>"ask"</code> deniega en vez de preguntar: Claude te dice lo que quería guardar. Más en <a href="guard.es.html#preguntar-antes-de-que-claude-guarde-una-regla">el guardia</a>.</li></ul>
   <p>La página Guardia del panel lo escribe, y el guardia pregunta antes de que Claude lo escriba. Si el fichero falta o <code>preferred_model</code> está vacío, el modelo no se comprueba. Es un fichero aparte por la misma razón que <code>guard.toml</code>. Las copias de seguridad no lo llevan.</p>
+  <p>Una línea de <code>guard.toml</code> o <code>session.toml</code> que el programa no conoce no se tiene en cuenta, pero no se rechaza: una versión más nueva puede añadir ajustes ahí, y una anterior sigue funcionando. <code>doctor</code> y el inicio de una sesión la nombran, con el nombre correcto si parece una errata, porque un ajuste mal escrito ahí no hace nada.</p>
   <h2 id="remotetoml"><code>remote.toml</code></h2>
   <p>Junto a <code>config.toml</code>, <code>remote.toml</code> guarda los ajustes del <a href="remote.es.html">acceso remoto</a>, que mantiene Claude accesible desde otro ordenador. Lo crea <code>augmented-brain remote install</code>. Es un fichero aparte porque las versiones anteriores a esta rechazan un ajuste de <code>config.toml</code> que no conocen, y tienen que seguir leyendo tu configuración.</p>
   <pre><code>enabled = true

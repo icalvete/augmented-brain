@@ -140,6 +140,12 @@ func ProblemsNote(problems []memory.Problem, max int) string {
 		fmt.Fprintf(&out, "- %s\n", p.Error())
 	}
 	out.WriteString("Tell the user, in their language, and offer to fix each file (its header, between the --- lines at the top); `augmented-brain check` in the space's folder lists them all.\n")
+	for _, p := range problems {
+		if _, ok := p.Newer(); ok {
+			out.WriteString("A field this version does not know most likely comes from a newer augmented brain (another computer, or a session started after an update): unless it is plainly a typo of a known field, do not remove it or rewrite the note; tell the user to update with `augmented-brain update`.\n")
+			break
+		}
+	}
 	return out.String()
 }
 
@@ -333,6 +339,10 @@ type UpdateInput struct {
 	// Reopen says why a closed task opens again: a closed task changes status only with
 	// it, so it never reopens by a slip.
 	Reopen string
+	// Result is what a task closed by Status "closed" achieved, as in Close. Without it
+	// the task still closes (task_update always could), with a line saying no result
+	// was given.
+	Result string
 }
 
 // phaseOrder are the phases a task goes through, in order; parked and someday pause it
@@ -412,6 +422,15 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 	reopen := strings.TrimSpace(in.Reopen)
 	if old == "closed" && h.Status != "closed" && slices.Contains(memory.Statuses, h.Status) && reopen == "" {
 		return nil, closedTask(n)
+	}
+	if h.Status == "closed" && old != "closed" {
+		// Closing through a change of status is closing: the same note as Close.
+		result := strings.TrimSpace(in.Result)
+		if result == "" {
+			result = b.text("closed.noresult")
+		}
+		b.closeNote(&cp, result)
+		return &cp, b.save(&cp)
 	}
 	if h.Status != old {
 		// Skipping phases is allowed (a small task may go straight to execution), and
@@ -544,13 +563,20 @@ func (b *Brain) Close(id, result string) (*memory.Note, error) {
 		return nil, err
 	}
 	cp := *n
+	b.closeNote(&cp, result)
+	return &cp, b.save(&cp)
+}
+
+// closeNote writes into a copy of a task what closing it says: the status, no next
+// step and no one to wait on, "where it is" and "next" in its first sections, and the
+// result in the journal. Close and Update (status "closed") both go through it.
+func (b *Brain) closeNote(cp *memory.Note, result string) {
 	cp.Header.Status = "closed"
 	cp.Header.Next = ""
 	cp.Header.WaitingOn = ""
 	cp.Body = setLine(cp.Body, "where", fmt.Sprintf(b.text("where.closed"), b.today(), oneLine(result)))
 	cp.Body = setLine(cp.Body, "next", b.text("next.closed"))
 	cp.Body = b.journalLine(cp.Body, fmt.Sprintf(b.text("closed"), result))
-	return &cp, b.save(&cp)
 }
 
 // setLine writes value after the first "- <label>:" line of body, with the label in

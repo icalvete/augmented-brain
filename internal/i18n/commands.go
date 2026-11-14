@@ -34,6 +34,11 @@ var commandMessages = map[string]msg{
 		en: "%s: unknown settings: %s",
 		es: "%s: ajustes desconocidos: %s",
 	},
+	// One unknown setting of guard.toml or session.toml, with the known one it looks like.
+	"config.unknown.near": {
+		en: "%s (did you mean %s?)",
+		es: "%s (¿querías decir %s?)",
+	},
 	// What is wrong with the configuration file (config.toml).
 	"config.nodir": {
 		en: "the configuration folder is unknown: HOME is not set, nor AB_CONFIG_DIR",
@@ -96,6 +101,10 @@ var commandMessages = map[string]msg{
 	"format.moving": {
 		en: "moving %s from format %d to %d (%s): %v; a copy from before is in %s",
 		es: "al pasar %s del formato %d al %d (%s): %v; hay una copia de antes en %s",
+	},
+	"check.newer": {
+		en: "%s: the field %q is not one this version knows. A newer augmented brain wrote it: update with `augmented-brain update`. If it is a typo, fix it in the note's header.",
+		es: "%s: este programa no conoce el campo %q. Lo escribió una versión más nueva de augmented brain: actualiza con `augmented-brain update`. Si es una errata, corrígela en la cabecera de la nota.",
 	},
 	"check.summary": {
 		en: "space %s: %s, %s",
