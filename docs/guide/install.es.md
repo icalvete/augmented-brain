@@ -156,6 +156,21 @@ configuración en `%APPDATA%\augmented-brain`; tus notas en
 - Para trabajar sin la app: `cd ~\augmented-brain\trabajo; claude` (el PowerShell de
   Windows no tiene `&&`).
 
+## Solo el plugin, desde Claude Code
+
+augmented brain son dos piezas: un programa en tu ordenador, que hace el trabajo, y un
+plugin de Claude Code, que lo conecta con Claude. El comando de instalación pone las dos.
+Claude Code también puede añadir el plugin por su cuenta, desde su menú de plugins
+(`/plugin`) o con `claude plugin install`, y entonces falta el programa.
+
+En ese caso, cada sesión nueva empieza con un mensaje que dice que falta el programa y el
+comando para instalarlo, y Claude te lo cuenta en tu idioma. Hasta que lo instales no hay
+notas, las herramientas de tareas no funcionan y Claude Code puede parar los comandos que
+intente Claude, porque el [guardia](guard.es.md) no puede revisarlos. Claude no puede
+instalarlo por ti: pega el comando de instalación de tu sistema (arriba) en una terminal
+tuya y vuelve a abrir Claude. El instalador conserva el plugin que añadiste y lo pone en
+la versión del programa.
+
 ## Actualizar
 
 Cuando hay versión nueva, Claude te lo dice al empezar una sesión y se ofrece a
