@@ -33,6 +33,13 @@ type todaySpace struct {
 	ReviewDays, Live, Parked int
 }
 
+// Empty says the space asks nothing of the user today, so its block says so instead of
+// showing a bare heading.
+func (ts todaySpace) Empty() bool {
+	return len(ts.Reminders) == 0 && len(ts.Mine) == 0 && len(ts.MineParked) == 0 && ts.Inbox == 0 &&
+		ts.Dead == 0 && !ts.ReviewDue && ts.Problems == 0
+}
+
 type taskLink struct{ Space, ID, Title, Status string }
 
 // repoRow is a repository that live tasks name and that holds something not yet

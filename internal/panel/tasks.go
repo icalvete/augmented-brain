@@ -305,6 +305,9 @@ func (s *Server) taskUpdate(v *view, r *http.Request) (string, error) {
 		if n.Header.Status == "closed" {
 			// From the panel the user chose it on purpose: that is saying so.
 			in.Reopen = v.t("task.reopened.panel")
+			if why := field(r, "why"); why != "" {
+				in.Reopen += ": " + why
+			}
 		}
 	}
 	for _, f := range textFields {
