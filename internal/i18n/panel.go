@@ -1055,6 +1055,150 @@ var panelMessages = map[string]msg{
 		en: "Saved.",
 		es: "Guardado.",
 	},
+	"panel.ok.task.new": {
+		en: "Task created.",
+		es: "Tarea creada.",
+	},
+	"panel.ok.task.update": {
+		en: "Task updated.",
+		es: "Tarea actualizada.",
+	},
+	"panel.ok.task.journal": {
+		en: "Added to the journal.",
+		es: "Añadido al diario.",
+	},
+	"panel.ok.task.park": {
+		en: "Task parked.",
+		es: "Tarea aparcada.",
+	},
+	"panel.ok.task.close": {
+		en: "Task closed.",
+		es: "Tarea cerrada.",
+	},
+	"panel.ok.task.step": {
+		en: "Plan updated.",
+		es: "Plan actualizado.",
+	},
+	"panel.ok.watch.add": {
+		en: "Watch date added.",
+		es: "Fecha para mirar añadida.",
+	},
+	"panel.ok.watch.done": {
+		en: "Watch date marked done.",
+		es: "Fecha marcada como hecha.",
+	},
+	"panel.ok.inbox.capture": {
+		en: "Written down in the inbox.",
+		es: "Apuntado en el buzón.",
+	},
+	"panel.ok.inbox.done": {
+		en: "Taken out of the inbox.",
+		es: "Sacado del buzón.",
+	},
+	"panel.ok.area.new": {
+		en: "Area created.",
+		es: "Área creada.",
+	},
+	"panel.ok.area.update": {
+		en: "Area saved.",
+		es: "Área guardada.",
+	},
+	"panel.ok.person": {
+		en: "Person saved.",
+		es: "Persona guardada.",
+	},
+	"panel.ok.person.card": {
+		en: "Person saved.",
+		es: "Persona guardada.",
+	},
+	"panel.ok.secret": {
+		en: "Secret's name added.",
+		es: "Nombre del secreto añadido.",
+	},
+	"panel.ok.secret.forget": {
+		en: "Secret's name forgotten.",
+		es: "Nombre del secreto olvidado.",
+	},
+	"panel.ok.review.capture": {
+		en: "Capture sorted out.",
+		es: "Captura resuelta.",
+	},
+	"panel.ok.review.task": {
+		en: "Task reviewed.",
+		es: "Tarea revisada.",
+	},
+	"panel.ok.review.done": {
+		en: "Weekly review finished.",
+		es: "Revisión semanal terminada.",
+	},
+	"panel.ok.profile": {
+		en: "Profile saved.",
+		es: "Perfil guardado.",
+	},
+	"panel.ok.session.recover": {
+		en: "Session recovered.",
+		es: "Sesión recuperada.",
+	},
+	"panel.ok.session.reviewed": {
+		en: "Session marked as reviewed.",
+		es: "Sesión marcada como revisada.",
+	},
+	"panel.ok.session.delete": {
+		en: "Session deleted.",
+		es: "Sesión borrada.",
+	},
+	"panel.ok.repo.describe": {
+		en: "Description saved.",
+		es: "Descripción guardada.",
+	},
+	"panel.ok.guard.list.add": {
+		en: "Added to the list.",
+		es: "Añadido a la lista.",
+	},
+	"panel.ok.guard.list.remove": {
+		en: "Taken off the list.",
+		es: "Quitado de la lista.",
+	},
+	"panel.ok.guard.root.add": {
+		en: "Root exception added.",
+		es: "Excepción de root añadida.",
+	},
+	"panel.ok.guard.root.remove": {
+		en: "Root exception removed.",
+		es: "Excepción de root quitada.",
+	},
+	"panel.ok.guard.accept": {
+		en: "Lists accepted.",
+		es: "Listas aceptadas.",
+	},
+	"panel.ok.guard.model": {
+		en: "Preferred model saved.",
+		es: "Modelo preferido guardado.",
+	},
+	"panel.ok.guard.trust": {
+		en: "Setting saved.",
+		es: "Ajuste guardado.",
+	},
+	"panel.ok.versions.restore": {
+		en: "Version restored.",
+		es: "Versión recuperada.",
+	},
+	"panel.ok.backup.run": {
+		en: "Backup started.",
+		es: "Copia en marcha.",
+	},
+	"panel.ok.backup.setup": {
+		en: "Backup set up; the first copy has started.",
+		es: "Copia configurada; la primera ya está en marcha.",
+	},
+	"panel.notsaved": {
+		en: "Nothing was saved.",
+		es: "No se ha guardado nada.",
+	},
+	"panel.notsaved.see": {
+		en: "See why, next to the form.",
+		es: "Mira por qué, junto al formulario.",
+	},
 	"panel.problems": {
 		en: "%d files of this space are not valid notes; nothing writes over them until they are fixed.",
 		es: "%d ficheros de este espacio no son notas válidas; nada los sobrescribe hasta que se arreglen.",
@@ -1133,7 +1277,7 @@ var panelMessages = map[string]msg{
 	},
 	"panel.dates": {
 		en: "created %s, last changed %s",
-		es: "creada el %s, último cambio el %s",
+		es: "creada %s, último cambio %s",
 	},
 	"panel.f.id": {
 		en: "Id",
@@ -1646,6 +1790,35 @@ var panelMessages = map[string]msg{
 	"panel.days.in": {
 		en: "in %d days",
 		es: "dentro de %d días",
+	},
+	// A date as a person reads it (package panel, humanDate).
+	"panel.date.today": {
+		en: "today",
+		es: "hoy",
+	},
+	"panel.date.yesterday": {
+		en: "yesterday",
+		es: "ayer",
+	},
+	"panel.date.tomorrow": {
+		en: "tomorrow",
+		es: "mañana",
+	},
+	"panel.date.months": {
+		en: "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec",
+		es: "ene feb mar abr may jun jul ago sep oct nov dic",
+	},
+	"panel.date.day": {
+		en: "%d %s",
+		es: "%d %s",
+	},
+	"panel.date.year": {
+		en: "%d %s %d",
+		es: "%d %s %d",
+	},
+	"panel.date.time": {
+		en: "%s, %s",
+		es: "%s, %s",
 	},
 	"panel.cli.started": {
 		en: "The panel is open at:\n  %s",

@@ -125,8 +125,13 @@ work_folders = ["~/augmented-brain/personal"]</code></pre>
   <p>To know which space a folder belongs to, run this in it:</p>
   <pre><code>augmented-brain space</code></pre>
   <h2 id="outside-every-space">Outside every space</h2>
+  <p>augmented brain works in every Claude Code session on this computer, whatever the folder: its plugin is installed for your whole user. A folder that is in no work folder is outside every space.</p>
   <p>The desktop app starts each new session in a scratch folder of its own. That folder is in no space. Then the <strong>default space</strong> is used, <code>personal</code> unless you change it, and Claude tells you in one line, with how to switch to work.</p>
   <p>The default space matters for one more thing: its backup carries your profile, the shared notes and the names of your secrets (never their values). Set it with <code>default_space</code> in the configuration. With a single space, it is that one.</p>
+  <p>What changes outside, next to a session in a space:</p>
+  <div class="table-wrap"><table><thead><tr><th></th><th>In a space</th><th>Outside every space</th></tr></thead><tbody><tr><td>Profile, rules, tasks and the rest of the notes</td><td>The space's</td><td>The default space's, and Claude tells you</td></tr><tr><td>What Claude writes in your notes</td><td>Goes to the space</td><td>Goes to the default space</td></tr><tr><td>Tasks changed by another session</td><td>Claude hears of them</td><td>Those of the default space</td></tr><tr><td>Reminder to write in the task's journal</td><td>Yes</td><td>No</td></tr><tr><td>A session cut short, offered to recover</td><td>Yes</td><td>No</td></tr><tr><td><a href="guard.html">The guard</a></td><td>All of it</td><td>All of it, the same</td></tr><tr><td>Backup when the session ends</td><td>The space's</td><td>The default space's</td></tr><tr><td>Warnings about the window's memory and the model</td><td>Yes</td><td>Yes</td></tr></tbody></table></div>
+  <p>The guard does not look at the folder: its lists hold for the whole computer. So in any project, also one you never gave augmented brain, Claude cannot commit or push until you <a href="guard.html#let-claude-commit-in-a-repository">let it in that repository</a>.</p>
+  <p>To bring a folder into a space, add it to the space's <code>work_folders</code> (next).</p>
   <h2 id="your-projects-live-elsewhere">Your projects live elsewhere?</h2>
   <p>If your code is in <code>~/code</code>, add that folder to the <code>work_folders</code> of the right space, as in the example above. Then opening Claude in <code>~/code/shop</code> uses the work space.</p>
   <h2 id="add-a-space">Add a space</h2>

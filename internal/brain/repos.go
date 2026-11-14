@@ -1,11 +1,11 @@
 package brain
 
 import (
-	"errors"
-	"fmt"
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/icalvete/augmented-brain/internal/i18n"
 
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -100,28 +100,28 @@ func parseRepoLine(l string) (key, text string, ok bool) {
 func (b *Brain) DescribeRepo(repo, text string) (string, error) {
 	repo = strings.TrimSpace(repo)
 	if repo == "" {
-		return "", errors.New("say which repository: its path, or its name as a task's repos: writes it")
+		return "", i18n.Errorf("err.repo.which")
 	}
 	p, ok := b.RepoPath(repo)
 	if !ok {
-		return "", fmt.Errorf("%q is not a folder in this space's work folders on this computer", repo)
+		return "", i18n.Errorf("err.repo.notfolder", repo)
 	}
 	if !slices.ContainsFunc(b.Space.WorkFolders, func(wf string) bool { return paths.Within(p, wf) }) {
-		return "", fmt.Errorf("%s is outside this space's work folders (%s): only repositories inside them are described here", paths.Tilde(p), strings.Join(tildeAll(b.Space.WorkFolders), ", "))
+		return "", i18n.Errorf("err.repo.outside", paths.Tilde(p), strings.Join(tildeAll(b.Space.WorkFolders), ", "))
 	}
 	key := paths.Tilde(p)
 	if strings.ContainsAny(key, "`\n\r") {
-		return "", fmt.Errorf("%q cannot be written in the note: its path has a backquote or a line break", key)
+		return "", i18n.Errorf("err.repo.path", key)
 	}
 	text = oneLine(text)
 	if len([]rune(text)) > maxRepoText {
-		return "", fmt.Errorf("the description is %d characters long; keep it to one line of %d at most", len([]rune(text)), maxRepoText)
+		return "", i18n.Errorf("err.repo.long", len([]rune(text)), maxRepoText)
 	}
 
 	var cp memory.Note
 	if old, ok := b.Mem.Notes[RepoNoteID]; ok {
 		if old.Header.Type != "reference" {
-			return "", fmt.Errorf("%s is a %s, not the reference of the repositories; rename it first", RepoNoteID, old.Header.Type)
+			return "", i18n.Errorf("err.repo.note", RepoNoteID, old.Header.Type)
 		}
 		cp = *old // the note in the index stays as it was until saved
 	} else {

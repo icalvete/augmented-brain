@@ -116,6 +116,9 @@ program) and what travels in the backup is in
   sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns that off.
 - **It does not change your Claude Code settings.** The plugin goes in and out with
   Claude Code's own commands, which the installer, `update` and `uninstall` run for you.
+- **It does not stay inside your spaces.** It works in every Claude Code session on this
+  computer. Outside your spaces it uses the default space, and the guard watches the
+  same. See [Outside every space](spaces.md#outside-every-space).
 - **Mind this: your assistant reads your notes**, like any file it opens. They travel
   with your conversations to its provider. Do not keep there what you would not share.
 

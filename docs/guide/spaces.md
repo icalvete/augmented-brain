@@ -48,13 +48,36 @@ augmented-brain space
 
 ## Outside every space
 
+augmented brain works in every Claude Code session on this computer, whatever the
+folder: its plugin is installed for your whole user. A folder that is in no work folder
+is outside every space.
+
 The desktop app starts each new session in a scratch folder of its own. That folder is
 in no space. Then the **default space** is used, `personal` unless you change it, and
 Claude tells you in one line, with how to switch to work.
 
-The default space matters for one more thing: its backup carries your profile, the
-shared notes and the names of your secrets (never their values). Set it with `default_space` in the configuration. With a single space, it
-is that one.
+The default space matters for one more thing: its backup carries your profile, the shared
+notes and the names of your secrets (never their values). Set it with `default_space` in
+the configuration. With a single space, it is that one.
+
+What changes outside, next to a session in a space:
+
+| | In a space | Outside every space |
+|---|---|---|
+| Profile, rules, tasks and the rest of the notes | The space's | The default space's, and Claude tells you |
+| What Claude writes in your notes | Goes to the space | Goes to the default space |
+| Tasks changed by another session | Claude hears of them | Those of the default space |
+| Reminder to write in the task's journal | Yes | No |
+| A session cut short, offered to recover | Yes | No |
+| [The guard](guard.md) | All of it | All of it, the same |
+| Backup when the session ends | The space's | The default space's |
+| Warnings about the window's memory and the model | Yes | Yes |
+
+The guard does not look at the folder: its lists hold for the whole computer. So in any
+project, also one you never gave augmented brain, Claude cannot commit or push until you
+[let it in that repository](guard.md#let-claude-commit-in-a-repository).
+
+To bring a folder into a space, add it to the space's `work_folders` (next).
 
 ## Your projects live elsewhere?
 
