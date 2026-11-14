@@ -32,6 +32,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/mcpserver"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/reach"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/version"
@@ -319,6 +320,9 @@ func cmdMCP(errOut io.Writer) int {
 		wd, err := os.Getwd()
 		if err != nil {
 			return nil, err
+		}
+		if reach.Outside(dir, c, wd) {
+			return nil, errors.New(i18n.T(c.Language, "mcp.outside", wd, strings.Join(c.SpaceNames(), ", ")))
 		}
 		s, _ := c.SpaceAt(wd)
 		if s == nil {

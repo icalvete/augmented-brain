@@ -165,31 +165,10 @@ actualizarlo. También puedes hacerlo tú:
 augmented-brain update
 ```
 
-Actualiza el programa y el plugin de Claude Code. Antes, revisa la instalación (y enseña lo
-que falla) y hace la copia de seguridad de cada espacio que la tenga; si falla una copia,
-no actualiza nada (`--force` actualiza igualmente). Si ningún espacio tiene copia, te dice
-que sigue sin una copia a la que volver. Después, reinicia las sesiones quietas que siguen con la versión vieja, con la misma
-conversación, y dice cuáles quedan y qué tarea está activa en cada espacio: pide a esas
-sesiones que aparquen su tarea. Volver a lanzar el comando
-de instalación también actualiza, sin esos pasos. `augmented-brain update --plugin`
-actualiza solo el plugin.
-
-Primero pregunta a GitHub cuál es la última versión, una sola vez: si GitHub no responde,
-lo dice y se para. Después, la descarga se intenta tres veces, también por la API de
-GitHub. Si sigue fallando, o el programa no es la versión nueva al acabar, te lo dice y
-termina con error: no ha cambiado nada, vuelve a lanzarlo más tarde.
-
-Después, cierra y abre las sesiones que no ha podido reiniciar (una que estaba
-respondiendo, o en Windows las de Claude Desktop). Una sesión que estaba abierta sigue con el programa viejo
-hasta que se reinicia, y sus herramientas de augmented brain pueden fallar.
-`augmented-brain doctor` y el arranque de una sesión nueva te dicen cuántas sesiones
-siguen con la versión vieja.
-
-Tus notas y tus ajustes se quedan como están. A veces una versión nueva guarda las notas
-de otra manera. Entonces la primera sesión las pasa a la manera nueva, después de guardar
-una copia completa en la carpeta `migrations/` de la configuración, y Claude te lo dice.
-Una versión más vieja nunca estropea notas escritas por una más nueva: se niega a
-abrirlas y pide que la actualices. Así que actualiza todos los ordenadores que uses.
+Primero hace la copia de seguridad de tus espacios, actualiza el programa y el plugin de
+Claude Code, y reinicia las sesiones que siguen con la versión vieja. Volver a lanzar el
+comando de instalación también actualiza. Qué hace cada paso, y qué hacer con las
+sesiones que deja: [Actualizar y desinstalar](update-and-uninstall.es.md#actualizar).
 
 ## Desinstalar
 
@@ -197,35 +176,9 @@ abrirlas y pide que la actualices. Así que actualiza todos los ordenadores que 
 augmented-brain uninstall
 ```
 
-Te enseña lo que va a quitar y te pregunta. Quita el programa, el plugin de Claude Code y
-lo que Claude Code guarda de él (su caché, sus datos y los registros de su servidor).
-
-- **Primero, lo que seguiría funcionando sin él:** los servicios del
-  [acceso remoto](remote.es.md) y las sesiones abiertas para tareas (`session start`). Sin
-  el plugin seguirían sin guardia, y sin el programa que sabe quitarlos. Si alguno no se
-  puede parar, no quita nada más: te dice por qué, para que lo arregles y lo vuelvas a
-  lanzar.
-
-- **Tus notas se quedan** en `~/augmented-brain/`: son tuyas. Si vuelves a instalarlo,
-  lo encuentras todo como estaba.
-- **La configuración también se queda.** `--config` la borra, con tu perfil.
-- **Para empezar de cero**, `--all` borra además las notas de cada espacio. Antes te
-  enseña cada carpeta con cuántas notas tiene, y te pregunta. Solo borra lo que augmented
-  brain guarda allí (las carpetas de notas, `MEMORY.md`, `inbox.md`, `docs/`, `archive/`),
-  y la carpeta solo si no queda nada más. Lo que tengas tuyo dentro de la carpeta de un
-  espacio se queda. Una carpeta de notas que contiene una carpeta de trabajo, tu carpeta
-  personal o una carpeta sin notas se deja entera, y el plan lo dice. `--config` solo
-  borra una carpeta que tenga un `config.toml`. Tu copia de seguridad en GitHub no se borra: te
-  dice cuál es y cómo borrarla. Si un espacio no tiene copia de seguridad, te avisa de que
-  sus notas se perderán para siempre. Para conservarlas, responde que no y configura antes
-  la copia.
-- Claude Code, su app de escritorio, git y la entrada del PATH se quedan: Claude Code
-  vive en esa misma carpeta.
-
-En Windows el fichero del programa desaparece un momento después de acabar el comando,
-porque Windows no deja que un programa en marcha se borre a sí mismo.
-
-Todos los comandos y sus opciones: [Comandos](commands.es.md).
+Quita el programa y el plugin de Claude Code, después de enseñar lo que va a quitar y
+preguntar. Tus notas y la configuración se quedan; `--config` y `--all` van más lejos.
+Qué quita y qué deja cada nivel: [Actualizar y desinstalar](update-and-uninstall.es.md#desinstalar).
 
 ## Si algo falla
 

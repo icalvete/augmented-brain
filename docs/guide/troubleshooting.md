@@ -122,7 +122,7 @@ What `augmented-brain update` may end with:
   --force` updates anyway, but then there is no fresh copy of your notes to go back to
   if the new version goes wrong.
 
-See [Installing](install.md#updating).
+See [Updating and uninstalling](update-and-uninstall.md#updating).
 
 ### The install stopped half way
 
@@ -380,7 +380,7 @@ follow.
 ### What if I stop using it?
 
 Your notes stay where they are, as plain files. There is nothing to export. See
-[Installing](install.md#uninstalling).
+[Updating and uninstalling](update-and-uninstall.md#uninstalling).
 
 ## Still stuck
 

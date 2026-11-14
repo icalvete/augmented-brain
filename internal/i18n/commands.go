@@ -562,6 +562,10 @@ Uso:
 		en: "run `augmented-brain init`",
 		es: "lanza `augmented-brain init`",
 	},
+	"mcp.outside": {
+		en: "%s is outside your spaces, and augmented brain keeps to them (reach = \"spaces\" on the panel's Guard page): no memory here. Tell the user; to use it, open the assistant inside a space's work folder (spaces: %s)",
+		es: "%s está fuera de tus espacios, y augmented brain se queda en ellos (reach = \"spaces\" en la página Guardia del panel): aquí no hay memoria. Díselo al usuario; para usarla, abre el asistente dentro de la carpeta de trabajo de un espacio (espacios: %s)",
+	},
 	"mcp.nospace": {
 		en: "%s belongs to no space (spaces: %s); open the assistant inside a space's work folder, or run `augmented-brain space add`",
 		es: "%s no es de ningún espacio (espacios: %s); abre el asistente dentro de la carpeta de trabajo de un espacio, o lanza `augmented-brain space add`",

@@ -262,6 +262,20 @@ func TestGuardFileChecks(t *testing.T) {
 	if c := find(Run(env), "not the ones saved"); c == nil || c.Status != Warning {
 		t.Error("lists changed outside the panel are not said")
 	}
+	// Where augmented brain acts: one line, whichever the mode.
+	if c := find(Run(env), "acts in every Claude Code session"); c == nil {
+		t.Error("the default reach is not said")
+	}
+	_ = config.SaveGuard(cfg, config.Guard{Reach: config.ReachSpaces})
+	if c := find(Run(env), "nobody accepted that change"); c == nil {
+		t.Error("an unaccepted reach is not said")
+	}
+	c, _ := config.Load(cfg)
+	g, _ := config.LoadGuard(cfg)
+	_ = state.WriteSeal(cfg, c.GuardFingerprint(g))
+	if c := find(Run(env), "keeps to the folders of your spaces"); c == nil {
+		t.Error("reach spaces is not said")
+	}
 }
 
 // With remote access set up, doctor gives a line per space and warns of a stopped

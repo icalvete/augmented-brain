@@ -386,6 +386,13 @@ func TestReasonsInTheUsersLanguage(t *testing.T) {
 			t.Errorf("%q: %q, want it to say %q", cmd, r, want)
 		}
 	}
+	// Stopping a commit says where the user allows it: the Guard page, not a setting's name.
+	for lang, want := range map[string]string{"en": "the Guard page of the panel, which they open with /brain:panel", "es": "la página Guardia del panel, que abre con /brain:panel"} {
+		r := (Policy{Lang: lang}).Command("git commit -m x").Reason
+		if !strings.Contains(r, want) || strings.Contains(r, "git_allowed_repos") {
+			t.Errorf("%s: %q", lang, r)
+		}
+	}
 	if r := PowerShell("es").Reason; !strings.Contains(r, "todavía no revisa los comandos de PowerShell") {
 		t.Errorf("PowerShell: %q", r)
 	}

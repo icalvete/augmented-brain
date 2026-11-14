@@ -20,6 +20,11 @@ other way round holds too, with one exception: in the mode that skips Claude Cod
 questions (`bypassPermissions`), a question from the guard may not reach you. Do not use
 that mode with the guard; [why](guard.md#sessions-that-skip-claude-codes-questions).
 
+If you keep augmented brain to your spaces, outside their folders the guard only
+protects its own files, your home folder and what your lists name: there, the rest is
+up to Claude Code's permissions alone. See
+[Outside every space](spaces.md#outside-every-space).
+
 ## Stopped
 
 The guard stops these. Claude tells you what it wanted and gives you the command, for you

@@ -9,6 +9,12 @@ All in plain text files of yours, backed up to your own git.</p>
 <p align="center"><a href="https://icalvete.github.io/augmented-brain/">Website</a> ·
 <a href="https://icalvete.github.io/augmented-brain/guide/">Documentation</a> · <a href="README.es.md">Leer en español</a></p>
 
+<p align="center"><a href="https://github.com/icalvete/augmented-brain/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/icalvete/augmented-brain/ci.yml?branch=main&amp;label=CI"></a>
+<a href="https://github.com/icalvete/augmented-brain/actions/workflows/vuln.yml?query=branch%3Amain"><img alt="vulnerabilities" src="https://img.shields.io/github/actions/workflow/status/icalvete/augmented-brain/vuln.yml?branch=main&amp;label=vulnerabilities"></a>
+<a href="https://github.com/icalvete/augmented-brain/releases"><img alt="release" src="https://img.shields.io/github/v/release/icalvete/augmented-brain?include_prereleases&amp;sort=semver&amp;label=release"></a>
+<a href="go.mod"><img alt="Go" src="https://img.shields.io/github/go-mod/go-version/icalvete/augmented-brain"></a>
+<a href="LICENSE"><img alt="license" src="https://img.shields.io/github/license/icalvete/augmented-brain?label=license"></a></p>
+
 <p align="center"><a href="https://github.com/sponsors/icalvete"><img alt="Sponsor" src="https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white"></a></p>
 
 > [!WARNING]
@@ -90,6 +96,10 @@ which tools you use and who you work with. At the end it offers to set up the ba
 
 From then on, the same. If something is off, `augmented-brain doctor` tells you what is
 missing and how to fix it.
+
+Already use Claude Code in other projects? augmented brain can keep to the folders you
+give it and leave the rest as it was:
+[Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
 
 ## What it looks like
 

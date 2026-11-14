@@ -119,6 +119,8 @@ Claude in the terminal instead, in your work space. Next times:
 The first time, Claude introduces itself and asks six questions, one at a time, telling
 you what each one is for: who you are, what you look after, how you want answers, what
 must not be touched, which tools you use and who you work with. You can skip any of them.
+If you write code, it also asks in which repositories it may commit: you add them
+yourself, on the panel's Guard page, and Claude offers to open it.
 
 At the end it shows what it saved and offers to set up the backup. Say yes: your notes go
 to a private repository of yours, and losing the computer loses nothing. It needs a
@@ -347,29 +349,10 @@ update it. You can also do it yourself:
 augmented-brain update
 ```
 
-It updates the program and the Claude Code plugin. Before, it checks the installation
-(and shows what fails) and backs up every space that has a backup; if a backup fails,
-it updates nothing (`--force` updates anyway). If no space has a backup, it says that it
-goes ahead with no copy to go back to. After, it restarts the idle sessions that still run the old version, with the same
-conversation, and says which are left and which task each space has active: ask those
-sessions to park their task. Running the install command again also
-updates, without those steps. `augmented-brain update --plugin` updates only the plugin.
-
-It first asks GitHub for the latest version, once: if GitHub does not answer, it says so
-and stops. The download is then tried three times, also through GitHub's API. If it still
-fails, or the program is not the new version afterwards, it says so and ends with an
-error: nothing changed, run it again later.
-
-Then close and open the sessions it could not restart (one that was answering, or on
-Windows those of Claude Desktop). A session that was open keeps the old program until it restarts,
-and its augmented brain tools may fail. `augmented-brain doctor` and the start of a new
-session tell you how many sessions still run the old version.
-
-Your notes and settings stay as they are. Sometimes a new version stores notes in a new
-way. Then the first session moves them to the new way, after keeping a full copy in the
-`migrations/` folder of the configuration, and Claude tells you. An older version never
-breaks notes a newer one wrote: it refuses them and asks to be updated. So update every
-computer you use.
+It backs up your spaces first, updates the program and the Claude Code plugin, and
+restarts the sessions still running the old version. Running the install command again
+also updates. What each step does, and what to do with the sessions it leaves: [Updating
+and uninstalling](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.html#updating).
 
 ## Uninstalling
 
@@ -377,33 +360,9 @@ computer you use.
 augmented-brain uninstall
 ```
 
-It shows what it will remove and asks. It removes the program, the Claude Code plugin and
-what Claude Code keeps of it (its cache, its data and its server's logs).
-
-- **First, what would keep running without it:** the [remote access](https://icalvete.github.io/augmented-brain/guide/remote.html) services
-  and the sessions opened for tasks (`session start`). Without the plugin they would go
-  on with no guard, and with no program left to take them away. If one cannot be
-  stopped, nothing else is removed: it tells you why, so you can fix it and run it again.
-
-- **Your notes stay** in `~/augmented-brain/`: they are yours. If you install it again,
-  you find everything as it was.
-- **The configuration stays** too. `--config` removes it, with your profile.
-- **To start from scratch**, `--all` also removes every space's notes. First it shows each
-  folder with how many notes it has, and asks. It removes only what augmented brain keeps
-  there (the note folders, `MEMORY.md`, `inbox.md`, `docs/`, `archive/`), and the folder
-  only if nothing else is left. Anything of yours inside a space's folder stays. A notes
-  folder that holds a work folder, your home folder, or a folder with no notes is left
-  whole, and the plan says so. `--config` only removes a folder that holds a
-  `config.toml`. Your backup on GitHub is not deleted: it says which one it is and how to delete
-  it. If a space has no backup, it warns you that its notes will be gone for good. To keep
-  them, answer no and set up the backup first.
-- Claude Code, its desktop app, git and the PATH entry stay: Claude Code lives in that
-  same folder.
-
-On Windows the program file disappears a moment after the command ends, because Windows
-does not let a running program delete itself.
-
-All the commands and their options: [Commands](https://icalvete.github.io/augmented-brain/guide/commands.html).
+It removes the program and the Claude Code plugin, after showing what it will remove and
+asking. Your notes and the configuration stay; `--config` and `--all` go further. What
+each level removes and keeps: [Updating and uninstalling](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.html#uninstalling).
 
 ## If something goes wrong
 
@@ -639,34 +598,50 @@ augmented-brain space
 
 ## Outside every space
 
-augmented brain works in every Claude Code session on this computer, whatever the
-folder: its plugin is installed for your whole user. A folder that is in no work folder
-is outside every space.
+A folder that is in no work folder is outside every space. What augmented brain does
+there depends on one choice, on the panel's Guard page: **where augmented brain acts**.
 
-The desktop app starts each new session in a scratch folder of its own. That folder is
-in no space. Then the **default space** is used, `personal` unless you change it, and
-Claude tells you in one line, with how to switch to work.
+- **On the whole computer** (as it comes). augmented brain works in every Claude Code
+  session on this computer, whatever the folder: its plugin is installed for your whole
+  user. Outside your spaces it uses the **default space**, `personal` unless you change
+  it, and Claude tells you in one line, with how to switch to work.
+- **Only in my spaces.** A session outside your spaces' folders gets nothing from
+  augmented brain: no memory, no notices, no backup. The guard there only protects its
+  own files, your home folder and what your lists name. Claude Code's own permissions
+  still decide the rest, as they always do. This is for you if you already use Claude
+  Code in other projects and want them left as they were.
+
+What changes, next to a session in a space:
+
+| | In a space | Outside, on the whole computer | Outside, only in my spaces |
+|---|---|---|---|
+| Profile, rules, tasks and the rest of the notes | The space's | The default space's, and Claude tells you | None |
+| What Claude writes in your notes | Goes to the space | Goes to the default space | Nothing: Claude cannot write notes there |
+| Tasks changed by another session, journal reminder, a session to recover | Yes | Those of the default space | No |
+| Commit and push | As your lists say | As your lists say | Not watched, except in repositories of your lists |
+| Root, secrets in commands, PowerShell | Stopped | Stopped | Not watched |
+| Deleting your home folder | Stopped | Stopped | Stopped |
+| Production profiles, untouchable machines and repositories | Asks, or stopped | Asks, or stopped | Asks, or stopped |
+| The guard's files, the plugin and the program | Protected | Protected | Protected |
+| Backup when the session ends | The space's | The default space's | None |
+| Warnings about the window's memory and the model | Yes | Yes | No |
+
+Three things to know:
+
+- **Inside a space nothing changes**, whichever you choose.
+- **A command that goes into a space is checked whole.** Run from outside,
+  `cd ~/work/app && git commit` or `git -C ~/work/app commit` gets every rule, as in the
+  space. So does a clone of a repository of your lists, found by its address.
+- **Mind the desktop app** if you keep augmented brain to your spaces. It starts each
+  new session in a scratch folder of its own, which is in no space: that session has no
+  memory until you choose a folder. That is why "on the whole computer" is the default.
+
+Change it on the panel's Guard page; a change by hand in `guard.toml` counts only once you
+accept it there ([`reach`](https://icalvete.github.io/augmented-brain/guide/configuration.html#guardtoml)).
 
 The default space matters for one more thing: its backup carries your profile, the shared
 notes and the names of your secrets (never their values). Set it with `default_space` in
 the configuration. With a single space, it is that one.
-
-What changes outside, next to a session in a space:
-
-| | In a space | Outside every space |
-|---|---|---|
-| Profile, rules, tasks and the rest of the notes | The space's | The default space's, and Claude tells you |
-| What Claude writes in your notes | Goes to the space | Goes to the default space |
-| Tasks changed by another session | Claude hears of them | Those of the default space |
-| Reminder to write in the task's journal | Yes | No |
-| A session cut short, offered to recover | Yes | No |
-| [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html) | All of it | All of it, the same |
-| Backup when the session ends | The space's | The default space's |
-| Warnings about the window's memory and the model | Yes | Yes |
-
-The guard does not look at the folder: its lists hold for the whole computer. So in any
-project, also one you never gave augmented brain, Claude cannot commit or push until you
-[let it in that repository](https://icalvete.github.io/augmented-brain/guide/guard.html#let-claude-commit-in-a-repository).
 
 To bring a folder into a space, add it to the space's `work_folders` (next).
 
@@ -1229,6 +1204,11 @@ other way round holds too, with one exception: in the mode that skips Claude Cod
 questions (`bypassPermissions`), a question from the guard may not reach you. Do not use
 that mode with the guard; [why](https://icalvete.github.io/augmented-brain/guide/guard.html#sessions-that-skip-claude-codes-questions).
 
+If you keep augmented brain to your spaces, outside their folders the guard only
+protects its own files, your home folder and what your lists name: there, the rest is
+up to Claude Code's permissions alone. See
+[Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+
 ## Stopped
 
 The guard stops these. Claude tells you what it wanted and gives you the command, for you
@@ -1374,10 +1354,16 @@ commands. Then Claude Code's own permissions decide.
 
 ## Where it watches
 
-Everywhere. The guard reads every command in every Claude Code session on this computer,
-inside your spaces or not, and its lists hold for the whole computer. A repository that is
-not in them is closed to commits and pushes, in any project. What else changes outside
-your spaces is in [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+As it comes, everywhere. The guard reads every command in every Claude Code session on
+this computer, inside your spaces or not, and its lists hold for the whole computer. A
+repository that is not in them is closed to commits and pushes, in any project.
+
+If you choose, on the panel's Guard page, that augmented brain acts **only in your
+spaces**, outside them the guard keeps to its own files, your home folder and what your
+lists name: production profiles, untouchable machines and the repositories of your
+lists. Root, secrets and commits elsewhere are then up to Claude Code's permissions. A
+command that goes into a space is checked with every rule. The table is in
+[Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
 
 ## Let Claude commit in a repository
 
@@ -1400,6 +1386,10 @@ git_ask_repos = ["~/code/shop"]                        # ask me each time
 The easiest way is the panel's **Guard** page. Adding a repository to the list where
 Claude commits and pushes without asking shows a warning, and you must tick a box that
 says you understand. Add only repositories where a mistake can be undone.
+
+When the guard stops a commit, Claude tells you so and where to allow it: this page,
+which opens when you type `/brain:panel`. In the first-session interview, if you write
+code, Claude asks which repositories they are and offers to open it for you.
 
 **Merging a pull request is a push too.** `gh pr merge`, `glab mr merge` and `glab mr
 accept` follow the same lists. gh and glab have no `-C`, so the command must say which
@@ -1882,9 +1872,10 @@ program) and what travels in the backup is in
   sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns that off.
 - **It does not change your Claude Code settings.** The plugin goes in and out with
   Claude Code's own commands, which the installer, `update` and `uninstall` run for you.
-- **It does not stay inside your spaces.** It works in every Claude Code session on this
-  computer. Outside your spaces it uses the default space, and the guard watches the
-  same. See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+- **As it comes, it does not stay inside your spaces.** It works in every Claude Code
+  session on this computer. Outside your spaces it uses the default space, and the guard
+  watches the same. On the panel's Guard page you can keep it to your spaces instead.
+  See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
 - **Mind this: your assistant reads your notes**, like any file it opens. They travel
   with your conversations to its provider. Do not keep there what you would not share.
 
@@ -2210,6 +2201,9 @@ the index, the last backup, the last weekly review, and a link to the space's
 
 Every list the guard answers to, in one page, to read and change:
 
+- **Where augmented brain acts**: on the whole computer (as it comes), or only in your
+  spaces. Choosing your spaces asks you to tick that you understand what the guard stops
+  watching outside them. [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space) tells it.
 - **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
   warns that the other lists decide again for it (if one lets Claude commit and push
   there, it will), and asks you to type the folder's name.
@@ -3275,7 +3269,8 @@ what each step does, so you can do it calmly.
 
 ## Updating
 
-When a new version is out, Claude tells you at the start of a session. To update:
+When a new version is out, Claude tells you at the start of a session and offers to
+update it. You can also do it yourself:
 
 ```bash
 augmented-brain update
@@ -3286,22 +3281,36 @@ What it does, in order:
 1. **Checks the installation** and shows what it finds, so a problem that was already
    there is not taken for one of the new version.
 2. **Backs up every space that has a backup.** If one fails, it stops and updates nothing:
-   that copy is your way back. With no backup at all, it says it goes ahead without one.
+   that copy is your way back. `--force` updates anyway. With no backup at all, it says
+   it goes ahead without one.
 3. **Downloads and installs** the new version, with the Claude Code plugin that comes
-   inside it. If GitHub fails to hand out the files, it tries three times, also through
-   GitHub's API; if all fails, it says so and nothing changes.
-4. **Checks the new version is in place**, and restarts the idle Claude sessions that
-   still run the old one, one at a time, with the same conversation: a task's session,
-   those of the remote access, and those of Claude Desktop, which stay open while only
-   their augmented brain restarts. A session that is answering is left as it is.
+   inside it. It asks GitHub for the latest version once: if GitHub does not answer, it
+   says so and stops. The download is tried three times, also through GitHub's API. If
+   all fails, or the program is not the new version afterwards, it says so and nothing
+   changes: run it again later. When there is no newer version, it only updates the
+   plugin.
+4. **Restarts the idle Claude sessions** that still run the old version, one at a time,
+   with the same conversation. A session that is answering is left as it is.
+   - **A task's session** (opened by `session start`) gets a new process.
+   - **A session of the remote access** (`remote install`): its service restarts. Only
+     on Linux; on macOS and Windows it counts as one of Claude Desktop.
+   - **A session of Claude Desktop or a terminal** stays open, and only its augmented
+     brain restarts. On Windows it is left as it is.
 5. **Says what is left:** the sessions it could not restart (one answering, the one you
    ran it from, on Windows any of Claude Desktop), and which task each space has active.
 
 For those left, ask the session to park its task, and close and open it. A session that
-was open keeps the old program until it restarts; `/clear` is not enough. When the
-session you are in is one of them, its start tells you so. Later on,
-`augmented-brain session restart --old` restarts the ones that have gone idle, and
-`augmented-brain update --no-restart` updates without restarting any.
+was open keeps the old program until it restarts, and its augmented brain tools may fail;
+`/clear` is not enough. `augmented-brain doctor` and the start of a new session say how
+many still run the old version. Later on, `augmented-brain session restart --old`
+restarts the ones that have gone idle.
+
+Other ways:
+
+- `augmented-brain update --no-restart` updates without restarting any session.
+- `augmented-brain update --plugin` updates only the Claude Code plugin.
+- Running the [install command](https://icalvete.github.io/augmented-brain/guide/install.html) again also updates, without steps 1, 2, 4
+  and 5.
 
 ### Before you update
 
@@ -3322,11 +3331,17 @@ you. Nothing is moved without that copy.
 augmented-brain uninstall
 ```
 
-It shows what it will remove and asks. There are three levels:
+It shows what it will remove and asks. First it stops what would keep running without
+it: the [remote access](https://icalvete.github.io/augmented-brain/guide/remote.html) services and the sessions opened for tasks (`session
+start`). Without the plugin they would go on with no guard, and with no program left to
+take them away. If one cannot be stopped, nothing else is removed: it tells you why, so
+you can fix it and run it again.
+
+Then there are three levels:
 
 | Command | Removes | Keeps |
 |---|---|---|
-| `uninstall` | The program and the Claude Code plugin | Your notes and the configuration |
+| `uninstall` | The program, the Claude Code plugin and what Claude Code keeps of it (its cache, its data and its server's logs) | Your notes and the configuration |
 | `uninstall --config` | Also the configuration and your profile | Your notes |
 | `uninstall --all` | Also every space's notes | Your backups |
 
@@ -3335,23 +3350,25 @@ It shows what it will remove and asks. There are three levels:
 - **`--all` deletes your notes.** It shows each notes folder with how many notes it has,
   and warns about those with no backup: they will be gone for good. Answer no, set up the
   backup or copy the folders, and run it again.
+- **It removes only what augmented brain keeps** in a notes folder (the note folders,
+  `MEMORY.md`, `inbox.md`, `docs/`, `archive/`), and the folder only if nothing else is
+  left. A notes folder that holds a work folder, your home folder, or a folder with no
+  notes is left whole, and the plan says so. `--config` only removes a folder that holds
+  a `config.toml`.
 - **Your backups are never deleted**, on GitHub or anywhere. It says which they are and how
   to delete one, if you want to.
-- Claude Code, its desktop app and git stay.
+- Claude Code, its desktop app, git and the PATH entry stay: Claude Code lives in that
+  same folder.
 
 On Windows the program file disappears a moment after the command ends: Windows does not
 let a running program delete itself.
 
 ## Moving to a new computer
 
-1. On the old one, make a last backup: `augmented-brain backup --all`.
-2. On the new one, install augmented brain, then restore each space:
-   `augmented-brain restore <address of its backup>`.
-3. Give again what does not travel: the lists of the guard, and the secrets' values
-   (`restore` names those its keychain lacks, with the command to store each).
-
-See [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html), and [Where everything lives](https://icalvete.github.io/augmented-brain/guide/where-things-live.html) for
-what travels and what does not.
+Make a last backup on the old one (`augmented-brain backup --all`), install augmented
+brain on the new one and restore each space from its backup, the default space too. The
+steps, and what you set up again by hand, are in [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html#on-a-new-machine).
+What travels and what does not: [Where everything lives](https://icalvete.github.io/augmented-brain/guide/where-things-live.html).
 
 
 ---
@@ -4197,7 +4214,7 @@ sessions opened for tasks go first; if one cannot be stopped, nothing else is re
   backups are not touched.
 - `--yes`: do not ask.
 
-See [Installing](https://icalvete.github.io/augmented-brain/guide/install.html#uninstalling).
+See [Updating and uninstalling](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.html#uninstalling).
 
 ## augmented-brain mcp
 
@@ -4948,11 +4965,19 @@ Next to `config.toml`, `guard.toml` holds what the guard never allows:
 
 ```toml
 untouchable_repos = ["~/work/core", "~/work/cli-*"]
+reach = "spaces"
 ```
 
 - `untouchable_repos`: repositories where Claude never commits, pushes or merges,
   whatever `git_allowed_repos` and `git_ask_repos` say. For the whole computer. Same form
   as those lists (`~`, a `*` in the last part, worktrees count).
+- `reach`: where augmented brain acts. `"machine"` (or no line, the default): in every
+  Claude Code session of the computer. `"spaces"`: only in the folders of your spaces;
+  a session outside them gets no memory and no notices, and the guard only protects its
+  own files, your home folder and what your lists name. See
+  [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space). Change it on the panel's Guard
+  page: written here by hand, it counts only once you accept it there, and until then
+  augmented brain acts on the whole computer.
 
 The panel's Guard page writes it. If the file is missing, nothing is untouchable. If it
 cannot be read, the guard does not know which repositories are untouchable, nor whether
@@ -5932,7 +5957,7 @@ What `augmented-brain update` may end with:
   --force` updates anyway, but then there is no fresh copy of your notes to go back to
   if the new version goes wrong.
 
-See [Installing](https://icalvete.github.io/augmented-brain/guide/install.html#updating).
+See [Updating and uninstalling](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.html#updating).
 
 ### The install stopped half way
 
@@ -6190,7 +6215,7 @@ follow.
 ### What if I stop using it?
 
 Your notes stay where they are, as plain files. There is nothing to export. See
-[Installing](https://icalvete.github.io/augmented-brain/guide/install.html#uninstalling).
+[Updating and uninstalling](https://icalvete.github.io/augmented-brain/guide/update-and-uninstall.html#uninstalling).
 
 ## Still stuck
 
@@ -6316,6 +6341,16 @@ own review. What it cannot see:
   skips Claude Code's permission questions (`bypassPermissions`) has no one to ask, so
   Claude cannot save rules, your profile or hosts for the guard there. It tells you what
   it wanted to save.
+- **Only in your spaces: a script that moves into one.** When augmented brain keeps to
+  your spaces, a command run outside them that goes into one (`cd ~/work/app`,
+  `git -C ~/work/app`) is checked with every rule. A script that changes folder inside
+  itself is not: run from outside, `bash build.sh` that moves into a space is checked as
+  outside. See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+- **Only in your spaces, with an earlier version still open.** A Claude session started
+  before an update keeps the earlier program, which does not know this choice. Its start
+  accepts the guard's lists as that program counts them, so until a session of the new
+  version starts again, augmented brain acts on the whole computer. It is the safe side,
+  and Claude Code tells you each time the lists are accepted.
 - **Questions in automatic modes.** When the guard asks, Claude Code shows you the
   question. What Claude Code does with it in its fully automatic modes is up to Claude
   Code, not augmented brain.

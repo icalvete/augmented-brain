@@ -25,6 +25,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/leftovers"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/reach"
 	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
@@ -477,6 +478,14 @@ func guardLists(c *config.Config, l string) []Check {
 		out = append(out, Check{Warning, i18n.T(l, "doctor.sealunread", err), i18n.T(l, "doctor.sealunread.fix")})
 	} else if seal != "" && seal != c.GuardFingerprint(g) {
 		out = append(out, Check{Warning, i18n.T(l, "doctor.guardchanged"), i18n.T(l, "doctor.guardchanged.fix")})
+	}
+	switch {
+	case reach.OnlySpaces(c.Dir, c):
+		out = append(out, Check{Info, i18n.T(l, "doctor.reach.spaces"), ""})
+	case g.OnlySpaces():
+		out = append(out, Check{Info, i18n.T(l, "doctor.reach.unsealed"), ""})
+	default:
+		out = append(out, Check{Info, i18n.T(l, "doctor.reach.machine"), ""})
 	}
 	return out
 }

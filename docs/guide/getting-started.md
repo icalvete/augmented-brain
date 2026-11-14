@@ -111,6 +111,8 @@ Claude in the terminal instead, in your work space. Next times:
 The first time, Claude introduces itself and asks six questions, one at a time, telling
 you what each one is for: who you are, what you look after, how you want answers, what
 must not be touched, which tools you use and who you work with. You can skip any of them.
+If you write code, it also asks in which repositories it may commit: you add them
+yourself, on the panel's Guard page, and Claude offers to open it.
 
 At the end it shows what it saved and offers to set up the backup. Say yes: your notes go
 to a private repository of yours, and losing the computer loses nothing. It needs a

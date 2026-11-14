@@ -838,7 +838,7 @@ sessions opened for tasks go first; if one cannot be stopped, nothing else is re
   backups are not touched.
 - `--yes`: do not ask.
 
-See [Installing](install.md#uninstalling).
+See [Updating and uninstalling](update-and-uninstall.md#uninstalling).
 
 ## augmented-brain mcp
 

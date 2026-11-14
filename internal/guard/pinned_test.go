@@ -64,9 +64,11 @@ func checkPinned(t *testing.T, p Policy, rows []pinned) {
 	// unspell), so tools that scan this file for them leave it alone.
 	for _, r := range rows {
 		cmd := unspell(r.cmd)
-		if got := p.Command(cmd); got.Verdict != r.want {
+		got := p.Command(cmd)
+		if got.Verdict != r.want {
 			t.Errorf("%q = %v, want %v (%s)", cmd, got.Verdict, r.want, got.Reason)
 		}
+		checkOutside(t, p, cmd, got) // every row, also outside the spaces
 	}
 }
 

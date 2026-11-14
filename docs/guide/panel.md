@@ -211,6 +211,9 @@ the index, the last backup, the last weekly review, and a link to the space's
 
 Every list the guard answers to, in one page, to read and change:
 
+- **Where augmented brain acts**: on the whole computer (as it comes), or only in your
+  spaces. Choosing your spaces asks you to tick that you understand what the guard stops
+  watching outside them. [Outside every space](spaces.md#outside-every-space) tells it.
 - **Untouchable repositories**, where Claude never commits, pushes or merges. Removing one
   warns that the other lists decide again for it (if one lets Claude commit and push
   there, it will), and asks you to type the folder's name.

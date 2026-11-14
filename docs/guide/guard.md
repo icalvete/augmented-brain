@@ -51,10 +51,16 @@ commands. Then Claude Code's own permissions decide.
 
 ## Where it watches
 
-Everywhere. The guard reads every command in every Claude Code session on this computer,
-inside your spaces or not, and its lists hold for the whole computer. A repository that is
-not in them is closed to commits and pushes, in any project. What else changes outside
-your spaces is in [Spaces](spaces.md#outside-every-space).
+As it comes, everywhere. The guard reads every command in every Claude Code session on
+this computer, inside your spaces or not, and its lists hold for the whole computer. A
+repository that is not in them is closed to commits and pushes, in any project.
+
+If you choose, on the panel's Guard page, that augmented brain acts **only in your
+spaces**, outside them the guard keeps to its own files, your home folder and what your
+lists name: production profiles, untouchable machines and the repositories of your
+lists. Root, secrets and commits elsewhere are then up to Claude Code's permissions. A
+command that goes into a space is checked with every rule. The table is in
+[Spaces](spaces.md#outside-every-space).
 
 ## Let Claude commit in a repository
 
@@ -77,6 +83,10 @@ git_ask_repos = ["~/code/shop"]                        # ask me each time
 The easiest way is the panel's **Guard** page. Adding a repository to the list where
 Claude commits and pushes without asking shows a warning, and you must tick a box that
 says you understand. Add only repositories where a mistake can be undone.
+
+When the guard stops a commit, Claude tells you so and where to allow it: this page,
+which opens when you type `/brain:panel`. In the first-session interview, if you write
+code, Claude asks which repositories they are and offers to open it for you.
 
 **Merging a pull request is a push too.** `gh pr merge`, `glab mr merge` and `glab mr
 accept` follow the same lists. gh and glab have no `-C`, so the command must say which

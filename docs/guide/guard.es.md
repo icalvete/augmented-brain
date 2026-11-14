@@ -51,11 +51,17 @@ siempre. Después deciden los permisos propios de Claude Code.
 
 ## Dónde vigila
 
-En todas partes. El guardia lee cada comando de cada sesión de Claude Code de este
-ordenador, dentro de tus espacios o no, y sus listas valen para todo el ordenador. Un
-repositorio que no está en ellas queda cerrado a commit y push, en cualquier proyecto. Lo
-demás que cambia fuera de tus espacios está en
-[Espacios](spaces.es.md#fuera-de-todos-los-espacios).
+Como viene, en todas partes. El guardia lee cada comando de cada sesión de Claude Code
+de este ordenador, dentro de tus espacios o no, y sus listas valen para todo el
+ordenador. Un repositorio que no está en ellas queda cerrado a commit y push, en
+cualquier proyecto.
+
+Si eliges en la página Guardia del panel que augmented brain actúe **solo en tus
+espacios**, fuera de ellos el guardia se queda en sus propios ficheros, tu carpeta
+personal y lo que nombran tus listas: perfiles de producción, máquinas intocables y los
+repositorios de tus listas. Root, secretos y commits en otros sitios dependen entonces de
+los permisos de Claude Code. Una orden que entra en un espacio se mira con todas las
+reglas. La tabla está en [Espacios](spaces.es.md#fuera-de-todos-los-espacios).
 
 ## Deja que Claude haga commit en un repositorio
 
@@ -79,6 +85,10 @@ Lo más fácil es la página **Guardia** del panel. Al añadir un repositorio a 
 donde Claude hace commit y push sin preguntar, sale un aviso y tienes que marcar una
 casilla que dice que lo entiendes. Añade solo repositorios donde un error se pueda
 deshacer.
+
+Cuando el guardia para un commit, Claude te lo dice y te cuenta dónde permitirlo: esta
+página, que se abre al escribir `/brain:panel`. En la entrevista de la primera sesión, si
+programas, Claude te pregunta qué repositorios son y se ofrece a abrírtela.
 
 **Fusionar una pull request también es un push.** `gh pr merge`, `glab mr merge` y `glab
 mr accept` van por las mismas listas. gh y glab no tienen `-C`, así que el comando tiene
