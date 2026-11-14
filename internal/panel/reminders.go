@@ -49,6 +49,9 @@ func (s *Server) watchAdd(v *view, r *http.Request) (string, error) {
 		return "", err
 	}
 	id := field(r, "id")
+	if err := brain.CheckDate(field(r, "date")); err != nil {
+		return "", onField("date", err)
+	}
 	if _, err := v.b.AddWatch(id, field(r, "date"), field(r, "what")); err != nil {
 		return "", err
 	}

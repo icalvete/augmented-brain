@@ -255,6 +255,7 @@ form.row button { flex: none; }
 .flash.ok { background: var(--good-bg); color: var(--good); }
 .flash.warn { background: var(--warn-bg); color: var(--warn); }
 .flash.err { background: var(--bad-bg); color: var(--bad); }
+.flash.ferr { margin: .35rem 0 .75rem; }
 
 /* Health */
 .health { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }

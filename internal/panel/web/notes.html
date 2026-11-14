@@ -6,15 +6,16 @@
 {{range .Rows}}<li class="card"><a class="title" href="{{$.Base}}/note?s={{if .Space}}{{.Space}}{{else}}{{$.Space}}{{end}}&amp;id={{.ID}}">{{.Title}}</a>
   <div class="meta">{{range .Badges}}<span class="badge">{{.}}</span>{{end}}{{if .Kind}}<span class="badge">{{.Kind}}</span>{{end}}{{if .Shared}}<span class="badge">{{t "shared"}}</span>{{end}}{{if .Summary}}<span>{{inline .Summary}}</span>{{end}}</div></li>{{end}}
 </ul>{{else}}<p class="empty">{{.Empty}}</p>{{end}}
-{{if .NewPerson}}<details class="box">
+{{if .NewPerson}}<details class="box"{{if $.Open "/person"}} open{{end}}>
   <summary>{{t "person.new"}}</summary>
   <form method="post" action="{{$.Base}}/person" class="stack">
     {{template "fields" (fields $)}}
-    <label>{{t "f.name"}} <input name="name" required maxlength="200"></label>
-    <label>{{t "f.aliases"}} <input name="aliases" maxlength="500" placeholder="{{t "f.aliases.hint"}}"></label>
-    <label>{{t "f.role"}} <input name="role" maxlength="300"></label>
-    <label>{{t "f.notes"}} <textarea name="notes" rows="4" maxlength="8000"></textarea></label>
+    <label>{{t "f.name"}} <input name="name" required maxlength="200" value="{{$.Val "/person" "name" ""}}"></label>
+    <label>{{t "f.aliases"}} <input name="aliases" maxlength="500" placeholder="{{t "f.aliases.hint"}}" value="{{$.Val "/person" "aliases" ""}}"></label>
+    <label>{{t "f.role"}} <input name="role" maxlength="300" value="{{$.Val "/person" "role" ""}}"></label>
+    <label>{{t "f.notes"}} <textarea name="notes" rows="4" maxlength="8000">{{$.Val "/person" "notes" ""}}</textarea></label>
     <p class="hint">{{t "person.hint"}} {{t "person.new.hint"}}</p>
+    {{template "ferr" ($.FormErr "/person")}}
     <button type="submit">{{t "create"}}</button>
   </form>
 </details>{{end}}

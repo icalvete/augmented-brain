@@ -2,9 +2,10 @@
 
 [Read in English](limitations.md)
 
-Lo que augmented brain todavía no sabe hacer, o hace solo en parte. Cada punto dice qué
-hacer en su lugar. La lista crece cuando sale algo nuevo: si encuentras algo, cuéntanoslo
-desde la página de Ayuda del panel.
+Lo que augmented brain todavía no sabe hacer, o hace solo en parte, y qué hacer en su
+lugar cuando hay algo que hacer. Cuando algo falla y quieres arreglarlo, mira
+[Si algo falla](troubleshooting.es.md). La lista crece cuando sale algo nuevo: si
+encuentras algo, cuéntanoslo desde la página de Ayuda del panel.
 
 ## Solo Claude Code
 
@@ -27,6 +28,12 @@ no tendrían ninguno de los dos.
   `AB_YES=1` para contestar que sí a todo.
 - **Los acentos pueden salir rotos** (`sesiÃ³n`) en Windows PowerShell 5.1. El arreglo
   está en [Si algo falla](troubleshooting.es.md).
+- **Sin aviso de la memoria de la ventana.** En Linux y macOS, Claude avisa cuando la
+  ventana que lleva tus sesiones pasa de 2 GB. En Windows no lo mira: si Claude va
+  lento, aparca la tarea y abre una ventana nueva.
+- **No se puede preguntar al llavero.** Después de recuperar una copia, augmented brain
+  no sabe qué secretos tiene ya el llavero de Windows. Mira la página Secretos del panel
+  y guarda los que falten.
 
 ## El primer arranque de Claude Code
 
@@ -60,17 +67,12 @@ nada.
 
 ## macOS
 
-Cada pull request pasa las pruebas en un Mac en la CI, también el instalador, Safari y un
-llavero bloqueado. Unas pocas cosas solo las ve una persona delante de un Mac de verdad,
-y de momento nadie las comprueba:
-
-1. Abrir desde el Finder el programa descargado con un navegador («Abrir igualmente»).
-2. Una sesión real de Claude Code: el guardia para un push y el inicio de sesión carga.
-3. Claude Desktop instalado por el instalador, y Tailscale con `panel remote`.
-4. Sin red: `backup`, `update` y `panel remote` lo dicen y no dejan nada a medias.
-5. El panel en Safari con la consola abierta, sin errores.
-
-Si a ti te falla alguna, nadie lo ha visto todavía: cuéntalo, por favor.
+Funciona en un Mac, y cada cambio se prueba en Macs en la CI: el instalador, el guardia,
+el panel en Safari y un llavero bloqueado. Pero ninguna persona lo ha usado todavía en un
+Mac de verdad, así que nadie ha mirado lo que solo se nota delante de la pantalla: abrir
+el programa desde el Finder («Abrir igualmente»), una sesión real de Claude, Claude
+Desktop, o Tailscale con `panel remote`. Si a ti te falla algo, nadie lo ha visto
+todavía: cuéntalo, por favor.
 
 ## El guardia
 
@@ -97,22 +99,36 @@ seguridad ni tu propia revisión. Lo que no puede ver:
   decir (`git ci` por `git commit`) cuando están en tus ajustes de git habituales. Un
   alias en un fichero que esos ajustes incluyen con `include` no se ve.
 - **Commits locales de merge, revert y cherry-pick.** El guardia para `git commit` donde
-  Claude no puede hacer commits, pero `git merge`, `git revert` y `git cherry-pick`
-  también hacen commits en tu ordenador. No se publican: un push sigue parado.
-- **Reglas que guarda Claude.** Claude guarda una regla, tu perfil o una máquina para
-  el guardia sin preguntarte antes, y todas las sesiones siguientes los cargan. Un texto
-  que Claude haya leído (una web, un correo) podría convencerle de guardar uno. Nada lo
-  impide, pero te enteras: Claude Code te enseña, una vez, lo que se ha guardado. Si no
-  se lo has pedido, dile a Claude que lo deshaga, o míralo en el panel.
+  Claude no puede hacer commits, pero `git merge`, `git pull`, `git revert`,
+  `git cherry-pick` y `git am` también hacen commits en tu ordenador. En un repositorio
+  intocable también se paran; en los demás pasan. No se publican: un push sigue parado.
+- **Reglas que guarda Claude.** Si no cambias nada, Claude guarda una regla, tu perfil o
+  una máquina para el guardia sin preguntarte antes, y todas las sesiones siguientes los
+  cargan. Un texto que Claude haya leído (una web, un correo) podría convencerle de
+  guardar uno. Te enteras: Claude Code te enseña, una vez, lo que se ha guardado. Si no
+  se lo has pedido, dile a Claude que lo deshaga, o míralo en el panel. Para que te
+  pregunte antes, elige «Preguntarme antes» en la página Guardia del panel (mira
+  [El guardia](guard.es.md#preguntar-antes-de-que-claude-guarde-una-regla)).
+- **Sin reglas en las sesiones que se saltan las preguntas.** Con «Preguntarme antes»,
+  una sesión que se salta las preguntas de permiso de Claude Code (`bypassPermissions`)
+  no tiene a quién preguntar, así que ahí Claude no puede guardar reglas, tu perfil ni
+  máquinas para el guardia. Te dice qué quería guardar.
 - **Preguntas en los modos automáticos.** Cuando el guardia pregunta, Claude Code te
   enseña la pregunta. Qué hace Claude Code con ella en sus modos totalmente automáticos
   depende de Claude Code, no de augmented brain.
 
 Más en [El guardia](guard.es.md).
 
+## En otros sitios
+
+- **`watch pr` solo sigue pull requests de GitHub.** Usa la herramienta de GitHub, `gh`.
+  Una merge request de GitLab o de otro sitio no se sigue: mírala allí.
+- **Un fichero de más de 50 MB se queda fuera de la copia.** El resto se copia, y la
+  copia dice qué fichero es. Guarda los ficheros grandes fuera de la carpeta de notas.
+
 ## Probado por poca gente
 
 augmented brain está en beta. Una persona lo usa a diario en Ubuntu, y lo ha probado en
-macOS y Windows 11. Lo que tienes sigue funcionando de una versión a otra (mira el
-[aviso legal](https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md#aviso-legal)),
-pero haz copia de lo importante.
+Windows 11; en macOS solo se prueba en la CI. Hasta ahora, cada versión ha mantenido
+funcionando lo que tienes, y desde la 1.0 será una promesa (mira
+[Lo que no cambia](compatibility.es.md)). Haz copia de lo importante.

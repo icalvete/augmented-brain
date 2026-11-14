@@ -1,13 +1,14 @@
 package brain
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/i18n"
 
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -64,7 +65,7 @@ const (
 
 // ErrNoDeadSession is returned by Recover when the session asked for is not a dead one
 // of the space: unknown, ended, running, or without a transcript on this machine.
-var ErrNoDeadSession = errors.New("no such session to recover")
+var ErrNoDeadSession = i18n.Errorf("err.session.none")
 
 // Recovery is what a dead session said after the last journal entry of its task.
 type Recovery struct {
