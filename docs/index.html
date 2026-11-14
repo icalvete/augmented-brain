@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>augmented brain · a memory for your AI coding assistant</title>
-<meta name="description" content="Your AI assistant forgets everything when the session ends. augmented brain gives Claude Code a notebook, a method and a doorman: tasks and decisions it remembers, kept as plain files on your machine.">
+<meta name="description" content="Your AI assistant forgets everything when the session ends. augmented brain gives Claude Code a memory, a method and a guard: tasks and decisions it remembers, kept as plain files on your machine.">
 <link rel="canonical" href="https://icalvete.github.io/augmented-brain/">
 <link rel="alternate" hreflang="en" href="https://icalvete.github.io/augmented-brain/">
 <link rel="alternate" hreflang="es" href="https://icalvete.github.io/augmented-brain/es/">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="augmented brain">
 <meta property="og:title" content="augmented brain · a memory for your AI coding assistant">
-<meta property="og:description" content="Your brain, augmented with AI: your assistant remembers where you left off, works with a method and asks before anything risky. Free, open source, plain files backed up to your git.">
+<meta property="og:description" content="Claude Code that remembers your work: it starts where you left off, works with a method and asks before anything risky. Free, open source, plain files backed up to your git.">
 <meta property="og:url" content="https://icalvete.github.io/augmented-brain/">
 <meta property="og:locale" content="en_US">
 <meta property="og:locale:alternate" content="es_ES">
@@ -24,7 +24,7 @@
 <meta property="og:image:alt" content="augmented brain logo: a green brain with the name across it">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="augmented brain · a memory for your AI coding assistant">
-<meta name="twitter:description" content="Your brain, augmented with AI: your assistant remembers where you left off, works with a method and asks before anything risky. Free, open source, plain files backed up to your git.">
+<meta name="twitter:description" content="Claude Code that remembers your work: it starts where you left off, works with a method and asks before anything risky. Free, open source, plain files backed up to your git.">
 <meta name="twitter:image" content="https://icalvete.github.io/augmented-brain/img/og-image.png">
 <script>
 // First visit: if the browser prefers Spanish, go to the Spanish page. A language picked
@@ -44,7 +44,7 @@
  "name": "augmented brain",
  "url": "https://icalvete.github.io/augmented-brain/",
  "inLanguage": "en",
- "description": "Your AI assistant forgets everything when the session ends. augmented brain gives Claude Code a notebook, a method and a doorman: tasks and decisions it remembers, kept as plain files on your machine.",
+ "description": "Your AI assistant forgets everything when the session ends. augmented brain gives Claude Code a memory, a method and a guard: tasks and decisions it remembers, kept as plain files on your machine.",
  "applicationCategory": "DeveloperApplication",
  "operatingSystem": "Linux, macOS, Windows",
  "license": "https://opensource.org/licenses/MIT",
@@ -86,7 +86,7 @@
    "name": "Which assistants does it work with?",
    "acceptedAnswer": {
     "@type": "Answer",
-    "text": "Claude Code, today. The tools for your notes run as an MCP server, which other assistants speak too. But reading your notes at the start of a session and the guard rely on Claude Code's hooks, so no other assistant is supported yet."
+    "text": "Claude Code, today: in the Claude desktop app or in a terminal. The tools for your notes run as an MCP server, which other assistants speak too. But reading your notes at the start of a session and the guard rely on Claude Code's hooks, so no other assistant is supported yet."
    }
   },
   {
@@ -99,42 +99,10 @@
   },
   {
    "@type": "Question",
-   "name": "Can I edit the notes by hand?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "Yes, they are Markdown files. Afterwards, augmented-brain check checks them and rebuilds the index."
-   }
-  },
-  {
-   "@type": "Question",
-   "name": "Does the backup run by itself?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "Yes. Once it is set up, it runs every time a Claude session ends, in the background. If it fails, Claude tells you at the start of the next session."
-   }
-  },
-  {
-   "@type": "Question",
    "name": "What happens when I run out of Claude usage?",
    "acceptedAnswer": {
     "@type": "Answer",
     "text": "Your task sessions wait and go on by themselves. On Linux, with remote access installed, augmented brain reads when the limit resets and wakes each session then, with its whole conversation. It tells you when the wait begins and when they are back."
-   }
-  },
-  {
-   "@type": "Question",
-   "name": "How can I support it?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "Sponsor it on GitHub Sponsors (https://github.com/sponsors/icalvete). It pays for the time to answer issues and add features."
-   }
-  },
-  {
-   "@type": "Question",
-   "name": "Is there paid support?",
-   "acceptedAnswer": {
-    "@type": "Answer",
-    "text": "Yes, on GitHub Sponsors (https://github.com/sponsors/icalvete): the Support tier gets you an answer by email within two working days, and the Setup session is one hour on a video call to set it up with you."
    }
   },
   {
@@ -155,17 +123,15 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="site.css">
 </head>
-<body>
+<body class="home">
 <a class="skip" href="#main">Skip to content</a>
-<div class="beta"><div class="wrap"><b>Beta</b> · a version still being tested, tested on Ubuntu, macOS and Windows 11. What you have keeps working from one version to the next. <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md">Read the disclaimer</a>.</div></div>
+<div class="beta"><div class="wrap"><span class="long"><b>Beta</b> · tested on Ubuntu, macOS and Windows. What you have keeps working from one version to the next. <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md">Read the disclaimer</a>.</span><span class="short"><b>Beta</b> · what you have keeps working · <a href="https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md">Disclaimer</a></span></div></div>
 
 <header class="wrap top">
   <a class="brand" href="./"><img src="img/favicon.svg" alt="">augmented brain</a>
   <nav aria-label="Main">
-    <a href="#what">What it does</a>
-    <a href="#panel">Panel</a>
-    <a href="#backup">Backup</a>
-    <a href="#start">Start</a>
+    <a href="#how">How it works</a>
+    <a href="#start">Install</a>
     <a href="guide/">Docs</a>
     <a href="es/" hreflang="es" data-lang="es">Español</a>
     <a href="https://github.com/icalvete/augmented-brain">GitHub</a>
@@ -173,85 +139,78 @@
 </header>
 
 <main id="main">
-  <div class="wrap hero">
+  <div class="wrap hero" id="top">
     <div>
-      <p class="kicker">For Claude Code · Linux, macOS and Windows · free and open source · beta</p>
-      <h1>Your brain, augmented with AI.</h1>
-      <p class="lead">Your AI assistant remembers where you left off, works with a method, and asks before touching anything risky. All in plain text files of yours, backed up to your own git, and a panel in your browser shows it all at a glance.</p>
+      <p class="kicker">For Claude Code · Linux, macOS and Windows · free and open source</p>
+      <h1>Claude Code that remembers your work.</h1>
+      <p class="lead">augmented brain keeps your tasks, decisions and rules as plain files on your computer. Every session starts where the last one stopped, works with a method, and asks you before anything risky.</p>
       <div class="actions">
-        <a class="btn" href="#start">Start in two steps</a>
-        <a class="btn ghost" href="#demo">See an example</a>
-        <a class="btn ghost" href="guide/">Documentation</a>
-        <a class="btn heart" href="https://github.com/sponsors/icalvete">♥ Sponsor</a>
+        <a class="btn" href="#start">Install</a>
+        <a class="link" href="#how">See how it works</a>
       </div>
+      <p class="reqs">Needs a paid Claude account (Pro or above).</p>
     </div>
-    <div class="card"><img src="img/logo.svg" alt="augmented brain logo: a brain with the name across it" width="592" height="487"></div>
-  </div>
 
-  <section id="demo">
-    <div class="wrap">
-      <div class="head">
-        <h2>One week with it</h2>
-        <p>Monday to Friday, in about a minute. Pick a day to jump to it.</p>
-      </div>
-      <div class="demo" data-demo>
-        <div class="demo-bar"><span class="demo-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="demo-title">Claude · ~/augmented-brain/work</span><button class="demo-play" type="button" aria-pressed="false" data-pause="Pause" data-play="Play" hidden>Pause</button></div>
-        <div class="demo-days" role="group" aria-label="Jump to a day" hidden><button type="button" data-goto="mon" hidden>Monday</button><button type="button" data-goto="tue" hidden>Tuesday</button><button type="button" data-goto="wed" hidden>Wednesday</button><button type="button" data-goto="fri" hidden>Friday</button></div>
-        <div class="demo-body">
-          <p class="demo-day" data-step data-day="mon">Monday, 9:00 · new session</p>
-          <div class="bubble you" data-step>New task: move the blog to the new server.</div>
-          <div class="bubble ai" data-step>Opened <b>Move the blog</b>, in definition. When is it done? I'd say: the blog answers from the new server, at the same addresses. Agreed?</div>
-          <div class="bubble you" data-step>Agreed. On Tuesday, check that the old server's last backup finished.</div>
-          <div class="bubble ai" data-step>Done: the task has a date to check on Tuesday. It comes up when you open Claude that day.</div>
-          <p class="demo-note" data-step>… you work on it all day …</p>
-          <div class="bubble you" data-step>Park it, we carry on tomorrow.</div>
-          <div class="bubble ai" data-step>Parked. Done: the analysis. Next: write the plan.</div>
-          <p class="demo-note" data-step>✓ Saved in <code>tasks/task-move-the-blog.md</code></p>
-          <p class="demo-day" data-step data-day="tue">Tuesday, 9:00 · another session</p>
-          <div class="bubble you" data-step>Shall we carry on?</div>
-          <div class="bubble ai" data-step>First, due today: check that the old server's last backup finished (<b>Move the blog</b>). Then the task itself: it's parked, and next is writing the plan.</div>
-          <div class="bubble you" data-step>The backup finished. Go for the plan.</div>
-          <div class="bubble ai" data-step>Noted in its journal, and the date marked as done. The plan: copy the blog, try it on the new server, switch the address. Shall I start?</div>
-          <p class="demo-day" data-step data-day="wed">Wednesday, 11:00</p>
-          <div class="bubble you" data-step>Idea for later: a dark theme for the blog.</div>
-          <div class="bubble ai" data-step>Captured in the inbox, without opening a task. It comes up in the weekly review.</div>
-          <div class="bubble you" data-step>The copy works. Push it.</div>
-          <div class="demo-guard" data-step>🛡 <b>The guard stops it.</b> <code>git push</code> is for you: this repository is not on the list where Claude may push.</div>
-          <div class="bubble ai" data-step>Then it's yours. The change is ready and checked: three files. Run <code>git commit</code> and <code>git push</code> when you like.</div>
-          <p class="demo-day" data-step data-day="fri">Friday, 16:00 · new session</p>
-          <div class="bubble you" data-step>Anything pending?</div>
-          <div class="bubble ai" data-step><b>Move the blog</b> is in execution. Next: switch the address. And the weekly review is due: one idea in the inbox, no task stalled. About ten minutes. Shall we?</div>
-          <div class="bubble you" data-step>Go.</div>
-          <div class="bubble ai" data-step>One at a time. “A dark theme for the blog”: a task, a note for an area, or drop it?</div>
-          <div class="bubble you" data-step>A task, for next month.</div>
-          <div class="bubble ai" data-step>Opened <b>Dark theme for the blog</b>. The inbox is empty and the review is saved. Have a good weekend.</div>
-          <p class="demo-note" data-step>✓ Saved in <code>reviews/review-2026-11-13.md</code></p>
+    <div class="demo" data-demo role="region" aria-label="Example: three days with augmented brain, in the Claude app">
+      <div class="app">
+        <div class="app-side" aria-hidden="true">
+          <span class="app-new">+ New</span>
+          <p class="app-label">Recent</p>
+          <ul>
+            <li data-for="wed" class="now">Point the blog at the new server</li>
+            <li data-for="tue">Morning</li>
+            <li data-for="mon">New task: move the blog</li>
+            <li>Holiday photos</li>
+          </ul>
         </div>
+        <div class="app-main">
+          <div class="app-head"><span class="app-folder">work</span><span class="app-title" data-title>Point the blog at the new server</span></div>
+          <div class="app-chat">
+            <div class="scene" data-scene="mon" data-title="New task: move the blog">
+              <p class="app-when">Monday 9:00 · new session</p>
+              <div class="say" data-step>New task: move the blog to the new server. Remind me tomorrow to check the old server's backup.</div>
+              <p class="tool" data-step data-key="m1"><b>augmented-brain</b> task_new ✓</p>
+              <div class="reply" data-step>Opened <b>Move the blog</b>, with a check for tomorrow. I'd call it done when the blog answers from the new server, at the same addresses. Agreed?</div>
+              <div class="say" data-step>Agreed. Park it, we carry on tomorrow.</div>
+              <p class="tool" data-step data-key="m2"><b>augmented-brain</b> task_park ✓</p>
+              <div class="reply" data-step>Parked. Next step: copy the blog to the new server.</div>
+            </div>
+            <div class="scene" data-scene="tue" data-title="Morning">
+              <p class="app-when">Tuesday 9:00 · new session</p>
+              <p class="tool loaded" data-step>Notes loaded · 3 tasks · 1 check for today</p>
+              <div class="say" data-step>Morning.</div>
+              <div class="reply" data-step>Morning. Due today: check that the old server's last backup finished (<b>Move the blog</b>). Then the task itself: next is copying the blog. Shall I look at the backup?</div>
+              <div class="say" data-step>Yes, go.</div>
+              <p class="tool" data-step data-key="t1"><b>augmented-brain</b> task_journal ✓</p>
+              <div class="reply" data-step>It finished last night: noted in the task, and the check is done. Now copying the blog.</div>
+            </div>
+            <div class="scene" data-scene="wed" data-title="Point the blog at the new server">
+              <p class="app-when">Wednesday 11:00</p>
+              <div class="say" data-step>The copy works. Point the blog's address at the new server.</div>
+              <div class="reply" data-step>That changes your DNS in production. Here goes:</div>
+              <div class="perm" data-step data-press>
+                <p class="perm-head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>The guard asks you first</p>
+                <code>aws --profile prod route53 change-resource-record-sets …</code>
+                <p>prod is a production profile: yours to approve.</p>
+                <div class="perm-btns"><span>Deny</span><span class="yes">Allow</span></div>
+              </div>
+              <p class="tool" data-step data-key="w1"><b>augmented-brain</b> task_journal ✓</p>
+              <div class="reply" data-step>Done: the blog answers from the new server. Written in the task's journal.</div>
+            </div>
+          </div>
+          <div class="app-input" aria-hidden="true"><span>Write to Claude…</span><i>↑</i></div>
+        </div>
+      </div>
+      <pre class="note-file" aria-label="The task's file, as the chat changes it"><span class="fname">tasks/task-move-the-blog.md</span><span class="fl gone" data-off="m1">(not there yet)</span><span class="fl fm" data-on="m1">title: Move the blog</span><span class="fl fm gone" data-on="m1" data-off="m2">status: definition · next: agree when it is done</span><span class="fl fm gone" data-on="m2" data-off="t1">status: parked · next: copy the blog</span><span class="fl fm" data-on="t1">status: execution · next: copy the blog</span><span class="fl" data-on="m1">## Journal</span><span class="fl" data-on="m1">- Mon — Opened. Done: same addresses, new server.</span><span class="fl" data-on="m2">- Mon — Parked. Next: copy the blog.</span><span class="fl" data-on="t1">- Tue — Old server's backup checked: it finished.</span><span class="fl" data-on="w1">- Wed — The address points at the new server.</span></pre>
+      <div class="demo-ctl" role="group" aria-label="Demo controls" hidden>
+        <button type="button" data-goto="mon">Monday</button>
+        <button type="button" data-goto="tue">Tuesday</button>
+        <button type="button" data-goto="wed">Wednesday</button>
+        <button type="button" class="play" data-pause="Pause" data-play="Play" data-again="Watch again">Pause</button>
       </div>
       <p class="demo-caption">A recreated example, with made-up tasks. With you, the tasks are yours.</p>
     </div>
-  </section>
-
-  <section id="what">
-    <div class="wrap">
-      <div class="head">
-        <h2>What it does, day to day</h2>
-        <p>You talk to it as usual. This is what changes.</p>
-      </div>
-      <div class="uses">
-        <div class="use"><p class="say">“Where were we?”</p><p>It lists your live tasks, each with its next step and who is holding it up.</p></div>
-        <div class="use"><p class="say">“Park it, we carry on tomorrow.”</p><p>It writes down where you stopped and what comes next. Tomorrow, in a new session, it starts there.</p></div>
-        <div class="use"><p class="say">“Note: renew the certificate in November.”</p><p>It goes to the inbox, without opening a task. You sort it out in the weekly review.</p></div>
-        <div class="use"><p class="say">“Remind me on Thursday to call the insurance.”</p><p>On Thursday, as soon as you open Claude, it reminds you. The same with a date on a task: “check in November that the certificate was renewed”.</p></div>
-        <div class="use"><p class="say">“Why did we pick Postgres?”</p><p>It looks it up in your notes and gives you the decision, with its date and its reason.</p></div>
-        <div class="use"><p class="say">“Save that as a lesson.”</p><p>What you learned gets its own note. Next time the topic comes up, it already knows.</p></div>
-        <div class="use"><p class="say">“Delete the old production bucket.”</p><p>Before running it, it asks you. Production is yours to approve.</p></div>
-        <div class="use"><p class="say">You open Claude in <code>~/augmented-brain/personal</code></p><p>It only sees your personal notes. Work stays in its own drawer.</p></div>
-        <div class="use"><p class="say">“Tell Marcos we moved it to Monday.”</p><p>It knows Marcos is your manager, because you told it on day one, and drafts the message.</p></div>
-        <div class="use"><p class="say">Your laptop dies</p><p>One command on the new one and it is all back: notes, tasks and rules. More on that below.</p></div>
-      </div>
-    </div>
-  </section>
+  </div>
 
   <section id="story">
     <div class="wrap">
@@ -262,14 +221,14 @@
       <div class="versus">
         <div class="side without">
           <p class="label">Without</p>
-          <div class="bubble you">Let's continue with the contact form.</div>
-          <div class="bubble ai">Sure! What contact form? Can you tell me about the project?</div>
+          <div class="bubble you">Let's carry on with the blog move.</div>
+          <div class="bubble ai">Sure! Which blog? Can you tell me about the project?</div>
           <p class="after">Fifteen minutes explaining it all again.</p>
         </div>
         <div class="side with">
           <p class="label">With augmented brain</p>
-          <div class="bubble you">Let's continue with the contact form.</div>
-          <div class="bubble ai">It's parked. We agreed on name, email and message, sent by email. Next step: the plan. Shall I start?</div>
+          <div class="bubble you">Let's carry on with the blog move.</div>
+          <div class="bubble ai">It's parked. Done when the blog answers from the new server, at the same addresses. Next step: copy it. Shall I start?</div>
           <p class="after">You go straight back to work.</p>
         </div>
       </div>
@@ -279,90 +238,59 @@
   <section id="how">
     <div class="wrap">
       <div class="head">
-        <h2>Three things your assistant was missing</h2>
+        <h2>A memory, a method and a guard</h2>
+        <p>Three things your assistant was missing. You talk to it as usual; this is what changes.</p>
       </div>
-      <div class="three">
-        <div class="thing">
-          <div class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M6 3v18M10 8h5M10 12h5"/></svg>
-          </div>
-          <h3>A notebook</h3>
-          <p>Every task, decision and lesson goes into a plain text file on your machine. Next session, the assistant reads it first.</p>
-          <p class="eg">“Which fields did the form have?” It's in its task, with the date.</p>
+      <div class="pillar">
+        <div>
+          <h3><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M6 3v18M10 8h5M10 12h5"/></svg></span>A memory</h3>
+          <p>Every task, decision and lesson is a Markdown file on your computer. Each session reads them first, so it starts where the last one stopped.</p>
+          <p>Open them with any editor. No account and no cloud: if you stop using augmented brain, your notes stay. <a href="guide/notes.html">Your notes</a>.</p>
         </div>
-        <div class="thing">
-          <div class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7 5M3.5 12l1.5 1.5L7 11M3.5 18l1.5 1.5L7 17"/></svg>
-          </div>
-          <h3>A method</h3>
-          <p>Like a pilot's checklist: every task goes from idea to done in the same six steps. Nothing is left half said.</p>
-          <p class="eg">“Park it” saves where you are and the next step, like a bookmark.</p>
-        </div>
-        <div class="thing">
-          <div class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
-          </div>
-          <h3>A doorman</h3>
-          <p>Some doors stay shut unless you open them: pushing code, running as root, writing a password into a file.</p>
-          <p class="eg">The assistant has to ask you first.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <div class="head">
-        <h2>The life of a task</h2>
-        <p>Six steps, like a recipe. You say “go” between them; inside each one, the assistant just works.</p>
-      </div>
-      <ol class="life">
-        <li><b>Define</b><span>What we want, and how we'll know it worked.</span><em>“A contact form: name, email, message.”</em></li>
-        <li><b>Analyse</b><span>How things really are. Checked, not guessed.</span><em>“The site already has a mailer.”</em></li>
-        <li><b>Plan</b><span>Steps in order, each one reversible.</span><em>“Form, then validation, then email.”</em></li>
-        <li><b>Do</b><span>Work, with a dated journal of what happened.</span><em>“Oct 16 — spam filter added.”</em></li>
-        <li><b>Check</b><span>Prove it works, for real.</span><em>“Sent one. It arrived.”</em></li>
-        <li><b>Close</b><span>Kept forever, never deleted.</span><em>“Done. Lesson: test on mobile first.”</em></li>
-      </ol>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <div class="head">
-        <h2>The doorman at work</h2>
-        <p>Real rules, checked before every command. Even when it's hidden inside another one, or sent over ssh.</p>
-      </div>
-      <div class="term" role="img" aria-label="Examples of commands the guard stops or asks about">
-        <div class="line"><code>git push origin main</code><span class="tag stop">stopped</span><span class="why">only you push, unless you allow a repository</span></div>
-        <div class="line"><code>sudo apt remove nginx</code><span class="tag stop">stopped</span><span class="why">never as root, unless you allow it on one machine until a date</span></div>
-        <div class="line"><code>export API_KEY=sk-…</code><span class="tag stop">stopped</span><span class="why">no secrets in commands or files</span></div>
-        <div class="line"><code>aws --profile prod s3 rm …</code><span class="tag ask">asks you</span><span class="why">production is marked as yours to approve</span></div>
-        <div class="line"><code>ssh db01 "systemctl restart …"</code><span class="tag ask">asks you</span><span class="why">a host you said not to touch</span></div>
-        <div class="line"><code>aws --profile dev s3 ls</code><span class="tag go">goes ahead</span><span class="why">everything else runs as usual</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap split">
-      <div>
-        <h2>Your notes are just files</h2>
-        <p>Markdown in a folder. Open them with any editor. No account, no cloud storage, no lock-in. If you stop using augmented brain tomorrow, your notes stay.</p>
-        <p>The assistant reads the header. You write the rest, in any language.</p>
-      </div>
-      <pre class="file" aria-label="Example of a task file"><span class="fname">tasks/task-contact-form.md</span><span class="fm">---
-title: Contact form
+        <pre class="file" aria-label="Example of a task file"><span class="fname">tasks/task-move-the-blog.md</span><span class="fm">---
+title: Move the blog
 status: parked
 waiting_on: nobody
-next: Write the plan
+next: Copy the blog to the new server
 ---</span>
 ## Essentials
-Name, email and message, sent by email.
+Done when the blog answers from
+the new server, at the same addresses.
 
 ## Journal
-- 2026-10-15 — Fields agreed.
-- 2026-10-15 — Parked: plan tomorrow.</pre>
+- 2026-11-09 — Opened. Backup check: Tue.
+- 2026-11-09 — Parked. Next: copy it.</pre>
+      </div>
+      <div class="pillar">
+        <div>
+          <h3><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M3.5 6l1.5 1.5L7 5M3.5 12l1.5 1.5L7 11M3.5 18l1.5 1.5L7 17"/></svg></span>A method</h3>
+          <p>Every task goes through the same six phases, like a pilot's checklist. You approve the definition, the plan and the result; inside each phase, the assistant just works and keeps a journal.</p>
+          <p>“Park it” saves where you are and the next step, like a bookmark. <a href="guide/tasks.html">Tasks</a>.</p>
+        </div>
+        <ol class="life">
+          <li><b>Define</b><span>What we want, and how we'll know it worked.</span></li>
+          <li><b>Analyse</b><span>How things really are. Checked, not guessed.</span></li>
+          <li><b>Plan</b><span>Steps in order, each one reversible.</span></li>
+          <li><b>Do</b><span>Work, with a dated journal.</span></li>
+          <li><b>Check</b><span>Prove it works, for real.</span></li>
+          <li><b>Close</b><span>Kept, never deleted.</span></li>
+        </ol>
+      </div>
+      <div class="pillar">
+        <div>
+          <h3><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>A guard</h3>
+          <p>Before every command Claude runs, the guard checks your rules. A few things stop, a few ask you, and everything else runs as usual. Even when the command hides inside another one, or goes over ssh.</p>
+          <p>You decide what is production and what must not be touched. <a href="guide/guard.html">The guard</a>.</p>
+        </div>
+        <div class="term" role="img" aria-label="Examples of commands the guard stops or asks about">
+          <div class="line"><code>git commit -m "…" &amp;&amp; git push</code><span class="tag stop">stopped</span><span class="why">commits and pushes are yours, unless you allow a repository</span></div>
+          <div class="line"><code>sudo apt remove nginx</code><span class="tag stop">stopped</span><span class="why">never as root, unless you allow it on one machine until a date</span></div>
+          <div class="line"><code>export API_KEY=sk-…</code><span class="tag stop">stopped</span><span class="why">no secrets in commands or files</span></div>
+          <div class="line"><code>aws --profile prod s3 rm …</code><span class="tag ask">asks you</span><span class="why">production is yours to approve</span></div>
+          <div class="line"><code>ssh db01 "systemctl restart …"</code><span class="tag ask">asks you</span><span class="why">a host you said not to touch</span></div>
+          <div class="line"><code>aws --profile dev s3 ls</code><span class="tag go">goes ahead</span><span class="why">everything else runs as usual</span></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -370,100 +298,52 @@ Name, email and message, sent by email.
     <div class="wrap">
       <div class="head">
         <h2>Everything at a glance</h2>
-        <p>Your notes are files, but you don't have to open them one by one. The panel is a page that opens in your browser. At a glance you see what is due this week, which tasks are waiting on you and where each one stands, across all your spaces at once. You can search, filter and change a note without asking Claude. Open it with <code>/brain:panel</code> in Claude, or <code>augmented-brain panel</code>.</p>
+        <p>The panel is a page in your browser: what is due this week and what waits on you, in every space at once. Search, filter and change a note without asking Claude. Open it with <code>/brain:panel</code> in Claude.</p>
       </div>
       <figure class="shot">
-        <img src="img/panel-today.en.webp" alt="The panel's Today page: reminders due this week, the tasks waiting on you with their next step, and the inbox" width="1040" height="780" loading="lazy">
+        <picture>
+          <source media="(max-width: 600px)" srcset="img/panel-today-narrow.en.webp" width="680" height="607">
+          <img src="img/panel-today.en.webp" alt="The panel's Today page: reminders due this week and the tasks waiting on you, with their next step" width="1040" height="780" loading="lazy">
+        </picture>
       </figure>
-      <div class="three">
-        <div class="thing"><h3>Today</h3><p>What is due this week, the tasks waiting on you and their next step, in every space at once.</p></div>
-        <div class="thing"><h3>See and change</h3><p>Tasks by area, reminders, the inbox, the weekly review, people, your repositories, the guard's lists. Edit a note without asking Claude.</p></div>
-        <div class="thing"><h3>Only yours</h3><p>It runs on your computer, only while you use it. After 30 minutes without use it stops by itself. Want it on your phone? <a href="guide/panel-remote.html">Through your own private network</a>, and only for you.</p></div>
-      </div>
-      <p class="shot-more"><a href="guide/panel.html">Every page of the panel</a></p>
-    </div>
-  </section>
-
-  <section id="backup">
-    <div class="wrap">
-      <div class="head">
-        <h2>Lose the laptop, keep the brain</h2>
-        <p>Each drawer can back up to a private git repository of yours. This is what you get:</p>
-      </div>
-      <div class="backup">
-        <ul class="pros">
-          <li><b>A new machine in minutes.</b> <code>augmented-brain restore</code> brings the whole drawer back: notes, tasks, rules, your profile and its settings. Only the repositories where Claude may commit stay out: it names them, for you to add again. Open Claude and carry on.</li>
-          <li><b>Several machines, one brain.</b> Laptop and desktop? Each backup first fetches what the other machine did, and merges it.</li>
-          <li><b>Full history.</b> Every backup is a git commit, with the machine and the time. See what changed, and go back to any day.</li>
-          <li><b>Your place, not ours.</b> GitHub, GitLab or your own server: you pick the repository. augmented brain has no cloud.</li>
-          <li><b>One repository per drawer.</b> Work can live in your company's git, and personal in yours.</li>
-          <li><b>No secrets go up.</b> Claude's tools refuse to write a password or a token into a note. If one gets in anyway, the backup stops and tells you where.</li>
-          <li><b>Nothing gets overwritten.</b> If two machines changed the same note, it stops without touching anything and tells you how to fix it. If each machine only added journal entries, they are joined by themselves.</li>
-        </ul>
-        <div class="howto">
-          <p class="label">Set it up once</p>
-          <div class="cmd"><code>augmented-brain backup setup \
-  git@github.com:you/my-brain.git</code></div>
-          <div class="cmd"><code>augmented-brain backup</code></div>
-          <p class="note">Easiest: tell Claude “set up the backup” and it creates a private repository in your GitHub. Rather somewhere else? The first command links the drawer to your repository, once. From then on the backup runs by itself every time a Claude session ends; the second saves by hand, if you like (<code>--all</code> for every drawer).</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap">
-      <div class="head"><h2>Also in the box</h2></div>
-      <div class="grid">
-        <div class="item"><h3>Two drawers</h3><p>Work and personal, each with its own notes, rules and backup. The folder you open picks the drawer.</p></div>
-        <div class="item"><h3>Lessons that stay</h3><p>“Save that as a lesson” and what you learned outlives the conversation. Sorted by area.</p></div>
-        <div class="item"><h3>Plain words</h3><p>“New task…”, “what's pending?”, “park it”, “note this for later”. No commands to learn.</p></div>
-        <div class="item"><h3>Areas</h3><p>Ongoing responsibilities, like “the website” or “the servers”, group their tasks and what you learned.</p></div>
-        <div class="item"><h3>Your tools</h3><p>Calendar, mail, documents and Jira can join in. <a href="guide/connect-services.html">How to connect them</a>.</p></div>
-        <div class="item"><h3>From anywhere</h3><p>Reach Claude on your computer from your phone or another computer, also after a reboot. Ask it for a session per task (Linux for now). <a href="guide/remote.html">Remote access</a>.</p></div>
-        <div class="item"><h3>Go back</h3><p>Your configuration keeps its last 10 versions. See what changed, and go back to any of them. <a href="guide/config-history.html">Configuration versions</a>.</p></div>
-        <div class="item"><h3>Not tied to one AI</h3><p>The method runs as an MCP server, the open standard for AI tools. Claude Code first; others can follow.</p></div>
-      </div>
+      <p><a href="guide/panel.html">Every page of the panel</a></p>
     </div>
   </section>
 
   <section id="start">
     <div class="wrap">
       <div class="head">
-        <h2>Start in two steps</h2>
-        <p>A few minutes, on Linux, macOS or Windows, with a paid Claude account (Pro or above). Never opened a terminal? Follow <a href="guide/getting-started.html">getting started</a>. What changes on each system: <a href="guide/install.html">Installing</a>.</p>
+        <h2>Install it</h2>
+        <p>Linux, macOS 13 or later, or Windows 10 or 11 · a paid Claude account (Pro or above) · a few minutes. Never opened a terminal? <a href="guide/getting-started.html">Getting started</a> goes step by step. What changes on each system: <a href="guide/install.html">Installing</a>.</p>
       </div>
       <ol class="steps">
-        <li><span>Install it with one command. It asks the language and offers to install what is missing: git, Claude Code and the Claude desktop app</span><span>On Linux or a Mac, in the terminal:</span><div class="cmd"><code id="c1">curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code><button class="copy" data-copy="c1">Copy</button></div><span>On Windows, in PowerShell:</span><div class="cmd"><code id="c1w">irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex</code><button class="copy" data-copy="c1w">Copy</button></div></li>
-        <li><span>Answer Claude: the first time it asks six quick questions, and says what each one is for</span></li>
+        <li><b>Open the terminal.</b><span>On a Mac, press Cmd + Space and type Terminal. On Ubuntu, Ctrl + Alt + T. On Windows, open PowerShell.</span></li>
+        <li><b>Paste the install command.</b><span>Then press Enter.</span>
+          <div class="install">
+            <div class="tabs" role="tablist" aria-label="Your system" hidden><button type="button" role="tab" data-os="unix" aria-selected="true">macOS and Linux</button><button type="button" role="tab" data-os="win" aria-selected="false">Windows</button></div>
+            <div class="os" data-os="unix" role="tabpanel"><span>On macOS or Linux, in the terminal:</span><div class="cmd"><code id="c1">curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/install.sh | sh</code><button class="copy" data-copy="c1">Copy</button></div></div>
+            <div class="os" data-os="win" role="tabpanel"><span>On Windows, in PowerShell:</span><div class="cmd"><code id="c1w">irm https://github.com/icalvete/augmented-brain/releases/latest/download/install.ps1 | iex</code><button class="copy" data-copy="c1w">Copy</button></div></div>
+          </div>
+        </li>
+        <li><b>Answer the installer.</b><span>The language, whatever is missing (git, Claude Code, the Claude app) and whether to open Claude now. Enter accepts what it suggests.</span></li>
+        <li><b>Sign in to Claude.</b><span>In the Claude app, with your paid account: open the Code tab, click <b>+ New</b> and say hi.</span></li>
+        <li><b>Answer the interview.</b><span>The first time, Claude asks six quick questions, one at a time, and offers to set up the backup. Say yes.</span></li>
       </ol>
-      <p class="note">It creates two spaces, <code>work</code> and <code>personal</code>, in <code>~/augmented-brain</code>, and asks whether to open Claude right away. From then on, open the Claude app and click <b>+ New</b>: without choosing a folder you are in your personal space; for work, pick <code>~/augmented-brain/work</code> with <b>Choose…</b>. Or in a terminal: <code>cd ~/augmented-brain/work &amp;&amp; claude</code> (on Windows, <code>cd ~\augmented-brain\work; claude</code>). If something is off, <code>augmented-brain doctor</code> tells you what is missing.</p>
-      <details class="more">
-        <summary>All the commands</summary>
-        <div class="table-wrap">
-          <table>
-            <tbody>
-              <tr><td><code>augmented-brain init</code></td><td>Sets everything up: the work and personal spaces and the plugin (the installer runs it; <code>--custom</code> to choose yourself)</td></tr>
-              <tr><td><code>augmented-brain space</code></td><td>Say which space this folder belongs to</td></tr>
-              <tr><td><code>augmented-brain space add</code></td><td>Add another space: personal, a client…</td></tr>
-              <tr><td><code>augmented-brain doctor</code></td><td>Say what is missing, and how to fix it</td></tr>
-              <tr><td><code>augmented-brain import &lt;folder&gt;</code></td><td>Bring in a memory Claude Code already wrote. It only shows what it would do; <code>--apply</code> writes it</td></tr>
-              <tr><td><code>augmented-brain check</code></td><td>Check this folder's notes and rebuild their index</td></tr>
-              <tr><td><code>augmented-brain backup setup &lt;url&gt;</code></td><td>Back up this space to a private git repository</td></tr>
-              <tr><td><code>augmented-brain backup</code></td><td>Save the latest changes (<code>--all</code> for every space)</td></tr>
-              <tr><td><code>augmented-brain restore &lt;url&gt;</code></td><td>Bring a space back on a new machine</td></tr>
-              <tr><td><code>augmented-brain panel</code></td><td>Open the panel in your browser: today at a glance, and every section of your spaces to see and edit (<code>panel stop</code> to stop it)</td></tr>
-              <tr><td><code>augmented-brain panel remote</code></td><td>Open the panel from your phone or another computer, through your own Tailscale network</td></tr>
-              <tr><td><code>augmented-brain remote install</code></td><td>Keep Claude on this computer reachable from anywhere, also after a reboot</td></tr>
-              <tr><td><code>augmented-brain session start &lt;task&gt;</code></td><td>Open a remote session of its own for a task, named after it (Linux; <code>session list</code>, <code>session stop</code>)</td></tr>
-              <tr><td><code>augmented-brain config history</code></td><td>The last versions of your configuration, and what each one changed (<code>config restore &lt;n&gt;</code> goes back)</td></tr>
-              <tr><td><code>augmented-brain update</code></td><td>Update augmented brain and its Claude Code plugin (Claude tells you when there is a new version)</td></tr>
-              <tr><td><code>augmented-brain uninstall</code></td><td>Remove the program and the plugin; your notes stay (<code>--config</code> removes the configuration too, <code>--all</code> starts from scratch)</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="note">Every option of every command: <a href="guide/commands.html">Commands</a>.</p>
-      </details>
+      <p class="note">If something is off, <code>augmented-brain doctor</code> tells you what is missing and how to fix it.</p>
+    </div>
+  </section>
+
+  <section id="more">
+    <div class="wrap">
+      <div class="head"><h2>And also</h2></div>
+      <ul class="also">
+        <li><b>A backup of yours.</b> Each space can go to a private git repository you choose, by itself after every session. A new computer gets it all back with one command. <a href="guide/backup.html">Backup</a>.</li>
+        <li><b>Work and personal, apart.</b> Each space has its own notes, rules and backup; the folder you open picks it. <a href="guide/spaces.html">Spaces</a>.</li>
+        <li><b>Reminders and an inbox.</b> “Remind me on Thursday…” comes up on Thursday. A loose idea goes to the inbox, without opening a task. <a href="guide/phrases.html">What to say</a>.</li>
+        <li><b>A weekly review.</b> Empty the inbox and look at stalled tasks, one at a time, in about ten minutes. <a href="guide/weekly-review.html">Weekly review</a>.</li>
+        <li><b>Your services.</b> Calendar, mail, documents and Jira can join in. <a href="guide/connect-services.html">Connect services</a>.</li>
+        <li><b>From anywhere.</b> Reach Claude on your computer from your phone or another computer, also after a reboot. <a href="guide/remote.html">Remote access</a>.</li>
+      </ul>
     </div>
   </section>
 
@@ -473,28 +353,15 @@ Name, email and message, sent by email.
       <div class="faq">
         <details><summary>Is it free?</summary><p>augmented brain is: open source, under the MIT license, with no account and no subscription. But it works with Claude Code, which needs a paid Claude account (Pro or above).</p></details>
         <details><summary>Do my notes leave my machine?</summary><p>augmented brain never sends them anywhere: they stay in files on your machine. Your assistant reads them to work, like any other file it opens, so they travel with the conversation. With a backup, they also go to a private git repository you choose.</p></details>
-        <details><summary>Which assistants does it work with?</summary><p>Claude Code, today. The tools for your notes run as an MCP server, which other assistants speak too. But reading your notes at the start of a session and the guard rely on Claude Code's hooks, so no other assistant is supported yet.</p></details>
+        <details><summary>Which assistants does it work with?</summary><p>Claude Code, today: in the Claude desktop app or in a terminal. The tools for your notes run as an MCP server, which other assistants speak too. But reading your notes at the start of a session and the guard rely on Claude Code's hooks, so no other assistant is supported yet.</p></details>
         <details><summary>Does it work on Windows?</summary><p>Yes: Windows 10 and 11, with one PowerShell command. Claude runs its commands in Git Bash, which the installer sets up, so the guard works there too. See <a href="guide/install.html">Installing</a>.</p></details>
-        <details><summary>Can I edit the notes by hand?</summary><p>Yes, they are Markdown files. Afterwards, <code>augmented-brain check</code> checks them and rebuilds the index.</p></details>
-        <details><summary>Does the backup run by itself?</summary><p>Yes. Once it is set up, it runs every time a Claude session ends, in the background. If it fails, Claude tells you at the start of the next session.</p></details>
         <details><summary>What happens when I run out of Claude usage?</summary><p>Your task sessions wait and go on by themselves. On Linux, with remote access installed, augmented brain reads when the limit resets and wakes each session then, with its whole conversation. It tells you when the wait begins and when they are back. See <a href="guide/task-sessions.html">A session per task</a>.</p></details>
-        <details><summary>How can I support it?</summary><p>Sponsor it on <a href="https://github.com/sponsors/icalvete">GitHub Sponsors</a>. It pays for the time to answer issues and add features.</p></details>
-        <details><summary>Is there paid support?</summary><p>Yes, on <a href="https://github.com/sponsors/icalvete">GitHub Sponsors</a>: the Support tier gets you an answer by email within two working days, and the Setup session is one hour on a video call to set it up with you.</p></details>
         <details><summary>What if I stop using it?</summary><p>Your notes stay where they are, as plain files. There is nothing to export.</p></details>
       </div>
-    </div>
-  </section>
-
-  <section id="docs">
-    <div class="wrap">
-      <div class="head"><h2>Documentation</h2><p>Everything about augmented brain, from the first session to every setting. <a href="guide/">Open the documentation</a>.</p></div>
-      <div class="guides">
-        <a class="guide" href="guide/getting-started.html"><h3>Get started</h3><span>What it is, installing it, and your first session, without knowing the terminal.</span></a>
-        <a class="guide" href="guide/tasks.html"><h3>Concepts</h3><span>Spaces, tasks, areas and the rest of your notes, the guard, and how it works inside.</span></a>
-        <a class="guide" href="guide/phrases.html"><h3>Daily use</h3><span>What to say to Claude, the panel and the weekly review. Then make it yours: backup, your services, remote access.</span></a>
-        <a class="guide" href="guide/commands.html"><h3>Reference</h3><span>Every command, MCP tool and setting, and the memory format.</span></a>
-        <a class="guide" href="guide/troubleshooting.html"><h3>Troubleshooting</h3><span>Problems and fixes, and what <code>augmented-brain doctor</code> tells you.</span></a>
-        <a class="guide" href="https://github.com/icalvete/augmented-brain"><h3>Source and issues</h3><span>The code, the changelog, and where to report a problem.</span></a>
+      <div class="close">
+        <a class="btn" href="#start">Install</a>
+        <a class="link" href="guide/">Read the documentation</a>
+        <a class="link sponsor" href="https://github.com/sponsors/icalvete">♥ Sponsor it on GitHub</a>
       </div>
     </div>
   </section>

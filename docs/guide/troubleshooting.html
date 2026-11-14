@@ -131,7 +131,7 @@
   <p>GitHub sometimes fails to hand out a release's files for a while. The installer and <code>augmented-brain update</code> try three times, and also through GitHub's API, which often keeps working when the usual address does not. If all of it fails, they say so and nothing changes: the program you had stays. Try again in a while.</p>
   <p>What <code>augmented-brain update</code> may end with:</p>
   <ul><li><strong>“cannot reach GitHub to see the latest version”</strong>: <code>update</code> asks for the latest version once, before downloading. Try again in a while.</li><li><strong>“the program is still X, not Y”</strong>: the installer ran but the program did not change. Nothing else changed; run <code>augmented-brain update</code> again later.</li><li><strong>“The backup failed, so nothing was updated”</strong>: fix the backup (see <a href="#the-backup-failed">The backup failed</a>) and update again. <code>augmented-brain update --force</code> updates anyway, but then there is no fresh copy of your notes to go back to if the new version goes wrong.</li></ul>
-  <p>See <a href="install.html#updating">Installing</a>.</p>
+  <p>See <a href="update-and-uninstall.html#updating">Updating and uninstalling</a>.</p>
   <h3 id="the-install-stopped-half-way">The install stopped half way</h3>
   <p>Run the install command again (or <code>augmented-brain init</code>): until it finishes, there is no configuration, so it starts over. See <a href="install.html">Installing</a>.</p>
   <h3 id="macos-the-developer-tools-window-did-not-open">macOS: the developer tools window did not open</h3>
@@ -204,7 +204,7 @@
   <h3 id="which-assistants-does-it-work-with">Which assistants does it work with?</h3>
   <p>Claude Code today. The tools are an MCP server, an open standard, so other assistants can follow.</p>
   <h3 id="what-if-i-stop-using-it">What if I stop using it?</h3>
-  <p>Your notes stay where they are, as plain files. There is nothing to export. See <a href="install.html#uninstalling">Installing</a>.</p>
+  <p>Your notes stay where they are, as plain files. There is nothing to export. See <a href="update-and-uninstall.html#uninstalling">Updating and uninstalling</a>.</p>
   <h2 id="still-stuck">Still stuck</h2>
   <p>Tell us in <a href="https://github.com/icalvete/augmented-brain/issues">the project's issues</a>, with what showed up on screen and what <code>augmented-brain doctor</code> says. The panel's Help page fills that in for you.</p>
   <p>What changed in each version is in the <a href="https://github.com/icalvete/augmented-brain/blob/main/CHANGELOG.md">changelog</a>.</p>
