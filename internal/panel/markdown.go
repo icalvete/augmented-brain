@@ -46,7 +46,7 @@ var (
 // markdown renders src as HTML.
 func markdown(src string, link linker) template.HTML {
 	r := mdRenderer{link: link}
-	r.blocks(strings.Split(strings.ReplaceAll(src, "\r\n", "\n"), "\n"))
+	r.blocks(strings.Split(strings.ReplaceAll(src, "\r\n", "\n"), "\n"), 0)
 	return template.HTML(r.out.String())
 }
 
@@ -55,7 +55,14 @@ type mdRenderer struct {
 	link linker
 }
 
-func (r *mdRenderer) blocks(lines []string) {
+// maxQuote is how many quotes one can hold, one inside another. Deeper, a line is
+// text with its ">": each level is a call, and a line of a million ">" in a note would
+// otherwise exhaust the stack and stop the whole panel.
+const maxQuote = 16
+
+// blocks renders lines; depth is how many quotes hold them.
+func (r *mdRenderer) blocks(lines []string, depth int) {
+	quote := func(t string) bool { return depth < maxQuote && strings.HasPrefix(t, ">") }
 	for i := 0; i < len(lines); {
 		l := lines[i]
 		t := strings.TrimSpace(l)
@@ -82,14 +89,14 @@ func (r *mdRenderer) blocks(lines []string) {
 		case reRule.MatchString(t):
 			r.out.WriteString("<hr>\n")
 			i++
-		case strings.HasPrefix(t, ">"):
+		case quote(t):
 			var q []string
-			for i < len(lines) && strings.HasPrefix(strings.TrimSpace(lines[i]), ">") {
+			for i < len(lines) && quote(strings.TrimSpace(lines[i])) {
 				q = append(q, strings.TrimPrefix(strings.TrimPrefix(strings.TrimSpace(lines[i]), ">"), " "))
 				i++
 			}
 			r.out.WriteString("<blockquote>")
-			r.blocks(q)
+			r.blocks(q, depth+1)
 			r.out.WriteString("</blockquote>\n")
 		case reItem.MatchString(l):
 			i = r.list(lines, i)
@@ -98,7 +105,7 @@ func (r *mdRenderer) blocks(lines []string) {
 			for i < len(lines) {
 				t := strings.TrimSpace(lines[i])
 				if t == "" || reHeading.MatchString(t) || reItem.MatchString(lines[i]) ||
-					strings.HasPrefix(t, "```") || strings.HasPrefix(t, "~~~") || strings.HasPrefix(t, ">") ||
+					strings.HasPrefix(t, "```") || strings.HasPrefix(t, "~~~") || quote(t) ||
 					strings.HasPrefix(t, "|") && i+1 < len(lines) && reTableSep.MatchString(lines[i+1]) {
 					break
 				}
