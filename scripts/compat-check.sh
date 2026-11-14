@@ -192,6 +192,10 @@ for v in "$@"; do
   mv "$WORK/home" "$WORK/home-before-$v"
   cp -R "$WORK/written" "$WORK/home"
   out=$(cd "$WORKDIR" && "$OLD" doctor 2>&1) || true
+  # reach is a setting of guard.toml only newer programs know: a release that names
+  # unknown settings (0.26.0 on) says so and to update, which is what it should say.
+  # That warning, about reach alone, and its fix line are expected; nothing else is.
+  out=$(printf '%s\n' "$out" | awk '/guard\.toml has settings this version does not know, and ignores them: reach$/ { skip = 1; next } skip && /^ *→/ { skip = 0; next } { skip = 0; print }')
   if printf '%s' "$out" | grep -qi "unknown settings\|cannot be read\|newer augmented brain"; then
     echo "  FAIL doctor:"; printf '%s\n' "$out" | sed 's/^/    /'; fail=1
   else
