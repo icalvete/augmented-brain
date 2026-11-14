@@ -3,6 +3,7 @@
 #
 #   scripts/privacy-check.sh --staged   # what is about to be committed (used by the pre-commit hook)
 #   scripts/privacy-check.sh --all      # every tracked file (used in CI and before publishing)
+#   scripts/privacy-check.sh --message FILE  # a commit message (used by the commit-msg hook)
 #
 # Three checks:
 #   1. Secrets: high-confidence patterns (cloud keys, tokens, private keys).
@@ -77,7 +78,11 @@ fi
 case "$MODE" in
   --staged) git diff --cached --name-only --diff-filter=ACMR > "$TMP/files"; READ='git show :' ;;
   --all)    git ls-files > "$TMP/files"; READ='cat ' ;;
-  *) echo "usage: $0 [--staged|--all]" >&2; exit 2 ;;
+  # A commit message is as public as the files: the same checks, on its text. Its file
+  # name (.git/COMMIT_EDITMSG) is git's, not the commit's, so only the text is looked at.
+  --message) [ -n "${2:-}" ] || { echo "usage: $0 --message FILE" >&2; exit 2; }
+             printf '%s\n' "$2" > "$TMP/files"; READ='cat ' ;;
+  *) echo "usage: $0 [--staged|--all|--message FILE]" >&2; exit 2 ;;
 esac
 
 while IFS= read -r f; do
@@ -92,7 +97,7 @@ while IFS= read -r f; do
   # only looks at text files (and at every file name).
   # scripts/privacy-hashes is only hex fingerprints: a short entry turns up there by chance.
   if [ -s "$TMP/deny" ] && [ "$f" != "scripts/privacy-hashes" ]; then
-    if printf '%s\n' "$f" | grep -q -i -F -f "$TMP/deny"; then
+    if [ "$MODE" != --message ] && printf '%s\n' "$f" | grep -q -i -F -f "$TMP/deny"; then
       echo "  PERSONAL  $f (file name)"; found=1
     fi
     strip_allowed < "$TMP/blob" > "$TMP/blob.allowed"

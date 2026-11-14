@@ -62,6 +62,9 @@ func TestDownload(t *testing.T) {
 	if err := Download(client, "", "v1.2.0", "install.sh", dst); err != nil || read(dst) != "echo public" {
 		t.Fatalf("public: %v %q", err, read(dst))
 	}
+	if *pub != 1 {
+		t.Errorf("the public address was asked %d times", *pub)
+	}
 	if *api != 0 {
 		t.Errorf("the API was asked %d times", *api)
 	}
