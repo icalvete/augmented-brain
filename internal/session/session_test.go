@@ -156,6 +156,11 @@ func TestFirstSession(t *testing.T) {
 	if text := Context(c, s); !strings.Contains(text, "## First session: get to know the user") || !strings.Contains(text, "the language the user writes in (Spanish if you cannot tell yet)") {
 		t.Errorf("a blank profile must start with the first-session note:\n%s", text)
 	}
+	// To someone who writes code it asks where it may commit, and sends them to the
+	// Guard page: neither the assistant nor safety_save can add a repository.
+	if text := Context(c, s); !strings.Contains(text, "in which of their git repositories you may commit and push") || !strings.Contains(text, "add them on its Guard page") {
+		t.Error("the interview must ask a programmer about their repositories and point to the Guard page")
+	}
 	profile := filepath.Join(c.Dir, "profile.md")
 	data, err := os.ReadFile(profile)
 	if err != nil {
