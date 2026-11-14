@@ -36,19 +36,16 @@ jobs:
       - name: Vet
         run: go vet ./...
       # No -race: on Windows it needs a C compiler the runner does not set up.
-      # -timeout well below the job's 10 minutes, so a test that hangs fails with every
-      # goroutine's stack instead of the job being cancelled with nothing to go on.
       #
-      # internal/hook runs on its own, before the rest. Run among all the packages at
-      # once, Windows sometimes never starts its test binary: go test -x printed the
-      # command, no process of it existed minutes later, and -timeout cannot fire before
-      # the process starts (14-nov-2026, #228). On its own it started in every run tried.
-      - name: Test internal/hook
-        timeout-minutes: 4
-        run: go test -timeout 3m ./internal/hook/
+      # -count=1: no test cache. With it, once a test binary ends, go test stats every
+      # file the tests opened or looked at, to key the cache; internal/hook's tests log
+      # some 900,000 (each guard call resolves the configuration's paths), which on the
+      # Windows runners took minutes, past the job's 10, and looked like a hang with no
+      # process left (14-nov-2026, #228). A CI run starts with an empty cache anyway.
+      # -timeout well below the job's 10 minutes, so a test that does hang fails with
+      # every goroutine's stack instead of the job being cancelled with nothing to go on.
       - name: Test
-        shell: bash
-        run: go test -timeout 3m $(go list ./... | grep -v '/internal/hook$')
+        run: go test -count=1 -timeout 3m ./...
       - name: Build
         run: go build -o augmented-brain.exe ./cmd/augmented-brain
       - name: The program runs
