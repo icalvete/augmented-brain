@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -141,7 +142,12 @@ func watchCode(r watch.Result) int {
 // prints it, so a session still alive is woken as before.
 const watchKeeperEnv = "AB_WATCH_RESULT"
 
-// watchesDir holds, per task and pull request, the keeper's pid, result and log.
+// watchesDir holds, per task and pull request, the keeper's lock, pid, result and log.
+// The keeper holds <base>.lock for as long as it lives: whether it still watches is
+// asked to the lock, which the system lets go when the process ends however it ends,
+// not to its pid, which another process may have taken after a reboot (R-13 of the
+// November 2026 review: a stale pid left the pull request unwatched for --max plus 10
+// minutes). The pid is only said.
 const watchesDir = "watches"
 
 // watchStart starts the keeper and returns a channel closed when it ends. Tests replace it.
@@ -171,6 +177,11 @@ var watchStart = func(args []string, env []string, log string) (int, <-chan stru
 // watchKeep is the keeper: it watches, writes the task, then the result file (first
 // line the exit code, then what to print).
 func watchKeep(c *config.Config, s *config.Space, l string, o *watchOpts, n int, result string, out io.Writer) int {
+	// Held until the process ends. A caller that just started this keeper may be
+	// probing the lock at this moment: a few seconds cover that.
+	if release, err := filelock.LockWithin(strings.TrimSuffix(result, ".result")+".lock", 10*time.Second); err == nil {
+		defer release()
+	}
 	r := watchRun(o, n)
 	line := watchLine(l, r)
 	lines := []string{strconv.Itoa(watchCode(r)), line}
@@ -198,20 +209,37 @@ func watchThroughKeeper(c *config.Config, l string, o *watchOpts, n int, args []
 		return 1
 	}
 	base := filepath.Join(dir, fmt.Sprintf("%s-pr%d", o.task, n))
-	result, pidFile, log := base+".result", base+".pid", base+".log"
+	result, pidFile, log, lock := base+".result", base+".pid", base+".log", base+".lock"
 	var done <-chan struct{}
-	if pid, err := readPid(pidFile); err == nil && processAlive(pid) {
+	// One caller at a time decides whether to start the keeper, and holds on until the
+	// keeper has its lock: two watches asked at once start one keeper.
+	releaseStart, err := filelock.LockWithin(base+".start", time.Minute)
+	if err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	}
+	if watching(lock) {
+		pid, _ := readPid(pidFile)
 		fmt.Fprintln(out, i18n.T(l, "watch.joined", pid))
 	} else {
 		_ = os.Remove(result)
 		pid, d, err := watchStart(args, []string{watchKeeperEnv + "=" + result}, log)
 		if err != nil {
+			releaseStart()
 			fmt.Fprintln(errOut, err)
 			return 1
 		}
 		done = d
 		_ = paths.WriteAtomic(pidFile, []byte(strconv.Itoa(pid)+"\n"), 0o600)
+		for until := time.Now().Add(10 * time.Second); time.Now().Before(until) && !watching(lock); {
+			select {
+			case <-done:
+				until = time.Time{}
+			case <-time.After(20 * time.Millisecond):
+			}
+		}
 	}
+	releaseStart()
 	// The keeper ends by --max; a little more covers its last look and the note.
 	deadline := watchNow().Add(o.max + 10*time.Minute)
 	for {
@@ -233,7 +261,7 @@ func watchThroughKeeper(c *config.Config, l string, o *watchOpts, n int, args []
 				ended = true
 			default:
 			}
-		} else if pid, err := readPid(pidFile); err != nil || !processAlive(pid) {
+		} else if !watching(lock) {
 			ended = true
 		}
 		if ended {
@@ -251,6 +279,17 @@ func watchThroughKeeper(c *config.Config, l string, o *watchOpts, n int, args []
 		}
 		watchSleep(2 * time.Second)
 	}
+}
+
+// watching says whether a keeper holds the lock, so still watches. It never takes the
+// lock for longer than the look.
+func watching(lock string) bool {
+	release, err := filelock.LockWithin(lock, 0)
+	if err != nil {
+		return errors.Is(err, filelock.ErrBusy)
+	}
+	release()
+	return false
 }
 
 func readPid(path string) (int, error) {
