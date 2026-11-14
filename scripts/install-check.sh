@@ -199,6 +199,34 @@ check "and updated with its own updater" test -f "$TMP/claude-updated"
 rm -f "$TMP/claude-updated"
 rerun 2.1.50
 check "a current Claude Code is left alone" sh -c "! test -f '$TMP/claude-updated' && ! grep -q 'la actual es' '$TMP/rerun.log'"
+# Where augmented brain acts: the hands-off install above (AB_YES=1) leaves the whole
+# computer. Someone who already had Claude Code is asked, through a pseudo-terminal as
+# the language is, each in a home of its own with the fake claude already there.
+check "AB_YES=1 leaves it on the whole computer" sh -c "! grep -qs '^reach' '$HOME/.config/augmented-brain/guard.toml'"
+reach_home() { # reach_home <name>: a new home, with nothing set up
+  mkdir -p "$TMP/reach-$1"
+  echo "HOME=$TMP/reach-$1 XDG_CONFIG_HOME=$TMP/reach-$1/.config"
+}
+reach_guard() { echo "$TMP/reach-$1/.config/augmented-brain/guard.toml"; }
+echo 2.1.50 >"$TMP/stable"
+# shellcheck disable=SC2046 # reach_home gives two words on purpose
+env $(reach_home env) AB_YES=1 AB_REACH=spaces AB_LANGUAGE=es AB_NO_DESKTOP=1 \
+  AB_RELEASE_URL="file://$TMP/release" AB_CLAUDE_STABLE_URL="file://$TMP/stable" PATH="$TMP/fakeclaude:$PATH" \
+  sh "$ROOT/install.sh" </dev/null >"$TMP/reach-env.log" 2>&1 || bad "install.sh with AB_REACH exited with an error"
+check "AB_REACH=spaces keeps it to the spaces" grep -q '^reach = "spaces"' "$(reach_guard env)"
+if script --version 2>/dev/null | grep -q util-linux; then
+  reach_run() { # reach_run <name> <answer>: the installer in a terminal, answering where
+    # shellcheck disable=SC2046
+    printf '%s\n' "$2" | env $(reach_home "$1") AB_YES= AB_REACH= AB_LANGUAGE=es AB_NO_DESKTOP=1 \
+      AB_RELEASE_URL="file://$TMP/release" AB_CLAUDE_STABLE_URL="file://$TMP/stable" PATH="$TMP/fakeclaude:$PATH" \
+      script -qec "sh '$ROOT/install.sh'" /dev/null >"$TMP/reach-$1.log" 2>&1 || true
+  }
+  reach_run two 2
+  check "with Claude Code already there, it asks" grep -q 'Ya usas Claude Code' "$TMP/reach-two.log"
+  check "2 keeps it to the spaces" grep -q '^reach = "spaces"' "$(reach_guard two)"
+  reach_run enter ""
+  check "Enter leaves the whole computer" sh -c "test -f '$TMP/reach-enter/.config/augmented-brain/config.toml' && ! grep -qs '^reach' '$(reach_guard enter)'"
+fi
 if [ "${AB_CHECK_DESKTOP:-}" = 1 ]; then
   check "desktop app installed" sh -c 'command -v claude-desktop || test -d /Applications/Claude.app || test -d "$HOME/Applications/Claude.app"'
   if [ "$(uname -s)" = Darwin ]; then

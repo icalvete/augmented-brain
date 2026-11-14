@@ -75,7 +75,11 @@ It asks a few questions. To accept what it suggests, just press Enter.
    Code and the Claude desktop app. It tells you what each one is for before installing it.
    If you already had Claude Code but it is behind, it offers to update it. If Claude Code
    is missing, it also asks whether you have a paid plan; a no does not stop it.
-3. **Open the Claude app now?** Say yes.
+3. **Where augmented brain acts**, only if you already had Claude Code: on the whole
+   computer, or only in its spaces, so your other projects stay as they were. Enter
+   keeps the whole computer; [Outside every space](spaces.md#outside-every-space) tells
+   the difference, and the panel's Guard page changes it later.
+4. **Open the Claude app now?** Say yes.
 
 If it asks for your password, type it even though you see nothing: the terminal does not
 show it, not even as asterisks. Press Enter when done.

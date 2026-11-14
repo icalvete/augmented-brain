@@ -120,9 +120,20 @@ try {
     Set-Content -Encoding ascii $stable '2.1.50'
     $cur = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
     Check "a current Claude Code is left alone" { -not (Test-Path $marker) -and -not ($cur -match 'la actual es') }
+    # Where augmented brain acts: AB_YES=1 above left the whole computer; AB_REACH keeps
+    # it to the spaces, in a configuration folder of its own (with nobody to ask, CI
+    # cannot answer the question itself).
+    $guard = Join-Path $env:APPDATA 'augmented-brain\guard.toml'
+    Check "AB_YES=1 leaves it on the whole computer" { -not ((Test-Path $guard) -and (Select-String -Path $guard -Pattern '^reach' -Quiet)) }
+    $env:AB_CONFIG_DIR = Join-Path $Tmp 'reach-cfg'
+    $env:AB_REACH = 'spaces'
+    $reach = & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'install.ps1') 2>&1 | Out-String
+    $guard = Join-Path $env:AB_CONFIG_DIR 'guard.toml'
+    Check "AB_REACH=spaces keeps it to the spaces" { (Test-Path $guard) -and (Select-String -Path $guard -Pattern '^reach = "spaces"' -Quiet) }
+    if (-not ($reach -match 'augmented brain est. listo')) { $reach -split "`n" | ForEach-Object { "    | $_" } }
   } finally {
     $env:Path = $savedPath
-    Remove-Item Env:\AB_CLAUDE_STABLE_URL -ErrorAction SilentlyContinue
+    Remove-Item Env:\AB_CLAUDE_STABLE_URL, Env:\AB_CONFIG_DIR, Env:\AB_REACH -ErrorAction SilentlyContinue
   }
 
   Write-Host "4. uninstall, and install again"

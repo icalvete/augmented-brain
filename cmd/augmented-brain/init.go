@@ -3,10 +3,12 @@ package main
 import (
 	"bufio"
 	"cmp"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 
@@ -14,6 +16,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/setup"
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 // msg is one of init's messages, unformatted.
@@ -51,13 +54,21 @@ func spaceFlags(name string, errOut io.Writer) (*flag.FlagSet, *setup.Options, *
 	return fs, o, yes
 }
 
-// initFlags are init's flags: the space's, --language, --no-plugin and --custom.
-func initFlags(errOut io.Writer) (fs *flag.FlagSet, o *setup.Options, yes *bool, lang *string, noPlugin, custom *bool) {
+// initOptions are init's own flags, besides the space's.
+type initOptions struct {
+	lang, reach      string
+	noPlugin, custom bool
+}
+
+// initFlags are init's flags: the space's, --language, --reach, --no-plugin and --custom.
+func initFlags(errOut io.Writer) (fs *flag.FlagSet, o *setup.Options, yes *bool, opts *initOptions) {
 	fs, o, yes = spaceFlags("init", errOut)
-	lang = fs.String("language", "", "language: en | es")
-	noPlugin = fs.Bool("no-plugin", false, "do not install the Claude Code plugin")
-	custom = fs.Bool("custom", false, "ask for the language, the space and its folders")
-	return fs, o, yes, lang, noPlugin, custom
+	opts = &initOptions{}
+	fs.StringVar(&opts.lang, "language", "", "language: en | es")
+	fs.StringVar(&opts.reach, "reach", "", "where augmented brain acts: machine | spaces (only the first time)")
+	fs.BoolVar(&opts.noPlugin, "no-plugin", false, "do not install the Claude Code plugin")
+	fs.BoolVar(&opts.custom, "custom", false, "ask for the language, the space and its folders")
+	return fs, o, yes, opts
 }
 
 // root holds every space unless told otherwise: one folder per space, to work in, with
@@ -87,9 +98,13 @@ func defaults(o *setup.Options, lang string) {
 // the system, and it creates two spaces in ~/augmented-brain. --custom asks for the
 // language and one space; --space, --work and --memory make that one space without asking.
 func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
-	fs, o, yes, lang, noPlugin, custom := initFlags(errOut)
+	fs, o, yes, opts := initFlags(errOut)
 	if _, ok := parseArgs(fs, args, 0, errOut); !ok {
 		return 2
+	}
+	lang, noPlugin, custom := &opts.lang, &opts.noPlugin, &opts.custom
+	if code := checkReach(opts.reach, errOut); code != 0 {
+		return code
 	}
 	a := &asker{in: bufio.NewReader(in), out: out, interactive: *custom && !*yes}
 	if *lang == "" {
@@ -102,6 +117,10 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 	oneSpace := *custom || o.Space != "" || o.WorkFolder != "" || o.Memory != ""
 	spaces := initSpaces(a, o, *lang, oneSpace)
 	if err := createSpaces(spaces, *lang, *custom, out); err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	}
+	if err := setReach(opts.reach); err != nil {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
@@ -118,6 +137,59 @@ func cmdInit(args []string, in io.Reader, out, errOut io.Writer) int {
 	}
 	fmt.Fprintf(out, "\n%s\n", nextStep(*lang, spaces[0].WorkFolder))
 	return 0
+}
+
+// checkReach refuses a --reach that is not machine or spaces, and any --reach once
+// this machine has a configuration: where augmented brain acts is chosen once, by
+// whoever installs it; later it changes only on the panel's Guard page, sealed, so
+// an assistant cannot loosen the guard by running init.
+func checkReach(reach string, errOut io.Writer) int {
+	if reach == "" {
+		return 0
+	}
+	if reach != config.ReachMachine && reach != config.ReachSpaces {
+		fmt.Fprintln(errOut, i18n.T(i18n.FromEnv(), "init.reach.value", reach))
+		return 2
+	}
+	dir, err := config.Dir()
+	if err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	}
+	if _, err := os.Stat(filepath.Join(dir, config.FileName)); !errors.Is(err, os.ErrNotExist) {
+		fmt.Fprintln(errOut, i18n.T(i18n.FromEnv(), "init.reach.set"))
+		return 2
+	}
+	return 0
+}
+
+// setReach writes --reach spaces in guard.toml and seals it when nothing was sealed
+// yet, as the first session would; a seal left from earlier stays, and the first
+// session then says the lists changed. machine is the default: nothing to write.
+func setReach(reach string) error {
+	if reach != config.ReachSpaces {
+		return nil
+	}
+	dir, err := config.Dir()
+	if err != nil {
+		return err
+	}
+	g, err := config.LoadGuard(dir)
+	if err != nil {
+		return err
+	}
+	g.Reach = config.ReachSpaces
+	if err := config.SaveGuard(dir, g); err != nil {
+		return err
+	}
+	if seal, err := state.ReadSeal(dir); err != nil || seal != "" {
+		return nil
+	}
+	c, err := config.Load(dir)
+	if err != nil {
+		return err
+	}
+	return state.WriteSeal(dir, c.GuardFingerprint(g))
 }
 
 // initSpaces are the spaces init creates, in the language lang: the one in o, asking
