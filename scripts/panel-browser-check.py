@@ -89,7 +89,10 @@ HOME = os.path.join(TMP, "home")
 os.makedirs(HOME)
 AB = os.path.join(TMP, "augmented-brain" + EXE)
 subprocess.run(["go", "build", "-o", AB, "./cmd/augmented-brain"], cwd=ROOT, check=True)
-CFG = os.path.join(HOME, "cfg")
+# A configuration folder with a long path: the Profile and Health pages show it, and on a
+# phone it must break instead of making the page wider than the screen (no hyphens, which
+# would give the browser a place to break on its own).
+CFG = os.path.join(HOME, "SettingsOfAPersonWhoNamesFoldersInFullAndNeverUsesSpaces", "augmented-brain")
 ENV = dict(os.environ, HOME=HOME, USERPROFILE=HOME, AB_CONFIG_DIR=CFG, AB_LANGUAGE="en", AB_NO_BROWSER="1",
            AB_NO_UPDATE_CHECK="1", CLAUDE_CONFIG_DIR=os.path.join(HOME, ".claude"))
 
@@ -121,7 +124,10 @@ try:
     tools(work, [("task_new", {"title": "Bake bread", "summary": "two loaves for Sunday"}),
                  ("capture", {"text": "buy flour"}),
                  ("knowledge_new", {"type": "lesson", "title": "Let the dough rest", "summary": "an hour at least", "body": "It rises better."}),
-                 ("person_save", {"name": "Lucía", "summary": "runs the bakery"})]
+                 ("person_save", {"name": "Lucía", "summary": "runs the bakery"}),
+                 # A profile with an assistant: Profile then shows how it signs.
+                 ("profile_save", {"name": "María José Fernández-Villaverde", "about": "- bakes on Sundays",
+                                   "assistant_name": "Bartolomé", "assistant_personality": "calm and to the point"})]
           # A long page: the task's journal, for the menu checks below.
           + [("task_journal", {"id": "task-bake-bread", "entry": f"Day {i}: fed the starter, weighed the flour, wrote down how it rose."}) for i in range(60)])
     r = ab("panel", "--no-browser", cwd=work)
