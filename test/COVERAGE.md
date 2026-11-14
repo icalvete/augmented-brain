@@ -106,6 +106,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 |---|---|---|
 | Every page loads, no console error, fits a phone | `scripts/panel-browser-check.py` | CI: Chromium and WebKit |
 | Every edit saves | `internal/panel` (one test per page) | Go |
+| A form that cannot be saved comes back with what was typed and the error next to it, in the panel's language; "Saved" says what, once | `internal/panel` `TestFormErrorNextToField`, `TestFormErrorRootUntil`, `TestFormErrorRepeatedForm`, `TestFormErrorAtTop`, `TestEveryFormHasItsError`, `TestSavedSaysWhat`, `internal/i18n` `TestError`; the browser check | Go, CI |
 | Configuration edits leave a version | `internal/panel` `TestPanelChangesLeaveVersions` | Go |
 | `memory_trust`: with "ask", saving a rule, the profile or the guard's lists asks first (refused where questions are skipped); the Guard page saves it | `internal/hook` `TestPreToolUseMemoryTrust`, `TestMatcherNamesTheMemoryTools`, `internal/config` `TestMemoryTrust`, `internal/panel` `TestGuardPageTrust`, the browser check, the rehearsal. The question itself, in a real session: by hand | Go, CI, VMs |
 | The Guard page: what changed, the box, the warnings | `TestGuardPageShowsWhatChanged`, `TestGuardPageWarnsOnDangerousLists`, the browser check | Go, CI |

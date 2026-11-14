@@ -616,6 +616,10 @@ augmented-brain space
 
 ## Outside every space
 
+augmented brain works in every Claude Code session on this computer, whatever the
+folder: its plugin is installed for your whole user. A folder that is in no work folder
+is outside every space.
+
 The desktop app starts each new session in a scratch folder of its own. That folder is
 in no space. Then the **default space** is used, `personal` unless you change it, and
 Claude tells you in one line, with how to switch to work.
@@ -623,6 +627,25 @@ Claude tells you in one line, with how to switch to work.
 The default space matters for one more thing: its backup carries your profile and the
 shared notes. Set it with `default_space` in the configuration. With a single space, it
 is that one.
+
+What changes outside, next to a session in a space:
+
+| | In a space | Outside every space |
+|---|---|---|
+| Profile, rules, tasks and the rest of the notes | The space's | The default space's, and Claude tells you |
+| What Claude writes in your notes | Goes to the space | Goes to the default space |
+| Tasks changed by another session | Claude hears of them | Those of the default space |
+| Reminder to write in the task's journal | Yes | No |
+| A session cut short, offered to recover | Yes | No |
+| [The guard](https://icalvete.github.io/augmented-brain/guide/guard.html) | All of it | All of it, the same |
+| Backup when the session ends | The space's | The default space's |
+| Warnings about the window's memory and the model | Yes | Yes |
+
+The guard does not look at the folder: its lists hold for the whole computer. So in any
+project, also one you never gave augmented brain, Claude cannot commit or push until you
+[let it in that repository](https://icalvete.github.io/augmented-brain/guide/guard.html#let-claude-commit-in-a-repository).
+
+To bring a folder into a space, add it to the space's `work_folders` (next).
 
 ## Your projects live elsewhere?
 
@@ -1129,6 +1152,13 @@ as text. It catches the mistakes an assistant makes, also hidden inside other co
 A program determined to get around it could. Read the
 [disclaimer](https://github.com/icalvete/augmented-brain/blob/main/DISCLAIMER.md).
 
+## Where it watches
+
+Everywhere. The guard reads every command in every Claude Code session on this computer,
+inside your spaces or not, and its lists hold for the whole computer. A repository that is
+not in them is closed to commits and pushes, in any project. What else changes outside
+your spaces is in [Spaces](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
+
 ## What it stops
 
 - **Commits and pushes.** `git commit`, `git push`, and what publishes like a push:
@@ -1275,7 +1305,9 @@ three things so that the lists stay yours:
   that works once, and run by Claude it prints none, nor does `augmented-brain panel
   remote`: they ask you to run them in a terminal of your own.
 - **It notices a change it did not see.** The guard keeps a seal of its lists: taken
-  when you start a session and when you save in the panel. If the lists differ from the
+  when you start a session and when you save in the panel. When Claude only adds a
+  production profile or a machine to lists you had accepted, the seal follows: adding
+  only makes the guard ask more. If the lists differ from the
   seal, something else changed them, and a commit, push or merge that the lists would
   let through asks first, and the Guard page and `doctor` say so, until you accept them
   in the Guard page or you start a new session. Meanwhile the lists cannot soften the
@@ -1327,7 +1359,9 @@ is production", "never touch `db01` without asking me". Claude saves them with t
 
 Claude can only add to these lists. To take one out, use the panel's **Guard** page, or
 edit `production_aws_profiles` and `untouchable_hosts` yourself
-([Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html)).
+([Configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html)). An addition does not leave the lists waiting for you
+to accept them: if you had accepted them, they stay accepted, and commits and pushes do
+not start asking. If something else had changed them first, they still wait for you.
 
 These lists are in no backup, because they may name your work's machines. After a
 restore on a new machine, the next session offers to ask you for them again.
@@ -1522,6 +1556,9 @@ Each file is described in [Configuration](https://icalvete.github.io/augmented-b
   sending nothing of yours. `AB_NO_UPDATE_CHECK=1` turns that off.
 - **It does not change your Claude Code settings.** The plugin goes in and out with
   Claude Code's own commands, which the installer, `update` and `uninstall` run for you.
+- **It does not stay inside your spaces.** It works in every Claude Code session on this
+  computer. Outside your spaces it uses the default space, and the guard watches the
+  same. See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space).
 - **Mind this: your assistant reads your notes**, like any file it opens. They travel
   with your conversations to its provider. Do not keep there what you would not share.
 
@@ -1905,10 +1942,11 @@ show only those waiting on you, under way, parked, untouched, or waiting on one 
 A task nobody has changed for 14 days is marked "untouched N days". At the end, folded,
 the tasks left for **Someday** and the **Closed** ones.
 
-Open one. Its essentials come first, the other sections folded, and the journal newest
-first. Write in its journal, change its status or next step, tick its steps, park it or
-close it. You can open new tasks too. If a status skips phases, the journal names them.
-When a task waits on a person you have a note of, "waits on" leads to them.
+Open one. Its essentials come first, then its steps and what you can do with it: write in
+its journal, change its status or next step, tick its steps, park it or close it. Below,
+the other sections folded, and the journal newest first. You can open new tasks too. If a
+status skips phases, the journal names them. When a task waits on a person you have a
+note of, "waits on" leads to them.
 
 Closing a task here does what closing it in a session does: if the task has a session of
 its own, that session ends once it finishes its answer, and its worktree goes when it
@@ -2320,65 +2358,17 @@ augmented-brain backup          # this folder's space
 augmented-brain backup --all    # every space
 ```
 
-To turn the automatic backup off, set `AB_NO_AUTO_BACKUP=1` in your environment.
+To turn the automatic backup off, use an environment variable: a setting your system
+hands to every program it starts. Set `AB_NO_AUTO_BACKUP` to `1`. On Linux or macOS, add
+this line to `~/.bashrc` or `~/.zshrc`:
 
-## On a new machine
+```bash
+export AB_NO_AUTO_BACKUP=1
+```
 
-1. Install augmented brain with the usual command. It creates the spaces, empty. If
-   Claude opens at the end, close it without doing the interview: your profile comes in
-   the backup.
-2. If the repository is on GitHub, log in once with `gh auth login`, so git has access.
-3. Bring each space back from its backup:
-   ```bash
-   augmented-brain restore https://github.com/lucia/augmented-brain-work.git
-   ```
-   It replaces the empty space with yours: notes, tasks, rules and the space's settings,
-   readable by you only. If anything fails half way, the empty space stays as it was. If
-   that space already had notes of yours, it leaves it alone.
-
-   The notes go where they were on the old machine, as long as that is inside your home
-   folder. A backup cannot choose a place outside it, or in its hidden or system folders
-   (`~/.config`, `~/Library`, `~/AppData`, any `.git`): your computer runs some of what
-   it finds there, and someone else may have changed the backup. Then the space goes to
-   `~/augmented-brain/<space>`, and `restore` tells you. To choose the place yourself,
-   use `--memory` and `--work`.
-4. Open Claude. It carries on where you left off, and the backup keeps running by itself.
-
-Restore the default space (`personal`) too: your profile, your shared notes and the list
-of your secrets' names come with it.
-
-## Go back to a copy
-
-A note got broken, or deleted by mistake? Open the panel's **Backup** page. Each copy
-shows **What it changed**: the notes it added, changed and removed, with their lines.
-
-To have your notes as they were in one copy, use **Go back to this copy**:
-
-1. A page shows what would change in your notes as they are now, note by note. Notes
-   that no copy holds yet show up too, as removed.
-2. Tick the box and type the space's name.
-3. What you have now is kept first, as a new copy. Then your notes become those of the
-   copy you picked, and that is kept as a copy too. The next backup sends it.
-
-To undo it, go back to the copy made just before. Going back touches the notes of that
-space only, never your configuration (that is [Versions](https://icalvete.github.io/augmented-brain/guide/config-history.html)). It is done
-from this computer's panel only: from another device the page only shows.
-
-## What a restore does not bring
-
-Some things are left out on purpose:
-
-- **The guard's lists**: production AWS profiles and untouchable machines. They may name
-  your work's machines, so they are in no backup. `restore` and `doctor` say so, and the
-  next session offers to ask you for them again. Until then, nothing asks before touching
-  production.
-- **The repositories where Claude may commit and push** (`git_allowed_repos` and
-  `git_ask_repos`). Someone else may have changed the backup, so `restore` names them,
-  and you add them again if you still want to.
-- **Your secrets' values.** Only their names travel. `restore` names the secrets this
-  machine's keychain does not have yet, each with the command to store it, and those it
-  could not check when the keychain does not answer, or on Windows, where it cannot be
-  asked.
+On Windows, run `setx AB_NO_AUTO_BACKUP 1` once. Either way, it counts for Claude
+sessions started after that, from a new terminal window. To turn the automatic backup on
+again, take the line out (on Windows, `setx AB_NO_AUTO_BACKUP ""`).
 
 ## What you get
 
@@ -2403,6 +2393,92 @@ Some things are left out on purpose:
   (`.DS_Store`, `Thumbs.db`) stay out. A file over 50 MB stays out too (GitHub refuses
   them), and Claude tells you which one.
 
+## On a new machine
+
+1. Install augmented brain with the usual command. It creates the spaces, empty. If
+   Claude opens at the end, close it without doing the interview: your profile comes in
+   the backup.
+2. If the repository is on GitHub, log in once with `gh auth login`, so git has access.
+3. Bring each space back from its backup:
+   ```bash
+   augmented-brain restore https://github.com/lucia/augmented-brain-work.git
+   ```
+   Run it once per space, and do not leave out the one that was your default space (the
+   installer calls it `personal`): your profile, your shared notes and the list of your
+   secrets' names come only with it.
+
+   Each `restore` brings the space's notes, tasks, rules and settings, readable by you
+   only. If anything fails half way, everything stays as it was.
+4. Open Claude. It carries on where you left off, and the backup keeps running by itself.
+
+### Where the notes go
+
+The installer already made a space with that name, still empty? Then your notes take its
+place: they go into its notes folder, and its work folder stays. That is the usual case.
+If that space already has notes of yours, `restore` stops and touches nothing.
+
+A space this machine does not have keeps the work folders it had on the old machine.
+Its notes go in the same place inside the first of them. If they were somewhere else,
+they go to `~/augmented-brain/<space>`.
+
+A backup cannot choose a place outside your home folder, or in its hidden or system
+folders (`~/.config`, `~/Library`, `~/AppData`, any `.git`): your computer runs some of
+what it finds there, and someone else may have changed the backup. Such a folder becomes
+`~/augmented-brain/<space>`, and `restore` tells you. To choose the place yourself, use
+`--memory` and `--work`.
+
+### Then, by hand
+
+The backup carries your notes, not this machine's setup. Do these again, if you used them:
+
+- **The guard's lists**, the repositories where Claude may commit, and your secrets: see
+  [What a restore does not bring](https://icalvete.github.io/augmented-brain/guide/backup.html#what-a-restore-does-not-bring).
+- **Which model you expect, and whether Claude asks before it saves a rule**: on the
+  panel's [Guard](https://icalvete.github.io/augmented-brain/guide/guard.html#asking-before-claude-saves-a-rule) page.
+- **Remote access**: `augmented-brain remote install`. See [Remote access](https://icalvete.github.io/augmented-brain/guide/remote.html).
+- **The panel from another device**: set up Tailscale again, then run
+  `augmented-brain panel remote`. See [The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html).
+- **Your code**: the backup holds your notes, not the repositories in your work folders.
+  Clone them again.
+
+## Go back to a copy
+
+A note got broken, or deleted by mistake? Open the panel's **Backup** page. Each copy
+shows **What it changed**: the notes it added, changed and removed, with their lines.
+
+To have your notes as they were in one copy, use **Go back to this copy**:
+
+1. A page shows what would change in your notes as they are now, note by note. Notes
+   that no copy holds yet show up too, as removed.
+2. Tick the box and type the space's name.
+3. What you have now is kept first, as a new copy. Then your notes become those of the
+   copy you picked, and that is kept as a copy too. The next backup sends it.
+
+To undo it, go back to the copy made just before. Going back touches the notes of that
+space only, never your configuration (that is [Versions](https://icalvete.github.io/augmented-brain/guide/config-history.html)). It is done
+from this computer's panel only: from another device the page only shows.
+
+## What a restore does not bring
+
+Some things are left out on purpose:
+
+- **The guard's lists**: production AWS profiles, untouchable machines, repositories
+  Claude must never touch, and root exceptions. They are kept for the whole computer and
+  may name your work's machines, so they are in no backup. `restore` and `doctor` say
+  so, and the next session offers to ask you for them again. Until then, nothing asks
+  before touching production. A space set up by an older version may still keep lists
+  of its own: those travel with it, and a restore uses them.
+- **The repositories where Claude may commit and push** (`git_allowed_repos` and
+  `git_ask_repos`). They travel with the space, but someone else may have changed the
+  backup, so `restore` only names them, and you add them again if you still want to.
+- **Your secrets' values.** Only their names travel. `restore` names the secrets this
+  machine's keychain does not have yet, each with the command to store it, and those it
+  could not check when the keychain does not answer, or on Windows, where it cannot be
+  asked.
+- **This machine's choices**: the model you expect and whether Claude asks before it
+  saves a rule (`session.toml`), and remote access (`remote.toml`). Choose them again on
+  the new machine.
+
 ## When it fails
 
 Claude tells you at the start of the next session, with the reason. Running
@@ -2414,6 +2490,8 @@ and when the last good one is over 3 days old and your notes changed since: the
 automatic backup is not running (say, `AB_NO_AUTO_BACKUP` was left set). `doctor` says
 the same.
 
+## Details
+
 Your git settings for your code do not get in the way: the backup never signs its
 commits, never runs your global hooks (`core.hooksPath`) and never opens a window asking
 for a password. A credential helper that already has it (`gh`'s, your keychain's) still
@@ -2423,9 +2501,9 @@ Backups go to the branch `main`, and `restore` reads them from there, even from 
 repository whose default branch is another (one made with `git init --bare` on a
 server, say).
 
-A backup never hangs: each step stops after 3 minutes without an answer (or a download
-slower than 1 KB a second for a minute), and a backup waits at most 10 minutes for
-another one to finish. Both say why.
+A backup never hangs. Each step may take 3 minutes at most, and a download slower than
+1 KB a second for a minute stops too. A backup waits at most 10 minutes for another one
+to finish. Each time, it says why it stopped.
 
 
 ---
@@ -2848,9 +2926,11 @@ of work.
 
 When the task's repository is bare, `session start` makes the task a worktree of its
 own next to it: `site-new-website` for the task `task-new-website` of `site`, on a new
-branch named after the task, from the default branch of origin as it is now (it fetches
-first). So two tasks of one repository never share a folder, and a session never starts
-on old code. Asked again, it uses the same worktree. Claude keeps the trust of a
+branch named after the task, from the default branch of origin. It fetches first, so
+the branch starts from the code of now; if origin cannot be reached, it starts from what
+this computer last knew, and says so. If an earlier session of the task left its branch,
+the worktree takes that branch as it was. So two tasks of one repository never share a
+folder. Asked again, it uses the same worktree. Claude keeps the trust of a
 worktree under its main repository: trusting either one is enough.
 
 The worktree goes away by itself when nothing would be lost: with `session stop`, when

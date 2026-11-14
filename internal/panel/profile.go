@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
+	"github.com/icalvete/augmented-brain/internal/paths"
 )
 
 func (s *Server) profile(v *view, _ *http.Request) (string, page, error) {
@@ -22,7 +23,7 @@ func (s *Server) profile(v *view, _ *http.Request) (string, page, error) {
 		P         brain.ProfileInput
 		Path      string
 		Signature string
-	}{in, filepath.Join(v.b.ConfigDir, brain.ProfileFile), sig}
+	}{in, paths.Tilde(filepath.Join(v.b.ConfigDir, brain.ProfileFile)), sig}
 	return "profile", p, nil
 }
 

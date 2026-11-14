@@ -48,7 +48,8 @@ type Server struct {
 	pages      map[string]map[string]*template.Template // language → page → template
 	static     http.Handler
 	mux        *http.ServeMux
-	last       atomic.Int64 // when the last authorized request came, in Unix nanoseconds
+	reads      map[string]readRoute // the pages, by path: a form that fails shows its page again
+	last       atomic.Int64         // when the last authorized request came, in Unix nanoseconds
 	stopped    chan struct{}
 	stop       sync.Once
 
@@ -219,6 +220,8 @@ func parsePages() (map[string]map[string]*template.Template, error) {
 					return i18n.T(l, "panel.days.in", d)
 				}
 			},
+			// day says a date (or a date and time) as a person reads it: "13 Nov", "today, 10:04".
+			"day":    func(s string) string { return humanDate(l, s, time.Now()) },
 			"fields": fields,
 			"intro":  intro,
 		}
