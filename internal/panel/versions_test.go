@@ -70,13 +70,13 @@ func TestVersionsPage(t *testing.T) {
 	// Through the network: shown, no button, and a post is refused.
 	const rhost, owner = "box.example.ts.net:8443", "lucia@example.com"
 	s.remote.Store(&Remote{Host: rhost, Owner: owner})
-	w := s.do(t, req{path: s.base() + "/versions?s=work", host: rhost, owner: owner})
+	w := s.do(t, req{path: s.netBase() + "/versions?s=work", host: rhost, owner: owner})
 	if w.Code != http.StatusOK || strings.Contains(w.Body.String(), "Go back to this one") || !strings.Contains(w.Body.String(), "from another device") {
 		t.Errorf("remote page: %d, button or note wrong", w.Code)
 	}
 	before, _ := confighistory.List(cfg)
-	form := url.Values{"s": {"work"}, "id": {before[1].ID}, "confirm": {"yes"}, "csrf": {s.csrf}}
-	if w := s.do(t, req{method: http.MethodPost, path: s.base() + "/versions/restore", host: rhost, owner: owner, origin: "https://" + rhost, form: form}); w.Code != http.StatusBadRequest {
+	form := url.Values{"s": {"work"}, "id": {before[1].ID}, "confirm": {"yes"}, "csrf": {s.netCSRF}}
+	if w := s.do(t, req{method: http.MethodPost, path: s.netBase() + "/versions/restore", host: rhost, owner: owner, origin: "https://" + rhost, form: form}); w.Code != http.StatusBadRequest {
 		t.Errorf("remote restore: %d", w.Code)
 	}
 	if after, _ := confighistory.List(cfg); len(after) != len(before) {

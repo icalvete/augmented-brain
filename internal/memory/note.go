@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strings"
 
@@ -91,6 +92,9 @@ func Parse(path string, data []byte) (*Note, error) {
 		return nil, err
 	}
 	n := &Note{Path: filepath.ToSlash(path), Body: string(body)}
+	if field := unknownField(header); field != "" {
+		return nil, &UnknownFieldError{Field: field}
+	}
 	dec := yaml.NewDecoder(bytes.NewReader(header))
 	dec.KnownFields(true)
 	if err := dec.Decode(&n.Header); err != nil {
@@ -101,6 +105,54 @@ func Parse(path string, data []byte) (*Note, error) {
 		return nil, err
 	}
 	return n, nil
+}
+
+// UnknownFieldError is a header with a field this program does not know. A newer
+// program wrote it (a new field raises the format's version, but a program from before
+// that rule would not know), or it is mistyped: either way the note is left out and
+// nothing writes over it, and the user hears that updating may be the fix.
+type UnknownFieldError struct {
+	Field string // as written, "watch.<key>" inside a watch date
+}
+
+func (e *UnknownFieldError) Error() string {
+	return fmt.Sprintf("header: field %q is not one this version knows: a newer augmented brain wrote it (update it), or it is mistyped", e.Field)
+}
+
+// unknownField is the first field of the header that Header does not have, or "" when
+// there is none, or when the header is not a YAML map (the decoder says what is wrong).
+func unknownField(header []byte) string {
+	var doc yaml.Node
+	if yaml.Unmarshal(header, &doc) != nil || len(doc.Content) == 0 {
+		return ""
+	}
+	return unknownIn(doc.Content[0], reflect.TypeFor[Header](), "")
+}
+
+func unknownIn(m *yaml.Node, t reflect.Type, prefix string) string {
+	if m.Kind != yaml.MappingNode {
+		return ""
+	}
+	fields := map[string]reflect.Type{}
+	for f := range t.Fields() {
+		name, _, _ := strings.Cut(f.Tag.Get("yaml"), ",")
+		fields[name] = f.Type
+	}
+	for i := 0; i+1 < len(m.Content); i += 2 {
+		key, value := m.Content[i].Value, m.Content[i+1]
+		ft, ok := fields[key]
+		if !ok {
+			return prefix + key
+		}
+		if ft.Kind() == reflect.Slice && ft.Elem().Kind() == reflect.Struct && value.Kind == yaml.SequenceNode {
+			for _, item := range value.Content {
+				if f := unknownIn(item, ft.Elem(), key+"."); f != "" {
+					return f
+				}
+			}
+		}
+	}
+	return ""
 }
 
 // Validate says what is wrong with a note's header, before anything is written for it.

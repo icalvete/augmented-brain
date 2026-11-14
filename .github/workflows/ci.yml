@@ -74,8 +74,10 @@ jobs:
     timeout-minutes: 10   # a stuck runner fails here instead of waiting six hours
     strategy:
       fail-fast: false
+      # macOS runners are few: a pull request runs this on Ubuntu and Windows, and main
+      # adds macOS after every merge.
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ github.event_name == 'pull_request' && fromJSON('["ubuntu-latest","windows-latest"]') || fromJSON('["ubuntu-latest","macos-latest","windows-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - run: git config --global core.autocrlf false
@@ -126,6 +128,8 @@ jobs:
   # downloaded by a browser, the Secrets page with the keychain locked, and the panel in
   # Safari itself (not only its engine).
   mac:
+    # macOS runners are few: a pull request leaves this to main, which runs it after every merge.
+    if: github.event_name != 'pull_request'
     timeout-minutes: 10
     runs-on: macos-latest
     steps:
@@ -145,6 +149,8 @@ jobs:
   # Remote access for real on macOS: a LaunchAgent loaded into launchd, with a claude
   # that only pretends (remote-check.py). Windows runs it in windows.yml.
   remote:
+    # macOS runners are few: a pull request leaves this to main, which runs it after every merge.
+    if: github.event_name != 'pull_request'
     timeout-minutes: 10
     runs-on: macos-latest
     steps:

@@ -3,7 +3,8 @@
 #
 #   GH_TOKEN=… scripts/release-checks.sh <owner/repo> <commit>
 #
-# The required checks are the ones main's ruleset names. Each must have passed: a check
+# The required checks are the ones main's ruleset names, plus the macOS ones (release_only
+# below), which only a release waits for. Each must have passed: a check
 # still running, missing, failed or cancelled stops the release. A merge commit of a
 # pull request counts its pull request's last commit too when both hold the same files
 # (main takes only pull requests up to date with it, so they do): a workflow that runs
@@ -20,6 +21,12 @@ required="$(gh api "repos/$repo/rules/branches/$main" \
 if [ -z "$required" ]; then
   echo "The ruleset of $main names no required checks: nothing to gate the release on."; exit 1
 fi
+# A release also needs the checks a pull request does not wait for: macOS is slow, so
+# the ruleset leaves it out and a pull request merges without it, but CI still runs it
+# on main after each merge and no version goes out until it has passed there.
+release_only="test (macos-latest)
+compat (macos-latest)"
+required="$(printf '%s\n%s\n' "$required" "$release_only" | sort -u)"
 
 shas="$commit"
 pr="$(git rev-parse --verify --quiet "$commit^2" || true)"

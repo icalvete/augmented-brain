@@ -97,6 +97,12 @@ el diario, y si se salta fases (de `definition` directa a `execution`, por ejemp
 línea dice cuáles: saltarlas se puede, y se ve. Una tarea cerrada solo se reabre con
 `reopen`.
 
+`status` `closed` cierra la tarea igual que [`task_close`](#task_close): las subtareas
+abiertas impiden cerrarla, el resultado va a la nota, se nombran las fechas para revisar
+abiertas, y la sesión y los worktrees de la tarea se tratan igual. Sin `result` se cierra
+también, con una línea que dice que no se dio resultado, y Claude escribe el resultado en
+el diario.
+
 - `id`: el id de la tarea.
 - `status` (opcional): `definition`, `analysis`, `plan`, `execution`, `validation`,
   `closed`, `parked` o `someday`.
@@ -110,6 +116,8 @@ línea dice cuáles: saltarlas se puede, y se ve. Una tarea cerrada solo se reab
 - `watch_done` (opcional): marca como hecha la fecha para revisar de este día.
 - `reopen` (opcional): solo para volver a abrir una tarea cerrada, con un `status` nuevo:
   por qué, en pocas palabras. Va al diario. Claude te lo pregunta antes.
+- `result` (opcional): con `status` `closed`, lo que logró la tarea, como en
+  `task_close`. Con cualquier otro estado se rechaza.
 - `space` (opcional): otro de tus espacios, del que es la tarea. Claude solo lo usa
   cuando le pides trabajar desde aquí en una tarea de ese espacio. Cerrarla se deja a una
   sesión de ese espacio. Mira
@@ -167,7 +175,7 @@ se rechaza: solo se vuelve a abrir con `task_update` y `reopen`, así su resulta
 Cierra una tarea terminada con su resultado. Se guarda, nunca se borra. Una tarea con
 subtareas abiertas no se puede cerrar, y una ya cerrada se rechaza, para que su resultado
 nunca se pise. Si la tarea tiene fechas para revisar sin marcar
-como hechas, lo dice: siguen saliendo al empezar la sesión en su día, porque cerrar suele
+como hechas, lo dice: siguen saliendo al empezar la sesión desde una semana antes de su día, porque cerrar suele
 ser cuando se apunta lo que hay que mirar más adelante. Si `session start` creó un
 worktree de git para la tarea y su sesión ya no corre, al cerrarla lo quita con su rama
 cuando no tiene nada que no esté en el remoto (ni un fichero que git ignora y que ningún
