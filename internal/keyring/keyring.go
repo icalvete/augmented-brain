@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 )
 
 // State is what can be said of one secret here.
@@ -33,10 +35,10 @@ func Has(service, name string) State {
 		if _, err := exec.LookPath("secret-tool"); err != nil {
 			return Unknown
 		}
-		cmd = exec.CommandContext(ctx, "secret-tool", "lookup", "service", service, "name", name)
+		cmd = runlimit.Command(ctx, "secret-tool", "lookup", "service", service, "name", name)
 	case "darwin":
 		// Without -w, security prints the item's attributes, not the password.
-		cmd = exec.CommandContext(ctx, "security", "find-generic-password", "-s", service, "-a", name)
+		cmd = runlimit.Command(ctx, "security", "find-generic-password", "-s", service, "-a", name)
 	default:
 		return Unknown
 	}

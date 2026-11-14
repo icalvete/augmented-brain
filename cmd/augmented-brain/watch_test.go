@@ -6,11 +6,14 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/filelock"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -252,6 +255,12 @@ func TestWatchJoinsTheKeeper(t *testing.T) {
 	if err := os.WriteFile(base+".pid", []byte(strconv.Itoa(os.Getpid())+"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	// The keeper holds its lock while it watches.
+	release, err := filelock.Lock(base + ".lock")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer release()
 	go func() {
 		time.Sleep(50 * time.Millisecond)
 		// Atomic, as the keeper writes it: a plain write can be read half done (an
@@ -264,5 +273,65 @@ func TestWatchJoinsTheKeeper(t *testing.T) {
 	}
 	if !strings.Contains(out.String(), "Ya la sigue otra vigilancia") || !strings.Contains(out.String(), "La PR #9 se ha mezclado (3 min).\nApuntado.") {
 		t.Errorf("output:\n%s", out.String())
+	}
+}
+
+// A pid file left by a keeper that died (a reboot) whose number another process has
+// taken does not stop a new keeper: whether one watches is the lock's to say (R-13 of
+// the November 2026 review: nothing watched the pull request for 3 h 10 min).
+func TestWatchStalePidStartsAKeeper(t *testing.T) {
+	cfg, id := taskHere(t)
+	fakeWatch(t, "MERGED", "test\tpass\t0\tu\n")
+	base := filepath.Join(cfg, "state", watchesDir, id+"-pr9")
+	if err := os.MkdirAll(filepath.Dir(base), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	// This very process: alive, and not a keeper.
+	if err := os.WriteFile(base+".pid", []byte(strconv.Itoa(os.Getpid())+"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	started := 0
+	keeper := watchStart
+	watchStart = func(args, env []string, log string) (int, <-chan struct{}, error) {
+		started++
+		return keeper(args, env, log)
+	}
+	var out, errOut bytes.Buffer
+	if code := run([]string{"watch", "pr", "9", "--task", id}, nil, &out, &errOut); code != 0 || started != 1 {
+		t.Fatalf("watch: code %d, %d keepers started\n%s%s", code, started, out.String(), errOut.String())
+	}
+}
+
+// Two watches of the same pull request asked at once: one keeper watches, and both get
+// its result.
+func TestWatchTwoAtOnceOneKeeper(t *testing.T) {
+	_, id := taskHere(t)
+	// Pending for a while (a millisecond a look), so the second watch comes while the
+	// keeper still watches.
+	looks := slices.Repeat([]string{"test\tpending\t0\tu\n"}, 200)
+	fakeWatch(t, "OPEN", append(looks, "test\tpass\t0\tu\n")...)
+	var mu sync.Mutex
+	started := 0
+	keeper := watchStart
+	watchStart = func(args, env []string, log string) (int, <-chan struct{}, error) {
+		mu.Lock()
+		started++
+		mu.Unlock()
+		return keeper(args, env, log)
+	}
+	codes := make(chan int, 2)
+	for range 2 {
+		go func() {
+			var out, errOut bytes.Buffer
+			codes <- run([]string{"watch", "pr", "9", "--task", id}, nil, &out, &errOut)
+		}()
+	}
+	for range 2 {
+		if code := <-codes; code != 0 {
+			t.Errorf("a watch ended with %d", code)
+		}
+	}
+	if started != 1 {
+		t.Errorf("%d keepers started", started)
 	}
 }

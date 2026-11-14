@@ -25,6 +25,9 @@ type searchHit struct {
 	score          int
 	updated        string
 	here           bool // in the space the page is for
+	// snip makes Snippet, once the hit is among the ones shown: a snippet folds every
+	// line a rune at a time, too much for every hit of a common word (P-11).
+	snip func() []part
 }
 
 // part is a piece of a title or snippet, Mark when it is a word the search asked for.
@@ -83,6 +86,14 @@ var unaccent = strings.NewReplacer(
 
 // fold lowers text and takes accents off, keeping one rune per rune.
 func fold(s string) string { return unaccent.Replace(strings.ToLower(s)) }
+
+// snippetOf is snippet; tests count the calls.
+var snippetOf = snippet
+
+// lazySnippet is the snip of a hit: the snippet of body, marked.
+func lazySnippet(body string, words []string) func() []part {
+	return func() []part { return marked(snippetOf(body, words), words) }
+}
 
 // snippet is a short piece of text around the first place a line matches one of the
 // words. It folds the line a rune at a time, so where the match is in the folded text
@@ -167,6 +178,11 @@ func (s *Server) search(v *view, r *http.Request) (string, page, error) {
 	if len(hits) > searchMax {
 		more, hits = len(hits)-searchMax, hits[:searchMax]
 	}
+	for i := range hits {
+		if hits[i].snip != nil {
+			hits[i].Snippet = hits[i].snip()
+		}
+	}
 	p := v.frame("search", v.t("search"))
 	p.D = struct {
 		Q      string
@@ -212,7 +228,7 @@ func noteHits(v *view, m *memory.Memory, space string, words []string) []searchH
 			s = v.b.Space.Name // a shared note opens from the page's own space
 		}
 		out = append(out, searchHit{Title: marked(h.Title, words), Kind: kind, Shared: space == "", Space: space,
-			Link: "/note?" + url.Values{"s": {s}, "id": {h.ID}}.Encode(), Snippet: marked(snippet(h.Summary+"\n"+n.Body, words), words),
+			Link: "/note?" + url.Values{"s": {s}, "id": {h.ID}}.Encode(), snip: lazySnippet(h.Summary+"\n"+n.Body, words),
 			score: score, updated: h.Updated})
 	}
 	return out
@@ -256,7 +272,7 @@ func journalHits(v *view, b *brain.Brain, words []string) []searchHit {
 			continue
 		}
 		out = append(out, searchHit{Title: marked(title, words), Kind: v.t("search.kind.journal"), Space: b.Space.Name,
-			Link: "/task?" + url.Values{"s": {b.Space.Name}, "id": {m[1]}}.Encode(), Snippet: marked(snippet(rest, words), words), updated: m[2]})
+			Link: "/task?" + url.Values{"s": {b.Space.Name}, "id": {m[1]}}.Encode(), snip: lazySnippet(rest, words), updated: m[2]})
 	}
 	return out
 }

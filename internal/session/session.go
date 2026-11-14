@@ -199,9 +199,9 @@ func partTag(space string, n, total int) string {
 // go whole goes in one line, with the path of its file.
 func rulePieces(m, shared *memory.Memory, max, parts int) []string {
 	type item struct {
-		group         int
-		whole, line   string
-		listed, split bool
+		group       int
+		whole, line string
+		listed      bool
 	}
 	titles := []string{"Rules for every space", "Rules of this space"}
 	var items []*item

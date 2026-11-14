@@ -496,3 +496,108 @@ func mustLoad(t *testing.T, cfg, key string) Seen {
 	}
 	return s
 }
+
+// seenTime moves the seen file's time back and returns it, to tell whether it is
+// written again.
+func seenTime(t *testing.T, e *env) time.Time {
+	t.Helper()
+	old := time.Now().Add(-10 * time.Minute).Truncate(time.Second)
+	if err := os.Chtimes(file(e.cfg, e.key), old, old); err != nil {
+		t.Fatal(err)
+	}
+	return old
+}
+
+func seenWritten(t *testing.T, e *env, since time.Time) bool {
+	t.Helper()
+	fi, err := os.Stat(file(e.cfg, e.key))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return !fi.ModTime().Equal(since)
+}
+
+// A Check or Absorb that finds nothing new leaves the seen file as it is: it was
+// written on every message and twice on every tool (finding N-23).
+func TestNothingNewIsNotWritten(t *testing.T) {
+	e := newEnv(t)
+	task(t, e.sp.Tasks, "task-a", "plan", "x", "")
+	task(t, e.sp.Tasks, "task-b", "plan", "y", "")
+	age(t, e.sp.Tasks, "task-a", time.Hour)
+	age(t, e.sp.Tasks, "task-b", time.Hour)
+	e.baseline(t, false)
+	since := seenTime(t, e)
+	for range 3 {
+		if r := e.check(t); !r.Empty() {
+			t.Fatalf("got %s", ids(r))
+		}
+		if err := Absorb(e.cfg, e.key, e.sp, time.Now(), nil); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if seenWritten(t, e, since) {
+		t.Fatal("the seen file was written though nothing changed")
+	}
+	// A task read for the first time is news for the file: it becomes touched.
+	if err := Absorb(e.cfg, e.key, e.sp, time.Now(), []string{"task-a"}); err != nil {
+		t.Fatal(err)
+	}
+	if !seenWritten(t, e, since) {
+		t.Fatal("a task newly touched was not recorded")
+	}
+	// A change is recorded, and reported once.
+	since = seenTime(t, e)
+	task(t, e.sp.Tasks, "task-b", "closed", "", "- closed")
+	if r := e.check(t); ids(r) != "changed:task-b" {
+		t.Fatalf("got %s", ids(r))
+	}
+	if !seenWritten(t, e, since) {
+		t.Fatal("a change was not recorded")
+	}
+	if r := e.check(t); !r.Empty() {
+		t.Fatalf("reported twice: %s", ids(r))
+	}
+}
+
+// Skipping the write keeps the old Taken, so a file written within Racy of it is
+// hashed on every call: an edit that leaves time and size alike is still seen, also
+// after several calls that wrote nothing.
+func TestNothingNewStillSeesRacyEdits(t *testing.T) {
+	e := newEnv(t)
+	task(t, e.sp.Tasks, "task-r", "plan", "aaaa", "")
+	fi, _ := os.Stat(filepath.Join(e.sp.Tasks, "task-r.md"))
+	e.baseline(t, false)
+	for range 3 {
+		if r := e.check(t); !r.Empty() {
+			t.Fatalf("got %s", ids(r))
+		}
+	}
+	task(t, e.sp.Tasks, "task-r", "plan", "bbbb", "") // same size
+	if err := os.Chtimes(filepath.Join(e.sp.Tasks, "task-r.md"), fi.ModTime(), fi.ModTime()); err != nil {
+		t.Fatal(err)
+	}
+	if r := e.check(t); ids(r) != "changed:task-r" {
+		t.Fatalf("a change with the same time and size was missed: %s", ids(r))
+	}
+}
+
+// A seen file with nothing new is still written once Refresh has passed, so Prune
+// never takes a live process for one that ended.
+func TestNothingNewIsWrittenAfterRefresh(t *testing.T) {
+	e := newEnv(t)
+	task(t, e.sp.Tasks, "task-a", "plan", "x", "")
+	age(t, e.sp.Tasks, "task-a", 3*time.Hour)
+	e.baseline(t, false)
+	s, _ := Load(e.cfg, e.key)
+	s.Taken = time.Now().Add(-Refresh - time.Minute)
+	if err := save(e.cfg, e.key, s); err != nil {
+		t.Fatal(err)
+	}
+	since := seenTime(t, e)
+	if r := e.check(t); !r.Empty() {
+		t.Fatalf("got %s", ids(r))
+	}
+	if !seenWritten(t, e, since) {
+		t.Fatal("a seen file older than Refresh was not written again")
+	}
+}

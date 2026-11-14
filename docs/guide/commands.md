@@ -465,6 +465,11 @@ What it does on each look:
   `bridge-pointer.json.archived`, in the folder's project in `~/.claude/projects`) and
   restarts the service again, so a new session starts: about ten minutes in all. The
   conversation of the archived session does not come back.
+- **Still nothing.** When both steps bring no session back, something a restart does
+  not mend is wrong. The watch waits 4 minutes before it tries again, then 8, 16 and 32.
+  After 5 tries it gives up and leaves the service alone: `remote status` and `doctor`
+  say so, with the command that shows why. Once the service has a session again, the
+  watch looks after it as before.
 - **Task sessions kept safe.** Stopping a service stops everything started inside it.
   A task session started from a remote session can start Claude's background service
   there, which runs every task session. So the watch moves out of each service whatever
@@ -569,7 +574,7 @@ augmented-brain session stop task-new-website
   session waiting for a permission counts as answering, and one still answering by then
   stays open. Closing the task runs it this way by itself, so a session can close its own
   task without cutting its answer off. What it did goes to `state/session-stop.log` in
-  the configuration folder.
+  the configuration folder, with a line every 5 minutes while it waits.
 
 **The task's worktree** (the one `session start` made, see above) goes too, with its
 branch, as long as nothing would be lost. It stays, and the command says so, when it
@@ -771,7 +776,9 @@ It looks in every folder Claude Code was opened in, and in its scratch folder:
 - **Worktrees git remembers whose folder is gone**: `git worktree prune` forgets them.
   Their branches stay.
 - **Scratch folders of sessions that ended** (`/tmp/claude-<number>` on Linux), untouched
-  for over a day. Those of running sessions stay, and so does anything else there.
+  for over a day. Those of running sessions stay, and so does anything else there. On
+  Linux that includes sessions of another Claude folder (`CLAUDE_CONFIG_DIR`); elsewhere
+  only those of your usual Claude folder count, and the command reminds you.
 
 Before removing each thing it looks again, so a session that started meanwhile keeps its
 folders. `doctor` says when there is something to clean.

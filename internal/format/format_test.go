@@ -145,6 +145,35 @@ func TestEnsureRecordsTheImpliedVersion(t *testing.T) {
 	}
 }
 
+// A version already recorded is not written again on every session start (N-23).
+func TestEnsureLeavesARecordedVersionAlone(t *testing.T) {
+	mem, cfg := t.TempDir(), t.TempDir()
+	if _, err := EnsureNotes(mem, cfg, "work", "", time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	p := filepath.Join(mem, MetaDir, File)
+	old := time.Now().Add(-time.Hour).Truncate(time.Second)
+	if err := os.Chtimes(p, old, old); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := EnsureNotes(mem, cfg, "work", "", time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if fi, err := os.Stat(p); err != nil || !fi.ModTime().Equal(old) {
+		t.Fatalf("the recorded version was written again: %v", err)
+	}
+	// A file that says something else, even with a space more, is written right.
+	if err := os.WriteFile(p, []byte(" 1\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := EnsureNotes(mem, cfg, "work", "", time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if data, _ := os.ReadFile(p); strings.TrimSpace(string(data)) != string(data[:len(data)-1]) {
+		t.Fatalf("the version file was not tidied: %q", data)
+	}
+}
+
 // The copy of the configuration folder leaves out earlier copies and the state.
 func TestEnsureConfigCopy(t *testing.T) {
 	cfg := t.TempDir()

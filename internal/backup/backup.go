@@ -10,12 +10,13 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 
 	"github.com/BurntSushi/toml"
 
@@ -67,10 +68,8 @@ func runGitAs(notes bool, env []string, args ...string) (string, error) {
 	if notes {
 		pre = append(pre, notesSettings...)
 	}
-	cmd := exec.CommandContext(ctx, "git", append(pre, args...)...)
-	// A program git started (ssh) may keep its output open after git is stopped: stop
-	// waiting for it shortly after.
-	cmd.WaitDelay = 5 * time.Second
+	cmd := runlimit.Command(ctx, "git", append(pre, args...)...)
+	// runlimit stops ssh and whatever else git started along with git.
 	// Never wait for a password; only the usual ways to reach a repository (no ext::);
 	// never take a folder above the temporary one for a repository.
 	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0", "GIT_ALLOW_PROTOCOL=file:git:https:ssh",

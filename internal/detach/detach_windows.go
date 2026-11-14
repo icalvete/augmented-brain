@@ -22,10 +22,10 @@ func Cmd(cmd *exec.Cmd) {
 	}
 }
 
-// Start starts a command prepared with Cmd and returns the one that runs. A job that
+// start starts a command prepared with Cmd and returns the one that runs. A job that
 // does not allow leaving it refuses the start: then it starts again without asking to
 // leave, in a fresh copy of the command (an exec.Cmd is not started twice).
-func Start(cmd *exec.Cmd) (*exec.Cmd, error) {
+func start(cmd *exec.Cmd) (*exec.Cmd, error) {
 	err := cmd.Start()
 	if err == nil || cmd.SysProcAttr == nil || cmd.SysProcAttr.CreationFlags&windows.CREATE_BREAKAWAY_FROM_JOB == 0 {
 		return cmd, err

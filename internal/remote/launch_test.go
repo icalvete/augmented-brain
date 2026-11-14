@@ -257,6 +257,46 @@ func TestStopWhenIdle(t *testing.T) {
 	}
 }
 
+// A wait of 30 minutes lasts 30 minutes by the clock, even when each look at Claude's
+// sessions takes 25 s, and looks far less than every 2 s (R-09 of the November 2026
+// review: it lasted almost 7 hours and started claude 900 times).
+func TestStopWhenIdleCountsTheClock(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	clock := time.Date(2026, 11, 14, 10, 0, 0, 0, time.UTC)
+	start := clock
+	f.sys.Now = func() time.Time { return clock }
+	f.sys.Sleep = func(d time.Duration) { clock = clock.Add(d) }
+	run := f.sys.Run
+	looks := 0
+	f.sys.Run = func(name string, args ...string) (string, error) {
+		if strings.Contains(strings.Join(args, " "), "agents") {
+			looks++
+			clock = clock.Add(25 * time.Second)
+		}
+		return run(name, args...)
+	}
+	var notes []time.Duration
+	f.sys.Waiting = func(d time.Duration) { notes = append(notes, d) }
+	f.busy["ab12cd34"] = 1 << 30
+	if err := f.sys.StopWhenIdle(c.Dir, "task-site", 30*time.Minute); !errors.Is(err, ErrStillBusy) {
+		t.Fatalf("a session that never ends its answer: %v", err)
+	}
+	if took := clock.Sub(start); took > 31*time.Minute {
+		t.Errorf("waited %s by the clock for a wait of 30 min", took)
+	}
+	if looks >= 150 {
+		t.Errorf("looked %d times", looks)
+	}
+	if len(notes) < 3 {
+		t.Errorf("said it was still waiting %d times in 30 min: %v", len(notes), notes)
+	}
+}
+
 // A session an earlier version launched as a systemd unit is still listed and stopped.
 func TestStopEarlierUnit(t *testing.T) {
 	f, _ := launchFake(t)
@@ -559,12 +599,16 @@ func TestStartWaitsForFirstAnswer(t *testing.T) {
 	if err := f.sys.Stop(c.Dir, "task-site"); err != nil {
 		t.Fatal(err)
 	}
-	sleeps = -1000 // it never answers
+	// It never answers: Start waits FirstTurnWait by the clock, looking every second at
+	// first and every 3 s after.
+	var slept time.Duration
+	looks := 0
+	f.sys.Sleep = func(d time.Duration) { slept += d; looks++ }
 	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
 		t.Fatal(err)
 	}
-	if got := sleeps + 1000; got != int(FirstTurnWait/time.Second) {
-		t.Errorf("waited %d seconds, want %d", got, int(FirstTurnWait/time.Second))
+	if slept != FirstTurnWait || looks > 30 {
+		t.Errorf("waited %s in %d looks, want %s in 30 at most", slept, looks, FirstTurnWait)
 	}
 	if got, _ := f.sys.Launches(c.Dir); len(got) != 1 || got[0].Active != "active" {
 		t.Errorf("a slow session: %+v", got)

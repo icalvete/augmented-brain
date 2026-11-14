@@ -251,6 +251,14 @@ var launchMessages = map[string]msg{
 		en: "Could not restart \"%s\": %v",
 		es: "No he podido reiniciar «%s»: %v",
 	},
+	"wait.start": {
+		en: "Waiting for \"%s\" to end its answer, %d minutes at most.",
+		es: "Espero a que «%s» termine su respuesta, %d minutos como mucho.",
+	},
+	"wait.still": {
+		en: "Still waiting for \"%s\" to end its answer (%d minutes so far).",
+		es: "Sigo esperando a que «%s» termine su respuesta (%d minutos de momento).",
+	},
 	"restart.stillbusy": {
 		en: "\"%s\" was still answering after %d minutes: left as it is.",
 		es: "«%s» seguía respondiendo al cabo de %d minutos: se queda como está.",

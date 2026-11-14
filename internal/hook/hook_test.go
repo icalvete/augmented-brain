@@ -211,7 +211,7 @@ func TestSessionStartUpdateNotice(t *testing.T) {
 	if text := o["additionalContext"].(string); strings.Contains(text, "is available") {
 		t.Errorf("told of a version before any check ended:\n%s", text)
 	}
-	o = run(t, ss, map[string]any{"cwd": work})
+	run(t, ss, map[string]any{"cwd": work})
 	if checks != 1 {
 		t.Errorf("a check already started was started again (%d)", checks)
 	}

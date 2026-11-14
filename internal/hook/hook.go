@@ -11,7 +11,6 @@ import (
 	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -21,7 +20,6 @@ import (
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
-	"github.com/icalvete/augmented-brain/internal/detach"
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -35,21 +33,6 @@ import (
 
 // LatestVersion asks for the latest published version; tests replace it.
 var LatestVersion = update.Fetch
-
-// StartUpdateCheck asks for the latest version in a process of its own (`hook
-// update-check`) and returns at once: the session start never waits for the network,
-// and the news reaches the next session. Tests replace it.
-var StartUpdateCheck = func() error {
-	self, err := os.Executable()
-	if err != nil {
-		return err
-	}
-	cmd := exec.Command(self, "hook", "update-check")
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
-	detach.Cmd(cmd)
-	_, err = detach.Start(cmd)
-	return err
-}
 
 // UpdateCheck asks for the latest published version and keeps the answer for the next
 // session start (StartUpdateCheck runs it).

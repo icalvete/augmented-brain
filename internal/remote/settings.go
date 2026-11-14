@@ -97,6 +97,11 @@ func LoadSettings(c *config.Config, hostname string) (Settings, error) {
 		if _, ok := c.Spaces[name]; !ok {
 			return s, errors.New(i18n.T(l, "remote.badspace", path, name, strings.Join(c.SpaceNames(), ", ")))
 		}
+		// The space's name goes into a unit's name, a session's name and a line of
+		// cmd.exe: a plain ASCII word, like the prefix, even if config.toml took more.
+		if !safeWord.MatchString(name) {
+			return s, errors.New(i18n.T(l, "remote.badspacename", name, filepath.Join(c.Dir, config.FileName)))
+		}
 	}
 	for name, folder := range f.Folders {
 		sp, ok := c.Spaces[name]
