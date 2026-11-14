@@ -10,13 +10,24 @@
   <button type="submit">{{t "capture"}}</button>
 </form>
 {{if .Entries}}<ul class="cards">
-{{range .Entries}}<li class="card">
+{{range $i, $e := .Entries}}{{$k := printf "/inbox/edit#e%d" $i}}<li class="card">
   <div class="title">{{inline .Text}}</div>
   <div class="meta"><span><time datetime="{{.Date}}" title="{{.Date}}">{{day .Date}}</time></span>{{if .Remind}}<span class="badge">{{t "f.remind"}}: <time datetime="{{.Remind}}" title="{{.Remind}}">{{day .Remind}}</time></span>{{end}}{{if .From}}<span class="badge">{{t "f.from"}} {{.From}}</span>{{end}}</div>
   <div class="actions">
   <form method="post" action="{{$.Base}}/review/capture" class="inline">{{template "fields" (fields $ "date" .Date "text" .Text "as" "task" "back" "inbox")}}<button type="submit" class="small">{{t "inbox.totask"}}</button></form>
   <form method="post" action="{{$.Base}}/inbox/done" class="inline">{{template "fields" (fields $ "date" .Date "text" .Text)}}<button type="submit" class="small">{{t "inbox.done"}}</button></form>
   </div>
+  <details{{if $.Open $k}} open{{end}}><summary>{{t "inbox.edit"}}</summary>
+  <form method="post" action="{{$.Base}}/inbox/edit" class="stack">
+    {{template "fields" (fields $ "date" .Date "text" .Text "form" (printf "e%d" $i))}}
+    <label>{{t "f.capture"}} <input name="new" required maxlength="4000" value="{{$.Val $k "new" .Text}}"></label>
+    {{template "ferr" ($.Err $k "new")}}
+    <label>{{t "f.remind"}} <input type="date" name="remind_on" value="{{$.Val $k "remind_on" .Remind}}"></label>
+    {{template "ferr" ($.Err $k "remind_on")}}
+    <p class="hint">{{t "inbox.edit.hint"}}</p>
+    {{template "ferr" ($.FormErr $k)}}
+    <button type="submit" class="small">{{t "save"}}</button>
+  </form></details>
 </li>{{end}}
 </ul>{{else}}<p class="empty">{{t "inbox.none"}}</p>{{end}}
 {{end}}{{end}}

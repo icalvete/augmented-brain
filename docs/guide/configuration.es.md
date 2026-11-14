@@ -26,7 +26,7 @@ comentarios; el programa los conserva cuando cambia el fichero.
 | Fichero | Qué guarda | Quién lo escribe | En la copia de seguridad |
 |---|---|---|---|
 | `config.toml` | Tus espacios, el idioma y las listas del guardia | El instalador, `space add`, `backup setup`, la página Guardia, `safety_save` (solo añade) | La sección de cada espacio, en la copia de ese espacio. Las listas de todo el ordenador, nunca |
-| `guard.toml` | Los repositorios que Claude nunca toca | La página Guardia | No |
+| `guard.toml` | Los repositorios que Claude nunca toca, y dónde actúa augmented brain | La página Guardia, y el instalador la primera vez (`reach`) | No |
 | `session.toml` | El modelo que esperas y si Claude pregunta antes de guardar una regla | La página Guardia | No |
 | `secrets.toml` | Los nombres de tus secretos, nunca sus valores | `secret_name_save`, la página Secretos | Sí, en la copia del espacio por defecto |
 | `remote.toml` | El acceso remoto | `remote install` y `remote uninstall` | No |
@@ -311,6 +311,8 @@ Defínelas en tu shell para cambiar cómo se porta el programa:
 El instalador lee alguna más:
 
 - `AB_YES=1`: contesta que sí a todas las preguntas.
+- `AB_REACH`: `machine` o `spaces`, dónde actúa augmented brain, sin preguntar (solo
+  pregunta si Claude Code ya estaba). Solo en una instalación nueva.
 - `AB_NO_DESKTOP=1`: no ofrece la app de escritorio de Claude.
 - `AB_DESKTOP_TIMEOUT`: en Linux, cuántos segundos puede tardar la descarga de la app de
   escritorio antes de que el instalador la deje y siga sin ella. Por defecto, 480 (8 minutos).

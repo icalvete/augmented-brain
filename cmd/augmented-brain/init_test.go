@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"errors"
+	"os"
 	"path/filepath"
 	"runtime"
 	"slices"
@@ -9,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 // emptyHome is a fake home with nothing set up yet, and no claude on the PATH, and
@@ -239,5 +242,59 @@ func TestPanelAddress(t *testing.T) {
 	}
 	if got := panelPage(c, t.TempDir()); got != "" {
 		t.Errorf("outside every space: %s", got)
+	}
+}
+
+// --reach spaces, the installer's answer for someone who already had Claude Code, writes
+// reach in guard.toml and seals it, so the first session acts only in the spaces.
+// machine, the default, writes nothing.
+func TestInitReach(t *testing.T) {
+	_, cfg := emptyHome(t)
+	if code, out, errOut := runInit(t, "--yes", "--language", "en", "--no-plugin", "--reach", "spaces"); code != 0 {
+		t.Fatalf("init --reach spaces: %d\n%s%s", code, out, errOut)
+	}
+	c, err := config.Load(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	g, err := config.LoadGuard(cfg)
+	if err != nil || !g.OnlySpaces() {
+		t.Fatalf("guard.toml after --reach spaces: %+v %v", g, err)
+	}
+	if seal, err := state.ReadSeal(cfg); err != nil || seal != c.GuardFingerprint(g) {
+		t.Errorf("seal %q (%v), want the lists with reach", seal, err)
+	}
+
+	_, cfg = emptyHome(t)
+	if code, out, errOut := runInit(t, "--yes", "--language", "en", "--no-plugin", "--reach", "machine"); code != 0 {
+		t.Fatalf("init --reach machine: %d\n%s%s", code, out, errOut)
+	}
+	if _, err := os.Stat(filepath.Join(cfg, config.GuardFile)); !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("--reach machine wrote guard.toml: %v", err)
+	}
+}
+
+// --reach is for the first setup only: on a machine already set up it changes nothing,
+// or an assistant could loosen the guard by running init. A wrong value is refused too.
+func TestInitReachRefused(t *testing.T) {
+	_, cfg := emptyHome(t)
+	if code, _, errOut := runInit(t, "--yes", "--language", "en", "--no-plugin", "--reach", "everywhere"); code != 2 ||
+		!strings.Contains(errOut, `reach "everywhere": use machine or spaces`) {
+		t.Errorf("--reach everywhere: %d %s", code, errOut)
+	}
+	if _, err := os.Stat(cfg); !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("a refused init left the configuration folder: %v", err)
+	}
+	if code, out, errOut := runInit(t, "--yes", "--language", "en", "--no-plugin"); code != 0 {
+		t.Fatalf("init: %d\n%s%s", code, out, errOut)
+	}
+	for _, reach := range []string{"spaces", "machine"} {
+		code, _, errOut := runInit(t, "--yes", "--language", "en", "--no-plugin", "--reach", reach)
+		if code != 2 || !strings.Contains(errOut, "--reach is only for the first setup") {
+			t.Errorf("init --reach %s on a machine set up: %d %s", reach, code, errOut)
+		}
+	}
+	if g, err := config.LoadGuard(cfg); err != nil || g.OnlySpaces() {
+		t.Errorf("guard.toml after a refused --reach: %+v %v", g, err)
 	}
 }

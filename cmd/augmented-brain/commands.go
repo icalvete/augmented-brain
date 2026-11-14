@@ -33,7 +33,7 @@ type command struct {
 // commands are every command run answers. A new one goes here, in the usage text
 // (internal/i18n/commands.go) and in the reference, in English and Spanish.
 var commands = []command{
-	{name: "init", run: cmdInit, flags: func() []string { fs, _, _, _, _, _ := initFlags(io.Discard); return flagNames(fs) }},
+	{name: "init", run: cmdInit, flags: func() []string { fs, _, _, _ := initFlags(io.Discard); return flagNames(fs) }},
 	{name: "space", run: noArgs(func(out, errOut io.Writer) int { return cmdSpace(out, errOut) })},
 	{name: "space add", run: cmdSpaceAdd, flags: func() []string { fs, _, _ := spaceFlags("space add", io.Discard); return flagNames(fs) }},
 	{name: "check", run: noArgs(func(out, errOut io.Writer) int { return cmdCheck(out, errOut) })},

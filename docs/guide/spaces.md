@@ -86,8 +86,10 @@ Three things to know:
   new session in a scratch folder of its own, which is in no space: that session has no
   memory until you choose a folder. That is why "on the whole computer" is the default.
 
-Change it on the panel's Guard page; a change by hand in `guard.toml` counts only once you
-accept it there ([`reach`](configuration.md#guardtoml)).
+If Claude Code was already on your computer, the installer asks you once, the first
+time; "on the whole computer" is the answer when you just press Enter. After that,
+change it on the panel's Guard page; a change by hand in `guard.toml` counts only once
+you accept it there ([`reach`](configuration.md#guardtoml)).
 
 The default space matters for one more thing: its backup carries your profile, the shared
 notes and the names of your secrets (never their values). Set it with `default_space` in

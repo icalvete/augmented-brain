@@ -83,7 +83,11 @@ It asks a few questions. To accept what it suggests, just press Enter.
    Code and the Claude desktop app. It tells you what each one is for before installing it.
    If you already had Claude Code but it is behind, it offers to update it. If Claude Code
    is missing, it also asks whether you have a paid plan; a no does not stop it.
-3. **Open the Claude app now?** Say yes.
+3. **Where augmented brain acts**, only if you already had Claude Code: on the whole
+   computer, or only in its spaces, so your other projects stay as they were. Enter
+   keeps the whole computer; [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space) tells
+   the difference, and the panel's Guard page changes it later.
+4. **Open the Claude app now?** Say yes.
 
 If it asks for your password, type it even though you see nothing: the terminal does not
 show it, not even as asterisks. Press Enter when done.
@@ -207,6 +211,10 @@ walks you through it.
 - **The installer asks first.** The language (your system's is suggested), then each
   missing piece, with what it is for. Press Enter to accept what it suggests. To change the
   language later, set `language` in your [configuration](https://icalvete.github.io/augmented-brain/guide/configuration.html#settings-for-the-whole-computer).
+- **If you already use Claude Code**, a new installation also asks where augmented brain
+  acts: on the whole computer (the default) or only in its spaces, leaving your other
+  projects as they were. See [Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space). Without
+  Claude Code beforehand it does not ask: it acts on the whole computer.
 - **No GitHub account.** The program downloads from GitHub without one. The backup does
   use one, or another git server, and you set it up later: see [Backup and restore](https://icalvete.github.io/augmented-brain/guide/backup.html).
 - **A new installation ends the same way:** two spaces, `work` and `personal` (in Spanish,
@@ -654,8 +662,10 @@ Three things to know:
   new session in a scratch folder of its own, which is in no space: that session has no
   memory until you choose a folder. That is why "on the whole computer" is the default.
 
-Change it on the panel's Guard page; a change by hand in `guard.toml` counts only once you
-accept it there ([`reach`](https://icalvete.github.io/augmented-brain/guide/configuration.html#guardtoml)).
+If Claude Code was already on your computer, the installer asks you once, the first
+time; "on the whole computer" is the answer when you just press Enter. After that,
+change it on the panel's Guard page; a change by hand in `guard.toml` counts only once
+you accept it there ([`reach`](https://icalvete.github.io/augmented-brain/guide/configuration.html#guardtoml)).
 
 The default space matters for one more thing: its backup carries your profile, the shared
 notes and the names of your secrets (never their values). Set it with `default_space` in
@@ -2052,7 +2062,7 @@ each block in two columns, and a shadow at its foot says there is more below.
 | [Reminders](https://icalvete.github.io/augmented-brain/guide/panel.html#reminders) | Watch dates and inbox reminders | one space |
 | [Inbox](https://icalvete.github.io/augmented-brain/guide/panel.html#inbox) | Loose ideas, to deal with later | one space |
 | [Weekly review](https://icalvete.github.io/augmented-brain/guide/panel.html#weekly-review) | Empty the inbox, look at stalled tasks | one space |
-| [Areas, knowledge, rules](https://icalvete.github.io/augmented-brain/guide/panel.html#areas-knowledge-rules-and-people) | Read them; create areas | one space, plus the shared notes |
+| [Areas, knowledge, rules](https://icalvete.github.io/augmented-brain/guide/panel.html#areas-knowledge-rules-and-people) | Read and write them; create areas | one space, plus the shared notes |
 | [People](https://icalvete.github.io/augmented-brain/guide/panel.html#areas-knowledge-rules-and-people) | Who is who | every space |
 | [Repositories](https://icalvete.github.io/augmented-brain/guide/panel.html#repositories) | Work only on this computer | every space |
 | [Secrets](https://icalvete.github.io/augmented-brain/guide/panel.html#secrets) | The names of your secrets | the same list in every space |
@@ -2090,7 +2100,10 @@ A task nobody has changed for 14 days is marked "untouched N days". At the end, 
 the tasks left for **Someday** and the **Closed** ones.
 
 Open one. Its essentials come first, then its steps and what you can do with it: write in
-its journal, change its status or next step, tick its steps, park it or close it. Below,
+its journal, change its title, status or next step, tick its steps, park it or close it.
+Under **Correct, move or remove steps**, fix a step's text, move it up or down, or take it
+out of the plan. Each watch date can move to another day or go. The journal says what
+changed: an old title, a step taken out, a date moved. Below,
 the other sections folded, and the journal newest first. You can open new tasks too. If a
 status skips phases, the journal names them. When a task waits on a person you have a
 note of, "waits on" leads to them.
@@ -2104,8 +2117,8 @@ choose its phase, say what comes next and, if you like, why. Its journal says it
 reopened from the panel, with your reason.
 
 When you save a task, only what you changed on the page is saved. If Claude changed
-something else in the meantime, that stays. A step is ticked only if it still says what
-the page showed.
+something else in the meantime, that stays. A step is ticked, corrected, moved or
+removed only if it still says what the page showed.
 
 ## Sessions
 
@@ -2122,13 +2135,15 @@ Your Claude sessions on this computer, from the last 30 days. It is in the menu,
 ## Reminders
 
 The watch dates of your tasks (closed ones too) and the inbox reminders: overdue first,
-then the next 30 days. Mark one done, or add a watch date to a task. A reminder that
+then the next 30 days. Mark one done, or add a watch date to a task. To move a date or
+take it out, open its task. A reminder that
 belongs to no task is a capture with a date: make it in the [Inbox](https://icalvete.github.io/augmented-brain/guide/panel.html#inbox).
 
 ## Inbox
 
 Capture an idea, with a date to be reminded if you want one. Mark one as dealt with, or
-make it a task.
+make it a task. **Correct** changes a capture's text or its reminder (empty removes it);
+its date stays, and so does the space it came from.
 
 ## Weekly review
 
@@ -2139,10 +2154,20 @@ and kept in the review's record when you finish.
 
 ## Areas, knowledge, rules and people
 
-Knowledge and rules show the space's own and the shared ones, marked "shared". Here you
-read them; you do not write them. A reference or a lesson comes from Claude, or from a
-capture in the [weekly review](https://icalvete.github.io/augmented-brain/guide/panel.html#weekly-review); a rule, from Claude. You can create areas
-and change an area's title and summary.
+Knowledge and rules show the space's own and the shared ones, marked "shared". You can
+write them here too. **New rule** and **New reference or lesson** create one, in this
+space or shared by every space. On a rule, reference or lesson's page, **Edit** changes
+its title, summary, area and text (Markdown); the version it replaces is kept in
+`archive/`. If the note changed since the page was shown, nothing is overwritten: reload
+and try again. **Retire** moves it to `archive/` with why, so it is never loaded again: a
+retired rule no longer reaches your sessions. Nothing is deleted.
+
+A rule changes what every session follows. If you chose to be asked first
+(`memory_trust = "ask"`, on the [Guard](https://icalvete.github.io/augmented-brain/guide/panel.html#guard) page), these forms show a box to tick
+before a rule is saved, changed or retired. This works through the
+[remote panel](https://icalvete.github.io/augmented-brain/guide/panel-remote.html) too, with its own sign-in.
+
+You can create areas and change an area's title and summary.
 
 People are listed once, with a badge for each space they are in. A new person starts in
 the space you are in. A person's page is one form: the name stays (a new name would be a
@@ -2315,9 +2340,12 @@ both fields empty for no name and no personality.
 
 ## Search and reading notes
 
-The **search** box at the side looks through the notes of the space and the shared ones:
-titles, summaries and text. A note shows up when it holds every word, in any case, with
-accents or without.
+The **search** box at the side looks through the notes of every space and the shared
+ones (titles, summaries and text), each space's inbox, and the journals moved out of long
+tasks into `archive/journals/`. Something shows up when it holds every word, in any case,
+with accents or without, and the words are marked. A result from another space says which
+space; one from an archived journal leads to its task. What matches in its title comes
+first, then what is in the space you are in.
 
 Notes read as text, not as raw Markdown (the plain-text format notes are
 written in): headings, lists, tables, code and links. A
@@ -3470,7 +3498,7 @@ Sets everything up: the spaces, the configuration and the Claude Code plugin. Th
 installer runs it for you the first time.
 
 Syntax: `augmented-brain init [--custom] [--language en|es] [--space <name>]
-[--work <folder>] [--memory <folder>] [--yes] [--no-plugin]`
+[--work <folder>] [--memory <folder>] [--reach machine|spaces] [--yes] [--no-plugin]`
 
 ```bash
 augmented-brain init
@@ -3491,6 +3519,10 @@ If there is a configuration already, it stops and changes nothing. To add a spac
 - `--work`: its work folder. Default: `~/augmented-brain/<space>`.
 - `--memory`: its notes folder. Default: `~/augmented-brain/<space>/notes`, also when
   `--work` names another folder.
+- `--reach`: where augmented brain acts, `machine` (the default) or `spaces`
+  ([Outside every space](https://icalvete.github.io/augmented-brain/guide/spaces.html#outside-every-space)). The installer passes it when
+  Claude Code was already on the computer. Only for the first setup: with a
+  configuration already, it is refused, and the choice changes on the panel's Guard page.
 - `--yes`: do not ask; take the options given and the defaults.
 - `--no-plugin`: do not install the Claude Code plugin.
 
@@ -4477,6 +4509,8 @@ still closes, with a line saying no result was given, and Claude writes the resu
 the journal.
 
 - `id`: the task's id.
+- `title` (optional): a new title. The id stays, so every link to the task still works.
+  The journal says what it was.
 - `status` (optional): `definition`, `analysis`, `plan`, `execution`, `validation`,
   `closed`, `parked` or `someday`.
 - `waiting_on` (optional): `me`, `nobody`, a person, or another task's id.
@@ -4486,6 +4520,9 @@ the journal.
 - `watch_date` (optional): add a date to look at something again. Needs `watch_what`.
 - `watch_what` (optional): what to look at on `watch_date`, in one line.
 - `watch_done` (optional): mark the watch date of this day as done.
+- `watch_drop` (optional): take out the watch dates of this day, done or not. With
+  `watch_date` and `watch_what` in the same call, it moves one to another day. The
+  journal says what was taken out or moved.
 - `reopen` (optional): only to open a closed task again, with a new `status`: why, in a
   few words. It goes to the journal. Claude asks you first.
 - `result` (optional): with `status` `closed`, what the task achieved, as in
@@ -4502,7 +4539,7 @@ At least one field besides `id` and `space` is needed.
 **You say:** "that step is done."
 
 Steps are the small parts of a task: checkboxes (`- [ ] text`) in its Plan. This tool adds
-one, or ticks or unticks one. Each change writes a short journal line, and the answer
+one, ticks or unticks one, or corrects, removes or moves one. Each change writes a short journal line, and the answer
 lists the steps. A closed task's steps stay as they were closed.
 
 - `id`: the task's id.
@@ -4512,6 +4549,12 @@ lists the steps. A closed task's steps stay as they were closed.
 - `text` (optional): the step to tick or untick, by its text (or a part only it holds),
   when `number` is not given.
 - `done` (optional): `true` to tick the step, `false` to untick it. Left out, it unticks.
+- `edit` (optional): new text for the step given by `number` or `text`, instead of
+  ticking it. Its mark stays.
+- `remove` (optional): `true` takes the step given by `number` or `text` out of the
+  Plan.
+- `move_to` (optional): move the step given by `number` or `text` to this place in the
+  Plan, 1 for the first.
 - `space` (optional): another of your spaces, whose task this is. Claude uses it only
   when you ask to work on a task of that space from here. See
   [A task of another space](https://icalvete.github.io/augmented-brain/guide/spaces.html#a-task-of-another-space).
@@ -4853,7 +4896,7 @@ program keeps them when it changes the file.
 | File | What it holds | Who writes it | In the backup |
 |---|---|---|---|
 | `config.toml` | Your spaces, the language and the guard's lists | The installer, `space add`, `backup setup`, the Guard page, `safety_save` (only adds) | Each space's own section, in that space's backup. The lists for the whole computer, never |
-| `guard.toml` | Repositories Claude never touches | The Guard page | No |
+| `guard.toml` | Repositories Claude never touches, and where augmented brain acts | The Guard page, and the installer the first time (`reach`) | No |
 | `session.toml` | The model you expect and whether Claude asks before saving a rule | The Guard page | No |
 | `secrets.toml` | The names of your secrets, never their values | `secret_name_save`, the Secrets page | Yes, in the default space's backup |
 | `remote.toml` | Remote access | `remote install` and `remote uninstall` | No |
@@ -5118,6 +5161,8 @@ Set these in your shell to change how the program behaves:
 The installer reads a few more:
 
 - `AB_YES=1`: answer yes to every question.
+- `AB_REACH`: `machine` or `spaces`, where augmented brain acts, instead of asking (it
+  asks only when Claude Code was already there). Only for a new installation.
 - `AB_NO_DESKTOP=1`: do not offer the Claude desktop app.
 - `AB_DESKTOP_TIMEOUT`: on Linux, how many seconds the desktop app's download may take
   before the installer gives up and goes on without it. Default 480 (8 minutes).

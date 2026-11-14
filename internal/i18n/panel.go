@@ -207,8 +207,8 @@ var panelMessages = map[string]msg{
 		es: "Una nota de tu memoria: un fichero Markdown en tu carpeta de notas, tuyo. Tu asistente la lee cuando el trabajo la necesita.",
 	},
 	"panel.search.intro": {
-		en: "Looks for words in every note of this space and in the shared ones: tasks, areas, knowledge, rules and people.",
-		es: "Busca palabras en todas las notas de este espacio y en las compartidas: tareas, áreas, conocimiento, reglas y personas.",
+		en: "Looks for words in every note of every space and in the shared ones (tasks, areas, knowledge, rules and people), in each inbox and in the journals archived from tasks. What it found is marked.",
+		es: "Busca palabras en todas las notas de todos los espacios y en las compartidas (tareas, áreas, conocimiento, reglas y personas), en cada buzón y en los diarios archivados de las tareas. Lo encontrado sale resaltado.",
 	},
 	"panel.space.intro": {
 		en: "Whether this space is well: its notes can be read, its index is up to date, its backup works and the weekly review is not overdue. Red means something to fix, with how.",
@@ -880,17 +880,33 @@ var panelMessages = map[string]msg{
 		en: "Search",
 		es: "Buscar",
 	},
-	"panel.search.found": {
-		en: "%d notes hold every word.",
-		es: "%d notas tienen todas las palabras.",
+	"panel.search.found.1": {
+		en: "1 result holds every word.",
+		es: "1 resultado tiene todas las palabras.",
+	},
+	"panel.search.found.n": {
+		en: "%d results hold every word.",
+		es: "%d resultados tienen todas las palabras.",
 	},
 	"panel.search.more": {
 		en: "And %d more: add a word to narrow it.",
 		es: "Y %d más: añade una palabra para afinar.",
 	},
 	"panel.search.none": {
-		en: "No note holds every word.",
-		es: "Ninguna nota tiene todas las palabras.",
+		en: "Nothing holds every word.",
+		es: "Nada tiene todas las palabras.",
+	},
+	"panel.search.kind.inbox": {
+		en: "inbox",
+		es: "buzón",
+	},
+	"panel.search.kind.journal": {
+		en: "archived journal",
+		es: "diario archivado",
+	},
+	"panel.search.unread": {
+		en: "These spaces could not be opened, so they were not searched: %s. Health says why.",
+		es: "Estos espacios no se pudieron abrir, así que no se ha buscado en ellos: %s. Salud dice por qué.",
 	},
 	"panel.review": {
 		en: "Weekly review",
@@ -1172,9 +1188,21 @@ var panelMessages = map[string]msg{
 		en: "Plan updated.",
 		es: "Plan actualizado.",
 	},
+	"panel.ok.task.step.remove": {
+		en: "Step taken out of the plan.",
+		es: "Paso quitado del plan.",
+	},
 	"panel.ok.watch.add": {
 		en: "Watch date added.",
 		es: "Fecha para mirar añadida.",
+	},
+	"panel.ok.watch.drop": {
+		en: "Watch date taken out.",
+		es: "Fecha para revisar quitada.",
+	},
+	"panel.ok.watch.move": {
+		en: "Watch date moved.",
+		es: "Fecha para revisar movida.",
 	},
 	"panel.ok.watch.done": {
 		en: "Watch date marked done.",
@@ -1183,6 +1211,10 @@ var panelMessages = map[string]msg{
 	"panel.ok.inbox.capture": {
 		en: "Written down in the inbox.",
 		es: "Apuntado en el buzón.",
+	},
+	"panel.ok.inbox.edit": {
+		en: "Capture corrected.",
+		es: "Apunte corregido.",
 	},
 	"panel.ok.inbox.done": {
 		en: "Taken out of the inbox.",
@@ -1468,6 +1500,34 @@ var panelMessages = map[string]msg{
 		en: "you",
 		es: "ti",
 	},
+	"panel.steps.fix": {
+		en: "Correct, move or remove steps",
+		es: "Corregir, mover o quitar pasos",
+	},
+	"panel.steps.fix.hint": {
+		en: "Each change goes into the journal. A step taken out is gone from the plan, but the journal still says what it was.",
+		es: "Cada cambio queda en el diario. Un paso quitado sale del plan, pero el diario sigue diciendo cuál era.",
+	},
+	"panel.step.up": {
+		en: "Move up",
+		es: "Subir",
+	},
+	"panel.step.down": {
+		en: "Move down",
+		es: "Bajar",
+	},
+	"panel.remove": {
+		en: "Remove",
+		es: "Quitar",
+	},
+	"panel.watch.move": {
+		en: "Move to",
+		es: "Mover al",
+	},
+	"panel.watch.drop": {
+		en: "Take out",
+		es: "Quitar",
+	},
 	"panel.save": {
 		en: "Save",
 		es: "Guardar",
@@ -1588,6 +1648,14 @@ var panelMessages = map[string]msg{
 		en: "The weekly review goes through the inbox: each capture becomes a task or knowledge, or is dropped. Make one a task here, or mark it as dealt with when it is.",
 		es: "La revisión semanal repasa el buzón: cada apunte se convierte en tarea o en conocimiento, o se descarta. Aquí puedes convertirlo en tarea, o marcarlo como resuelto cuando lo esté.",
 	},
+	"panel.inbox.edit": {
+		en: "Correct",
+		es: "Corregir",
+	},
+	"panel.inbox.edit.hint": {
+		en: "Its date stays, and so does the space it came from. Leave the reminder empty to remove it.",
+		es: "Su fecha se queda, y también el espacio del que vino. Deja el recordatorio vacío para quitarlo.",
+	},
 	"panel.inbox.done": {
 		en: "Dealt with",
 		es: "Resuelto",
@@ -1611,6 +1679,86 @@ var panelMessages = map[string]msg{
 	"panel.area.new": {
 		en: "New area",
 		es: "Área nueva",
+	},
+	"panel.rule.new": {
+		en: "New rule",
+		es: "Regla nueva",
+	},
+	"panel.rule.new.hint": {
+		en: "A rule is how Claude must work. Every session reads it at the start: in this space, or in every space when shared.",
+		es: "Una regla es cómo debe trabajar Claude. Cada sesión la lee al empezar: en este espacio, o en todos si es compartida.",
+	},
+	"panel.rule.confirm": {
+		en: "Yes: change what every session follows. (You chose to be asked: memory_trust is \"ask\".)",
+		es: "Sí: cambiar lo que sigue cada sesión. (Elegiste que se te pregunte: memory_trust es \"ask\".)",
+	},
+	"panel.rule.confirm.missing": {
+		en: "Tick the box to say yes: a rule changes what every session follows.",
+		es: "Marca la casilla para decir que sí: una regla cambia lo que sigue cada sesión.",
+	},
+	"panel.knowledge.new": {
+		en: "New reference or lesson",
+		es: "Referencia o lección nueva",
+	},
+	"panel.knowledge.new.hint": {
+		en: "A reference is how something works; a lesson is what was learned, with a title that says it. Shared, it belongs to every space and has no area.",
+		es: "Una referencia es cómo funciona algo; una lección es lo aprendido, con un título que lo dice. Compartida, es de todos los espacios y no tiene área.",
+	},
+	"panel.note.edit": {
+		en: "Edit",
+		es: "Editar",
+	},
+	"panel.note.edit.hint": {
+		en: "The text is Markdown. The version it replaces is kept in archive/. An empty summary keeps the one it had.",
+		es: "El texto es Markdown. La versión que sustituye se guarda en archive/. Un resumen vacío deja el que tenía.",
+	},
+	"panel.note.stale": {
+		en: "This note changed since the page was shown. Reload it, and make your change again.",
+		es: "Esta nota ha cambiado desde que se mostró la página. Vuelve a cargarla y haz otra vez tu cambio.",
+	},
+	"panel.note.retire": {
+		en: "Retire",
+		es: "Retirar",
+	},
+	"panel.note.retire.hint": {
+		en: "It is not deleted: it moves to archive/, which is never loaded, with a line that says when and why. A rule stops reaching the sessions.",
+		es: "No se borra: pasa a archive/, que nunca se carga, con una línea que dice cuándo y por qué. Una regla deja de llegar a las sesiones.",
+	},
+	"panel.note.retire.do": {
+		en: "Retire it",
+		es: "Retirarla",
+	},
+	"panel.f.body": {
+		en: "Text",
+		es: "Texto",
+	},
+	"panel.f.shared": {
+		en: "Shared by every space",
+		es: "Compartida por todos los espacios",
+	},
+	"panel.f.reason": {
+		en: "Why",
+		es: "Por qué",
+	},
+	"panel.f.replaced_by": {
+		en: "Replaced by (id of a note, optional)",
+		es: "Sustituida por (id de una nota, opcional)",
+	},
+	"panel.ok.rule.new": {
+		en: "Rule saved.",
+		es: "Regla guardada.",
+	},
+	"panel.ok.knowledge.new": {
+		en: "Saved.",
+		es: "Guardada.",
+	},
+	"panel.ok.note.update": {
+		en: "Note updated; the old version is in archive/.",
+		es: "Nota actualizada; la versión anterior está en archive/.",
+	},
+	"panel.ok.note.retire": {
+		en: "Retired to archive/.",
+		es: "Retirada a archive/.",
 	},
 	"panel.create": {
 		en: "Create",

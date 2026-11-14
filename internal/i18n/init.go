@@ -75,12 +75,24 @@ var initMessages = map[string]msg{
 		es: "Esta terminal todavía no encuentra augmented-brain: para sus comandos, abre una nueva.",
 	},
 	"init.launch": {
-		en: "From now on, to work: open a new terminal and type\n  cd %s && claude",
-		es: "A partir de ahora, para trabajar: abre una terminal nueva y escribe\n  cd %s && claude",
+		en: "From now on, to work: open a new terminal and type\n  cd %s && claude\nThe first time, Claude will ask who you are and how you like to work.",
+		es: "A partir de ahora, para trabajar: abre una terminal nueva y escribe\n  cd %s && claude\nLa primera vez, Claude te preguntará quién eres y cómo te gusta trabajar.",
 	},
 	"init.desktop": {
-		en: "From now on, to work: open the Claude app, go to the Code tab and click + New. Without choosing a folder you work in your personal space; for the work one, pick the folder %s with Choose….\n(Or, in a new terminal: cd %[1]s && claude)",
-		es: "A partir de ahora, para trabajar: abre la app de Claude, ve a la pestaña Code y pulsa + New. Sin elegir carpeta trabajas en tu espacio personal; para el de trabajo, elige con Choose… la carpeta %s.\n(O, en una terminal nueva: cd %[1]s && claude)",
+		en: "From now on, to work: open the Claude app, go to the Code tab and click + New. Without choosing a folder you work in your personal space; for the work one, pick the folder %s with Choose….\n(Or, in a new terminal: cd %[1]s && claude)\nThe first time, sign in with your account; Claude will ask who you are and how you like to work.",
+		es: "A partir de ahora, para trabajar: abre la app de Claude, ve a la pestaña Code y pulsa + New. Sin elegir carpeta trabajas en tu espacio personal; para el de trabajo, elige con Choose… la carpeta %s.\n(O, en una terminal nueva: cd %[1]s && claude)\nLa primera vez, entra con tu cuenta; Claude te preguntará quién eres y cómo te gusta trabajar.",
+	},
+	"init.desktop.pick": {
+		en: "From now on, to work: open the Claude app, go to the Code tab, click + New and pick with Choose… the folder of a space, such as %s.\n(Or, in a new terminal: cd %[1]s && claude)\nThe first time, sign in with your account; Claude will ask who you are and how you like to work.",
+		es: "A partir de ahora, para trabajar: abre la app de Claude, ve a la pestaña Code, pulsa + New y elige con Choose… la carpeta de un espacio, como %s.\n(O, en una terminal nueva: cd %[1]s && claude)\nLa primera vez, entra con tu cuenta; Claude te preguntará quién eres y cómo te gusta trabajar.",
+	},
+	"init.reach.value": {
+		en: "reach %q: use machine or spaces.",
+		es: "reach %q: usa machine o spaces.",
+	},
+	"init.reach.set": {
+		en: "--reach is only for the first setup, and this computer already has one. To change where augmented brain acts, open the panel's Guard page (augmented-brain panel).",
+		es: "--reach es solo para la primera configuración, y este ordenador ya tiene una. Para cambiar dónde actúa augmented brain, abre la página Guardia del panel (augmented-brain panel).",
 	},
 	"init.space.work": {
 		en: "work",

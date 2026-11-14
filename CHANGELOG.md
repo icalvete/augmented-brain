@@ -2,6 +2,143 @@
 
 ## Unreleased
 
+## 1.0.0-rc.1
+
+Released 2026-11-14.
+
+- **`update` now sees a release candidate's next step.** It compared only the numbers,
+  so after installing 1.0.0-rc.1 it would never have offered 1.0.0-rc.2 or 1.0.0: same
+  numbers. Now a release is newer than its candidates, and rc.2 is newer than rc.1.
+- **If you already use Claude Code, the installer asks where augmented brain acts.** On
+  a new installation it offers the whole computer (the default, as before) or only its
+  spaces, so your other projects stay as they were. Someone new to Claude Code is not
+  asked. `AB_REACH=machine|spaces` answers it without a terminal, and the new
+  `init --reach` works only the first time: after that, the choice changes on the
+  panel's Guard page.
+- **The plugin on its own says the program is missing.** Claude Code can add the plugin
+  from its plugin menu without the augmented-brain program. Every session then started
+  with hook errors and no explanation. Now it starts with a message that the program is
+  missing and the command to install it, and Claude tells you the same in your language.
+  [Installing](https://icalvete.github.io/augmented-brain/guide/install.html) tells this
+  case.
+- **The guard says how to write a commit or a push in a repository it already lets
+  through.** The lists only count a repository named with `git -C` and its full path. A
+  `cd` into an allowed repository, or a path in a variable, was refused with advice to add
+  the repository to the lists, which it already was in, and Claude stopped there. Now the
+  refusal gives the exact `git -C` command to use; what the guard allows has not changed.
+- **The installer says how to start once, and warns about the first questions.** With the
+  Claude desktop app, the instructions to open it came out twice in a row; now they come
+  once, and every ending says that the first time Claude asks who you are and how you
+  like to work. When augmented brain acts only in its spaces, or there is a single
+  space, it asks you to pick a space's folder in the app instead of saying you can skip it.
+- **The Guard page keeps your comments in `guard.toml`, and going back to a version tells
+  you everything it changed.** Adding or removing an untouchable repository now changes
+  only that list: your comments and any setting a newer version wrote stay. Going back
+  to a version on the Versions page now also tells you, in your open sessions, when it
+  changed what Claude saves on its own, the model you expect or remote access. A note's
+  link that starts with `//` or `/\` is no longer shown as a link to the panel, since it
+  leads to another site, and the panel's check that it is running no longer says what it
+  is to anything that asks.
+- **The panel's Guard page fits in half the height.** The forms to add or change are
+  folded under their title until you open one, each list of repositories shows every
+  space's in one place with its warning once, and boxes and radio buttons sit beside
+  their text. A repository whose folder is not on this computer says so in the list:
+  most often its name was typed wrong.
+- **Every command has its help: `augmented-brain help <command>`, or `--help` after it.**
+  `augmented-brain panel --help` used to answer "This command does not take: --help". Now
+  it says what the command does, its syntax, its options and an example, in your
+  language, and works before `init` too. The text is the start of the command's section
+  in the [commands reference](https://icalvete.github.io/augmented-brain/guide/commands.html),
+  so the two always say the same.
+- **When the guard stops a commit, Claude tells you where to allow it.** It used to name
+  two settings, `git_allowed_repos` and `git_ask_repos`; now it points to the panel's
+  Guard page, opened with `/brain:panel`. And in the first-session interview, someone
+  who writes code is asked in which repositories Claude may commit, and offered the
+  page to add them.
+- **The website's home page shows the product at first sight.** A short demo of three
+  days in the Claude app sits next to the headline: a task opened and parked, the next
+  session starting where it stopped, and the guard asking before a change in production,
+  with the task's file changing as you watch. The page is shorter, tells one story, and
+  its install steps are the five of getting started.
+- **A closed task opens again from its page in the panel.** The guide said so, but the
+  page had no form for it. Now **Open it again** asks for the phase, what comes next and,
+  if you like, why, and writes it in the task's journal. A closed task no longer shows an
+  empty Steps heading, and a space with nothing for you says so on Today.
+- **The guard's page opens with what it stops, what it asks and what it lets through, in
+  one minute.** The lists of commands moved to a section at the end, the jargon is
+  explained, and a new section says why not to use the mode that skips Claude Code's
+  questions. "What Claude may do without asking you" now covers everything: no commit or
+  push in a repository you have not listed, PowerShell, releases, commands the guard
+  cannot read, saving rules with "ask first", and that adding a production profile keeps
+  the lists accepted.
+- **The panel is easier to read and to use with a finger.** Every text now stands out
+  from its background enough to read comfortably (pale grey text was hard to make out).
+  Dates read "13 Nov", "today" or "today, 10:04" instead of `2026-11-13`; the exact one
+  shows when you hover over it. Small buttons such as **Done** and **Remove** are taller,
+  more so on a touch screen. Long folder paths start with `~` and break on a phone instead
+  of making the page wider than the screen. On a task's page, writing in its journal,
+  editing, parking and closing come before its body, not at the very end.
+- **The README, Getting started and Installing tell the same first start.** All three
+  say to open the Code tab, use the same example folder, say to answer yes when Claude
+  asks whether you trust the folder, and say up front that installing needs no GitHub
+  account while the backup does. On Windows, winget is no longer listed as required.
+- **Claude never gets an address that opens the panel.** Run by Claude with no browser
+  to open (a session in the background, a computer with no screen), `augmented-brain
+  panel` used to print the address; now it asks you to run it in a terminal of your own,
+  and so does `augmented-brain panel remote`. On Linux the browser no longer gets the
+  address as an argument, which every user of the computer can read, but a small file
+  only you can read (not with a snap or flatpak browser, which cannot read it).
+- **The panel's menu fits any window.** On a short window the side now scrolls on its
+  own, so its last pages and **Stop the panel** are always within reach. The menu comes
+  in three blocks (Day to day, Notes, Upkeep), with **Sessions** back in it. On a phone,
+  the menu button says **Profile** on your profile, the open menu shows two columns, and
+  a shadow at its foot says there is more below.
+- **The remote panel's address no longer opens the panel on this computer.** The pages
+  you open from another device now carry a key of their own, which does not work on
+  this computer, and their forms a code of their own. Before, a program on this
+  computer that got hold of the address meant for your phone could use it to change the
+  guard's lists, which only this computer may do.
+- **A form of the panel that cannot be saved comes back with what you typed and the
+  error next to it, in your language.** It used to lead to a page of its own, in English
+  for errors from inside ("date "tomorrow": use YYYY-MM-DD"), with a link to go back.
+  And "Saved" now says what was saved ("Task updated.", "Watch date added.") and no
+  longer comes back when you reload the page.
+- **The help pages are grouped and up to date, and a new page tells how to edit notes
+  by hand.** Troubleshooting is grouped by subject and covers what `doctor` finds (the
+  plugin, a missing notes folder, no default space, three backup warnings, saving rules
+  with `memory_trust`). Known limitations, What stays stable, `SECURITY.md` and
+  `DISCLAIMER.md` say the same thing: 1.0 is not out yet, macOS is tested in CI only,
+  and what counts as a vulnerability.
+- **augmented brain can keep to your spaces.** On the panel's Guard page, "Where
+  augmented brain acts" now has two choices. "On the whole computer" is how it always
+  worked. "Only in my spaces" means a Claude Code session outside your spaces' folders
+  gets no memory and no notices. There the guard only protects its own files, your home
+  folder and what your lists name: production profiles, untouchable machines and the
+  repositories of your lists. Inside a space nothing changes. It is for people who
+  already use Claude Code in other projects and want those left as they were.
+- **Closing a task by changing its status now closes it fully.** `task_update` with
+  status `closed` used to change only the status: no result, and the task's session and
+  worktree stayed. Now it does what `task_close` does, with a new optional `result`; the
+  panel's Close button also ends the task's session and removes its worktree.
+- **The backup's errors speak your language.** A backup that got no answer from the
+  network, one stuck behind another, and a space with no backup used to be told only in
+  English; now they follow the language of your configuration, and the troubleshooting
+  guide quotes them as the program writes them.
+- **Clearer texts for Claude and in the help.** The help no longer says `remote install`
+  is for Linux only: it works on Linux, macOS and Windows. The tools Claude reads now say
+  that a reminder comes up from a week before its day, that `task_step` without `done`
+  unticks the step, that saving a rule, the profile or the guard's lists may ask you
+  first, and describe every parameter.
+- **The backup guide says exactly what a restore brings and where it puts your notes.**
+  It names what to set up again by hand on a new machine (remote access, the panel from
+  another device, the model and trust choices, your code), the guard's lists of older
+  spaces that do travel, and the real time limits.
+- **Saving a production profile or a machine no longer makes the guard ask about every
+  commit.** Claude adding one to lists you had accepted used to leave them "not
+  accepted" until the next session, so each commit, push, `aws` or `ssh` asked first.
+  Adding only makes the guard ask more, so the lists stay accepted; a change you had not
+  accepted yet still waits for you.
+
 ## 0.26.1-beta
 
 Released 2026-11-14.

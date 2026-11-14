@@ -17,6 +17,10 @@ walks you through it.
 - **The installer asks first.** The language (your system's is suggested), then each
   missing piece, with what it is for. Press Enter to accept what it suggests. To change the
   language later, set `language` in your [configuration](configuration.md#settings-for-the-whole-computer).
+- **If you already use Claude Code**, a new installation also asks where augmented brain
+  acts: on the whole computer (the default) or only in its spaces, leaving your other
+  projects as they were. See [Outside every space](spaces.md#outside-every-space). Without
+  Claude Code beforehand it does not ask: it acts on the whole computer.
 - **No GitHub account.** The program downloads from GitHub without one. The backup does
   use one, or another git server, and you set it up later: see [Backup and restore](backup.md).
 - **A new installation ends the same way:** two spaces, `work` and `personal` (in Spanish,

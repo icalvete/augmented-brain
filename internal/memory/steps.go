@@ -141,3 +141,55 @@ func AddStep(body, text string) (string, bool) {
 	b.WriteString(strings.Join(lines[at:], ""))
 	return b.String(), true
 }
+
+// SetStepText returns body with the text of the checkbox on line i replaced; its mark
+// and indentation stay as they were.
+func SetStepText(body string, i int, text string) string {
+	lines := strings.SplitAfter(body, "\n")
+	if i < 0 || i >= len(lines) {
+		return body
+	}
+	end := lines[i][len(strings.TrimRight(lines[i], "\r\n")):]
+	m := checkbox.FindStringSubmatch(strings.TrimRight(lines[i], "\r\n"))
+	if m == nil {
+		return body
+	}
+	lines[i] = m[1] + m[2] + m[3] + strings.Join(strings.Fields(text), " ") + end
+	return strings.Join(lines, "")
+}
+
+// RemoveStep returns body without the checkbox on line i.
+func RemoveStep(body string, i int) string {
+	lines := strings.SplitAfter(body, "\n")
+	if i < 0 || i >= len(lines) || !checkbox.MatchString(strings.TrimRight(lines[i], "\r\n")) {
+		return body
+	}
+	return strings.Join(append(lines[:i:i], lines[i+1:]...), "")
+}
+
+// MoveStep returns body with the checkbox on line from moved to where the checkbox on
+// line to is: before it when it moves up, after it when it moves down. Every other line
+// keeps its place.
+func MoveStep(body string, from, to int) string {
+	open := !strings.HasSuffix(body, "\n") // the last line has no end of line of its own
+	full := body
+	if open {
+		full += "\n"
+	}
+	lines := strings.SplitAfter(full, "\n")
+	lines = lines[:len(lines)-1] // the empty string after the last "\n"
+	if from == to || from < 0 || to < 0 || from >= len(lines) || to >= len(lines) {
+		return body
+	}
+	moved := lines[from]
+	rest := append(lines[:from:from], lines[from+1:]...)
+	out := make([]string, 0, len(lines))
+	out = append(out, rest[:to]...)
+	out = append(out, moved)
+	out = append(out, rest[to:]...)
+	s := strings.Join(out, "")
+	if open {
+		s = strings.TrimSuffix(s, "\n")
+	}
+	return s
+}
