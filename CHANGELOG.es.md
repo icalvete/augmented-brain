@@ -2,6 +2,49 @@
 
 ## Sin publicar
 
+## 1.0.0-rc.4
+
+Publicada el 2026-11-15.
+
+- **`session start` abre en una carpeta en la que Claude ya confía.** Una carpeta que no
+  es un repositorio, dentro de una de confianza, se rechazaba, y el comando te pedía
+  aceptar una pregunta que Claude no enseña ahí. Ahora decide como Claude: un
+  repositorio tiene que ser de confianza él mismo; cualquier otra carpeta lo es si lo es
+  una de arriba.
+- **`session start --model` elige el modelo de la sesión**, como `opus` o `sonnet`.
+- **Tras `update`, las sesiones que no pudo reiniciar reciben el comando correcto.** Antes
+  decía que cerraras y abrieras Claude; ahora dice que lances `augmented-brain session
+  restart --old` cuando hayan terminado de responder.
+- **Cerrar la sesión de una tarea dice lo que pasa de verdad.** Sale de las listas de
+  Claude Desktop y claude.ai, pero la app de Claude del móvil puede seguir enseñándola,
+  desconectada, hasta que la archives allí.
+- **Un worktree que se queda por ficheros que git ignora los nombra.** Un programa
+  compilado, el bytecode y cachés como `.next` ya no lo retienen.
+- **Las páginas de las guías de la web se generan al publicarla, no se guardan en el
+  repositorio.** Una pull request puesta al día con `main` ya no puede llevar páginas
+  viejas, y la web siempre coincide con las guías de las que sale.
+- **En modo bypassPermissions el guardia para lo que preguntaría.** En ese modo Claude
+  Code puede no enseñar las preguntas del guardia (en una prueba ejecutó un comando sin
+  enseñarla), así que un comando de producción, un push a un repositorio de «preguntar»
+  o cualquier otra cosa por la que pregunta el guardia podía ejecutarse sin tu sí. Ahora
+  se rechaza ahí, y Claude te dice qué quería hacer. La publicación y memory_trust ya
+  funcionaban así.
+- **`watch pr` ya no da un resultado de antes ni se rinde cuando no toca.** Justo después
+  de un push o de relanzar la CI espera 90 segundos antes de creerse un verde o un rojo,
+  porque GitHub aún enseña el viejo un rato. Una pull request cuyos cambios no lanzan
+  ningún check obligatorio acaba diciéndolo: bien si GitHub deja mezclarla, bloqueada si
+  no. Y fuera de un repositorio git saca el repositorio de las carpetas de la tarea, o
+  pide `--repo` en el acto.
+- **Claude escribe la Definición, el Análisis, el Plan, la Validación y el Cierre de una
+  tarea con una herramienta propia, `task_section`.** Hasta ahora esas secciones solo
+  cambiaban a mano o no cambiaban, y lo que dejaba una fase se quedaba en el diario. El
+  Plan conserva sus pasos; lo esencial y el diario no se tocan nunca.
+- **La skill de ayuda puede buscar en las guías con `grep` cuando falta la herramienta
+  Grep.** Hasta ahora solo tenía permitida la herramienta Grep.
+- **La portada cuenta la historia de alguien que no programa.** La demo mudaba un blog a
+  un servidor nuevo; ahora renueva un pasaporte antes de un viaje, y el momento del guardia
+  es aprobar una regla nueva. Quien no programa se ve usándolo.
+
 ## 1.0.0-rc.3
 
 Publicada el 2026-11-15.
