@@ -52,6 +52,60 @@ func Resolve(p string) (string, error) {
 	}
 }
 
+// Resolver resolves many paths as Resolve does, remembering every folder it has
+// resolved, so paths that share folders read the disk for them once: the guard checks
+// dozens of files in the same few folders on every call. It is for one short run (a
+// hook): a link made or changed after a folder was resolved is not seen. The zero value
+// is ready to use; it is not safe for concurrent use.
+//
+// The answer is Resolve's, except on Windows, where Resolve also writes the last part
+// in the disk's own case and this one keeps it as given: compare with Same or Within,
+// which ignore case there.
+type Resolver struct{ seen map[string]string }
+
+// Resolve is Resolve, remembering what it resolves.
+func (r *Resolver) Resolve(p string) (string, error) {
+	if p == "~" || strings.HasPrefix(p, "~/") || strings.HasPrefix(p, `~\`) {
+		home, err := Home()
+		if err != nil {
+			return "", err
+		}
+		p = filepath.Join(home, p[1:])
+	}
+	p, err := filepath.Abs(p)
+	if err != nil {
+		return "", err
+	}
+	if r.seen == nil {
+		r.seen = map[string]string{}
+	}
+	return r.resolve(p), nil
+}
+
+// resolve resolves the absolute, clean path p: its folder (remembered), then its last
+// part, followed only when it is a link. A last part that is missing or cannot be read
+// stays as written, as Resolve keeps the part that does not exist.
+func (r *Resolver) resolve(p string) string {
+	if done, ok := r.seen[p]; ok {
+		return done
+	}
+	out := p
+	if parent := filepath.Dir(p); parent == p {
+		if root, err := Resolve(p); err == nil { // a disk's root
+			out = root
+		}
+	} else {
+		out = filepath.Join(r.resolve(parent), filepath.Base(p))
+		if info, err := os.Lstat(out); err == nil && info.Mode()&os.ModeSymlink != 0 {
+			if real, err := filepath.EvalSymlinks(out); err == nil {
+				out = real
+			}
+		}
+	}
+	r.seen[p] = out
+	return out
+}
+
 // foldCase says whether folders compare ignoring case: on macOS and Windows, whose
 // disks usually do (/Users/Ana/Notes and /users/ana/notes are one folder). Tests set it.
 var foldCase = runtime.GOOS == "darwin" || runtime.GOOS == "windows"

@@ -392,9 +392,11 @@ func policy(cfgDir, dir string) guard.Policy {
 			}
 		}
 	}
-	p.Protected = protectedFiles(cfgDir, dir, p.Outside)
-	p.ProtectedDirs = protectedDirs()
-	p.Hidden, p.ConfigDirs = hiddenFiles(cfgDir)
+	// One resolver for the call: these files share a few folders, resolved once.
+	var r paths.Resolver
+	p.Protected = protectedFiles(&r, cfgDir, dir, p.Outside)
+	p.ProtectedDirs = protectedDirs(&r)
+	p.Hidden, p.ConfigDirs = hiddenFiles(&r, cfgDir)
 	return p
 }
 
@@ -447,7 +449,7 @@ func written(v any) string {
 // protectedFiles are the files the assistant does not change on its own: the guard's
 // configuration, and Claude Code's settings (yours and the project's), where a line can
 // switch the plugin, and so the guard, off.
-func protectedFiles(cfgDir, dir string, outside bool) []string {
+func protectedFiles(r *paths.Resolver, cfgDir, dir string, outside bool) []string {
 	var list []string
 	if cfgDir != "" { // unknown: never a file of the current folder in its place
 		list = []string{filepath.Join(cfgDir, config.FileName), filepath.Join(cfgDir, config.GuardFile),
@@ -482,8 +484,8 @@ func protectedFiles(cfgDir, dir string, outside bool) []string {
 		list = append(list, filepath.Join(dir, ".claude", f))
 	}
 	for i, f := range list {
-		if r, err := paths.Resolve(f); err == nil {
-			list[i] = r
+		if resolved, err := r.Resolve(f); err == nil {
+			list[i] = resolved
 		}
 	}
 	return list
@@ -491,14 +493,14 @@ func protectedFiles(cfgDir, dir string, outside bool) []string {
 
 // protectedDirs are the folders whose every file is protected: Claude Code's copy of
 // the plugin, one folder per version, where it reads the hooks that are the guard.
-func protectedDirs() []string {
+func protectedDirs(r *paths.Resolver) []string {
 	home, err := paths.Home()
 	if err != nil {
 		return nil
 	}
 	d := filepath.Join(home, ".claude", "plugins", "cache", claudecode.MarketplaceName)
-	if r, err := paths.Resolve(d); err == nil {
-		d = r
+	if resolved, err := r.Resolve(d); err == nil {
+		d = resolved
 	}
 	return []string{d}
 }
@@ -513,13 +515,13 @@ func programName() string {
 
 // hiddenFiles are the files the assistant never reads (the panel's token file) and the
 // ways a command can write the configuration folder.
-func hiddenFiles(cfgDir string) (hidden, dirs []string) {
+func hiddenFiles(r *paths.Resolver, cfgDir string) (hidden, dirs []string) {
 	if cfgDir == "" {
 		return nil, []string{".config/augmented-brain", "AB_CONFIG_DIR"}
 	}
 	f := filepath.Join(cfgDir, "panel.json")
-	if r, err := paths.Resolve(f); err == nil {
-		f = r
+	if resolved, err := r.Resolve(f); err == nil {
+		f = resolved
 	}
 	dirs = []string{cfgDir, paths.Tilde(cfgDir), ".config/augmented-brain", "AB_CONFIG_DIR"}
 	return []string{f}, dirs
