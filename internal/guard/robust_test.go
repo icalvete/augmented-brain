@@ -46,6 +46,19 @@ func slowLimit() time.Duration {
 	return time.Second
 }
 
+// fastest runs f up to three times and gives its fastest run, stopping at the first
+// within slowLimit. A stall is slow every time; a busy machine (a shared CI runner on
+// Windows took 1.7 s once for what takes milliseconds) only now and then.
+func fastest(f func()) time.Duration {
+	best := time.Duration(1<<63 - 1)
+	for i := 0; i < 3 && best > slowLimit(); i++ {
+		start := time.Now()
+		f()
+		best = min(best, time.Since(start))
+	}
+	return best
+}
+
 // Inputs that used to keep the guard busy for seconds, or forever: each answers within
 // a second, and the nested ones ask.
 func TestNoInputStallsTheGuard(t *testing.T) {
@@ -87,9 +100,8 @@ func TestNoInputStallsTheGuard(t *testing.T) {
 		{"prettier with 3000 files", words(3000), Allow},
 		{"too long", "echo " + strings.Repeat("a", maxCommand), Ask},
 	} {
-		start := time.Now()
-		d := p.Command(c.in)
-		if el := time.Since(start); el > slowLimit() {
+		var d Decision
+		if el := fastest(func() { d = p.Command(c.in) }); el > slowLimit() {
 			t.Errorf("%s (%d bytes): %v", c.name, len(c.in), el)
 		}
 		if d.Verdict != c.want {
@@ -126,9 +138,8 @@ func TestRecursiveGitAlias(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, cmd := range []string{"git again", "git loop"} {
-		start := time.Now()
-		d := p.Command(cmd)
-		if el := time.Since(start); el > slowLimit() {
+		var d Decision
+		if el := fastest(func() { d = p.Command(cmd) }); el > slowLimit() {
 			t.Errorf("%s: %v", cmd, el)
 		}
 		if cmd == "git again" && d.Verdict != Ask {
