@@ -76,8 +76,8 @@ type Policy struct {
 	// the lists would let a commit, a push or a merge through, it asks instead.
 	ConfigChanged bool
 	// NoPrompt says the session may not show the user a permission dialog
-	// (bypassPermissions): what is asked only so the user decides, such as starting a
-	// release workflow, is denied instead.
+	// (bypassPermissions). The hook then turns every Ask into a Deny; a release
+	// workflow is denied here already, with words of its own.
 	NoPrompt bool
 	// SealProblem, when not empty, says why the record of the lists the user last saw
 	// could not be read: ConfigChanged is set too, since the guard cannot tell.

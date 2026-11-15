@@ -230,6 +230,14 @@ no one to ask, and with "ask" the save is refused. Claude tells you what it want
 save. Start a session in a normal mode to save it, or choose "Save and tell me" in the
 Guard page.
 
+### Claude says the guard stopped something because of bypassPermissions
+
+In a session that skips Claude Code's permission questions (`bypassPermissions`), the
+guard stops whatever it would otherwise ask you about, such as a command with a
+production profile or a push to a repository on the "ask" list. Claude tells you what it
+wanted to do. Do it yourself, or start a session in another mode and allow it there
+([why](guard.md#sessions-that-skip-claude-codes-questions)).
+
 ## Backup and restore
 
 ### The backup failed

@@ -16,9 +16,10 @@ question. The whole story, command by command, is in [The guard](guard.md).
    can stop an action the guard would let through.
 
 Both must say yes. A yes from the guard never skips a question from Claude Code. The
-other way round holds too, with one exception: in the mode that skips Claude Code's
-questions (`bypassPermissions`), a question from the guard may not reach you. Do not use
-that mode with the guard; [why](guard.md#sessions-that-skip-claude-codes-questions).
+other way round holds too. In the mode that skips Claude Code's questions
+(`bypassPermissions`) a question from the guard may not reach you, so there the guard
+stops what it would ask about instead. Do not use that mode with the guard;
+[why](guard.md#sessions-that-skip-claude-codes-questions).
 
 If you keep augmented brain to your spaces, outside their folders the guard only
 protects its own files, your home folder and what your lists name: there, the rest is
