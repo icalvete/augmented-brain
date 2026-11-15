@@ -68,7 +68,8 @@ if out=$(python3 -I scripts/privacy-hashed.py selftest 2>&1); then ok; else bad 
 
 # What regenerating changes, not what you changed by hand and have not committed yet.
 step "guides up to date"
-docs_sum() { find docs internal/i18n/cmdhelp.go plugin/skills -type f | LC_ALL=C sort | xargs cat | cksum; }
+# The website's pages (ignored, built by the pages workflow) do not count; new files do.
+docs_sum() { git ls-files -co --exclude-standard -- docs internal/i18n/cmdhelp.go plugin/skills | LC_ALL=C sort | xargs cat | cksum; }
 before=$(docs_sum)
 python3 -I scripts/build-guides.py >/dev/null
 if [ "$before" = "$(docs_sum)" ]; then ok; else bad "scripts/build-guides.py changed the generated pages: commit them"; fi

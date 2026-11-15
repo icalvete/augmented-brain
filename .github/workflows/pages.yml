@@ -1,0 +1,49 @@
+name: pages
+
+# The website: docs/ as it is in main, plus the pages scripts/build-guides.py writes
+# from the guides' Markdown (docs/guide/*.html, docs/sitemap.xml, docs/llms-full.txt).
+# Those are not committed: a pull request brought up to date with main can never carry
+# stale ones, and the site always matches the Markdown it was built from. The help
+# skill's copy of the guides and internal/i18n/cmdhelp.go are still committed (the
+# program and the plugin need them) and ci.yml checks them.
+# Settings > Pages > Source must be "GitHub Actions".
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deployment at a time; a newer push waits rather than cancel one half done.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the guides' pages
+        run: python3 -I scripts/build-guides.py
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
