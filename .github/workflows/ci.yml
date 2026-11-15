@@ -201,13 +201,15 @@ jobs:
             ${{ github.event.pull_request.title }}
           AB_PRIVACY_REQUIRED: ${{ github.repository == 'icalvete/augmented-brain' && (github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]')) }}
         run: python3 -I scripts/privacy-hashed.py scan
-      # The website's pages are generated from the guides' Markdown: a change to a guide
-      # that forgot to regenerate them would publish the old text. The help skill's
-      # copy of the guides (plugin/skills) is generated too, new files included.
+      # The help skill's copy of the guides (plugin/skills) and cmdhelp.go are generated
+      # from the guides' Markdown and committed: a change to a guide that forgot to
+      # regenerate them would ship the old text, new files included. The website's own
+      # pages are not committed (.gitignore): the pages workflow builds them, and this
+      # step still fails if building them does.
       # Each pull request leaves its changelog entry in changelog.d/, in both languages.
       - name: Changelog entries come in both languages
         run: python3 -I scripts/changelog.py check
-      - name: The website's pages match the guides
+      - name: The generated guides match their Markdown
         run: |
           python3 scripts/build-guides.py >/dev/null
           if git status --porcelain -- docs internal/i18n/cmdhelp.go plugin/skills | grep .; then

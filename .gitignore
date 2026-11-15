@@ -8,3 +8,9 @@ __pycache__/
 
 # Logs of test/rehearsal/rehearse.sh
 test/rehearsal/logs/
+
+# Written by scripts/build-guides.py and built into the website by the pages
+# workflow, never committed (.github/workflows/pages.yml).
+/docs/guide/*.html
+/docs/sitemap.xml
+/docs/llms-full.txt

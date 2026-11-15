@@ -66,7 +66,7 @@ it feels to a newcomer.
 | `internal/doccheck`, `internal/stable`, `internal/portcheck`, `internal/testenv` | Test only: reference pages cover the program; the compatibility promise is frozen; patterns that fail on Windows; a plain test machine. |
 | `plugin/` | The Claude Code plugin (hooks, MCP server, `/brain:panel`, and the help skill `/brain:help` with the guides inside); it travels inside the program (`marketplace.go`). |
 | `install.sh`, `install.ps1` | The installers people run. |
-| `docs/` | The website (GitHub Pages, from `main`), the guides in `docs/guide/` and the format spec. |
+| `docs/` | The website (GitHub Pages, built from `main` by `.github/workflows/pages.yml`), the guides in `docs/guide/` and the format spec. |
 | `scripts/` | Checks, builders and release helpers. |
 | `changelog.d/` | Changelog entries waiting for the next release. |
 | `test/` | `COVERAGE.md`, the release rehearsal and the Ubuntu and Windows VMs. |
@@ -151,7 +151,8 @@ The full text, with the reasons, is in [dev/rules.md](dev/rules.md).
 - **The docs follow the code, and are checked as people read them.** Tests fail when the
   reference misses a command, flag, tool, parameter or setting, when a link is broken or
   a guide lacks its twin.
-- **Generated files are not edited by hand:** the guides' HTML, `docs/sitemap.xml`,
+- **Generated files are not edited by hand:** the guides' HTML (not committed: the
+  pages workflow builds it), `docs/sitemap.xml`,
   `docs/llms-full.txt`, `internal/i18n/cmdhelp.go` and the help skill's `plugin/skills/help/guides/` come
   from `scripts/build-guides.py`;
   `docs/img/*.svg` from `docs/img/diagrams.py`; `MEMORY.md` from the program.
