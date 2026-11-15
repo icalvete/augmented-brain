@@ -843,7 +843,8 @@ Claude works without asking at every step.
 The task's file has a numbered section for each phase where there is something to write
 down (1. Definition, 2. Analysis, 3. Plan, 4. Validation, 5. Closing). Execution has no
 section of its own: what is done goes to the journal. That is why the numbers of the
-sections and of the phases do not match from validation on.
+sections and of the phases do not match from validation on. Claude writes each section
+as its phase settles it, with the tool [`task_section`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_section).
 
 The phase is the task's `status`. Two more statuses pause a task without losing anything:
 
@@ -4483,7 +4484,7 @@ A few things hold for every tool:
 
 - **Where things are**: [`where_am_i`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#where_am_i), [`pending`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#pending).
 - **Tasks**: [`task_new`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_new), [`task_get`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_get),
-  [`task_update`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_update), [`task_step`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_step),
+  [`task_update`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_update), [`task_section`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_section), [`task_step`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_step),
   [`task_journal`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_journal), [`task_park`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_park), [`task_close`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_close),
   [`task_worktree`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_worktree).
 - **Inbox and the weekly review**: [`capture`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#capture),
@@ -4610,6 +4611,28 @@ lists the steps. A closed task's steps stay as they were closed.
   Plan.
 - `move_to` (optional): move the step given by `number` or `text` to this place in the
   Plan, 1 for the first.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. See
+  [A task of another space](https://icalvete.github.io/augmented-brain/guide/spaces.html#a-task-of-another-space).
+
+## `task_section`
+
+**You say:** "write down the plan." Claude also calls it on its own, as a phase moves on.
+
+Writes one section of a task: its Definition (goal, scope, done when), Analysis (how
+things are, measured), Plan (the way there), Validation (the proof and its result) or
+Closing. The new text replaces the section's; its heading stays. The essentials and the
+journal are never touched, and a short journal line says which section changed. A closed
+task's sections stay as they were closed.
+
+In the Plan, only the prose changes: its steps stay, after the new text, and are added
+or ticked with [`task_step`](https://icalvete.github.io/augmented-brain/guide/mcp-tools.html#task_step). A text with steps for the Plan, or with a
+heading (`#` or `##`) that would split the task, is refused and nothing is written. Use
+`###` for the parts of a section.
+
+- `id`: the task's id.
+- `section`: `definition`, `analysis`, `plan`, `validation` or `closing`.
+- `text`: the section's new text, in Markdown, without its heading.
 - `space` (optional): another of your spaces, whose task this is. Claude uses it only
   when you ask to work on a task of that space from here. See
   [A task of another space](https://icalvete.github.io/augmented-brain/guide/spaces.html#a-task-of-another-space).
