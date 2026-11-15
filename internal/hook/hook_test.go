@@ -144,6 +144,13 @@ func TestPreToolUse(t *testing.T) {
 		{map[string]any{"cwd": work, "permission_mode": "auto", "tool_name": "Bash", "tool_input": map[string]any{"command": "gh workflow run release"}}, "ask"},
 		{map[string]any{"cwd": work, "permission_mode": "bypassPermissions", "tool_name": "Bash", "tool_input": map[string]any{"command": "gh workflow run release"}}, "deny"},
 		{map[string]any{"cwd": work, "permission_mode": "bypassPermissions", "tool_name": "Bash", "tool_input": map[string]any{"command": "gh workflow run deploy-site"}}, ""},
+		// Whatever else the guard asks about is refused there too: the docs do not
+		// promise the dialog. Other modes still ask.
+		{map[string]any{"cwd": work, "permission_mode": "bypassPermissions", "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}}, "deny"},
+		{map[string]any{"cwd": work, "permission_mode": "bypassPermissions", "tool_name": "Monitor", "tool_input": map[string]any{"command": "aws logs tail app --follow --profile prod"}}, "deny"},
+		{map[string]any{"cwd": work, "permission_mode": "dontAsk", "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}}, "ask"},
+		{map[string]any{"cwd": work, "permission_mode": "acceptEdits", "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}}, "ask"},
+		{map[string]any{"cwd": work, "permission_mode": "bypassPermissions", "tool_name": "Bash", "tool_input": map[string]any{"command": "ls"}}, ""},
 		// A WebSocket watch runs no program.
 		{map[string]any{"cwd": work, "tool_name": "Monitor", "tool_input": map[string]any{"ws": map[string]any{"url": "wss://example.invalid/feed"}}}, ""},
 	}
@@ -159,6 +166,12 @@ func TestPreToolUse(t *testing.T) {
 		if got != c.want {
 			t.Errorf("%v: got %q, want %q", c.in, got, c.want)
 		}
+	}
+
+	// The refusal in bypassPermissions says why, and keeps what the guard would have asked.
+	o := run(t, pre, map[string]any{"cwd": work, "permission_mode": "bypassPermissions", "tool_name": "Bash", "tool_input": map[string]any{"command": "aws s3 ls --profile prod"}})
+	if r, _ := o["permissionDecisionReason"].(string); !strings.Contains(r, "bypassPermissions") || !strings.Contains(r, "prod") {
+		t.Errorf("bypassPermissions reason: %v", o)
 	}
 
 	// Broken input is refused, never let through unchecked, and is no error.

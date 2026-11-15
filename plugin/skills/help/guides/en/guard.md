@@ -231,13 +231,14 @@ security boundary.
 
 ## Sessions that skip Claude Code's questions
 
-Claude Code has a mode that skips its permission questions: `bypassPermissions`
-("bypass permissions"). Do not use it with the guard. The guard can still stop a
-command there, but when it asks, Claude Code may not show you the question and run the
-command anyway. The guard knows this in two cases and stops instead of asking: starting
-a release, and saving a rule, your profile or a guard list with "ask first". Everything
-else it asks about (production, untouchable machines, the "ask" list, a push that
-overwrites) depends on Claude Code showing you the question.
+Claude Code has a mode that skips its permission questions: `bypassPermissions` ("bypass
+permissions"). Do not use it with the guard. Anthropic's documentation does not promise
+that Claude Code still shows you the guard's questions in that mode, and in a test with
+Claude Code 2.1.325 it ran a command the guard asked about without showing the question.
+So in that mode the guard stops everything it would otherwise ask you about: production,
+untouchable machines, the "ask" list, a push that overwrites, a release, saving a rule
+with "ask first". Claude tells you what it wanted to do and why. Then you can do it
+yourself, or start a session in another mode and allow it there.
 
 ## When something is wrong with it
 

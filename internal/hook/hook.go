@@ -269,8 +269,9 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 			PermissionDecision: decision, PermissionDecisionReason: "augmented brain: " + reason}})
 	}
 	p := policy(cfgDir, i.Cwd)
-	// In bypassPermissions Claude Code may skip the dialog an "ask" opens, so what must
-	// never go without the user's yes is refused there instead.
+	// In bypassPermissions Claude Code may skip the dialog an "ask" opens, so whatever
+	// the guard would ask about is refused there instead: none of it may go without the
+	// user's yes.
 	p.NoPrompt = i.PermissionMode == "bypassPermissions"
 	var d guard.Decision
 	switch {
@@ -278,6 +279,11 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 		d = guard.Decision{Verdict: guard.Deny, Reason: i18n.T(p.Lang, "guard.unreadable")}
 	default:
 		d = toolDecision(p, i)
+	}
+	if p.NoPrompt && d.Verdict == guard.Ask {
+		// The docs do not promise the dialog there, and Claude Code 2.1.325 was seen
+		// running a command whose hook said "ask" without showing it.
+		d = guard.Decision{Verdict: guard.Deny, Reason: i18n.T(p.Lang, "guard.noprompt", d.Reason)}
 	}
 	decision := map[guard.Verdict]string{guard.Deny: "deny", guard.Ask: "ask"}[d.Verdict]
 	if decision == "" {

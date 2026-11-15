@@ -163,6 +163,8 @@
   <ul><li><strong>A new machine, or after a restore.</strong> <code>session.toml</code> is not carried by backups, so the setting is back to telling you after saving. Choose “Ask me first” again in the panel's Guard page.</li><li><strong>The setting is misspelled.</strong> A line of <code>session.toml</code> with a name the program does not know is ignored. <code>doctor</code> names it, with the right name. See <a href="#settings-this-version-does-not-know-in-guardtoml-or-sessiontoml">“Settings this version does not know”</a>.</li></ul>
   <h3 id="claude-says-it-cannot-save-a-rule">Claude says it cannot save a rule</h3>
   <p>The session skips Claude Code's permission questions (<code>bypassPermissions</code>), so there is no one to ask, and with “ask” the save is refused. Claude tells you what it wanted to save. Start a session in a normal mode to save it, or choose “Save and tell me” in the Guard page.</p>
+  <h3 id="claude-says-the-guard-stopped-something-because-of-bypasspermissions">Claude says the guard stopped something because of bypassPermissions</h3>
+  <p>In a session that skips Claude Code's permission questions (<code>bypassPermissions</code>), the guard stops whatever it would otherwise ask you about, such as a command with a production profile or a push to a repository on the “ask” list. Claude tells you what it wanted to do. Do it yourself, or start a session in another mode and allow it there (<a href="guard.html#sessions-that-skip-claude-codes-questions">why</a>).</p>
   <h2 id="backup-and-restore">Backup and restore</h2>
   <h3 id="the-backup-failed">The backup failed</h3>
   <p>Claude tells you at the start of the next session. Run <code>augmented-brain backup</code> in a folder of the space to see why:</p>

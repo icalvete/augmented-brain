@@ -240,6 +240,14 @@ no hay a quién preguntar, y con «preguntar» se rechaza el guardado. Claude te
 quería guardar. Empieza una sesión en un modo normal para guardarlo, o elige «Guardar y
 avisarme» en la página Guardia.
 
+### Claude dice que el guardia ha parado algo por bypassPermissions
+
+En una sesión que se salta las preguntas de permiso de Claude Code (`bypassPermissions`),
+el guardia para todo lo que en otro modo te preguntaría, como un comando con un perfil de
+producción o un push a un repositorio de la lista «preguntar». Claude te dice qué quería
+hacer. Hazlo tú, o abre una sesión en otro modo y permítelo allí
+([por qué](guard.md#sesiones-que-se-saltan-las-preguntas-de-claude-code)).
+
 ## Copia de seguridad y restauración
 
 ### Ha fallado la copia de seguridad

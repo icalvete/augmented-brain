@@ -32,7 +32,7 @@ A few things hold for every tool:
 
 - **Where things are**: [`where_am_i`](#where_am_i), [`pending`](#pending).
 - **Tasks**: [`task_new`](#task_new), [`task_get`](#task_get),
-  [`task_update`](#task_update), [`task_step`](#task_step),
+  [`task_update`](#task_update), [`task_section`](#task_section), [`task_step`](#task_step),
   [`task_journal`](#task_journal), [`task_park`](#task_park), [`task_close`](#task_close),
   [`task_worktree`](#task_worktree).
 - **Inbox and the weekly review**: [`capture`](#capture),
@@ -159,6 +159,28 @@ lists the steps. A closed task's steps stay as they were closed.
   Plan.
 - `move_to` (optional): move the step given by `number` or `text` to this place in the
   Plan, 1 for the first.
+- `space` (optional): another of your spaces, whose task this is. Claude uses it only
+  when you ask to work on a task of that space from here. See
+  [A task of another space](spaces.md#a-task-of-another-space).
+
+## `task_section`
+
+**You say:** "write down the plan." Claude also calls it on its own, as a phase moves on.
+
+Writes one section of a task: its Definition (goal, scope, done when), Analysis (how
+things are, measured), Plan (the way there), Validation (the proof and its result) or
+Closing. The new text replaces the section's; its heading stays. The essentials and the
+journal are never touched, and a short journal line says which section changed. A closed
+task's sections stay as they were closed.
+
+In the Plan, only the prose changes: its steps stay, after the new text, and are added
+or ticked with [`task_step`](#task_step). A text with steps for the Plan, or with a
+heading (`#` or `##`) that would split the task, is refused and nothing is written. Use
+`###` for the parts of a section.
+
+- `id`: the task's id.
+- `section`: `definition`, `analysis`, `plan`, `validation` or `closing`.
+- `text`: the section's new text, in Markdown, without its heading.
 - `space` (optional): another of your spaces, whose task this is. Claude uses it only
   when you ask to work on a task of that space from here. See
   [A task of another space](spaces.md#a-task-of-another-space).

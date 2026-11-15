@@ -2,7 +2,7 @@
 description: Answers questions about augmented brain itself (how to install, update or uninstall it, the panel and the panel on the phone, spaces, tasks, the guard, backups, commands, settings, MCP tools, errors) from the guides of the version installed, and with no question proposes the next step · Responde dudas sobre augmented brain (instalar, actualizar o desinstalar, el panel y el panel en el móvil, espacios, tareas, el guardia, copias, comandos, ajustes, herramientas MCP, errores) con las guías de la versión instalada, y sin pregunta propone el siguiente paso
 when_to_use: Use it whenever the user asks how augmented brain works or how to do something with it, or something of it fails; not for the user's own tasks and notes, which are the MCP tools' work.
 argument-hint: "[question · pregunta]"
-allowed-tools: Read, Grep, Glob, Bash(augmented-brain doctor), Bash(augmented-brain help:*), Bash(augmented-brain version), Bash(~/.local/bin/augmented-brain doctor), Bash(~/.local/bin/augmented-brain help:*), Bash(~/.local/bin/augmented-brain version)
+allowed-tools: Read, Grep, Glob, Bash(grep:*), Bash(augmented-brain doctor), Bash(augmented-brain help:*), Bash(augmented-brain version), Bash(~/.local/bin/augmented-brain doctor), Bash(~/.local/bin/augmented-brain help:*), Bash(~/.local/bin/augmented-brain version)
 ---
 You answer questions about augmented brain with its own documentation: the guides of
 the version installed on this computer, in the folder `guides/` next to this file
@@ -13,7 +13,8 @@ The user's question: $ARGUMENTS
 
 ## When there is a question
 
-Use the Read and Grep tools on these files, not shell commands.
+Use the Read and Grep tools on these files. If Grep is not there, search with `grep`;
+no other shell commands.
 
 1. Read `${CLAUDE_SKILL_DIR}/guides/index.md`: every page, with the line of what it answers.
 2. Pick the page or two that answer it. Read them in the user's language: `es/` for

@@ -100,7 +100,7 @@ func TestTools(t *testing.T) {
 		names = append(names, tl.Name)
 	}
 	sort.Strings(names)
-	want := "area_new backup_setup capture capture_done knowledge_new note_retire pending person_save profile_save repo_describe review_done rule_new safety_save secret_name_save session_recover task_close task_get task_journal task_new task_park task_step task_update task_worktree weekly_review where_am_i"
+	want := "area_new backup_setup capture capture_done knowledge_new note_retire pending person_save profile_save repo_describe review_done rule_new safety_save secret_name_save session_recover task_close task_get task_journal task_new task_park task_section task_step task_update task_worktree weekly_review where_am_i"
 	if got := strings.Join(names, " "); got != want {
 		t.Errorf("tools = %s", got)
 	}
@@ -516,6 +516,15 @@ func TestSubtasksAndSteps(t *testing.T) {
 	}
 	if out, isErr := call(t, cs, "task_step", map[string]any{"id": "task-new-website", "number": 1, "done": true}); isErr || !strings.Contains(out, "1. [x] Pick a theme") {
 		t.Errorf("task_step tick: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_section", map[string]any{"id": "task-new-website", "section": "plan", "text": "Small and cheap first."}); isErr {
+		t.Errorf("task_section plan: %s", out)
+	}
+	if out, _ := call(t, cs, "task_get", map[string]any{"id": "task-new-website"}); !strings.Contains(out, "## 3. Plan\nSmall and cheap first.\n\n- [x] Pick a theme\n\n## 4.") {
+		t.Errorf("task_section kept the steps after the new text: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_section", map[string]any{"id": "task-new-website", "section": "budget", "text": "x"}); !isErr || !strings.Contains(out, "definition, analysis, plan, validation, closing") {
+		t.Errorf("task_section unknown: %s", out)
 	}
 	out, _ := call(t, cs, "pending", nil)
 	if !strings.Contains(out, "- task-new-website (New website) · definition · 1/1 steps · waits on me") ||

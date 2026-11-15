@@ -81,14 +81,14 @@ func (s System) ClosedTask(cfgDir, task string, stop func(cfgDir, task string) e
 	case removed:
 		out += "\n" + i18n.T("en", "session.worktree.closed", paths.Tilde(folder))
 	case why != "":
-		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(folder), i18n.T("en", "session.worktree.why."+why))
+		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(folder), WhyKept("en", folder, why))
 	}
 	gone, kept := RemoveNotedWorktrees(cfgDir, task, skip...)
 	for _, f := range gone {
 		out += "\n" + i18n.T("en", "session.worktree.closed", paths.Tilde(f))
 	}
 	for _, k := range kept {
-		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(k.Folder), i18n.T("en", "session.worktree.why."+k.Why))
+		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(k.Folder), WhyKept("en", k.Folder, k.Why))
 	}
 	return out
 }
