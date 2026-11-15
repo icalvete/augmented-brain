@@ -923,6 +923,9 @@ Los eventos:
   resumen en `archive/sessions/` y lo enlaza desde el diario de la tarea.
 - `session-end`: acaba la sesión. Apunta que acabó bien, y arranca la copia de seguridad
   por detrás.
+- `update-check`: no es una llamada de Claude Code. Una vez al día, `session-start` lo
+  lanza por detrás para preguntar a GitHub cuál es la última versión, y así ninguna sesión
+  espera a la red. Una versión nueva se dice al empezar la sesión siguiente.
 
 ## augmented-brain version
 

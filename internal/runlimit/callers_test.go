@@ -16,6 +16,7 @@ var unbounded = map[string]string{
 	"internal/remote/remote.go":                 "realStartDaemon: Claude's daemon, detached",
 	"internal/remote/closetask.go":              "session stop --when-idle, detached",
 	"internal/hook/session_end.go":              "the automatic backup, detached",
+	"internal/hook/updatecheck.go":              "the check for a new version, detached",
 	"internal/panel/backup.go":                  "a backup started from the panel, detached",
 	"internal/panel/control.go":                 "the panel's server, detached; the browser it opens",
 	"internal/detach/detach_windows.go":         "detach itself",

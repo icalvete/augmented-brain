@@ -89,6 +89,50 @@ func PartFor(c *config.Config, s *config.Space, note, task string, n int) string
 	return partTag(s.Name, n, total) + slots[n-2]
 }
 
+// AllParts returns every part of the session text at once (index 0 is part 1), from
+// one reading of the space: what PartFor gives for each n, built once. With all the
+// parts in hand it can also do what a part built on its own cannot: when part 1 does
+// not fit and a part is free, the profile goes whole to that part instead of being cut.
+func AllParts(c *config.Config, s *config.Space, note, task string) []string {
+	out := make([]string, Parts)
+	m, shared, problems, failed := loadSpace(c, s)
+	if failed != "" {
+		out[0] = failed
+		return out
+	}
+	slots := layout(c, s, m, shared)
+	total := 1 + len(slots)
+	head := heading(c, s, m, problems, note, task) + assistantText(c)
+	first := firstFrom(c, s, head, total)
+	if total < Parts {
+		if head, profile, ok := splitFirst(c, s, head, total, total+1); ok {
+			first = head
+			slots = append(slots, profile)
+			total++
+		}
+	}
+	out[0] = first
+	for i, text := range slots {
+		out[i+1] = partTag(s.Name, i+2, total) + text
+	}
+	return out
+}
+
+// splitFirst is part 1 with the profile moved to a part of its own, for when the
+// heading (head) and the whole profile do not fit in one part of total: ok is false
+// when they do, or when the profile alone would not fit in a part either. newTotal
+// counts the profile's part.
+func splitFirst(c *config.Config, s *config.Space, head string, total, newTotal int) (first, profile string, ok bool) {
+	profile = section("Who the user is", profileText(c, s))
+	room := Budget - size(partTag(s.Name, Parts, Parts))
+	whole := head + fmt.Sprintf(partsNote, total) + profile
+	first = head + fmt.Sprintf("\n(This is part 1 of %d. The profile, the rules and the index of the space come in the other parts, which may arrive in any order: read them together.)\n", newTotal)
+	if size(whole) <= Budget || size(profile) > room || size(first) > Budget {
+		return "", "", false
+	}
+	return first, profile, true
+}
+
 // layout is the text of parts 2 onwards, in order and without their tags: the index
 // (in up to indexParts parts), the common rules, and the user's rules in what is left.
 func layout(c *config.Config, s *config.Space, m, shared *memory.Memory) []string {
@@ -120,9 +164,16 @@ func layout(c *config.Config, s *config.Space, m, shared *memory.Memory) []strin
 // assistant's name and personality, and the profile. When they do not fit, the profile
 // is cut to profileBudget, and then the end of the part, saying what was left out.
 func firstPart(c *config.Config, s *config.Space, m *memory.Memory, problems []memory.Problem, note, task string, total int) string {
-	head := heading(c, s, m, problems, note, task) + assistantText(c)
+	return firstFrom(c, s, heading(c, s, m, problems, note, task)+assistantText(c), total)
+}
+
+// partsNote is what part 1 says of the others, when there are others.
+const partsNote = "\n(This is part 1 of %d. The rules and the index of the space come in the other parts, which may arrive in any order: read them together.)\n"
+
+// firstFrom is firstPart from its heading (heading and assistantText) already built.
+func firstFrom(c *config.Config, s *config.Space, head string, total int) string {
 	if total > 1 {
-		head += fmt.Sprintf("\n(This is part 1 of %d. The rules and the index of the space come in the other parts, which may arrive in any order: read them together.)\n", total)
+		head += fmt.Sprintf(partsNote, total)
 	}
 	profilePath := filepath.Join(c.Dir, "profile.md")
 	profile := section("Who the user is", profileText(c, s))

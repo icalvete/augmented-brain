@@ -19,6 +19,7 @@
     "event session-end",
     "event session-start",
     "event stop",
+    "event update-check",
     "event user-prompt-submit"
   ],
   "import": [

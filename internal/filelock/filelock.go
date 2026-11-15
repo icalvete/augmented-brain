@@ -9,6 +9,9 @@ import (
 	"time"
 )
 
+// maxPause is the longest LockWithin sleeps between two tries.
+const maxPause = 50 * time.Millisecond
+
 // ErrBusy is what LockWithin returns when the lock stayed held all the time it waited.
 var ErrBusy = errors.New("the lock is held by another process")
 
@@ -34,7 +37,9 @@ func Lock(path string) (func(), error) {
 
 // LockWithin is Lock, waiting at most wait: a hook has a few seconds, not forever (a
 // backup or an import may hold the lock for longer). It returns ErrBusy when the lock
-// stayed held.
+// stayed held. It tries again after 1 ms, then waits twice as long each time up to
+// 50 ms: the session start's parts hold the lock for a few milliseconds, and a fixed
+// 50 ms wait made them queue for far longer than the work itself.
 func LockWithin(path string, wait time.Duration) (func(), error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return nil, err
@@ -44,6 +49,7 @@ func LockWithin(path string, wait time.Duration) (func(), error) {
 		return nil, err
 	}
 	deadline := time.Now().Add(wait)
+	pause := time.Millisecond
 	for {
 		ok, err := tryLock(f)
 		if err != nil {
@@ -56,10 +62,12 @@ func LockWithin(path string, wait time.Duration) (func(), error) {
 				f.Close()
 			}, nil
 		}
-		if time.Now().After(deadline) {
+		left := time.Until(deadline)
+		if left <= 0 {
 			f.Close()
 			return nil, ErrBusy
 		}
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(min(pause, left))
+		pause = min(2*pause, maxPause)
 	}
 }
