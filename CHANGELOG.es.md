@@ -2,6 +2,16 @@
 
 ## Sin publicar
 
+## 1.0.0-rc.5
+
+Publicada el 2026-11-15.
+
+- **Una tarea que ya existe puede hacerse subtarea, cambiar de madre o volver a ser una
+  tarea propia.** `task_update` admite `parent`: el id de la nueva madre, o `none`.
+  Comprueba lo mismo que con una subtarea nueva (un solo nivel, una madre que no esté
+  cerrada), rechaza una tarea con subtareas propias, pasa al área de la madre salvo que se
+  dé `area`, y apunta el cambio en el diario.
+
 ## 1.0.0-rc.4
 
 Publicada el 2026-11-15.
