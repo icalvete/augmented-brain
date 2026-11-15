@@ -2,6 +2,83 @@
 
 ## Sin publicar
 
+## 1.0.0-rc.3
+
+Publicada el 2026-11-15.
+
+- **Después de instalar, la terminal que usaste también sirve.** No ve el PATH nuevo, así
+  que `augmented-brain` allí decía «command not found». El instalador acaba ahora con la
+  línea que lo arregla ahí mismo, como `source ~/.bashrc`, también cuando solo actualiza.
+  En Windows la ventana del instalador ya funciona; dice que las que ya estaban abiertas
+  hay que abrirlas de nuevo.
+- **Preparar una copia nunca usa por error la copia de otro ordenador.** Si tu cuenta de
+  GitHub ya tiene `augmented-brain-<espacio>` con notas dentro, no se toca: usarlo
+  mezclaría las notas de este ordenador con esas. La copia nueva va a
+  `augmented-brain-<espacio>-<ordenador>`, y Claude o el panel te lo dicen. Para traer a
+  este ordenador las notas de esa copia, está `augmented-brain restore`.
+- **Los espacios grandes responden antes.** Con 2.000 tareas, cada llamada del
+  asistente a sus herramientas tarda unos 100 ms en vez de 145. La lista de tareas ya no
+  se construye de una forma que se volvía más lenta con el cuadrado de su número (8.000
+  tareas: 10 ms en vez de 3 s). El registro de qué tareas ha visto una sesión ya no se
+  reescribe en cada mensaje cuando nada ha cambiado. Una nota abierta en el panel mira
+  si ha cambiado sin leer el espacio entero, y una búsqueda de una palabra común ya no
+  prepara todos los resultados que no va a enseñar.
+- **El panel ya no ejecuta los filtros de un repositorio al enseñar tus repositorios.**
+  Una carpeta descomprimida de un archivo trae su `.git/config`, y un filtro que nombre
+  podía arrancar un programa con solo abrir Hoy o Repositorios. Tus propios filtros,
+  como git-lfs, siguen funcionando.
+- **Una nota con una cita sin fin ya no para el panel.** Una línea de un millón de `>`
+  lo tumbaba; ahora las citas paran en 16 niveles y el resto sale como texto.
+- **Los textos largos se guardan.** El panel aceptaba como mucho 64 KiB de un
+  formulario, menos de lo que cabe en un perfil escrito en ruso o en japonés; ahora
+  acepta 1 MiB y, si se pasa, dice que el texto es demasiado largo en vez de un «bad
+  request» sin más.
+- **El informe de un problema ya no lleva el nombre de tu ordenador.** El diagnóstico
+  deja de nombrar la máquina en tu red de Tailscale, y el informe quita el nombre de
+  este ordenador y cualquier nombre `*.ts.net`.
+- **Escribir en el panel cuenta como usarlo.** Se para tras 30 minutos sin uso; escribir
+  un texto largo sin cambiar de página ya no te deja sin panel donde guardarlo.
+- **Ninguna llamada a Claude Code, gh o git puede dejar colgado un comando.** `doctor`,
+  `update` y la página de Ayuda del panel esperaban para siempre a un Claude Code parado
+  en su pantalla de primer uso o con la red a medias; ahora cada llamada tiene un límite
+  que se cumple, y `doctor` dice lo que no ha podido comprobar.
+- **Esperar a que una sesión termine su respuesta dura lo que dice.** Cerrar o reiniciar
+  una sesión espera 30 minutos como mucho de reloj, mira muchas menos veces y apunta en
+  su log cada 5 minutos que sigue esperando.
+- **`watch pr` siempre vigila.** Tras un reinicio podía unirse a una vigilancia que ya
+  no existía y no decir nada durante horas; ahora arranca una siempre que no haya
+  ninguna, y dos pedidas a la vez comparten una.
+- **El vigilante del acceso remoto se rinde en vez de reiniciar sin fin.** Si reiniciar
+  no recupera la sesión, espera cada vez más y, tras 5 intentos, deja el servicio en paz;
+  `remote status` y `doctor` lo dicen.
+- **`clean` respeta las carpetas temporales de las sesiones de otra carpeta de Claude**
+  en Linux, y el log del servicio en macOS ya no crece sin fin.
+- **Se rechaza un nombre de espacio o una carpeta que podría colarse en un servicio.** Un
+  nombre escrito a mano con un salto de línea, una barra, un espacio o un signo como `&` ya
+  no carga, y el error dice cómo cambiarlo; `remote install` rechaza además una ruta con un
+  salto de línea o, en Windows, con `%` o comillas, en vez de escribir un servicio que
+  ejecuta otra cosa.
+- **Las sesiones en segundo plano reciben solo las variables que necesitan.** El programa
+  en segundo plano de Claude guardaba todo lo que tenía la terminal que lo arrancó, tokens
+  e interruptores de pruebas incluidos, para todas las sesiones posteriores; ahora recibe
+  la carpeta personal, `PATH`, el idioma, el agente de ssh, los proxies y los ajustes del
+  propio Claude.
+- **Desinstalar en Windows nombra cada programa por su ruta completa**, así que un
+  `ping.bat` en la carpeta desde la que lo lanzas no se ejecuta.
+- **Las sesiones arrancan antes.** Las nueve partes del arranque ya no esperan de 50 en
+  50 ms al cerrojo de las notas, el buzón se lee una vez y sin un patrón lento, una
+  sesión nueva aprovecha lo que otra ya leyó de las tareas, y la lista de procesos solo
+  se mira tras una actualización. La consulta de versión nueva ya no hace esperar a la
+  sesión a GitHub: va aparte, y una versión nueva se dice en la sesión siguiente.
+- **Una sesión que hace un worktree ya no deja paradas a las demás.** `task_worktree` y
+  cerrar una tarea ejecutaban git, con red, con las notas bloqueadas: con la red lenta,
+  todas las herramientas de las demás sesiones esperaban, una vez 17 segundos. Ahora git
+  corre después de soltar las notas, y una herramienta que las encuentra ocupadas 20
+  segundos lo dice en vez de quedarse colgada.
+- **Una sesión arranca a tiempo aunque otra esté escribiendo.** El arranque de sesión
+  esperaba a las notas hasta tres veces, 9 de los 10 segundos que tiene; ahora espera
+  una sola vez, 2 segundos como mucho, y arranca con el perfil y las reglas igualmente.
+
 ## 1.0.0-rc.2
 
 Publicada el 2026-11-14.
