@@ -285,8 +285,8 @@ var remoteMessages = map[string]msg{
 	},
 	// doctor's line about the remote panel (panel remote), once it has been used.
 	"doctor.panelremote.ok": {
-		en: "remote panel: Tailscale is ready (%s)",
-		es: "panel remoto: Tailscale está listo (%s)",
+		en: "remote panel: Tailscale is ready",
+		es: "panel remoto: Tailscale está listo",
 	},
 	"doctor.panelremote.missing": {
 		en: "remote panel: Tailscale is no longer installed",

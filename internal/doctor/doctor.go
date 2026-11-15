@@ -699,7 +699,7 @@ func panelRemote(e Env, c *config.Config) []Check {
 		return []Check{{Warning, i18n.T(l, "doctor.panelremote.leftover", tailnet.Port, cur),
 			i18n.T(l, "doctor.panelremote.leftover.fix", tailnet.Port)}}
 	}
-	return []Check{{OK, i18n.T(l, "doctor.panelremote.ok", st.Name), ""}}
+	return []Check{{OK, i18n.T(l, "doctor.panelremote.ok"), ""}}
 }
 
 // configHistory says how many versions of the configuration are kept, and whether it

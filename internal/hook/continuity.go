@@ -275,7 +275,7 @@ func rootNote(c *config.Config) string {
 // a new conversation but keeps the MCP server, so it is told apart and named first.
 // The others are named only when others is true.
 func oldServersNote(c *config.Config, others bool) string {
-	old := state.OldServers(c.Dir, version.Version)
+	old := state.OldServersAtStart(c.Dir, version.Version, time.Now())
 	if len(old) == 0 {
 		return ""
 	}

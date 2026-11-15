@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
+	"slices"
 	"sort"
 	"strings"
 
@@ -36,13 +36,69 @@ func (e InboxEntry) full() string {
 // fromMark is how a capture sent from another space ends, before any reminder.
 func fromMark(space string) string { return " (from " + space + ")" }
 
-// fromSuffix splits the origin off a capture's text. Only the name of a space of the
-// configuration counts: "(from Amazon)" in the user's own words stays text.
-var fromSuffix = regexp.MustCompile(`^(.*) \(from ([A-Za-z0-9_.-]+)\)$`)
+// splitFrom splits the origin off a capture's text: "text (from personal)" gives
+// "text" and "personal"; ok is false when the text does not end so. The origin is a
+// word of letters, digits, '_', '.' and '-'. Only the name of a space of the
+// configuration counts, which the caller checks: "(from Amazon)" in the user's own
+// words stays text. A text of more than one line never has one. (It was the regular
+// expression `^(.*) \(from ([A-Za-z0-9_.-]+)\)$`, which costs far more on long lines.)
+func splitFrom(text string) (rest, space string, ok bool) {
+	if !strings.HasSuffix(text, ")") || strings.Contains(text, "\n") {
+		return "", "", false
+	}
+	i := strings.LastIndex(text, " (from ")
+	if i < 0 {
+		return "", "", false
+	}
+	name := text[i+len(" (from ") : len(text)-1]
+	if name == "" || strings.IndexFunc(name, func(r rune) bool { return !spaceNameRune(r) }) >= 0 {
+		return "", "", false
+	}
+	return text[:i], name, true
+}
 
-// remindSuffix splits the text of an inbox line ("- 2026-10-17 — text", see
-// memory.DatedLine) from the reminder it may end in: " (remind: 2026-10-22)".
-var remindSuffix = regexp.MustCompile(`^(.*?)(?: \(remind: (\d{4}-\d{2}-\d{2})\))?\s*$`)
+func spaceNameRune(r rune) bool {
+	return r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9' || r == '_' || r == '.' || r == '-'
+}
+
+// inlineSpace are the blanks a line may end in that splitRemind drops.
+const inlineSpace = " \t\n\f\r"
+
+// splitRemind splits the text of an inbox line ("- 2026-10-17 — text", see
+// memory.DatedLine) from the reminder it may end in: " (remind: 2026-10-22)". Blanks at
+// the end go; blanks before the reminder stay in the text. ok is false for a text that
+// goes on after a line break. (It was the regular expression
+// `^(.*?)(?: \(remind: (\d{4}-\d{2}-\d{2})\))?\s*$`, which backtracks on long lines.)
+func splitRemind(text string) (rest, date string, ok bool) {
+	t := strings.TrimRight(text, inlineSpace)
+	if strings.Contains(t, "\n") {
+		return "", "", false
+	}
+	const open, mark = " (remind: ", len(" (remind: 2026-10-22)")
+	if len(t) >= mark && strings.HasSuffix(t, ")") && t[len(t)-mark:len(t)-mark+len(open)] == open {
+		if d := t[len(t)-mark+len(open) : len(t)-1]; isDate(d) {
+			return t[:len(t)-mark], d, true
+		}
+	}
+	return t, "", true
+}
+
+// isDate says s has the shape 2026-10-22 (digits, not a check of the calendar).
+func isDate(s string) bool {
+	if len(s) != 10 {
+		return false
+	}
+	for i := range len(s) {
+		if i == 4 || i == 7 {
+			if s[i] != '-' {
+				return false
+			}
+		} else if s[i] < '0' || s[i] > '9' {
+			return false
+		}
+	}
+	return true
+}
 
 // parseInboxLine reads one line of the inbox; ok is false for a line that is not a
 // capture (the heading, a paragraph).
@@ -51,10 +107,10 @@ func parseInboxLine(l string, spaces map[string]bool) (e InboxEntry, ok bool) {
 	if !ok {
 		return InboxEntry{}, false
 	}
-	m := remindSuffix.FindStringSubmatch(rest)
-	e = InboxEntry{Date: date, Text: memory.OneLine(m[1]), Remind: m[2]}
-	if f := fromSuffix.FindStringSubmatch(e.Text); f != nil && spaces[f[2]] {
-		e.Text, e.From = f[1], f[2]
+	text, remind, _ := splitRemind(rest) // a line of the file has no line break
+	e = InboxEntry{Date: date, Text: memory.OneLine(text), Remind: remind}
+	if t, from, ok := splitFrom(e.Text); ok && spaces[from] {
+		e.Text, e.From = t, from
 	}
 	return e, true
 }
@@ -66,12 +122,12 @@ func parseInboxLine(l string, spaces map[string]bool) (e InboxEntry, ok bool) {
 func (b *Brain) ownWords(text string, capture bool) string {
 	spaces := b.spaceSet()
 	for range 4 { // each pass undoes one ending; more would be text made on purpose
-		if m := remindSuffix.FindStringSubmatch(text); capture && m != nil && m[2] != "" {
-			text = m[1] + " [remind: " + m[2] + "]"
+		if t, date, ok := splitRemind(text); capture && ok && date != "" {
+			text = t + " [remind: " + date + "]"
 			continue
 		}
-		if f := fromSuffix.FindStringSubmatch(text); f != nil && spaces[f[2]] {
-			text = f[1] + " [from " + f[2] + "]"
+		if t, from, ok := splitFrom(text); ok && spaces[from] {
+			text = t + " [from " + from + "]"
 			continue
 		}
 		break
@@ -81,7 +137,9 @@ func (b *Brain) ownWords(text string, capture bool) string {
 
 func (b *Brain) inboxPath() string { return filepath.Join(b.Mem.Dir, "inbox.md") }
 
-// Inbox returns the captures waiting to be processed, oldest first.
+// Inbox returns the captures waiting to be processed, oldest first. The session start
+// asks for it several times (captures arrived, reminders, the weekly review): it reads
+// the file each time, and reads its lines again only when the file changed.
 func (b *Brain) Inbox() ([]InboxEntry, error) {
 	data, err := os.ReadFile(b.inboxPath())
 	if errors.Is(err, os.ErrNotExist) {
@@ -90,13 +148,20 @@ func (b *Brain) Inbox() ([]InboxEntry, error) {
 	if err != nil {
 		return nil, err
 	}
+	b.inboxMu.Lock()
+	defer b.inboxMu.Unlock()
+	if b.inboxRead && b.inboxData == string(data) {
+		return slices.Clone(b.inbox), nil
+	}
+	spaces := b.spaceSet()
 	var out []InboxEntry
 	for _, l := range strings.Split(string(data), "\n") {
-		if e, ok := parseInboxLine(l, b.spaceSet()); ok {
+		if e, ok := parseInboxLine(l, spaces); ok {
 			out = append(out, e)
 		}
 	}
-	return out, nil
+	b.inboxData, b.inbox, b.inboxRead = string(data), out, true
+	return slices.Clone(out), nil
 }
 
 // Arrived are the captures other spaces sent to this one (CaptureTo), oldest first,

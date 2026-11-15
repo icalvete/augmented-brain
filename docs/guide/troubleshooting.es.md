@@ -100,7 +100,9 @@ notas solo para ti.
 
 `command not found`, o "no se reconoce" en Windows. Cierra la terminal y abre otra. El
 PATH es la lista de carpetas donde la terminal busca los programas; el instalador le
-añadió una, y una terminal abierta antes aún no la ve.
+añadió una, y una terminal abierta antes aún no la ve. Para seguir en la misma terminal
+en Linux o macOS, haz que lea el cambio con la línea que te dio el instalador al final,
+como `source ~/.bashrc` (`source ~/.zshrc` con zsh, la shell normal del Mac).
 
 ### Las herramientas de augmented brain fallan después de actualizar
 

@@ -72,6 +72,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
 
 - Después de instalar, **abre una terminal nueva**: la que usaste todavía no ve el PATH
   nuevo.
+  Para seguir en ella, escribe la línea que te da el instalador al final, como
+  `source ~/.bashrc`.
 - En la app: pestaña **Code**, **+ New**. Sin elegir carpeta trabajas en tu espacio
   personal; para el de trabajo, **Choose…** y elige `~/augmented-brain/trabajo`.
 - Para trabajar sin la app: `cd ~/augmented-brain/trabajo && claude`.
@@ -214,7 +216,8 @@ Qué quita y qué deja cada nivel: [Actualizar y desinstalar](update-and-uninsta
 ## Si algo falla
 
 - **La terminal no encuentra una orden** (`command not found`, o "no se reconoce" en
-  Windows). Abre una terminal nueva: la que usaste todavía no ve el PATH nuevo.
+  Windows). Abre una terminal nueva: la que usaste todavía no ve el PATH nuevo. O, en
+  esa, la línea que te dio el instalador al final, como `source ~/.bashrc`.
 - **Cualquier otra cosa después de instalar.** Lanza `augmented-brain doctor`: te dice qué
   falta y cómo arreglarlo. También te avisa si un espacio no tiene copia de seguridad, si
   Claude Code lleva una segunda memoria propia para las carpetas de tus espacios, y si

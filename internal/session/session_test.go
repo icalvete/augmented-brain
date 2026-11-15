@@ -487,3 +487,55 @@ func TestCommonRulesAlwaysArrive(t *testing.T) {
 		})
 	}
 }
+
+// AllParts gives, from one reading of the space, the parts PartFor gives one by one.
+func TestAllPartsLikePartFor(t *testing.T) {
+	c, s := space(t, "en")
+	note := "\nA note.\n"
+	all := AllParts(c, s, note, "task-x")
+	if len(all) != Parts {
+		t.Fatalf("%d parts, want %d", len(all), Parts)
+	}
+	for n := 1; n <= Parts; n++ {
+		if want := PartFor(c, s, note, "task-x", n); all[n-1] != want {
+			t.Errorf("part %d differs:\n%s\n--- PartFor:\n%s", n, all[n-1], want)
+		}
+	}
+}
+
+// When the heading and the profile do not fit in part 1 and a part is free, AllParts
+// gives the profile whole in that part instead of cutting it, and every part counts it.
+func TestAllPartsMovesTheProfile(t *testing.T) {
+	c, s := space(t, "en")
+	b, err := brain.Open(c, s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := b.SaveProfile(brain.ProfileInput{Name: "Dana", About: strings.Repeat("Runs a bakery's IT and its website. ", 120) + "The end of the profile.",
+		Assistant: "Argos", Personality: "Calm."}); err != nil {
+		t.Fatal(err)
+	}
+	note := "\n" + strings.Repeat("A note from the program for this session. ", 110) + "\n"
+	if !strings.Contains(PartFor(c, s, note, "", 1), "was cut") {
+		t.Fatal("the test needs a part 1 that PartFor cuts")
+	}
+	all := AllParts(c, s, note, "")
+	total := 0
+	for _, p := range all {
+		if p != "" {
+			total++
+		}
+		if size(p) > Budget {
+			t.Errorf("a part is %d units, over %d", size(p), Budget)
+		}
+	}
+	if strings.Contains(all[0], "was cut") || strings.Contains(all[0], "Cut to fit") {
+		t.Errorf("part 1 still cut:\n%s", all[0])
+	}
+	if !strings.Contains(strings.Join(all, ""), "The end of the profile.") {
+		t.Error("the profile does not arrive whole")
+	}
+	if !strings.Contains(all[0], fmt.Sprintf("part 1 of %d", total)) || !strings.Contains(all[total-1], fmt.Sprintf("part %d of %d", total, total)) {
+		t.Errorf("the parts do not count %d", total)
+	}
+}

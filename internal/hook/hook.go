@@ -20,7 +20,6 @@ import (
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
-	"github.com/icalvete/augmented-brain/internal/filelock"
 	"github.com/icalvete/augmented-brain/internal/guard"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
@@ -34,6 +33,27 @@ import (
 
 // LatestVersion asks for the latest published version; tests replace it.
 var LatestVersion = update.Fetch
+
+// UpdateCheck asks for the latest published version and keeps the answer for the next
+// session start (StartUpdateCheck runs it).
+func UpdateCheck(cfgDir string) error {
+	update.Check(cfgDir, time.Now(), LatestVersion)
+	return nil
+}
+
+// updateNote says a newer version is out, from what the last check found, and starts
+// a new check when it is due.
+func updateNote(c *config.Config, cfgDir string) string {
+	now := time.Now()
+	if update.Due(cfgDir, now) {
+		update.Mark(cfgDir, now) // before it starts: another session starting now waits for this one
+		_ = StartUpdateCheck()
+	}
+	if latest := update.Cached(cfgDir, version.Version); latest != "" {
+		return session.UpdateNote(c.Language, version.Version, latest)
+	}
+	return ""
+}
 
 type input struct {
 	Cwd       string         `json:"cwd"`
@@ -151,15 +171,21 @@ func SessionStartPart(in io.Reader, out io.Writer, cfgDir string, n int) error {
 	case s == nil:
 		text = session.NoSpace(c, i.Cwd)
 	case n > 1:
-		// Part 1 may be moving the notes to a new format: wait for it, briefly.
-		if unlock, err := filelock.LockWithin(filepath.Join(cfgDir, backup.NotesLock), PartWait); err == nil {
-			unlock()
+		// Part 1 builds every part once it has done its work behind the notes (it may be
+		// moving them to a new format): wait for it, briefly, and take this part.
+		var ok bool
+		if text, ok = waitParts(cfgDir, i, s.Name, n, Now(), PartWait); !ok {
+			text = session.Part(c, s, "", n)
 		}
-		text = session.Part(c, s, "", n)
 	case n == 1:
 		task := launchedTask(cfgDir, i)
 		note := startNote(c, s, i, cfgDir, task)
-		text = session.PartFor(c, s, note, task, 1)
+		if all := session.AllParts(c, s, note, task); saveParts(cfgDir, i, s.Name, all) {
+			text = all[0]
+		} else {
+			// The others build their own parts: part 1 must count them as they will.
+			text = session.PartFor(c, s, note, task, 1)
+		}
 	default:
 		task := launchedTask(cfgDir, i)
 		note := startNote(c, s, i, cfgDir, task)
@@ -184,9 +210,7 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir, task string) 
 		note = session.DefaultNote(c, s, i.Cwd)
 	}
 	note += backupNote(c, s, cfgDir)
-	if latest := update.Available(cfgDir, version.Version, time.Now(), LatestVersion); latest != "" {
-		note += session.UpdateNote(c.Language, version.Version, latest)
-	}
+	note += updateNote(c, cfgDir)
 	note += startWork(c, s, i, cfgDir)
 	note += sessionStarted(c, s, i, cfgDir, task == "")
 	note += modelStartNote(c.Language, cfgDir, i)

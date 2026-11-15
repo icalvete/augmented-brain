@@ -574,6 +574,7 @@ fi
 
 # The plugin runs `augmented-brain` by name, so Claude Code must find it in the PATH.
 new_terminal=0
+reload="" # the line that reads the new PATH in the terminal that ran this installer
 case ":$PATH:" in
   *":$DIR:"*) ;;
   *)
@@ -604,6 +605,10 @@ case ":$PATH:" in
       say "✓ added $(tilde "$DIR") to your PATH in $(tilde "$rc")" "✓ añadido $(tilde "$DIR") a tu PATH en $(tilde "$rc")"
     fi
     new_terminal=1
+    case "$rc" in
+      */.bashrc | */.zshrc | */.bash_profile | */.bash_login) reload="source $(tilde "$rc")" ;;
+      *) reload=". $(tilde "$rc")" ;;
+    esac
     PATH="$DIR:$PATH"
     export PATH
     ;;
@@ -634,6 +639,18 @@ if [ -f "$cfg/config.toml" ]; then
   say "Already set up ($(tilde "$cfg")): the program is updated; now the Claude Code plugin." \
       "Ya estaba configurado ($(tilde "$cfg")): programa actualizado; ahora, el plugin de Claude Code."
   "$DIR/augmented-brain" update --plugin </dev/null || true
+  # The PATH changed: this terminal does not see it, and augmented-brain typed here
+  # would look like a failed install.
+  if [ "$new_terminal" = 1 ]; then
+    if [ -n "$reload" ]; then
+      say "This terminal does not find augmented-brain yet. Open a new one, or type this here first:" \
+          "Esta terminal todavía no encuentra augmented-brain. Abre una nueva, o escribe esto aquí primero:"
+      echo "  $reload"
+    else
+      say "This terminal does not find augmented-brain yet: for its commands, open a new one." \
+          "Esta terminal todavía no encuentra augmented-brain: para sus comandos, abre una nueva."
+    fi
+  fi
   exit 0
 fi
 # Where augmented brain acts (reach in guard.toml): asked only of someone who already had
@@ -673,7 +690,7 @@ launch=0
 (exec </dev/tty) 2>/dev/null && launch=1
 desktop=0
 has_desktop && desktop=1
-AB_NEW_TERMINAL="$new_terminal" AB_LAUNCH="$launch" AB_DESKTOP="$desktop" "$DIR/augmented-brain" init "$@" </dev/null
+AB_NEW_TERMINAL="$new_terminal" AB_RELOAD="$reload" AB_LAUNCH="$launch" AB_DESKTOP="$desktop" "$DIR/augmented-brain" init "$@" </dev/null
 [ "$launch" = 1 ] || exit 0
 if [ "$lang" = es ]; then work="$HOME/augmented-brain/trabajo"; else work="$HOME/augmented-brain/work"; fi
 echo

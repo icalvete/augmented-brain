@@ -265,6 +265,8 @@ curl -fsSL https://github.com/icalvete/augmented-brain/releases/latest/download/
 **Good to know:**
 
 - After installing, **open a new terminal**: the one you used does not see the new PATH yet.
+  To stay in it, type the line the installer gives you at the end, such as
+  `source ~/.bashrc`.
 - In the app: **Code** tab, **+ New**. Without choosing a folder you work in your personal
   space; for work, **Choose…** and pick `~/augmented-brain/work`.
 - To work without the app: `cd ~/augmented-brain/work && claude`.
@@ -406,7 +408,8 @@ each level removes and keeps: [Updating and uninstalling](https://icalvete.githu
 ## If something goes wrong
 
 - **The terminal cannot find a command** (`command not found`, or "not recognized" on
-  Windows). Open a new terminal: the one you used does not see the new PATH yet.
+  Windows). Open a new terminal: the one you used does not see the new PATH yet. Or, in
+  that one, the line the installer gave you at the end, such as `source ~/.bashrc`.
 - **Anything else after installing.** Run `augmented-brain doctor`: it says what is missing
   and how to fix it. It also warns you when a space has no backup, when Claude Code keeps
   a second memory of its own for your spaces' folders, and when other users of the
@@ -2335,8 +2338,9 @@ Click **Report a problem on GitHub**. The panel runs the health check (what
 with the version, your system and that check filled in.
 
 Before it opens, the panel takes out what is personal: your home folder (shown as `~`),
-your notes and work folders, e-mail addresses, the names of your spaces, untouchable
-machines, production AWS profiles, and any line that looks like a password or a key.
+your notes and work folders, e-mail addresses, the names of your spaces, this
+computer's name and its Tailscale name, untouchable machines, production AWS profiles,
+and any line that looks like a password or a key.
 You write what happened, and read the rest: change or delete what you prefer not to
 share. Nothing is sent until you press GitHub's submit button. To be honest about it:
 the text travels to GitHub inside the page's address as soon as it opens, so GitHub can
@@ -2371,8 +2375,9 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
 
 ## Made to stay yours
 
-- It runs **only while you use it**. After 30 minutes without use it stops by itself. To
-  stop it now: `augmented-brain panel stop`, or the link at the bottom of the page.
+- It runs **only while you use it**. After 30 minutes without use it stops by itself.
+  Typing in one of its forms counts as use, so a long text is not left without a panel
+  to save it in; a tab left open does not count. To stop it now: `augmented-brain panel stop`, or the link at the bottom of the page.
 - It works **only on this computer**. Other machines on your network cannot reach it.
   To open it from your phone or another computer of yours, use
   `augmented-brain panel remote`: see [The panel from another device](https://icalvete.github.io/augmented-brain/guide/panel-remote.html).
@@ -4380,6 +4385,9 @@ The events:
   `archive/sessions/` and points the task's journal at it.
 - `session-end`: the session ends. It notes that it ended well, and starts the backup in
   the background.
+- `update-check`: not a call of Claude Code. Once a day, `session-start` runs it in the
+  background to ask GitHub for the latest version, so no session waits for the network.
+  A new version is told at the next session start.
 
 ## augmented-brain version
 
@@ -6065,7 +6073,10 @@ the notes yours only.
 
 `command not found`, or "not recognized" on Windows. Close the terminal and open a new
 one. The PATH is the list of folders where the terminal looks for programs; the
-installer added one to it, and a terminal opened before does not see it yet.
+installer added one to it, and a terminal opened before does not see it yet. To keep
+using the same terminal on Linux or macOS, read the change in it with the line the
+installer gave you at the end, such as `source ~/.bashrc` (`source ~/.zshrc` with zsh,
+the Mac's usual shell).
 
 ### augmented brain's tools fail after an update
 
