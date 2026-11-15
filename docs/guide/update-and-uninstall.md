@@ -38,11 +38,12 @@ What it does, in order:
 5. **Says what is left:** the sessions it could not restart (one answering, the one you
    ran it from, on Windows any of Claude Desktop), and which task each space has active.
 
-For those left, ask the session to park its task, and close and open it. A session that
-was open keeps the old program until it restarts, and its augmented brain tools may fail;
-`/clear` is not enough. `augmented-brain doctor` and the start of a new session say how
-many still run the old version. Later on, `augmented-brain session restart --old`
-restarts the ones that have gone idle.
+For those left, run `augmented-brain session restart --old` once they have finished
+their answer: it restarts them with the same conversation. A session that was open keeps
+the old program until it restarts, and its augmented brain tools may fail; `/clear` is
+not enough. `augmented-brain doctor` and the start of a new session say how many still
+run the old version. One it cannot restart (on Windows, one of Claude Desktop) you close
+and open by hand.
 
 Other ways:
 

@@ -3,6 +3,7 @@ package remote
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -10,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/filelock"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/state"
 )
@@ -209,7 +211,7 @@ func WorktreeWork(folder, branch string) string {
 		if !isIgnored {
 			return KeptChanges
 		}
-		if !regenerable(path) {
+		if !regenerable(folder, path) {
 			ignored = true
 		}
 	}
@@ -234,23 +236,35 @@ func branchPushed(dir, ref string) bool {
 	return err == nil && strings.TrimSpace(out) == ""
 }
 
-// regenerableFolders are folders git ignores whose contents a build or an install makes
-// again: what is ignored inside them is not work of the user's.
+// regenerableFolders are folders git ignores whose contents a build, an install or a
+// tool's cache makes again: what is ignored inside them is not work of the user's.
 var regenerableFolders = map[string]bool{
 	"node_modules": true, "vendor": true, "target": true, "dist": true, "build": true,
 	".venv": true, "venv": true, "__pycache__": true, ".pytest_cache": true, ".cache": true,
-	"tmp": true, "log": true, "coverage": true,
+	"tmp": true, "log": true, "coverage": true, ".next": true, ".nuxt": true,
+	".gradle": true, ".mypy_cache": true, ".ruff_cache": true, ".tox": true, ".turbo": true,
+	".parcel-cache": true,
 }
 
-// regenerable says whether an ignored path, as git status prints it, lies in one of
-// regenerableFolders.
-func regenerable(path string) bool {
+// regenerableExts are the endings of files a build makes: objects, libraries, bytecode,
+// test binaries and logs.
+var regenerableExts = map[string]bool{
+	".o": true, ".a": true, ".so": true, ".dylib": true, ".dll": true, ".exe": true,
+	".class": true, ".pyc": true, ".pyo": true, ".test": true, ".log": true,
+}
+
+// regenerable says whether an ignored path of the worktree folder, as git status prints
+// it, is something a build makes again: it lies in one of regenerableFolders, ends in
+// one of regenerableExts, or is a program a compiler wrote (an ELF, Mach-O or PE file,
+// such as a Go build's binary at the repository's root).
+func regenerable(folder, path string) bool {
 	if p, err := strconv.Unquote(path); err == nil {
 		path = p
 	}
+	isFolder := strings.HasSuffix(path, "/")
 	parts := strings.Split(strings.TrimSuffix(path, "/"), "/")
 	// The last part is a folder only when git printed it with its slash.
-	if !strings.HasSuffix(path, "/") {
+	if !isFolder {
 		parts = parts[:len(parts)-1]
 	}
 	for _, p := range parts {
@@ -258,7 +272,72 @@ func regenerable(path string) bool {
 			return true
 		}
 	}
-	return false
+	if isFolder {
+		return false
+	}
+	return regenerableExts[strings.ToLower(filepath.Ext(path))] || compiled(filepath.Join(folder, filepath.FromSlash(path)))
+}
+
+// compiled says whether file starts as a program a compiler writes: ELF, Mach-O (32 or
+// 64 bits, either byte order, or universal) or PE.
+func compiled(file string) bool {
+	f, err := os.Open(file)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+	var b [4]byte
+	if n, _ := io.ReadFull(f, b[:]); n < 2 {
+		return false
+	}
+	switch string(b[:]) {
+	case "\x7fELF", "\xfe\xed\xfa\xce", "\xfe\xed\xfa\xcf", "\xce\xfa\xed\xfe", "\xcf\xfa\xed\xfe", "\xca\xfe\xba\xbe":
+		return true
+	}
+	return string(b[:2]) == "MZ"
+}
+
+// IgnoredWork are the files git ignores in a worktree that no build makes again, as
+// WorktreeWork counts them: what the user would lose with it. Sorted; nil when git
+// cannot answer.
+func IgnoredWork(folder string) []string {
+	out, err := GitRun(folder, "-c", "core.fsmonitor=false", "status", "--porcelain",
+		"--untracked-files=all", "--ignored=matching")
+	if err != nil {
+		return nil
+	}
+	var list []string
+	for _, line := range strings.Split(out, "\n") {
+		path, isIgnored := strings.CutPrefix(strings.TrimSpace(line), "!! ")
+		if !isIgnored || regenerable(folder, path) {
+			continue
+		}
+		if p, err := strconv.Unquote(path); err == nil {
+			path = p
+		}
+		list = append(list, path)
+	}
+	sort.Strings(list)
+	return list
+}
+
+// IgnoredNames are the first files of IgnoredWork, for a message: at most three, and
+// how many more ("" when git cannot tell which).
+func IgnoredNames(lang, folder string) string {
+	list := IgnoredWork(folder)
+	if len(list) <= 3 {
+		return strings.Join(list, ", ")
+	}
+	return i18n.T(lang, "session.worktree.ignored.more", strings.Join(list[:3], ", "), len(list)-3)
+}
+
+// WhyKept is why a worktree stays, for a person to read: with KeptIgnored, it names the
+// files.
+func WhyKept(lang, folder, why string) string {
+	if why == KeptIgnored {
+		return i18n.T(lang, "session.worktree.why.ignored", IgnoredNames(lang, folder))
+	}
+	return i18n.T(lang, "session.worktree.why."+why)
 }
 
 // registered says whether folder is a worktree git knows of in repo: a .git file that
