@@ -681,15 +681,18 @@ augmented-brain watch pr 104 --task task-my-change
 ```
 
 It ends when the pull request is merged or closed, conflicts with its base branch (no
-CI runs then), a required check fails, every required check has finished, or `--max`
-passes.
+CI runs then), a required check fails, every required check has finished, the pull
+request turns out to start no required check, or `--max` passes.
 
 - `--task`: write that line in the task's journal, and what happened as its next step.
   Every other session hears of it before its next answer, and the panel's Today shows
   it. The watching is then done by a process of its own, which goes on if the session
   that started it closes or restarts. Asked again for the same pull request and task,
   it waits for the one already running. The task must be in this folder's space.
-- `--repo`: the repository, as `owner/name`. Default: the one of this folder.
+- `--repo`: the repository, as `owner/name`. Default: the one of this folder. Outside a
+  git repository, with `--task`, it is taken from the task's folders (its worktrees and
+  the folder its session was started in) when they all point to one GitHub repository;
+  otherwise it stops at once and asks for `--repo`.
 - `--max`: the longest it watches. Default: `3h`.
 - `--every`: how often it looks. Default: `30s`; `10s` at least.
 
@@ -701,13 +704,26 @@ the line names those still running or failed (five at most, each cut at 60 chara
 Their names go only in the journal, never in the next step, which every session reads
 at the start: whoever writes the workflows chooses those names.
 
-**When it gives up.** If GitHub lists no required check after 5 minutes, or `gh` fails
-three times in a row or gives an answer it does not understand, it stops and says what
-`gh` said.
+**A result of before does not count.** Right after a push or a rerun of the CI, GitHub
+still shows for some seconds the result of before, green or red. So a verdict counts only
+when it still holds 90 seconds after the watch started, or after a new commit reached
+the pull request.
+
+**Pull requests that start no required check.** A workflow can run only for some paths.
+If the changes of a pull request start none of the required ones, GitHub lists no
+required check for it. After 5 minutes the watch looks at what GitHub says of the pull
+request: if it can be merged, it says so and ends with 0; if GitHub keeps it blocked
+(waiting for a check that will never start, a review, or an update of the branch), it
+says so and ends with 1. When every required check passed but GitHub still blocks it,
+the line says that too.
+
+**When it gives up.** If `gh` fails three times in a row or gives an answer it does not
+understand, it stops and says what `gh` said.
 
 It needs `gh` with your GitHub login. The assistant runs it in the background; its last
-line asks it to tell you straight away. It ends with 0 when the checks passed or the
-pull request was merged, and 1 otherwise.
+line asks it to tell you straight away. It ends with 0 when the checks passed, the
+pull request was merged or it starts no required check and can be merged, and 1
+otherwise.
 
 ## augmented-brain config
 
@@ -957,8 +973,9 @@ or a value it cannot use (`--language fr`).
 A few commands give their codes a meaning of their own:
 
 - `check` and `doctor`: `1` when a note is not valid, or something fails.
-- `watch pr`: `0` only when the checks passed or the pull request was merged; `1` for
-  everything else (closed, a conflict, a failed check, `--max` reached).
+- `watch pr`: `0` only when the checks passed, the pull request was merged, or it starts
+  no required check and GitHub lets it merge; `1` for everything else (closed, a
+  conflict, a failed check, blocked, `--max` reached).
 - `hook`: `0` even when something fails inside, so Claude is never stopped by it. The
   exception is the guard (`pre-tool-use`), which ends with `2` to stop the command when
   it cannot give its answer.

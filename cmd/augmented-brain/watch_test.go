@@ -18,6 +18,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/paths"
+	"github.com/icalvete/augmented-brain/internal/state"
 )
 
 // fakeWatch makes watch run against a pretend gh that answers each look with the next
@@ -28,8 +29,12 @@ func fakeWatch(t *testing.T, state string, checks ...string) *[][]string {
 	var mu sync.Mutex
 	now := time.Date(2026, 11, 12, 10, 0, 0, 0, time.UTC)
 	look := 0
-	gh, sleep, clock, lookPath, start := watchGh, watchSleep, watchNow, watchLookPath, watchStart
-	t.Cleanup(func() { watchGh, watchSleep, watchNow, watchLookPath, watchStart = gh, sleep, clock, lookPath, start })
+	gh, sleep, clock, lookPath, start, inRepo, repoOf := watchGh, watchSleep, watchNow, watchLookPath, watchStart, watchInRepo, watchRepoOf
+	t.Cleanup(func() {
+		watchGh, watchSleep, watchNow, watchLookPath, watchStart, watchInRepo, watchRepoOf = gh, sleep, clock, lookPath, start, inRepo, repoOf
+	})
+	watchInRepo = func() bool { return true }
+	watchRepoOf = func(string) string { return "" }
 	watchLookPath = func(string) (string, error) { return "/usr/bin/gh", nil }
 	watchSleep = func(d time.Duration) {
 		mu.Lock()
@@ -67,6 +72,9 @@ func fakeWatch(t *testing.T, state string, checks ...string) *[][]string {
 		}
 		out := checks[min(look, len(checks)-1)]
 		look++
+		if out == "" {
+			return "", "no required checks reported on the 'x' branch\n", fmt.Errorf("exit status 1")
+		}
 		return out, "", nil
 	}
 	return &calls
@@ -101,7 +109,8 @@ func TestWatchWritesTheTask(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("watch: %d\n%s%s", code, out.String(), errOut.String())
 	}
-	next := "PR #104: todos los checks obligatorios en verde (1 min). Sigue abierta: falta mezclarla."
+	// The green comes at 30 s, but is believed only after watchSettle: 90 s, 2 min.
+	next := "PR #104: todos los checks obligatorios en verde (2 min). Sigue abierta: falta mezclarla."
 	want := next + ` No obligatorios, aún en marcha o fallidos: "install-linux (pending)".`
 	if !strings.Contains(out.String(), want) || !strings.Contains(out.String(), "Para el asistente: díselo ahora") {
 		t.Errorf("output:\n%s", out.String())
@@ -333,5 +342,78 @@ func TestWatchTwoAtOnceOneKeeper(t *testing.T) {
 	}
 	if started != 1 {
 		t.Errorf("%d keepers started", started)
+	}
+}
+
+// Outside a git repository, with no --repo: the repository comes from the task's folders,
+// and the keeper is told it; with no way to tell, the watch fails at once and says why.
+func TestWatchRepoOutsideARepository(t *testing.T) {
+	h, cfg := home(t)
+	c, err := config.Load(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := c.SpaceFor(filepath.Join(h, "augmented-brain", "trabajo"))
+	b, err := brain.Open(c, s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	task, err := b.NewTask(brain.NewTaskInput{Title: "Un cambio"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	wd, _ := os.Getwd()
+	t.Cleanup(func() { os.Chdir(wd) })
+	if err := os.Chdir(filepath.Join(h, "augmented-brain", "trabajo")); err != nil {
+		t.Fatal(err)
+	}
+	calls := fakeWatch(t, "OPEN MERGEABLE abc CLEAN", "test\tpass\t3m\tu\n")
+	watchInRepo = func() bool { return false }
+
+	var out, errOut bytes.Buffer
+	if code := run([]string{"watch", "pr", "5", "--task", task.Header.ID}, nil, &out, &errOut); code != 1 ||
+		!strings.Contains(errOut.String(), "--repo DUEÑO/NOMBRE") || len(*calls) != 0 {
+		t.Fatalf("no folder: code %d, calls %v\n%s%s", code, *calls, out.String(), errOut.String())
+	}
+
+	folder := filepath.Join(h, "proyecto")
+	if err := os.MkdirAll(folder, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	// The folder its session was launched in, as session start writes it down.
+	rec := filepath.Join(c.Dir, state.Dir, "sessions", task.Header.ID+".json")
+	if err := os.MkdirAll(filepath.Dir(rec), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	data := fmt.Sprintf(`{"id":"abc","task":%q,"folder":%q}`, task.Header.ID, folder)
+	if err := os.WriteFile(rec, []byte(data), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	watchRepoOf = func(dir string) string {
+		if dir == folder {
+			return "dueña/proyecto"
+		}
+		return ""
+	}
+	out.Reset()
+	errOut.Reset()
+	if code := run([]string{"watch", "pr", "5", "--task", task.Header.ID}, nil, &out, &errOut); code != 0 {
+		t.Fatalf("code %d\n%s%s", code, out.String(), errOut.String())
+	}
+	if !strings.Contains(out.String(), "Repositorio: dueña/proyecto.") || !strings.Contains(strings.Join((*calls)[0], " "), "-R dueña/proyecto") {
+		t.Errorf("output:\n%s\ncalls: %v", out.String(), *calls)
+	}
+}
+
+// A PR that starts no required check: said as such, and a success when GitHub lets it merge.
+func TestWatchNoRequiredCheck(t *testing.T) {
+	for merge, code := range map[string]int{"CLEAN": 0, "BLOCKED": 1} {
+		fakeWatch(t, "OPEN MERGEABLE abc "+merge, "")
+		var out, errOut bytes.Buffer
+		got := run([]string{"watch", "pr", "8", "--repo", "o/r"}, nil, &out, &errOut)
+		want := map[string]string{"CLEAN": "no lanza ningún check obligatorio", "BLOCKED": "GitHub la mantiene bloqueada"}[merge]
+		if got != code || !strings.Contains(out.String(), want) {
+			t.Errorf("%s: code %d\n%s%s", merge, got, out.String(), errOut.String())
+		}
 	}
 }

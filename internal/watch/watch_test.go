@@ -131,3 +131,67 @@ func TestTimesOut(t *testing.T) {
 		t.Fatalf("got %+v", r)
 	}
 }
+
+// Right after a rerun GitHub still shows the old red for a while: the watch waits Settle
+// before it believes a verdict, and then sees the new run.
+func TestSettleSkipsTheVerdictOfBefore(t *testing.T) {
+	f := &fake{
+		states: []string{"OPEN MERGEABLE abc CLEAN"},
+		checks: []string{"test\tfail\t1m\tu", "test\tfail\t1m\tu", "test\tpending\t0\tu", "test\tpass\t3m\tu"},
+	}
+	o := f.options()
+	o.Settle = 90 * time.Second
+	r := PR(o)
+	if r.Kind != Green || r.Elapsed != 90*time.Second {
+		t.Fatalf("got %+v", r)
+	}
+}
+
+// A push during the watch: the green of the old commit does not count, the clock starts
+// again with the new one.
+func TestNewHeadStartsTheSettleAgain(t *testing.T) {
+	f := &fake{
+		states: []string{"OPEN MERGEABLE old CLEAN", "OPEN MERGEABLE old CLEAN", "OPEN MERGEABLE new CLEAN"},
+		checks: []string{"test\tpending\t0\tu", "test\tpending\t0\tu", "test\tpass\t1m\tu"},
+	}
+	o := f.options()
+	o.Settle = 60 * time.Second
+	r := PR(o)
+	// The new head is seen at 60 s, so its green is believed at 120 s.
+	if r.Kind != Green || r.Elapsed != 120*time.Second {
+		t.Fatalf("got %+v", r)
+	}
+}
+
+// A PR whose changes start no required workflow: GitHub lets it merge, or keeps it
+// blocked waiting for a check that never comes. Either way the watch says so.
+func TestNoRequiredChecksByMergeState(t *testing.T) {
+	for merge, kind := range map[string]Kind{"CLEAN": NoRequired, "UNSTABLE": NoRequired, "BLOCKED": Blocked, "BEHIND": Blocked, "UNKNOWN": Broken} {
+		f := &fake{states: []string{"OPEN MERGEABLE abc " + merge}, checks: []string{""}, errOut: "no required checks reported on the 'x' branch"}
+		r := PR(f.options())
+		if r.Kind != kind || r.Elapsed < 5*time.Minute || r.Elapsed > 6*time.Minute {
+			t.Errorf("%s: got %+v", merge, r)
+		}
+	}
+}
+
+// Every required check passed but GitHub still blocks the PR (a required check that never
+// started, a review): the green says it, once GitHub has said it twice.
+func TestGreenStillBlocked(t *testing.T) {
+	f := &fake{states: []string{"OPEN MERGEABLE abc BLOCKED"}, checks: []string{"test\tpass\t1m\tu"}}
+	r := PR(f.options())
+	if r.Kind != Green || !r.StillBlocked || r.Elapsed != 30*time.Second {
+		t.Fatalf("got %+v", r)
+	}
+	f = &fake{states: []string{"OPEN MERGEABLE abc BLOCKED", "OPEN MERGEABLE abc CLEAN"}, checks: []string{"test\tpass\t1m\tu"}}
+	if r := PR(f.options()); r.Kind != Green || r.StillBlocked {
+		t.Fatalf("a moment blocked: got %+v", r)
+	}
+}
+
+func TestAnswerWithTooManyWordsIsBroken(t *testing.T) {
+	f := &fake{states: []string{"OPEN MERGEABLE abc CLEAN extra"}, checks: []string{"t\tpass\t1m\tu"}}
+	if r := PR(f.options()); r.Kind != Broken {
+		t.Fatalf("got %+v", r)
+	}
+}
