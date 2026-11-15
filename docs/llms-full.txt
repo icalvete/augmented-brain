@@ -1245,9 +1245,10 @@ question. The whole story, command by command, is in [The guard](https://icalvet
    can stop an action the guard would let through.
 
 Both must say yes. A yes from the guard never skips a question from Claude Code. The
-other way round holds too, with one exception: in the mode that skips Claude Code's
-questions (`bypassPermissions`), a question from the guard may not reach you. Do not use
-that mode with the guard; [why](https://icalvete.github.io/augmented-brain/guide/guard.html#sessions-that-skip-claude-codes-questions).
+other way round holds too. In the mode that skips Claude Code's questions
+(`bypassPermissions`) a question from the guard may not reach you, so there the guard
+stops what it would ask about instead. Do not use that mode with the guard;
+[why](https://icalvete.github.io/augmented-brain/guide/guard.html#sessions-that-skip-claude-codes-questions).
 
 If you keep augmented brain to your spaces, outside their folders the guard only
 protects its own files, your home folder and what your lists name: there, the rest is
@@ -1580,13 +1581,14 @@ security boundary.
 
 ## Sessions that skip Claude Code's questions
 
-Claude Code has a mode that skips its permission questions: `bypassPermissions`
-("bypass permissions"). Do not use it with the guard. The guard can still stop a
-command there, but when it asks, Claude Code may not show you the question and run the
-command anyway. The guard knows this in two cases and stops instead of asking: starting
-a release, and saving a rule, your profile or a guard list with "ask first". Everything
-else it asks about (production, untouchable machines, the "ask" list, a push that
-overwrites) depends on Claude Code showing you the question.
+Claude Code has a mode that skips its permission questions: `bypassPermissions` ("bypass
+permissions"). Do not use it with the guard. Anthropic's documentation does not promise
+that Claude Code still shows you the guard's questions in that mode, and in a test with
+Claude Code 2.1.325 it ran a command the guard asked about without showing the question.
+So in that mode the guard stops everything it would otherwise ask you about: production,
+untouchable machines, the "ask" list, a push that overwrites, a release, saving a rule
+with "ask first". Claude tells you what it wanted to do and why. Then you can do it
+yourself, or start a session in another mode and allow it there.
 
 ## When something is wrong with it
 
@@ -6257,6 +6259,14 @@ The session skips Claude Code's permission questions (`bypassPermissions`), so t
 no one to ask, and with "ask" the save is refused. Claude tells you what it wanted to
 save. Start a session in a normal mode to save it, or choose "Save and tell me" in the
 Guard page.
+
+### Claude says the guard stopped something because of bypassPermissions
+
+In a session that skips Claude Code's permission questions (`bypassPermissions`), the
+guard stops whatever it would otherwise ask you about, such as a command with a
+production profile or a push to a repository on the "ask" list. Claude tells you what it
+wanted to do. Do it yourself, or start a session in another mode and allow it there
+([why](https://icalvete.github.io/augmented-brain/guide/guard.html#sessions-that-skip-claude-codes-questions)).
 
 ## Backup and restore
 
