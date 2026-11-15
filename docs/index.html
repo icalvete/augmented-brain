@@ -158,58 +158,59 @@
           <span class="app-new">+ New</span>
           <p class="app-label">Recent</p>
           <ul>
-            <li data-for="wed" class="now">Point the blog at the new server</li>
+            <li data-for="wed" class="now">No document numbers in my notes</li>
             <li data-for="tue">Morning</li>
-            <li data-for="mon">New task: move the blog</li>
+            <li data-for="mon">New task: renew my passport</li>
             <li>Holiday photos</li>
           </ul>
         </div>
         <div class="app-main">
-          <div class="app-head"><span class="app-folder">work</span><span class="app-title" data-title>Point the blog at the new server</span></div>
+          <div class="app-head"><span class="app-folder">home</span><span class="app-title" data-title>No document numbers in my notes</span></div>
           <div class="app-chat">
-            <div class="scene" data-scene="mon" data-title="New task: move the blog">
+            <div class="scene" data-scene="mon" data-title="New task: renew my passport">
               <p class="app-when">Monday 9:00 · new session</p>
-              <div class="say" data-step>New task: move the blog to the new server. Remind me tomorrow to check the old server's backup.</div>
+              <div class="say" data-step>New task: renew my passport before the June trip. Remind me tomorrow to find the old one.</div>
               <p class="tool" data-step data-key="m1"><b>augmented-brain</b> task_new ✓</p>
-              <div class="reply" data-step>Opened <b>Move the blog</b>, with a check for tomorrow. I'd call it done when the blog answers from the new server, at the same addresses. Agreed?</div>
+              <div class="reply" data-step>Opened <b>Renew the passport</b>, with a reminder for tomorrow. I'd call it done when the new passport is in your hands, before the trip. Agreed?</div>
               <div class="say" data-step>Agreed. Park it, we carry on tomorrow.</div>
               <p class="tool" data-step data-key="m2"><b>augmented-brain</b> task_park ✓</p>
-              <div class="reply" data-step>Parked. Next step: copy the blog to the new server.</div>
+              <div class="reply" data-step>Parked. Next step: list the papers the appointment asks for.</div>
             </div>
             <div class="scene" data-scene="tue" data-title="Morning">
               <p class="app-when">Tuesday 9:00 · new session</p>
               <p class="tool loaded" data-step>Notes loaded · 3 tasks · 1 check for today</p>
               <div class="say" data-step>Morning.</div>
-              <div class="reply" data-step>Morning. Due today: check that the old server's last backup finished (<b>Move the blog</b>). Then the task itself: next is copying the blog. Shall I look at the backup?</div>
-              <div class="say" data-step>Yes, go.</div>
+              <div class="reply" data-step>Morning. Due today: find your old passport (<b>Renew the passport</b>). Then the task itself: next is the list of papers. Have you found it?</div>
+              <div class="say" data-step>Yes, it was in the desk drawer.</div>
               <p class="tool" data-step data-key="t1"><b>augmented-brain</b> task_journal ✓</p>
-              <div class="reply" data-step>It finished last night: noted in the task, and the check is done. Now copying the blog.</div>
+              <div class="reply" data-step>Noted in the task, and the reminder is done. Now the papers: a recent photo, the old passport and the form.</div>
             </div>
-            <div class="scene" data-scene="wed" data-title="Point the blog at the new server">
+            <div class="scene" data-scene="wed" data-title="No document numbers in my notes">
               <p class="app-when">Wednesday 11:00</p>
-              <div class="say" data-step>The copy works. Point the blog's address at the new server.</div>
-              <div class="reply" data-step>That changes your DNS in production. Here goes:</div>
+              <div class="say" data-step>From now on, never write my passport or ID numbers in the notes.</div>
+              <div class="reply" data-step>That's a rule for every session. You chose to approve rules yourself:</div>
               <div class="perm" data-step data-press>
                 <p class="perm-head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>The guard asks you first</p>
-                <code>aws --profile prod route53 change-resource-record-sets …</code>
-                <p>prod is a production profile: yours to approve.</p>
+                <code>rule_new · Never write passport or ID numbers in the notes</code>
+                <p>A rule changes how every session works: yours to approve.</p>
                 <div class="perm-btns"><span>Deny</span><span class="yes">Allow</span></div>
               </div>
+              <p class="tool" data-step><b>augmented-brain</b> rule_new ✓</p>
               <p class="tool" data-step data-key="w1"><b>augmented-brain</b> task_journal ✓</p>
-              <div class="reply" data-step>Done: the blog answers from the new server. Written in the task's journal.</div>
+              <div class="reply" data-step>Saved: every session reads it from now on. Noted in the task too.</div>
             </div>
           </div>
           <div class="app-input" aria-hidden="true"><span>Write to Claude…</span><i>↑</i></div>
         </div>
       </div>
-      <pre class="note-file" aria-label="The task's file, as the chat changes it"><span class="fname">tasks/task-move-the-blog.md</span><span class="fl gone" data-off="m1">(not there yet)</span><span class="fl fm" data-on="m1">title: Move the blog</span><span class="fl fm gone" data-on="m1" data-off="m2">status: definition · next: agree when it is done</span><span class="fl fm gone" data-on="m2" data-off="t1">status: parked · next: copy the blog</span><span class="fl fm" data-on="t1">status: execution · next: copy the blog</span><span class="fl" data-on="m1">## Journal</span><span class="fl" data-on="m1">- Mon — Opened. Done: same addresses, new server.</span><span class="fl" data-on="m2">- Mon — Parked. Next: copy the blog.</span><span class="fl" data-on="t1">- Tue — Old server's backup checked: it finished.</span><span class="fl" data-on="w1">- Wed — The address points at the new server.</span></pre>
+      <pre class="note-file" aria-label="The task's file, as the chat changes it"><span class="fname">tasks/task-renew-the-passport.md</span><span class="fl gone" data-off="m1">(not there yet)</span><span class="fl fm" data-on="m1">title: Renew the passport</span><span class="fl fm gone" data-on="m1" data-off="m2">status: definition · next: agree when it is done</span><span class="fl fm gone" data-on="m2" data-off="t1">status: parked · next: list the papers</span><span class="fl fm" data-on="t1">status: execution · next: list the papers</span><span class="fl" data-on="m1">## Journal</span><span class="fl" data-on="m1">- Mon — Opened. Done: new one, before June.</span><span class="fl" data-on="m2">- Mon — Parked. Next: list the papers.</span><span class="fl" data-on="t1">- Tue — Old passport found: desk drawer.</span><span class="fl" data-on="w1">- Wed — New rule: no document numbers in notes.</span></pre>
       <div class="demo-ctl" role="group" aria-label="Demo controls" hidden>
         <button type="button" data-goto="mon">Monday</button>
         <button type="button" data-goto="tue">Tuesday</button>
         <button type="button" data-goto="wed">Wednesday</button>
         <button type="button" class="play" data-pause="Pause" data-play="Play" data-again="Watch again">Pause</button>
       </div>
-      <p class="demo-caption">A recreated example, with made-up tasks. With you, the tasks are yours.</p>
+      <p class="demo-caption">A recreated example, with made-up tasks. Approving each rule yourself is a choice on the panel’s Guard page. With you, the tasks are yours.</p>
     </div>
   </div>
 
@@ -222,14 +223,14 @@
       <div class="versus">
         <div class="side without">
           <p class="label">Without</p>
-          <div class="bubble you">Let's carry on with the blog move.</div>
-          <div class="bubble ai">Sure! Which blog? Can you tell me about the project?</div>
+          <div class="bubble you">Let's carry on with the passport.</div>
+          <div class="bubble ai">Sure! Which passport? Where are you travelling?</div>
           <p class="after">Fifteen minutes explaining it all again.</p>
         </div>
         <div class="side with">
           <p class="label">With augmented brain</p>
-          <div class="bubble you">Let's carry on with the blog move.</div>
-          <div class="bubble ai">It's parked. Done when the blog answers from the new server, at the same addresses. Next step: copy it. Shall I start?</div>
+          <div class="bubble you">Let's carry on with the passport.</div>
+          <div class="bubble ai">It's parked. Done when the new passport is in your hands, before the June trip. Next step: list the papers. Shall we?</div>
           <p class="after">You go straight back to work.</p>
         </div>
       </div>
@@ -248,19 +249,19 @@
           <p>Every task, decision and lesson is a Markdown file on your computer. Each session reads them first, so it starts where the last one stopped.</p>
           <p>Open them with any editor. No account and no cloud: if you stop using augmented brain, your notes stay. <a href="guide/notes.html">Your notes</a>.</p>
         </div>
-        <pre class="file" aria-label="Example of a task file"><span class="fname">tasks/task-move-the-blog.md</span><span class="fm">---
-title: Move the blog
+        <pre class="file" aria-label="Example of a task file"><span class="fname">tasks/task-renew-the-passport.md</span><span class="fm">---
+title: Renew the passport
 status: parked
 waiting_on: nobody
-next: Copy the blog to the new server
+next: List the papers for the appointment
 ---</span>
 ## Essentials
-Done when the blog answers from
-the new server, at the same addresses.
+Done when the new passport is in
+your hands, before the June trip.
 
 ## Journal
-- 2026-11-09 — Opened. Backup check: Tue.
-- 2026-11-09 — Parked. Next: copy it.</pre>
+- 2026-11-09 — Opened. Find the old one: Tue.
+- 2026-11-09 — Parked. Next: the papers.</pre>
       </div>
       <div class="pillar">
         <div>
