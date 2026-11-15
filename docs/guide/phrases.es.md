@@ -18,6 +18,7 @@ forma de decir lo mismo también.
 | "Añade un paso: cambiar el dominio." | Añade una casilla al plan de la tarea |
 | "La base de datos ya está copiada." | Marca ese paso |
 | "Eso depende de Diego: hazlo subtarea." | Abre una subtarea con su propio estado y su siguiente paso |
+| "La tarea del dominio es parte de la del blog: ponla debajo." | Hace de una tarea que ya existe subtarea de otra (o, con "sácala", otra vez una tarea propia) |
 | "El día 16, mira si se ha renovado el certificado." | Pone una fecha para revisar en la tarea |
 | "Apárcala, mañana seguimos." | Apunta el siguiente paso exacto y lo esencial, y pausa la tarea |
 | "Déjala para algún día." | La aparca como algún día: fuera de la lista diaria, guardada en su área |

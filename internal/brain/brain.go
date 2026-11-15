@@ -311,6 +311,52 @@ func (b *Brain) parent(id string) (*memory.Note, error) {
 	return p, nil
 }
 
+// setParent gives the task of header h the parent id, or takes its parent away when
+// id is NoParent, and returns the journal lines that say so. A parent is checked as
+// in NewTask; the task must not be the parent itself nor have subtasks of its own, as
+// subtasks go one level deep (so parents never loop). With followArea, a task that
+// gets a parent moves to the parent's area.
+func (b *Brain) setParent(h *memory.Header, id string, followArea bool) ([]string, error) {
+	id = strings.TrimSpace(id)
+	if id == NoParent {
+		if h.Parent == "" {
+			return nil, nil
+		}
+		old := h.Parent
+		h.Parent = ""
+		return []string{fmt.Sprintf(b.text("parent.removed"), old)}, nil
+	}
+	if id == h.Parent {
+		return nil, nil
+	}
+	if id == h.ID {
+		return nil, i18n.Errorf("err.task.parentself", id)
+	}
+	p, err := b.parent(id)
+	if err != nil {
+		return nil, err
+	}
+	if kids := b.Mem.Children(h.ID); len(kids) > 0 {
+		ids := make([]string, len(kids))
+		for i, k := range kids {
+			ids[i] = k.Header.ID
+		}
+		return nil, i18n.Errorf("err.task.haschildren", h.ID, strings.Join(ids, ", "))
+	}
+	var lines []string
+	if h.Parent == "" {
+		lines = append(lines, fmt.Sprintf(b.text("parent.set"), id))
+	} else {
+		lines = append(lines, fmt.Sprintf(b.text("parent.moved"), h.Parent, id))
+	}
+	h.Parent = id
+	if followArea && p.Header.Area != "" && p.Header.Area != h.Area {
+		lines = append(lines, fmt.Sprintf(b.text("parent.area"), h.Area, p.Header.Area))
+		h.Area = p.Header.Area
+	}
+	return lines, nil
+}
+
 // openChildren refuses to close a task while any of its subtasks is not closed.
 func (b *Brain) openChildren(id string) error {
 	var open []string
@@ -336,7 +382,7 @@ type UpdateInput struct {
 	Next      string
 	Summary   string
 	Area      string
-	// Clear empties fields by name: "waiting_on", "next", "summary", "area". The MCP
+	// Clear empties fields by name: "waiting_on", "next", "summary", "area", "parent". The MCP
 	// tool never sets it (a blank there keeps the field); the panel does, when the
 	// user empties a field. A live task still needs waiting_on and next.
 	Clear []string
@@ -355,7 +401,14 @@ type UpdateInput struct {
 	// the task still closes (task_update always could), with a line saying no result
 	// was given.
 	Result string
+	// Parent makes the task a subtask of that task, or moves it to it; NoParent (the
+	// value "none" in the MCP tool, or Clear "parent") makes it a task of its own.
+	// Without Area, a task given a parent takes the parent's area, as in NewTask.
+	Parent string
 }
+
+// NoParent is the Parent that takes a task's parent away.
+const NoParent = "none"
 
 // phaseOrder are the phases a task goes through, in order; parked and someday pause it
 // and are not in it.
@@ -405,9 +458,18 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 			h.Summary = ""
 		case "area":
 			h.Area = ""
+		case "parent":
+			in.Parent = NoParent
 		default:
 			return nil, i18n.Errorf("err.task.clear", f)
 		}
+	}
+	if in.Parent != "" {
+		l, err := b.setParent(h, in.Parent, in.Area == "")
+		if err != nil {
+			return nil, err
+		}
+		lines = append(lines, l...)
 	}
 	var dropped []memory.Watch
 	if in.WatchDrop != "" {

@@ -139,6 +139,8 @@ you go on with the rest. A subtask is a whole task, with one more line in its he
 - Only one level: a subtask has no subtasks.
 - The bigger task closes last, when all its subtasks are closed.
 - Parking the bigger task leaves its subtasks as they are.
+- A task that already exists can become a subtask later, move to another bigger task, or
+  stand on its own again: ask Claude, and the journal says so.
 
 Rule of thumb: if it waits on someone or has its own pace, it is a subtask. Otherwise, it
 is a step.

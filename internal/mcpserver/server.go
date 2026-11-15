@@ -344,14 +344,15 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Title     string `json:"title,omitempty" jsonschema:"a new title; the id stays, so links to the task still work"`
 		Reopen    string `json:"reopen,omitempty" jsonschema:"only to open a closed task again, with a new status: why, in a few words; it goes to the journal. Ask the user first"`
 		Result    string `json:"result,omitempty" jsonschema:"with status closed: what was achieved, as in task_close"`
+		Parent    string `json:"parent,omitempty" jsonschema:"id of the task to make this one a subtask of, or move it to (one level only: the parent is no subtask, this task has none; without area it takes the parent's area); none to make it a task of its own"`
 		Space     string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	toolThen(s, locked, "task_update", "Change a task's title, status, who it waits on, its next step, summary or area, or add, close, take out or move a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
+	toolThen(s, locked, "task_update", "Change a task's title, status, who it waits on, its next step, summary, area or parent, or add, close, take out or move a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
 		func(b0 *brain.Brain, in updateIn) (string, then, error) {
 			u := brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn, Next: in.Next,
 				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone,
-				WatchDrop: in.WatchDrop, Title: in.Title, Reopen: in.Reopen, Result: in.Result}
-			if in.Status+in.WaitingOn+in.Next+in.Summary+in.Area+in.WatchDate+in.WatchDone+in.WatchDrop+in.Title == "" {
+				WatchDrop: in.WatchDrop, Title: in.Title, Reopen: in.Reopen, Result: in.Result, Parent: in.Parent}
+			if in.Status+in.WaitingOn+in.Next+in.Summary+in.Area+in.WatchDate+in.WatchDone+in.WatchDrop+in.Title+in.Parent == "" {
 				return "", nil, errors.New("nothing to change: give at least one field")
 			}
 			if in.Result != "" && in.Status != "closed" {

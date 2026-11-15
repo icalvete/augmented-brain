@@ -119,6 +119,22 @@ var noteMessages = map[string]msg{
 		en: "Title changed: %s → %s",
 		es: "Título cambiado: %s → %s",
 	},
+	"note.parent.set": {
+		en: "Now a subtask of %s",
+		es: "Ahora es subtarea de %s",
+	},
+	"note.parent.moved": {
+		en: "Parent changed: %s → %s",
+		es: "Madre cambiada: %s → %s",
+	},
+	"note.parent.removed": {
+		en: "No longer a subtask of %s: now a task of its own",
+		es: "Ya no es subtarea de %s: ahora es una tarea propia",
+	},
+	"note.parent.area": {
+		en: "Area changed to its parent's: %s → %s",
+		es: "Área cambiada a la de su madre: %s → %s",
+	},
 	"note.watch.dropped": {
 		en: "Watch date taken out: %s · %s",
 		es: "Fecha para revisar quitada: %s · %s",

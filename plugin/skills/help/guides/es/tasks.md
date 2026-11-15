@@ -139,6 +139,8 @@ su cabecera: `parent: task-mudar-el-blog`.
 - Un solo nivel: una subtarea no tiene subtareas.
 - La tarea grande se cierra la última, cuando todas sus subtareas están cerradas.
 - Aparcar la tarea grande deja sus subtareas como están.
+- Una tarea que ya existe puede hacerse subtarea después, pasar a otra tarea grande o
+  volver a ser una tarea propia: pídeselo a Claude, y el diario lo cuenta.
 
 Regla práctica: si espera a alguien o lleva su propio ritmo, es una subtarea. Si no, es un
 paso.

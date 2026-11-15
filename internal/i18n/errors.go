@@ -129,6 +129,14 @@ var errorMessages = map[string]msg{
 		en: "%q cannot be closed while its subtasks are open; close them first: %s",
 		es: "%q no se puede cerrar con subtareas abiertas; ciérralas antes: %s",
 	},
+	"err.task.parentself": {
+		en: "%q cannot be its own parent",
+		es: "%q no puede ser su propia madre",
+	},
+	"err.task.haschildren": {
+		en: "%q has subtasks of its own (%s), and subtasks go one level deep only: move or close them first",
+		es: "%q tiene subtareas propias (%s), y las subtareas solo tienen un nivel: muévelas o ciérralas antes",
+	},
 	"err.task.clear": {
 		en: "%q cannot be cleared",
 		es: "%q no se puede vaciar",

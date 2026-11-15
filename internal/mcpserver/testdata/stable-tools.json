@@ -152,6 +152,7 @@
     "area: string",
     "id: string",
     "next: string",
+    "parent: string",
     "reopen: string",
     "required id",
     "result: string",

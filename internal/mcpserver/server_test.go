@@ -657,8 +657,8 @@ func TestRuleChangeAndRetire(t *testing.T) {
 	}
 }
 
-// task_step corrects, moves and removes steps; task_update changes the title and takes
-// out or moves a watch date.
+// task_step corrects, moves and removes steps; task_update changes the title, takes
+// out or moves a watch date, and gives or takes away a parent.
 func TestFixThroughTools(t *testing.T) {
 	cs := connect(t, space(t))
 	if out, isErr := call(t, cs, "task_new", map[string]any{"title": "Garden"}); isErr {
@@ -695,5 +695,22 @@ func TestFixThroughTools(t *testing.T) {
 	}
 	if out, _ := call(t, cs, "task_get", map[string]any{"id": id}); !strings.Contains(out, "taken out: 2026-12-08 · Feed") {
 		t.Errorf("after the drop: %s", out)
+	}
+	// task_update gives a task a parent alone, and none takes it away.
+	call(t, cs, "task_new", map[string]any{"title": "Fence"})
+	if out, isErr := call(t, cs, "task_update", map[string]any{"id": "task-fence", "parent": id}); isErr {
+		t.Errorf("parent: %s", out)
+	}
+	if out, _ := call(t, cs, "task_get", map[string]any{"id": "task-fence"}); !strings.Contains(out, "parent: "+id) {
+		t.Errorf("after the parent: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_update", map[string]any{"id": id, "parent": "task-fence"}); !isErr || !strings.Contains(out, "one level") {
+		t.Errorf("a parent under its own subtask: %s", out)
+	}
+	if out, isErr := call(t, cs, "task_update", map[string]any{"id": "task-fence", "parent": "none"}); isErr {
+		t.Errorf("no parent: %s", out)
+	}
+	if out, _ := call(t, cs, "task_get", map[string]any{"id": "task-fence"}); strings.Contains(out, "parent: ") {
+		t.Errorf("after none: %s", out)
 	}
 }

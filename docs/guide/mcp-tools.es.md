@@ -125,6 +125,10 @@ el diario.
 - `next` (opcional): la única acción siguiente, en una línea.
 - `summary` (opcional): una línea sobre qué es.
 - `area` (opcional): el id de su área.
+- `parent` (opcional): el id de una tarea, para hacer esta subtarea suya o moverla allí.
+  La madre tiene que ser una tarea que no esté cerrada ni sea subtarea, y esta tarea no
+  puede tener subtareas propias: un solo nivel. Sin `area`, la tarea pasa al área de su
+  madre. `none` la vuelve una tarea propia. El diario dice qué cambió.
 - `watch_date` (opcional): añade una fecha para volver a mirar algo. Necesita
   `watch_what`.
 - `watch_what` (opcional): qué mirar en `watch_date`, en una línea.
