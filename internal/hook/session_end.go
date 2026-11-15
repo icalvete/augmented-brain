@@ -37,6 +37,7 @@ func SessionEnd(in io.Reader, cfgDir string) error {
 		// goes on, and SessionStart takes a new one.
 		fresh.Remove(cfgDir, fresh.HookKey(Getenv))
 	}
+	removeParts(cfgDir, i.SessionID, Now())
 	c, s, err := load(cfgDir, i.Cwd)
 	if err != nil || c == nil || s == nil || quiet(cfgDir, c, i.Cwd) {
 		return nil

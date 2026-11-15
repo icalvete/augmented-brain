@@ -362,6 +362,9 @@ var hookEvents = []hookEvent{
 	{"stop", func(in io.Reader, out io.Writer, dir string, _ int) error { return hook.Stop(in, out, dir) }},
 	{"post-compact", func(in io.Reader, _ io.Writer, dir string, _ int) error { return hook.PostCompact(in, dir) }},
 	{"session-end", func(in io.Reader, _ io.Writer, dir string, _ int) error { return hook.SessionEnd(in, dir) }},
+	// Not a hook of Claude Code: the session start runs it apart, to ask for the latest
+	// version without making the session wait.
+	{"update-check", func(_ io.Reader, _ io.Writer, dir string, _ int) error { return hook.UpdateCheck(dir) }},
 }
 
 // cmdHook answers a Claude Code hook. A hook must never break the assistant, so it
