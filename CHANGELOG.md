@@ -2,6 +2,47 @@
 
 ## Unreleased
 
+## 1.0.0-rc.4
+
+Released 2026-11-15.
+
+- **`session start` opens in a folder Claude already trusts.** A folder that is not a
+  repository, inside one Claude trusts, was refused, and the command asked you to accept
+  a question Claude never shows there. It now decides as Claude does: a repository must
+  be trusted on its own, any other folder is trusted when a folder above it is.
+- **`session start --model` picks the session's model**, such as `opus` or `sonnet`.
+- **After `update`, the sessions it could not restart get the right command.** It used to
+  say to close and open Claude; it now says to run `augmented-brain session restart
+  --old` once they have finished their answer.
+- **Closing a task's session says what really happens.** It leaves the lists of Claude
+  Desktop and claude.ai, but the Claude app on a phone may keep showing it, offline,
+  until you archive it there.
+- **A worktree kept for files git ignores names them.** A compiled program, bytecode
+  and caches such as `.next` no longer keep it.
+- **The website's guide pages are built when the site is published, not committed.**
+  A pull request brought up to date with `main` can no longer carry stale pages, and
+  the site always matches the guides it was built from.
+- **In bypassPermissions mode the guard stops what it would ask about.** In that mode
+  Claude Code may not show the guard's questions (a test ran a command without one), so
+  a production command, a push to an "ask" repository or anything else the guard asks
+  about could run without your yes. Now it is refused there, and Claude tells you what
+  it wanted to do. Release and memory_trust already worked this way.
+- **`watch pr` no longer reports a result of before, nor gives up when it need not.**
+  Right after a push or a rerun it waits 90 seconds before it believes a green or a red,
+  since GitHub still shows the old one for a while. A pull request whose changes start no
+  required check now ends saying so: a success when GitHub lets it merge, blocked when it
+  does not. And outside a git repository it takes the repository from the task's folders,
+  or asks for `--repo` at once.
+- **Claude writes a task's Definition, Analysis, Plan, Validation and Closing with a
+  tool of their own, `task_section`.** Until now those sections only changed by hand
+  or not at all, and what a phase settled stayed in the journal. The Plan keeps its
+  steps; the essentials and the journal are never touched.
+- **The help skill can search the guides with `grep` when the Grep tool is missing.**
+  Until now it was allowed the Grep tool only.
+- **The home page tells the story of someone who does not code.** The demo used to move a
+  blog to a new server; now it renews a passport before a trip, and the guard's moment is
+  approving a new rule. People who do not program can see themselves using it.
+
 ## 1.0.0-rc.3
 
 Released 2026-11-15.
