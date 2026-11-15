@@ -383,3 +383,28 @@ func RemoveWorktree(folder, branch string) (done bool, why string) {
 	}
 	return true, ""
 }
+
+// TaskFolders are the folders a task works in, as this machine knows them: the worktree
+// session start made for it, the worktrees noted for it (task_worktree) and the folder
+// its session was launched in. Folders gone are left out; none repeats.
+func TaskFolders(cfgDir, task string) []string {
+	var list []string
+	add := func(folder string) {
+		if folder == "" || slicesSame(list, folder) {
+			return
+		}
+		if fi, err := os.Stat(folder); err == nil && fi.IsDir() {
+			list = append(list, folder)
+		}
+	}
+	if folder, _, ok := recordedWorktree(cfgDir, task); ok {
+		add(folder)
+	}
+	for _, n := range readNoted(cfgDir, task) {
+		add(n.folder)
+	}
+	if r, ok := readLaunch(cfgDir, task); ok {
+		add(r.Folder)
+	}
+	return list
+}

@@ -705,7 +705,8 @@ augmented-brain watch pr 104 --task task-my-change
 ```
 
 Termina cuando la pull request se mezcla o se cierra, choca con su rama base (entonces no
-corre la CI), falla un check obligatorio, terminan todos los obligatorios o pasa `--max`.
+corre la CI), falla un check obligatorio, terminan todos los obligatorios, resulta que la
+pull request no lanza ningún check obligatorio o pasa `--max`.
 
 - `--task`: escribe esa línea en el diario de la tarea, y lo que pasó como su siguiente
   paso. Todas las demás sesiones se enteran antes de su próxima respuesta, y lo enseña
@@ -713,7 +714,10 @@ corre la CI), falla un check obligatorio, terminan todos los obligatorios o pasa
   sesión que la empezó se cierre o se reinicie. Si se pide otra vez para la misma pull
   request y tarea, espera a la que ya está en marcha. La tarea tiene que ser del espacio
   de esta carpeta.
-- `--repo`: el repositorio, como `dueño/nombre`. Por defecto, el de esta carpeta.
+- `--repo`: el repositorio, como `dueño/nombre`. Por defecto, el de esta carpeta. Fuera
+  de un repositorio git, con `--task`, lo saca de las carpetas de la tarea (sus worktrees
+  y la carpeta donde se lanzó su sesión) si todas llevan a un mismo repositorio de
+  GitHub; si no, se para en el acto y pide `--repo`.
 - `--max`: lo más que vigila. Por defecto, `3h`.
 - `--every`: cada cuánto mira. Por defecto, `30s`; `10s` como poco.
 
@@ -725,13 +729,26 @@ los que siguen en marcha o han fallado (cinco como mucho, cada uno cortado a 60
 caracteres). Sus nombres van solo al diario, nunca al siguiente paso, que todas las
 sesiones leen al empezar: esos nombres los elige quien escribe los workflows.
 
-**Cuándo se rinde.** Si GitHub no lista ningún check obligatorio a los 5 minutos, o `gh`
-falla tres veces seguidas o da una respuesta que no entiende, se para y dice lo que dijo
-`gh`.
+**Un resultado de antes no cuenta.** Justo después de un push o de relanzar la CI,
+GitHub enseña unos segundos el resultado de antes, en verde o en rojo. Por eso un
+veredicto solo cuenta si sigue igual 90 segundos después de empezar a vigilar, o de que
+llegue un commit nuevo a la pull request.
+
+**Pull requests que no lanzan ningún check obligatorio.** Un workflow puede correr solo
+para algunas rutas. Si los cambios de una pull request no lanzan ninguno de los
+obligatorios, GitHub no le lista ningún check obligatorio. A los 5 minutos la vigilancia
+mira qué dice GitHub de la pull request: si se puede mezclar, lo dice y acaba con 0; si
+GitHub la mantiene bloqueada (esperando un check que nunca empezará, una revisión o poner
+la rama al día), lo dice y acaba con 1. Si todos los obligatorios pasaron pero GitHub aún
+la bloquea, la línea también lo dice.
+
+**Cuándo se rinde.** Si `gh` falla tres veces seguidas o da una respuesta que no entiende,
+se para y dice lo que dijo `gh`.
 
 Necesita `gh` con tu login de GitHub. El asistente lo lanza en segundo plano; su última
-línea le pide avisarte en el acto. Acaba con 0 si los checks pasaron o la pull request se
-mezcló, y con 1 en cualquier otro caso.
+línea le pide avisarte en el acto. Acaba con 0 si los checks pasaron, la pull request se
+mezcló o no lanza ningún check obligatorio y se puede mezclar, y con 1 en cualquier otro
+caso.
 
 ## augmented-brain config
 
@@ -987,8 +1004,9 @@ falta o que sobra, o un valor que no puede usar (`--language fr`).
 Algunos comandos dan a sus códigos un sentido propio:
 
 - `check` y `doctor`: `1` si una nota no es válida, o algo falla.
-- `watch pr`: `0` solo si los checks pasaron o la pull request se mezcló; `1` en todo lo
-  demás (cerrada, un conflicto, un check fallido, `--max` alcanzado).
+- `watch pr`: `0` solo si los checks pasaron, la pull request se mezcló, o no lanza
+  ningún check obligatorio y GitHub deja mezclarla; `1` en todo lo demás (cerrada, un
+  conflicto, un check fallido, bloqueada, `--max` alcanzado).
 - `hook`: `0` aunque algo falle dentro, para no parar nunca a Claude. La excepción es el
   guardia (`pre-tool-use`), que acaba con `2` para parar el comando si no puede dar su
   respuesta.

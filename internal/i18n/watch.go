@@ -27,6 +27,26 @@ var watchMessages = map[string]msg{
 		en: "PR #%d: a required check failed (%s); which one, and the rest, is in the journal.",
 		es: "PR #%d: ha fallado un check obligatorio (%s); cuál, y lo demás, está en el diario.",
 	},
+	"watch.stillblocked": {
+		en: " But GitHub still blocks it: a required check this PR does not start (a workflow filtered by paths), or a review.",
+		es: " Pero GitHub aún la bloquea: falta un check obligatorio que esta PR no lanza (un workflow filtrado por rutas) o una revisión.",
+	},
+	"watch.norequired": {
+		en: "PR #%d starts no required check (its changes are outside the paths of the required workflows), and GitHub lets it merge (%s).",
+		es: "La PR #%d no lanza ningún check obligatorio (sus cambios quedan fuera de las rutas de los workflows obligatorios) y GitHub deja mezclarla (%s).",
+	},
+	"watch.blocked": {
+		en: "PR #%d: no required check ran, and GitHub keeps it blocked: it waits for a check this PR does not start (a workflow filtered by paths), a review or an update of the branch. Waiting longer changes nothing (%s).",
+		es: "PR #%d: no ha corrido ningún check obligatorio y GitHub la mantiene bloqueada: espera un check que esta PR no lanza (un workflow filtrado por rutas), una revisión o poner la rama al día. Esperar más no cambia nada (%s).",
+	},
+	"watch.norepo": {
+		en: "PR #%d: this folder is not a git repository and I cannot tell the PR's repository from the task's folders. Say it with --repo OWNER/NAME.",
+		es: "PR #%d: esta carpeta no es un repositorio git y no sé de qué repositorio es la PR por las carpetas de la tarea. Dilo con --repo DUEÑO/NOMBRE.",
+	},
+	"watch.repo": {
+		en: "Repository: %s.",
+		es: "Repositorio: %s.",
+	},
 	"watch.timeout.next": {
 		en: "PR #%d: after %s, checks still pending; which ones is in the journal. I stopped watching it.",
 		es: "PR #%d: tras %s, siguen checks pendientes; cuáles, está en el diario. He dejado de vigilarla.",
