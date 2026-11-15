@@ -22,21 +22,32 @@ func TestLaunchUnit(t *testing.T) {
 	}
 }
 
-// The folder must be trusted on its own: a trusted parent is not enough (measured on
-// claude 2.1.319), unlike what the space's service needs.
-func TestFolderTrustedIsExact(t *testing.T) {
+// Claude's own rule (measured in claude 2.1.325, 15-nov): outside a git repository a
+// trusted folder above is enough, and Claude never asks there; inside one, only up to
+// the repository's root.
+func TestFolderTrustedAsClaude(t *testing.T) {
 	f := newFake(t)
+	plain := filepath.Join(f.root, "p", "notes", "drafts")
 	repo := filepath.Join(f.root, "p", "site")
-	if err := os.MkdirAll(repo, 0o755); err != nil {
-		t.Fatal(err)
+	sub := filepath.Join(repo, "web")
+	for _, d := range []string{plain, filepath.Join(repo, ".git"), sub} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if f.sys.FolderTrusted(plain) {
+		t.Error("a folder was trusted with nothing accepted")
 	}
 	f.trust(filepath.Join(f.root, "p"))
-	if f.sys.FolderTrusted(repo) {
-		t.Error("a trusted parent made the folder trusted")
+	if !f.sys.FolderTrusted(plain) {
+		t.Error("a folder that is no repository, below a trusted one, was not trusted")
+	}
+	if f.sys.FolderTrusted(repo) || f.sys.FolderTrusted(sub) {
+		t.Error("a trusted folder above a repository made the repository trusted")
 	}
 	f.trust(repo)
-	if !f.sys.FolderTrusted(repo) {
-		t.Error("the trusted folder was not trusted")
+	if !f.sys.FolderTrusted(repo) || !f.sys.FolderTrusted(sub) {
+		t.Error("a trusted repository, or a folder inside it, was not trusted")
 	}
 }
 
@@ -170,6 +181,28 @@ func TestStartRunsAndStops(t *testing.T) {
 	}
 	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo}, "go"); err != nil {
 		t.Errorf("starting again after it ended: %v", err)
+	}
+}
+
+// --model goes to claude before the first message; a name that could be an option is
+// refused before anything runs.
+func TestStartModel(t *testing.T) {
+	f, repo := launchFake(t)
+	c, set := f.load()
+	f.trust(repo)
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo, Model: "--evil"}, "go"); err == nil || len(f.ranIn) != 0 {
+		t.Fatalf("a model like an option: err %v, runs %v", err, f.ranIn)
+	}
+	if err := f.sys.Start(c, set, Launch{Task: "task-site", Name: "x", Folder: repo, Model: "opus"}, "go"); err != nil {
+		t.Fatal(err)
+	}
+	if len(f.ranIn) != 1 || !strings.Contains(f.ranIn[0], "--permission-mode default --model opus go") {
+		t.Errorf("runs: %v", f.ranIn)
+	}
+	for m, ok := range map[string]bool{"opus": true, "claude-opus-5-5": true, "claude-opus-5-5[1m]": true, "": false, "-x": false, "a b": false} {
+		if ValidModel(m) != ok {
+			t.Errorf("ValidModel(%q) = %v", m, !ok)
+		}
 	}
 }
 

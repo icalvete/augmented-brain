@@ -147,7 +147,7 @@ func TestAfterUpdate(t *testing.T) {
 	}
 	out.Reset()
 	afterUpdate("es", "0.10.0-alpha", false, &out) // --no-restart
-	for _, want := range []string{"1 sesiones", "trabajo", "task-mudanza", "augmented-brain doctor"} {
+	for _, want := range []string{"1 sesiones", "trabajo", "task-mudanza", "session restart --old", "augmented-brain doctor"} {
 		if !strings.Contains(out.String(), want) {
 			t.Errorf("missing %q:\n%s", want, out.String())
 		}
@@ -172,7 +172,7 @@ func TestAfterUpdate(t *testing.T) {
 	left = errors.New("exit status 1")
 	out.Reset()
 	afterUpdate("es", "0.10.0-alpha", true, &out)
-	if !strings.Contains(out.String(), "task-mudanza") || strings.Contains(out.String(), "1 sesiones") {
+	if !strings.Contains(out.String(), "task-mudanza") || !strings.Contains(out.String(), "session restart --old") || strings.Contains(out.String(), "1 sesiones") {
 		t.Errorf("some left:\n%s", out.String())
 	}
 }

@@ -32,7 +32,8 @@ starts on its own: it reads its task, tells you in two or three lines where it s
 and gets on with the next step. It hears only what is its task's: that task's dates, not
 the rest of the space's reminders, the weekly review or sessions to recover, which come
 up in your other sessions. When it stops (the task closed or parked, or waiting on you),
-it tells the session that asked for it, in one line.
+it tells the session that asked for it, in one line. With `--model sonnet` (or any
+model `claude --model` takes) it starts with that model instead of Claude's default.
 
 The command waits for the session's first answer, up to a minute. A session that cannot
 work is not left open: if Claude Code is not logged in, nothing opens, and if the first
@@ -60,9 +61,10 @@ augmented-brain session start task-new-website --folder ~/projects/website
 
 Two rules keep it safe:
 
-- **Claude must trust that folder itself.** Trusting a folder above it is not enough:
-  a repository's own settings and hooks must not run unasked. The first time, the
-  command says what to do: on the computer (or through `ssh`), go to the folder, run
+- **Claude must trust that folder.** A repository must be trusted on its own, so its
+  own settings and hooks never run unasked: trusting a folder above it is not enough.
+  A folder that is not a repository is trusted when a folder above it is, as Claude
+  itself does. When Claude does not trust it yet, the command says what to do: on the computer (or through `ssh`), go to the folder, run
   `claude`, accept the question and close it with `/exit`. Then ask again.
 - **One task per folder.** Two tasks in one folder would step on each other's changes,
   so a folder another task's session uses is refused. Give it another one with
@@ -113,7 +115,9 @@ folder.
 augmented-brain session stop task-new-website
 ```
 
-closes the session and takes it out of Claude Desktop and claude.ai, worktree and all.
+closes the session and takes it out of the lists of Claude Desktop and claude.ai,
+worktree and all. The Claude app on a phone may keep showing it, offline, until you
+archive it there.
 Closing the task does the same, once the session has finished its answer. A session
 also ends when the computer restarts, and does not come back by itself: ask for it
 again.

@@ -40,7 +40,7 @@ func TestRemoveKeepsBranchCommits(t *testing.T) {
 // (node_modules) does not keep it (R-04).
 func TestRemoveKeepsIgnoredFiles(t *testing.T) {
 	w := newGitWorld(t)
-	if err := os.WriteFile(filepath.Join(w.origin, ".gitignore"), []byte(".env\nnode_modules/\n"), 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(w.origin, ".gitignore"), []byte(".env\nnode_modules/\n/site\n*.pyc\n.next/\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	w.git(w.origin, "add", ".gitignore")
@@ -55,9 +55,28 @@ func TestRemoveKeepsIgnoredFiles(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(wt, "node_modules", "left-pad", "index.js"), []byte("x\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	// What a build makes again: a compiled program at the root (a Go build's), bytecode,
+	// a framework's cache.
+	for name, data := range map[string]string{"site": "\x7fELF\x02\x01", "app.pyc": "x", ".next/cache/a": "x"} {
+		if err := os.MkdirAll(filepath.Dir(filepath.Join(wt, name)), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(wt, name), []byte(data), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if got := IgnoredWork(wt); len(got) != 0 {
+		t.Fatalf("what a build makes counts as work: %v", got)
+	}
 	secret := filepath.Join(wt, ".env")
 	if err := os.WriteFile(secret, []byte("API_KEY=only-copy\n"), 0o600); err != nil {
 		t.Fatal(err)
+	}
+	if got := IgnoredNames("en", wt); got != ".env" {
+		t.Errorf("the files named: %q", got)
+	}
+	if got := WhyKept("en", wt, KeptIgnored); !strings.Contains(got, "(.env)") {
+		t.Errorf("why kept: %q", got)
 	}
 	if _, removed, why := RemoveTaskWorktree(w.cfgDir, "task-secret"); removed || why != KeptIgnored {
 		t.Fatalf("removed=%v why=%q, want kept with %q", removed, why, KeptIgnored)

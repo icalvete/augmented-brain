@@ -343,8 +343,8 @@ var commandMessages = map[string]msg{
 		es: "  · espacio %s: la tarea %s está activa. Pide antes a su sesión que la aparque.",
 	},
 	"update.after.restart": {
-		en: "Then close and open Claude (the whole app, or each session), and run `augmented-brain doctor` to check none is left.",
-		es: "Después cierra y abre Claude (la app entera, o cada sesión) y lanza `augmented-brain doctor` para ver que no queda ninguna.",
+		en: "Then run `augmented-brain session restart --old`: it restarts the idle ones with the same conversation (those of Claude Desktop stay open, only their augmented brain restarts). One busy answering waits: run it again when it has finished. `augmented-brain doctor` says whether any is left.",
+		es: "Después lanza `augmented-brain session restart --old`: reinicia las que están quietas, con la misma conversación (las de Claude Desktop siguen abiertas, solo se reinicia su augmented brain). Una que está respondiendo espera: vuelve a lanzarlo cuando termine. `augmented-brain doctor` dice si queda alguna.",
 	},
 	"update.plugin": {
 		en: "✓ Claude Code plugin up to date. Restart Claude (close and open the app or the session) to use it.",

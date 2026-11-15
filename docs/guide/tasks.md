@@ -62,7 +62,8 @@ Claude works without asking at every step.
 The task's file has a numbered section for each phase where there is something to write
 down (1. Definition, 2. Analysis, 3. Plan, 4. Validation, 5. Closing). Execution has no
 section of its own: what is done goes to the journal. That is why the numbers of the
-sections and of the phases do not match from validation on.
+sections and of the phases do not match from validation on. Claude writes each section
+as its phase settles it, with the tool [`task_section`](mcp-tools.md#task_section).
 
 The phase is the task's `status`. Two more statuses pause a task without losing anything:
 

@@ -507,11 +507,12 @@ use them: [A session per task](task-sessions.md).
 
 Opens a session for a task, in the task's folder.
 
-Syntax: `augmented-brain session start <task> [--folder <folder>]`
+Syntax: `augmented-brain session start <task> [--folder <folder>] [--model <model>]`
 
 ```bash
 augmented-brain session start task-new-website
 augmented-brain session start task-new-website --folder ~/projects/website
+augmented-brain session start task-new-website --model sonnet
 ```
 
 It starts a background Claude session of its own for the task (`claude --bg
@@ -522,6 +523,9 @@ tell you where it stands, and get on with the next step.
 
 - `--folder`: the folder to open the session in. It must lie inside the work folders of
   the task's space: a session elsewhere would not find its task.
+- `--model`: the model the session starts with, as `claude --model` takes it: an alias
+  such as `opus` or `sonnet`, or a model's full name. Without it, Claude's default. A
+  session Claude had stopped comes back with the model it had, and the command says so.
 
 **Which folder.** Without `--folder`, the first of the task's repositories found in the
 space's work folders. A task that names no repository opens in the space's first work
@@ -541,9 +545,11 @@ repository given with `--folder`. See
 
 - Run it from a folder of the task's space. The remote session you reach from another
   computer can run it for you ("open me a session for the website task").
-- The folder must be trusted on its own: trusting a folder above it is not enough, so
-  the first time the command says to open Claude once in that folder and accept the
-  question. A git worktree is the exception: trusting its main repository is enough.
+- Claude must trust the folder, as it decides itself. A repository must be trusted on its
+  own: trusting a folder above it is not enough. A git worktree is trusted when its main
+  repository is. A folder that is not a repository is trusted when a folder above it is.
+  When Claude does not trust it yet, the command says to open Claude once in that folder
+  and accept the question.
 - One task per folder: a folder another task's session uses is refused. Give it another
   with `--folder` (a git worktree, for example).
 - When Claude Code is not logged in, or its login has expired, nothing is opened. It
@@ -560,8 +566,9 @@ repository given with `--folder`. See
 
 ## augmented-brain session stop
 
-Closes a task's session and takes it out of Claude Desktop and claude.ai. It works
-from any folder.
+Closes a task's session and takes it out of the lists of Claude Desktop and claude.ai.
+The Claude app on a phone may keep showing it, offline, until you archive it there:
+Claude offers no way to remove it from there. It works from any folder.
 
 Syntax: `augmented-brain session stop <task> [--when-idle]`
 
@@ -583,8 +590,9 @@ has:
 - changes not committed (files your git settings hide count too);
 - commits not pushed, on the task's branch, even when the worktree was left on another
   commit;
-- files git ignores that no build makes again (a `.env`, a key; `node_modules`, `build`,
-  `dist` and the like do not count).
+- files git ignores that no build makes again, such as a `.env` or a key. Folders like
+  `node_modules`, `build`, `dist` or `.next`, compiled programs and bytecode (`.o`,
+  `.pyc`, `.class`) do not count. It names the files that keep the worktree.
 
 Sessions that end without `stop` (a reboot, a session closed from Claude Desktop) leave
 their worktree. The next `session start` removes those with nothing of their own (not
@@ -682,15 +690,18 @@ augmented-brain watch pr 104 --task task-my-change
 ```
 
 It ends when the pull request is merged or closed, conflicts with its base branch (no
-CI runs then), a required check fails, every required check has finished, or `--max`
-passes.
+CI runs then), a required check fails, every required check has finished, the pull
+request turns out to start no required check, or `--max` passes.
 
 - `--task`: write that line in the task's journal, and what happened as its next step.
   Every other session hears of it before its next answer, and the panel's Today shows
   it. The watching is then done by a process of its own, which goes on if the session
   that started it closes or restarts. Asked again for the same pull request and task,
   it waits for the one already running. The task must be in this folder's space.
-- `--repo`: the repository, as `owner/name`. Default: the one of this folder.
+- `--repo`: the repository, as `owner/name`. Default: the one of this folder. Outside a
+  git repository, with `--task`, it is taken from the task's folders (its worktrees and
+  the folder its session was started in) when they all point to one GitHub repository;
+  otherwise it stops at once and asks for `--repo`.
 - `--max`: the longest it watches. Default: `3h`.
 - `--every`: how often it looks. Default: `30s`; `10s` at least.
 
@@ -702,13 +713,26 @@ the line names those still running or failed (five at most, each cut at 60 chara
 Their names go only in the journal, never in the next step, which every session reads
 at the start: whoever writes the workflows chooses those names.
 
-**When it gives up.** If GitHub lists no required check after 5 minutes, or `gh` fails
-three times in a row or gives an answer it does not understand, it stops and says what
-`gh` said.
+**A result of before does not count.** Right after a push or a rerun of the CI, GitHub
+still shows for some seconds the result of before, green or red. So a verdict counts only
+when it still holds 90 seconds after the watch started, or after a new commit reached
+the pull request.
+
+**Pull requests that start no required check.** A workflow can run only for some paths.
+If the changes of a pull request start none of the required ones, GitHub lists no
+required check for it. After 5 minutes the watch looks at what GitHub says of the pull
+request: if it can be merged, it says so and ends with 0; if GitHub keeps it blocked
+(waiting for a check that will never start, a review, or an update of the branch), it
+says so and ends with 1. When every required check passed but GitHub still blocks it,
+the line says that too.
+
+**When it gives up.** If `gh` fails three times in a row or gives an answer it does not
+understand, it stops and says what `gh` said.
 
 It needs `gh` with your GitHub login. The assistant runs it in the background; its last
-line asks it to tell you straight away. It ends with 0 when the checks passed or the
-pull request was merged, and 1 otherwise.
+line asks it to tell you straight away. It ends with 0 when the checks passed, the
+pull request was merged or it starts no required check and can be merged, and 1
+otherwise.
 
 ## augmented-brain config
 
@@ -812,15 +836,15 @@ plugin. Around it, it does what you would otherwise do by hand:
 - **After:** the idle Claude sessions still running the old version are restarted, one
   at a time, as `session restart --old` does: those of Claude Desktop stay open and only
   their augmented brain restarts. For those it cannot restart (one answering, or on
-  Windows one of Claude Desktop), it says which task is active in each space, so you ask
-  its session to park it, and then you close and open them.
+  Windows one of Claude Desktop), it says which task is active in each space, and to run
+  `augmented-brain session restart --old` again once they have finished their answer.
 
 Options:
 
 - `--plugin`: update only the Claude Code plugin. The installer uses it.
 - `--force`: update even when the backup before it fails.
 - `--no-restart`: restart no session after updating; it only says which still run the
-  old version.
+  old version, and that `augmented-brain session restart --old` restarts them.
 - `--from <address>`: for tests: install the release at this address instead of
   GitHub's latest. It must be `https://`, `file://`, or `http://` to this computer or to
   the host of a test VM (`10.0.2.2`).
@@ -958,8 +982,9 @@ or a value it cannot use (`--language fr`).
 A few commands give their codes a meaning of their own:
 
 - `check` and `doctor`: `1` when a note is not valid, or something fails.
-- `watch pr`: `0` only when the checks passed or the pull request was merged; `1` for
-  everything else (closed, a conflict, a failed check, `--max` reached).
+- `watch pr`: `0` only when the checks passed, the pull request was merged, or it starts
+  no required check and GitHub lets it merge; `1` for everything else (closed, a
+  conflict, a failed check, blocked, `--max` reached).
 - `hook`: `0` even when something fails inside, so Claude is never stopped by it. The
   exception is the guard (`pre-tool-use`), which ends with `2` to stop the command when
   it cannot give its answer.

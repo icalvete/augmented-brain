@@ -65,7 +65,16 @@ type Launch struct {
 	// Shared: the folder is the space's own, for tasks with no repository, which may
 	// share it (no code of theirs to step on).
 	Shared bool
+	// Model is the model the session starts with (claude --model), "" for Claude's
+	// default. A session brought back with respawn keeps the one it had.
+	Model string
 }
+
+// ValidModel says whether m can be a model's name or alias for claude --model: one
+// plain word, never an option.
+func ValidModel(m string) bool { return modelName.MatchString(m) }
+
+var modelName = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._:@\[\]-]{0,99}$`)
 
 // Unit is the transient unit's name for a task.
 func LaunchUnit(task string) string {
@@ -99,8 +108,13 @@ type LaunchStatus struct {
 	Resets time.Time
 }
 
-// FolderTrusted says whether Claude's server would start in folder: the folder itself
-// has accepted the trust question (its own entry in .claude.json), as measured.
+// FolderTrusted says whether Claude trusts folder as its own trust check does
+// (measured in claude 2.1.325, 15-nov): the folder or a folder above it has accepted
+// the trust question, but inside a git repository only up to the repository's root, so
+// trusting ~/projects does not make a repository cloned in it trusted. Outside a
+// repository a trusted folder above is enough, and Claude then never asks there (the
+// failure of 12-nov: session start asked to accept a question that never came). A git
+// worktree is trusted when its main repository is (measured on 9-nov, 2.1.319).
 func (s System) FolderTrusted(folder string) bool {
 	var f struct {
 		Projects map[string]struct {
@@ -111,22 +125,45 @@ func (s System) FolderTrusted(folder string) bool {
 	if err != nil || json.Unmarshal(data, &f) != nil {
 		return false
 	}
-	cands := []string{filepath.Clean(folder)}
-	if real, err := paths.Resolve(folder); err == nil {
-		cands = append(cands, real)
+	accepted := func(p string) bool {
+		return f.Projects[p].Accepted || f.Projects[filepath.ToSlash(p)].Accepted
 	}
-	// Claude Code keeps the answer for a git worktree under its main repository
-	// (measured on 9-nov, 2.1.319: accepted in ~/x-main, written as ~/x), and its
-	// server then starts in the worktree.
-	if root := WorktreeRoot(folder); root != "" {
-		cands = append(cands, root)
+	starts := []string{filepath.Clean(folder)}
+	if real, err := paths.Resolve(folder); err == nil && real != starts[0] {
+		starts = append(starts, real)
 	}
-	for _, p := range cands {
-		if f.Projects[p].Accepted || f.Projects[filepath.ToSlash(p)].Accepted {
-			return true
+	for _, start := range starts {
+		top := repoTop(start)
+		for dir := start; ; dir = filepath.Dir(dir) {
+			if accepted(dir) {
+				return true
+			}
+			if dir == top || filepath.Dir(dir) == dir {
+				break
+			}
+		}
+		// Claude Code keeps the answer for a git worktree under its main repository
+		// (accepted in ~/x-main, written as ~/x).
+		if top != "" {
+			if root := WorktreeRoot(top); root != "" && accepted(root) {
+				return true
+			}
 		}
 	}
 	return false
+}
+
+// repoTop is the root of the git repository folder lies in: the nearest folder, from
+// folder up, that holds a .git (a folder, or the file of a worktree). "" outside one.
+func repoTop(folder string) string {
+	for dir := folder; ; dir = filepath.Dir(dir) {
+		if _, err := os.Lstat(filepath.Join(dir, ".git")); err == nil {
+			return dir
+		}
+		if filepath.Dir(dir) == dir {
+			return ""
+		}
+	}
 }
 
 // WorktreeRoot is the main repository of a git worktree: its .git is a file
@@ -396,6 +433,9 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 	if s.GOOS != "linux" {
 		return ErrUnsupported
 	}
+	if l.Model != "" && !ValidModel(l.Model) {
+		return fmt.Errorf("%q is not a model's name", l.Model)
+	}
 	claude, err := s.FindClaude()
 	if err != nil {
 		return errors.New("claude is not installed or not in the PATH")
@@ -449,8 +489,11 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 	before, _ := s.listedAgents(claude)
 	// In a scope of its own: a daemon it starts must not live in the group of a remote
 	// service this may run from (scope.go).
-	bg, bgArgs := s.scoped(claude,
-		"--bg", "--remote-control", l.Name, "-n", l.Name, "--permission-mode", set.PermissionMode, first)
+	args := []string{"--bg", "--remote-control", l.Name, "-n", l.Name, "--permission-mode", set.PermissionMode}
+	if l.Model != "" {
+		args = append(args, "--model", l.Model)
+	}
+	bg, bgArgs := s.scoped(claude, append(args, first)...)
 	out, err := s.RunIn(l.Folder, bg, bgArgs...)
 	id := ""
 	if m := backgrounded.FindStringSubmatch(out); m != nil {

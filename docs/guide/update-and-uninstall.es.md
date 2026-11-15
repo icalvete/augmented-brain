@@ -38,11 +38,12 @@ Qué hace, por orden:
    desde la que lo lanzaste, en Windows cualquiera de Claude Desktop) y qué tarea está
    activa en cada espacio.
 
-Para las que quedan, pide a la sesión que aparque su tarea, y ciérrala y ábrela. Una
-sesión que estaba abierta sigue con el programa viejo hasta que se reinicia, y sus
-herramientas de augmented brain pueden fallar; `/clear` no basta. `augmented-brain
-doctor` y el inicio de una sesión nueva dicen cuántas siguen con la versión vieja. Más
-tarde, `augmented-brain session restart --old` reinicia las que ya estén quietas.
+Para las que quedan, lanza `augmented-brain session restart --old` cuando hayan
+terminado de responder: las reinicia con la misma conversación. Una sesión que estaba
+abierta sigue con el programa viejo hasta que se reinicia, y sus herramientas de
+augmented brain pueden fallar; `/clear` no basta. `augmented-brain doctor` y el inicio de
+una sesión nueva dicen cuántas siguen con la versión vieja. Una que no puede reiniciar
+(en Windows, una de Claude Desktop) la cierras y la abres tú.
 
 Otras formas:
 

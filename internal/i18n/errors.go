@@ -281,6 +281,30 @@ var errorMessages = map[string]msg{
 		en: "task %s has no watch date on %s to take out",
 		es: "la tarea %s no tiene ninguna fecha para revisar el %s que quitar",
 	},
+	"err.section.unknown": {
+		en: "there is no section %q to write: use one of %s",
+		es: "no hay sección %q que escribir: usa una de %s",
+	},
+	"err.section.empty": {
+		en: "the section's text is empty",
+		es: "el texto de la sección está vacío",
+	},
+	"err.section.heading": {
+		en: "the text has a heading (a line starting with # or ##): it would split the task. Write the section's text only, with ### for its parts",
+		es: "el texto tiene un título (una línea que empieza por # o ##): partiría la tarea. Escribe solo el texto de la sección, con ### para sus partes",
+	},
+	"err.section.steps": {
+		en: "the text has steps (- [ ] lines): a plan's steps are added with task_step, so they can be ticked. Write the plan's prose here and the steps there",
+		es: "el texto tiene pasos (líneas - [ ]): los pasos del plan se añaden con task_step, para poder marcarlos. Escribe aquí la explicación del plan y allí los pasos",
+	},
+	"err.section.code": {
+		en: "the text opens a code block (```) and never closes it",
+		es: "el texto abre un bloque de código (```) y no lo cierra",
+	},
+	"err.section.missing": {
+		en: "task %q has no %s section (its heading was renamed or removed); write it in its journal instead",
+		es: "la tarea %q no tiene la sección %s (su título se cambió o se quitó); escríbelo en su diario",
+	},
 	"err.step.empty": {
 		en: "the step is empty",
 		es: "el paso está vacío",
