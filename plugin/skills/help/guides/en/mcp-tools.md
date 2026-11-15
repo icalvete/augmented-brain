@@ -120,6 +120,10 @@ the journal.
 - `next` (optional): the single next action, in one line.
 - `summary` (optional): one line on what it is.
 - `area` (optional): the id of its area.
+- `parent` (optional): the id of a task, to make this one its subtask or move it there.
+  The parent must be a task that is not closed and not a subtask, and this task must
+  have no subtasks of its own: one level only. Without `area`, the task takes its
+  parent's area. `none` makes it a task of its own again. The journal says what changed.
 - `watch_date` (optional): add a date to look at something again. Needs `watch_what`.
 - `watch_what` (optional): what to look at on `watch_date`, in one line.
 - `watch_done` (optional): mark the watch date of this day as done.

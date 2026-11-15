@@ -18,6 +18,7 @@ wording with the same meaning works too.
 | "Add a step: switch the domain." | Adds a checkbox to the task's plan |
 | "The database is copied." | Ticks that step |
 | "That part waits on Diego: make it a subtask." | Opens a subtask with its own status and next step |
+| "The domain task belongs to the blog one: put it under it." | Makes an existing task a subtask of another (or, with "take it out", a task of its own again) |
 | "On the 16th, check the certificate is renewed." | Adds a watch date to the task |
 | "Park it, we carry on tomorrow." | Writes the exact next step and the essentials, and pauses the task |
 | "Leave it for some day." | Parks it as someday: out of the daily list, kept in its area |
