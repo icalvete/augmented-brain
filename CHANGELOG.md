@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 1.0.0-rc.5
+
+Released 2026-11-15.
+
+- **A task that already exists can become a subtask, move to another parent, or stand on
+  its own again.** `task_update` takes `parent`: the id of the new parent, or `none`. It
+  checks what a new subtask checks (one level only, a parent that is not closed), refuses
+  a task with subtasks of its own, takes the parent's area unless `area` is given, and
+  writes the change in the journal.
+
 ## 1.0.0-rc.4
 
 Released 2026-11-15.
