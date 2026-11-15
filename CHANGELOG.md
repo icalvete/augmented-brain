@@ -2,6 +2,81 @@
 
 ## Unreleased
 
+## 1.0.0-rc.3
+
+Released 2026-11-15.
+
+- **After installing, the terminal you used works too.** It does not see the new PATH, so
+  `augmented-brain` there said "command not found". The installer now ends with the line
+  that fixes it in place, such as `source ~/.bashrc`, also when it only updated. On
+  Windows the installer's own window already works; it says that windows open before
+  need opening again.
+- **Setting up a backup never uses another computer's backup by mistake.** If your GitHub
+  account already has `augmented-brain-<space>` with notes in it, it is left alone: using
+  it would mix this computer's notes with those. The new backup goes to
+  `augmented-brain-<space>-<computer>`, and Claude or the panel tells you. To bring that
+  backup's notes to this computer, that is `augmented-brain restore`.
+- **Large spaces answer faster.** With 2,000 tasks, each tool call of the assistant
+  takes about 100 ms instead of 145. The list of tasks is no longer built in a way that
+  slowed down with the square of their number (8,000 tasks: 10 ms instead of 3 s). The
+  record of which tasks a session has seen is no longer rewritten on every message when
+  nothing changed. An open note page in the panel checks for changes without reading
+  the whole space, and a search for a common word no longer prepares every result it
+  will not show.
+- **The panel no longer runs a repository's own filters when it shows your
+  repositories.** A folder unpacked from an archive brings its `.git/config`, and a
+  filter named there could start a program just by opening Today or Repositories. Your
+  own filters, such as git-lfs, still work.
+- **A note with an endless quote no longer stops the panel.** A line of a million `>`
+  used to crash it; quotes now stop at 16 levels, and the rest shows as text.
+- **Long texts are saved.** The panel took at most 64 KiB from a form, less than a
+  profile written in Russian or Japanese can hold; now it takes 1 MiB, and beyond that
+  it says the text is too long instead of a bare "bad request".
+- **A problem report no longer carries your computer's name.** The health report stops
+  naming the machine in your Tailscale network, and the report takes out this
+  computer's name and any `*.ts.net` name.
+- **Typing in the panel counts as using it.** It stops after 30 minutes without use;
+  writing a long text without changing page no longer leaves you without a panel to
+  save it in.
+- **No call to Claude Code, gh or git can hang a command any more.** `doctor`, `update`
+  and the panel's Help page used to wait for good on a Claude Code stuck on a first-run
+  screen or a slow network; now every call has a limit that holds, and `doctor` says what
+  it could not check.
+- **Waiting for a session to end its answer takes the time it says.** Closing or
+  restarting a session waits 30 minutes at most by the clock, looks far less often, and
+  writes in its log every 5 minutes that it is still waiting.
+- **`watch pr` always watches.** After a reboot it could join a watch that no longer
+  existed and say nothing for hours; now it always starts one when none runs, and two
+  asked at once share one.
+- **The remote access watch gives up instead of restarting for ever.** When restarting
+  does not bring the session back, it waits longer each time and, after 5 tries, leaves
+  the service alone; `remote status` and `doctor` say so.
+- **`clean` keeps the scratch folders of sessions of another Claude folder** on Linux,
+  and the service's log on macOS no longer grows without end.
+- **A space's name or a folder that could slip into a service is refused.** A name written
+  by hand with a line break, a slash, a space or a sign such as `&` no longer loads, and
+  the error says how to rename it; `remote install` also refuses a path with a line break,
+  or on Windows with `%` or a quote, instead of writing a service that runs something else.
+- **Background sessions get only the variables they need.** Claude's background program
+  kept everything the terminal that started it had, tokens and test switches included, for
+  every later session; now it gets home, `PATH`, language, ssh agent, proxies and Claude's
+  own settings.
+- **Uninstalling on Windows names every program by its full path**, so a `ping.bat` in the
+  folder you ran it from does not run.
+- **Sessions start sooner.** The nine parts of the session start no longer queue for 50
+  ms at a time on the notes lock, the inbox is read once and without a slow pattern, a
+  new session reuses what another already read of the tasks, and the list of processes
+  is read only after an update. The check for a new version no longer makes the session
+  wait for GitHub: it runs apart, and a new version is told at the next session.
+- **One session making a worktree no longer stalls the others.** `task_worktree` and
+  closing a task ran git, network included, with the notes locked: with a slow network,
+  every tool of every other session waited, once 17 seconds. Git now runs after the
+  notes are released, and a tool that finds them busy for 20 seconds says so instead
+  of hanging.
+- **A session starts on time while another one is writing.** The start of a session
+  waited for the notes up to three times, 9 of the 10 seconds it has; it now waits once,
+  2 seconds at most, and starts with the profile and the rules either way.
+
 ## 1.0.0-rc.2
 
 Released 2026-11-14.
