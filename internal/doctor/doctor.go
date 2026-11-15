@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/icalvete/augmented-brain/internal/confighistory"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,6 +14,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/confighistory"
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
@@ -74,6 +76,37 @@ type Env struct {
 	Leftovers *leftovers.Env
 	// ClaudeVersion returns what `claude --version` prints; nil means ask claude.
 	ClaudeVersion func() (string, error)
+	// Budget is how long the checks that ask Claude Code or the system (the plugin,
+	// remote access, worktrees, lingering sessions) may take in all; 0 means
+	// DefaultBudget. Each call has its own limit too; this one keeps their sum short.
+	Budget time.Duration
+
+	until time.Time // when Budget runs out
+}
+
+// DefaultBudget is Env.Budget when it is not set.
+const DefaultBudget = 60 * time.Second
+
+// asking runs checks that ask Claude Code or the system, and stops waiting for them
+// when the doctor's time is over: then it says what was left unchecked. A Claude Code
+// stuck on a first-run screen used to leave doctor, update and the panel's Help page
+// waiting for good (R-08 of the November 2026 review). What it stopped waiting for
+// still ends within its own limit.
+func asking(e Env, part string, checks func() []Check) []Check {
+	left := time.Until(e.until)
+	if e.until.IsZero() {
+		left = DefaultBudget
+	}
+	done := make(chan []Check, 1)
+	go func() { done <- checks() }()
+	timer := time.NewTimer(max(left, 0))
+	defer timer.Stop()
+	select {
+	case out := <-done:
+		return out
+	case <-timer.C:
+		return []Check{{Warning, i18n.T(e.Lang, "doctor.noanswer", i18n.T(e.Lang, part)), i18n.T(e.Lang, "doctor.noanswer.fix")}}
+	}
 }
 
 // Run returns every check, in the order they are shown. Later checks are skipped when
@@ -87,6 +120,10 @@ func Run(e Env) []Check {
 	if e.Lang == "" {
 		e.Lang = "en"
 	}
+	if e.Budget <= 0 {
+		e.Budget = DefaultBudget
+	}
+	e.until = time.Now().Add(e.Budget)
 
 	c, err := config.Load(e.ConfigDir)
 	switch {
@@ -150,10 +187,10 @@ func Run(e Env) []Check {
 	for _, name := range c.SpaceNames() {
 		out = append(out, space(c, c.Spaces[name])...)
 	}
-	out = append(out, remoteChecks(e, c)...)
-	out = append(out, worktreeChecks(e, c)...)
+	out = append(out, asking(e, "doctor.part.remote", func() []Check { return remoteChecks(e, c) })...)
+	out = append(out, asking(e, "doctor.part.worktrees", func() []Check { return worktreeChecks(e, c) })...)
 	out = append(out, leftoverChecks(e, l)...)
-	out = append(out, lingeringChecks(e, c)...)
+	out = append(out, asking(e, "doctor.part.lingering", func() []Check { return lingeringChecks(e, c) })...)
 	out = append(out, panelRemote(e, c)...)
 	out = append(out, configHistory(c)...)
 	out = append(out, autoMemory(e, c)...)
@@ -224,7 +261,7 @@ func tools(e Env) []Check {
 			out = append(out, Check{Failed, i18n.T(e.Lang, "doctor.notool", t.why), t.fix})
 		}
 	}
-	return append(out, plugin(e)...)
+	return append(out, asking(e, "doctor.part.plugin", func() []Check { return plugin(e) })...)
 }
 
 func plugin(e Env) []Check {
@@ -265,7 +302,7 @@ func claudeVersion(e Env) (Check, bool) {
 		get = func() (string, error) {
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
-			out, err := exec.CommandContext(ctx, "claude", "--version").Output()
+			out, err := runlimit.Command(ctx, "claude", "--version").Output()
 			return string(out), err
 		}
 	}
@@ -353,7 +390,7 @@ func runHook(input []byte) ([]byte, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, bin, "hook", "pre-tool-use")
+	cmd := runlimit.Command(ctx, bin, "hook", "pre-tool-use")
 	cmd.Stdin = bytes.NewReader(input)
 	return cmd.Output()
 }
@@ -627,6 +664,10 @@ func remoteChecks(e Env, c *config.Config) []Check {
 		if what, fix, ok := sys.WatchDoctorLine(l, *st.Watch); !ok {
 			out = append(out, Check{Warning, what, fix})
 		}
+		what, fix := remote.WatchGaveUpLines(l, *st.Watch)
+		for i := range what {
+			out = append(out, Check{Warning, what[i], fix[i]})
+		}
 	}
 	return out
 }
@@ -658,7 +699,7 @@ func panelRemote(e Env, c *config.Config) []Check {
 		return []Check{{Warning, i18n.T(l, "doctor.panelremote.leftover", tailnet.Port, cur),
 			i18n.T(l, "doctor.panelremote.leftover.fix", tailnet.Port)}}
 	}
-	return []Check{{OK, i18n.T(l, "doctor.panelremote.ok", st.Name), ""}}
+	return []Check{{OK, i18n.T(l, "doctor.panelremote.ok"), ""}}
 }
 
 // configHistory says how many versions of the configuration are kept, and whether it

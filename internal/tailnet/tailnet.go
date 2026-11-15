@@ -21,6 +21,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 )
 
 // Port is the HTTPS port of the tailnet address the panel is published on. Not 443, to
@@ -63,7 +65,7 @@ func New() Tailnet {
 func realRun(name string, args ...string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, name, args...)
+	cmd := runlimit.Command(ctx, name, args...)
 	var out, errOut bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &out, &errOut
 	if err := cmd.Run(); err != nil {

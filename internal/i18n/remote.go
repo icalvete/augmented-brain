@@ -26,6 +26,14 @@ var remoteMessages = map[string]msg{
 		en: "%s: name_prefix %q must be one plain word (letters, digits, dot, dash, underscore)",
 		es: "%s: name_prefix %q debe ser una palabra sencilla (letras, cifras, punto, guion, guion bajo)",
 	},
+	"remote.badspacename": {
+		en: "the space %q cannot have a service: for remote access a space's name holds only ASCII letters, digits, dots, dashes and underscores. Rename it in %s (its line [spaces.…], and default_space and remote.toml if they name it); its notes stay where they are",
+		es: "el espacio %q no puede tener servicio: para el acceso remoto, el nombre de un espacio solo lleva letras sin acentos, cifras, puntos, guiones y guiones bajos. Cámbialo en %s (su línea [spaces.…], y default_space y remote.toml si lo nombran); sus notas siguen donde están",
+	},
+	"remote.badpath": {
+		en: "the path %q cannot go into a service: it holds a line break, or on Windows a %% or a quote. Move it to a folder whose name does not",
+		es: "la ruta %q no puede ir en un servicio: lleva un salto de línea o, en Windows, un %% o unas comillas. Llévala a una carpeta cuyo nombre no los tenga",
+	},
 	"remote.badspace": {
 		en: "%s: the space %q is not one of your spaces (%s)",
 		es: "%s: el espacio %q no es ninguno de tus espacios (%s)",
@@ -126,6 +134,18 @@ var remoteMessages = map[string]msg{
 		es: "Parado y quitado: %s.\nLas carpetas y sus entradas de work_folders se quedan; bórralas a mano si quieres.",
 	},
 	// remote watch, run by its timer: each line goes to the system journal.
+	"remote.watch.gaveup": {
+		en: "%s: %d restarts in a row brought no Claude session back; the watch leaves it alone until a session shows up again.",
+		es: "%s: %d reinicios seguidos no han recuperado ninguna sesión de Claude; el vigilante lo deja en paz hasta que vuelva a aparecer una sesión.",
+	},
+	"remote.watch.gaveup.status": {
+		en: "the watch gave up on %s: restarting it brought no session back",
+		es: "el vigilante ha dejado %s: reiniciarlo no recuperaba ninguna sesión",
+	},
+	"remote.fix.watch.gaveup": {
+		en: "see why with `journalctl --user -u %s -n 50`, then restart it with `systemctl --user restart %s`; the watch looks after it again once it has a session",
+		es: "mira por qué con `journalctl --user -u %s -n 50` y después reinícialo con `systemctl --user restart %s`; el vigilante vuelve a cuidarlo en cuanto tenga una sesión",
+	},
 	"remote.watch.restart": {
 		en: "%s: the server has no Claude session behind it (the server archived it, or it stopped); restarting the service to bring it back.",
 		es: "%s: el servidor no tiene ninguna sesión de Claude detrás (el servidor la archivó, o se paró); reinicio el servicio para recuperarla.",
@@ -265,8 +285,8 @@ var remoteMessages = map[string]msg{
 	},
 	// doctor's line about the remote panel (panel remote), once it has been used.
 	"doctor.panelremote.ok": {
-		en: "remote panel: Tailscale is ready (%s)",
-		es: "panel remoto: Tailscale está listo (%s)",
+		en: "remote panel: Tailscale is ready",
+		es: "panel remoto: Tailscale está listo",
 	},
 	"doctor.panelremote.missing": {
 		en: "remote panel: Tailscale is no longer installed",

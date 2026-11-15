@@ -101,8 +101,12 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			// The detached copy (or a task with no session on record, said at once):
 			// its output goes to a log in the configuration's state folder, each line
 			// dated.
+			fmt.Fprintln(out, logStamp()+i18n.T(l, "wait.start", task, 30))
+			sys.Waiting = func(d time.Duration) {
+				fmt.Fprintln(out, logStamp()+i18n.T(l, "wait.still", task, int(d.Minutes())))
+			}
 			err := sys.StopWhenIdle(c.Dir, task, 30*time.Minute)
-			stamp := time.Now().Format("2006-01-02 15:04:05") + " "
+			stamp := logStamp()
 			code, _ := sessionStopped(l, task, err, stamp, out, errOut)
 			return code
 		}

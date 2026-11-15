@@ -32,6 +32,31 @@ func redactorFixture(t *testing.T) (*redactor, string) {
 	return newRedactor("en", c), home
 }
 
+// hostShort is this computer's name before its first dot.
+func hostShort(t *testing.T) string {
+	h, err := os.Hostname()
+	if err != nil || h == "" || h == "localhost" {
+		t.Skip("no name for this computer")
+	}
+	short, _, _ := strings.Cut(h, ".")
+	return short
+}
+
+// A space called "work" (the default name in English) does not replace inside the
+// placeholder of a work folder: "[work folder]", never "[[space] folder]".
+func TestRedactPlaceholdersStay(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	c := &config.Config{Language: "en", Spaces: map[string]*config.Space{"work": {Name: "work", Memory: filepath.Join(home, "n"), WorkFolders: []string{filepath.Join(home, "code")}}}}
+	r := newRedactor("en", c)
+	in := "repository " + filepath.Join(home, "code", "client") + " in space work, mail ana@example.com"
+	want := "repository " + filepath.Join("[work folder]", "client") + " in space [space], mail [e-mail]"
+	if got := r.text(in); got != want {
+		t.Errorf("\n got %q\nwant %q", got, want)
+	}
+}
+
 func TestRedact(t *testing.T) {
 	r, home := redactorFixture(t)
 	for _, tc := range []struct{ in, want string }{
@@ -48,6 +73,9 @@ func TestRedact(t *testing.T) {
 		{"backup to git@github.com:someone/acme-notes.git", "backup to [backup]"},
 		{"acme acme", "[space] [space]"},
 		{"jump.example until someday: not a date", "[machine] until someday: not a date"},
+		{"remote panel: Tailscale is ready (box.acme-corp.ts.net)", "remote panel: Tailscale is ready ([machine])"},
+		{"https://Laptop-Ana.tail1234.TS.NET:8443/", "https://[machine]:8443/"},
+		{"panel on " + hostShort(t) + " and " + hostShort(t) + "-two", "panel on [machine] and " + hostShort(t) + "-two"},
 	} {
 		if got := r.text(tc.in); got != tc.want {
 			t.Errorf("%q\n got %q\nwant %q", tc.in, got, tc.want)

@@ -33,6 +33,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"maps"
 	"os"
 	"path/filepath"
 	"sort"
@@ -186,16 +187,55 @@ func Baseline(cfgDir, key, session string, sp Space, now time.Time, keepTouched 
 		return nil
 	}
 	old, had := Load(cfgDir, key)
-	cur, _ := scan(sp.Tasks, nil, time.Time{})
-	if had && keepTouched && old.Space == sp.Name {
-		for id, v := range old.Tasks {
-			if c, ok := cur[id]; ok && v.Touched {
-				c.Touched = true
-				cur[id] = c
-			}
-		}
+	var prev Seen
+	if d, ok := donor(cfgDir, sp); ok {
+		prev = d
+	}
+	cur, _ := scan(sp.Tasks, prev.Tasks, prev.Taken)
+	for id, c := range cur {
+		c.Touched = had && keepTouched && old.Space == sp.Name && old.Tasks[id].Touched
+		cur[id] = c
 	}
 	return save(cfgDir, key, Seen{Session: session, Space: sp.Name, Format: sp.Format, Taken: now, Tasks: cur})
+}
+
+// donorTries is how many of the newest seen files donor reads at most.
+const donorTries = 3
+
+// donor is the newest seen file of the space sp, of any process: Baseline takes from it
+// the versions of the tasks whose time and size have not moved since, instead of
+// reading and hashing every task again (with thousands of closed tasks, most of the
+// session start's time, with the notes lock held). The usual rule keeps it safe: a file
+// within Racy of when that seen file was taken is read again.
+func donor(cfgDir string, sp Space) (Seen, bool) {
+	entries, err := os.ReadDir(filepath.Join(cfgDir, filepath.FromSlash(Dir)))
+	if err != nil {
+		return Seen{}, false
+	}
+	type cand struct {
+		key string
+		mt  time.Time
+	}
+	var cands []cand
+	for _, e := range entries {
+		key, ok := strings.CutSuffix(e.Name(), ".json")
+		if !ok || e.IsDir() {
+			continue
+		}
+		if fi, err := e.Info(); err == nil {
+			cands = append(cands, cand{key, fi.ModTime()})
+		}
+	}
+	sort.Slice(cands, func(i, j int) bool { return cands[i].mt.After(cands[j].mt) })
+	for i, c := range cands {
+		if i == donorTries {
+			break
+		}
+		if s, ok := Load(cfgDir, c.key); ok && s.Space == sp.Name && s.Format == sp.Format && !s.Taken.IsZero() {
+			return s, true
+		}
+	}
+	return Seen{}, false
 }
 
 // Check compares the tasks with what the process last saw, returns what changed
@@ -239,8 +279,7 @@ func Check(cfgDir, key string, sp Space, now time.Time) (Report, error) {
 		r.Changes = nil
 	}
 	sort.Slice(r.Changes, func(i, j int) bool { return r.Changes[i].ID < r.Changes[j].ID })
-	old.Tasks, old.Format, old.Taken = cur, sp.Format, now
-	return r, save(cfgDir, key, old)
+	return r, update(cfgDir, key, old, cur, sp.Format, now)
 }
 
 // Absorb records as seen, and touched, every task that changed since the last Check or
@@ -268,7 +307,23 @@ func Absorb(cfgDir, key string, sp Space, now time.Time, touched []string) error
 		c.Touched = (had && o.Touched) || read[id] || !had || o.Hash != c.Hash
 		cur[id] = c
 	}
-	old.Tasks, old.Format, old.Taken = cur, sp.Format, now
+	return update(cfgDir, key, old, cur, sp.Format, now)
+}
+
+// Refresh is how long a seen file whose versions did not move goes without being
+// written again. Writing it only to move Taken would cost a full encode and write on
+// every message and every tool; leaving Taken behind costs nothing but rereading the
+// few files within Racy of it. It is written again from time to time anyway, so that
+// Prune, which goes by the file's time, never takes it for a process that ended.
+const Refresh = time.Hour
+
+// update records cur as the versions seen now, unless nothing moved since old: then
+// the file stays as it is (see Refresh).
+func update(cfgDir, key string, old Seen, cur map[string]Version, format int, now time.Time) error {
+	if old.Format == format && maps.Equal(old.Tasks, cur) && now.Sub(old.Taken) < Refresh && !now.Before(old.Taken) {
+		return nil
+	}
+	old.Tasks, old.Format, old.Taken = cur, format, now
 	return save(cfgDir, key, old)
 }
 

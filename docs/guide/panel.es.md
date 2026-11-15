@@ -214,7 +214,9 @@ para que sobrevivan si este ordenador se rompe. Un espacio sin copia lo dice en 
   llamado `augmented-brain-<espacio>` en tu cuenta de GitHub y hace la primera copia.
   Necesita la línea de comandos de GitHub, `gh`, que te ofrece el instalador. Si `gh` aún
   no ha entrado en tu cuenta, la página te da un código corto para escribir en
-  github.com/login/device; después pulsa otra vez el botón. **Ya tengo un repositorio privado** toma su dirección en su lugar.
+  github.com/login/device; después pulsa otra vez el botón. Un repositorio con ese nombre y
+  notas dentro (la copia de otro ordenador) no se toca: la copia va a uno con el nombre de
+  este ordenador, y la página te lo dice. **Ya tengo un repositorio privado** toma su dirección en su lugar.
 - **Recuperar las notas en otro ordenador** enseña el comando que hay que ejecutar allí.
   Recuperar nunca se hace desde el panel: es para un ordenador que aún no tiene las notas.
 
@@ -307,7 +309,7 @@ pestaña, con la versión, tu sistema y esa revisión ya escritos.
 
 Antes de abrirlo, el panel quita lo personal: tu carpeta personal (sale como `~`), tus
 carpetas de notas y de trabajo, las direcciones de correo, los nombres de tus espacios,
-las máquinas intocables, los perfiles de AWS de producción, y cualquier línea que parezca
+el nombre de este ordenador y su nombre en Tailscale, las máquinas intocables, los perfiles de AWS de producción, y cualquier línea que parezca
 una contraseña o una clave. Tú cuentas qué pasó y lees el resto: cambia o borra lo que
 prefieras no compartir. Nada se envía hasta que pulsas el botón de enviar de GitHub. Para
 ser claros: el texto viaja a GitHub dentro de la dirección de la página en cuanto se abre,
@@ -344,8 +346,9 @@ dice, con un enlace para verla como está ahora.
 
 ## Hecho para que siga siendo tuyo
 
-- Funciona **solo mientras lo usas**. Tras 30 minutos sin uso se para solo. Para pararlo
-  ya: `augmented-brain panel stop`, o el enlace del pie de la página.
+- Funciona **solo mientras lo usas**. Tras 30 minutos sin uso se para solo. Escribir en
+  uno de sus formularios cuenta como uso, así que un texto largo no se queda sin panel
+  donde guardarlo; una pestaña abierta sin más no cuenta. Para pararlo ya: `augmented-brain panel stop`, o el enlace del pie de la página.
 - Funciona **solo en este ordenador**. Las otras máquinas de tu red no llegan a él.
   Para abrirlo desde el móvil u otro ordenador tuyo, usa `augmented-brain panel remote`:
   mira [El panel desde otro dispositivo](panel-remote.es.md).

@@ -4,11 +4,15 @@
 package claudecode
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
+
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/version"
@@ -65,9 +69,27 @@ func addMarketplace(run Runner) error {
 // Runner runs a command and returns its combined output. Tests replace it.
 type Runner func(name string, args ...string) (string, error)
 
-// Exec runs real commands.
+// ListLimit is how long Exec waits for `claude plugin list`, which reads files only;
+// NetworkLimit, for the rest (install, update, marketplace add…), which use the network.
+// A Claude Code stuck on a first-run screen or half a network used to leave doctor,
+// update and the panel's Help page waiting for good.
+const (
+	ListLimit    = 30 * time.Second
+	NetworkLimit = 3 * time.Minute
+)
+
+// Exec runs real commands, within ListLimit or NetworkLimit.
 func Exec(name string, args ...string) (string, error) {
-	out, err := exec.Command(name, args...).CombinedOutput()
+	limit := NetworkLimit
+	if len(args) > 0 && args[len(args)-1] == "list" {
+		limit = ListLimit
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), limit)
+	defer cancel()
+	out, err := runlimit.Command(ctx, name, args...).CombinedOutput()
+	if ctx.Err() == context.DeadlineExceeded {
+		err = fmt.Errorf("no answer from %s in %s: %w", name, limit, err)
+	}
 	return string(out), err
 }
 

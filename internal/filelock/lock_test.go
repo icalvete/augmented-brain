@@ -52,6 +52,31 @@ func TestLockWithinWaits(t *testing.T) {
 	got()
 }
 
+// A lock released a few milliseconds after LockWithin starts waiting is taken soon
+// after, not at the next 50 ms tick: the session start's nine parts queue on it. The
+// best of a few rounds keeps a slow machine's hiccup out of it.
+func TestLockWithinRetriesSoon(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "notes.lock")
+	best := time.Hour
+	for range 5 {
+		release, err := Lock(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		time.AfterFunc(5*time.Millisecond, release)
+		start := time.Now()
+		got, err := LockWithin(path, 5*time.Second)
+		if err != nil {
+			t.Fatalf("released while waiting: %v", err)
+		}
+		best = min(best, time.Since(start))
+		got()
+	}
+	if best >= 40*time.Millisecond {
+		t.Errorf("took a lock released after 5 ms in %v at best, want under 40 ms", best)
+	}
+}
+
 // A lock whose folder cannot be made is an error, not a lock that holds nothing.
 func TestLockErrors(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "file")

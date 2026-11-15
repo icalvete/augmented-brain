@@ -41,6 +41,15 @@ abre nada, y si la primera respuesta es un error (el login caducó, el servicio 
 saturado), la sesión se cierra. En los dos casos el comando dice qué hacer, como `claude
 auth login`.
 
+La sesión nueva no recibe todo lo que tiene tu terminal. Claude arranca sus sesiones
+desde un programa en segundo plano, que guarda las variables con las que arrancó para
+todas las sesiones posteriores, de cualquier tarea y espacio. Así que solo recibe lo que
+una sesión necesita para trabajar: tu carpeta personal y tu usuario, `PATH`, el idioma,
+las variables del escritorio y del agente de ssh, los proxies y los ajustes del propio
+Claude (`CLAUDE_*`, `ANTHROPIC_*`). Un token que exportaste en una terminal, como
+`GH_TOKEN` o `AWS_*`, se queda en esa terminal: una herramienta de la sesión usa su propio
+login (`gh auth login`, un perfil de AWS).
+
 ## En qué carpeta se abre
 
 La carpeta es la del primer repositorio de la tarea que encuentra en las carpetas de

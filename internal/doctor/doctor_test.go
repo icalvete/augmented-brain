@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/remote"
@@ -353,7 +354,8 @@ func TestPanelRemoteLine(t *testing.T) {
 	if err := tailnet.MarkUsed(cfg); err != nil {
 		t.Fatal(err)
 	}
-	if c := find(Run(env), "remote panel"); c == nil || c.Status != OK || !strings.Contains(c.What, "box.example.ts.net") {
+	if c := find(Run(env), "remote panel"); c == nil || c.Status != OK || strings.Contains(c.What, "box.example") {
+		// The machine's name stays out: the health report goes into problem reports.
 		t.Errorf("ready: %+v", c)
 	}
 	served = `{"TCP":{"8443":{"HTTPS":true}},"Web":{"box.example.ts.net:8443":{"Handlers":{"/":{"Proxy":"http://127.0.0.1:4321"}}}}}`
@@ -463,5 +465,31 @@ func TestClaudeVersion(t *testing.T) {
 	}
 	if _, ok := claudeVersion(Env{Lang: "en", ClaudeVersion: answer("", errors.New("no claude"))}); ok {
 		t.Error("an error says nothing")
+	}
+}
+
+// A Claude Code that never answers does not leave doctor waiting: past its budget it
+// says what it could not check (R-08 of the November 2026 review).
+func TestDoctorStopsWaitingForClaudeCode(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	work := filepath.Join(home, "work")
+	if err := os.MkdirAll(work, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: work, Memory: "~/brain"}); err != nil {
+		t.Fatal(err)
+	}
+	stuck := make(chan struct{})
+	defer close(stuck)
+	hangs := func() (bool, error) { <-stuck; return true, nil }
+	start := time.Now()
+	checks := Run(Env{ConfigDir: cfg, WorkDir: work, LookPath: allTools, Plugin: hangs, Hook: denies, Budget: 300 * time.Millisecond})
+	if took := time.Since(start); took > 5*time.Second {
+		t.Fatalf("doctor took %s with a budget of 300 ms", took)
+	}
+	if c := find(checks, "the plugin and the guard not checked"); c == nil || c.Status != Warning || c.Fix == "" {
+		t.Fatalf("no line about the plugin left unchecked: %+v", checks)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"crypto/subtle"
 	"embed"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -27,8 +28,10 @@ import (
 //go:embed web
 var webFS embed.FS
 
-// maxBody is the largest request body the panel reads: forms of a few lines.
-const maxBody = 64 << 10
+// maxBody is the largest request body the panel reads. It is a bound, not a size any
+// form needs: every form, filled to its maxlength in a script whose letters take nine
+// bytes once encoded, fits (TestFormsFitTheBody).
+const maxBody = 1 << 20
 
 // Server is the panel of one configuration folder, for one run.
 type Server struct {
@@ -53,9 +56,9 @@ type Server struct {
 	stopped    chan struct{}
 	stop       sync.Once
 
-	diagnose  func(lang string) []doctor.Check   // the Help page's health check; nil: doctor.Run
-	backupNow func(space string) error           // starts a copy of a space; nil: the program, detached
-	github    func(space string) (string, error) // makes the space's GitHub repository; nil: gh
+	diagnose  func(lang string) []doctor.Check        // the Help page's health check; nil: doctor.Run
+	backupNow func(space string) error                // starts a copy of a space; nil: the program, detached
+	github    func(space string) (backup.Repo, error) // makes the space's GitHub repository; nil: gh
 
 	// remote is the panel published to the user's Tailscale network; nil: local only.
 	// It can change while the panel runs (POST /remote, POST /local), and every request
@@ -499,7 +502,8 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request, remote bool) {
 		return
 	}
 	// The open pages' check for changes is not a person using the panel: it must
-	// not keep it running.
+	// not keep it running. Typing in a form is (/alive, which the page asks while
+	// someone types).
 	if r.URL.Path != "/stamp" {
 		s.last.Store(time.Now().UnixNano())
 	}
@@ -512,6 +516,10 @@ func (s *Server) serve(w http.ResponseWriter, r *http.Request, remote bool) {
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, maxBody)
 		if err := r.ParseForm(); err != nil {
+			if _, ok := errors.AsType[*http.MaxBytesError](err); ok {
+				s.fail(w, r, nil, http.StatusRequestEntityTooLarge, i18n.Errorf("panel.err.toolong"))
+				return
+			}
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}

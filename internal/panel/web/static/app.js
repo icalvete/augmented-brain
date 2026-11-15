@@ -1,5 +1,6 @@
 // The panel works without this file; it only saves a click (a new space in the
-// selector opens at once) and says when the note on screen changed elsewhere.
+// selector opens at once), says when the note on screen changed elsewhere, and keeps
+// the panel running while someone types.
 document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll("select.autosubmit").forEach(function (s) {
     s.addEventListener("change", function () { s.form.submit(); });
@@ -15,6 +16,23 @@ document.addEventListener("DOMContentLoaded", function () {
       var rest = q.toString();
       history.replaceState(history.state, "", location.pathname + (rest ? "?" + rest : "") + location.hash);
     }
+  }
+
+  // Typing is using the panel, even without changing page: while someone types, the
+  // page says so at most once a minute, so the panel does not stop (after 30 minutes
+  // without use) under a long text not yet saved. A tab left open without typing
+  // still does not count.
+  var aliveURL = document.body.dataset.alive;
+  if (aliveURL && window.fetch) {
+    var lastAlive = 0;
+    document.addEventListener("input", function (e) {
+      var el = e.target;
+      if (!el || !(el.tagName === "TEXTAREA" || el.tagName === "INPUT")) { return; }
+      var now = Date.now();
+      if (now - lastAlive < 60000) { return; }
+      lastAlive = now;
+      fetch(aliveURL, { credentials: "same-origin" }).catch(function () {});
+    });
   }
 
   // A note's page asks now and then whether the note changed on disk (Claude, another

@@ -209,7 +209,9 @@ survive if this computer breaks. A space with no backup says so in red.
   `augmented-brain-<space>` in your GitHub account and the first copy. It needs the
   GitHub command line, `gh`, which the installer offers. If `gh` has not entered your
   account yet, the page gives you a short code to type at github.com/login/device; then
-  press the button again.
+  press the button again. A repository of that name with notes in it (another computer's
+  backup) is left alone: the copy goes to one named after this computer, and the page says
+  so.
   **I already have a private repository** takes its address instead.
 - **Bring the notes back on another computer** shows the command to run there. Restoring
   is never done from the panel: it is for a computer that does not have the notes yet.
@@ -300,8 +302,9 @@ Click **Report a problem on GitHub**. The panel runs the health check (what
 with the version, your system and that check filled in.
 
 Before it opens, the panel takes out what is personal: your home folder (shown as `~`),
-your notes and work folders, e-mail addresses, the names of your spaces, untouchable
-machines, production AWS profiles, and any line that looks like a password or a key.
+your notes and work folders, e-mail addresses, the names of your spaces, this
+computer's name and its Tailscale name, untouchable machines, production AWS profiles,
+and any line that looks like a password or a key.
 You write what happened, and read the rest: change or delete what you prefer not to
 share. Nothing is sent until you press GitHub's submit button. To be honest about it:
 the text travels to GitHub inside the page's address as soon as it opens, so GitHub can
@@ -336,8 +339,9 @@ open (Claude wrote in it, say), the page tells you, with a link to see it as it 
 
 ## Made to stay yours
 
-- It runs **only while you use it**. After 30 minutes without use it stops by itself. To
-  stop it now: `augmented-brain panel stop`, or the link at the bottom of the page.
+- It runs **only while you use it**. After 30 minutes without use it stops by itself.
+  Typing in one of its forms counts as use, so a long text is not left without a panel
+  to save it in; a tab left open does not count. To stop it now: `augmented-brain panel stop`, or the link at the bottom of the page.
 - It works **only on this computer**. Other machines on your network cannot reach it.
   To open it from your phone or another computer of yours, use
   `augmented-brain panel remote`: see [The panel from another device](panel-remote.md).

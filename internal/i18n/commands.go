@@ -64,6 +64,10 @@ var commandMessages = map[string]msg{
 		en: "space %q: memory folder is missing",
 		es: "espacio %q: falta la carpeta de memoria (memory)",
 	},
+	"config.badspacename": {
+		en: "the space %q has a name that cannot be used: a space's name holds only letters, digits, dots, dashes and underscores, and starts with a letter or a digit. Rename it in %s: change its line [spaces.…] to a plain name, such as [spaces.work], and write the same name in default_space and in remote.toml if they name it. Its notes stay where they are",
+		es: "el espacio %q tiene un nombre que no se puede usar: el nombre de un espacio solo lleva letras, cifras, puntos, guiones y guiones bajos, y empieza por una letra o una cifra. Cámbialo en %s: pon en su línea [spaces.…] un nombre sencillo, como [spaces.trabajo], y escribe el mismo nombre en default_space y en remote.toml si lo nombran. Sus notas siguen donde están",
+	},
 	"config.nospace": {
 		en: "%s has no space %q",
 		es: "%s no tiene ningún espacio %q",
@@ -446,6 +450,10 @@ var commandMessages = map[string]msg{
 		en: "Nothing removed.",
 		es: "No he quitado nada.",
 	},
+	"uninstall.selfpath": {
+		en: "The program stays at %s: its path holds a %% or a quote, which the cleanup cannot carry. Delete the file by hand.",
+		es: "El programa se queda en %s: su ruta lleva un %% o unas comillas, que la limpieza no puede llevar. Borra el fichero a mano.",
+	},
 	"uninstall.keptself": {
 		en: "The program stays at %s: the plugin could not be removed completely, and while it is there Claude Code needs the program to check commands (without it, it stops every command and file change). Fix the error above and run `augmented-brain uninstall` again.",
 		es: "El programa se queda en %s: el plugin no se pudo quitar del todo, y mientras esté, Claude Code necesita el programa para revisar los comandos (sin él, para todos los comandos y cambios de ficheros). Arregla el error de arriba y vuelve a lanzar `augmented-brain uninstall`.",
@@ -485,7 +493,7 @@ Usage:
   augmented-brain update       update augmented brain and its Claude Code plugin
   augmented-brain uninstall    remove the program and the plugin (your notes stay; --all: start from scratch)
   augmented-brain mcp          run the MCP server (your assistant starts it, not you)
-  augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use, user-prompt-submit, stop, post-compact, session-end
+  augmented-brain hook EVENT   answer an assistant hook: session-start, pre-tool-use, user-prompt-submit, stop, post-compact, session-end, update-check
   augmented-brain version      show the version
   augmented-brain help COMMAND what a command does, its options and an example (also: COMMAND --help)
 `,
@@ -515,7 +523,7 @@ Uso:
   augmented-brain update       actualiza augmented brain y su plugin de Claude Code
   augmented-brain uninstall    quita el programa y el plugin (tus notas se quedan; --all: empezar de cero)
   augmented-brain mcp          arranca el servidor MCP (lo arranca tu asistente, no tú)
-  augmented-brain hook EVENTO  responde a un hook del asistente: session-start, pre-tool-use, user-prompt-submit, stop, post-compact, session-end
+  augmented-brain hook EVENTO  responde a un hook del asistente: session-start, pre-tool-use, user-prompt-submit, stop, post-compact, session-end, update-check
   augmented-brain version      muestra la versión
   augmented-brain help COMANDO qué hace un comando, sus opciones y un ejemplo (también: COMANDO --help)
 `,

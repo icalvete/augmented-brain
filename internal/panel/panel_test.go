@@ -290,10 +290,18 @@ func TestWritesNeedTheirOrigin(t *testing.T) {
 	if w := s.do(t, req{method: "PUT", path: path, origin: own}); w.Code != http.StatusMethodNotAllowed {
 		t.Errorf("PUT: %d", w.Code)
 	}
-	// Too big a body.
-	big := url.Values{"csrf": {s.csrf}, "text": {strings.Repeat("a", maxBody)}}
-	if w := s.do(t, req{method: "POST", path: path, origin: own, form: big}); w.Code != http.StatusBadRequest {
-		t.Errorf("big body: %d", w.Code)
+	// Too big a body: a page that says so, not a bare "bad request".
+	big := url.Values{"csrf": {s.csrf}, "text": {strings.Repeat("a", 2*maxBody)}}
+	if w := s.do(t, req{method: "POST", path: path, origin: own, form: big}); w.Code != http.StatusRequestEntityTooLarge ||
+		!strings.Contains(w.Body.String(), "<h1") || !strings.Contains(w.Body.String(), "1 MiB") {
+		t.Errorf("big body: %d %.300s", w.Code, w.Body)
+	}
+	// A profile in Cyrillic to every maxlength, six bytes a letter once encoded (over
+	// the old 64 KiB), is saved.
+	cyr := url.Values{"csrf": {s.csrf}, "s": {"work"}, "name": {strings.Repeat("ж", 200)}, "about": {strings.Repeat("ж", 8000)},
+		"work_style": {strings.Repeat("ж", 8000)}, "assistant": {strings.Repeat("ж", 80)}, "personality": {strings.Repeat("ж", 2000)}}
+	if w := s.post(t, "/profile", cyr); w.Code != http.StatusSeeOther {
+		t.Errorf("long profile in Cyrillic: %d %.300s", w.Code, w.Body)
 	}
 
 	// Accepted: Origin, or Referer when there is no Origin.
@@ -804,3 +812,24 @@ func TestInboxShowsOrigin(t *testing.T) {
 // localBase is base for a request on 127.0.0.1; netBase, through the network's socket.
 func (s *Server) localBase() string { return "/s/" + s.session }
 func (s *Server) netBase() string   { return "/s/" + s.netSession }
+
+// Typing in a form is using the panel: the page asks /alive while someone types, and
+// that keeps it running. The pages' own check for changes (/stamp) does not.
+func TestAliveCountsAsUse(t *testing.T) {
+	s, _ := fixture(t, "en")
+	if w := s.get(t, "/inbox"); !strings.Contains(w.Body.String(), `data-alive="`+s.localBase()+`/alive"`) {
+		t.Fatalf("the page does not say where /alive is: %.400s", w.Body)
+	}
+	s.last.Store(1)
+	if w := s.get(t, "/stamp?s=work&id=task-one"); s.last.Load() != 1 {
+		t.Fatalf("/stamp counted as use (%d)", w.Code)
+	}
+	if w := s.get(t, "/alive"); w.Code != http.StatusNoContent || s.last.Load() == 1 {
+		t.Fatalf("/alive: %d, last %d", w.Code, s.last.Load())
+	}
+	// Without the session's address, nothing.
+	s.last.Store(1)
+	if w := s.do(t, req{path: "/alive"}); w.Code != http.StatusForbidden || s.last.Load() != 1 {
+		t.Errorf("/alive without the session: %d", w.Code)
+	}
+}
