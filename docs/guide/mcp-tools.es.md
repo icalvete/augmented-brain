@@ -35,7 +35,7 @@ Hay cosas que valen para todas:
 
 - **Dónde está cada cosa**: [`where_am_i`](#where_am_i), [`pending`](#pending).
 - **Tareas**: [`task_new`](#task_new), [`task_get`](#task_get),
-  [`task_update`](#task_update), [`task_step`](#task_step),
+  [`task_update`](#task_update), [`task_section`](#task_section), [`task_step`](#task_step),
   [`task_journal`](#task_journal), [`task_park`](#task_park), [`task_close`](#task_close),
   [`task_worktree`](#task_worktree).
 - **El buzón y la revisión semanal**: [`capture`](#capture),
@@ -167,6 +167,28 @@ se cerró.
   Plan, 1 para el primero.
 - `space` (opcional): otro de tus espacios, del que es la tarea. Claude solo lo usa
   cuando le pides trabajar desde aquí en una tarea de ese espacio. Mira
+  [Una tarea de otro espacio](spaces.es.md#una-tarea-de-otro-espacio).
+
+## `task_section`
+
+**Dices:** "apunta el plan". Claude también la usa por su cuenta, según avanza una fase.
+
+Escribe una sección de una tarea: su Definición (objetivo, alcance, hecho cuando),
+Análisis (cómo están las cosas, medido), Plan (el camino), Validación (la prueba y su
+resultado) o Cierre. El texto nuevo sustituye al de la sección; su título se queda. Lo
+esencial y el diario no se tocan nunca, y una línea corta en el diario dice qué sección
+cambió. Las secciones de una tarea cerrada se quedan como se cerró.
+
+En el Plan solo cambia la explicación: sus pasos se quedan, después del texto nuevo, y
+se añaden o se marcan con [`task_step`](#task_step). Un texto con pasos para el Plan, o
+con un título (`#` o `##`) que partiría la tarea, se rechaza y no se escribe nada. Usa
+`###` para las partes de una sección.
+
+- `id`: el id de la tarea.
+- `section`: `definition`, `analysis`, `plan`, `validation` o `closing`.
+- `text`: el texto nuevo de la sección, en Markdown, sin su título.
+- `space` (opcional): otro de tus espacios, del que es la tarea. Claude lo usa solo
+  cuando pides trabajar desde aquí en una tarea de ese espacio. Mira
   [Una tarea de otro espacio](spaces.es.md#una-tarea-de-otro-espacio).
 
 ## `task_journal`

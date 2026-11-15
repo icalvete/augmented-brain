@@ -37,7 +37,8 @@ const Instructions = `augmented brain keeps the user's memory: tasks, areas, kno
 as Markdown files. Use these tools instead of editing those files by hand.
 
 - Every piece of work is a task. It moves through definition, analysis, plan, execution,
-  validation and closed, and the user approves each change of phase.
+  validation and closed, and the user approves each change of phase. Write what a
+  phase settles in its section of the task (task_section).
 - Keep the task current as you work: write what was done, what came out and what was
   decided in its journal (task_journal) at the moment it happens, not only when parking:
   a session can end at any time, and what is not in the note is lost. Keep its next
@@ -304,6 +305,29 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				fmt.Fprintf(&out, "%d. [%s] %s\n", st.N, mark, st.Text)
 			}
 			return out.String() + fromOther(b), nil
+		})
+
+	type sectionIn struct {
+		ID      string `json:"id" jsonschema:"task id, e.g. task-backup"`
+		Section string `json:"section" jsonschema:"definition, analysis, plan, validation or closing"`
+		Text    string `json:"text" jsonschema:"the section's new text, in Markdown, without its heading; ### for its parts. For the plan, its prose only: its steps stay and are changed with task_step"`
+		Space   string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
+	}
+	tool(s, locked, "task_section", "Write one section of a task: its Definition (goal, scope, done when), Analysis (how things are, measured), Plan (the way there), Validation (the proof and its result) or Closing. Replaces that section's text and keeps its heading; the essentials and the journal are never touched, and a short journal line says which section changed. In the Plan, the steps stay after the new text: add or tick them with task_step. "+otherSpace,
+		func(b0 *brain.Brain, in sectionIn) (string, error) {
+			b, err := b0.Other(in.Space)
+			if err != nil {
+				return "", err
+			}
+			n, err := b.SetSection(in.ID, in.Section, in.Text)
+			if err == nil {
+				b.Touched(in.ID, true)
+			}
+			out, err := render(n, err)
+			if err != nil {
+				return "", err
+			}
+			return out + fromOther(b), nil
 		})
 
 	type updateIn struct {

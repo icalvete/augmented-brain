@@ -127,6 +127,26 @@ var noteMessages = map[string]msg{
 		en: "Watch date moved from %s to %s: %s",
 		es: "Fecha para revisar movida del %s al %s: %s",
 	},
+	"note.section.definition": {
+		en: "Definition rewritten.",
+		es: "Definición reescrita.",
+	},
+	"note.section.analysis": {
+		en: "Analysis rewritten.",
+		es: "Análisis reescrito.",
+	},
+	"note.section.plan": {
+		en: "Plan rewritten (its steps kept).",
+		es: "Plan reescrito (con sus pasos).",
+	},
+	"note.section.validation": {
+		en: "Validation rewritten.",
+		es: "Validación reescrita.",
+	},
+	"note.section.closing": {
+		en: "Closing rewritten.",
+		es: "Cierre reescrito.",
+	},
 	"step.noplan": {
 		en: "task %q has no Plan section (a line \"## Plan\") to keep its steps in",
 		es: "la tarea %q no tiene sección Plan (una línea \"## Plan\") donde guardar sus pasos",

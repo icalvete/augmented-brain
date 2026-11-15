@@ -127,6 +127,15 @@
     "someday: boolean",
     "waiting_on: string"
   ],
+  "task_section": [
+    "id: string",
+    "required id",
+    "required section",
+    "required text",
+    "section: string",
+    "space: string",
+    "text: string"
+  ],
   "task_step": [
     "add: string",
     "done: boolean",
