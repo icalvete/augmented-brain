@@ -78,3 +78,76 @@ func TestWithinIgnoresCaseWhereTheSystemDoes(t *testing.T) {
 		t.Error("case-sensitive systems: matched")
 	}
 }
+
+// A Resolver gives Resolve's answer for every shape of path: folders and files reached
+// through links (absolute, relative, chained), broken links, missing parts below a link,
+// the home folder, and the same path asked twice. On Windows the last part may differ
+// in case only, so there the paths are compared with Same.
+func TestResolverMatchesResolve(t *testing.T) {
+	root := t.TempDir()
+	mk := func(p string) {
+		if err := os.MkdirAll(filepath.Join(root, p), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	file := func(p string) {
+		if err := os.WriteFile(filepath.Join(root, p), []byte("x"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	link := func(target, name string) {
+		if err := os.Symlink(target, filepath.Join(root, name)); err != nil {
+			if runtime.GOOS == "windows" {
+				t.Skip("symlinks need Developer Mode or an administrator on Windows:", err)
+			}
+			t.Fatal(err)
+		}
+	}
+	mk("real/plugin/skills")
+	file("real/plugin/skills/a.md")
+	file("real/top.md")
+	link(filepath.Join(root, "real"), "abs")              // a folder, absolute target
+	link("real", "rel")                                   // a folder, relative target
+	link("rel", "chain")                                  // a link to a link
+	link(filepath.Join("..", "top.md"), "real/plugin/up") // a file, relative with ..
+	link(filepath.Join(root, "nowhere"), "broken")        // a link to nothing
+	mk("other")
+	link(filepath.Join("..", "real", "plugin"), "other/plug")
+
+	t.Setenv("HOME", root)
+	var cases []string
+	for _, base := range []string{"real", "abs", "rel", "chain", "broken", "other/plug", "missing"} {
+		for _, rest := range []string{"", "plugin", "plugin/skills/a.md", "plugin/up", "plugin/skills/new/deep.md", "top.md", "skills/a.md"} {
+			cases = append(cases, filepath.Join(root, base, filepath.FromSlash(rest)))
+		}
+	}
+	cases = append(cases, "~", "~/abs/plugin", "~/broken/x", "/", filepath.Join(root, "abs", "..", "real", "top.md"))
+
+	var r Resolver
+	for round := 0; round < 2; round++ { // the second round answers from memory
+		for _, c := range cases {
+			want, werr := Resolve(c)
+			got, gerr := r.Resolve(c)
+			if (werr == nil) != (gerr == nil) {
+				t.Fatalf("%s: errors differ: %v, %v", c, werr, gerr)
+			}
+			if got != want && !(runtime.GOOS == "windows" && Same(got, want)) {
+				t.Errorf("%s: Resolver %q, Resolve %q", c, got, want)
+			}
+		}
+	}
+}
+
+// What the Resolver saves: a hundred files of a missing folder ten levels deep resolve
+// that folder once, not a hundred times, each from the top.
+func BenchmarkResolverManyFiles(b *testing.B) {
+	dir := filepath.Join(b.TempDir(), "a", "b", "c", "d", "e", "f", "g", "h", "i", "j")
+	for i := 0; i < b.N; i++ {
+		var r Resolver
+		for n := 0; n < 100; n++ {
+			if _, err := r.Resolve(filepath.Join(dir, strings.Repeat("x", n%7+1)+".md")); err != nil {
+				b.Fatal(err)
+			}
+		}
+	}
+}

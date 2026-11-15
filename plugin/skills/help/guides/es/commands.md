@@ -517,11 +517,12 @@ Sin subcomando, o con otro, `session` muestra su uso. Para qué sirven y cómo u
 
 Abre una sesión para una tarea, en la carpeta de la tarea.
 
-Sintaxis: `augmented-brain session start <tarea> [--folder <carpeta>]`
+Sintaxis: `augmented-brain session start <tarea> [--folder <carpeta>] [--model <modelo>]`
 
 ```bash
 augmented-brain session start task-new-website
 augmented-brain session start task-new-website --folder ~/projects/website
+augmented-brain session start task-new-website --model sonnet
 ```
 
 Arranca una sesión de Claude propia para la tarea, en segundo plano (`claude --bg
@@ -532,6 +533,10 @@ decirte cómo está y ponerse con el siguiente paso.
 
 - `--folder`: la carpeta donde abrir la sesión. Tiene que estar dentro de las carpetas de
   trabajo del espacio de la tarea: una sesión fuera de ellas no encontraría su tarea.
+- `--model`: el modelo con el que arranca la sesión, como lo toma `claude --model`: un
+  alias como `opus` o `sonnet`, o el nombre completo de un modelo. Sin ella, el de Claude
+  por defecto. Una sesión que Claude había parado vuelve con el modelo que tenía, y el
+  comando lo dice.
 
 **Qué carpeta.** Sin `--folder`, la del primer repositorio de la tarea que encuentra en
 las carpetas de trabajo del espacio. Una tarea que no nombra ningún repositorio se abre
@@ -552,10 +557,12 @@ mismo vale para un repositorio bare dado con `--folder`. Mira
 - Lánzalo desde una carpeta del espacio de la tarea. La sesión remota a la que entras
   desde otro ordenador puede lanzarlo por ti («ábreme una sesión para la tarea de la
   web»).
-- La carpeta tiene que ser de confianza ella misma: que confíe en una carpeta de arriba
-  no basta, así que la primera vez el comando te dice que abras Claude una vez en esa
-  carpeta y aceptes la pregunta. Un worktree de git es la excepción: basta con confiar en
-  su repositorio principal.
+- Claude tiene que confiar en la carpeta, como lo decide él mismo. Un repositorio tiene
+  que ser de confianza él mismo: que confíe en una carpeta de arriba no basta. Un
+  worktree de git es de confianza si lo es su repositorio principal. Una carpeta que no
+  es un repositorio es de confianza si lo es una carpeta de arriba. Si Claude aún no
+  confía en ella, el comando te dice que abras Claude una vez en esa carpeta y aceptes la
+  pregunta.
 - Una tarea por carpeta: una carpeta que ya usa la sesión de otra tarea se rechaza. Dale
   otra con `--folder` (un worktree de git, por ejemplo).
 - Si Claude Code no tiene la sesión iniciada, o le ha caducado, no se abre nada. Espera
@@ -572,8 +579,9 @@ mismo vale para un repositorio bare dado con `--folder`. Mira
 
 ## augmented-brain session stop
 
-Cierra la sesión de una tarea y la quita de Claude Desktop y claude.ai. Funciona desde
-cualquier carpeta.
+Cierra la sesión de una tarea y la quita de las listas de Claude Desktop y claude.ai.
+La app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la archives
+allí: Claude no da forma de quitarla desde fuera. Funciona desde cualquier carpeta.
 
 Sintaxis: `augmented-brain session stop <tarea> [--when-idle]`
 
@@ -595,8 +603,10 @@ su rama, siempre que no se pierda nada. Se queda, y el comando lo dice, si tiene
 - cambios sin commitear (también los ficheros que tus ajustes de git esconden);
 - commits sin subir, en la rama de la tarea, aunque el worktree se quedara en otro
   commit;
-- ficheros que git ignora y que ningún build vuelve a hacer (un `.env`, una clave;
-  `node_modules`, `build`, `dist` y parecidos no cuentan).
+- ficheros que git ignora y que ningún build vuelve a hacer, como un `.env` o una clave.
+  Carpetas como `node_modules`, `build`, `dist` o `.next`, los programas compilados y el
+  bytecode (`.o`, `.pyc`, `.class`) no cuentan. Nombra los ficheros que dejan el
+  worktree.
 
 Las sesiones que terminan sin `stop` (un reinicio, una sesión cerrada desde Claude
 Desktop) dejan su worktree. El próximo `session start` quita los que no tienen nada
@@ -695,7 +705,8 @@ augmented-brain watch pr 104 --task task-my-change
 ```
 
 Termina cuando la pull request se mezcla o se cierra, choca con su rama base (entonces no
-corre la CI), falla un check obligatorio, terminan todos los obligatorios o pasa `--max`.
+corre la CI), falla un check obligatorio, terminan todos los obligatorios, resulta que la
+pull request no lanza ningún check obligatorio o pasa `--max`.
 
 - `--task`: escribe esa línea en el diario de la tarea, y lo que pasó como su siguiente
   paso. Todas las demás sesiones se enteran antes de su próxima respuesta, y lo enseña
@@ -703,7 +714,10 @@ corre la CI), falla un check obligatorio, terminan todos los obligatorios o pasa
   sesión que la empezó se cierre o se reinicie. Si se pide otra vez para la misma pull
   request y tarea, espera a la que ya está en marcha. La tarea tiene que ser del espacio
   de esta carpeta.
-- `--repo`: el repositorio, como `dueño/nombre`. Por defecto, el de esta carpeta.
+- `--repo`: el repositorio, como `dueño/nombre`. Por defecto, el de esta carpeta. Fuera
+  de un repositorio git, con `--task`, lo saca de las carpetas de la tarea (sus worktrees
+  y la carpeta donde se lanzó su sesión) si todas llevan a un mismo repositorio de
+  GitHub; si no, se para en el acto y pide `--repo`.
 - `--max`: lo más que vigila. Por defecto, `3h`.
 - `--every`: cada cuánto mira. Por defecto, `30s`; `10s` como poco.
 
@@ -715,13 +729,26 @@ los que siguen en marcha o han fallado (cinco como mucho, cada uno cortado a 60
 caracteres). Sus nombres van solo al diario, nunca al siguiente paso, que todas las
 sesiones leen al empezar: esos nombres los elige quien escribe los workflows.
 
-**Cuándo se rinde.** Si GitHub no lista ningún check obligatorio a los 5 minutos, o `gh`
-falla tres veces seguidas o da una respuesta que no entiende, se para y dice lo que dijo
-`gh`.
+**Un resultado de antes no cuenta.** Justo después de un push o de relanzar la CI,
+GitHub enseña unos segundos el resultado de antes, en verde o en rojo. Por eso un
+veredicto solo cuenta si sigue igual 90 segundos después de empezar a vigilar, o de que
+llegue un commit nuevo a la pull request.
+
+**Pull requests que no lanzan ningún check obligatorio.** Un workflow puede correr solo
+para algunas rutas. Si los cambios de una pull request no lanzan ninguno de los
+obligatorios, GitHub no le lista ningún check obligatorio. A los 5 minutos la vigilancia
+mira qué dice GitHub de la pull request: si se puede mezclar, lo dice y acaba con 0; si
+GitHub la mantiene bloqueada (esperando un check que nunca empezará, una revisión o poner
+la rama al día), lo dice y acaba con 1. Si todos los obligatorios pasaron pero GitHub aún
+la bloquea, la línea también lo dice.
+
+**Cuándo se rinde.** Si `gh` falla tres veces seguidas o da una respuesta que no entiende,
+se para y dice lo que dijo `gh`.
 
 Necesita `gh` con tu login de GitHub. El asistente lo lanza en segundo plano; su última
-línea le pide avisarte en el acto. Acaba con 0 si los checks pasaron o la pull request se
-mezcló, y con 1 en cualquier otro caso.
+línea le pide avisarte en el acto. Acaba con 0 si los checks pasaron, la pull request se
+mezcló o no lanza ningún check obligatorio y se puede mezclar, y con 1 en cualquier otro
+caso.
 
 ## augmented-brain config
 
@@ -827,15 +854,16 @@ hace lo que si no harías a mano:
   reinician, una a una, como hace `session restart --old`: las de Claude Desktop siguen
   abiertas y solo se reinicia su augmented brain. Para las que no puede reiniciar (una
   que está respondiendo, o en Windows una de Claude Desktop), dice qué tarea está activa
-  en cada espacio, para que pidas a su sesión que la aparque, y después las cierras y las
-  abres.
+  en cada espacio, y que vuelvas a lanzar `augmented-brain session restart --old` cuando
+  hayan terminado de responder.
 
 Opciones:
 
 - `--plugin`: actualiza solo el plugin de Claude Code. Lo usa el instalador.
 - `--force`: actualiza aunque falle la copia de antes.
 - `--no-restart`: no reinicia ninguna sesión después de actualizar; solo dice cuáles
-  siguen con la versión vieja.
+  siguen con la versión vieja, y que `augmented-brain session restart --old` las
+  reinicia.
 - `--from <dirección>`: para pruebas: instala la versión de esa dirección en vez de la
   última de GitHub. Tiene que ser `https://`, `file://`, o `http://` a este ordenador o al
   host de una VM de pruebas (`10.0.2.2`).
@@ -976,8 +1004,9 @@ falta o que sobra, o un valor que no puede usar (`--language fr`).
 Algunos comandos dan a sus códigos un sentido propio:
 
 - `check` y `doctor`: `1` si una nota no es válida, o algo falla.
-- `watch pr`: `0` solo si los checks pasaron o la pull request se mezcló; `1` en todo lo
-  demás (cerrada, un conflicto, un check fallido, `--max` alcanzado).
+- `watch pr`: `0` solo si los checks pasaron, la pull request se mezcló, o no lanza
+  ningún check obligatorio y GitHub deja mezclarla; `1` en todo lo demás (cerrada, un
+  conflicto, un check fallido, bloqueada, `--max` alcanzado).
 - `hook`: `0` aunque algo falle dentro, para no parar nunca a Claude. La excepción es el
   guardia (`pre-tool-use`), que acaba con `2` para parar el comando si no puede dar su
   respuesta.

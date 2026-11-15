@@ -17,9 +17,9 @@ sigue adelante sin preguntar. La historia entera, comando a comando, está en
    control propio que puede parar algo que el guardia dejaría pasar.
 
 Los dos tienen que decir que sí. Un sí del guardia nunca se salta una pregunta de Claude
-Code. Al revés también vale, con una excepción: en el modo que se salta las preguntas de
-Claude Code (`bypassPermissions`), una pregunta del guardia puede no llegarte. No uses ese
-modo con el guardia; [por qué](guard.es.md#sesiones-que-se-saltan-las-preguntas-de-claude-code).
+Code. Al revés también vale. En el modo que se salta las preguntas de Claude Code
+(`bypassPermissions`) una pregunta del guardia puede no llegarte, así que ahí el guardia
+para lo que preguntaría. No uses ese modo con el guardia; [por qué](guard.es.md#sesiones-que-se-saltan-las-preguntas-de-claude-code).
 
 Si haces que augmented brain se quede en tus espacios, fuera de sus carpetas el guardia
 solo protege sus propios ficheros, tu carpeta personal y lo que nombran tus listas: ahí,

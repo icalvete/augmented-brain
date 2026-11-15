@@ -549,7 +549,7 @@ func worktreeChecks(e Env, c *config.Config) []Check {
 	}
 	for _, k := range kept {
 		out = append(out, Check{Warning,
-			i18n.T(l, "doctor.worktree.kept", paths.Tilde(k.Folder), k.Task, i18n.T(l, "session.worktree.why."+k.Why)),
+			i18n.T(l, "doctor.worktree.kept", paths.Tilde(k.Folder), k.Task, remote.WhyKept(l, k.Folder, k.Why)),
 			i18n.T(l, "doctor.worktree.kept.fix")})
 	}
 	return out

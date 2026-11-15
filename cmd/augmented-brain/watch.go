@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -58,12 +59,62 @@ var watchGh = func(args ...string) (string, string, error) {
 	return out.String(), errOut.String(), err
 }
 
-// watchSleep, watchNow and watchLookPath are there for the tests.
+// watchSleep, watchNow, watchLookPath, watchInRepo and watchRepoOf are there for the tests.
 var (
 	watchSleep    = time.Sleep
 	watchNow      = time.Now
 	watchLookPath = exec.LookPath
+	watchInRepo   = inGitRepo
+	watchRepoOf   = ghRepoOf
 )
+
+// inGitRepo says whether the working folder is inside a git repository, where gh finds
+// the pull request's repository by itself.
+func inGitRepo() bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	cmd := runlimit.Command(ctx, "git", "rev-parse", "--is-inside-work-tree")
+	cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
+	out, err := cmd.Output()
+	return err == nil && strings.TrimSpace(string(out)) == "true"
+}
+
+// ghRepoOf is the GitHub repository, OWNER/NAME, gh works with in a folder, or "".
+func ghRepoOf(folder string) string {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	cmd := runlimit.Command(ctx, "gh", "repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner")
+	cmd.Dir = folder
+	cmd.Env = append(os.Environ(), "GH_PROMPT_DISABLED=1", "GH_NO_UPDATE_NOTIFIER=1", "NO_COLOR=1")
+	out, err := cmd.Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(out))
+}
+
+// watchRepo is the repository to watch the pull request in when --repo is not given:
+// none ("", true) inside a git repository, where gh finds it; outside one, the single
+// GitHub repository of the task's folders. ok is false when there is no telling, so the
+// watch fails at once instead of three looks later with gh's own words.
+func watchRepo(c *config.Config, task string) (repo string, ok bool) {
+	if watchInRepo() {
+		return "", true
+	}
+	if task == "" {
+		return "", false
+	}
+	var found []string
+	for _, folder := range remote.TaskFolders(c.Dir, task) {
+		if r := watchRepoOf(folder); r != "" && !slices.Contains(found, r) {
+			found = append(found, r)
+		}
+	}
+	if len(found) != 1 {
+		return "", false
+	}
+	return found[0], true
+}
 
 // cmdWatch is `watch pr NUMBER`: it follows a pull request until it is merged or
 // closed, a required check fails, every required check has finished, or --max passes,
@@ -110,9 +161,25 @@ func cmdWatch(args []string, out, errOut io.Writer) int {
 	if result := os.Getenv(watchKeeperEnv); result != "" && o.task != "" {
 		return watchKeep(c, s, l, o, n, result, out)
 	}
+	keeperArgs := append([]string{"watch"}, args...)
+	if o.repo == "" {
+		repo, ok := watchRepo(c, o.task)
+		if !ok {
+			fmt.Fprintln(errOut, i18n.T(l, "watch.norepo", n))
+			return 1
+		}
+		if repo != "" {
+			o.repo = repo
+			// The keeper is told, so it never depends on the folder it was started in.
+			keeperArgs = append([]string{"watch", "--repo", repo}, args...)
+		}
+	}
 	fmt.Fprintln(out, i18n.T(l, "watch.start", n, minutes(l, o.max)))
+	if o.repo != "" {
+		fmt.Fprintln(out, i18n.T(l, "watch.repo", o.repo))
+	}
 	if o.task != "" {
-		return watchThroughKeeper(c, l, o, n, append([]string{"watch"}, args...), out, errOut)
+		return watchThroughKeeper(c, l, o, n, keeperArgs, out, errOut)
 	}
 	r := watchRun(o, n)
 	fmt.Fprintln(out, watchLine(l, r))
@@ -122,13 +189,18 @@ func cmdWatch(args []string, out, errOut io.Writer) int {
 
 func watchRun(o *watchOpts, n int) watch.Result {
 	return watch.PR(watch.Options{
-		PR: n, Repo: o.repo, Every: o.every, Max: o.max, Grace: 5 * time.Minute,
+		PR: n, Repo: o.repo, Every: o.every, Max: o.max, Grace: 5 * time.Minute, Settle: watchSettle,
 		Run: watchGh, Sleep: watchSleep, Now: watchNow,
 	})
 }
 
+// watchSettle is how long a verdict must stand before watch believes it: after a push or
+// a rerun GitHub shows the result of before for some seconds, and a check may take a
+// minute to be listed.
+const watchSettle = 90 * time.Second
+
 func watchCode(r watch.Result) int {
-	if r.Kind == watch.Green || r.Kind == watch.Merged {
+	if r.Kind == watch.Green || r.Kind == watch.Merged || r.Kind == watch.NoRequired {
 		return 0
 	}
 	return 1
@@ -342,6 +414,13 @@ func watchText(l string, r watch.Result, names bool) string {
 	switch r.Kind {
 	case watch.Green:
 		line = i18n.T(l, "watch.green", r.PR, took)
+		if r.StillBlocked {
+			line += i18n.T(l, "watch.stillblocked")
+		}
+	case watch.NoRequired:
+		line = i18n.T(l, "watch.norequired", r.PR, took)
+	case watch.Blocked:
+		line = i18n.T(l, "watch.blocked", r.PR, took)
 	case watch.Failed:
 		if !names {
 			return i18n.T(l, "watch.failed.next", r.PR, took)

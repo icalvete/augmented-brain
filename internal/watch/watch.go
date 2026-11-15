@@ -1,6 +1,6 @@
 // Package watch follows a pull request until something worth telling happens: it is
-// merged or closed, a required check fails, every required check has finished, or the
-// time allowed runs out. It replaces the loops each session used to write by hand,
+// merged or closed, a required check fails, every required check has finished, it turns
+// out to have no required check to wait for, or the time allowed runs out. It replaces the loops each session used to write by hand,
 // which hung on an answer they did not expect and never said so.
 //
 // It reads gh's plain output (a line per check, its fields separated by tabs), which
@@ -29,17 +29,27 @@ const (
 	TimedOut             // Max passed with checks still pending
 	Conflict             // the PR conflicts with its base: no CI runs until it is rebased
 	Broken               // gh could not tell: missing, logged out, or an answer not understood
+	// NoRequired: after Grace no required check ran, and GitHub lets the PR merge: its
+	// changes start no required workflow (a workflow filtered by paths) and none is asked.
+	NoRequired
+	// Blocked: after Grace no required check ran, and GitHub keeps the PR blocked: it waits
+	// for a check this PR's changes never start, or for something else (a review, an
+	// update of the branch). Waiting longer would wait for nothing.
+	Blocked
 )
 
 // Result is what a watch found.
 type Result struct {
 	Kind    Kind
 	PR      int
-	Failed  []string      // the required checks that failed (Failed)
-	Pending []string      // the required checks still pending (TimedOut)
-	Others  []string      // the checks not required still pending or failed, "name (bucket)"
-	Problem string        // what gh said (Broken)
-	Elapsed time.Duration // from start to end
+	Failed  []string // the required checks that failed (Failed)
+	Pending []string // the required checks still pending (TimedOut)
+	Others  []string // the checks not required still pending or failed, "name (bucket)"
+	Problem string   // what gh said (Broken)
+	// StillBlocked: every required check passed, but GitHub still keeps the PR blocked
+	// (Green): a required check never started, or a review is missing.
+	StillBlocked bool
+	Elapsed      time.Duration // from start to end
 }
 
 // Options say what to watch and how. Run, Sleep and Now are there so tests never run
@@ -53,6 +63,10 @@ type Options struct {
 	// right after a push GitHub has not listed them yet, but a filter that matches
 	// nothing must not look like "still waiting" for ever.
 	Grace time.Duration
+	// Settle is how long the watch waits, from its start or from a new commit at the head
+	// of the PR, before it believes a verdict: right after a push or a rerun of the CI,
+	// GitHub still shows for a while the result of before, green or red.
+	Settle time.Duration
 	// Run runs gh with these arguments and returns what it printed, and the error of
 	// running it (an exit code other than 0 included).
 	Run   func(args ...string) (stdout, stderr string, err error)
@@ -80,10 +94,19 @@ func PR(o Options) Result {
 	}
 	failures := 0
 	var last error
+	since, head := start, ""
+	blockedOnce := false
 	for {
 		req, err := o.look()
 		if err == nil {
 			failures = 0
+			if req.head != "" && req.head != head {
+				if head != "" {
+					since = o.Now() // a new commit: what was seen before is of the old one
+				}
+				head = req.head
+			}
+			settled := o.Now().Sub(since) >= o.Settle
 			switch {
 			case req.state == "MERGED":
 				return res(Result{Kind: Merged})
@@ -92,16 +115,33 @@ func PR(o Options) Result {
 			case req.state == "CONFLICTING":
 				return res(Result{Kind: Conflict})
 			case len(req.checks) == 0:
-				if o.Now().Sub(start) >= o.Grace {
-					return res(Result{Kind: Broken, Problem: "no required checks reported"})
+				if o.Now().Sub(since) >= max(o.Grace, o.Settle) {
+					switch req.merge {
+					case "CLEAN", "UNSTABLE", "HAS_HOOKS":
+						return res(Result{Kind: NoRequired})
+					case "BLOCKED", "BEHIND":
+						return res(Result{Kind: Blocked})
+					}
+					if o.Now().Sub(since) >= o.Grace+o.Settle {
+						return res(Result{Kind: Broken, Problem: "no required checks reported"})
+					}
 				}
+			case !settled:
+				// A verdict now could be the one of before a push or a rerun: look again.
 			default:
 				if failed := names(req.checks, "fail", "cancel"); len(failed) > 0 {
 					return res(Result{Kind: Failed, Failed: failed, Others: o.others(req.checks)})
 				}
 				if len(names(req.checks, "pending")) == 0 {
-					return res(Result{Kind: Green, Others: o.others(req.checks)})
+					// GitHub may take a moment to see the PR can merge: blocked twice in a
+					// row is blocked.
+					if req.merge == "BLOCKED" && !blockedOnce {
+						blockedOnce = true
+						break
+					}
+					return res(Result{Kind: Green, Others: o.others(req.checks), StillBlocked: req.merge == "BLOCKED"})
 				}
+				blockedOnce = false
 			}
 		} else {
 			failures++
@@ -125,14 +165,21 @@ func PR(o Options) Result {
 
 type look struct {
 	state  string
+	head   string // the commit at the head of the PR
+	merge  string // GitHub's mergeStateStatus: CLEAN, BLOCKED, BEHIND...
 	checks []Check
 }
 
 // look is one look: the PR's state and, while it is open, its required checks.
 func (o Options) look() (look, error) {
-	args := []string{"pr", "view", strconv.Itoa(o.PR), "--json", "state,mergeable", "-q", `.state + " " + .mergeable`}
+	args := []string{"pr", "view", strconv.Itoa(o.PR), "--json", "state,mergeable,headRefOid,mergeStateStatus",
+		"-q", `.state + " " + .mergeable + " " + .headRefOid + " " + .mergeStateStatus`}
 	out, errOut, err := o.Run(o.repo(args)...)
-	state, mergeable, _ := strings.Cut(strings.TrimSpace(out), " ")
+	f := append(strings.Fields(out), "", "", "", "")
+	state, mergeable := f[0], f[1]
+	if len(strings.Fields(out)) > 4 {
+		state = "" // not the four words asked for: not understood
+	}
 	switch state {
 	case "OPEN", "MERGED", "CLOSED":
 	default:
@@ -146,7 +193,7 @@ func (o Options) look() (look, error) {
 		return look{state: "CONFLICTING"}, nil
 	}
 	checks, err := o.checks(true)
-	return look{state: state, checks: checks}, err
+	return look{state: state, head: f[2], merge: f[3], checks: checks}, err
 }
 
 // checks are the PR's checks, the required ones only or all.

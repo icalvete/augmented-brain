@@ -4,8 +4,8 @@ package i18n
 // session start tells the assistant in it.
 var launchMessages = map[string]msg{
 	"usage.session": {
-		en: "usage: augmented-brain session start TASK [--folder DIR] | stop TASK [--when-idle] | restart SESSION [--when-idle] | restart --old | list",
-		es: "uso: augmented-brain session start TAREA [--folder DIR] | stop TAREA [--when-idle] | restart SESIÓN [--when-idle] | restart --old | list",
+		en: "usage: augmented-brain session start TASK [--folder DIR] [--model MODEL] | stop TASK [--when-idle] | restart SESSION [--when-idle] | restart --old | list",
+		es: "uso: augmented-brain session start TAREA [--folder DIR] [--model MODELO] | stop TAREA [--when-idle] | restart SESIÓN [--when-idle] | restart --old | list",
 	},
 	"session.notask": {
 		en: "there is no task %q in space %s.",
@@ -20,12 +20,12 @@ var launchMessages = map[string]msg{
 		es: "%s no nombra ningún repositorio y su espacio no tiene carpeta de trabajo, así que no sé en qué carpeta abrirla. Dímela con --folder DIR.",
 	},
 	"session.woken": {
-		en: "Brought back the session \"%s\" of %s, in %s, with its whole conversation: Claude had stopped it. It is connected again in Claude Desktop and claude.ai.\nTo close it (and take it out of Claude Desktop and claude.ai): augmented-brain session stop %s",
-		es: "Recuperada la sesión «%s» de %s, en %s, con toda su conversación: Claude la había parado. Vuelve a estar conectada en Claude Desktop y claude.ai.\nPara cerrarla (y quitarla de Claude Desktop y claude.ai): augmented-brain session stop %s",
+		en: "Brought back the session \"%s\" of %s, in %s, with its whole conversation: Claude had stopped it. It is connected again in Claude Desktop and claude.ai.\nTo close it: augmented-brain session stop %s",
+		es: "Recuperada la sesión «%s» de %s, en %s, con toda su conversación: Claude la había parado. Vuelve a estar conectada en Claude Desktop y claude.ai.\nPara cerrarla: augmented-brain session stop %s",
 	},
 	"session.started": {
-		en: "Opened the session \"%s\" for %s, in %s. It shows up in Claude Desktop and claude.ai within a minute, and it starts on its own: it reads its task and gets going.\nTo close it (and take it out of Claude Desktop and claude.ai): augmented-brain session stop %s",
-		es: "Abierta la sesión «%s» para %s, en %s. Sale en Claude Desktop y claude.ai en menos de un minuto, y empieza sola: lee su tarea y se pone a ello.\nPara cerrarla (y quitarla de Claude Desktop y claude.ai): augmented-brain session stop %s",
+		en: "Opened the session \"%s\" for %s, in %s. It shows up in Claude Desktop and claude.ai within a minute, and it starts on its own: it reads its task and gets going.\nTo close it: augmented-brain session stop %s",
+		es: "Abierta la sesión «%s» para %s, en %s. Sale en Claude Desktop y claude.ai en menos de un minuto, y empieza sola: lee su tarea y se pone a ello.\nPara cerrarla: augmented-brain session stop %s",
 	},
 	// The first message of a launched session: what has it start on its own.
 	"session.first": {
@@ -57,12 +57,16 @@ var launchMessages = map[string]msg{
 		es: "Dejo su worktree %s: tiene commits sin subir.",
 	},
 	"session.worktree.kept.ignored": {
-		en: "Kept its worktree %s: it has files git ignores (a .env, a key) that may exist nowhere else.",
-		es: "Dejo su worktree %s: tiene ficheros que git ignora (un .env, una clave) que quizá no estén en otro sitio.",
+		en: "Kept its worktree %s: it has files git ignores that may exist nowhere else: %s.",
+		es: "Dejo su worktree %s: tiene ficheros que git ignora que quizá no estén en otro sitio: %s.",
 	},
 	"session.worktree.why.ignored": {
-		en: "files git ignores (a .env, a key) that may exist nowhere else",
-		es: "ficheros que git ignora (un .env, una clave) que quizá no estén en otro sitio",
+		en: "files git ignores that may exist nowhere else (%s)",
+		es: "ficheros que git ignora que quizá no estén en otro sitio (%s)",
+	},
+	"session.worktree.ignored.more": {
+		en: "%s and %d more",
+		es: "%s y %d más",
 	},
 	"session.folder.otherspace": {
 		en: "%s is not inside the work folders of space %s, where %s lives: a session there would not find its task. Give a folder inside them.",
@@ -85,12 +89,12 @@ var launchMessages = map[string]msg{
 		es: "La sesión de %s se cerrará cuando acabe su respuesta (espera como mucho %d minutos). Cómo fue: %s",
 	},
 	"session.closing": {
-		en: "The task's own session closes when it finishes this answer, and leaves Claude Desktop and claude.ai; its worktree goes with it when nothing would be lost.",
-		es: "La sesión propia de la tarea se cierra cuando termine esta respuesta, y sale de Claude Desktop y claude.ai; su worktree se va con ella si no se pierde nada.",
+		en: "The task's own session closes when it finishes this answer, and leaves the lists of Claude Desktop and claude.ai (the Claude app on a phone may keep showing it, offline, until you archive it there); its worktree goes with it when nothing would be lost.",
+		es: "La sesión propia de la tarea se cierra cuando termine esta respuesta, y sale de las listas de Claude Desktop y claude.ai (la app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la archives allí); su worktree se va con ella si no se pierde nada.",
 	},
 	"session.closed.retired": {
-		en: "Closed the task's own session, which Claude had stopped: it leaves Claude Desktop and claude.ai.",
-		es: "Cerrada la sesión propia de la tarea, que Claude había parado: sale de Claude Desktop y claude.ai.",
+		en: "Closed the task's own session, which Claude had stopped: it leaves the lists of Claude Desktop and claude.ai (the Claude app on a phone may keep showing it, offline, until you archive it there).",
+		es: "Cerrada la sesión propia de la tarea, que Claude había parado: sale de las listas de Claude Desktop y claude.ai (la app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la archives allí).",
 	},
 	"session.worktree.closed.kept": {
 		en: "The task's worktree %s stays: it has %s. Push or drop that work, then remove it.",
@@ -132,9 +136,17 @@ var launchMessages = map[string]msg{
 		en: "%d worktree(s) of sessions that have ended hold nothing that is not on the remote: the next session start removes them.",
 		es: "%d worktree(s) de sesiones que ya terminaron no tienen nada que no esté en el remoto: los quita el próximo session start.",
 	},
+	"session.model.bad": {
+		en: "%q is not a model's name: give an alias such as opus or sonnet, or a model's full name.",
+		es: "%q no es el nombre de un modelo: da un alias como opus o sonnet, o el nombre completo de un modelo.",
+	},
+	"session.woken.model": {
+		en: "It keeps the model it had: --model %s counts only for a new session. To start it anew with that model: augmented-brain session stop %s, then this command again.",
+		es: "Sigue con el modelo que tenía: --model %s solo cuenta para una sesión nueva. Para empezarla de nuevo con ese modelo: augmented-brain session stop %s y después este mismo comando.",
+	},
 	"session.untrusted": {
-		en: "Claude does not trust %s yet. A task's session opens only in a folder that accepted Claude's question itself (trusting a folder above it is not enough), so a repository's own settings and hooks never run unasked. Once, in a terminal on %s (from another computer: ssh %s):",
-		es: "Claude aún no confía en %s. La sesión de una tarea solo se abre en una carpeta que ha aceptado ella misma la pregunta de Claude (que confíe en una carpeta de arriba no basta), para que los ajustes y hooks de un repositorio nunca corran sin preguntar. Una vez, en un terminal de %s (desde otro ordenador: ssh %s):",
+		en: "Claude does not trust %s yet. A task's session opens only in a folder Claude trusts, and a repository must accept Claude's question itself (trusting a folder above it is not enough), so its own settings and hooks never run unasked. Once, in a terminal on %s (from another computer: ssh %s):",
+		es: "Claude aún no confía en %s. La sesión de una tarea solo se abre en una carpeta en la que Claude confía, y un repositorio tiene que aceptar él mismo la pregunta de Claude (que confíe en una carpeta de arriba no basta), para que sus ajustes y hooks nunca corran sin preguntar. Una vez, en un terminal de %s (desde otro ordenador: ssh %s):",
 	},
 	"session.untrusted.cmd": {
 		en: "  cd %s && claude",
@@ -157,8 +169,8 @@ var launchMessages = map[string]msg{
 		es: "%s ya tiene su sesión abierta. Para abrirla de nuevo: augmented-brain session stop %s",
 	},
 	"session.stopped": {
-		en: "Closed the session of %s.",
-		es: "Cerrada la sesión de %s.",
+		en: "Closed the session of %s. It leaves the lists of Claude Desktop and claude.ai; the Claude app on a phone may keep showing it, offline, until you archive it there.",
+		es: "Cerrada la sesión de %s. Sale de las listas de Claude Desktop y claude.ai; la app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la archives allí.",
 	},
 	"session.left": {
 		en: "Claude could not take the session of %s out of Claude Desktop and claude.ai: it no longer runs and is no longer the task's. To take it out later: claude rm %s",

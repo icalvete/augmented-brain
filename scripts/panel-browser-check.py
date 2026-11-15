@@ -98,6 +98,10 @@ subprocess.run(["go", "build", "-o", AB, "./cmd/augmented-brain"], cwd=ROOT, che
 CFG = os.path.join(HOME, "SettingsOfAPersonWhoNamesFoldersInFullAndNeverUsesSpaces", "augmented-brain")
 ENV = dict(os.environ, HOME=HOME, USERPROFILE=HOME, AB_CONFIG_DIR=CFG, AB_LANGUAGE="en", AB_NO_BROWSER="1",
            AB_NO_UPDATE_CHECK="1", CLAUDE_CONFIG_DIR=os.path.join(HOME, ".claude"))
+# Run from a Claude Code session, CLAUDECODE is set and `panel` keeps its address from the
+# assistant. This panel is a throwaway one (its own HOME and configuration), not the
+# user's: the check drops the variable for its own runs only, and the program is unchanged.
+ENV.pop("CLAUDECODE", None)
 
 
 def ab(*args, cwd=None, inp=None):

@@ -55,7 +55,7 @@ var commands = []command{
 	{name: "remote watch", hidden: true},
 	// session is hidden: its subcommands are the ones the usage text lists.
 	{name: "session", hidden: true, run: withoutIn(cmdSession)},
-	{name: "session start", flags: func() []string { fs, _ := sessionFlags(io.Discard); return flagNames(fs) }},
+	{name: "session start", flags: func() []string { fs, _, _ := sessionFlags(io.Discard); return flagNames(fs) }},
 	{name: "session stop", flags: func() []string { fs, _ := sessionStopFlags(io.Discard); return flagNames(fs) }},
 	{name: "session restart", flags: func() []string { fs, _, _ := sessionRestartFlags(io.Discard); return flagNames(fs) }},
 	{name: "session list"},

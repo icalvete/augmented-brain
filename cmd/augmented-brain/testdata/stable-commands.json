@@ -56,7 +56,8 @@
     "when-idle"
   ],
   "session start": [
-    "folder"
+    "folder",
+    "model"
   ],
   "session stop": [
     "when-idle"

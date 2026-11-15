@@ -419,7 +419,9 @@ func TestBrokenSeenFile(t *testing.T) {
 	}
 }
 
-// A hundred tasks: well within a hook's budget.
+// A hundred tasks: well within a hook's budget. The fastest of ten checks is what the
+// code costs; the average also counts whatever else the machine was doing (the race
+// detector, other test packages), which made this fail now and then with no change.
 func TestSpeed(t *testing.T) {
 	e := newEnv(t)
 	for i := 0; i < 100; i++ {
@@ -428,12 +430,14 @@ func TestSpeed(t *testing.T) {
 		age(t, e.sp.Tasks, id, time.Hour)
 	}
 	e.baseline(t, false)
-	start := time.Now()
+	fastest := time.Duration(1<<63 - 1)
 	for i := 0; i < 10; i++ {
+		start := time.Now()
 		e.check(t)
+		fastest = min(fastest, time.Since(start))
 	}
-	if per := time.Since(start) / 10; per > 50*time.Millisecond {
-		t.Fatalf("a check of 100 tasks took %v", per)
+	if fastest > 50*time.Millisecond {
+		t.Fatalf("the fastest of ten checks of 100 tasks took %v", fastest)
 	}
 }
 
