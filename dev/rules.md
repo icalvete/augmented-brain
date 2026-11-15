@@ -7,7 +7,8 @@
   Never bypass it. Its denylist of the maintainer's personal data lives outside the repo;
   CI checks it by keyed fingerprints (`scripts/privacy-hashed.py`, `scripts/privacy-hashes`,
   the key in the `AB_PRIVACY_KEY` secret, at least 32 characters), on the files, every
-  commit's author, committer and message, the branch name and the pull request's title.
+  commit's author, committer and message (GitHub's "Merge pull request #N from
+  owner/branch" keeps the owner's public name), the branch name and the pull request's title.
   Text is compared in a canonical form (no case, no accents, words apart or together), so
   `jane.doe` or `janedoe` hit the entry `jane doe`. After changing the denylist, or the
   canonical form, run `scripts/privacy-hashed.py build` and commit the fingerprints;
