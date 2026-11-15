@@ -281,7 +281,8 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 		d = toolDecision(p, i)
 	}
 	if p.NoPrompt && d.Verdict == guard.Ask {
-		// The docs do not promise the dialog there: refuse rather than hope.
+		// The docs do not promise the dialog there, and Claude Code 2.1.325 was seen
+		// running a command whose hook said "ask" without showing it.
 		d = guard.Decision{Verdict: guard.Deny, Reason: i18n.T(p.Lang, "guard.noprompt", d.Reason)}
 	}
 	decision := map[guard.Verdict]string{guard.Deny: "deny", guard.Ask: "ask"}[d.Verdict]

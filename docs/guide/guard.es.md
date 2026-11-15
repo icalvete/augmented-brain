@@ -240,12 +240,13 @@ una red contra despistes, no un muro de seguridad.
 
 Claude Code tiene un modo que se salta sus preguntas de permiso: `bypassPermissions`
 («saltarse los permisos»). No lo uses con el guardia. La documentación de Anthropic no
-garantiza que en ese modo Claude Code te siga enseñando las preguntas del guardia: puede
-ejecutar el comando sin preguntarte. Por eso, por precaución, en ese modo el guardia para
-todo lo que en otro modo te preguntaría: producción, máquinas intocables, la lista
-«preguntar», un push que sobrescribe, una publicación, guardar una regla con «preguntarte
-antes». Claude te dice qué quería hacer y por qué. Entonces puedes hacerlo tú, o abrir una
-sesión en otro modo y permitirlo allí.
+garantiza que en ese modo Claude Code te siga enseñando las preguntas del guardia, y en
+una prueba con Claude Code 2.1.325 ejecutó un comando por el que el guardia preguntaba
+sin enseñar la pregunta. Por eso, en ese modo el guardia para todo lo que en otro modo te
+preguntaría: producción, máquinas intocables, la lista «preguntar», un push que
+sobrescribe, una publicación, guardar una regla con «preguntarte antes». Claude te dice
+qué quería hacer y por qué. Entonces puedes hacerlo tú, o abrir una sesión en otro modo y
+permitirlo allí.
 
 ## Cuando algo le pasa
 
