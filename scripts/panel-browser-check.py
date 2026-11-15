@@ -220,6 +220,10 @@ try:
             ctx = browser.new_context()
             page = ctx.new_page()
             page.goto(f"{base}/inbox?s=work")
+            # Typing is using the panel: the page asks /alive, so the panel keeps running.
+            with page.expect_request(lambda r: r.url.endswith("/alive"), timeout=5000) as alive:
+                page.type("textarea[name=text], input[name=text]", "call")
+            report(f"{engine}: typing in a form says the panel is in use", alive.value.response().status == 204, alive.value.url)
             page.fill("textarea[name=text], input[name=text]", "call the miller")
             page.click("form[action$='/inbox/capture'] button[type=submit]")
             page.wait_for_load_state("networkidle")

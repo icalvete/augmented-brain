@@ -132,6 +132,11 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Cut-off sessions from Today; Sessions out of the menu | `TestSessions` | Go |
 | The Backup page: set up (own repository, GitHub), back up now, last copies | `TestBackupPage`, `TestBackupSetupWithoutGitHub`, the browser check | Go, CI |
 | What each copy changed; going back to a copy (box and name, undone by going back again, local only) | `internal/backup` `TestCopiesChangesAndGoingBack`, `TestGoBackOnlyToACopy`, `TestGoBackRefusesNotesNotValid`, panel `TestBackupGoBack` | Go |
+| Repositories and Today run none of a repository's own programs (fsmonitor, clean, process and required filters, included or per worktree); the user's own filters still run | `internal/repostat` `TestReadRunsNoProgramOfTheRepository`, `TestReadKeepsTheUsersFilters` | Go |
+| A note with a line of millions of `>` ends, quotes stop at 16 levels | `internal/panel` `TestMarkdownQuoteDepth`, `FuzzMarkdown` | Go |
+| Every form fits in the body the panel reads, in any script; past it, a page that says so | `internal/panel` `TestFormsFitTheBody`, `TestWritesNeedTheirOrigin` | Go |
+| A problem report leaves out this computer's name and Tailscale names; a placeholder is never replaced again | `internal/panel` `TestRedact`, `TestRedactPlaceholdersStay`, `internal/doctor` `TestPanelRemoteLine` | Go |
+| Typing in a form keeps the panel running (`/alive`); the pages' check for changes does not | `internal/panel` `TestAliveCountsAsUse`; the browser check | Go, CI |
 | From another device (access, the switch) | `TestRemoteAccess`, `TestRemoteSwitchInPlace` and the others | Go |
 | Firefox | `panel-browser-check.py firefox` | by hand, before a release |
 | Safari for real (every page, its stylesheet, a capture) | `scripts/mac-check.py`, through safaridriver | CI: macOS |

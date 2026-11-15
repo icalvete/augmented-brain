@@ -354,7 +354,8 @@ func TestPanelRemoteLine(t *testing.T) {
 	if err := tailnet.MarkUsed(cfg); err != nil {
 		t.Fatal(err)
 	}
-	if c := find(Run(env), "remote panel"); c == nil || c.Status != OK || !strings.Contains(c.What, "box.example.ts.net") {
+	if c := find(Run(env), "remote panel"); c == nil || c.Status != OK || strings.Contains(c.What, "box.example") {
+		// The machine's name stays out: the health report goes into problem reports.
 		t.Errorf("ready: %+v", c)
 	}
 	served = `{"TCP":{"8443":{"HTTPS":true}},"Web":{"box.example.ts.net:8443":{"Handlers":{"/":{"Proxy":"http://127.0.0.1:4321"}}}}}`

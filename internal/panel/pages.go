@@ -33,6 +33,7 @@ func (s *Server) routes() *http.ServeMux {
 	s.page(m, "/people", "people", s.people)
 	s.page(m, "/note", "", s.note)
 	m.HandleFunc("GET /stamp", s.stamp)
+	m.HandleFunc("GET /alive", alive)
 	s.page(m, "/search", "search", s.search)
 	s.page(m, "/review", "review", s.review)
 	s.page(m, "/secrets", "secrets", s.secrets)

@@ -181,8 +181,24 @@ func TestJournalByHeading(t *testing.T) {
 
 // Any text at all: the renderer ends, writes only its own tags and attributes, and
 // never puts HTML in an address.
+// A line of millions of ">" (a mail quoted over and over, pasted in a note) ends, and
+// quotes stop at maxQuote levels: deeper, the rest is text.
+func TestMarkdownQuoteDepth(t *testing.T) {
+	got := md(strings.Repeat(">", 2_000_000) + " x")
+	if n := strings.Count(got, "<blockquote>"); n != maxQuote {
+		t.Fatalf("%d quotes, want %d", n, maxQuote)
+	}
+	if !strings.Contains(got, "<p>&gt;&gt;") || !strings.HasSuffix(strings.TrimSpace(got), "</blockquote>") {
+		t.Fatalf("the rest should be text: %q…", got[:min(len(got), 400)])
+	}
+	got = md("> a\n>> b\n> c")
+	if strings.Count(got, "<blockquote>") != 2 {
+		t.Fatalf("a quote inside a quote: %s", got)
+	}
+}
+
 func FuzzMarkdown(f *testing.F) {
-	for _, s := range []string{"# a\n- [ ] b\n| c |\n|---|\n| d |", "[x](https://e.com) [[task-known]] `c` **b**", "> | a |\n~~~", "http://x[t](/a/)"} {
+	for _, s := range []string{"# a\n- [ ] b\n| c |\n|---|\n| d |", "[x](https://e.com) [[task-known]] `c` **b**", "> | a |\n~~~", "http://x[t](/a/)", strings.Repeat(">", 5000) + " x"} {
 		f.Add(s)
 	}
 	tag := regexp.MustCompile(`<(/?)([a-zA-Z0-9]+)([^>]*)>`)
