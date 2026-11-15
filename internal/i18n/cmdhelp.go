@@ -244,20 +244,20 @@ var cmdHelpMessages = map[string]msg{
 		es: "Abre una sesión para una tarea, en la carpeta de la tarea.",
 	},
 	"cmdhelp.session start.syntax": {
-		en: "augmented-brain session start <task> [--folder <folder>]",
-		es: "augmented-brain session start <tarea> [--folder <carpeta>]",
+		en: "augmented-brain session start <task> [--folder <folder>] [--model <model>]",
+		es: "augmented-brain session start <tarea> [--folder <carpeta>] [--model <modelo>]",
 	},
 	"cmdhelp.session start.options": {
-		en: "--folder\tthe folder to open the session in. It must lie inside the work folders of the task's space: a session elsewhere would not find its task.",
-		es: "--folder\tla carpeta donde abrir la sesión. Tiene que estar dentro de las carpetas de trabajo del espacio de la tarea: una sesión fuera de ellas no encontraría su tarea.",
+		en: "--folder\tthe folder to open the session in. It must lie inside the work folders of the task's space: a session elsewhere would not find its task.\n--model\tthe model the session starts with, as claude --model takes it: an alias such as opus or sonnet, or a model's full name. Without it, Claude's default. A session Claude had stopped comes back with the model it had, and the command says so.",
+		es: "--folder\tla carpeta donde abrir la sesión. Tiene que estar dentro de las carpetas de trabajo del espacio de la tarea: una sesión fuera de ellas no encontraría su tarea.\n--model\tel modelo con el que arranca la sesión, como lo toma claude --model: un alias como opus o sonnet, o el nombre completo de un modelo. Sin ella, el de Claude por defecto. Una sesión que Claude había parado vuelve con el modelo que tenía, y el comando lo dice.",
 	},
 	"cmdhelp.session start.example": {
-		en: "augmented-brain session start task-new-website\naugmented-brain session start task-new-website --folder ~/projects/website",
-		es: "augmented-brain session start task-new-website\naugmented-brain session start task-new-website --folder ~/projects/website",
+		en: "augmented-brain session start task-new-website\naugmented-brain session start task-new-website --folder ~/projects/website\naugmented-brain session start task-new-website --model sonnet",
+		es: "augmented-brain session start task-new-website\naugmented-brain session start task-new-website --folder ~/projects/website\naugmented-brain session start task-new-website --model sonnet",
 	},
 	"cmdhelp.session stop.what": {
-		en: "Closes a task's session and takes it out of Claude Desktop and claude.ai. It works from any folder.",
-		es: "Cierra la sesión de una tarea y la quita de Claude Desktop y claude.ai. Funciona desde cualquier carpeta.",
+		en: "Closes a task's session and takes it out of the lists of Claude Desktop and claude.ai. The Claude app on a phone may keep showing it, offline, until you archive it there: Claude offers no way to remove it from there. It works from any folder.",
+		es: "Cierra la sesión de una tarea y la quita de las listas de Claude Desktop y claude.ai. La app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la archives allí: Claude no da forma de quitarla desde fuera. Funciona desde cualquier carpeta.",
 	},
 	"cmdhelp.session stop.syntax": {
 		en: "augmented-brain session stop <task> [--when-idle]",
@@ -372,8 +372,8 @@ var cmdHelpMessages = map[string]msg{
 		es: "augmented-brain update [--plugin] [--force] [--no-restart]",
 	},
 	"cmdhelp.update.options": {
-		en: "--plugin\tupdate only the Claude Code plugin. The installer uses it.\n--force\tupdate even when the backup before it fails.\n--no-restart\trestart no session after updating; it only says which still run the old version.\n--from <address>\tfor tests: install the release at this address instead of GitHub's latest. It must be https://, file://, or http:// to this computer or to the host of a test VM (10.0.2.2).",
-		es: "--plugin\tactualiza solo el plugin de Claude Code. Lo usa el instalador.\n--force\tactualiza aunque falle la copia de antes.\n--no-restart\tno reinicia ninguna sesión después de actualizar; solo dice cuáles siguen con la versión vieja.\n--from <dirección>\tpara pruebas: instala la versión de esa dirección en vez de la última de GitHub. Tiene que ser https://, file://, o http:// a este ordenador o al host de una VM de pruebas (10.0.2.2).",
+		en: "--plugin\tupdate only the Claude Code plugin. The installer uses it.\n--force\tupdate even when the backup before it fails.\n--no-restart\trestart no session after updating; it only says which still run the old version, and that augmented-brain session restart --old restarts them.\n--from <address>\tfor tests: install the release at this address instead of GitHub's latest. It must be https://, file://, or http:// to this computer or to the host of a test VM (10.0.2.2).",
+		es: "--plugin\tactualiza solo el plugin de Claude Code. Lo usa el instalador.\n--force\tactualiza aunque falle la copia de antes.\n--no-restart\tno reinicia ninguna sesión después de actualizar; solo dice cuáles siguen con la versión vieja, y que augmented-brain session restart --old las reinicia.\n--from <dirección>\tpara pruebas: instala la versión de esa dirección en vez de la última de GitHub. Tiene que ser https://, file://, o http:// a este ordenador o al host de una VM de pruebas (10.0.2.2).",
 	},
 	"cmdhelp.update.example": {
 		en: "augmented-brain update",

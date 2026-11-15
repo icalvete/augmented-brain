@@ -518,11 +518,12 @@ Sin subcomando, o con otro, `session` muestra su uso. Para qué sirven y cómo u
 
 Abre una sesión para una tarea, en la carpeta de la tarea.
 
-Sintaxis: `augmented-brain session start <tarea> [--folder <carpeta>]`
+Sintaxis: `augmented-brain session start <tarea> [--folder <carpeta>] [--model <modelo>]`
 
 ```bash
 augmented-brain session start task-new-website
 augmented-brain session start task-new-website --folder ~/projects/website
+augmented-brain session start task-new-website --model sonnet
 ```
 
 Arranca una sesión de Claude propia para la tarea, en segundo plano (`claude --bg
@@ -533,6 +534,10 @@ decirte cómo está y ponerse con el siguiente paso.
 
 - `--folder`: la carpeta donde abrir la sesión. Tiene que estar dentro de las carpetas de
   trabajo del espacio de la tarea: una sesión fuera de ellas no encontraría su tarea.
+- `--model`: el modelo con el que arranca la sesión, como lo toma `claude --model`: un
+  alias como `opus` o `sonnet`, o el nombre completo de un modelo. Sin ella, el de Claude
+  por defecto. Una sesión que Claude había parado vuelve con el modelo que tenía, y el
+  comando lo dice.
 
 **Qué carpeta.** Sin `--folder`, la del primer repositorio de la tarea que encuentra en
 las carpetas de trabajo del espacio. Una tarea que no nombra ningún repositorio se abre
@@ -553,10 +558,12 @@ mismo vale para un repositorio bare dado con `--folder`. Mira
 - Lánzalo desde una carpeta del espacio de la tarea. La sesión remota a la que entras
   desde otro ordenador puede lanzarlo por ti («ábreme una sesión para la tarea de la
   web»).
-- La carpeta tiene que ser de confianza ella misma: que confíe en una carpeta de arriba
-  no basta, así que la primera vez el comando te dice que abras Claude una vez en esa
-  carpeta y aceptes la pregunta. Un worktree de git es la excepción: basta con confiar en
-  su repositorio principal.
+- Claude tiene que confiar en la carpeta, como lo decide él mismo. Un repositorio tiene
+  que ser de confianza él mismo: que confíe en una carpeta de arriba no basta. Un
+  worktree de git es de confianza si lo es su repositorio principal. Una carpeta que no
+  es un repositorio es de confianza si lo es una carpeta de arriba. Si Claude aún no
+  confía en ella, el comando te dice que abras Claude una vez en esa carpeta y aceptes la
+  pregunta.
 - Una tarea por carpeta: una carpeta que ya usa la sesión de otra tarea se rechaza. Dale
   otra con `--folder` (un worktree de git, por ejemplo).
 - Si Claude Code no tiene la sesión iniciada, o le ha caducado, no se abre nada. Espera
@@ -573,8 +580,9 @@ mismo vale para un repositorio bare dado con `--folder`. Mira
 
 ## augmented-brain session stop
 
-Cierra la sesión de una tarea y la quita de Claude Desktop y claude.ai. Funciona desde
-cualquier carpeta.
+Cierra la sesión de una tarea y la quita de las listas de Claude Desktop y claude.ai.
+La app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la archives
+allí: Claude no da forma de quitarla desde fuera. Funciona desde cualquier carpeta.
 
 Sintaxis: `augmented-brain session stop <tarea> [--when-idle]`
 
@@ -596,8 +604,10 @@ su rama, siempre que no se pierda nada. Se queda, y el comando lo dice, si tiene
 - cambios sin commitear (también los ficheros que tus ajustes de git esconden);
 - commits sin subir, en la rama de la tarea, aunque el worktree se quedara en otro
   commit;
-- ficheros que git ignora y que ningún build vuelve a hacer (un `.env`, una clave;
-  `node_modules`, `build`, `dist` y parecidos no cuentan).
+- ficheros que git ignora y que ningún build vuelve a hacer, como un `.env` o una clave.
+  Carpetas como `node_modules`, `build`, `dist` o `.next`, los programas compilados y el
+  bytecode (`.o`, `.pyc`, `.class`) no cuentan. Nombra los ficheros que dejan el
+  worktree.
 
 Las sesiones que terminan sin `stop` (un reinicio, una sesión cerrada desde Claude
 Desktop) dejan su worktree. El próximo `session start` quita los que no tienen nada
@@ -828,15 +838,16 @@ hace lo que si no harías a mano:
   reinician, una a una, como hace `session restart --old`: las de Claude Desktop siguen
   abiertas y solo se reinicia su augmented brain. Para las que no puede reiniciar (una
   que está respondiendo, o en Windows una de Claude Desktop), dice qué tarea está activa
-  en cada espacio, para que pidas a su sesión que la aparque, y después las cierras y las
-  abres.
+  en cada espacio, y que vuelvas a lanzar `augmented-brain session restart --old` cuando
+  hayan terminado de responder.
 
 Opciones:
 
 - `--plugin`: actualiza solo el plugin de Claude Code. Lo usa el instalador.
 - `--force`: actualiza aunque falle la copia de antes.
 - `--no-restart`: no reinicia ninguna sesión después de actualizar; solo dice cuáles
-  siguen con la versión vieja.
+  siguen con la versión vieja, y que `augmented-brain session restart --old` las
+  reinicia.
 - `--from <dirección>`: para pruebas: instala la versión de esa dirección en vez de la
   última de GitHub. Tiene que ser `https://`, `file://`, o `http://` a este ordenador o al
   host de una VM de pruebas (`10.0.2.2`).
