@@ -62,7 +62,8 @@ Claude trabaja sin preguntarte a cada paso.
 El fichero de la tarea tiene una sección numerada por cada fase en la que hay algo que
 apuntar (1. Definición, 2. Análisis, 3. Plan, 4. Validación, 5. Cierre). La ejecución no
 tiene sección propia: lo que se hace va al diario. Por eso, de la validación en adelante,
-los números de las secciones y los de las fases no coinciden.
+los números de las secciones y los de las fases no coinciden. Claude escribe cada sección
+cuando su fase la deja clara, con la herramienta [`task_section`](mcp-tools.es.md#task_section).
 
 La fase es el `status` de la tarea. Dos estados más pausan una tarea sin perder nada:
 

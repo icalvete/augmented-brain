@@ -147,58 +147,59 @@
           <span class="app-new">+ New</span>
           <p class="app-label">Recientes</p>
           <ul>
-            <li data-for="wed" class="now">Apunta el blog al servidor nuevo</li>
+            <li data-for="wed" class="now">Sin números de documentos en mis notas</li>
             <li data-for="tue">Buenos días</li>
-            <li data-for="mon">Tarea nueva: mudar el blog</li>
+            <li data-for="mon">Tarea nueva: renovar el pasaporte</li>
             <li>Fotos de las vacaciones</li>
           </ul>
         </div>
         <div class="app-main">
-          <div class="app-head"><span class="app-folder">work</span><span class="app-title" data-title>Apunta el blog al servidor nuevo</span></div>
+          <div class="app-head"><span class="app-folder">casa</span><span class="app-title" data-title>Sin números de documentos en mis notas</span></div>
           <div class="app-chat">
-            <div class="scene" data-scene="mon" data-title="Tarea nueva: mudar el blog">
+            <div class="scene" data-scene="mon" data-title="Tarea nueva: renovar el pasaporte">
               <p class="app-when">Lunes 9:00 · sesión nueva</p>
-              <div class="say" data-step>Tarea nueva: mudar el blog al servidor nuevo. Recuérdame mañana mirar la copia del servidor viejo.</div>
+              <div class="say" data-step>Tarea nueva: renovar el pasaporte antes del viaje de junio. Recuérdame mañana buscar el viejo.</div>
               <p class="tool" data-step data-key="m1"><b>augmented-brain</b> task_new ✓</p>
-              <div class="reply" data-step>Abierta <b>Mudar el blog</b>, con un aviso para mañana. Yo la daría por hecha cuando el blog responda desde el servidor nuevo, en las mismas direcciones. ¿De acuerdo?</div>
+              <div class="reply" data-step>Abierta <b>Renovar el pasaporte</b>, con un aviso para mañana. Yo la daría por hecha cuando tengas el pasaporte nuevo en la mano, antes del viaje. ¿De acuerdo?</div>
               <div class="say" data-step>De acuerdo. Apárcala, seguimos mañana.</div>
               <p class="tool" data-step data-key="m2"><b>augmented-brain</b> task_park ✓</p>
-              <div class="reply" data-step>Aparcada. Siguiente paso: copiar el blog al servidor nuevo.</div>
+              <div class="reply" data-step>Aparcada. Siguiente paso: la lista de papeles que piden para la cita.</div>
             </div>
             <div class="scene" data-scene="tue" data-title="Buenos días">
               <p class="app-when">Martes 9:00 · sesión nueva</p>
               <p class="tool loaded" data-step>Notas cargadas · 3 tareas · 1 aviso para hoy</p>
               <div class="say" data-step>Buenos días.</div>
-              <div class="reply" data-step>Buenos días. Para hoy: mirar que terminó la última copia del servidor viejo (<b>Mudar el blog</b>). Después, la tarea: lo siguiente es copiar el blog. ¿Miro la copia?</div>
-              <div class="say" data-step>Sí, adelante.</div>
+              <div class="reply" data-step>Buenos días. Para hoy: buscar tu pasaporte viejo (<b>Renovar el pasaporte</b>). Después, la tarea: lo siguiente es la lista de papeles. ¿Lo has encontrado?</div>
+              <div class="say" data-step>Sí, estaba en el cajón del escritorio.</div>
               <p class="tool" data-step data-key="t1"><b>augmented-brain</b> task_journal ✓</p>
-              <div class="reply" data-step>Terminó anoche: apuntado en la tarea, y el aviso, hecho. Me pongo a copiar el blog.</div>
+              <div class="reply" data-step>Apuntado en la tarea, y el aviso, hecho. Ahora los papeles: una foto reciente, el pasaporte viejo y el impreso.</div>
             </div>
-            <div class="scene" data-scene="wed" data-title="Apunta el blog al servidor nuevo">
+            <div class="scene" data-scene="wed" data-title="Sin números de documentos en mis notas">
               <p class="app-when">Miércoles 11:00</p>
-              <div class="say" data-step>La copia funciona. Apunta la dirección del blog al servidor nuevo.</div>
-              <div class="reply" data-step>Eso cambia tu DNS de producción. Allá va:</div>
+              <div class="say" data-step>A partir de ahora, no apuntes nunca en las notas mi número de pasaporte ni el del DNI.</div>
+              <div class="reply" data-step>Eso es una regla para todas las sesiones. Elegiste aprobar tú las reglas:</div>
               <div class="perm" data-step data-press>
                 <p class="perm-head"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>El guardia te pregunta antes</p>
-                <code>aws --profile prod route53 change-resource-record-sets …</code>
-                <p>prod es un perfil de producción: lo apruebas tú.</p>
+                <code>rule_new · No apuntar en las notas números de pasaporte ni de DNI</code>
+                <p>Una regla cambia cómo trabaja cada sesión: la apruebas tú.</p>
                 <div class="perm-btns"><span>Denegar</span><span class="yes">Permitir</span></div>
               </div>
+              <p class="tool" data-step><b>augmented-brain</b> rule_new ✓</p>
               <p class="tool" data-step data-key="w1"><b>augmented-brain</b> task_journal ✓</p>
-              <div class="reply" data-step>Hecho: el blog responde desde el servidor nuevo. Apuntado en el diario de la tarea.</div>
+              <div class="reply" data-step>Guardada: desde ahora la lee cada sesión. Apuntado también en la tarea.</div>
             </div>
           </div>
           <div class="app-input" aria-hidden="true"><span>Escribe a Claude…</span><i>↑</i></div>
         </div>
       </div>
-      <pre class="note-file" aria-label="El fichero de la tarea, según lo cambia la conversación"><span class="fname">tasks/task-mudar-el-blog.md</span><span class="fl gone" data-off="m1">(todavía no existe)</span><span class="fl fm" data-on="m1">title: Mudar el blog</span><span class="fl fm gone" data-on="m1" data-off="m2">status: definition · next: acordar cuándo está hecha</span><span class="fl fm gone" data-on="m2" data-off="t1">status: parked · next: copiar el blog</span><span class="fl fm" data-on="t1">status: execution · next: copiar el blog</span><span class="fl" data-on="m1">## Diario</span><span class="fl" data-on="m1">- lun — Abierta. Hecha: mismas direcciones.</span><span class="fl" data-on="m2">- lun — Aparcada. Siguiente: copiar el blog.</span><span class="fl" data-on="t1">- mar — Copia del servidor viejo: terminó.</span><span class="fl" data-on="w1">- mié — La dirección apunta al servidor nuevo.</span></pre>
+      <pre class="note-file" aria-label="El fichero de la tarea, según lo cambia la conversación"><span class="fname">tasks/task-renovar-el-pasaporte.md</span><span class="fl gone" data-off="m1">(todavía no existe)</span><span class="fl fm" data-on="m1">title: Renovar el pasaporte</span><span class="fl fm gone" data-on="m1" data-off="m2">status: definition · next: acordar cuándo está hecha</span><span class="fl fm gone" data-on="m2" data-off="t1">status: parked · next: lista de papeles</span><span class="fl fm" data-on="t1">status: execution · next: lista de papeles</span><span class="fl" data-on="m1">## Diario</span><span class="fl" data-on="m1">- lun — Abierta. Hecha: nuevo antes de junio.</span><span class="fl" data-on="m2">- lun — Aparcada. Siguiente: lista de papeles.</span><span class="fl" data-on="t1">- mar — Pasaporte viejo: en el cajón.</span><span class="fl" data-on="w1">- mié — Regla nueva: sin números de documentos.</span></pre>
       <div class="demo-ctl" role="group" aria-label="Controles del ejemplo" hidden>
         <button type="button" data-goto="mon">Lunes</button>
         <button type="button" data-goto="tue">Martes</button>
         <button type="button" data-goto="wed">Miércoles</button>
         <button type="button" class="play" data-pause="Pausa" data-play="Seguir" data-again="Ver otra vez">Pausa</button>
       </div>
-      <p class="demo-caption">Un ejemplo recreado, con tareas inventadas. Contigo, las tareas son las tuyas.</p>
+      <p class="demo-caption">Un ejemplo recreado, con tareas inventadas. Aprobar tú cada regla se elige en la página Guardia del panel. Contigo, las tareas son las tuyas.</p>
     </div>
   </div>
 
@@ -211,14 +212,14 @@
       <div class="versus">
         <div class="side without">
           <p class="label">Sin</p>
-          <div class="bubble you">Sigamos con la mudanza del blog.</div>
-          <div class="bubble ai">¡Claro! ¿Qué blog? ¿Me cuentas el proyecto?</div>
+          <div class="bubble you">Sigamos con lo del pasaporte.</div>
+          <div class="bubble ai">¡Claro! ¿Qué pasaporte? ¿Adónde viajas?</div>
           <p class="after">Quince minutos explicándolo todo otra vez.</p>
         </div>
         <div class="side with">
           <p class="label">Con augmented brain</p>
-          <div class="bubble you">Sigamos con la mudanza del blog.</div>
-          <div class="bubble ai">Está aparcada. Hecha cuando el blog responda desde el servidor nuevo, en las mismas direcciones. Siguiente paso: copiarlo. ¿Empiezo?</div>
+          <div class="bubble you">Sigamos con lo del pasaporte.</div>
+          <div class="bubble ai">Está aparcada. Hecha cuando tengas el pasaporte nuevo en la mano, antes del viaje de junio. Siguiente paso: la lista de papeles. ¿Vamos?</div>
           <p class="after">Vuelves al trabajo sin más.</p>
         </div>
       </div>
@@ -237,19 +238,19 @@
           <p>Cada tarea, decisión y lección es un fichero Markdown en tu ordenador. Cada sesión los lee primero, así que empieza donde acabó la anterior.</p>
           <p>Ábrelos con cualquier editor. Sin cuenta y sin nube: si dejas augmented brain, tus notas se quedan. <a href="../guide/notes.es.html">Tus notas</a>.</p>
         </div>
-        <pre class="file" aria-label="Ejemplo de fichero de una tarea"><span class="fname">tasks/task-mudar-el-blog.md</span><span class="fm">---
-title: Mudar el blog
+        <pre class="file" aria-label="Ejemplo de fichero de una tarea"><span class="fname">tasks/task-renovar-el-pasaporte.md</span><span class="fm">---
+title: Renovar el pasaporte
 status: parked
 waiting_on: nobody
-next: Copiar el blog al servidor nuevo
+next: Lista de papeles para la cita
 ---</span>
 ## Lo esencial
-Hecha cuando el blog responda desde
-el servidor nuevo, en las mismas direcciones.
+Hecha cuando tenga el pasaporte nuevo
+en la mano, antes del viaje de junio.
 
 ## Diario
-- 2026-11-09 — Abierta. Mirar la copia: mar.
-- 2026-11-09 — Aparcada. Siguiente: copiarlo.</pre>
+- 2026-11-09 — Abierta. Buscar el viejo: mar.
+- 2026-11-09 — Aparcada. Siguiente: los papeles.</pre>
       </div>
       <div class="pillar">
         <div>

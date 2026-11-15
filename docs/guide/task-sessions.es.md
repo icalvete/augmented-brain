@@ -33,7 +33,8 @@ sola: lee su tarea, te dice en dos o tres líneas cómo está y se pone con el s
 paso. Solo oye lo que es de su tarea: las fechas de esa tarea, no el resto de avisos del
 espacio, la revisión semanal ni las sesiones por recuperar, que salen en tus otras
 sesiones. Cuando para (la tarea cerrada o aparcada, o esperándote), avisa en una línea a
-la sesión que la pidió.
+la sesión que la pidió. Con `--model sonnet` (o cualquier modelo que acepte `claude
+--model`) arranca con ese modelo en vez del de Claude por defecto.
 
 El comando espera la primera respuesta de la sesión, hasta un minuto. Una sesión que no
 puede trabajar no se queda abierta: si Claude Code no tiene la sesión iniciada, no se
@@ -63,9 +64,11 @@ augmented-brain session start task-new-website --folder ~/projects/website
 
 Dos reglas la mantienen segura:
 
-- **Claude tiene que confiar en esa carpeta ella misma.** Que confíe en una carpeta de
-  más arriba no basta: los ajustes y hooks propios de un repositorio no deben ejecutarse
-  sin preguntar. La primera vez, el comando dice qué hacer: en el ordenador (o por
+- **Claude tiene que confiar en esa carpeta.** Un repositorio tiene que ser de confianza
+  él mismo, para que sus ajustes y hooks nunca se ejecuten sin preguntar: que confíe en
+  una carpeta de arriba no basta. Una carpeta que no es un repositorio es de confianza si
+  lo es una carpeta de arriba, como hace el propio Claude. Si Claude aún no confía en
+  ella, el comando dice qué hacer: en el ordenador (o por
   `ssh`), entra en la carpeta, lanza `claude`, acepta la pregunta y ciérralo con `/exit`.
   Luego pídelo otra vez.
 - **Una tarea por carpeta.** Dos tareas en una carpeta se pisarían los cambios, así que
@@ -117,7 +120,9 @@ lista las sesiones de tarea abiertas en este ordenador: la tarea, si corre y su 
 augmented-brain session stop task-new-website
 ```
 
-cierra la sesión y la quita de Claude Desktop y claude.ai, con su worktree. Cerrar la
+cierra la sesión y la quita de las listas de Claude Desktop y claude.ai, con su
+worktree. La app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la
+archives allí. Cerrar la
 tarea hace lo mismo, cuando la sesión termina su respuesta. Una sesión también termina
 al reiniciar el ordenador, y no vuelve sola: pídela otra vez.
 

@@ -507,11 +507,12 @@ use them: [A session per task](task-sessions.md).
 
 Opens a session for a task, in the task's folder.
 
-Syntax: `augmented-brain session start <task> [--folder <folder>]`
+Syntax: `augmented-brain session start <task> [--folder <folder>] [--model <model>]`
 
 ```bash
 augmented-brain session start task-new-website
 augmented-brain session start task-new-website --folder ~/projects/website
+augmented-brain session start task-new-website --model sonnet
 ```
 
 It starts a background Claude session of its own for the task (`claude --bg
@@ -522,6 +523,9 @@ tell you where it stands, and get on with the next step.
 
 - `--folder`: the folder to open the session in. It must lie inside the work folders of
   the task's space: a session elsewhere would not find its task.
+- `--model`: the model the session starts with, as `claude --model` takes it: an alias
+  such as `opus` or `sonnet`, or a model's full name. Without it, Claude's default. A
+  session Claude had stopped comes back with the model it had, and the command says so.
 
 **Which folder.** Without `--folder`, the first of the task's repositories found in the
 space's work folders. A task that names no repository opens in the space's first work
@@ -541,9 +545,11 @@ repository given with `--folder`. See
 
 - Run it from a folder of the task's space. The remote session you reach from another
   computer can run it for you ("open me a session for the website task").
-- The folder must be trusted on its own: trusting a folder above it is not enough, so
-  the first time the command says to open Claude once in that folder and accept the
-  question. A git worktree is the exception: trusting its main repository is enough.
+- Claude must trust the folder, as it decides itself. A repository must be trusted on its
+  own: trusting a folder above it is not enough. A git worktree is trusted when its main
+  repository is. A folder that is not a repository is trusted when a folder above it is.
+  When Claude does not trust it yet, the command says to open Claude once in that folder
+  and accept the question.
 - One task per folder: a folder another task's session uses is refused. Give it another
   with `--folder` (a git worktree, for example).
 - When Claude Code is not logged in, or its login has expired, nothing is opened. It
@@ -560,8 +566,9 @@ repository given with `--folder`. See
 
 ## augmented-brain session stop
 
-Closes a task's session and takes it out of Claude Desktop and claude.ai. It works
-from any folder.
+Closes a task's session and takes it out of the lists of Claude Desktop and claude.ai.
+The Claude app on a phone may keep showing it, offline, until you archive it there:
+Claude offers no way to remove it from there. It works from any folder.
 
 Syntax: `augmented-brain session stop <task> [--when-idle]`
 
@@ -583,8 +590,9 @@ has:
 - changes not committed (files your git settings hide count too);
 - commits not pushed, on the task's branch, even when the worktree was left on another
   commit;
-- files git ignores that no build makes again (a `.env`, a key; `node_modules`, `build`,
-  `dist` and the like do not count).
+- files git ignores that no build makes again, such as a `.env` or a key. Folders like
+  `node_modules`, `build`, `dist` or `.next`, compiled programs and bytecode (`.o`,
+  `.pyc`, `.class`) do not count. It names the files that keep the worktree.
 
 Sessions that end without `stop` (a reboot, a session closed from Claude Desktop) leave
 their worktree. The next `session start` removes those with nothing of their own (not
@@ -828,15 +836,15 @@ plugin. Around it, it does what you would otherwise do by hand:
 - **After:** the idle Claude sessions still running the old version are restarted, one
   at a time, as `session restart --old` does: those of Claude Desktop stay open and only
   their augmented brain restarts. For those it cannot restart (one answering, or on
-  Windows one of Claude Desktop), it says which task is active in each space, so you ask
-  its session to park it, and then you close and open them.
+  Windows one of Claude Desktop), it says which task is active in each space, and to run
+  `augmented-brain session restart --old` again once they have finished their answer.
 
 Options:
 
 - `--plugin`: update only the Claude Code plugin. The installer uses it.
 - `--force`: update even when the backup before it fails.
 - `--no-restart`: restart no session after updating; it only says which still run the
-  old version.
+  old version, and that `augmented-brain session restart --old` restarts them.
 - `--from <address>`: for tests: install the release at this address instead of
   GitHub's latest. It must be `https://`, `file://`, or `http://` to this computer or to
   the host of a test VM (`10.0.2.2`).

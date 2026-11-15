@@ -20,11 +20,12 @@ import (
 	"github.com/icalvete/augmented-brain/internal/state"
 )
 
-func sessionFlags(errOut io.Writer) (*flag.FlagSet, *string) {
+func sessionFlags(errOut io.Writer) (*flag.FlagSet, *string, *string) {
 	fs := flag.NewFlagSet("session start", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	folder := fs.String("folder", "", "the folder to open the session in")
-	return fs, folder
+	model := fs.String("model", "", "the model the session starts with (an alias such as opus, or a full name)")
+	return fs, folder, model
 }
 
 func sessionStopFlags(errOut io.Writer) (*flag.FlagSet, *bool) {
@@ -122,12 +123,12 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		case why == remote.KeptCommits:
 			fmt.Fprintln(out, i18n.T(l, "session.worktree.kept.commits", tilde(wt)))
 		case why == remote.KeptIgnored:
-			fmt.Fprintln(out, i18n.T(l, "session.worktree.kept.ignored", tilde(wt)))
+			fmt.Fprintln(out, i18n.T(l, "session.worktree.kept.ignored", tilde(wt), remote.IgnoredNames(l, wt)))
 		}
 		return 0
 	}
 	// The task may come before or after --folder.
-	fs, folder := sessionFlags(errOut)
+	fs, folder, model := sessionFlags(errOut)
 	var id string
 	rest := args[1:]
 	if len(rest) > 0 && !strings.HasPrefix(rest[0], "-") {
@@ -140,6 +141,10 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		id = fs.Arg(0)
 	} else if id == "" || fs.NArg() > 0 {
 		fmt.Fprintln(errOut, i18n.T(l, "usage.session"))
+		return 2
+	}
+	if *model != "" && !remote.ValidModel(*model) {
+		fmt.Fprintln(errOut, i18n.T(l, "session.model.bad", *model))
 		return 2
 	}
 	// Before anything is made: on a system it does not run on, session start changes
@@ -168,12 +173,15 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 	}
 	name := set.NamePrefix + " · " + task.Header.Title
 	shared := len(s.WorkFolders) > 0 && *folder == "" && len(task.Header.Repos) == 0
-	launch := remote.Launch{Task: id, Name: name, Folder: dir, Shared: shared}
+	launch := remote.Launch{Task: id, Name: name, Folder: dir, Shared: shared, Model: *model}
 	// A session Claude stopped comes back with its conversation; only when it cannot,
 	// a new one opens and replaces it.
 	woke, err := sys.Wake(c.Dir, launch)
 	if err == nil && woke {
 		fmt.Fprintln(out, i18n.T(l, "session.woken", name, id, tilde(dir), id))
+		if *model != "" {
+			fmt.Fprintln(out, i18n.T(l, "session.woken.model", *model, id))
+		}
 		return 0
 	}
 	if err == nil {
