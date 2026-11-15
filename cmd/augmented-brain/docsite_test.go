@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 	"testing"
-	"unicode"
+
+	"github.com/icalvete/augmented-brain/internal/doccheck"
 )
 
 // The documentation as people read it: every link and anchor leads somewhere, every
@@ -31,46 +31,10 @@ func docPages(t *testing.T) []string {
 }
 
 var (
-	fenceRE  = regexp.MustCompile("(?ms)^```.*?^```")
-	linkRE   = regexp.MustCompile(`\]\(([^)\s]+)\)`)
-	headRE   = regexp.MustCompile(`(?m)^(#{1,6}) (.*)$`)
-	anchorRE = regexp.MustCompile(`<a id="([\w\-]+)"></a>`)
-	tagRE    = regexp.MustCompile(`<[^>]+>`)
+	fenceRE = regexp.MustCompile("(?ms)^```.*?^```")
+	linkRE  = regexp.MustCompile(`\]\(([^)\s]+)\)`)
+	headRE  = regexp.MustCompile(`(?m)^(#{1,6}) (.*)$`)
 )
-
-// slug is a heading's anchor as the site (scripts/build-guides.py) and GitHub make it:
-// lowercase, no punctuation, spaces as dashes, accented letters kept; -1, -2 when repeated.
-func slug(text string, seen map[string]bool) string {
-	s := strings.ToLower(strings.TrimSpace(tagRE.ReplaceAllString(text, "")))
-	var b strings.Builder
-	for _, r := range s {
-		switch {
-		case r == ' ':
-			b.WriteRune('-')
-		case r == '-' || r == '_' || unicode.IsLetter(r) || unicode.IsDigit(r):
-			b.WriteRune(r)
-		}
-	}
-	base, out := b.String(), b.String()
-	for n := 1; seen[out]; n++ {
-		out = base + "-" + strconv.Itoa(n)
-	}
-	seen[out] = true
-	return out
-}
-
-// anchors are the targets a page offers: its headings' slugs and its <a id> marks.
-func anchors(text string) map[string]bool {
-	out, seen := map[string]bool{}, map[string]bool{}
-	body := fenceRE.ReplaceAllString(text, "")
-	for _, m := range headRE.FindAllStringSubmatch(body, -1) {
-		out[slug(strings.ReplaceAll(m[2], "`", ""), seen)] = true
-	}
-	for _, m := range anchorRE.FindAllStringSubmatch(body, -1) {
-		out[m[1]] = true
-	}
-	return out
-}
 
 func read(t *testing.T, p string) string {
 	t.Helper()
@@ -114,7 +78,7 @@ func TestDocLinks(t *testing.T) {
 				continue
 			}
 			if cache[target] == nil {
-				cache[target] = anchors(read(t, target))
+				cache[target] = doccheck.Anchors(read(t, target))
 			}
 			if !cache[target][frag] {
 				t.Errorf("%s: link to %s, whose page has no #%s", rel(page), url, frag)

@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/icalvete/augmented-brain/internal/doccheck"
 )
 
 // Every page starts with what it is and a link to its part of the guide, in the
@@ -94,22 +96,23 @@ func TestIntroSpanish(t *testing.T) {
 	}
 }
 
-// The anchors the introductions link to exist in the built guide, in both languages.
+// The anchors the introductions link to exist in the guide, in both languages: read
+// from its Markdown, which the website's pages are built from.
 func TestIntroAnchors(t *testing.T) {
-	read := func(name string) string {
+	read := func(name string) map[string]bool {
 		b, err := os.ReadFile(filepath.Join("..", "..", "docs", "guide", name))
 		if err != nil {
 			t.Fatal(err)
 		}
-		return string(b)
+		return doccheck.Anchors(string(b))
 	}
-	en, es := read("panel.html"), read("panel.es.html")
+	en, es := read("panel.md"), read("panel.es.md")
 	for key, a := range guideAnchors {
-		if !strings.Contains(en, `id="`+a[0]+`"`) {
-			t.Errorf("%s: no #%s in panel.html", key, a[0])
+		if !en[a[0]] {
+			t.Errorf("%s: no #%s in panel.md", key, a[0])
 		}
-		if !strings.Contains(es, `id="`+a[1]+`"`) {
-			t.Errorf("%s: no #%s in panel.es.html", key, a[1])
+		if !es[a[1]] {
+			t.Errorf("%s: no #%s in panel.es.md", key, a[1])
 		}
 	}
 }
