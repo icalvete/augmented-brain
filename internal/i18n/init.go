@@ -74,6 +74,18 @@ var initMessages = map[string]msg{
 		en: "This terminal does not find augmented-brain yet: for its commands, open a new one.",
 		es: "Esta terminal todavía no encuentra augmented-brain: para sus comandos, abre una nueva.",
 	},
+	"init.newterm.reload": {
+		en: "This terminal does not find augmented-brain yet. Open a new one, or type this here first:\n  %s",
+		es: "Esta terminal todavía no encuentra augmented-brain. Abre una nueva, o escribe esto aquí primero:\n  %s",
+	},
+	"init.newterm.or": {
+		en: "Or stay in this one: type this first, then the line above.\n  %s",
+		es: "O sigue en esta: escribe esto primero, y después la línea de arriba.\n  %s",
+	},
+	"init.newterm.windows": {
+		en: "This window already finds augmented-brain. Windows that were open before do not: close them and open new ones.",
+		es: "Esta ventana ya encuentra augmented-brain. Las que ya estaban abiertas, no: ciérralas y abre otras nuevas.",
+	},
 	"init.launch": {
 		en: "From now on, to work: open a new terminal and type\n  cd %s && claude\nThe first time, Claude will ask who you are and how you like to work.",
 		es: "A partir de ahora, para trabajar: abre una terminal nueva y escribe\n  cd %s && claude\nLa primera vez, Claude te preguntará quién eres y cómo te gusta trabajar.",

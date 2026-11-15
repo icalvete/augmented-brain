@@ -1,6 +1,7 @@
 package main
 
 import (
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -8,12 +9,17 @@ import (
 // The terminal that ran the installer does not find the program yet: whatever the last
 // message suggests, it says so when the installer changed the PATH.
 func TestNextStepSaysNewTerminal(t *testing.T) {
+	t.Setenv("AB_RELOAD", "")
+	newOne := "open a new one"
+	if runtime.GOOS == "windows" {
+		newOne = "open new ones" // install.ps1 gave its own window the new PATH
+	}
 	for _, env := range []string{"AB_DESKTOP", "AB_LAUNCH"} {
 		t.Setenv("AB_DESKTOP", "")
 		t.Setenv("AB_LAUNCH", "")
 		t.Setenv(env, "1")
 		t.Setenv("AB_NEW_TERMINAL", "1")
-		if got := nextStep("en", "~/augmented-brain/work", false); !strings.Contains(got, "open a new one") {
+		if got := nextStep("en", "~/augmented-brain/work", false); !strings.Contains(got, newOne) {
 			t.Errorf("%s with a new PATH: %q says nothing of a new terminal", env, got)
 		}
 		t.Setenv("AB_NEW_TERMINAL", "")
@@ -59,6 +65,27 @@ func TestNextStepDesktopPicksAFolder(t *testing.T) {
 		}
 		if got := nextStep(lang, "~/augmented-brain/work", false); !strings.Contains(got, without) {
 			t.Errorf("%s without pick: %q", lang, got)
+		}
+	}
+}
+
+// With the line that reads the new PATH (AB_RELOAD, from install.sh), the message gives
+// it, so augmented-brain works in the same terminal; once, whatever the next step.
+func TestNextStepGivesTheReloadLine(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("install.ps1 changes its own window's PATH: there is nothing to reload")
+	}
+	t.Setenv("AB_NEW_TERMINAL", "1")
+	t.Setenv("AB_RELOAD", "source ~/.bashrc")
+	cases := map[string][2]string{"desktop": {"1", ""}, "launch": {"", "1"}, "newterm": {"", ""}}
+	for name, env := range cases {
+		t.Setenv("AB_DESKTOP", env[0])
+		t.Setenv("AB_LAUNCH", env[1])
+		for lang, word := range map[string]string{"en": "this", "es": "esto"} {
+			got := nextStep(lang, "~/augmented-brain/work", false)
+			if strings.Count(got, "source ~/.bashrc") != 1 || !strings.Contains(got, word) {
+				t.Errorf("%s (%s): %q", name, lang, got)
+			}
 		}
 	}
 }

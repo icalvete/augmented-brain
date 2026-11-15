@@ -165,6 +165,8 @@ else
   check "gh installed next to the program, and it runs" "$HOME/.local/bin/gh" --version
 fi
 check "the installer said what gh is for" grep -q 'repositorio privado de tu cuenta de GitHub' "$TMP/install.log"
+# This terminal does not see the new PATH: the end says how to use it anyway.
+check "it says how to use this same terminal (source …)" grep -Eq '(source|\.) ~/\.(bashrc|zshrc|bash_profile|bash_login|profile)' "$TMP/install.log"
 cfg="$HOME/.config/augmented-brain/config.toml"
 check "configuration in Spanish" grep -q '^language = "es"' "$cfg"
 check "default space is personal" grep -q '^default_space = "personal"' "$cfg"

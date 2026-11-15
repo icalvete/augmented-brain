@@ -98,7 +98,10 @@ the notes yours only.
 
 `command not found`, or "not recognized" on Windows. Close the terminal and open a new
 one. The PATH is the list of folders where the terminal looks for programs; the
-installer added one to it, and a terminal opened before does not see it yet.
+installer added one to it, and a terminal opened before does not see it yet. To keep
+using the same terminal on Linux or macOS, read the change in it with the line the
+installer gave you at the end, such as `source ~/.bashrc` (`source ~/.zshrc` with zsh,
+the Mac's usual shell).
 
 ### augmented brain's tools fail after an update
 
