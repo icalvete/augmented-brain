@@ -58,9 +58,10 @@ func Resolve(p string) (string, error) {
 // hook): a link made or changed after a folder was resolved is not seen. The zero value
 // is ready to use; it is not safe for concurrent use.
 //
-// The answer is Resolve's, except on Windows, where Resolve also writes the last part
-// in the disk's own case and this one keeps it as given: compare with Same or Within,
-// which ignore case there.
+// The answer is Resolve's, except on Windows, where Resolve also writes every part in
+// the disk's own case and this one keeps it as given: compare with Same or Within,
+// which ignore case there. Short names (RUNNER~1) it does expand, as Resolve does: a
+// short and a long name of one folder compare equal nowhere.
 type Resolver struct{ seen map[string]string }
 
 // Resolve is Resolve, remembering what it resolves.
@@ -83,8 +84,9 @@ func (r *Resolver) Resolve(p string) (string, error) {
 }
 
 // resolve resolves the absolute, clean path p: its folder (remembered), then its last
-// part, followed only when it is a link. A last part that is missing or cannot be read
-// stays as written, as Resolve keeps the part that does not exist.
+// part, followed only when it is a link or, on Windows, may be a short name. A last part
+// that is missing or cannot be read stays as written, as Resolve keeps the part that
+// does not exist.
 func (r *Resolver) resolve(p string) string {
 	if done, ok := r.seen[p]; ok {
 		return done
@@ -95,8 +97,10 @@ func (r *Resolver) resolve(p string) string {
 			out = root
 		}
 	} else {
-		out = filepath.Join(r.resolve(parent), filepath.Base(p))
-		if info, err := os.Lstat(out); err == nil && info.Mode()&os.ModeSymlink != 0 {
+		base := filepath.Base(p)
+		out = filepath.Join(r.resolve(parent), base)
+		short := runtime.GOOS == "windows" && strings.Contains(base, "~")
+		if info, err := os.Lstat(out); err == nil && (short || info.Mode()&os.ModeSymlink != 0) {
 			if real, err := filepath.EvalSymlinks(out); err == nil {
 				out = real
 			}
