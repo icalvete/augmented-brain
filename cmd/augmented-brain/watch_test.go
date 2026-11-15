@@ -407,6 +407,7 @@ func TestWatchRepoOutsideARepository(t *testing.T) {
 
 // A PR that starts no required check: said as such, and a success when GitHub lets it merge.
 func TestWatchNoRequiredCheck(t *testing.T) {
+	home(t) // a configuration of its own, in Spanish: never the machine's
 	for merge, code := range map[string]int{"CLEAN": 0, "BLOCKED": 1} {
 		fakeWatch(t, "OPEN MERGEABLE abc "+merge, "")
 		var out, errOut bytes.Buffer
