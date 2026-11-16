@@ -2,6 +2,16 @@
 
 ## Sin publicar
 
+## 1.0.0
+
+Publicada el 2026-11-16.
+
+- **augmented brain 1.0.0: la primera versión estable.** Es el mismo código que la
+  1.0.0-rc.5, usada a diario y ensayada en máquinas limpias de Ubuntu y Windows. Desde
+  aquí rige la promesa de compatibilidad: el formato de las notas, los comandos y las
+  herramientas MCP solo cambian sin romper nada hasta la 2.0 (mira Compatibilidad en las
+  guías).
+
 ## 1.0.0-rc.5
 
 Publicada el 2026-11-15.

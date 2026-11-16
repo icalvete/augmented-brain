@@ -18,8 +18,8 @@ asistente es Claude Code.
 No aprendes comandos nuevos. Hablas con Claude como siempre: "nueva tarea…",
 "apárcala", "¿en qué estábamos?".
 
-Es gratis y de código abierto (MIT). También es beta: una versión todavía en pruebas, aunque lo
-que tienes sigue funcionando de una versión a otra. Lo que todavía no sabe hacer está en
+Es gratis y de código abierto (MIT), y estable desde la 1.0: lo que tienes sigue funcionando
+de una versión a otra hasta la 2.0 ([Lo que no cambia](compatibility.md)). Lo que todavía no sabe hacer está en
 [Limitaciones conocidas](limitations.md).
 
 Esta guía es para empezar de cero, aunque nunca hayas abierto una terminal. Son unos diez

@@ -134,7 +134,7 @@ More in [The guard](guard.md).
 
 ## Tested by few people
 
-augmented brain is beta. One person has used it every day on Ubuntu, and tried it on
-Windows 11; on macOS it is tested in CI only. Every version so far has kept what you
-have working, and from 1.0 on that is a promise (see
+augmented brain is young. One person has used it every day on Ubuntu, and tried it on
+Windows 11; on macOS it is tested in CI only. Every version has kept what you have
+working, and since 1.0 that is a promise (see
 [What stays stable](compatibility.md)). Back up anything important.

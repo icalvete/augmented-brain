@@ -18,8 +18,8 @@ assistant is Claude Code.
 You do not learn new commands. You talk to Claude as usual: "new task…", "park it",
 "where were we?".
 
-It is free and open source (MIT). It is also beta: a version still being tested, though what you
-have keeps working from one version to the next. What it cannot do yet is in
+It is free and open source (MIT), and stable since 1.0: what you have keeps working from one
+version to the next until 2.0 ([What stays stable](compatibility.md)). What it cannot do yet is in
 [Known limitations](limitations.md).
 
 This guide is for starting from scratch, even if you have never opened a terminal. It
