@@ -2,15 +2,14 @@
 
 [Leer en español](#aviso-legal)
 
-**augmented brain is beta software.** It is still being tested and may have bugs. A
-person uses it every day on Ubuntu and has tried it on Windows 11; on macOS it is tested
+**augmented brain is young software.** It is tested, but by few people, and may have
+bugs. A person uses it every day on Ubuntu and has tried it on Windows 11; on macOS it is tested
 in CI only. Back up anything important before you rely on it.
 
-- **What you have keeps working, and from 1.0 on that is a promise.** When a version
+- **What you have keeps working, and since 1.0 that is a promise.** When a version
   changes how notes or settings are kept, it brings the step that moves yours forward,
   and runs it by itself after a full copy. A command, setting or tool that changes name
-  keeps working under the old one and says what replaced it. The betas (0.x) already
-  work this way, but it is not a promise yet. What every 1.x keeps is in
+  keeps working under the old one and says what replaced it. What every 1.x keeps is in
   [What stays stable](https://icalvete.github.io/augmented-brain/guide/compatibility.html).
   What it still cannot do is in
   [Known limitations](https://icalvete.github.io/augmented-brain/guide/limitations.html).
@@ -39,16 +38,15 @@ in CI only. Back up anything important before you rely on it.
 
 ## Aviso legal
 
-**augmented brain es software en fase beta.** Todavía está en pruebas y puede tener
-errores. Una persona lo usa a diario en Ubuntu y lo ha probado en Windows 11; en macOS
+**augmented brain es software joven.** Está probado, pero por poca gente, y puede
+tener errores. Una persona lo usa a diario en Ubuntu y lo ha probado en Windows 11; en macOS
 solo se prueba en la CI. Haz copia de lo importante antes de confiar en él.
 
 - **Lo que tienes sigue funcionando, y desde la 1.0 es una promesa.** Cuando una versión
   cambia cómo se guardan las notas o la configuración, trae el paso que pone al día las
   tuyas, y lo da sola después de una copia completa. Un comando, un ajuste o una
   herramienta que cambia de nombre sigue funcionando con el viejo y dice cuál lo
-  sustituye. Las betas (0.x) ya funcionan así, pero todavía no es una promesa. Lo que
-  mantiene toda 1.x está en
+  sustituye. Lo que mantiene toda 1.x está en
   [Lo que no cambia](https://icalvete.github.io/augmented-brain/guide/compatibility.es.html).
   Lo que todavía no sabe hacer está en
   [Limitaciones conocidas](https://icalvete.github.io/augmented-brain/guide/limitations.es.html).

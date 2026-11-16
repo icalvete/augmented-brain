@@ -139,7 +139,7 @@ Más en [El guardia](guard.es.md).
 
 ## Probado por poca gente
 
-augmented brain está en beta. Una persona lo usa a diario en Ubuntu, y lo ha probado en
-Windows 11; en macOS solo se prueba en la CI. Hasta ahora, cada versión ha mantenido
-funcionando lo que tienes, y desde la 1.0 será una promesa (mira
+augmented brain es joven. Una persona lo usa a diario en Ubuntu, y lo ha probado en
+Windows 11; en macOS solo se prueba en la CI. Cada versión ha mantenido funcionando lo
+que tienes, y desde la 1.0 es una promesa (mira
 [Lo que no cambia](compatibility.es.md)). Haz copia de lo importante.

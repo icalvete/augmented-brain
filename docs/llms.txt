@@ -78,5 +78,5 @@ The documentation, as web pages: https://icalvete.github.io/augmented-brain/guid
 ## Optional
 
 - [Changelog](https://raw.githubusercontent.com/icalvete/augmented-brain/main/CHANGELOG.md): what changed in each version
-- [Disclaimer](https://raw.githubusercontent.com/icalvete/augmented-brain/main/DISCLAIMER.md): beta software, no warranty, not affiliated with Anthropic
+- [Disclaimer](https://raw.githubusercontent.com/icalvete/augmented-brain/main/DISCLAIMER.md): young software, no warranty, not affiliated with Anthropic
 - [Handbook for coding agents](https://raw.githubusercontent.com/icalvete/augmented-brain/main/AGENTS.md): how to build, test and change the code

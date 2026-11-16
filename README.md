@@ -18,12 +18,14 @@ All in plain text files of yours, backed up to your own git.</p>
 
 <p align="center"><a href="https://github.com/sponsors/icalvete"><img alt="Sponsor" src="https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white"></a></p>
 
-> [!WARNING]
-> **Beta.** This version is still being tested: it may have bugs. Tested by a person on Ubuntu,
-> macOS and Windows 11. What you have keeps working: each version that changes the
-> format brings the step that moves your notes forward. Read the [disclaimer](DISCLAIMER.md)
-> and the [known limitations](https://icalvete.github.io/augmented-brain/guide/limitations.html)
-> before you use it, and back up anything important.
+> [!NOTE]
+> **1.0, stable.** What you have keeps working until 2.0: each version that changes the
+> format brings the step that moves your notes forward
+> ([what stays stable](https://icalvete.github.io/augmented-brain/guide/compatibility.html)).
+> Tested by one person on Ubuntu, macOS and Windows 11, so read the
+> [disclaimer](DISCLAIMER.md) and the
+> [known limitations](https://icalvete.github.io/augmented-brain/guide/limitations.html),
+> and back up anything important.
 
 ---
 
