@@ -303,6 +303,7 @@ func cmdDoctor(out, errOut io.Writer) int {
 // cmdMCP serves the tools over stdin and stdout. The assistant starts it in the folder
 // it works in, which selects the space; the space is resolved again on every call.
 func cmdMCP(errOut io.Writer) int {
+	tasksOnly := os.Getenv("AB_MCP_TASKS_ONLY") == "1"
 	open := func() (*brain.Brain, error) {
 		dir, err := config.Dir()
 		if err != nil {
@@ -325,6 +326,9 @@ func cmdMCP(errOut io.Writer) int {
 			return nil, errors.New(i18n.T(c.Language, "mcp.outside", wd, strings.Join(c.SpaceNames(), ", ")))
 		}
 		s, _ := c.SpaceAt(wd)
+		if tasksOnly {
+			s = c.SpaceOf(wd) // no default space; its notes folder counts
+		}
 		if s == nil {
 			return nil, errors.New(i18n.T(c.Language, "mcp.nospace", wd, strings.Join(c.SpaceNames(), ", ")))
 		}
@@ -336,7 +340,12 @@ func cmdMCP(errOut io.Writer) int {
 		lockFile = filepath.Join(dir, backup.NotesLock)
 		// Noted, so a newer program can tell which sessions still run this one.
 		defer state.RegisterServer(dir, version.Version)()
-		opts = append(opts, mcpserver.WithFresh(dir, fresh.ServerKey(os.Getenv, os.Getppid())))
+		if !tasksOnly {
+			opts = append(opts, mcpserver.WithFresh(dir, fresh.ServerKey(os.Getenv, os.Getppid())))
+		}
+	}
+	if tasksOnly {
+		opts = append(opts, mcpserver.WithTasksOnly())
 	}
 	if err := mcpserver.New(open, lockFile, opts...).Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		fmt.Fprintln(errOut, err)

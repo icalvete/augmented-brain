@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
+	"slices"
 	"strings"
 	"time"
 
@@ -93,6 +95,7 @@ type Option func(*options)
 
 type options struct {
 	freshDir, freshKey string
+	tasksOnly          bool
 }
 
 // WithFresh has every tool that holds the notes lock tell the session which tasks
@@ -101,6 +104,23 @@ type options struct {
 // names the session whose active task the tools change (brain.Touched).
 func WithFresh(cfgDir, key string) Option {
 	return func(o *options) { o.freshDir, o.freshKey = cfgDir, key }
+}
+
+// TasksOnlyTools are the tools WithTasksOnly keeps: enough to carry a task through
+// its phases in the space of the folder, and nothing that changes the rules, the
+// profile, the guard's lists, the backup or another space.
+var TasksOnlyTools = []string{"where_am_i", "pending", "task_new", "task_get", "task_park",
+	"task_journal", "task_update", "task_step", "task_section"}
+
+// WithTasksOnly limits the server to TasksOnlyTools, in the space of the folder only:
+// a call that names another space is refused. The Codex integration uses it.
+func WithTasksOnly() Option {
+	return func(o *options) { o.tasksOnly = true }
+}
+
+type toolServer struct {
+	*mcp.Server
+	tasksOnly bool
 }
 
 // New builds the server with every tool. lockFile, when not empty, is shared by every
@@ -154,8 +174,15 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		}
 		return b, release, nil
 	}
-	s := mcp.NewServer(&mcp.Implementation{Name: "augmented-brain", Version: version.Version},
-		&mcp.ServerOptions{Instructions: Instructions})
+	instructions := Instructions
+	if o.tasksOnly {
+		instructions = "Use these tools to work with tasks in the current augmented brain space. The task notes are shared across clients."
+	}
+	s := &toolServer{
+		Server: mcp.NewServer(&mcp.Implementation{Name: "augmented-brain", Version: version.Version},
+			&mcp.ServerOptions{Instructions: instructions}),
+		tasksOnly: o.tasksOnly,
+	}
 
 	tool(s, locked, "where_am_i", "Which space this session works in, its memory folder, its areas and how many tasks are live.",
 		func(b *brain.Brain, _ struct{}) (string, error) {
@@ -742,7 +769,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			return recoverSession(b, in.SessionID, time.Now())
 		})
 
-	return s
+	return s.Server
 }
 
 // recoverSession returns the conversation of an earlier session that never ended,
@@ -777,21 +804,43 @@ func recoverSession(b *brain.Brain, id string, now time.Time) (string, error) {
 // tool registers a handler that receives the brain of the current space, opened afresh
 // for every call, and returns text for the assistant. Errors come back as tool errors,
 // which the assistant reads and can act on.
-func tool[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.Brain, In) (string, error)) {
+func tool[In any](s *toolServer, open opener, name, desc string, h func(*brain.Brain, In) (string, error)) {
 	toolThen(s, open, name, desc, func(b *brain.Brain, in In) (string, then, error) {
 		text, err := h(b, in)
 		return text, nil, err
 	})
 }
 
+// namedSpace is the space a tool's input names (its Space field), or "".
+func namedSpace(in any) string {
+	v := reflect.ValueOf(in)
+	if v.Kind() == reflect.Pointer {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return ""
+	}
+	if f := v.FieldByName("Space"); f.IsValid() && f.Kind() == reflect.String {
+		return f.String()
+	}
+	return ""
+}
+
 // toolThen is tool for a handler that has work to do once the notes are released
 // (then); it runs only when the handler did not fail.
-func toolThen[In any](s *mcp.Server, open opener, name, desc string, h func(*brain.Brain, In) (string, then, error)) {
-	mcp.AddTool(s, &mcp.Tool{Name: name, Description: desc},
+func toolThen[In any](s *toolServer, open opener, name, desc string, h func(*brain.Brain, In) (string, then, error)) {
+	if s.tasksOnly && !slices.Contains(TasksOnlyTools, name) {
+		return
+	}
+	mcp.AddTool(s.Server, &mcp.Tool{Name: name, Description: desc},
 		func(_ context.Context, _ *mcp.CallToolRequest, in In) (*mcp.CallToolResult, any, error) {
 			b, release, err := open()
 			if err != nil {
 				return nil, nil, err
+			}
+			if s.tasksOnly && namedSpace(in) != "" {
+				release()
+				return nil, nil, errors.New(i18n.T(b.Language, "mcp.tasks-only.space"))
 			}
 			released := false
 			defer func() {

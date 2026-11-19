@@ -362,21 +362,35 @@ func (c *Config) SpaceFor(dir string) *Space {
 	return best
 }
 
-// InSpace says whether dir is inside a space: one of its work folders or its notes.
-func (c *Config) InSpace(dir string) bool {
-	if c.SpaceFor(dir) != nil {
-		return true
-	}
+// SpaceOf returns the space whose work folder or notes folder contains dir, the deepest
+// one when folders are nested, or nil. Unlike SpaceFor, a session opened in a space's
+// notes belongs to that space: the Codex integration, which has no default space,
+// needs it.
+func (c *Config) SpaceOf(dir string) *Space {
 	d, err := absPath(dir)
 	if err != nil {
-		return false
+		return nil
 	}
-	for _, s := range c.Spaces {
-		if s.Memory != "" && paths.Within(d, s.Memory) {
-			return true
+	var best *Space
+	bestLen := -1
+	for _, name := range c.SpaceNames() {
+		s := c.Spaces[name]
+		folders := s.WorkFolders
+		if s.Memory != "" {
+			folders = append(append([]string{}, folders...), s.Memory)
+		}
+		for _, f := range folders {
+			if paths.Within(d, f) && len(f) > bestLen {
+				best, bestLen = s, len(f)
+			}
 		}
 	}
-	return false
+	return best
+}
+
+// InSpace says whether dir is inside a space: one of its work folders or its notes.
+func (c *Config) InSpace(dir string) bool {
+	return c.SpaceOf(dir) != nil
 }
 
 // SpaceDirs are the folders of every space: work folders and notes.
