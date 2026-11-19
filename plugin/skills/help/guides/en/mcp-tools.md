@@ -40,7 +40,8 @@ A few things hold for every tool:
   [`rule_new`](#rule_new), [`note_retire`](#note_retire), [`person_save`](#person_save),
   [`repo_describe`](#repo_describe).
 - **You and this machine**: [`profile_save`](#profile_save),
-  [`safety_save`](#safety_save), [`secret_name_save`](#secret_name_save),
+  [`safety_save`](#safety_save), [`root_exception_save`](#root_exception_save),
+  [`secret_name_save`](#secret_name_save),
   [`backup_setup`](#backup_setup), [`session_recover`](#session_recover).
 
 ## `where_am_i`
@@ -446,6 +447,30 @@ the lists first, they still wait for you to accept them (see
   asks before commands that use them.
 - `untouchable_hosts` (optional): machines not to touch without asking, as you type them
   for ssh.
+
+## `root_exception_save`
+
+**You say:** "give yourself root on `db01` until Friday, for the database upgrade."
+
+Adds a temporary root exception for one machine: until its date, the guard asks you
+about each command as root there (`sudo`, also through ssh) instead of stopping it.
+After the date, root is stopped again by itself. It is kept in `root_ask` in
+`config.toml` and holds on this whole machine, in every space (see
+[Root on one machine, for a while](guard.md#root-on-one-machine-for-a-while)).
+
+Claude Code always asks you before it is saved, whatever
+[`memory_trust`](configuration.md#sessiontoml) says, showing the machine, the date and
+what it is for. A session that skips permission questions is refused. Taking an
+exception out only makes the guard stricter, so it is not asked about. Either way,
+Claude Code tells you after the next answer.
+
+- `host`: the machine, as you type it for ssh (`db01`, `ubuntu@10.0.0.5`), or this
+  computer's own name.
+- `until` (to add): when it ends, in UTC. A day (`2026-11-30`, which lasts to its end)
+  or a time (`2026-11-30T18:00Z`). Not past, and 30 days ahead at most. A machine has
+  one exception: adding it again changes its date.
+- `why` (optional): what it is for, in a few words. You read it in the question.
+- `remove` (optional): `true` to take the machine's exception out instead.
 
 ## `secret_name_save`
 

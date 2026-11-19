@@ -153,7 +153,11 @@ a pedírtelas.
 ## Root en una máquina, durante un tiempo
 
 A veces Claude necesita de verdad ser root en una máquina, para una migración, por
-ejemplo. Añade una excepción con fecha de fin en la configuración:
+ejemplo. Lo más rápido es pedírselo a Claude en una sesión: «date root en db01 hasta el
+viernes». Usa la herramienta `root_exception_save`, y Claude Code siempre te pregunta
+antes, con la máquina, la fecha y para qué es. Di que sí solo si lo has pedido tú. Vale
+también desde una sesión que sigues en otro dispositivo. También puedes escribir la
+excepción, con su fecha de fin, en la configuración:
 
 ```toml
 root_ask = ["db01 until 2026-12-31"]
@@ -164,9 +168,16 @@ ejecuta se sigue mirando. Pasada la fecha, root vuelve a pararse solo, y
 `augmented-brain doctor` te dice que puedes quitar la línea. La fecha es obligatoria, así
 que ninguna excepción se queda olvidada.
 
-También puedes añadirla en la página **Guardia** del panel. Te pide escribir otra vez el
-nombre de la máquina y te recuerda que hasta esa fecha Claude podrá lanzar comandos como
-root allí, después de que confirmes cada uno. Pon una fecha cercana.
+También puedes añadirla en la página **Guardia** del panel, en este ordenador (desde otro
+dispositivo la página solo enseña). Te pide escribir otra vez el nombre de la máquina y
+te recuerda que hasta esa fecha Claude podrá lanzar comandos como root allí, después de
+que confirmes cada uno.
+
+Por cualquiera de los dos caminos, la fecha no puede haber pasado y queda como mucho a 30
+días: ponla cercana, y vuelve a añadir la excepción si el trabajo se alarga. Una máquina
+tiene una sola excepción: añadirla otra vez cambia su fecha. Para quitarla, pídeselo a
+Claude o usa el panel. Claude Code te avisa, después de la siguiente respuesta, de cada
+excepción que Claude añada o quite.
 
 ## Preguntar antes de que Claude guarde una regla
 

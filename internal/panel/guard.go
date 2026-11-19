@@ -419,7 +419,8 @@ func (s *Server) guardList(v *view, r *http.Request) (string, error) {
 }
 
 // guardRootAsk adds a root exception or removes one. Adding asks for the machine's name
-// typed again, and checks the date reads: "<host> until <date>".
+// typed again, and checks the date as root_exception_save does (config.NewRootAsk): it
+// reads, has not passed and ends within config.RootAskMaxDays.
 func (s *Server) guardRootAsk(v *view, r *http.Request) (string, error) {
 	err := v.sealed(func(*config.Guard) error {
 		cur := v.c.RootAsk
@@ -435,13 +436,23 @@ func (s *Server) guardRootAsk(v *view, r *http.Request) (string, error) {
 			if field(r, "confirm") != host {
 				return &fieldError{"confirm", errors.New(v.t("guard.err.typename", host))}
 			}
-			entry := host + " until " + until
-			if _, err := config.ParseRootAsk(v.lang, entry); err != nil {
+			entry, ra, err := config.NewRootAsk(v.lang, host, until, time.Now())
+			if err != nil {
 				return &fieldError{"until", err}
 			}
-			if !slices.Contains(cur, entry) {
-				cur = append(slices.Clone(cur), entry)
+			// One exception a machine, as root_exception_save keeps them: a new
+			// date replaces the old one.
+			var out []string
+			for _, e := range cur {
+				if old, err := config.ParseRootAsk(v.lang, e); err == nil && strings.EqualFold(old.Host, ra.Host) && e != entry {
+					continue
+				}
+				out = append(out, e)
 			}
+			if !slices.Contains(out, entry) {
+				out = append(out, entry)
+			}
+			cur = out
 		case "remove":
 			out, ok := without(cur, field(r, "value"))
 			if !ok {

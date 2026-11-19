@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/confighistory"
@@ -85,11 +86,20 @@ func TestGuardPageEditsTheLists(t *testing.T) {
 	if w := s.post(t, "/guard/root", url.Values{"s": {"work"}, "op": {"add"}, "host": {"m1"}, "until": {"someday"}, "confirm": {"m1"}}); w.Code != http.StatusBadRequest {
 		t.Errorf("root with a bad date: %d", w.Code)
 	}
-	redirected(s.post(t, "/guard/root", url.Values{"s": {"work"}, "op": {"add"}, "host": {"m1"}, "until": {"2099-01-01"}, "confirm": {"m1"}}), "add root")
-	if c, _ = config.Load(cfg); len(c.RootAsk) != 1 || c.RootAsk[0] != "m1 until 2099-01-01" {
+	// and a date that has not passed and ends within 30 days, as root_exception_save
+	for _, until := range []string{"2020-01-01", "2099-01-01"} {
+		if w := s.post(t, "/guard/root", url.Values{"s": {"work"}, "op": {"add"}, "host": {"m1"}, "until": {until}, "confirm": {"m1"}}); w.Code != http.StatusBadRequest {
+			t.Errorf("root until %s: %d", until, w.Code)
+		}
+	}
+	soon := time.Now().UTC().AddDate(0, 0, 2).Format("2006-01-02")
+	redirected(s.post(t, "/guard/root", url.Values{"s": {"work"}, "op": {"add"}, "host": {"m1"}, "until": {time.Now().UTC().AddDate(0, 0, 1).Format("2006-01-02")}, "confirm": {"m1"}}), "add root")
+	// The same machine again: its date is replaced.
+	redirected(s.post(t, "/guard/root", url.Values{"s": {"work"}, "op": {"add"}, "host": {"m1"}, "until": {soon}, "confirm": {"m1"}}), "add root again")
+	if c, _ = config.Load(cfg); len(c.RootAsk) != 1 || c.RootAsk[0] != "m1 until "+soon {
 		t.Errorf("root_ask: %v", c.RootAsk)
 	}
-	redirected(s.post(t, "/guard/root", url.Values{"s": {"work"}, "op": {"remove"}, "value": {"m1 until 2099-01-01"}}), "remove root")
+	redirected(s.post(t, "/guard/root", url.Values{"s": {"work"}, "op": {"remove"}, "value": {"m1 until " + soon}}), "remove root")
 	if c, _ = config.Load(cfg); len(c.RootAsk) != 0 {
 		t.Errorf("root_ask after removing: %v", c.RootAsk)
 	}
@@ -342,7 +352,7 @@ func TestGuardPageRemoteOnlyShows(t *testing.T) {
 		t.Fatalf("remote page: %d, no note: %.300s", w.Code, body)
 	}
 	// The repository by its folder's name: on Windows the page writes the path its own way.
-	for _, want := range []string{`core</code>`, "<code>db1</code>", "<code>opus</code>", "Save and tell me", "On the whole computer"} {
+	for _, want := range []string{`core</code>`, "<code>db1</code>", "<code>opus</code>", "Save and tell me", "On the whole computer", "ask the assistant in a session"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("the remote page does not show %q", want)
 		}
@@ -359,7 +369,7 @@ func TestGuardPageRemoteOnlyShows(t *testing.T) {
 	seal := readSeal(t, cfg)
 	for path, form := range map[string]url.Values{
 		"/guard/list":   {"list": {"hosts"}, "op": {"add"}, "value": {"db2"}},
-		"/guard/root":   {"op": {"add"}, "host": {"box"}, "until": {"2099-01-01"}, "confirm": {"box"}},
+		"/guard/root":   {"op": {"add"}, "host": {"box"}, "until": {time.Now().UTC().AddDate(0, 0, 1).Format("2006-01-02")}, "confirm": {"box"}},
 		"/guard/accept": {},
 		"/guard/model":  {"value": {"haiku"}},
 		"/guard/trust":  {"value": {"ask"}},

@@ -43,7 +43,8 @@ Hay cosas que valen para todas:
   [`rule_new`](#rule_new), [`note_retire`](#note_retire), [`person_save`](#person_save),
   [`repo_describe`](#repo_describe).
 - **Tú y esta máquina**: [`profile_save`](#profile_save),
-  [`safety_save`](#safety_save), [`secret_name_save`](#secret_name_save),
+  [`safety_save`](#safety_save), [`root_exception_save`](#root_exception_save),
+  [`secret_name_save`](#secret_name_save),
   [`backup_setup`](#backup_setup), [`session_recover`](#session_recover).
 
 ## `where_am_i`
@@ -459,6 +460,30 @@ ello. Si otra cosa había cambiado las listas antes, siguen esperando a que las 
   guardia pregunta antes de los comandos que los usan.
 - `untouchable_hosts` (opcional): máquinas que no se tocan sin preguntar, tal como las
   escribes para ssh.
+
+## `root_exception_save`
+
+**Dices:** "date root en `db01` hasta el viernes, para actualizar la base de datos".
+
+Añade una excepción temporal de root para una máquina: hasta su fecha, el guardia te
+pregunta por cada comando como root allí (`sudo`, también por ssh) en vez de pararlo.
+Pasada la fecha, root vuelve a pararse solo. Se guarda en `root_ask` de `config.toml` y
+vale en toda esta máquina, en todos los espacios (lo tienes en
+[Root en una máquina, durante un tiempo](guard.md#root-en-una-máquina-durante-un-tiempo)).
+
+Claude Code siempre te pregunta antes de guardarla, diga lo que diga
+[`memory_trust`](configuration.md#sessiontoml), con la máquina, la fecha y para qué
+es. En una sesión que se salta las preguntas de permiso, se rechaza. Quitar una excepción
+solo hace más estricto al guardia, así que no pregunta. En los dos casos, Claude Code te
+avisa después de la siguiente respuesta.
+
+- `host`: la máquina, tal como la escribes para ssh (`db01`, `ubuntu@10.0.0.5`), o el
+  nombre de este ordenador.
+- `until` (para añadir): cuándo acaba, en UTC. Un día (`2026-11-30`, que dura hasta que
+  acaba) o una hora (`2026-11-30T18:00Z`). No puede haber pasado y queda como mucho a 30
+  días. Una máquina tiene una sola excepción: añadirla otra vez cambia su fecha.
+- `why` (opcional): para qué es, en pocas palabras. Lo lees en la pregunta.
+- `remove` (opcional): `true` para quitar la excepción de la máquina.
 
 ## `secret_name_save`
 

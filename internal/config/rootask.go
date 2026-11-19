@@ -36,6 +36,29 @@ func ParseRootAsk(lang, entry string) (RootAsk, error) {
 	return RootAsk{}, errors.New(i18n.T(lang, "config.rootask.date", entry, date))
 }
 
+// RootAskMaxDays is how far ahead a new root exception may end: an exception is for a
+// job at hand, and one that lasts longer is written again when it ends.
+const RootAskMaxDays = 30
+
+// NewRootAsk checks a root exception about to be added, for host until the date until:
+// that it reads, that it has not ended and that it ends within RootAskMaxDays of now. It
+// returns the entry to write in root_ask. Entries already written are not held to this:
+// they are read as they are (ParseRootAsk).
+func NewRootAsk(lang, host, until string, now time.Time) (string, RootAsk, error) {
+	entry := strings.TrimSpace(host) + " until " + strings.TrimSpace(until)
+	r, err := ParseRootAsk(lang, entry)
+	if err != nil {
+		return "", RootAsk{}, err
+	}
+	if !r.Until.After(now) {
+		return "", RootAsk{}, errors.New(i18n.T(lang, "config.rootask.past", strings.TrimSpace(until)))
+	}
+	if r.Until.After(now.Add(RootAskMaxDays * 24 * time.Hour)) {
+		return "", RootAsk{}, errors.New(i18n.T(lang, "config.rootask.far", strings.TrimSpace(until), RootAskMaxDays))
+	}
+	return entry, r, nil
+}
+
 // RootExceptions returns the entries of root_ask that can be read, and those that
 // cannot (they grant nothing).
 func (c *Config) RootExceptions() (valid []RootAsk, unread []string) {

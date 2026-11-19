@@ -148,8 +148,12 @@ restore on a new machine, the next session offers to ask you for them again.
 
 ## Root on one machine, for a while
 
-Sometimes Claude really needs root on a machine, for a migration, say. Add an exception
-with an end date to the configuration:
+Sometimes Claude really needs root on a machine, for a migration, say. The quickest way
+is to ask Claude in a session: "give yourself root on db01 until Friday". It uses the
+`root_exception_save` tool, and Claude Code always asks you first, showing the machine,
+the date and what it is for. Say yes only if you asked for it. This works from a session
+you follow on another device too. You can also write the exception, with its end date,
+in the configuration:
 
 ```toml
 root_ask = ["db01 until 2026-12-31"]
@@ -160,9 +164,14 @@ it runs is still checked. After the date, root is stopped again by itself, and
 `augmented-brain doctor` says the line can go. The date is required, so no exception is
 left behind.
 
-You can also add it in the panel's **Guard** page. It asks you to type the machine's name
-again, and reminds you that until that date Claude may run commands as root there, after
-you confirm each one. Keep the date close.
+You can also add it in the panel's **Guard** page, on this computer (from another device
+the page only shows). It asks you to type the machine's name again, and reminds you that
+until that date Claude may run commands as root there, after you confirm each one.
+
+Either way, the date cannot have passed and is 30 days ahead at most: keep it close, and
+add the exception again if the work takes longer. A machine has one exception: adding it
+again changes its date. To take one out, ask Claude or use the panel. Claude Code tells
+you, after the next answer, every exception Claude added or took out.
 
 ## Asking before Claude saves a rule
 

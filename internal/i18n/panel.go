@@ -511,6 +511,10 @@ var panelMessages = map[string]msg{
 		en: "These entries cannot be read, so they grant nothing: %s",
 		es: "Estas entradas no se pueden leer, así que no conceden nada: %s",
 	},
+	"panel.guard.root.remote": {
+		en: "From another device this list only shows. To add an exception, ask the assistant in a session (it asks you to confirm), or use the panel on this computer.",
+		es: "Desde otro dispositivo esta lista solo se ve. Para añadir una excepción, pídesela al asistente en una sesión (te pide que confirmes), o usa el panel de este ordenador.",
+	},
 	"panel.guard.root.none": {
 		en: "No exception now.",
 		es: "Ahora no hay ninguna excepción.",
@@ -520,8 +524,8 @@ var panelMessages = map[string]msg{
 		es: "caducada",
 	},
 	"panel.guard.until": {
-		en: "Until (date, or date and time, UTC)",
-		es: "Hasta (fecha, o fecha y hora, UTC)",
+		en: "Until (date, or date and time, UTC; 30 days at most)",
+		es: "Hasta (fecha, o fecha y hora, UTC; 30 días como mucho)",
 	},
 	"panel.guard.typehost": {
 		en: "To confirm, type the machine's name again:",

@@ -247,7 +247,9 @@ Todas las listas a las que responde el guardia, en una página, para leerlas y c
   avisa de lo que permite y te pide marcar que lo entiendes.
 - **Excepciones de root**, con la fecha en que acaba cada una (las que ya acabaron se
   marcan). Añadir una avisa de lo que permite y te pide escribir otra vez el nombre de la
-  máquina.
+  máquina. La fecha no puede haber pasado y queda como mucho a 30 días. Desde otro
+  dispositivo, pídesela a Claude: la añade después de que confirmes (lo tienes en
+  [Root en una máquina, durante un tiempo](guard.es.md#root-en-una-máquina-durante-un-tiempo)).
 - **Perfiles de producción** y **máquinas intocables**.
 - **El modelo de tus sesiones** (`preferred_model` en `session.toml`): si una sesión
   responde con otro, Claude te lo dice. Debajo, lo que Claude Code dijo de su modelo en el

@@ -10,9 +10,10 @@ import (
 
 // memoryTools are the tools of this program's MCP server that save what every session
 // answers to: a rule, the profile, the guard's lists. With memory_trust = "ask" in
-// session.toml the user is asked before each one. The plugin's second PreToolUse
-// matcher names the same ones (a test compares them).
-var memoryTools = []string{"rule_new", "note_retire", "profile_save", "safety_save"}
+// session.toml the user is asked before each one. root_exception_save is asked about
+// whatever the level (rootDecision). The plugin's second PreToolUse matcher names the
+// same ones (a test compares them).
+var memoryTools = []string{"rule_new", "note_retire", "profile_save", "safety_save", "root_exception_save"}
 
 // memoryServer is how the name of this program's MCP server ends, as Claude Code
 // writes it in a tool's name: mcp__augmented-brain__rule_new when the server is added
@@ -50,6 +51,9 @@ func trustDecision(cfgDir, lang string, i input, tool string, noPrompt bool) (de
 	if cfgDir == "" {
 		return "", ""
 	}
+	if tool == "root_exception_save" {
+		return rootDecision(lang, i, noPrompt)
+	}
 	if s, err := config.LoadSession(cfgDir); err == nil && s.Trust() == config.TrustTell {
 		return "", ""
 	}
@@ -66,6 +70,28 @@ func trustDecision(cfgDir, lang string, i input, tool string, noPrompt bool) (de
 		return "deny", i18n.T(lang, "guard.trust.deny", what)
 	}
 	return "ask", i18n.T(lang, "guard.trust.ask", what)
+}
+
+// rootDecision is the answer to root_exception_save. Adding an exception loosens the
+// guard: the user is always asked, with what is about to be added, whatever
+// memory_trust says, and where the question may be skipped the call is refused. Taking
+// one out only makes the guard stricter and goes through.
+func rootDecision(lang string, i input, noPrompt bool) (decision, reason string) {
+	if remove, _ := i.ToolInput["remove"].(bool); remove {
+		return "", ""
+	}
+	text := func(key string) string {
+		v, _ := i.ToolInput[key].(string)
+		return strings.Join(strings.Fields(v), " ")
+	}
+	why := text("why")
+	if why == "" {
+		why = "-"
+	}
+	if noPrompt {
+		return "deny", i18n.T(lang, "guard.rootsave.deny", text("host"), text("until"))
+	}
+	return "ask", i18n.T(lang, "guard.rootsave.ask", text("host"), text("until"), why)
 }
 
 // language is the configuration's language when it loads, the system's when not.

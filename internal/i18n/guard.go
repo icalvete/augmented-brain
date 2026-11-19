@@ -371,6 +371,19 @@ var guardMessages = map[string]msg{
 		en: "changes your profile",
 		es: "cambia tu perfil",
 	},
+	// The machine, the date it ends, and what it is for as the assistant says it.
+	"guard.rootsave.ask": {
+		en: "the assistant wants to add a root exception: on %s, until %s (UTC). Until then, on that machine, it may run commands as root, the most powerful user, after you confirm each one. What for, in its words: %s. Say yes only if you asked for it.",
+		es: "el asistente quiere añadir una excepción de root: en %s, hasta %s (UTC). Hasta entonces, en esa máquina, podrá lanzar comandos como root, el usuario con más poder, después de que confirmes cada uno. Para qué, en sus palabras: %s. Di que sí solo si lo has pedido tú.",
+	},
+	"guard.rootsave.deny": {
+		en: "adding a root exception (on %s, until %s) always asks the user, and this session skips permission questions, so nothing was saved. Tell the user: they can add it from a session that asks, or in the panel's Guard page on this computer.",
+		es: "añadir una excepción de root (en %s, hasta %s) siempre pregunta al usuario, y esta sesión se salta las preguntas de permiso, así que no se ha guardado nada. Díselo al usuario: puede añadirla desde una sesión que pregunte, o en la página Guardia del panel de este ordenador.",
+	},
+	"guard.trust.what.root_exception_save": {
+		en: "adds a root exception",
+		es: "añade una excepción de root",
+	},
 	"guard.trust.what.safety_save": {
 		en: "adds to the guard's lists",
 		es: "añade a las listas del guardia",
