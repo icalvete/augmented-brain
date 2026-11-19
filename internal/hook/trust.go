@@ -19,6 +19,10 @@ var memoryTools = []string{"rule_new", "note_retire", "profile_save", "safety_sa
 // by hand, mcp__plugin_brain_augmented-brain__rule_new through the plugin.
 const memoryServer = "augmented-brain"
 
+// memoryServerCodex is the same name as Codex writes it: it turns the hyphen into an
+// underscore (mcp__augmented_brain__rule_new, measured with Codex CLI 0.170.0).
+const memoryServerCodex = "augmented_brain"
+
 // memoryTool is which of memoryTools a tool's name is, or "".
 func memoryTool(name string) string {
 	rest, ok := strings.CutPrefix(name, "mcp__")
@@ -26,7 +30,7 @@ func memoryTool(name string) string {
 		return ""
 	}
 	at := strings.LastIndex(rest, "__")
-	if at < 0 || !strings.HasSuffix(rest[:at], memoryServer) {
+	if at < 0 || !strings.HasSuffix(rest[:at], memoryServer) && !strings.HasSuffix(rest[:at], memoryServerCodex) {
 		return ""
 	}
 	for _, t := range memoryTools {
@@ -40,9 +44,9 @@ func memoryTool(name string) string {
 // trustDecision is the answer to a call of one of memoryTools: nothing with
 // memory_trust = "tell" (the tool saves and the user is told afterwards), a question
 // with "ask". A session.toml that cannot be read asks too: the level is unknown.
-// Where Claude Code may skip the question (bypassPermissions) the call is refused,
+// Where the question may be skipped (bypassPermissions, Codex) the call is refused,
 // as everything else that must not go without the user's yes.
-func trustDecision(cfgDir, lang string, i input, tool string) (decision, reason string) {
+func trustDecision(cfgDir, lang string, i input, tool string, noPrompt bool) (decision, reason string) {
 	if cfgDir == "" {
 		return "", ""
 	}
@@ -58,7 +62,7 @@ func trustDecision(cfgDir, lang string, i input, tool string) (decision, reason 
 		}
 	}
 	what := i18n.T(lang, "guard.trust.what."+tool)
-	if i.PermissionMode == "bypassPermissions" {
+	if noPrompt {
 		return "deny", i18n.T(lang, "guard.trust.deny", what)
 	}
 	return "ask", i18n.T(lang, "guard.trust.ask", what)
