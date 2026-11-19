@@ -240,7 +240,7 @@ def check_memory(ab, codex, claude, root, work, env):
         require(expected in output, f"task_{step} did not return {expected!r}: {output[:1200]}")
         if step == "get":
             require(TASK in initial and NEXT in initial, "The task did not reach a new session's context")
-            require("## In Codex" in initial and "command guard does not run here" in initial,
+            require("## In Codex" in initial and "command guard runs here only if" in initial,
                     "Codex did not receive the note on what differs there")
             require(RULE_END in initial and "truncated" not in initial,
                     "A part of the Codex start was cut: the long rule did not arrive whole")

@@ -6,8 +6,10 @@ take a task through its phases. The notes stay as they are; each client keeps
 its own conversation. Claude Code is still the main client: nothing here
 changes how its plugin works.
 
-Experimental and wired by hand for now. A command to set it up, and the
-guard in Codex, are separate pieces of work.
+Experimental and wired by hand for now. A command to set it up is a separate
+piece of work. The guard in Codex is `hook pre-tool-use codex`, registered by
+hand: see the guide (`docs/guide/guard.md`, "In Codex") and
+`scripts/codex-guard-check.py`.
 
 ## What there is
 
@@ -17,8 +19,9 @@ guard in Codex, are separate pieces of work.
   alone: a work folder or the notes folder (`Config.SpaceOf`), never the
   default space. Part 1 adds a note on what differs from the rules, which are
   written for Claude Code: the guard, the tools there are, no SendMessage
-  (`i18n/codex.go`; the guard's sentence is its own key, `codex.guard`, the
-  one place to change when the guard runs in Codex).
+  (`i18n/codex.go`; the guard's sentence is its own key, `codex.guard`: the
+  guard runs only if the user registered `hook pre-tool-use codex`, and then
+  it refuses what it would ask).
 - **Tools** — `AB_MCP_TASKS_ONLY=1` in the MCP server's environment serves
   only `mcpserver.TasksOnlyTools`: where_am_i, pending, task_new, task_get,
   task_park, task_journal, task_update, task_step and task_section. A call
