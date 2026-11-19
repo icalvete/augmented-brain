@@ -162,6 +162,10 @@ var doctorMessages = map[string]msg{
 		en: "the plugin and the guard",
 		es: "el plugin y el guardia",
 	},
+	"doctor.part.codex": {
+		en: "Codex",
+		es: "Codex",
+	},
 	"doctor.part.remote": {
 		en: "remote access",
 		es: "el acceso remoto",

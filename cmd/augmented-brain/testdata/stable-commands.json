@@ -9,6 +9,9 @@
   "clean": [
     "yes"
   ],
+  "codex install": [],
+  "codex status": [],
+  "codex uninstall": [],
   "config history": [],
   "config restore": [],
   "doctor": [],

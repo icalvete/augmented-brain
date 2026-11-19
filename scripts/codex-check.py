@@ -240,7 +240,7 @@ def check_memory(ab, codex, claude, root, work, env):
         require(expected in output, f"task_{step} did not return {expected!r}: {output[:1200]}")
         if step == "get":
             require(TASK in initial and NEXT in initial, "The task did not reach a new session's context")
-            require("## In Codex" in initial and "command guard runs here only if" in initial,
+            require("## In Codex" in initial and "command guard runs here when" in initial,
                     "Codex did not receive the note on what differs there")
             require(RULE_END in initial and "truncated" not in initial,
                     "A part of the Codex start was cut: the long rule did not arrive whole")
@@ -334,6 +334,68 @@ print(json.dumps({"hookSpecificOutput": {"hookEventName": event, **fields}}))
         print(f"OK  {case}: " + ("blocked" if blocked else "not blocked by the hook"))
 
 
+def check_install(ab, codex, root, work, env):
+    """augmented-brain codex install in a fresh CODEX_HOME, then Codex with hook trust as a
+    user has it (no bypass): the start, the task tools and the guard come from the plugin."""
+    home = root / "codex-install"
+    home.mkdir()
+    (home / "config.toml").write_text('# the user\'s own comment\n[hooks.state."elsewhere:x"]\ntrusted_hash = "sha256:theirs"\n',
+                                      encoding="utf-8")
+    cenv = {**env, "CODEX_HOME": str(home), "AB_LANGUAGE": "en"}
+
+    def ab_codex(*args):
+        result = subprocess.run([str(ab), "codex", *args], cwd=root, env=cenv, stdin=subprocess.DEVNULL,
+                                text=True, capture_output=True, timeout=120)
+        return result.returncode, result.stdout + result.stderr
+
+    for attempt in (1, 2):
+        code, out = ab_codex("install")
+        require(code == 0, f"codex install ({attempt}) failed: {out[-2000:]}")
+    code, out = ab_codex("status")
+    require(code == 0 and "trusted hooks" in out, f"codex status after install: {out[-1500:]}")
+    installed = (home / "config.toml").read_text(encoding="utf-8")
+    require("the user's own comment" in installed and "sha256:theirs" in installed,
+            "codex install lost what the user had in config.toml")
+
+    def turn(call):
+        with scripted_model(call) as model:
+            (home / "config.toml").write_text(f"""model = "{MODEL}"
+model_provider = "probe"
+approval_policy = "never"
+sandbox_mode = "read-only"
+{installed}
+[model_providers.probe]
+name = "Local fixture"
+base_url = "http://127.0.0.1:{model.server_port}/v1"
+wire_api = "responses"
+request_max_retries = 0
+stream_max_retries = 0
+""", encoding="utf-8")
+            result = subprocess.run([codex, "exec", "--json", "--skip-git-repo-check", "Run the scripted probe."],
+                                    cwd=work, env=cenv, stdin=subprocess.DEVNULL, text=True,
+                                    capture_output=True, timeout=40)
+            require(result.returncode == 0 and len(model.requests) == 2,
+                    f"Codex turn failed ({result.returncode}): {result.stderr[-2000:]}")
+            outputs = [item["output"] for item in model.requests[1]["input"]
+                       if item.get("type") == "function_call_output"]
+            return json.dumps(model.requests[0]["input"], ensure_ascii=False), json.dumps(outputs, ensure_ascii=False)
+
+    initial, output = turn(("mcp__augmented_brain.where_am_i", {}))
+    require("space: lab" in output, f"The plugin's MCP server did not answer: {output[:1200]}")
+    require("## In Codex" in initial and RULE_END in initial and "truncated" not in initial,
+            "The plugin's start did not arrive whole")
+    _, output = turn(("exec_command", {"cmd": "sudo id"}))
+    require("blocked" in output.lower() and "root" in output, f"The plugin's guard did not stop sudo: {output[:1200]}")
+    (home / "config.toml").write_text(installed, encoding="utf-8")
+    for attempt in (1, 2):
+        code, out = ab_codex("uninstall")
+        require(code == 0, f"codex uninstall ({attempt}) failed: {out[-2000:]}")
+    left = (home / "config.toml").read_text(encoding="utf-8")
+    require("brain@augmented-brain" not in left and "sha256:theirs" in left and "the user's own comment" in left,
+            f"codex uninstall left augmented brain's trust, or took the user's: {left}")
+    print("OK  codex install (twice) set up Codex: start, task tools and guard ran with real hook trust; uninstall (twice) left only what the user had")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("augmented_brain", type=Path)
@@ -361,6 +423,7 @@ def main():
         check_memory(ab, codex, claude, root, work, env)
         check_spaces(ab, codex, root, work, env)
         check_hooks(codex, root, work, env)
+        check_install(ab, codex, root, work, env)
 
 
 if __name__ == "__main__":

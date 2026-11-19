@@ -107,6 +107,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Correcting, moving and removing steps (`task_step` `edit`, `remove`, `move_to`); a task's title; taking out or moving a watch date (`task_update` `title`, `watch_drop`) | `internal/brain` `TestChangeStep`, `TestMoveStepKeepsOtherLines`, `TestUpdateTitleAndWatchDrop`; `TestFixThroughTools` |
 | Every tool and parameter documented | `TestToolsDocumented` |
 | Codex: the start in nine parts measured in bytes, from a work or notes folder, without what only Claude Code has; the tasks-only MCP tools and their refusal of another space; a task handed between sessions and clients; how Codex treats a hook's decisions | `internal/hook` `TestCodexStart`; `internal/session` `TestCodexParts`; `internal/mcpserver` `TestTasksOnlyTools`; `internal/config` `TestSpaceOf`; `scripts/codex-check.py` (real Codex and Claude Code CLIs, scripted local models; by hand, see [Codex integration](../dev/codex-integration.md)) |
+| `codex install`, `uninstall`, `status`; doctor's Codex line; `update --plugin` trusting the hooks again | `internal/codex` `TestInstallTrustsAndRepeats`, `TestNewVersionIsSeenAndInstallFixesIt`, `TestUninstallLeavesTheRest`, `TestInstallFailsLoudly`, `TestHooks` (a fake Codex); `internal/doctor` `TestCodexChecks`; `scripts/codex-check.py` `check_install` with a real Codex CLI (on 19-nov, 0.170.0). Windows, the interactive Codex and its desktop app: not tried |
 
 ## The panel
 

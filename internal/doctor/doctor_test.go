@@ -4,10 +4,12 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/codex"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/setup"
@@ -491,5 +493,41 @@ func TestDoctorStopsWaitingForClaudeCode(t *testing.T) {
 	}
 	if c := find(checks, "the plugin and the guard not checked"); c == nil || c.Status != Warning || c.Fix == "" {
 		t.Fatalf("no line about the plugin left unchecked: %+v", checks)
+	}
+}
+
+func TestCodexChecks(t *testing.T) {
+	c := &config.Config{Language: "en"}
+	full := codex.Status{Installed: true, Hooks: codex.HookCount, Trusted: codex.HookCount, TTYOff: true}
+	for _, tc := range []struct {
+		name string
+		st   codex.Status
+		want []Status
+		has  string
+	}{
+		{"ok", full, []Status{OK}, "trusted"},
+		{"not installed", codex.Status{TTYOff: true}, []Status{Info}, "codex install"},
+		{"cannot ask", codex.Status{Err: errors.New("boom")}, []Status{Warning}, "boom"},
+		{"new version", codex.Status{Installed: true, Hooks: codex.HookCount, Trusted: 0, Modified: true, TTYOff: true}, []Status{Failed}, "changed"},
+		{"terminal on", codex.Status{Installed: true, Hooks: codex.HookCount, Trusted: codex.HookCount}, []Status{Failed}, "unified_exec_tty"},
+		{"half trusted, terminal on", codex.Status{Installed: true, Hooks: codex.HookCount, Trusted: 3}, []Status{Failed, Failed}, "3 of"},
+	} {
+		got := codexChecks(Env{Codex: func() codex.Status { return tc.st }}, c)
+		var statuses []Status
+		text := ""
+		for _, ch := range got {
+			statuses = append(statuses, ch.Status)
+			text += ch.What + "\n"
+			if ch.Status == Failed && ch.Fix != codex.Fix {
+				t.Errorf("%s: fix %q, want %q", tc.name, ch.Fix, codex.Fix)
+			}
+		}
+		if !slices.Equal(statuses, tc.want) || !strings.Contains(text, tc.has) {
+			t.Errorf("%s: got %v %q", tc.name, statuses, text)
+		}
+	}
+	// Codex not on the PATH: nothing to say.
+	if got := codexChecks(Env{LookPath: noTools}, c); len(got) != 0 {
+		t.Errorf("without Codex: %v", got)
 	}
 }

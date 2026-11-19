@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/icalvete/augmented-brain/internal/claudecode"
+	"github.com/icalvete/augmented-brain/internal/codex"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/format"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -194,6 +195,16 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 	if code != 0 {
 		fmt.Fprintln(errOut, i18n.T(lang, "uninstall.firstfailed"))
 		return code
+	}
+	// Codex first: its guard refuses every command once the program is gone.
+	if cfgDir != "" && exists(codex.Dir(cfgDir)) {
+		if e, err := codexEnv(cfgDir); err != nil {
+			fail(err)
+		} else if codexAvailable() {
+			fail(codex.Uninstall(e))
+		} else {
+			fail(codex.Remove(e.Dir))
+		}
 	}
 	if claudecode.Available() {
 		fail(claudecode.Uninstall(claudecode.Exec))

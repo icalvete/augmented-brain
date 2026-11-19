@@ -45,6 +45,7 @@ it feels to a newcomer.
 | `internal/panel` | The local web panel; routes in `pages.go`, one file per page. |
 | `internal/tailnet` | Tailscale, for `panel remote`. |
 | `internal/remote` | `remote install` services and `session start \| stop \| restart \| list`. |
+| `internal/codex` | `codex install \| uninstall \| status`: augmented brain in Codex as a plugin, its hooks trusted through Codex's app server. |
 | `internal/watch` | `watch pr`: follows a pull request until there is news. |
 | `internal/leftovers` | `clean`: what Claude Code leaves behind. |
 | `internal/backup` | Backup and restore through a private git repository; the git runner. |

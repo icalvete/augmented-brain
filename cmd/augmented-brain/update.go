@@ -17,6 +17,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/runlimit"
 
 	"github.com/icalvete/augmented-brain/internal/claudecode"
+	"github.com/icalvete/augmented-brain/internal/codex"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/doctor"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -317,8 +318,9 @@ func installedVersion() string {
 }
 
 func updatePlugin(lang string, out, errOut io.Writer) int {
+	code := updateCodex(lang, out, errOut)
 	if !claudecode.Available() {
-		return 0 // no Claude Code here: nothing to update
+		return code // no Claude Code here: nothing to update
 	}
 	// After an uninstall the plugin is gone: install it again instead of updating it.
 	update := claudecode.Update
@@ -330,5 +332,34 @@ func updatePlugin(lang string, out, errOut io.Writer) int {
 		return 1
 	}
 	fmt.Fprintln(out, i18n.T(lang, "update.plugin"))
+	return code
+}
+
+// updateCodex brings augmented brain in Codex to this program, when it was installed
+// there: a new program can change its hooks, and Codex stops running a hook whose
+// content changed until it is trusted again.
+func updateCodex(lang string, out, errOut io.Writer) int {
+	if !codexAvailable() {
+		return 0
+	}
+	dir, err := config.Dir()
+	if err != nil {
+		return 0
+	}
+	e, err := codexEnv(dir)
+	if err != nil {
+		return 0
+	}
+	if _, err := os.Stat(e.Dir); err != nil {
+		return 0 // never installed from this program
+	}
+	if st := codex.Check(e); st.Err == nil && st.NotInstalled() {
+		return 0 // removed from Codex since: leave it so
+	}
+	if err := codex.Install(e); err != nil {
+		fmt.Fprintln(errOut, err)
+		return 1
+	}
+	fmt.Fprintln(out, i18n.T(lang, "update.codex"))
 	return 0
 }

@@ -16,6 +16,7 @@ func TestMain(m *testing.M) {
 	state.ScanProc = false
 	hostmem.Local = nil
 	askClaude = false
+	askCodex = false
 	localLeftovers = func() (leftovers.Env, bool) { return leftovers.Env{}, false }
 	os.Exit(m.Run())
 }

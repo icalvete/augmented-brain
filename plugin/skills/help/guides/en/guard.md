@@ -243,8 +243,9 @@ yourself, or start a session in another mode and allow it there.
 ## In Codex (experimental)
 
 The guard also works in [Codex](https://developers.openai.com/codex/hooks), OpenAI's
-coding assistant, as its `PreToolUse` hook. It was tried with Codex CLI 0.170.0. There
-is no command to set it up yet; this is how to do it by hand.
+coding assistant, as its `PreToolUse` hook. It was tried with Codex CLI 0.170.0. It is
+set up with `augmented-brain codex install`, along with the rest of augmented brain in
+Codex: see [Carry on in Codex](codex.md).
 
 Codex cannot show you a question from the guard: when a hook asks, Codex runs the
 command anyway. So in Codex the guard never asks. Everything it would ask you about in
@@ -256,41 +257,23 @@ It checks the same as in Claude Code: commands, file changes (Codex's `apply_pat
 when it is named in a command) and the tools that save a rule, the profile or the
 guard's lists.
 
-To set it up, add the hook to `~/.codex/hooks.json`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {"hooks": [{"type": "command", "command": "augmented-brain hook pre-tool-use codex", "timeout": 10}]}
-    ]
-  }
-}
-```
-
-And add this to `~/.codex/config.toml`:
-
-```toml
-[features]
-unified_exec_tty = false
-```
-
-Without that line, the assistant can open a terminal and type commands into it. What it
-types there does not go through the hook, so the guard never sees it.
-
-If Codex does not find `augmented-brain`, write its full path in the command
-(`~/.local/bin/augmented-brain` after a normal install). Codex runs a hook only once you
-trust it: start Codex and accept the hook when it asks.
+`codex install` also turns off a setting of Codex, `unified_exec_tty`. With it on, the
+assistant can open a terminal and type commands into it. What it types there does not go
+through the hook, so the guard never sees it. And it trusts the guard's hook for you:
+Codex runs a hook only once you trust it.
 
 What to know before relying on it:
 
 - **If the guard fails, the command goes through.** Claude Code stops a command when its
   hook breaks. Codex does not: a hook that ends with an error other than `2`, takes
   longer than its `timeout` or answers something Codex cannot read lets the command run.
-  augmented brain answers in a few milliseconds and ends with `2` when it cannot answer,
-  but a missing program, for one, is not stopped.
+  augmented brain answers in a few milliseconds and ends with `2` when it cannot answer.
+  On Linux and macOS a missing program is stopped too; on Windows it is not.
 - **Keep Codex's own protections on.** Use its sandbox (`sandbox_mode = "workspace-write"`)
   and its approvals. The guard is one more net, not a replacement for them.
+- **A new version needs its hooks trusted again.** Codex trusts a hook as it was: when
+  an update changes it, Codex stops running it. `augmented-brain update` trusts it again;
+  `augmented-brain codex status` and `doctor` say when it is needed.
 - The guard protects Codex's `config.toml` and `hooks.json` (in `~/.codex`, in the folder
   `CODEX_HOME` names, and the project's `.codex/`), as it does Claude Code's settings.
 
