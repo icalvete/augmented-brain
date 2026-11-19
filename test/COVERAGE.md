@@ -105,6 +105,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | A session that cannot work: no login or an expired one, a first answer that is an API error (as Claude Code writes it when the login ran out, measured on 11-nov, 2.1.322), a slow first answer, a session whose last answer failed (`list` says failed) | `internal/state` `TestLastAnswer`; `internal/remote` `TestStartNeedsLogin`, `TestStartFirstTurnFails`, `TestStartWaitsForFirstAnswer`, `TestLaunchesFailed`; `cmd` `TestSessionListFailed` |
 | Correcting, moving and removing steps (`task_step` `edit`, `remove`, `move_to`); a task's title; taking out or moving a watch date (`task_update` `title`, `watch_drop`) | `internal/brain` `TestChangeStep`, `TestMoveStepKeepsOtherLines`, `TestUpdateTitleAndWatchDrop`; `TestFixThroughTools` |
 | Every tool and parameter documented | `TestToolsDocumented` |
+| Codex: the start in nine parts measured in bytes, from a work or notes folder, without what only Claude Code has; the tasks-only MCP tools and their refusal of another space; a task handed between sessions and clients; how Codex treats a hook's decisions | `internal/hook` `TestCodexStart`; `internal/session` `TestCodexParts`; `internal/mcpserver` `TestTasksOnlyTools`; `internal/config` `TestSpaceOf`; `scripts/codex-check.py` (real Codex and Claude Code CLIs, scripted local models; by hand, see [Codex integration](../dev/codex-integration.md)) |
 
 ## The panel
 
