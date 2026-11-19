@@ -408,8 +408,8 @@ var cmdHelpMessages = map[string]msg{
 		es: "Contesta a un hook de Claude Code: una llamada que hace Claude Code en un momento dado. Lo lanza Claude Code, a través del plugin; tú no. Lee lo que Claude Code le manda por su entrada.",
 	},
 	"cmdhelp.hook.syntax": {
-		en: "augmented-brain hook <event> [<part>]",
-		es: "augmented-brain hook <evento> [<parte>]",
+		en: "augmented-brain hook <event> [<part> | codex]",
+		es: "augmented-brain hook <evento> [<parte> | codex]",
 	},
 	"cmdhelp.hook.example": {
 		en: "augmented-brain hook session-start 1",
