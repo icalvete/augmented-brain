@@ -714,3 +714,51 @@ func TestFixThroughTools(t *testing.T) {
 		t.Errorf("after none: %s", out)
 	}
 }
+
+func TestTasksOnlyTools(t *testing.T) {
+	cs := connect(t, space(t), WithTasksOnly())
+	list, err := cs.ListTools(context.Background(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	for _, tl := range list.Tools {
+		names = append(names, tl.Name)
+	}
+	sort.Strings(names)
+	want := append([]string{}, TasksOnlyTools...)
+	sort.Strings(want)
+	if got := strings.Join(names, " "); got != strings.Join(want, " ") {
+		t.Fatalf("tasks-only tools = %s", got)
+	}
+	if result, err := cs.CallTool(context.Background(), &mcp.CallToolParams{Name: "backup_setup"}); err == nil && !result.IsError {
+		t.Fatal("tasks-only server allowed a tool outside its list")
+	}
+	mustCall(t, cs, "task_new", map[string]any{"title": "Local task"})
+	mustCall(t, cs, "task_update", map[string]any{"id": "task-local-task", "status": "plan", "next": "Write the plan"})
+	mustCall(t, cs, "task_section", map[string]any{"id": "task-local-task", "section": "plan", "text": "Two steps."})
+	mustCall(t, cs, "task_step", map[string]any{"id": "task-local-task", "add": "First step"})
+	if out := mustCall(t, cs, "task_get", map[string]any{"id": "task-local-task"}); !strings.Contains(out, "Two steps.") ||
+		!strings.Contains(out, "- [ ] First step") || !strings.Contains(out, "status: plan") {
+		t.Errorf("task after update, section and step: %s", out)
+	}
+	for _, name := range []string{"pending", "task_get", "task_journal", "task_update", "task_step", "task_section"} {
+		args := map[string]any{"space": "other"}
+		if name != "pending" {
+			args["id"] = "task-local-task"
+		}
+		switch name {
+		case "task_journal":
+			args["entry"] = "Other space"
+		case "task_update":
+			args["next"] = "Other space"
+		case "task_step":
+			args["add"] = "Other space"
+		case "task_section":
+			args["section"], args["text"] = "analysis", "Other space"
+		}
+		if out, failed := call(t, cs, name, args); !failed || !strings.Contains(out, "current space") {
+			t.Errorf("%s: accepted cross-space call: %s", name, out)
+		}
+	}
+}

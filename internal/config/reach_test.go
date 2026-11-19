@@ -72,6 +72,40 @@ work_folders = ["~/work"]
 	}
 }
 
+// SpaceOf finds the space of a notes folder too, the deepest folder winning: the
+// personal notes inside the work folder of another space are still personal.
+func TestSpaceOf(t *testing.T) {
+	home, _ := filepath.EvalSymlinks(t.TempDir())
+	t.Setenv("HOME", home)
+	cfgDir := t.TempDir()
+	write(t, cfgDir, `
+[spaces.work]
+memory = "~/work/.notes"
+work_folders = ["~/work"]
+
+[spaces.home]
+memory = "~/work/home-notes"
+work_folders = ["~/me"]
+`)
+	c, err := Load(cfgDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for rel, want := range map[string]string{"work": "work", "work/.notes/tasks": "work",
+		"work/home-notes": "home", "work/home-notes/tasks": "home", "me/app": "home", "elsewhere": ""} {
+		got := ""
+		if s := c.SpaceOf(filepath.Join(home, rel)); s != nil {
+			got = s.Name
+		}
+		if got != want {
+			t.Errorf("SpaceOf(%q) = %q, want %q", rel, got, want)
+		}
+	}
+	if s := c.SpaceFor(filepath.Join(home, "work/home-notes")); s == nil || s.Name != "work" {
+		t.Errorf("SpaceFor changed: %+v", s)
+	}
+}
+
 // doctor and the session start name unknown settings of guard.toml: reach is known.
 func TestReachIsAKnownSetting(t *testing.T) {
 	dir := t.TempDir()
