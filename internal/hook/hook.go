@@ -259,9 +259,29 @@ func backupNote(c *config.Config, s *config.Space, cfgDir string) string {
 // WebSocket has no command and runs no program, so it goes through. A tool that saves
 // what every session answers to (memoryTools) asks first when the user wants that.
 func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
+	return PreToolUseFor(in, out, cfgDir, ClaudeCode)
+}
+
+// Client is the program that runs the guard's hook.
+type Client int
+
+const (
+	// ClaudeCode can show the user the question an "ask" opens.
+	ClaudeCode Client = iota
+	// Codex runs a command whose hook says "ask" without asking anyone (measured with
+	// Codex CLI 0.170.0), so there everything the guard would ask about is refused.
+	// Codex leaves no mark of itself in the hook's input or environment: whoever
+	// registers the hook says it is Codex (`augmented-brain hook pre-tool-use codex`).
+	Codex
+)
+
+// PreToolUseFor is PreToolUse for the given client. Codex's apply_patch, a tool or a
+// shell command, is checked as a write of every file it names.
+func PreToolUseFor(in io.Reader, out io.Writer, cfgDir string, client Client) error {
 	i, ok := readChecked(in)
+	noPrompt := client == Codex || i.PermissionMode == "bypassPermissions"
 	if tool := memoryTool(i.ToolName); ok && tool != "" {
-		decision, reason := trustDecision(cfgDir, language(cfgDir), i, tool)
+		decision, reason := trustDecision(cfgDir, language(cfgDir), i, tool, noPrompt)
 		if decision == "" {
 			return nil
 		}
@@ -272,7 +292,7 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	// In bypassPermissions Claude Code may skip the dialog an "ask" opens, so whatever
 	// the guard would ask about is refused there instead: none of it may go without the
 	// user's yes.
-	p.NoPrompt = i.PermissionMode == "bypassPermissions"
+	p.NoPrompt = noPrompt
 	var d guard.Decision
 	switch {
 	case !ok:
@@ -283,7 +303,11 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 	if p.NoPrompt && d.Verdict == guard.Ask {
 		// The docs do not promise the dialog there, and Claude Code 2.1.325 was seen
 		// running a command whose hook said "ask" without showing it.
-		d = guard.Decision{Verdict: guard.Deny, Reason: i18n.T(p.Lang, "guard.noprompt", d.Reason)}
+		key := "guard.noprompt"
+		if client == Codex {
+			key = "guard.codex.noprompt"
+		}
+		d = guard.Decision{Verdict: guard.Deny, Reason: i18n.T(p.Lang, key, d.Reason)}
 	}
 	decision := map[guard.Verdict]string{guard.Deny: "deny", guard.Ask: "ask"}[d.Verdict]
 	if decision == "" {
@@ -293,8 +317,9 @@ func PreToolUse(in io.Reader, out io.Writer, cfgDir string) error {
 		PermissionDecision: decision, PermissionDecisionReason: "augmented brain: " + d.Reason}})
 }
 
-// toolCases are the tools toolDecision checks; the plugin's PreToolUse matcher names
-// the same ones (a test compares them).
+// toolCases are the tools of Claude Code toolDecision checks; the plugin's PreToolUse
+// matcher names the same ones (a test compares them). It also checks Codex's
+// apply_patch, which Claude Code does not have.
 var toolCases = []string{"Bash", "Monitor", "PowerShell", "Read", "Grep", "Write", "Edit", "MultiEdit", "NotebookEdit"}
 
 // toolDecision is the guard's answer to one tool call. A call whose command or path is
@@ -317,7 +342,28 @@ func toolDecision(p guard.Policy, i input) guard.Decision {
 		if _, there := i.ToolInput["command"]; !ok || !there && i.ToolName == "Bash" {
 			return unreadable // a Monitor with no command watches a WebSocket: nothing runs
 		}
-		return p.Command(cmd)
+		d := p.Command(cmd)
+		if strings.Contains(cmd, patchBegin) {
+			// Codex runs apply_patch named in a shell command itself.
+			pd, ok := patchDecision(p, shellPatchDir(i.Cwd, cmd), cmd)
+			if !ok {
+				return unreadable
+			}
+			if stricter(pd, d) {
+				d = pd
+			}
+		}
+		return d
+	case "apply_patch":
+		patch, ok := text("command")
+		if !ok {
+			return unreadable
+		}
+		d, ok := patchDecision(p, i.Cwd, patch)
+		if !ok {
+			return unreadable
+		}
+		return d
 	case "PowerShell":
 		if p.Outside {
 			return guard.Decision{} // a general rule: not outside the spaces
@@ -453,8 +499,8 @@ func written(v any) string {
 }
 
 // protectedFiles are the files the assistant does not change on its own: the guard's
-// configuration, and Claude Code's settings (yours and the project's), where a line can
-// switch the plugin, and so the guard, off.
+// configuration, and Claude Code's and Codex's settings (yours and the project's), where
+// a line can switch the plugin or the hook, and so the guard, off.
 func protectedFiles(r *paths.Resolver, cfgDir, dir string, outside bool) []string {
 	var list []string
 	if cfgDir != "" { // unknown: never a file of the current folder in its place
@@ -480,14 +526,22 @@ func protectedFiles(r *paths.Resolver, cfgDir, dir string, outside bool) []strin
 		// The program the hooks run: they put ~/.local/bin first in their PATH.
 		list = append(list, filepath.Join(home, ".local", "bin", programName()))
 	}
+	// Codex's settings and hooks, where a line can switch the guard off there.
+	codexHome := Getenv("CODEX_HOME")
+	if home, err := paths.Home(); codexHome == "" && err == nil {
+		codexHome = filepath.Join(home, ".codex")
+	}
+	if codexHome != "" {
+		list = append(list, filepath.Join(codexHome, "config.toml"), filepath.Join(codexHome, "hooks.json"))
+	}
 	if exe, err := os.Executable(); err == nil {
 		list = append(list, exe) // the program running this hook, wherever it is
 	}
-	for _, f := range []string{"settings.json", "settings.local.json"} {
+	for _, f := range []string{".claude/settings.json", ".claude/settings.local.json", ".codex/config.toml", ".codex/hooks.json"} {
 		if outside {
 			break // the project's own settings are the user's business outside the spaces
 		}
-		list = append(list, filepath.Join(dir, ".claude", f))
+		list = append(list, filepath.Join(dir, filepath.FromSlash(f)))
 	}
 	for i, f := range list {
 		if resolved, err := r.Resolve(f); err == nil {

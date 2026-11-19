@@ -404,6 +404,11 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) (code int) {
 		}
 		part, args = n, args[:1]
 	}
+	// pre-tool-use codex: the guard registered in Codex, which cannot ask the user.
+	codex := len(args) == 2 && args[0] == "pre-tool-use" && args[1] == "codex"
+	if codex {
+		args = args[:1]
+	}
 	if len(args) != 1 {
 		names := make([]string, len(hookEvents))
 		for i, e := range hookEvents {
@@ -425,7 +430,13 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) (code int) {
 		return 0
 	}
 	// The guard runs with dir "": it then asks about everything its lists cover.
-	if err := hookEvents[i].run(in, out, dir, part); err != nil {
+	run := hookEvents[i].run
+	if codex {
+		run = func(in io.Reader, out io.Writer, dir string, _ int) error {
+			return hook.PreToolUseFor(in, out, dir, hook.Codex)
+		}
+	}
+	if err := run(in, out, dir, part); err != nil {
 		fmt.Fprintln(errOut, "augmented-brain hook:", err)
 		if guard {
 			return 2 // its answer did not reach Claude Code: block, never "no opinion"

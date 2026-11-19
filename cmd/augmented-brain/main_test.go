@@ -139,3 +139,27 @@ func TestFlagsAnywhere(t *testing.T) {
 		t.Errorf("an argument too many was taken: %q", errOut.String())
 	}
 }
+
+// `hook pre-tool-use codex` is the guard registered in Codex: what Claude Code would
+// ask about is refused, since Codex runs a command whose hook says "ask". Any other
+// word after a hook is a mistake, said as one.
+func TestHookPreToolUseCodex(t *testing.T) {
+	t.Setenv("AB_CONFIG_DIR", t.TempDir())
+	t.Setenv("AB_LANGUAGE", "en")
+	call := `{"cwd":"/","permission_mode":"default","tool_name":"Bash","tool_input":{"command":"gh workflow run release"}}`
+	for args, want := range map[string]string{
+		"pre-tool-use":       `"permissionDecision":"ask"`,
+		"pre-tool-use codex": `"permissionDecision":"deny"`,
+	} {
+		var out, errOut bytes.Buffer
+		if code := run(append([]string{"hook"}, strings.Fields(args)...), strings.NewReader(call), &out, &errOut); code != 0 || !strings.Contains(out.String(), want) {
+			t.Errorf("hook %s: %d %q %q", args, code, out.String(), errOut.String())
+		}
+	}
+	for _, args := range []string{"pre-tool-use claude", "pre-tool-use codex x", "stop codex"} {
+		var out, errOut bytes.Buffer
+		if code := run(append([]string{"hook"}, strings.Fields(args)...), strings.NewReader(call), &out, &errOut); code != 2 || !strings.Contains(errOut.String(), "usage: augmented-brain hook") {
+			t.Errorf("hook %s: %d %q", args, code, errOut.String())
+		}
+	}
+}
