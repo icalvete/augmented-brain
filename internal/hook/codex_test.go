@@ -35,7 +35,7 @@ func TestCodexStart(t *testing.T) {
 			}
 			all += p
 		}
-		for _, want := range []string{"space \"work\"", "## In Codex", "command guard does not run here", "task_section", "## Rules", "# Memory index"} {
+		for _, want := range []string{"space \"work\"", "## In Codex", "command guard runs here only if", "task_section", "## Rules", "# Memory index"} {
 			if !strings.Contains(all, want) {
 				t.Errorf("%s: the Codex start lacks %q", dir, want)
 			}
