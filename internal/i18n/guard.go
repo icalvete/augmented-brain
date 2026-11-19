@@ -216,6 +216,10 @@ var guardMessages = map[string]msg{
 		en: "Starting the workflow `%s` by hand publishes a version (it is a release workflow). Allow it only if you asked for this release now. If you say no, nothing starts: you can run it yourself later, or press Run workflow on GitHub.",
 		es: "Lanzar a mano el flujo `%s` saca una versión (es un flujo de publicación). Permítelo solo si has pedido tú esta versión ahora. Si dices que no, no se lanza nada: puedes lanzarlo tú más tarde, o pulsar Run workflow en GitHub.",
 	},
+	"guard.codex.noprompt": {
+		en: "Codex cannot show the user a question from augmented brain's guard, so the guard refuses what it would ask about in Claude Code. What it would have asked: %s Do not look for another way to do it. Tell the user what you wanted to do and why: they can do it themselves, or from a Claude Code session.",
+		es: "Codex no puede enseñar al usuario una pregunta del guardia de augmented brain, así que el guardia rechaza lo que en Claude Code preguntaría. Lo que habría preguntado: %s No busques otra forma de hacerlo. Dile al usuario qué querías hacer y por qué: puede hacerlo él, o desde una sesión de Claude Code.",
+	},
 	"guard.noprompt": {
 		en: "This session runs in bypassPermissions mode, where Claude Code may not show the user a permission question, so the guard refuses what it would otherwise ask about. What it would have asked: %s Do not look for another way to do it. Tell the user what you wanted to do and why: they can do it themselves, or allow it from a session that is not in bypassPermissions.",
 		es: "Esta sesión está en modo bypassPermissions, donde Claude Code puede no enseñar al usuario una pregunta de permiso, así que el guardia rechaza lo que en otro modo preguntaría. Lo que habría preguntado: %s No busques otra forma de hacerlo. Dile al usuario qué querías hacer y por qué: puede hacerlo él, o permitirlo desde una sesión que no esté en bypassPermissions.",
