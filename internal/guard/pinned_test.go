@@ -22,8 +22,9 @@ func pinnedPolicy(t *testing.T) Policy {
 	home, _ := filepath.EvalSymlinks(t.TempDir()) // macOS: /var is /private/var
 	t.Setenv("HOME", home)
 	t.Setenv("USERPROFILE", home)
+	// Give each fixture its own repository marker so discovery stops there.
 	for _, r := range []string{"mine", "ask", "never"} {
-		if err := os.MkdirAll(filepath.Join(home, "repos", r), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Join(home, "repos", r, ".git"), 0o755); err != nil {
 			t.Fatal(err)
 		}
 	}
