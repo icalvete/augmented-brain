@@ -241,7 +241,10 @@ Every list the guard answers to, in one page, to read and change:
   to, and a form to add (you choose the space) or remove. Adding to the first warns what
   it allows and asks you to tick that you understand.
 - **Root exceptions**, with the date each ends (the ones that ended are marked). Adding
-  one warns what it allows and asks you to type the machine's name again.
+  one warns what it allows and asks you to type the machine's name again. The date
+  cannot have passed and is 30 days ahead at most. From another device, ask Claude
+  instead: it adds the exception after you confirm (see
+  [Root on one machine, for a while](guard.md#root-on-one-machine-for-a-while)).
 - **Production profiles** and **untouchable machines**.
 - **The model of your sessions** (`preferred_model` in `session.toml`): when a session
   answers with another one, Claude tells you. Below it, what Claude Code said about its

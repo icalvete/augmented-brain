@@ -84,6 +84,14 @@ var commandMessages = map[string]msg{
 		en: "%q: the date %q is neither a day (2026-10-31) nor a time (2026-10-31T23:59Z)",
 		es: "%q: la fecha %q no es ni un día (2026-10-31) ni una hora (2026-10-31T23:59Z)",
 	},
+	"config.rootask.past": {
+		en: "the date %s has already passed: an exception must end later than now",
+		es: "la fecha %s ya ha pasado: una excepción tiene que acabar después de ahora",
+	},
+	"config.rootask.far": {
+		en: "the date %s is too far: an exception ends within %d days, and is added again if it is still needed",
+		es: "la fecha %s queda demasiado lejos: una excepción acaba en %d días como mucho, y se vuelve a añadir si aún hace falta",
+	},
 	"format.newer": {
 		en: "%s was written by a newer augmented brain (format %d; this one knows up to %d): run `augmented-brain update` before using it here",
 		es: "%s lo escribió un augmented brain más nuevo (formato %d; este conoce hasta el %d): lanza `augmented-brain update` antes de usarlo aquí",

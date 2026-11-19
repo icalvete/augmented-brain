@@ -26,3 +26,30 @@ func TestParseRootAsk(t *testing.T) {
 		t.Errorf("in Spanish: %v", err)
 	}
 }
+
+func TestNewRootAsk(t *testing.T) {
+	now := time.Date(2026, 11, 19, 12, 0, 0, 0, time.UTC)
+	entry, r, err := NewRootAsk("en", " db01 ", "2026-11-20", now)
+	if err != nil || entry != "db01 until 2026-11-20" || r.Host != "db01" {
+		t.Fatalf("%q %v %v", entry, r, err)
+	}
+	if _, _, err := NewRootAsk("en", "db01", "2026-11-19", now); err != nil {
+		t.Errorf("today, ending at its end: %v", err)
+	}
+	if _, _, err := NewRootAsk("en", "db01", "2026-12-19T12:00Z", now); err != nil {
+		t.Errorf("exactly 30 days: %v", err)
+	}
+	for until, want := range map[string]string{
+		"2026-11-18":        "already passed",
+		"2026-11-19T11:00Z": "already passed",
+		"2026-12-20":        "too far",
+		"tomorrow":          "neither a day",
+	} {
+		if _, _, err := NewRootAsk("en", "db01", until, now); err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("%s: %v, want %q", until, err, want)
+		}
+	}
+	if _, _, err := NewRootAsk("es", "db01", "2026-12-20", now); err == nil || !strings.Contains(err.Error(), "demasiado lejos") {
+		t.Errorf("in Spanish: %v", err)
+	}
+}

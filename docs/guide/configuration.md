@@ -84,7 +84,8 @@ These go at the top, before any `[spaces.…]` heading.
 - `root_ask`: temporary exceptions for root, one machine each, written `"<host> until
   <date>"`. The date is a day (`2026-12-31`, which lasts to its end, in UTC) or a time
   (`2026-12-31T23:59Z`). Until then, the guard asks you before a command as root on that
-  machine, instead of stopping it. The date is required. See
+  machine, instead of stopping it. The date is required. A new one, from the panel or
+  from Claude, ends within 30 days. See
   [Root on one machine, for a while](guard.md#root-on-one-machine-for-a-while).
 - `format`: the version of the configuration folder. The program writes it when a new
   version needs it; never change it by hand. Without it, it is 1.
@@ -121,15 +122,17 @@ let through from a session in any of them.
 
 ## What Claude may change
 
-Claude never edits these files on its own: the guard asks you first. Two tools add to
-`config.toml`, and only add:
+Claude never edits these files on its own: the guard asks you first. Three tools write
+to `config.toml`:
 
 - `safety_save` adds production profiles and untouchable machines. Adding only makes the
   guard ask more, so lists you had accepted stay accepted.
+- `root_exception_save` adds a root exception to `root_ask`, or takes one out. Adding
+  always asks you first, whatever `memory_trust` says.
 - `backup_setup` writes a space's `backup`, only for the repository it creates in your
   GitHub account, and never moves an existing backup elsewhere.
 
-To take anything out of the guard's lists, or to let Claude do more, use the panel's
+To take anything else out of the guard's lists, or to let Claude do more, use the panel's
 **Guard** page. You can edit the files by hand too, but then the guard sees lists you
 have not accepted: every commit, push or merge they would let through asks you, and so
 does every `aws` command and every connection to another machine, until you accept them

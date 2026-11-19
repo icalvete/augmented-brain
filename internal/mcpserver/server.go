@@ -698,6 +698,20 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			return out, err
 		})
 
+	type rootIn struct {
+		Host   string `json:"host" jsonschema:"the machine, as the guard sees it: its name as the user types it in ssh (db01, ubuntu@10.0.0.5), or this computer's own name"`
+		Until  string `json:"until,omitempty" jsonschema:"when it ends, in UTC: a day (2026-11-30, to its end) or a time (2026-11-30T18:00Z); not past, and within 30 days. Needed to add"`
+		Why    string `json:"why,omitempty" jsonschema:"what it is for, in a few words, as the user asked; the user reads it in the question before saying yes"`
+		Remove bool   `json:"remove,omitempty" jsonschema:"true to take the machine's exception out instead"`
+	}
+	tool(s, locked, "root_exception_save", "Add a temporary root exception for one machine, until a date: until then the guard asks the user about each command as root there (sudo, also through ssh) instead of denying it, and after the date it denies them again by itself. Use it only when the user asks for root on a machine, with the date they say (no more than 30 days ahead). The user is always asked first, whatever memory_trust says; in a session that skips permission questions it is refused. A machine has one exception: adding again changes its date. With remove it takes the machine's exception out, without asking. The exception is kept in root_ask in config.toml and holds on this whole machine, in every space.",
+		func(b *brain.Brain, in rootIn) (string, error) {
+			if in.Remove {
+				return b.RemoveRootException(in.Host, time.Now())
+			}
+			return b.SaveRootException(in.Host, in.Until, time.Now())
+		})
+
 	type secretIn struct {
 		Service string `json:"service" jsonschema:"the service the secret is kept under in the system keychain, e.g. telegram"`
 		Name    string `json:"name" jsonschema:"its name under that service, e.g. alerts-bot"`

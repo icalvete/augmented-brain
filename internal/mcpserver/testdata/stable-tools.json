@@ -68,6 +68,13 @@
     "required summary",
     "summary: string"
   ],
+  "root_exception_save": [
+    "host: string",
+    "remove: boolean",
+    "required host",
+    "until: string",
+    "why: string"
+  ],
   "rule_new": [
     "body: string",
     "id: string",

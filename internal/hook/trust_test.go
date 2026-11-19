@@ -31,6 +31,9 @@ func TestPreToolUseMemoryTrust(t *testing.T) {
 			t.Fatal(err)
 		}
 		for _, tool := range memoryTools {
+			if tool == "root_exception_save" {
+				continue // asked about at every level (TestRootExceptionSaveAlwaysAsks)
+			}
 			if d, _ := call(plugin+tool, rule, "default"); d != "" {
 				t.Errorf("memory_trust %q, %s: %q, want nothing", level, tool, d)
 			}
@@ -85,6 +88,47 @@ func TestPreToolUseMemoryTrust(t *testing.T) {
 		if d, _ := call(plugin+"rule_new", rule, "default"); d != "ask" {
 			t.Errorf("session.toml %q: %q, want ask", content, d)
 		}
+	}
+}
+
+// Adding a root exception loosens the guard: the user is asked whatever memory_trust
+// says, the question names the machine and the date, and a session that skips the
+// questions is refused. Taking one out goes through.
+func TestRootExceptionSaveAlwaysAsks(t *testing.T) {
+	cfgDir, work := setupSpace(t)
+	pre := func(in *bytes.Reader, out *bytes.Buffer) error { return PreToolUse(in, out, cfgDir) }
+	call := func(tool string, input map[string]any, mode string) (string, string) {
+		o := run(t, pre, map[string]any{"cwd": work, "tool_name": tool, "tool_input": input, "permission_mode": mode})
+		if o == nil {
+			return "", ""
+		}
+		return o["permissionDecision"].(string), o["permissionDecisionReason"].(string)
+	}
+	add := map[string]any{"host": "db01", "until": "2026-11-25", "why": "apt\nupgrade"}
+	for _, level := range []string{"", config.TrustTell, config.TrustAsk} {
+		if err := config.SaveSession(cfgDir, config.Session{MemoryTrust: level}); err != nil {
+			t.Fatal(err)
+		}
+		for _, c := range []struct {
+			tool  string
+			input map[string]any
+			mode  string
+			want  string
+		}{
+			{"mcp__plugin_brain_augmented-brain__root_exception_save", add, "default", "ask"},
+			{"mcp__augmented-brain__root_exception_save", add, "auto", "ask"},
+			{"mcp__plugin_brain_augmented-brain__root_exception_save", add, "acceptEdits", "ask"},
+			{"mcp__plugin_brain_augmented-brain__root_exception_save", add, "bypassPermissions", "deny"},
+			{"mcp__plugin_brain_augmented-brain__root_exception_save", map[string]any{"host": "db01", "remove": true}, "default", ""},
+			{"mcp__plugin_brain_augmented-brain__root_exception_save", map[string]any{"host": "db01", "remove": "true"}, "default", "ask"},
+		} {
+			if d, r := call(c.tool, c.input, c.mode); d != c.want {
+				t.Errorf("memory_trust %q, %s %v in %s: %q (%s), want %q", level, c.tool, c.input, c.mode, d, r, c.want)
+			}
+		}
+	}
+	if _, r := call("mcp__plugin_brain_augmented-brain__root_exception_save", add, "default"); !strings.Contains(r, "on db01, until 2026-11-25") || !strings.Contains(r, "for, in its words: apt upgrade.") {
+		t.Errorf("question: %q", r)
 	}
 }
 

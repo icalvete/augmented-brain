@@ -93,6 +93,7 @@
     {{template "fields" (fields $ "op" "remove" "value" .Entry)}}
     <button type="submit" class="small">{{t "guard.remove"}}</button>
   </form>{{end}}</li>{{end}}</ul>{{else if $.D.Remote}}<p class="empty">{{t "guard.root.none"}}</p>{{end}}
+{{if $.D.Remote}}<p class="hint">{{t "guard.root.remote"}}</p>{{end}}
 {{if not $.D.Remote}}<details class="box"{{if $.Open "/guard/root#add"}} open{{end}}>
   <summary>{{t "guard.add.root"}}</summary>
   <p class="flash warn">{{t "guard.root.warn"}}</p>

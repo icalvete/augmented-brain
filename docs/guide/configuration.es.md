@@ -91,7 +91,8 @@ Van arriba, antes de cualquier encabezado `[spaces.…]`.
   `"<máquina> until <fecha>"`. La fecha es un día (`2026-12-31`, que dura hasta que
   acaba, en UTC) o una hora (`2026-12-31T23:59Z`). Hasta entonces, el guardia te pregunta
   antes de un comando como root en esa máquina, en vez de pararlo. La fecha es
-  obligatoria. Lo tienes en
+  obligatoria. Una nueva, desde el panel o desde Claude, acaba en 30 días como mucho. Lo
+  tienes en
   [Root en una máquina, durante un tiempo](guard.es.md#root-en-una-máquina-durante-un-tiempo).
 - `format`: la versión de la carpeta de configuración. El programa la escribe cuando una
   versión nueva lo necesita; no la cambies nunca a mano. Si no está, es 1.
@@ -131,15 +132,17 @@ lista de un espacio pasa desde una sesión de cualquiera de ellos.
 
 ## Lo que puede cambiar Claude
 
-Claude nunca edita estos ficheros por su cuenta: el guardia te pregunta antes. Dos
-herramientas le añaden cosas a `config.toml`, y solo añaden:
+Claude nunca edita estos ficheros por su cuenta: el guardia te pregunta antes. Tres
+herramientas escriben en `config.toml`:
 
 - `safety_save` añade perfiles de producción y máquinas intocables. Añadir solo hace que
   el guardia pregunte más, así que unas listas que habías aceptado siguen aceptadas.
+- `root_exception_save` añade una excepción de root a `root_ask`, o la quita. Añadir
+  siempre te pregunta antes, diga lo que diga `memory_trust`.
 - `backup_setup` escribe el `backup` de un espacio, solo para el repositorio que crea en
   tu cuenta de GitHub, y nunca lleva a otro sitio una copia que ya existe.
 
-Para quitar algo de las listas del guardia, o para dejar que Claude haga más, usa la
+Para quitar cualquier otra cosa de las listas del guardia, o para dejar que Claude haga más, usa la
 página **Guardia** del panel. También puedes editar los ficheros a mano, pero entonces el
 guardia ve unas listas que no has aceptado: te pregunta antes de cada commit, push o
 merge que dejarían pasar, y también antes de cada comando `aws` y de cada conexión a otra

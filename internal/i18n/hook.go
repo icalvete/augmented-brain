@@ -79,6 +79,15 @@ var hookMessages = map[string]msg{
 		en: "the assistant's personality",
 		es: "la personalidad del asistente",
 	},
+	// The machine, and the date and time the exception ends (UTC).
+	"hook.guardnotice.rootadded": {
+		en: "root exception added by the assistant, which you confirmed: on %s, until %s UTC. Take it out in the panel's Guard page, or ask the assistant",
+		es: "excepción de root añadida por el asistente, que confirmaste: en %s, hasta el %s UTC. Se quita en la página Guardia del panel, o pidiéndoselo al asistente",
+	},
+	"hook.guardnotice.rootremoved": {
+		en: "root exception taken out by the assistant: %s. Root there is denied again",
+		es: "excepción de root quitada por el asistente: %s. Root allí vuelve a estar denegado",
+	},
 	"hook.toolnotice.safety": {
 		en: "the guard now also asks about: %s",
 		es: "el guardia ahora también pregunta por: %s",

@@ -100,7 +100,7 @@ func TestTools(t *testing.T) {
 		names = append(names, tl.Name)
 	}
 	sort.Strings(names)
-	want := "area_new backup_setup capture capture_done knowledge_new note_retire pending person_save profile_save repo_describe review_done rule_new safety_save secret_name_save session_recover task_close task_get task_journal task_new task_park task_section task_step task_update task_worktree weekly_review where_am_i"
+	want := "area_new backup_setup capture capture_done knowledge_new note_retire pending person_save profile_save repo_describe review_done root_exception_save rule_new safety_save secret_name_save session_recover task_close task_get task_journal task_new task_park task_section task_step task_update task_worktree weekly_review where_am_i"
 	if got := strings.Join(names, " "); got != want {
 		t.Errorf("tools = %s", got)
 	}
@@ -760,5 +760,36 @@ func TestTasksOnlyTools(t *testing.T) {
 		if out, failed := call(t, cs, name, args); !failed || !strings.Contains(out, "current space") {
 			t.Errorf("%s: accepted cross-space call: %s", name, out)
 		}
+	}
+}
+
+// A root exception goes to root_ask, checked; the same machine again changes its date,
+// and remove takes it out. Its date is relative to today, as the tool's is.
+func TestRootExceptionSave(t *testing.T) {
+	open := space(t)
+	cfgDir := filepath.Join(os.Getenv("HOME"), "cfg")
+	cs := connect(t, open)
+	until := time.Now().UTC().AddDate(0, 0, 3).Format("2006-01-02")
+	if out, isErr := call(t, cs, "root_exception_save", map[string]any{"host": "db01", "until": until, "why": "upgrade"}); isErr {
+		t.Fatal(out)
+	}
+	if out, isErr := call(t, cs, "root_exception_save", map[string]any{"host": "db01", "until": "2020-01-01"}); !isErr || !strings.Contains(out, "already passed") {
+		t.Errorf("a past date: %v %s", isErr, out)
+	}
+	if out, isErr := call(t, cs, "root_exception_save", map[string]any{"host": "db02", "until": time.Now().UTC().AddDate(0, 2, 0).Format("2006-01-02")}); !isErr || !strings.Contains(out, "too far") {
+		t.Errorf("a date two months ahead: %v %s", isErr, out)
+	}
+	c, err := config.Load(cfgDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Join(c.RootAsk, ",") != "db01 until "+until {
+		t.Errorf("root_ask = %v", c.RootAsk)
+	}
+	if out, isErr := call(t, cs, "root_exception_save", map[string]any{"host": "db01", "remove": true}); isErr {
+		t.Fatal(out)
+	}
+	if c, err = config.Load(cfgDir); err != nil || len(c.RootAsk) != 0 {
+		t.Errorf("after remove: %v %v", c.RootAsk, err)
 	}
 }

@@ -65,7 +65,7 @@
         ]
       },
       {
-        "matcher": "mcp__.*augmented-brain__(rule_new|note_retire|profile_save|safety_save)",
+        "matcher": "mcp__.*augmented-brain__(rule_new|note_retire|profile_save|safety_save|root_exception_save)",
         "hooks": [
           {
             "type": "command",
