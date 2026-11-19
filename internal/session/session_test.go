@@ -364,9 +364,57 @@ func TestParts(t *testing.T) {
 	}
 }
 
+// Codex cuts a hook's text at about 10,000 bytes, not characters: in a space written
+// in Spanish every Codex part stays within CodexBudget bytes, and every task and rule
+// still arrives, each part whole and in the same order as Claude's.
+func TestCodexParts(t *testing.T) {
+	c, s := space(t, "es")
+	long := strings.Repeat("Explícame cada paso antes de dar el siguiente, ¿vale? ", 60)
+	for i := 0; i < 6; i++ {
+		rule := fmt.Sprintf("---\nid: rule-%d\ntype: rule\ntitle: Regla %d\nsummary: paso %d primero\n---\n%s\n", i, i, i, long)
+		if err := os.WriteFile(filepath.Join(s.Memory, "rules", fmt.Sprintf("rule-%d.md", i)), []byte(rule), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i := 0; i < 60; i++ {
+		task := fmt.Sprintf("---\nid: task-%03d\ntype: task\ntitle: Tarea número %03d, con título largo y eñes\nstatus: plan\nwaiting_on: me\nnext: decidir qué hacer con la tarea %03d —una frase entera, con tildes—\n---\n", i, i, i)
+		if err := os.WriteFile(filepath.Join(s.Memory, "tasks", fmt.Sprintf("task-%03d.md", i)), []byte(task), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	claude, over := AllParts(c, s, "NOTA\n", ""), false
+	for _, p := range claude {
+		over = over || len(p) > CodexBudget
+	}
+	if !over {
+		t.Fatal("the fixture does not test the bytes: every Claude part already fits")
+	}
+	all := ""
+	for n, p := range CodexParts(c, s, "NOTA\n", "") {
+		if len(p) > CodexBudget {
+			t.Errorf("part %d is %d bytes, over %d", n+1, len(p), CodexBudget)
+		}
+		if !utf8.ValidString(p) {
+			t.Errorf("part %d splits a character", n+1)
+		}
+		if one := CodexPart(c, s, "NOTA\n", "", n+1); n > 0 && one != p {
+			t.Errorf("part %d built alone differs from the whole", n+1)
+		}
+		all += p
+	}
+	for _, want := range []string{"NOTA", "Tarea número 000", "Tarea número 059", "### Regla 5"} {
+		if !strings.Contains(all, want) {
+			t.Errorf("the Codex parts lack %q", want)
+		}
+	}
+	if strings.Contains(all, "was cut") {
+		t.Errorf("60 tasks and 6 rules should fit whole")
+	}
+}
+
 func TestLines(t *testing.T) {
 	text := "a\nbb\nccc\n" + strings.Repeat("x", 12) + "\n"
-	got := lines(text, 5)
+	got := claudeMeter.lines(text, 5)
 	if strings.Join(got, "") != text {
 		t.Errorf("pieces lose text: %q", got)
 	}
