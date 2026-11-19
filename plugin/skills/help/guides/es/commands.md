@@ -45,6 +45,7 @@ guías, o sin pregunta te propone el siguiente paso.
 | Abrir el panel desde el móvil | [`panel remote`](#augmented-brain-panel-remote) |
 | Llegar a Claude desde el móvil | [`remote install`](#augmented-brain-remote-install) |
 | Ver cómo está el acceso remoto | [`remote status`](#augmented-brain-remote-status) |
+| Seguir una tarea en Codex | [`codex install`](#augmented-brain-codex-install) |
 | Abrir una sesión propia para una tarea | [`session start`](#augmented-brain-session-start) |
 | Reiniciar sesiones tras actualizar | [`session restart`](#augmented-brain-session-restart) |
 | Enterarme de cuándo acaba una pull request | [`watch pr`](#augmented-brain-watch-pr) |
@@ -214,6 +215,9 @@ algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Re
   puesto con `remote install` (un aviso si su servicio no está en marcha, Claude aún no
   confía en su carpeta o, en Linux, el linger está apagado); el panel desde otro
   dispositivo, si lo has usado (Tailscale, HTTPS y una dirección que se quedó publicada).
+- **Codex:** si Codex está en el ordenador, si augmented brain está instalado allí y, si
+  lo está, si Codex ejecuta sus hooks y `unified_exec_tty` está apagado (ver
+  `codex status`).
 
 Acaba con error si algo falla. Si la configuración no se puede leer, te lleva a
 `config history` y `config restore`. Lo tienes en [Si algo falla](troubleshooting.md).
@@ -503,6 +507,66 @@ gastan el uso nuevo de golpe. Solo se despiertan las sesiones abiertas con
 `augmented-brain session start`, nunca otras. Te avisa dos veces, en la siguiente
 sesión que uses: cuando empieza la espera, con la hora, y cuando ha vuelto la última.
 Cada tarea despertada recibe una línea en su diario.
+
+## augmented-brain codex
+
+Prepara augmented brain en [Codex](codex.md), para seguir allí con una tarea cuando
+se acaba el uso de Claude. Son tres comandos, `install`, `uninstall` y `status`, cada uno
+con su sección. Necesitan `codex` en tu PATH. Sin subcomando, o con otro, `codex`
+muestra su uso. Experimental.
+
+## augmented-brain codex install
+
+Instala augmented brain en Codex, o lo arregla.
+
+Sintaxis: `augmented-brain codex install`
+
+```bash
+augmented-brain codex install
+```
+
+Escribe un plugin para Codex en la carpeta de configuración (`codex-marketplace`) y lo
+añade a Codex con la propia línea de comandos de Codex. El plugin lleva el arranque de
+cada sesión (`hook session-start 1` a `9` con `codex`), el guardia (`hook pre-tool-use
+codex`) y el servidor MCP solo con las herramientas de tareas.
+
+Después, a través del servidor de aplicaciones de Codex, confía por ti en los hooks del
+plugin (Codex solo ejecuta un hook en el que confías) y apaga `unified_exec_tty`, que deja
+al asistente escribir en un terminal que el guardia no ve. Lo escribe el propio Codex en
+su `config.toml`, conservando tus comentarios. No cambia nada más tuyo.
+
+Puedes lanzarlo otra vez cuando quieras: no añade nada dos veces. `update` lo lanza al
+actualizar el programa, porque una versión nueva puede cambiar los hooks, y Codex deja de
+ejecutar un hook cuyo contenido ha cambiado.
+
+## augmented-brain codex uninstall
+
+Quita augmented brain de Codex.
+
+Sintaxis: `augmented-brain codex uninstall`
+
+```bash
+augmented-brain codex uninstall
+```
+
+Quita la confianza en los hooks del plugin, el plugin, su marketplace y los ficheros que
+escribió. `unified_exec_tty` sigue apagado: solo protege. Si algo ya no estaba, no pasa
+nada.
+
+## augmented-brain codex status
+
+Dice cómo está augmented brain en Codex, y no cambia nada.
+
+Sintaxis: `augmented-brain codex status`
+
+```bash
+augmented-brain codex status
+```
+
+Una línea si todo está en su sitio, o si no está instalado. Si no, una línea por problema
+(hooks que Codex no ejecuta, hooks cambiados por una versión nueva, `unified_exec_tty`
+encendido) y el comando que los arregla, `augmented-brain codex install`. Acaba con error
+salvo que todo esté en su sitio.
 
 ## augmented-brain session
 
@@ -838,7 +902,8 @@ augmented-brain update
 ```
 
 Primero pregunta a GitHub por la última versión, una vez: si GitHub no contesta, lo dice
-y se para. Si no hay una versión más nueva, solo actualiza el plugin. Si la hay, lanza el
+y se para. Si no hay una versión más nueva, solo actualiza el plugin (y augmented brain
+en Codex, si lo instalaste allí con `codex install`). Si la hay, lanza el
 instalador publicado, que cambia el programa y después actualiza el plugin. Alrededor
 hace lo que si no harías a mano:
 
@@ -859,7 +924,8 @@ hace lo que si no harías a mano:
 
 Opciones:
 
-- `--plugin`: actualiza solo el plugin de Claude Code. Lo usa el instalador.
+- `--plugin`: actualiza solo el plugin de Claude Code, y augmented brain en Codex si está
+  instalado allí. Lo usa el instalador.
 - `--force`: actualiza aunque falle la copia de antes.
 - `--no-restart`: no reinicia ninguna sesión después de actualizar; solo dice cuáles
   siguen con la versión vieja, y que `augmented-brain session restart --old` las
@@ -882,7 +948,8 @@ Sintaxis: `augmented-brain uninstall [--config | --all] [--yes]`
 augmented-brain uninstall
 ```
 
-Enseña lo que va a quitar y pregunta antes. Primero se van los servicios del acceso
+Enseña lo que va a quitar y pregunta antes. augmented brain en Codex, si lo instalaste
+allí, también se va (como con `codex uninstall`). Primero se van los servicios del acceso
 remoto y las sesiones abiertas para tareas; si uno no se puede parar, no se quita nada
 más.
 
@@ -928,7 +995,9 @@ Los eventos:
 - `session-start`: empieza una sesión. Le da a Claude el perfil, las reglas, el índice de
   tareas y lo que toca. Va en hasta nueve partes, de `session-start 1` a
   `session-start 9`, porque Claude Code corta el texto de cada hook a los 10.000
-  caracteres. Solo se mandan las partes que tienen algo.
+  caracteres. Solo se mandan las partes que tienen algo. `session-start <parte> codex` es
+  el arranque de una sesión de Codex: las mismas partes, medidas para Codex, con una nota
+  de lo que cambia allí (ver [Seguir en Codex](codex.md)).
 - `pre-tool-use`: antes de cada comando y cada cambio de un fichero. Es el
   [guardia](guard.md). `pre-tool-use codex` es el mismo guardia registrado en Codex,
   que no puede preguntarte: lo que preguntaría se rechaza (ver

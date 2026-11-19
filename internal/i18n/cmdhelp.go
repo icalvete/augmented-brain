@@ -235,6 +235,46 @@ var cmdHelpMessages = map[string]msg{
 		en: "augmented-brain remote watch",
 		es: "augmented-brain remote watch",
 	},
+	"cmdhelp.codex.what": {
+		en: "Sets augmented brain up in Codex, to carry on a task there when Claude's usage runs out. It is three commands, install, uninstall and status, each with its own section. They need codex on your PATH. Without a subcommand, or with another, codex prints its usage. Experimental.",
+		es: "Prepara augmented brain en Codex, para seguir allí con una tarea cuando se acaba el uso de Claude. Son tres comandos, install, uninstall y status, cada uno con su sección. Necesitan codex en tu PATH. Sin subcomando, o con otro, codex muestra su uso. Experimental.",
+	},
+	"cmdhelp.codex install.what": {
+		en: "Installs augmented brain in Codex, or repairs it.",
+		es: "Instala augmented brain en Codex, o lo arregla.",
+	},
+	"cmdhelp.codex install.syntax": {
+		en: "augmented-brain codex install",
+		es: "augmented-brain codex install",
+	},
+	"cmdhelp.codex install.example": {
+		en: "augmented-brain codex install",
+		es: "augmented-brain codex install",
+	},
+	"cmdhelp.codex uninstall.what": {
+		en: "Removes augmented brain from Codex.",
+		es: "Quita augmented brain de Codex.",
+	},
+	"cmdhelp.codex uninstall.syntax": {
+		en: "augmented-brain codex uninstall",
+		es: "augmented-brain codex uninstall",
+	},
+	"cmdhelp.codex uninstall.example": {
+		en: "augmented-brain codex uninstall",
+		es: "augmented-brain codex uninstall",
+	},
+	"cmdhelp.codex status.what": {
+		en: "Says how augmented brain stands in Codex, and changes nothing.",
+		es: "Dice cómo está augmented brain en Codex, y no cambia nada.",
+	},
+	"cmdhelp.codex status.syntax": {
+		en: "augmented-brain codex status",
+		es: "augmented-brain codex status",
+	},
+	"cmdhelp.codex status.example": {
+		en: "augmented-brain codex status",
+		es: "augmented-brain codex status",
+	},
 	"cmdhelp.session.what": {
 		en: "Opens a session of its own for one task, so that from another computer you can work on several tasks at once, each in its own session. It is four commands, start, stop, restart and list, each with its own section. start, stop and list work on Linux only for now: they have been tried only there. restart works on Linux and macOS. Without a subcommand, or with another, session prints its usage. Why and how to use them: A session per task.",
 		es: "Abre una sesión propia para una tarea, para que desde otro ordenador puedas trabajar en varias tareas a la vez, cada una en su sesión. Son cuatro comandos, start, stop, restart y list, cada uno con su apartado. start, stop y list funcionan por ahora solo en Linux: solo se han probado ahí. restart funciona en Linux y macOS. Sin subcomando, o con otro, session muestra su uso. Para qué sirven y cómo usarlos: Una sesión por tarea.",
@@ -372,8 +412,8 @@ var cmdHelpMessages = map[string]msg{
 		es: "augmented-brain update [--plugin] [--force] [--no-restart]",
 	},
 	"cmdhelp.update.options": {
-		en: "--plugin\tupdate only the Claude Code plugin. The installer uses it.\n--force\tupdate even when the backup before it fails.\n--no-restart\trestart no session after updating; it only says which still run the old version, and that augmented-brain session restart --old restarts them.\n--from <address>\tfor tests: install the release at this address instead of GitHub's latest. It must be https://, file://, or http:// to this computer or to the host of a test VM (10.0.2.2).",
-		es: "--plugin\tactualiza solo el plugin de Claude Code. Lo usa el instalador.\n--force\tactualiza aunque falle la copia de antes.\n--no-restart\tno reinicia ninguna sesión después de actualizar; solo dice cuáles siguen con la versión vieja, y que augmented-brain session restart --old las reinicia.\n--from <dirección>\tpara pruebas: instala la versión de esa dirección en vez de la última de GitHub. Tiene que ser https://, file://, o http:// a este ordenador o al host de una VM de pruebas (10.0.2.2).",
+		en: "--plugin\tupdate only the Claude Code plugin, and augmented brain in Codex when it is installed there. The installer uses it.\n--force\tupdate even when the backup before it fails.\n--no-restart\trestart no session after updating; it only says which still run the old version, and that augmented-brain session restart --old restarts them.\n--from <address>\tfor tests: install the release at this address instead of GitHub's latest. It must be https://, file://, or http:// to this computer or to the host of a test VM (10.0.2.2).",
+		es: "--plugin\tactualiza solo el plugin de Claude Code, y augmented brain en Codex si está instalado allí. Lo usa el instalador.\n--force\tactualiza aunque falle la copia de antes.\n--no-restart\tno reinicia ninguna sesión después de actualizar; solo dice cuáles siguen con la versión vieja, y que augmented-brain session restart --old las reinicia.\n--from <dirección>\tpara pruebas: instala la versión de esa dirección en vez de la última de GitHub. Tiene que ser https://, file://, o http:// a este ordenador o al host de una VM de pruebas (10.0.2.2).",
 	},
 	"cmdhelp.update.example": {
 		en: "augmented-brain update",

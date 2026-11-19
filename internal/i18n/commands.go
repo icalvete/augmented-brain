@@ -346,6 +346,10 @@ var commandMessages = map[string]msg{
 		en: "Then run `augmented-brain session restart --old`: it restarts the idle ones with the same conversation (those of Claude Desktop stay open, only their augmented brain restarts). One busy answering waits: run it again when it has finished. `augmented-brain doctor` says whether any is left.",
 		es: "Después lanza `augmented-brain session restart --old`: reinicia las que están quietas, con la misma conversación (las de Claude Desktop siguen abiertas, solo se reinicia su augmented brain). Una que está respondiendo espera: vuelve a lanzarlo cuando termine. `augmented-brain doctor` dice si queda alguna.",
 	},
+	"update.codex": {
+		en: "✓ augmented brain in Codex up to date, its hooks trusted again. Open a new Codex session to use it.",
+		es: "✓ augmented brain en Codex al día, con sus hooks de nuevo de confianza. Abre una sesión nueva de Codex para usarlo.",
+	},
 	"update.plugin": {
 		en: "✓ Claude Code plugin up to date. Restart Claude (close and open the app or the session) to use it.",
 		es: "✓ Plugin de Claude Code al día. Reinicia Claude (cierra y abre la app o la sesión) para usarlo.",
@@ -483,6 +487,7 @@ Usage:
   augmented-brain remote install    keep Claude reachable from another computer, also after a reboot
   augmented-brain remote uninstall  stop that and remove it
   augmented-brain remote status     say whether it runs, and what is missing
+  augmented-brain codex install     set augmented brain up in Codex, to carry on a task there (codex uninstall: remove it) (codex status: how it stands)
   augmented-brain session start TASK   open a remote session of its own for a task, in its folder (--folder DIR) (Linux)
   augmented-brain session stop TASK    close it (session list: the open ones)
   augmented-brain session restart SESSION  restart a Claude session with the program of now (--old: every one still on an earlier one)
@@ -513,6 +518,7 @@ Uso:
   augmented-brain remote install    mantiene Claude accesible desde otro ordenador, también tras reiniciar
   augmented-brain remote uninstall  lo para y lo quita
   augmented-brain remote status     dice si funciona y qué falta
+  augmented-brain codex install     prepara augmented brain en Codex, para seguir allí una tarea (codex uninstall: lo quita) (codex status: cómo está)
   augmented-brain session start TAREA  abre una sesión remota propia para una tarea, en su carpeta (--folder DIR) (Linux)
   augmented-brain session stop TAREA   la cierra (session list: las abiertas)
   augmented-brain session restart SESIÓN  reinicia una sesión de Claude con el programa de ahora (--old: todas las que siguen con uno anterior)

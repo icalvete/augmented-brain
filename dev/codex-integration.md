@@ -6,14 +6,15 @@ take a task through its phases. The notes stay as they are; each client keeps
 its own conversation. Claude Code is still the main client: nothing here
 changes how its plugin works.
 
-Experimental and wired by hand for now. A command to set it up is a separate
-piece of work. The guard in Codex is `hook pre-tool-use codex`, registered by
-hand: see the guide (`docs/guide/guard.md`, "In Codex") and
+Experimental. `augmented-brain codex install` sets it up (`internal/codex`); the
+user's guide is `docs/guide/codex.md`. The guard in Codex is
+`hook pre-tool-use codex`: see `docs/guide/guard.md`, "In Codex", and
 `scripts/codex-guard-check.py`.
 
 ## What there is
 
-- **Start** — `AB_CODEX_START_HOOK=1 augmented-brain hook session-start N`,
+- **Start** — `augmented-brain hook session-start N codex` (or, as written by
+  hand before, `AB_CODEX_START_HOOK=1 augmented-brain hook session-start N`),
   N from 1 to 9, as nine `SessionStart` hooks (`hook.CodexStartPart`). It
   gives the same parts as the Claude Code plugin, for the space of the folder
   alone: a work folder or the notes folder (`Config.SpaceOf`), never the
@@ -54,25 +55,48 @@ Codex CLI 0.170.0, Ubuntu 26.04, scripted local model.
 - `codex exec` with an open stdin waits to read more of the prompt from it:
   run it with stdin closed.
 
-## Setting it up by hand
+## How `codex install` sets it up
 
-In `$CODEX_HOME/config.toml` (the probe writes the same):
+A plugin, as for Claude Code, so its hooks have keys of their own and the user's
+`hooks.json` is never touched. Everything in Codex's configuration is written by
+Codex itself:
 
-```toml
-[mcp_servers.augmented-brain]
-command = "augmented-brain"
-args = ["mcp"]
-enabled_tools = ["where_am_i", "pending", "task_new", "task_get", "task_park",
-  "task_journal", "task_update", "task_step", "task_section"]
+1. `codex.Write` puts a local marketplace in `<config>/codex-marketplace`:
+   `.claude-plugin/marketplace.json` (Codex reads that name too) and the plugin
+   `brain/` with `.codex-plugin/plugin.json`, `hooks/hooks.json` and `.mcp.json`.
+   The hooks run the program by its full path (on Windows by its name); the
+   guard's command exits 2 when sh says 127, so a missing program blocks
+   instead of letting the command through. The MCP server has
+   `AB_MCP_TASKS_ONLY=1`, `default_tools_approval_mode = "approve"` (otherwise
+   Codex asks before every call) and `env_vars = ["AB_CONFIG_DIR"]` (Codex
+   passes a server only a few variables).
+2. `codex plugin marketplace add <dir>` and `codex plugin add brain@augmented-brain`.
+   Adding again installs the new version in place.
+3. `codex app-server` (JSON-RPC over stdio, `appserver.go`): `hooks/list` gives
+   each hook's `key`, `currentHash` and `trustStatus` (`trusted`, `untrusted`,
+   `modified`, `managed`); `config/batchWrite` writes
+   `hooks.state."<key>".trusted_hash` with that hash and
+   `features.unified_exec_tty = false`. It keeps the user's comments. The hook
+   key has dots, so the key path quotes it; `replace` with `null` deletes one.
+4. Checked again: all ten hooks `trusted`.
 
-[mcp_servers.augmented-brain.env]
-AB_MCP_TASKS_ONLY = "1"
-```
+Measured with 0.170.0:
 
-In `$CODEX_HOME/hooks.json`, nine `SessionStart` commands,
-`env AB_CODEX_START_HOOK=1 augmented-brain hook session-start N` for N from
-1 to 9. Codex does not run a hook it does not trust: trust them in Codex
-first.
+- Installing a plugin, from the CLI or the app server's `plugin/install`, does
+  not trust its hooks. `codex plugin remove` leaves their trust behind:
+  `Uninstall` removes it first (from `config/read`'s `hooks.state`).
+- The hash depends only on the hook's content, not its place; it could not be
+  reproduced outside Codex, hence the app server.
+- A hook's key in the user's `hooks.json` is positional
+  (`<path>:pre_tool_use:<group>:<hook>`): another hook put before it loses its
+  trust. A plugin's are `brain@augmented-brain:hooks/hooks.json:…`.
+- Codex adds `trusted_content_hash` next to `trusted_hash` by itself.
+
+`update --plugin` (which the installer runs) installs again when the
+marketplace folder exists and Codex still has the plugin, so a new program's
+hooks are trusted again. `codex status` and `doctor` read the same three things:
+the plugin installed and enabled (`plugin/list`), its hooks trusted
+(`hooks/list`), `unified_exec_tty` false (`config/read`).
 
 ## The probe
 
@@ -82,9 +106,12 @@ python3 -I scripts/codex-check.py /tmp/ab-codex-check
 python3 -I scripts/codex-check.py --cross-client /tmp/ab-codex-check
 ```
 
-It needs `codex` (and, with `--cross-client`, `claude`) on `PATH`, uses
+It ends with `codex install` and `uninstall` for real, twice each, and Codex
+running the plugin's hooks with real trust (no bypass). It needs `codex` (and,
+with `--cross-client`, `claude`) on `PATH`, uses
 throwaway homes and configuration, and no account. Not in CI: run it when
-touching the Codex start, the tasks-only profile or after a Codex update.
+touching the Codex start, the tasks-only profile, `internal/codex` or after a
+Codex update.
 
 ## Still open
 

@@ -37,6 +37,7 @@ español en es/ (la especificación del formato, solo en inglés).
 - `en/anywhere.md` · `es/anywhere.md`: Remote access and the panel together, and what to do when it drops. · Acceso remoto y panel juntos, y qué hacer cuando se cae.
 - `en/remote.md` · `es/remote.md`: Reach Claude on this computer from anywhere, even after a reboot. · Llega al Claude de este ordenador desde cualquier sitio, incluso tras reiniciar.
 - `en/task-sessions.md` · `es/task-sessions.md`: Several tasks at once, each in a session and a folder of its own. · Varias tareas a la vez, cada una en su sesión y su carpeta.
+- `en/codex.md` · `es/codex.md`: Claude's usage ran out? Carry on with the task in Codex. · ¿Se acabó el uso de Claude? Sigue con la tarea en Codex.
 - `en/panel-remote.md` · `es/panel-remote.md`: Your panel on the phone, through your own private network. · Tu panel en el móvil, por tu propia red privada.
 - `en/update-and-uninstall.md` · `es/update-and-uninstall.md`: Update, uninstall and move to a new computer, losing nothing. · Actualizar, desinstalar y cambiar de ordenador sin perder nada.
 

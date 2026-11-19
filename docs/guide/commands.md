@@ -46,6 +46,7 @@ with these guides, or with no question proposes your next step.
 | Open the panel from my phone | [`panel remote`](#augmented-brain-panel-remote) |
 | Reach Claude from my phone | [`remote install`](#augmented-brain-remote-install) |
 | See how remote access stands | [`remote status`](#augmented-brain-remote-status) |
+| Carry on a task in Codex | [`codex install`](#augmented-brain-codex-install) |
 | Open a session of its own for a task | [`session start`](#augmented-brain-session-start) |
 | Restart sessions after an update | [`session restart`](#augmented-brain-session-restart) |
 | Be told when a pull request is done | [`watch pr`](#augmented-brain-watch-pr) |
@@ -207,6 +208,9 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
   `remote install` (a warning when its service is not running, Claude does not trust its
   folder yet, or, on Linux, linger is off); the panel from another device, once you have
   used it (Tailscale, HTTPS, and an address left published).
+- **Codex:** when Codex is on the computer, whether augmented brain is installed there
+  and, if it is, whether Codex runs its hooks and `unified_exec_tty` is off (see
+  `codex status`).
 
 It ends with an error when something fails. When the configuration cannot be read, it
 points to `config history` and `config restore`. See
@@ -493,6 +497,65 @@ the new usage all at once. Only sessions opened with `augmented-brain session st
 are woken, never any other. You are told twice, in the next session you use: when the
 wait begins, with the hour, and when the last one is back. Each woken task gets a line
 in its journal.
+
+## augmented-brain codex
+
+Sets augmented brain up in [Codex](codex.md), to carry on a task there when Claude's
+usage runs out. It is three commands, `install`, `uninstall` and `status`, each with its
+own section. They need `codex` on your PATH. Without a subcommand, or with another,
+`codex` prints its usage. Experimental.
+
+## augmented-brain codex install
+
+Installs augmented brain in Codex, or repairs it.
+
+Syntax: `augmented-brain codex install`
+
+```bash
+augmented-brain codex install
+```
+
+It writes a plugin for Codex in the configuration folder (`codex-marketplace`) and adds
+it to Codex with Codex's own command line. The plugin has the start of every session
+(`hook session-start 1` to `9` with `codex`), the guard (`hook pre-tool-use codex`) and
+the MCP server with the task tools only.
+
+Then, through Codex's app server, it trusts the plugin's hooks for you (Codex runs a hook
+only once you trust it) and turns off `unified_exec_tty`, which lets the assistant type
+into a terminal the guard cannot see. Codex writes these in its `config.toml` itself,
+keeping your comments. Nothing else of yours changes.
+
+You can run it again at any time: it adds nothing twice. `update` runs it when it updates
+the program, because a new version can change the hooks, and Codex stops running a hook
+whose content changed.
+
+## augmented-brain codex uninstall
+
+Removes augmented brain from Codex.
+
+Syntax: `augmented-brain codex uninstall`
+
+```bash
+augmented-brain codex uninstall
+```
+
+It removes the trust in the plugin's hooks, the plugin, its marketplace and the files it
+wrote. `unified_exec_tty` stays off: it only protects. Something already gone is fine.
+
+## augmented-brain codex status
+
+Says how augmented brain stands in Codex, and changes nothing.
+
+Syntax: `augmented-brain codex status`
+
+```bash
+augmented-brain codex status
+```
+
+One line when everything is in place, or when it is not installed. Otherwise one line per
+problem (hooks Codex does not run, hooks changed by a new version, `unified_exec_tty` on)
+and the command that fixes them, `augmented-brain codex install`. It ends with an error
+unless everything is in place.
 
 ## augmented-brain session
 
@@ -820,7 +883,8 @@ augmented-brain update
 ```
 
 It first asks GitHub for the latest version, once: if GitHub does not answer, it says so
-and stops. If there is no newer version, it only updates the plugin. If there is one,
+and stops. If there is no newer version, it only updates the plugin (and augmented
+brain in Codex, when you installed it there with `codex install`). If there is one,
 it runs the published installer, which replaces the program and then updates the
 plugin. Around it, it does what you would otherwise do by hand:
 
@@ -841,7 +905,8 @@ plugin. Around it, it does what you would otherwise do by hand:
 
 Options:
 
-- `--plugin`: update only the Claude Code plugin. The installer uses it.
+- `--plugin`: update only the Claude Code plugin, and augmented brain in Codex when it is
+  installed there. The installer uses it.
 - `--force`: update even when the backup before it fails.
 - `--no-restart`: restart no session after updating; it only says which still run the
   old version, and that `augmented-brain session restart --old` restarts them.
@@ -863,7 +928,8 @@ Syntax: `augmented-brain uninstall [--config | --all] [--yes]`
 augmented-brain uninstall
 ```
 
-It shows what it will remove and asks first. The remote access services and the
+It shows what it will remove and asks first. augmented brain in Codex, when you
+installed it there, goes too (as `codex uninstall`). The remote access services and the
 sessions opened for tasks go first; if one cannot be stopped, nothing else is removed.
 
 - `--config`: also remove the configuration and the profile.
@@ -906,7 +972,9 @@ The events:
 - `session-start`: a session starts. It hands Claude the profile, the rules, the index of
   tasks and what is due. It comes in up to nine parts, `session-start 1` to
   `session-start 9`, because Claude Code cuts each hook's text at 10,000 characters. Only
-  the parts with something in them are sent.
+  the parts with something in them are sent. `session-start <part> codex` is the start
+  of a Codex session: the same parts, measured for Codex, with a note on what is
+  different there (see [Carry on in Codex](codex.md)).
 - `pre-tool-use`: before every command and file change. This is the
   [guard](guard.md). `pre-tool-use codex` is the same guard registered in Codex, which
   cannot ask you: what it would ask about is refused (see

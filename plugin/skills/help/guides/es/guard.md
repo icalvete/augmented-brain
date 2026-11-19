@@ -251,7 +251,8 @@ permitirlo allí.
 
 El guardia también funciona en [Codex](https://developers.openai.com/codex/hooks), el
 asistente de programación de OpenAI, como su hook `PreToolUse`. Se ha probado con Codex
-CLI 0.170.0. Todavía no hay una orden que lo configure; así se hace a mano.
+CLI 0.170.0. Se configura con `augmented-brain codex install`, junto con el resto de
+augmented brain en Codex: mira [Seguir en Codex](codex.md).
 
 Codex no puede enseñarte una pregunta del guardia: cuando un hook pregunta, Codex ejecuta
 el comando de todas formas. Por eso en Codex el guardia nunca pregunta. Todo lo que en
@@ -264,31 +265,10 @@ Revisa lo mismo que en Claude Code: los comandos, los cambios de ficheros (el
 `apply_patch` de Codex, también cuando va dentro de un comando) y las herramientas que
 guardan una regla, el perfil o las listas del guardia.
 
-Para configurarlo, añade el hook a `~/.codex/hooks.json`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {"hooks": [{"type": "command", "command": "augmented-brain hook pre-tool-use codex", "timeout": 10}]}
-    ]
-  }
-}
-```
-
-Y añade esto a `~/.codex/config.toml`:
-
-```toml
-[features]
-unified_exec_tty = false
-```
-
-Sin esa línea, el asistente puede abrir una terminal y escribir comandos en ella. Lo que
-escribe ahí no pasa por el hook, así que el guardia no lo ve nunca.
-
-Si Codex no encuentra `augmented-brain`, escribe su ruta entera en el comando
-(`~/.local/bin/augmented-brain` tras una instalación normal). Codex solo ejecuta un hook en
-el que confías: arranca Codex y acepta el hook cuando te lo pregunte.
+`codex install` también apaga un ajuste de Codex, `unified_exec_tty`. Si está encendido,
+el asistente puede abrir una terminal y escribir comandos en ella. Lo que escribe ahí no
+pasa por el hook, así que el guardia no lo ve nunca. Y da por ti la confianza al hook del
+guardia: Codex solo ejecuta un hook en el que confías.
 
 Lo que conviene saber antes de fiarse de él:
 
@@ -296,9 +276,13 @@ Lo que conviene saber antes de fiarse de él:
   rompe. Codex no: un hook que acaba con un error distinto de `2`, tarda más que su
   `timeout` o contesta algo que Codex no entiende deja que el comando se ejecute.
   augmented brain contesta en unos milisegundos y acaba con `2` cuando no puede
-  contestar, pero, por ejemplo, un programa que falta no se para.
+  contestar. En Linux y macOS también se para si falta el programa; en Windows, no.
 - **Deja puestas las protecciones de Codex.** Usa su aislamiento (`sandbox_mode =
   "workspace-write"`) y sus aprobaciones. El guardia es una red más, no las sustituye.
+- **Una versión nueva necesita volver a confiar en sus hooks.** Codex confía en un hook
+  tal como era: si una actualización lo cambia, Codex deja de ejecutarlo. `augmented-brain
+  update` vuelve a confiar en él; `augmented-brain codex status` y `doctor` dicen cuándo
+  hace falta.
 - El guardia protege el `config.toml` y el `hooks.json` de Codex (en `~/.codex`, en la
   carpeta que diga `CODEX_HOME` y en el `.codex/` del proyecto), igual que los ajustes de
   Claude Code.

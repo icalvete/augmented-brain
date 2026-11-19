@@ -21,6 +21,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/backup"
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
+	"github.com/icalvete/augmented-brain/internal/codex"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/hostmem"
 	"github.com/icalvete/augmented-brain/internal/i18n"
@@ -76,6 +77,9 @@ type Env struct {
 	Leftovers *leftovers.Env
 	// ClaudeVersion returns what `claude --version` prints; nil means ask claude.
 	ClaudeVersion func() (string, error)
+	// Codex reports how augmented brain stands in Codex; nil means ask Codex itself, when
+	// it is on the PATH.
+	Codex func() codex.Status
 	// Budget is how long the checks that ask Claude Code or the system (the plugin,
 	// remote access, worktrees, lingering sessions) may take in all; 0 means
 	// DefaultBudget. Each call has its own limit too; this one keeps their sum short.
@@ -188,6 +192,7 @@ func Run(e Env) []Check {
 		out = append(out, space(c, c.Spaces[name])...)
 	}
 	out = append(out, asking(e, "doctor.part.remote", func() []Check { return remoteChecks(e, c) })...)
+	out = append(out, asking(e, "doctor.part.codex", func() []Check { return codexChecks(e, c) })...)
 	out = append(out, asking(e, "doctor.part.worktrees", func() []Check { return worktreeChecks(e, c) })...)
 	out = append(out, leftoverChecks(e, l)...)
 	out = append(out, asking(e, "doctor.part.lingering", func() []Check { return lingeringChecks(e, c) })...)
@@ -629,6 +634,42 @@ func leftoverChecks(e Env, l string) []Check {
 // remoteChecks is a line per space when remote access is set up (`remote install`): a
 // warning when its service is not running, Claude does not trust its folder, or linger
 // is off. Nothing when it is not set up, or on a system that has no remote access yet.
+// askCodex is false in tests: the Codex of the machine that runs them is not theirs.
+var askCodex = true
+
+// codexChecks is how augmented brain stands in Codex, when Codex is on this computer:
+// a line saying it can be installed there, or that it is, or what to fix.
+func codexChecks(e Env, c *config.Config) []Check {
+	l := c.Language
+	status := e.Codex
+	if status == nil {
+		if _, err := e.LookPath("codex"); err != nil || !askCodex {
+			return nil
+		}
+		status = func() codex.Status {
+			env, err := codex.Default(c.Dir)
+			if err != nil {
+				return codex.Status{Err: err}
+			}
+			return codex.Check(env)
+		}
+	}
+	st := status()
+	switch {
+	case st.Err != nil:
+		return []Check{{Warning, i18n.T(l, "codex.status.error", st.Err), ""}}
+	case st.OK():
+		return []Check{{OK, i18n.T(l, "doctor.codex.ok", codex.Plugin, st.Trusted), ""}}
+	case st.NotInstalled():
+		return []Check{{Info, i18n.T(l, "doctor.codex.none"), ""}}
+	}
+	var out []Check
+	for _, p := range codex.Problems(l, st) {
+		out = append(out, Check{Failed, "Codex: " + p, codex.Fix})
+	}
+	return out
+}
+
 func remoteChecks(e Env, c *config.Config) []Check {
 	l := c.Language
 	sys := e.Remote

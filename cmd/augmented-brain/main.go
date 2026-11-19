@@ -390,6 +390,12 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) (code int) {
 		}
 	}()
 	part := 0 // session-start N: part N of the session text
+	// session-start N codex: the start registered in Codex (AB_CODEX_START_HOOK=1 says
+	// the same, for hooks written by hand before the word existed).
+	codexStart := len(args) == 3 && args[0] == "session-start" && args[2] == "codex"
+	if codexStart {
+		args = args[:2]
+	}
 	if len(args) == 2 && args[0] == "session-start" {
 		n, err := strconv.Atoi(args[1])
 		if err != nil || n < 1 {
@@ -434,6 +440,11 @@ func cmdHook(args []string, in io.Reader, out, errOut io.Writer) (code int) {
 	if codex {
 		run = func(in io.Reader, out io.Writer, dir string, _ int) error {
 			return hook.PreToolUseFor(in, out, dir, hook.Codex)
+		}
+	}
+	if codexStart {
+		run = func(in io.Reader, out io.Writer, dir string, part int) error {
+			return hook.CodexStartPart(in, out, dir, part)
 		}
 	}
 	if err := run(in, out, dir, part); err != nil {
