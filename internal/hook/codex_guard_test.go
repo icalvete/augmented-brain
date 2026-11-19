@@ -109,6 +109,18 @@ func TestPreToolUseCodexPatch(t *testing.T) {
 		{"shell: later in the command", "Bash", "true; applypatch <<'EOF'\n" + patch("*** Delete File: "+filepath.ToSlash(guardFile)+"\n") + "EOF\n", "deny"},
 		{"shell: names no file", "Bash", "apply_patch <<'EOF'\n" + patch("") + "EOF\n", "deny"},
 	}
+	// CODEX_HOME moves Codex's settings: those are protected, and ~/.codex still is.
+	moved := filepath.Join(t.TempDir(), "codex-home")
+	old := Getenv
+	t.Cleanup(func() { Getenv = old })
+	Getenv = func(k string) string {
+		if k == "CODEX_HOME" {
+			return moved
+		}
+		return old(k)
+	}
+	cases = append(cases, struct{ name, tool, text, want string }{
+		"CODEX_HOME's settings", "apply_patch", patch("*** Update File: " + filepath.Join(moved, "config.toml") + "\n@@\n+x\n"), "deny"})
 	for _, c := range cases {
 		d, r := decision(run(t, codex, codexCall(work, c.tool, map[string]any{"command": c.text}, "bypassPermissions")))
 		if d != c.want {

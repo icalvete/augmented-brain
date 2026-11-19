@@ -526,13 +526,18 @@ func protectedFiles(r *paths.Resolver, cfgDir, dir string, outside bool) []strin
 		// The program the hooks run: they put ~/.local/bin first in their PATH.
 		list = append(list, filepath.Join(home, ".local", "bin", programName()))
 	}
-	// Codex's settings and hooks, where a line can switch the guard off there.
-	codexHome := Getenv("CODEX_HOME")
-	if home, err := paths.Home(); codexHome == "" && err == nil {
-		codexHome = filepath.Join(home, ".codex")
+	// Codex's settings and hooks, where a line can switch the guard off there: in
+	// ~/.codex, and in the folder CODEX_HOME moves them to (both, as the next Codex
+	// started may not have the same CODEX_HOME).
+	var codexHomes []string
+	if home, err := paths.Home(); err == nil {
+		codexHomes = append(codexHomes, filepath.Join(home, ".codex"))
 	}
-	if codexHome != "" {
-		list = append(list, filepath.Join(codexHome, "config.toml"), filepath.Join(codexHome, "hooks.json"))
+	if h := Getenv("CODEX_HOME"); h != "" {
+		codexHomes = append(codexHomes, h)
+	}
+	for _, h := range codexHomes {
+		list = append(list, filepath.Join(h, "config.toml"), filepath.Join(h, "hooks.json"))
 	}
 	if exe, err := os.Executable(); err == nil {
 		list = append(list, exe) // the program running this hook, wherever it is
