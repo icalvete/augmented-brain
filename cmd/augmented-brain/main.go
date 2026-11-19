@@ -364,6 +364,9 @@ type hookEvent struct {
 // hookEvents are every hook the command answers, in the order its usage names them.
 var hookEvents = []hookEvent{
 	{"session-start", func(in io.Reader, out io.Writer, dir string, part int) error {
+		if os.Getenv("AB_CODEX_START_HOOK") == "1" {
+			return hook.CodexStartPart(in, out, dir, part)
+		}
 		return hook.SessionStartPart(in, out, dir, part)
 	}},
 	{"pre-tool-use", func(in io.Reader, out io.Writer, dir string, _ int) error { return hook.PreToolUse(in, out, dir) }},

@@ -9,6 +9,7 @@ import (
 	"slices"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
@@ -19,6 +20,50 @@ import (
 // Budget is the most a hook may add to the context: Claude Code cuts anything longer
 // than 10,000 characters to a short preview, so stay well under it.
 const Budget = 9500
+
+// CodexBudget is Budget for Codex, in bytes of UTF-8: Codex cuts a hook's text at
+// about 10,000 bytes, keeping its start and end, so a part in Spanish that fits
+// Budget's units could still lose its middle there.
+const CodexBudget = 9500
+
+// meter is how the parts of the session text are measured: the most a part may take,
+// and in what (UTF-16 units for Claude Code, UTF-8 bytes for Codex).
+type meter struct {
+	budget int
+	bytes  bool
+}
+
+var (
+	claudeMeter = meter{budget: Budget}
+	codexMeter  = meter{budget: CodexBudget, bytes: true}
+)
+
+// size is s measured as mt counts.
+func (mt meter) size(s string) int {
+	if mt.bytes {
+		return len(s)
+	}
+	return size(s)
+}
+
+// cut keeps the start of s that fits in max of mt's measure, without splitting a
+// character.
+func (mt meter) cut(s string, max int) string {
+	if !mt.bytes {
+		return cut(s, max)
+	}
+	if max <= 0 {
+		return ""
+	}
+	if len(s) <= max {
+		return s
+	}
+	i := max
+	for i > 0 && !utf8.RuneStart(s[i]) {
+		i--
+	}
+	return s[:i]
+}
 
 // Context returns the text for a session started in a folder of space s. When the full
 // text does not fit, the user's rules (shared and of the space) are listed by title and
@@ -71,6 +116,15 @@ func Part(c *config.Config, s *config.Space, note string, n int) string {
 // PartFor is Part for a session opened for task (session start; "" for any other
 // session): what comes up today is only that task's.
 func PartFor(c *config.Config, s *config.Space, note, task string, n int) string {
+	return partFor(claudeMeter, c, s, note, task, n)
+}
+
+// CodexPart is PartFor for Codex, which measures a hook's text in bytes.
+func CodexPart(c *config.Config, s *config.Space, note, task string, n int) string {
+	return partFor(codexMeter, c, s, note, task, n)
+}
+
+func partFor(mt meter, c *config.Config, s *config.Space, note, task string, n int) string {
 	m, shared, problems, failed := loadSpace(c, s)
 	if failed != "" {
 		if n == 1 {
@@ -78,10 +132,10 @@ func PartFor(c *config.Config, s *config.Space, note, task string, n int) string
 		}
 		return ""
 	}
-	slots := layout(c, s, m, shared)
+	slots := layout(mt, c, s, m, shared)
 	total := 1 + len(slots)
 	if n == 1 {
-		return firstPart(c, s, m, problems, note, task, total)
+		return firstPart(mt, c, s, m, problems, note, task, total)
 	}
 	if n < 2 || n > total {
 		return ""
@@ -94,18 +148,27 @@ func PartFor(c *config.Config, s *config.Space, note, task string, n int) string
 // parts in hand it can also do what a part built on its own cannot: when part 1 does
 // not fit and a part is free, the profile goes whole to that part instead of being cut.
 func AllParts(c *config.Config, s *config.Space, note, task string) []string {
+	return allParts(claudeMeter, c, s, note, task)
+}
+
+// CodexParts is AllParts for Codex, which measures a hook's text in bytes.
+func CodexParts(c *config.Config, s *config.Space, note, task string) []string {
+	return allParts(codexMeter, c, s, note, task)
+}
+
+func allParts(mt meter, c *config.Config, s *config.Space, note, task string) []string {
 	out := make([]string, Parts)
 	m, shared, problems, failed := loadSpace(c, s)
 	if failed != "" {
 		out[0] = failed
 		return out
 	}
-	slots := layout(c, s, m, shared)
+	slots := layout(mt, c, s, m, shared)
 	total := 1 + len(slots)
 	head := heading(c, s, m, problems, note, task) + assistantText(c)
-	first := firstFrom(c, s, head, total)
+	first := firstFrom(mt, c, s, head, total)
 	if total < Parts {
-		if head, profile, ok := splitFirst(c, s, head, total, total+1); ok {
+		if head, profile, ok := splitFirst(mt, c, s, head, total, total+1); ok {
 			first = head
 			slots = append(slots, profile)
 			total++
@@ -122,12 +185,12 @@ func AllParts(c *config.Config, s *config.Space, note, task string) []string {
 // heading (head) and the whole profile do not fit in one part of total: ok is false
 // when they do, or when the profile alone would not fit in a part either. newTotal
 // counts the profile's part.
-func splitFirst(c *config.Config, s *config.Space, head string, total, newTotal int) (first, profile string, ok bool) {
+func splitFirst(mt meter, c *config.Config, s *config.Space, head string, total, newTotal int) (first, profile string, ok bool) {
 	profile = section("Who the user is", profileText(c, s))
-	room := Budget - size(partTag(s.Name, Parts, Parts))
+	room := mt.budget - mt.size(partTag(s.Name, Parts, Parts))
 	whole := head + fmt.Sprintf(partsNote, total) + profile
 	first = head + fmt.Sprintf("\n(This is part 1 of %d. The profile, the rules and the index of the space come in the other parts, which may arrive in any order: read them together.)\n", newTotal)
-	if size(whole) <= Budget || size(profile) > room || size(first) > Budget {
+	if mt.size(whole) <= mt.budget || mt.size(profile) > room || mt.size(first) > mt.budget {
 		return "", "", false
 	}
 	return first, profile, true
@@ -135,7 +198,7 @@ func splitFirst(c *config.Config, s *config.Space, head string, total, newTotal 
 
 // layout is the text of parts 2 onwards, in order and without their tags: the index
 // (in up to indexParts parts), the common rules, and the user's rules in what is left.
-func layout(c *config.Config, s *config.Space, m, shared *memory.Memory) []string {
+func layout(mt meter, c *config.Config, s *config.Space, m, shared *memory.Memory) []string {
 	where := filepath.Join(s.Memory, memory.IndexFile)
 	if len(shared.Notes) > 0 {
 		where += "; the shared notes are in " + shared.Dir
@@ -143,19 +206,19 @@ func layout(c *config.Config, s *config.Space, m, shared *memory.Memory) []strin
 	cutNote := fmt.Sprintf("\n\n(The index was cut to fit. Read it whole in %s.)\n", where)
 	rulesEnd := "\n(Cut to fit. Read the rules in " + s.Memory + " and the shared notes in " + shared.Dir + ".)\n"
 	// Parts has one digit, so the tag measured with it is as long as any.
-	room := Budget - size(partTag(s.Name, Parts, Parts))
-	chunks := lines("\n"+m.SessionIndex(c.Language)+sharedKnowledge(shared), room-size(cutNote))
+	room := mt.budget - mt.size(partTag(s.Name, Parts, Parts))
+	chunks := mt.lines("\n"+m.SessionIndex(c.Language)+sharedKnowledge(shared), room-mt.size(cutNote))
 	if len(chunks) > indexParts {
 		chunks = chunks[:indexParts]
 		chunks[len(chunks)-1] += cutNote
 	}
 	common := section("Rules", rules.Common(c.Language))
-	if size(common) > room { // never with the rules shipped; a guard all the same
-		common = cut(common, room-size(rulesEnd)) + rulesEnd
+	if mt.size(common) > room { // never with the rules shipped; a guard all the same
+		common = mt.cut(common, room-mt.size(rulesEnd)) + rulesEnd
 	}
 	out := append(chunks, common)
-	for _, p := range rulePieces(m, shared, room-size(rulesEnd), Parts-1-len(out)) {
-		out = append(out, within(p, room, rulesEnd))
+	for _, p := range rulePieces(mt, m, shared, room-mt.size(rulesEnd), Parts-1-len(out)) {
+		out = append(out, mt.within(p, room, rulesEnd))
 	}
 	return out
 }
@@ -163,29 +226,29 @@ func layout(c *config.Config, s *config.Space, m, shared *memory.Memory) []strin
 // firstPart is part 1: the heading with the note and what comes up today, the
 // assistant's name and personality, and the profile. When they do not fit, the profile
 // is cut to profileBudget, and then the end of the part, saying what was left out.
-func firstPart(c *config.Config, s *config.Space, m *memory.Memory, problems []memory.Problem, note, task string, total int) string {
-	return firstFrom(c, s, heading(c, s, m, problems, note, task)+assistantText(c), total)
+func firstPart(mt meter, c *config.Config, s *config.Space, m *memory.Memory, problems []memory.Problem, note, task string, total int) string {
+	return firstFrom(mt, c, s, heading(c, s, m, problems, note, task)+assistantText(c), total)
 }
 
 // partsNote is what part 1 says of the others, when there are others.
 const partsNote = "\n(This is part 1 of %d. The rules and the index of the space come in the other parts, which may arrive in any order: read them together.)\n"
 
 // firstFrom is firstPart from its heading (heading and assistantText) already built.
-func firstFrom(c *config.Config, s *config.Space, head string, total int) string {
+func firstFrom(mt meter, c *config.Config, s *config.Space, head string, total int) string {
 	if total > 1 {
 		head += fmt.Sprintf(partsNote, total)
 	}
 	profilePath := filepath.Join(c.Dir, "profile.md")
 	profile := section("Who the user is", profileText(c, s))
-	if size(head+profile) > Budget && size(profile) > profileBudget {
-		profile = cut(profile, profileBudget) + fmt.Sprintf("\n(The profile was cut to fit. Read it whole in %s.)\n", profilePath)
+	if mt.size(head+profile) > mt.budget && mt.size(profile) > profileBudget {
+		profile = mt.cut(profile, profileBudget) + fmt.Sprintf("\n(The profile was cut to fit. Read it whole in %s.)\n", profilePath)
 	}
 	end := "\n(Cut to fit: the rest of the profile is in " + profilePath + ".)\n"
-	if size(head) > Budget-size(end) {
+	if mt.size(head) > mt.budget-mt.size(end) {
 		// Only a very long note gets here: what comes up today is in the pending tool.
 		end = "\n(Cut to fit: the pending tool lists what comes up, and the profile is in " + profilePath + ".)\n"
 	}
-	return within(head+profile, Budget, end)
+	return mt.within(head+profile, mt.budget, end)
 }
 
 // partTag heads part n of total. Part 1 says once that the parts go together.
@@ -197,7 +260,7 @@ func partTag(space string, n, total int) string {
 // pieces of max units: each whole, without its History section, in the first piece
 // with room, and one longer than a piece across pieces of its own. A rule that cannot
 // go whole goes in one line, with the path of its file.
-func rulePieces(m, shared *memory.Memory, max, parts int) []string {
+func rulePieces(mt meter, m, shared *memory.Memory, max, parts int) []string {
 	type item struct {
 		group       int
 		whole, line string
@@ -251,12 +314,12 @@ func rulePieces(m, shared *memory.Memory, max, parts int) []string {
 	slots := func() int { return parts - len(pieces) - len(raw) }
 	place := func(it *item) bool {
 		for i, p := range pieces {
-			if size(render(append(p[:len(p):len(p)], it))) <= max {
+			if mt.size(render(append(p[:len(p):len(p)], it))) <= max {
 				pieces[i] = append(p, it)
 				return true
 			}
 		}
-		if slots() > 0 && size(render([]*item{it})) <= max {
+		if slots() > 0 && mt.size(render([]*item{it})) <= max {
 			pieces = append(pieces, []*item{it})
 			return true
 		}
@@ -267,7 +330,7 @@ func rulePieces(m, shared *memory.Memory, max, parts int) []string {
 			continue
 		}
 		head := "\n## " + titles[it.group] + "\n\n"
-		if chunks := lines(head+it.whole, max); size(head+it.whole) > max && len(chunks) <= slots()-1 {
+		if chunks := mt.lines(head+it.whole, max); mt.size(head+it.whole) > max && len(chunks) <= slots()-1 {
 			raw = append(raw, chunks...) // one slot stays for the rules that go in a line
 			continue
 		}
@@ -356,26 +419,26 @@ func loadSpace(c *config.Config, s *config.Space) (m, shared *memory.Memory, pro
 }
 
 // within returns text, or its start and end when it is over max units.
-func within(text string, max int, end string) string {
-	if size(text) <= max {
+func (mt meter) within(text string, max int, end string) string {
+	if mt.size(text) <= max {
 		return text
 	}
-	return cut(text, max-size(end)) + end
+	return mt.cut(text, max-mt.size(end)) + end
 }
 
 // lines splits text into pieces of at most max units, at line ends when it can.
-func lines(text string, max int) []string {
+func (mt meter) lines(text string, max int) []string {
 	var out []string
 	cur := ""
 	for _, l := range strings.SplitAfter(text, "\n") {
-		for size(l) > max { // a line longer than a piece: cut it
+		for mt.size(l) > max { // a line longer than a piece: cut it
 			if cur != "" {
 				out, cur = append(out, cur), ""
 			}
-			head := cut(l, max)
+			head := mt.cut(l, max)
 			out, l = append(out, head), l[len(head):]
 		}
-		if size(cur+l) > max {
+		if mt.size(cur+l) > max {
 			out, cur = append(out, cur), ""
 		}
 		cur += l
