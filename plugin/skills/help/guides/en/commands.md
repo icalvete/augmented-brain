@@ -890,7 +890,7 @@ folder Claude works in. The tools are in [MCP tools](mcp-tools.md).
 Answers a Claude Code hook: a call Claude Code makes at a given moment. **Claude Code
 runs it**, through the plugin; you do not. It reads what Claude Code sends on its input.
 
-Syntax: `augmented-brain hook <event> [<part>]`
+Syntax: `augmented-brain hook <event> [<part> | codex]`
 
 ```bash
 augmented-brain hook session-start 1
@@ -907,7 +907,9 @@ The events:
   `session-start 9`, because Claude Code cuts each hook's text at 10,000 characters. Only
   the parts with something in them are sent.
 - `pre-tool-use`: before every command and file change. This is the
-  [guard](guard.md).
+  [guard](guard.md). `pre-tool-use codex` is the same guard registered in Codex, which
+  cannot ask you: what it would ask about is refused (see
+  [In Codex](guard.md#in-codex-experimental)).
 - `user-prompt-submit`: before Claude answers a message. It tells Claude which tasks
   changed outside its session since it last looked (another session closed one, the
   panel changed its next step), so it reads them again instead of trusting what it read

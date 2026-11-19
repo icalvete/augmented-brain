@@ -201,7 +201,7 @@ Hace cuatro cosas para que las listas sigan siendo tuyas:
 
 - **Pregunta antes de escribir en los ficheros del guardia** (`config.toml`,
   `guard.toml`, `secrets.toml`, `remote.toml`, `session.toml`, el sello de abajo y los
-  ajustes de Claude Code), o en lo que hace funcionar al guardia: el plugin tal como lo
+  ajustes de Claude Code y de Codex), o en lo que hace funcionar al guardia: el plugin tal como lo
   guarda Claude Code (`~/.claude/plugins/cache/augmented-brain/`,
   `installed_plugins.json`) y el programa `augmented-brain`. Copiar, desempaquetar o
   sincronizar en la carpeta que guarda uno de ellos también pregunta (`cp -t`, `tar
@@ -247,6 +247,62 @@ preguntaría: producción, máquinas intocables, la lista «preguntar», un push
 sobrescribe, una publicación, guardar una regla con «preguntarte antes». Claude te dice
 qué quería hacer y por qué. Entonces puedes hacerlo tú, o abrir una sesión en otro modo y
 permitirlo allí.
+
+## En Codex (experimental)
+
+El guardia también funciona en [Codex](https://developers.openai.com/codex/hooks), el
+asistente de programación de OpenAI, como su hook `PreToolUse`. Se ha probado con Codex
+CLI 0.170.0. Todavía no hay una orden que lo configure; así se hace a mano.
+
+Codex no puede enseñarte una pregunta del guardia: cuando un hook pregunta, Codex ejecuta
+el comando de todas formas. Por eso en Codex el guardia nunca pregunta. Todo lo que en
+Claude Code te preguntaría se rechaza: producción, máquinas intocables, la lista
+«preguntar», root en una máquina con excepción, una publicación, guardar una regla con
+«preguntarte antes». El asistente te dice qué quería hacer. Entonces lo haces tú, o desde
+una sesión de Claude Code.
+
+Revisa lo mismo que en Claude Code: los comandos, los cambios de ficheros (el
+`apply_patch` de Codex, también cuando va dentro de un comando) y las herramientas que
+guardan una regla, el perfil o las listas del guardia.
+
+Para configurarlo, añade el hook a `~/.codex/hooks.json`:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {"hooks": [{"type": "command", "command": "augmented-brain hook pre-tool-use codex", "timeout": 10}]}
+    ]
+  }
+}
+```
+
+Y añade esto a `~/.codex/config.toml`:
+
+```toml
+[features]
+unified_exec_tty = false
+```
+
+Sin esa línea, el asistente puede abrir una terminal y escribir comandos en ella. Lo que
+escribe ahí no pasa por el hook, así que el guardia no lo ve nunca.
+
+Si Codex no encuentra `augmented-brain`, escribe su ruta entera en el comando
+(`~/.local/bin/augmented-brain` tras una instalación normal). Codex solo ejecuta un hook en
+el que confías: arranca Codex y acepta el hook cuando te lo pregunte.
+
+Lo que conviene saber antes de fiarse de él:
+
+- **Si el guardia falla, el comando pasa.** Claude Code para un comando cuando su hook se
+  rompe. Codex no: un hook que acaba con un error distinto de `2`, tarda más que su
+  `timeout` o contesta algo que Codex no entiende deja que el comando se ejecute.
+  augmented brain contesta en unos milisegundos y acaba con `2` cuando no puede
+  contestar, pero, por ejemplo, un programa que falta no se para.
+- **Deja puestas las protecciones de Codex.** Usa su aislamiento (`sandbox_mode =
+  "workspace-write"`) y sus aprobaciones. El guardia es una red más, no las sustituye.
+- El guardia protege el `config.toml` y el `hooks.json` de Codex (en `~/.codex`, en la
+  carpeta que diga `CODEX_HOME` y en el `.codex/` del proyecto), igual que los ajustes de
+  Claude Code.
 
 ## Cuando algo le pasa
 
@@ -339,8 +395,8 @@ saber por qué se paró o se preguntó por un comando.
   qué hacen (`git $cmd`), `xargs` pasándole a git o a una shell las palabras que lee, y
   `rm -r "$(…)"`.
 - **Los ajustes del propio guardia.** Claude nunca cambia por su cuenta la configuración
-  de augmented brain ni los ajustes de Claude Code, porque una línea ahí podría apagar una
-  comprobación.
+  de augmented brain ni los ajustes de Claude Code o de Codex, porque una línea ahí podría
+  apagar una comprobación.
 
 ### Mira por dentro
 
