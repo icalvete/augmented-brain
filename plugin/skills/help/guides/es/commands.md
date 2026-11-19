@@ -913,7 +913,7 @@ Contesta a un hook de Claude Code: una llamada que hace Claude Code en un moment
 **Lo lanza Claude Code**, a través del plugin; tú no. Lee lo que Claude Code le manda por
 su entrada.
 
-Sintaxis: `augmented-brain hook <evento> [<parte>]`
+Sintaxis: `augmented-brain hook <evento> [<parte> | codex]`
 
 ```bash
 augmented-brain hook session-start 1
@@ -930,7 +930,9 @@ Los eventos:
   `session-start 9`, porque Claude Code corta el texto de cada hook a los 10.000
   caracteres. Solo se mandan las partes que tienen algo.
 - `pre-tool-use`: antes de cada comando y cada cambio de un fichero. Es el
-  [guardia](guard.md).
+  [guardia](guard.md). `pre-tool-use codex` es el mismo guardia registrado en Codex,
+  que no puede preguntarte: lo que preguntaría se rechaza (ver
+  [En Codex](guard.md#en-codex-experimental)).
 - `user-prompt-submit`: antes de que Claude conteste a un mensaje. Le dice a Claude qué
   tareas han cambiado fuera de su sesión desde la última vez que miró (otra sesión cerró
   una, el panel cambió su siguiente paso), para que las vuelva a leer en vez de fiarse de
