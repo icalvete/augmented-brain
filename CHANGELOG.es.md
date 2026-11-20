@@ -2,6 +2,38 @@
 
 ## Sin publicar
 
+## 1.1.0
+
+Publicada el 2026-11-20.
+
+- **Pide a Claude root en una máquina, y confírmalo.** Una herramienta nueva,
+  `root_exception_save`, añade una excepción temporal de root (una máquina y una fecha
+  de fin) cuando la pides. Claude Code siempre te pregunta antes, con la máquina, la
+  fecha y para qué es, así que sirve desde una sesión que sigues en otro dispositivo,
+  donde el panel solo enseña. Una excepción nueva, desde Claude o desde el panel, acaba
+  en 30 días como mucho y no puede empezar en el pasado; una máquina tiene una sola
+  excepción, y añadirla otra vez cambia su fecha.
+- **Experimental: sigue con una tarea en Codex cuando se acaban los tokens de Claude.**
+  Se configura con `augmented-brain codex install`. Codex arranca con el
+  mismo perfil, las mismas reglas y el mismo índice del espacio que Claude, y puede abrir,
+  actualizar, planificar y aparcar sus tareas en las mismas notas. Se le dice lo que
+  cambia allí: el guardia de comandos rechaza lo que preguntaría.
+- **`augmented-brain codex install` prepara augmented brain en Codex con una sola orden
+  (experimental).** Añade un plugin con el arranque de la sesión, el guardia y las
+  herramientas de tareas, confía por ti en sus hooks y apaga `unified_exec_tty`, que
+  dejaba al asistente escribir donde el guardia no veía. Ningún fichero de Codex que
+  editar a mano. `codex status` y `doctor` dicen qué falla y cómo arreglarlo; `update`
+  vuelve a confiar en los hooks cuando una versión nueva los cambia; `codex uninstall` lo
+  quita. En Linux y macOS el guardia también para un comando si falta su programa. Cómo
+  seguir una tarea en Codex está en una guía nueva, [Seguir en
+  Codex](https://icalvete.github.io/augmented-brain/guide/codex.es.html).
+- **El guardia también funciona en Codex (experimental).**
+  `augmented-brain codex install` lo registra como hook `PreToolUse` de Codex. Codex no
+  puede enseñar una pregunta de un hook, así que allí el guardia rechaza lo que en Claude
+  Code preguntaría. Revisa los comandos, el `apply_patch` de Codex y las herramientas que
+  guardan una regla. También protege los ajustes de Codex. Cómo configurarlo, y sus
+  límites, están en [El guardia](https://icalvete.github.io/augmented-brain/guide/guard.es.html#en-codex-experimental).
+
 ## 1.0.0
 
 Publicada el 2026-11-16.
