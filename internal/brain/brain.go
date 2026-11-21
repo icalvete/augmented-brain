@@ -1080,3 +1080,22 @@ func (b *Brain) brokenID(id string) bool {
 }
 
 func (b *Brain) lang() string { return i18n.Known(b.Language) }
+
+// TaskStatuses finds a task in any space of c and says its status; found is false when
+// no space has it. Spaces that cannot be read are left out.
+func TaskStatuses(c *config.Config) func(id string) (status string, found bool) {
+	var brains []*Brain
+	for _, name := range c.SpaceNames() {
+		if b, err := Open(c, c.Spaces[name]); err == nil {
+			brains = append(brains, b)
+		}
+	}
+	return func(id string) (string, bool) {
+		for _, b := range brains {
+			if n, err := b.Task(id); err == nil {
+				return n.Header.Status, true
+			}
+		}
+		return "", false
+	}
+}

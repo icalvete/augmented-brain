@@ -300,12 +300,12 @@ var cmdHelpMessages = map[string]msg{
 		es: "Cierra la sesión de una tarea y la quita de las listas de Claude Desktop y claude.ai. La app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la archives allí: Claude no da forma de quitarla desde fuera. Funciona desde cualquier carpeta.",
 	},
 	"cmdhelp.session stop.syntax": {
-		en: "augmented-brain session stop <task> [--when-idle]",
-		es: "augmented-brain session stop <tarea> [--when-idle]",
+		en: "augmented-brain session stop <task> [--when-idle] [--keep-worktrees]",
+		es: "augmented-brain session stop <tarea> [--when-idle] [--keep-worktrees]",
 	},
 	"cmdhelp.session stop.options": {
-		en: "--when-idle\twait until the session has finished its answer, then close it. The command returns at once, and a process in the background waits, up to 30 minutes; a session waiting for a permission counts as answering, and one still answering by then stays open. Closing the task runs it this way by itself, so a session can close its own task without cutting its answer off. What it did goes to state/session-stop.log in the configuration folder, with a line every 5 minutes while it waits.",
-		es: "--when-idle\tespera a que la sesión termine su respuesta y después la cierra. La orden vuelve en el acto, y un proceso en segundo plano espera, hasta 30 minutos; una sesión que espera un permiso cuenta como respondiendo, y una que siga respondiendo entonces se queda abierta. Cerrar la tarea lo lanza así solo, para que una sesión pueda cerrar su propia tarea sin cortar su respuesta. Lo que hizo queda en state/session-stop.log, en la carpeta de la configuración, con una línea cada 5 minutos mientras espera.",
+		en: "--when-idle\twait until the session has finished its answer, then close it. The command returns at once, and a process in the background waits, up to 30 minutes; a session waiting for a permission counts as answering, and one still answering by then stays open. Closing the task runs it this way by itself, so a session can close its own task without cutting its answer off. What it did goes to state/session-stop.log in the configuration folder, with a line every 5 minutes while it waits.\n--keep-worktrees\tclose the session and leave the task's worktrees as they are. Parking a task, or sending it to someday, runs it this way by itself, with --when-idle: the task goes on later, and its branch with it.",
+		es: "--when-idle\tespera a que la sesión termine su respuesta y después la cierra. La orden vuelve en el acto, y un proceso en segundo plano espera, hasta 30 minutos; una sesión que espera un permiso cuenta como respondiendo, y una que siga respondiendo entonces se queda abierta. Cerrar la tarea lo lanza así solo, para que una sesión pueda cerrar su propia tarea sin cortar su respuesta. Lo que hizo queda en state/session-stop.log, en la carpeta de la configuración, con una línea cada 5 minutos mientras espera.\n--keep-worktrees\tcierra la sesión y deja los worktrees de la tarea como están. Aparcar una tarea, o mandarla a algún día, lo lanza así solo, con --when-idle: la tarea sigue más adelante, y su rama con ella.",
 	},
 	"cmdhelp.session stop.example": {
 		en: "augmented-brain session stop task-new-website",
@@ -396,8 +396,8 @@ var cmdHelpMessages = map[string]msg{
 		es: "augmented-brain clean [--yes]",
 	},
 	"cmdhelp.clean.options": {
-		en: "--yes\tdo not ask.",
-		es: "--yes\tno pregunta.",
+		en: "--yes\tdo not ask, except for the background sessions no task opened.",
+		es: "--yes\tno pregunta, salvo por las sesiones de fondo que no abrió ninguna tarea.",
 	},
 	"cmdhelp.clean.example": {
 		en: "augmented-brain clean",

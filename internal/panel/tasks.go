@@ -352,6 +352,8 @@ func (s *Server) taskPark(v *view, r *http.Request) (string, error) {
 		return "", err
 	}
 	v.b.Released(id)
+	v.unlock()
+	parkedTask(v.b.ConfigDir, id)
 	return taskPage(id), nil
 }
 
@@ -373,9 +375,18 @@ func (s *Server) taskClose(v *view, r *http.Request) (string, error) {
 // newRemoteSystem and stopWhenIdle are what closing a task from the panel uses to end
 // its session and remove its worktrees, as task_close does; tests replace them.
 var (
-	newRemoteSystem = remote.NewSystem
-	stopWhenIdle    = remote.StopWhenIdle
+	newRemoteSystem  = remote.NewSystem
+	stopWhenIdle     = remote.StopWhenIdle
+	stopWhenIdleKeep = remote.StopWhenIdleKeep
 )
+
+// parkedTask ends a parked task's own session and keeps its worktrees, the way
+// task_park does (remote.System.ParkedTask).
+func parkedTask(cfgDir, id string) {
+	if sys, err := newRemoteSystem(); err == nil {
+		_ = sys.ParkedTask(cfgDir, id, stopWhenIdleKeep)
+	}
+}
 
 // closedTask ends a task's own session and removes its worktrees, the way task_close
 // does (remote.System.ClosedTask). What it did is for an assistant; the task's page

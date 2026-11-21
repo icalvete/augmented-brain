@@ -2,11 +2,13 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"strings"
 
+	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/leftovers"
@@ -33,9 +35,10 @@ func cmdClean(args []string, in io.Reader, out, errOut io.Writer) int {
 		return 2
 	}
 	lang := i18n.FromEnv()
+	var c *config.Config
 	if dir, err := config.Dir(); err == nil {
-		if c, err := config.Load(dir); err == nil {
-			lang = c.Language
+		if loaded, err := config.Load(dir); err == nil {
+			c, lang = loaded, loaded.Language
 		}
 	}
 	env, ok := cleanEnv()
@@ -45,66 +48,176 @@ func cmdClean(args []string, in io.Reader, out, errOut io.Writer) int {
 	}
 	r := leftovers.Find(env)
 	kept := keptWorktrees(r)
-	if r.Empty() {
+	sys, tasks, others := spareSessions(c, lang, errOut)
+	answers := bufio.NewReader(in)
+	if r.Empty() && len(tasks) == 0 && len(others) == 0 {
 		fmt.Fprintln(out, i18n.T(lang, "clean.nothing"))
 		printKept(out, lang, kept)
 		return 0
 	}
-	fmt.Fprintln(out, i18n.T(lang, "clean.plan"))
-	if w := r.Removable(); len(w) > 0 {
-		fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.worktrees"))
-		for _, x := range w {
-			line := paths.Tilde(x.Folder)
-			if x.Branch != "" {
-				line = i18n.T(lang, "clean.worktree.branch", line, x.Branch)
+	code := 0
+	if !r.Empty() || len(tasks) > 0 {
+		fmt.Fprintln(out, i18n.T(lang, "clean.plan"))
+		if w := r.Removable(); len(w) > 0 {
+			fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.worktrees"))
+			for _, x := range w {
+				line := paths.Tilde(x.Folder)
+				if x.Branch != "" {
+					line = i18n.T(lang, "clean.worktree.branch", line, x.Branch)
+				}
+				fmt.Fprintln(out, "  - "+line)
 			}
-			fmt.Fprintln(out, "  - "+line)
 		}
-	}
-	if len(r.Prunable) > 0 {
-		fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.prunable"))
-		for _, p := range r.Prunable {
-			fmt.Fprintln(out, "  - "+paths.Tilde(p))
+		if len(r.Prunable) > 0 {
+			fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.prunable"))
+			for _, p := range r.Prunable {
+				fmt.Fprintln(out, "  - "+paths.Tilde(p))
+			}
 		}
-	}
-	if len(r.Scratch) > 0 {
-		fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.scratch", len(r.Scratch), leftovers.HumanSize(r.ScratchSize()), paths.Tilde(env.TempRoot)))
-		if !r.AllProfiles {
-			fmt.Fprintln(out, i18n.T(lang, "clean.oneprofile", paths.Tilde(env.ClaudeDir)))
+		if len(r.Scratch) > 0 {
+			fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.scratch", len(r.Scratch), leftovers.HumanSize(r.ScratchSize()), paths.Tilde(env.TempRoot)))
+			if !r.AllProfiles {
+				fmt.Fprintln(out, i18n.T(lang, "clean.oneprofile", paths.Tilde(env.ClaudeDir)))
+			}
 		}
-	}
-	if !r.ScratchOK {
-		fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.noscratch", paths.Tilde(env.ClaudeDir)))
-	}
-	printKept(out, lang, kept)
-	if !*yes {
-		fmt.Fprint(out, "\n"+i18n.T(lang, "clean.ask")+" ")
-		answer, _ := bufio.NewReader(in).ReadString('\n')
-		if a := strings.ToLower(strings.TrimSpace(answer)); !strings.HasPrefix(a, "y") && !strings.HasPrefix(a, "s") {
+		if len(tasks) > 0 {
+			fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.sessions"))
+			for _, sp := range tasks {
+				fmt.Fprintln(out, "  - "+spareTaskLine(lang, sp))
+			}
+		}
+		if !r.ScratchOK {
+			fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.noscratch", paths.Tilde(env.ClaudeDir)))
+		}
+		printKept(out, lang, kept)
+		if *yes || said(out, answers, "\n"+i18n.T(lang, "clean.ask")) {
+			code = cleanAll(env, r, sys, c, tasks, lang, out, errOut)
+		} else {
 			fmt.Fprintln(out, i18n.T(lang, "uninstall.nothing"))
-			return 1
+			code = 1
+		}
+	} else {
+		printKept(out, lang, kept)
+	}
+	if len(others) == 0 {
+		return code
+	}
+	// Sessions someone else started: one by one, never with --yes.
+	fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.others"))
+	for _, sp := range others {
+		line := i18n.T(lang, "clean.other", sp.Name, sp.ID, paths.Tilde(sp.Folder), i18n.T(lang, "clean.state."+sp.State))
+		if sp.InWorktree() {
+			line += " " + i18n.T(lang, "clean.other.worktree")
+		}
+		fmt.Fprintln(out, "  - "+line)
+		if *yes {
+			continue
+		}
+		if !said(out, answers, "    "+i18n.T(lang, "clean.other.ask")) {
+			continue
+		}
+		if err := sys.RemoveSpare(c.Dir, sp); err != nil {
+			fmt.Fprintln(errOut, "    "+err.Error())
+			code = 1
+			continue
+		}
+		fmt.Fprintln(out, "    "+i18n.T(lang, "clean.other.removed", sp.Name))
+	}
+	if *yes {
+		fmt.Fprintln(out, i18n.T(lang, "clean.others.yes"))
+	}
+	return code
+}
+
+// said asks question and says whether the answer is yes (y, s, yes, sí…).
+func said(out io.Writer, in *bufio.Reader, question string) bool {
+	fmt.Fprint(out, question+" ")
+	answer, _ := in.ReadString('\n')
+	a := strings.ToLower(strings.TrimSpace(answer))
+	return strings.HasPrefix(a, "y") || strings.HasPrefix(a, "s")
+}
+
+// cleanAll removes what clean found, after the yes: the leftovers and the sessions of
+// tasks parked, put off, closed or gone.
+func cleanAll(env leftovers.Env, r leftovers.Report, sys remote.System, c *config.Config, tasks []remote.Spare, lang string, out, errOut io.Writer) int {
+	code := 0
+	if !r.Empty() {
+		d := leftovers.Clean(env, r)
+		if len(d.Worktrees) > 0 {
+			fmt.Fprintln(out, i18n.T(lang, "clean.removed.worktrees", len(d.Worktrees)))
+		}
+		for _, k := range d.Kept {
+			fmt.Fprintln(out, i18n.T(lang, "clean.removed.kept", paths.Tilde(k.Folder)))
+		}
+		if len(d.Pruned) > 0 {
+			fmt.Fprintln(out, i18n.T(lang, "clean.removed.pruned", len(d.Pruned)))
+		}
+		if d.Scratch > 0 {
+			fmt.Fprintln(out, i18n.T(lang, "clean.removed.scratch", d.Scratch, leftovers.HumanSize(d.Freed)))
+		}
+		for _, err := range d.Errors {
+			fmt.Fprintln(errOut, err)
+		}
+		if len(d.Errors) > 0 {
+			code = 1
 		}
 	}
-	d := leftovers.Clean(env, r)
-	if len(d.Worktrees) > 0 {
-		fmt.Fprintln(out, i18n.T(lang, "clean.removed.worktrees", len(d.Worktrees)))
+	removed := 0
+	for _, sp := range tasks {
+		var left *remote.LeftInClaude
+		switch err := sys.RemoveSpare(c.Dir, sp); {
+		case err == nil:
+			removed++
+		case errors.As(err, &left):
+			fmt.Fprintln(errOut, i18n.T(lang, "session.left", sp.Task, left.ID))
+			code = 1
+		default:
+			fmt.Fprintln(errOut, sp.Task+": "+err.Error())
+			code = 1
+		}
 	}
-	for _, k := range d.Kept {
-		fmt.Fprintln(out, i18n.T(lang, "clean.removed.kept", paths.Tilde(k.Folder)))
+	if removed > 0 {
+		fmt.Fprintln(out, i18n.T(lang, "clean.removed.sessions", removed))
 	}
-	if len(d.Pruned) > 0 {
-		fmt.Fprintln(out, i18n.T(lang, "clean.removed.pruned", len(d.Pruned)))
+	return code
+}
+
+// spareTaskLine names a task's spare session and why it is left over.
+func spareTaskLine(lang string, sp remote.Spare) string {
+	if sp.TaskStatus == "" {
+		return i18n.T(lang, "clean.session.gone", sp.Name, sp.Task)
 	}
-	if d.Scratch > 0 {
-		fmt.Fprintln(out, i18n.T(lang, "clean.removed.scratch", d.Scratch, leftovers.HumanSize(d.Freed)))
+	return i18n.T(lang, "clean.session", sp.Name, sp.Task, i18n.T(lang, "clean.status."+sp.TaskStatus))
+}
+
+// spareSessions are the background sessions left over (remote.SpareSessions): the
+// tasks' own and the others. None without a configuration, or where sessions are not
+// supported; when Claude's list cannot be read, it says so.
+func spareSessions(c *config.Config, lang string, errOut io.Writer) (remote.System, []remote.Spare, []remote.Spare) {
+	if c == nil {
+		return remote.System{}, nil, nil
 	}
-	for _, err := range d.Errors {
-		fmt.Fprintln(errOut, err)
+	sys, err := remoteSystem()
+	if err != nil || sys.GOOS != "linux" {
+		return sys, nil, nil
 	}
-	if len(d.Errors) > 0 {
-		return 1
+	if _, err := sys.FindClaude(); err != nil {
+		return sys, nil, nil
 	}
-	return 0
+	list, err := sys.SpareSessions(c.Dir, brain.TaskStatuses(c))
+	if err != nil {
+		fmt.Fprintln(errOut, i18n.T(lang, "clean.sessions.unread", err))
+		return sys, nil, nil
+	}
+	var tasks, others []remote.Spare
+	for _, sp := range list {
+		if sp.OfTask() {
+			tasks = append(tasks, sp)
+		} else {
+			others = append(others, sp)
+		}
+	}
+	return sys, tasks, others
 }
 
 func keptWorktrees(r leftovers.Report) []leftovers.Worktree {

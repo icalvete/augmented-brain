@@ -632,7 +632,7 @@ Closes a task's session and takes it out of the lists of Claude Desktop and clau
 The Claude app on a phone may keep showing it, offline, until you archive it there:
 Claude offers no way to remove it from there. It works from any folder.
 
-Syntax: `augmented-brain session stop <task> [--when-idle]`
+Syntax: `augmented-brain session stop <task> [--when-idle] [--keep-worktrees]`
 
 ```bash
 augmented-brain session stop task-new-website
@@ -644,6 +644,9 @@ augmented-brain session stop task-new-website
   stays open. Closing the task runs it this way by itself, so a session can close its own
   task without cutting its answer off. What it did goes to `state/session-stop.log` in
   the configuration folder, with a line every 5 minutes while it waits.
+- `--keep-worktrees`: close the session and leave the task's worktrees as they are.
+  Parking a task, or sending it to someday, runs it this way by itself, with
+  `--when-idle`: the task goes on later, and its branch with it.
 
 **The task's worktree** (the one `session start` made, see above) goes too, with its
 branch, as long as nothing would be lost. It stays, and the command says so, when it
@@ -865,11 +868,24 @@ It looks in every folder Claude Code was opened in, and in its scratch folder:
   for over a day. Those of running sessions stay, and so does anything else there. On
   Linux that includes sessions of another Claude folder (`CLAUDE_CONFIG_DIR`); elsewhere
   only those of your usual Claude folder count, and the command reminds you.
+- **Sessions of tasks no longer going on** (Linux): a task's own session
+  (`session start`) whose task is parked, put off, closed or gone. Claude keeps a
+  session it stopped in its list, in Claude Desktop and in claude.ai, and may bring it
+  back when it starts again. It is closed as `session stop --keep-worktrees` does: out of
+  those lists for good, its worktrees left.
+
+Then, one by one, **background sessions no task opened** that ended or that you
+archived. Someone else started them, so it asks for each one, and `--yes` never removes
+them. Each goes with `claude stop` and `claude rm`: it leaves Claude Desktop and
+claude.ai, and its conversation stays for `claude --resume`. If it works in a worktree
+Claude Code made, the worktree goes too when nothing would be lost; when Claude refuses,
+it says why. A session answering now is never touched, nor one of Claude Desktop or a
+terminal.
 
 Before removing each thing it looks again, so a session that started meanwhile keeps its
 folders. `doctor` says when there is something to clean.
 
-- `--yes`: do not ask.
+- `--yes`: do not ask, except for the background sessions no task opened.
 
 ## augmented-brain update
 

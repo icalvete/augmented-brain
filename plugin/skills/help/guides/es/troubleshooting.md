@@ -351,6 +351,18 @@ con el mismo nombre, en otro grupo de la lista. En la vieja no contesta nadie: l
 escribas ahí se pierde. Usa la del grupo con el nombre de la carpeta nueva, y archiva la
 vieja en claude.ai o Claude Desktop.
 
+### Vuelven sesiones que archivé o aparqué
+
+Archivar una sesión de fondo en Claude Desktop no la cierra: Claude la guarda en su
+lista y la vuelve a levantar la próxima vez que arranca, como hace con cada sesión que
+paró por falta de uso. Ejecuta `augmented-brain clean`: cierra las sesiones de tareas
+aparcadas, para algún día o cerradas, y pregunta una a una por las sesiones de fondo que
+no abrió ninguna tarea. Desde ahora, aparcar una tarea cierra su sesión sola.
+
+Justo después de actualizarse Claude Code, Claude Desktop también puede enseñar una
+sesión dos veces, una de ellas desconectada. Es la misma sesión (claude.ai la enseña una
+vez), y Claude no da forma de quitar la línea de más desde este ordenador.
+
 ## El ordenador
 
 ### La ventana usa mucha memoria
