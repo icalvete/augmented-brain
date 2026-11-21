@@ -855,6 +855,16 @@ func findAgent(list []claudeAgent, id string) (claudeAgent, bool) {
 // version (a systemd unit) tells nothing of its answers: it is stopped at once, as
 // `session stop` does. With no session at all it says so (ErrNoSession).
 func (s System) StopWhenIdle(cfgDir, task string, max time.Duration) error {
+	return s.stopIdle(cfgDir, task, max, false)
+}
+
+// StopWhenIdleKeep is StopWhenIdle that leaves the task's worktrees as they are: what
+// parking a task uses, since the task goes on later and its branch with it.
+func (s System) StopWhenIdleKeep(cfgDir, task string, max time.Duration) error {
+	return s.stopIdle(cfgDir, task, max, true)
+}
+
+func (s System) stopIdle(cfgDir, task string, max time.Duration, keepWorktrees bool) error {
 	r, ok := readLaunch(cfgDir, task)
 	if !ok {
 		return s.Stop(cfgDir, task)
@@ -886,8 +896,10 @@ func (s System) StopWhenIdle(cfgDir, task string, max time.Duration) error {
 	if stopErr != nil && !errors.As(stopErr, &left) {
 		return stopErr
 	}
-	_, _, _ = RemoveTaskWorktree(cfgDir, task)
-	_, _ = RemoveNotedWorktrees(cfgDir, task)
+	if !keepWorktrees {
+		_, _, _ = RemoveTaskWorktree(cfgDir, task)
+		_, _ = RemoveNotedWorktrees(cfgDir, task)
+	}
 	return stopErr
 }
 

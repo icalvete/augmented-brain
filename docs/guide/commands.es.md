@@ -648,7 +648,7 @@ Cierra la sesión de una tarea y la quita de las listas de Claude Desktop y clau
 La app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la archives
 allí: Claude no da forma de quitarla desde fuera. Funciona desde cualquier carpeta.
 
-Sintaxis: `augmented-brain session stop <tarea> [--when-idle]`
+Sintaxis: `augmented-brain session stop <tarea> [--when-idle] [--keep-worktrees]`
 
 ```bash
 augmented-brain session stop task-new-website
@@ -661,6 +661,9 @@ augmented-brain session stop task-new-website
   cerrar su propia tarea sin cortar su respuesta. Lo que hizo queda en
   `state/session-stop.log`, en la carpeta de la configuración, con una línea cada 5
   minutos mientras espera.
+- `--keep-worktrees`: cierra la sesión y deja los worktrees de la tarea como están.
+  Aparcar una tarea, o mandarla a algún día, lo lanza así solo, con `--when-idle`: la
+  tarea sigue más adelante, y su rama con ella.
 
 **El worktree de la tarea** (el que creó `session start`, mira arriba) también se va, con
 su rama, siempre que no se pierda nada. Se queda, y el comando lo dice, si tiene:

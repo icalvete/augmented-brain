@@ -63,6 +63,7 @@
     "model"
   ],
   "session stop": [
+    "keep-worktrees",
     "when-idle"
   ],
   "space": [],

@@ -28,11 +28,12 @@ func sessionFlags(errOut io.Writer) (*flag.FlagSet, *string, *string) {
 	return fs, folder, model
 }
 
-func sessionStopFlags(errOut io.Writer) (*flag.FlagSet, *bool) {
+func sessionStopFlags(errOut io.Writer) (*flag.FlagSet, *bool, *bool) {
 	fs := flag.NewFlagSet("session stop", flag.ContinueOnError)
 	fs.SetOutput(errOut)
 	whenIdle := fs.Bool("when-idle", false, "wait until the session has finished its answer (what closing the task uses)")
-	return fs, whenIdle
+	keep := fs.Bool("keep-worktrees", false, "leave the task's worktrees as they are (what parking the task uses)")
+	return fs, whenIdle, keep
 }
 
 // cmdSession is `session start TASK | stop TASK | restart SESSION | list`: a remote session of its own
@@ -73,7 +74,7 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		}
 		return sessionList(c, sys, out, errOut)
 	case "stop":
-		fs, whenIdle := sessionStopFlags(errOut)
+		fs, whenIdle, keep := sessionStopFlags(errOut)
 		var task string
 		rest := args[1:]
 		if len(rest) > 0 && !strings.HasPrefix(rest[0], "-") {
@@ -92,7 +93,11 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			// Run from the session itself, waiting here would keep it answering until
 			// the command returns, and it would never be idle (#99): the wait goes on in
 			// a detached copy, the same one closing the task starts.
-			if err := stopDetached(c.Dir, task); err != nil {
+			detached := stopDetached
+			if *keep {
+				detached = stopDetachedKeep
+			}
+			if err := detached(c.Dir, task); err != nil {
 				return sessionErr(l, err, errOut)
 			}
 			fmt.Fprintln(out, i18n.T(l, "session.stop.waiting", task, 30, tilde(filepath.Join(c.Dir, state.Dir, mcpserver.StopLog))))
@@ -106,12 +111,16 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 			sys.Waiting = func(d time.Duration) {
 				fmt.Fprintln(out, logStamp()+i18n.T(l, "wait.still", task, int(d.Minutes())))
 			}
-			err := sys.StopWhenIdle(c.Dir, task, 30*time.Minute)
+			stop := sys.StopWhenIdle
+			if *keep {
+				stop = sys.StopWhenIdleKeep
+			}
+			err := stop(c.Dir, task, 30*time.Minute)
 			stamp := logStamp()
 			code, _ := sessionStopped(l, task, err, stamp, out, errOut)
 			return code
 		}
-		if code, ok := sessionStopped(l, task, sys.Stop(c.Dir, task), "", out, errOut); !ok {
+		if code, ok := sessionStopped(l, task, sys.Stop(c.Dir, task), "", out, errOut); !ok || *keep {
 			return code
 		}
 		args = []string{"stop", task}
@@ -326,6 +335,9 @@ func sessionStopped(l, task string, err error, prefix string, out, errOut io.Wri
 // stopDetached starts the copy of `session stop --when-idle` that waits; tests replace
 // it.
 var stopDetached = mcpserver.StopSessionWhenIdle
+
+// stopDetachedKeep is stopDetached with --keep-worktrees; tests replace it.
+var stopDetachedKeep = mcpserver.StopSessionWhenIdleKeep
 
 func sessionErr(l string, err error, errOut io.Writer) int {
 	if errors.Is(err, remote.ErrUnsupported) {

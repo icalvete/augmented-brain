@@ -4,8 +4,8 @@ package i18n
 // session start tells the assistant in it.
 var launchMessages = map[string]msg{
 	"usage.session": {
-		en: "usage: augmented-brain session start TASK [--folder DIR] [--model MODEL] | stop TASK [--when-idle] | restart SESSION [--when-idle] | restart --old | list",
-		es: "uso: augmented-brain session start TAREA [--folder DIR] [--model MODELO] | stop TAREA [--when-idle] | restart SESIÓN [--when-idle] | restart --old | list",
+		en: "usage: augmented-brain session start TASK [--folder DIR] [--model MODEL] | stop TASK [--when-idle] [--keep-worktrees] | restart SESSION [--when-idle] | restart --old | list",
+		es: "uso: augmented-brain session start TAREA [--folder DIR] [--model MODELO] | stop TAREA [--when-idle] [--keep-worktrees] | restart SESIÓN [--when-idle] | restart --old | list",
 	},
 	"session.notask": {
 		en: "there is no task %q in space %s.",
@@ -91,6 +91,14 @@ var launchMessages = map[string]msg{
 	"session.closing": {
 		en: "The task's own session closes when it finishes this answer, and leaves the lists of Claude Desktop and claude.ai (the Claude app on a phone may keep showing it, offline, until you archive it there); its worktree goes with it when nothing would be lost.",
 		es: "La sesión propia de la tarea se cierra cuando termine esta respuesta, y sale de las listas de Claude Desktop y claude.ai (la app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la archives allí); su worktree se va con ella si no se pierde nada.",
+	},
+	"session.parking": {
+		en: "The task's own session closes when it finishes this answer, and leaves the lists of Claude Desktop and claude.ai, so it does not come back by itself; its worktrees stay. To take the task up again in a session of its own: augmented-brain session start <task>.",
+		es: "La sesión propia de la tarea se cierra cuando termine esta respuesta, y sale de las listas de Claude Desktop y claude.ai, así que no vuelve sola; sus worktrees se quedan. Para retomar la tarea en una sesión propia: augmented-brain session start <tarea>.",
+	},
+	"session.parked.retired": {
+		en: "Closed the task's own session, which Claude had stopped: it leaves the lists of Claude Desktop and claude.ai, so it does not come back by itself; its worktrees stay.",
+		es: "Cerrada la sesión propia de la tarea, que Claude había parado: sale de las listas de Claude Desktop y claude.ai, así que no vuelve sola; sus worktrees se quedan.",
 	},
 	"session.closed.retired": {
 		en: "Closed the task's own session, which Claude had stopped: it leaves the lists of Claude Desktop and claude.ai (the Claude app on a phone may keep showing it, offline, until you archive it there).",

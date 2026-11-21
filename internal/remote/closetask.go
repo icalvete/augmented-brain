@@ -26,11 +26,25 @@ const StopDetached = "AB_STOP_DETACHED"
 // finished its answer (`session stop <task> --when-idle`), its output appended to
 // StopLog (started afresh past 64 KB).
 func StopWhenIdle(cfgDir, task string) error {
+	return stopDetached(cfgDir, task, false)
+}
+
+// StopWhenIdleKeep is StopWhenIdle for a task that was parked: the detached process
+// leaves the task's worktrees (`session stop <task> --when-idle --keep-worktrees`).
+func StopWhenIdleKeep(cfgDir, task string) error {
+	return stopDetached(cfgDir, task, true)
+}
+
+func stopDetached(cfgDir, task string, keepWorktrees bool) error {
 	self, err := os.Executable()
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command(self, "session", "stop", task, "--when-idle")
+	args := []string{"session", "stop", task, "--when-idle"}
+	if keepWorktrees {
+		args = append(args, "--keep-worktrees")
+	}
+	cmd := exec.Command(self, args...)
 	cmd.Env = append(os.Environ(), "AB_CONFIG_DIR="+cfgDir, StopDetached+"=1")
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = nil, nil, nil
 	logPath := filepath.Join(cfgDir, state.Dir, StopLog)
@@ -91,4 +105,31 @@ func (s System) ClosedTask(cfgDir, task string, stop func(cfgDir, task string) e
 		out += "\n" + i18n.T("en", "session.worktree.closed.kept", paths.Tilde(k.Folder), WhyKept("en", k.Folder, k.Why))
 	}
 	return out
+}
+
+// ParkedTask does what parking a task does beyond its note (task_park, task_update with
+// status parked or someday, the panel's Park): it ends the task's own session, so
+// Claude's daemon does not bring it back on its next start (it does, for a session it
+// only retired: measured on 21-nov, 2.1.330), and leaves its worktrees, since the task
+// goes on later. A running session is closed once it has finished its answer, through
+// stop (StopWhenIdleKeep); one Claude retired, at once. It says what it did in English,
+// like every tool's answer.
+func (s System) ParkedTask(cfgDir, task string, stop func(cfgDir, task string) error) string {
+	if s.LaunchRunning(cfgDir, task) {
+		if err := stop(cfgDir, task); err == nil {
+			return "\n" + i18n.T("en", "session.parking")
+		}
+		return ""
+	}
+	if !HasLaunch(cfgDir, task) {
+		return ""
+	}
+	var left *LeftInClaude
+	switch err := s.Stop(cfgDir, task); {
+	case err == nil:
+		return "\n" + i18n.T("en", "session.parked.retired")
+	case errors.As(err, &left):
+		return "\n" + i18n.T("en", "session.left", task, left.ID)
+	}
+	return ""
 }
