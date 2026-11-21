@@ -24,7 +24,9 @@ it feels to a newcomer.
 - **The guard and the installed plugin apply to you too.** A push, a pull request merge
   or a release asks the maintainer, and so does a write to the plugin's own files. The MCP
   tools and hooks in your session are the *installed* version's, not this checkout's: to
-  try a change, build it and run `claude --plugin-dir plugin` with it first in `PATH`.
+  try a change in a real session, run `scripts/try-plugin.sh` (a copy of the plugin that
+  runs the program it just built, in a made-up space). `claude --plugin-dir plugin` alone
+  still runs the installed program: the plugin puts `~/.local/bin` first in `PATH`.
 - **Code, comments, commit messages and `dev/` are in English.** Whatever a person reads
   in the program or the docs is in English and Spanish (rules below).
 - **Read the package comment first.** Every package starts with `// Package …`, which
