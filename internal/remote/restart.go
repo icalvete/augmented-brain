@@ -39,6 +39,11 @@ import (
 //     this program cannot see which server is whose (Windows), it is left alone, and
 //     said why.
 //
+// `session restart --old` (and update) restarts none of them: it only stops the old
+// servers of every idle session, as for Claude Desktop (ServersOnly). A respawn brought
+// back a task's session the user had archived in Claude Desktop (21-nov), and a service
+// restart opens new sessions in it. Naming one session restarts it as above.
+//
 // Each session is looked at again just before its restart, and only an idle one is
 // restarted (busy also means waiting for a permission): never one in the middle of an
 // answer. One that fails leaves the others going. Never the session, or the service,
@@ -70,8 +75,14 @@ type Session struct {
 	// Claude nothing (its state stays blocked, measured on 12-nov), so it is never
 	// respawned either.
 	Unlaunched bool
-	Kind       SessionKind
-	Unit       string // the remote service, for KindRemote
+	// ServersOnly is set by --old on every session: only its old augmented brain
+	// servers are stopped, never a respawn or a service restart. Archiving a session in
+	// Claude Desktop tells Claude nothing, so a task's own session may be one the user
+	// put away (21-nov: --old brought one back), and a service restart opens new
+	// sessions in it.
+	ServersOnly bool
+	Kind        SessionKind
+	Unit        string // the remote service, for KindRemote
 	// Old says its augmented brain is an earlier one; Version is that one's ("" when
 	// it did not say).
 	Old     bool
@@ -292,7 +303,7 @@ func (s System) Restart(claude string, targets []Session) []RestartResult {
 	var out []RestartResult
 	doneUnit := map[string]RestartResult{}
 	for _, t := range targets {
-		if t.Kind == KindRemote {
+		if t.Kind == KindRemote && !t.ServersOnly {
 			if r, ok := doneUnit[t.Unit]; ok {
 				r.Session = t
 				out = append(out, r)
@@ -300,7 +311,7 @@ func (s System) Restart(claude string, targets []Session) []RestartResult {
 			}
 		}
 		r := s.restartOne(claude, t)
-		if t.Kind == KindRemote {
+		if t.Kind == KindRemote && !t.ServersOnly {
 			doneUnit[t.Unit] = r
 		}
 		out = append(out, r)
@@ -311,14 +322,19 @@ func (s System) Restart(claude string, targets []Session) []RestartResult {
 func (s System) restartOne(claude string, t Session) RestartResult {
 	r := RestartResult{Session: t}
 	var servers []int
-	if t.Kind == KindOther {
+	if t.Kind == KindOther || t.ServersOnly {
 		if servers = s.serversOf(t); len(servers) == 0 {
 			r.Outcome = Unsupported
 			return r
 		}
 	}
 	mains := s.serviceMains()
-	if s.isSelf(t, mains) {
+	self := t
+	if t.ServersOnly {
+		// Its service is not restarted: only this very session counts as self.
+		self.Kind = KindOther
+	}
+	if s.isSelf(self, mains) {
 		r.Outcome = Self
 		return r
 	}
@@ -355,8 +371,8 @@ func (s System) restartOne(claude string, t Session) RestartResult {
 		r.Outcome = Busy
 		return r
 	}
-	switch t.Kind {
-	case KindOther:
+	switch {
+	case t.Kind == KindOther || t.ServersOnly:
 		// Its window stays; Claude Code starts the server again at its next call.
 		for _, pid := range servers {
 			if err := s.StopServer(pid); err != nil {
@@ -366,12 +382,12 @@ func (s System) restartOne(claude string, t Session) RestartResult {
 		}
 		r.Outcome = ServerRestarted
 		return r
-	case KindBackground:
+	case t.Kind == KindBackground:
 		if out, err := s.Run(claude, "respawn", t.ID); err != nil {
 			r.Outcome, r.Err = RestartFailed, errors.New(strings.TrimSpace(cleanTerminal(out)+" "+err.Error()))
 			return r
 		}
-	case KindRemote:
+	case t.Kind == KindRemote:
 		for _, se := range now {
 			if se.Kind == KindRemote && se.Unit == t.Unit && se.Status != "idle" {
 				r.Outcome = SharedBusy

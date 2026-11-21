@@ -252,12 +252,12 @@ var launchMessages = map[string]msg{
 		es: "«%s» comparte su servicio remoto (%s) con una sesión que está respondiendo: se queda como está. Prueba otra vez cuando acabe.",
 	},
 	"restart.ended": {
-		en: "✓ Updated \"%s\" without bringing it back (it is archived or ended, or not a task's session, so it may have been archived in Claude Desktop): only its earlier augmented brain stops, and the one of now starts if it is used again.",
-		es: "✓ Puesta al día «%s» sin relanzarla (está archivada o terminada, o no es la sesión de una tarea, así que pudo archivarse en Claude Desktop): solo se para su augmented brain anterior, y arranca el de ahora si vuelve a usarse.",
+		en: "✓ Updated \"%s\" without bringing it back (it is archived or ended): only its earlier augmented brain stops, and the one of now starts if it is used again.",
+		es: "✓ Puesta al día «%s» sin relanzarla (está archivada o terminada): solo se para su augmented brain anterior, y arranca el de ahora si vuelve a usarse.",
 	},
 	"restart.server": {
-		en: "✓ Updated \"%s\" (Claude Desktop or a terminal) without closing it: its augmented brain starts again, with the program of now, the next time it uses it.",
-		es: "✓ Puesta al día «%s» (Claude Desktop o un terminal) sin cerrarla: su augmented brain arranca otra vez, con el programa de ahora, la próxima vez que lo use.",
+		en: "✓ Updated \"%s\" without closing or restarting it: its augmented brain starts again, with the program of now, the next time it uses it.",
+		es: "✓ Puesta al día «%s» sin cerrarla ni reiniciarla: su augmented brain arranca otra vez, con el programa de ahora, la próxima vez que lo use.",
 	},
 	"restart.unsupported": {
 		en: "\"%s\" is a session of Claude Desktop or a terminal, and on this system augmented brain cannot tell which of its servers is that session's. Close it and open it again when it suits you.",
@@ -288,8 +288,8 @@ var launchMessages = map[string]msg{
 		es: "✓ Ninguna sesión de Claude sigue con un augmented brain anterior.",
 	},
 	"restart.old": {
-		en: "%d Claude sessions still run an earlier augmented brain. Restarting the idle ones, one at a time:",
-		es: "%d sesiones de Claude siguen con un augmented brain anterior. Reinicio las que están quietas, una a una:",
+		en: "%d Claude sessions still run an earlier augmented brain. Updating the idle ones, one at a time, without restarting them:",
+		es: "%d sesiones de Claude siguen con un augmented brain anterior. Pongo al día las que están quietas, una a una, sin reiniciarlas:",
 	},
 	"restart.unknown": {
 		en: "%d more servers of an earlier augmented brain are running, and I cannot tell which session they belong to: close and open your Claude sessions when it suits you.",

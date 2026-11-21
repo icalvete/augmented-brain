@@ -351,8 +351,8 @@ var commandMessages = map[string]msg{
 		es: "  · espacio %s: la tarea %s está activa. Pide antes a su sesión que la aparque.",
 	},
 	"update.after.restart": {
-		en: "Then run `augmented-brain session restart --old`: it restarts the idle ones with the same conversation (those of Claude Desktop stay open, only their augmented brain restarts). One busy answering waits: run it again when it has finished. `augmented-brain doctor` says whether any is left.",
-		es: "Después lanza `augmented-brain session restart --old`: reinicia las que están quietas, con la misma conversación (las de Claude Desktop siguen abiertas, solo se reinicia su augmented brain). Una que está respondiendo espera: vuelve a lanzarlo cuando termine. `augmented-brain doctor` dice si queda alguna.",
+		en: "Then run `augmented-brain session restart --old`: it updates the idle ones without restarting them (each stays open, only its augmented brain restarts). One busy answering waits: run it again when it has finished. `augmented-brain doctor` says whether any is left.",
+		es: "Después lanza `augmented-brain session restart --old`: pone al día las que están quietas sin reiniciarlas (cada una sigue abierta, solo se reinicia su augmented brain). Una que está respondiendo espera: vuelve a lanzarlo cuando termine. `augmented-brain doctor` dice si queda alguna.",
 	},
 	"update.codex": {
 		en: "✓ augmented brain in Codex up to date, its hooks trusted again. Open a new Codex session to use it.",

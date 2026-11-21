@@ -418,18 +418,23 @@ func TestRestartLeavesArchived(t *testing.T) {
 	}
 }
 
-// With --old, a background session no task's `session start` opened is never
-// respawned either: archived in Claude Desktop, it stays blocked (12-nov,
-// check_multiregion_summary). A task's own session still is.
-func TestRestartOldLeavesUnlaunched(t *testing.T) {
+// With --old (ServersOnly) nothing is respawned and no service restarted, not even a
+// task's own session: archived in Claude Desktop it stays blocked, and on 21-nov --old
+// brought one back. Only the old servers of the idle sessions stop, those of a
+// background or remote session too (OldSessions finds them for every kind); one that
+// is answering is left. Running inside a remote service does not stop the others of it.
+func TestRestartOldOnlyStopsServers(t *testing.T) {
 	r := newRestartFake(t)
 	stopped := r.withServers()
 	list := r.agentList
 	r.agentList = func() []map[string]any {
 		return append(list(),
-			map[string]any{"pid": 920, "id": "hand0001", "kind": "background", "name": "a mano", "sessionId": "hand0001-hhhh", "status": "idle", "state": "blocked"})
+			map[string]any{"pid": 920, "id": "hand0001", "kind": "background", "name": "a mano", "sessionId": "hand0001-hhhh", "status": "idle", "state": "blocked"},
+			map[string]any{"pid": 930, "id": "arch0001", "kind": "background", "name": "archivada", "sessionId": "arch0001-ffff", "status": "idle", "state": "done"})
 	}
-	r.parents[921] = 920
+	r.parents[921], r.parents[931] = 920, 930
+	// This process runs in the service of personal, in a session of its own.
+	r.parents[4] = 60
 	dir := launchRecords(r.cfgDir)
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
@@ -437,21 +442,38 @@ func TestRestartOldLeavesUnlaunched(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "task-una.json"), []byte(`{"id":"bg123456","task":"task-una","folder":"/x"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	old := []state.Server{{PID: 501, Version: "0.19.0-beta"}, {PID: 921, Version: "0.19.0-beta"}}
+	r.status[700] = "busy"
+	old := []state.Server{{PID: 501, Version: "1.1.0"}, {PID: 601, Version: "1.1.0"}, {PID: 701, Version: "1.1.0"}, {PID: 801, Version: "1.1.0"}, {PID: 921, Version: "1.1.0"}, {PID: 931, Version: "1.1.0"}}
 	targets, _, err := r.sys.OldSessions(r.claude(), old)
-	if err != nil || len(targets) != 2 {
+	if err != nil || len(targets) != 6 {
 		t.Fatalf("old: %+v %v", targets, err)
 	}
-	MarkUnlaunched(r.cfgDir, targets)
+	for i := range targets {
+		if len(targets[i].Servers) == 0 {
+			t.Errorf("%s: no servers found", targets[i].Label())
+		}
+		targets[i].ServersOnly = true
+	}
 	r.calls = nil
 	got := outcomes(r.sys.Restart(r.claude(), targets))
-	if got["a mano"] != Ended || got["box · Una tarea"] != Restarted {
-		t.Errorf("outcomes: %v", got)
+	want := map[string]Outcome{
+		"box · Una tarea": ServerRestarted, // a task's own session, blocked
+		"a mano":          ServerRestarted,
+		"me-74":           ServerRestarted, // in the service this process runs in
+		"work-b7":         Busy,
+		"Augmented Brain": ServerRestarted,
+		"archivada":       Ended,
 	}
-	if acts := r.acts(); !slices.Equal(acts, []string{"respawn bg123456"}) {
-		t.Errorf("acts: %v, want only the task's session respawned", acts)
+	for k, v := range want {
+		if got[k] != v {
+			t.Errorf("%s: %v, want %v (all: %v)", k, got[k], v, got)
+		}
 	}
-	if !slices.Equal(*stopped, []int{921}) {
+	if acts := r.acts(); len(acts) > 0 {
+		t.Errorf("acts: %v, want no respawn and no service restart", acts)
+	}
+	slices.Sort(*stopped)
+	if !slices.Equal(*stopped, []int{501, 601, 801, 921, 931}) {
 		t.Errorf("stopped servers: %v", *stopped)
 	}
 }

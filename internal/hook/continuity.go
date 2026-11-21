@@ -296,7 +296,7 @@ func oldServersNote(c *config.Config, others bool) string {
 			version.Version, session.FirstAnswerLine(c.Language))
 	}
 	if rest > 0 {
-		note += fmt.Sprintf("\n%d other Claude sessions on this machine still run an earlier augmented brain: they started before it was updated to %s, and their augmented-brain tools may fail until they are restarted. %smention it in one line: `augmented-brain session restart --old` restarts the idle ones, with the same conversation (those of Claude Desktop stay open: only their augmented brain restarts).\n",
+		note += fmt.Sprintf("\n%d other Claude sessions on this machine still run an earlier augmented brain: they started before it was updated to %s, and their augmented-brain tools may fail until they are restarted. %smention it in one line: `augmented-brain session restart --old` updates the idle ones without restarting them: each stays open, and only its augmented brain restarts.\n",
 			rest, version.Version, session.FirstAnswerLine(c.Language))
 	}
 	return note

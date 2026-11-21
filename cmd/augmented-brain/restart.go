@@ -102,7 +102,8 @@ func sessionRestart(c *config.Config, sys remote.System, args []string, out, err
 	return restartSaid(l, []remote.RestartResult{r}, stamp, out, errOut)
 }
 
-// restartOld restarts the idle sessions still running an earlier augmented brain.
+// restartOld updates the idle sessions still running an earlier augmented brain,
+// stopping only their old servers.
 // It exits 0 only when none is left.
 func restartOld(c *config.Config, sys remote.System, claude string, out, errOut io.Writer) int {
 	l := c.Language
@@ -115,9 +116,11 @@ func restartOld(c *config.Config, sys remote.System, claude string, out, errOut 
 	if err != nil {
 		return sessionErr(l, err, errOut)
 	}
-	// Only a task's own session is brought back with respawn: any other background
-	// session may have been archived in Claude Desktop, which Claude is not told.
-	remote.MarkUnlaunched(c.Dir, list)
+	// None is brought back or restarted: any of them may have been archived in Claude
+	// Desktop, which Claude is not told. Only their old servers stop.
+	for i := range list {
+		list[i].ServersOnly = true
+	}
 	code := 0
 	if len(list) > 0 {
 		fmt.Fprintln(out, i18n.T(l, "restart.old", len(list)))

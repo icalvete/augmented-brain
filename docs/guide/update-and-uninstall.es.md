@@ -27,20 +27,19 @@ Qué hace, por orden:
    dice y se para. La descarga se intenta tres veces, también por la API de GitHub. Si
    falla todo, o el programa no es la versión nueva al acabar, lo dice y no cambia nada:
    vuelve a lanzarlo más tarde. Si no hay versión nueva, solo actualiza el plugin.
-4. **Reinicia las sesiones de Claude quietas** que siguen con la versión vieja, una a una
-   y con la misma conversación. Una sesión que está respondiendo se queda como está.
-   - **La sesión de una tarea** (abierta con `session start`) recibe un proceso nuevo.
-   - **Una sesión del acceso remoto** (`remote install`): se reinicia su servicio. Solo
-     en Linux; en macOS y Windows cuenta como una de Claude Desktop.
-   - **Una sesión de Claude Desktop o de una terminal** sigue abierta, y solo se reinicia
-     su augmented brain. En Windows se queda como está.
-5. **Dice lo que queda:** las sesiones que no ha podido reiniciar (una que respondía, la
+4. **Pone al día las sesiones de Claude quietas** que siguen con la versión vieja, una a
+   una y sin reiniciarlas: cada una sigue como está, y solo se para su augmented brain.
+   Claude Code arranca la versión nueva la próxima vez que la sesión lo use. Una sesión
+   que está respondiendo se queda como está. Ninguna vuelve: la sesión de una tarea que
+   archivaste en Claude Desktop sigue archivada, y el acceso remoto no abre sesiones
+   nuevas. En Windows se quedan como están.
+5. **Dice lo que queda:** las sesiones que no ha podido poner al día (una que respondía, la
    desde la que lo lanzaste, en Windows cualquiera de Claude Desktop) y qué tarea está
    activa en cada espacio.
 
 Para las que quedan, lanza `augmented-brain session restart --old` cuando hayan
-terminado de responder: las reinicia con la misma conversación. Una sesión que estaba
-abierta sigue con el programa viejo hasta que se reinicia, y sus herramientas de
+terminado de responder: las pone al día de la misma forma. Una sesión que estaba
+abierta sigue con el programa viejo hasta entonces, y sus herramientas de
 augmented brain pueden fallar; `/clear` no basta. `augmented-brain doctor` y el inicio de
 una sesión nueva dicen cuántas siguen con la versión vieja. Una que no puede reiniciar
 (en Windows, una de Claude Desktop) la cierras y la abres tú.
