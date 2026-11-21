@@ -96,10 +96,19 @@ fi
 # With a terminal (script(1) gives it one), it waits for the tools and carries on.
 rm -f "$T/tools-asked" "$T/tools-done"
 mkdir -p "$T/home-wait"
-printf '#!/bin/sh\nexec env HOME="%s" PATH="%s" AB_LANGUAGE=en AB_NO_DESKTOP=1 sh "%s"\n' \
+# script(1) with nothing on its input answers one question at most (an end of file),
+# and a second one waits for ever. So only the last question is left, whether to open
+# Claude: the fake claude makes the installer think Claude Code was already here, and
+# AB_REACH answers where augmented brain acts; AB_NO_GH skips the offer of gh.
+printf '#!/bin/sh\nexec env HOME="%s" PATH="%s" AB_LANGUAGE=en AB_NO_DESKTOP=1 AB_REACH=machine AB_NO_GH=1 sh "%s"\n' \
   "$T/home-wait" "$T/notools:$SYS" "$ROOT/install.sh" >"$T/wait.sh"
-script -q "$T/home-wait.out" sh "$T/wait.sh" </dev/null >/dev/null 2>&1
-if grep -q "I wait here" "$T/home-wait.out" && grep -q "git installed" "$T/home-wait.out" && [ -x "$T/home-wait/.local/bin/augmented-brain" ]; then
+# A limit, so a new question fails here, with what it printed, instead of reaching
+# the job's limit and being cancelled without a word. macOS has no timeout(1).
+perl -e 'alarm shift; exec @ARGV' 120 script -q "$T/home-wait.out" sh "$T/wait.sh" </dev/null >/dev/null 2>&1
+rc=$?
+if [ "$rc" -eq 142 ]; then
+  bad "with a terminal: still waiting after 120 s (a question nobody answers?)"; cat "$T/home-wait.out"
+elif grep -q "I wait here" "$T/home-wait.out" && grep -q "git installed" "$T/home-wait.out" && [ -x "$T/home-wait/.local/bin/augmented-brain" ]; then
   ok "with a terminal: it waits for the tools, then installs"
 else
   bad "with a terminal: it did not wait and carry on"; cat "$T/home-wait.out"
