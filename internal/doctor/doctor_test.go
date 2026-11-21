@@ -531,3 +531,37 @@ func TestCodexChecks(t *testing.T) {
 		t.Errorf("without Codex: %v", got)
 	}
 }
+
+// Background sessions left over (of tasks no longer going on, or ended) get one line
+// that sends to augmented-brain clean (21-nov).
+func TestSpareSessionsLine(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: "~/work", Memory: "~/brain/work"}); err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(cfg, "state", "sessions")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "task-gone.json"), []byte(`{"id":"aaa11111","task":"task-gone"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	sys := &remote.System{
+		Run: func(name string, args ...string) (string, error) {
+			if len(args) > 0 && args[0] == "agents" {
+				return `[{"id":"aaa11111","kind":"background","state":"done"},{"id":"bbb22222","kind":"background","state":"stopped"}]`, nil
+			}
+			return "", nil
+		},
+		LookPath: func(string) (string, error) { return "/bin/claude", nil },
+		Hostname: func() (string, error) { return "box", nil }, GOOS: "linux", User: "lucia",
+		UnitDir: filepath.Join(home, "units"), ClaudeJSON: filepath.Join(home, "none.json"),
+	}
+	env := Env{ConfigDir: cfg, WorkDir: home, LookPath: allTools, Plugin: yes, Hook: denies, Remote: sys}
+	c := find(Run(env), "background sessions are left over")
+	if c == nil || !strings.Contains(c.What, "2 background sessions") || !strings.Contains(c.What, "1 of them") || !strings.Contains(c.Fix, "augmented-brain clean") {
+		t.Errorf("spare line = %+v", c)
+	}
+}

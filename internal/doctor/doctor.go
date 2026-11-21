@@ -564,8 +564,9 @@ func worktreeChecks(e Env, c *config.Config) []Check {
 // Env gives no Remote; tests turn it off.
 var askClaude = true
 
-// lingeringChecks names the background sessions that keep their process while nobody
-// uses them (remote.Lingering), each with the command that stops it.
+// lingeringChecks counts the background sessions left over (remote.SpareSessions), for
+// augmented-brain clean, and names those no task opened that have sat idle for hours
+// (remote.Lingering), each with the command that stops it.
 func lingeringChecks(e Env, c *config.Config) []Check {
 	sys := e.Remote
 	if sys == nil {
@@ -581,18 +582,28 @@ func lingeringChecks(e Env, c *config.Config) []Check {
 	if sys.Run == nil || sys.LookPath == nil {
 		return nil // a system that cannot run claude
 	}
-	list, err := sys.Lingering(c.Dir, time.Now())
-	if err != nil {
-		return nil
-	}
 	l := c.Language
 	var out []Check
-	for _, se := range list {
-		what := i18n.T(l, "doctor.lingering.idle", se.Label(), se.ID, int(remote.LingerAge.Hours()))
-		if se.Ended() {
-			what = i18n.T(l, "doctor.lingering.ended", se.Label(), se.ID)
+	// Those left over, ended or of a task no longer going on: clean removes them.
+	if spare, err := sys.SpareSessions(c.Dir, brain.TaskStatuses(c)); err == nil && len(spare) > 0 {
+		tasks := 0
+		for _, sp := range spare {
+			if sp.OfTask() {
+				tasks++
+			}
 		}
-		out = append(out, Check{Info, what, i18n.T(l, "doctor.lingering.fix", se.ID)})
+		out = append(out, Check{Info, i18n.T(l, "doctor.spare", len(spare), tasks), i18n.T(l, "doctor.spare.fix")})
+	}
+	list, err := sys.Lingering(c.Dir, time.Now())
+	if err != nil {
+		return out
+	}
+	for _, se := range list {
+		if se.Ended() {
+			continue // counted above, among those left over
+		}
+		out = append(out, Check{Info, i18n.T(l, "doctor.lingering.idle", se.Label(), se.ID, int(remote.LingerAge.Hours())),
+			i18n.T(l, "doctor.lingering.fix", se.ID)})
 	}
 	return out
 }
