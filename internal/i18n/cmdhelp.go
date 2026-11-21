@@ -396,8 +396,8 @@ var cmdHelpMessages = map[string]msg{
 		es: "augmented-brain clean [--yes]",
 	},
 	"cmdhelp.clean.options": {
-		en: "--yes\tdo not ask.",
-		es: "--yes\tno pregunta.",
+		en: "--yes\tdo not ask, except for the background sessions no task opened.",
+		es: "--yes\tno pregunta, salvo por las sesiones de fondo que no abrió ninguna tarea.",
 	},
 	"cmdhelp.clean.example": {
 		en: "augmented-brain clean",

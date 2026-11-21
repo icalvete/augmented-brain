@@ -889,11 +889,25 @@ Mira en cada carpeta en la que se abrió Claude Code, y en su carpeta temporal:
   que haya ahí también. En Linux eso incluye las sesiones de otra carpeta de Claude
   (`CLAUDE_CONFIG_DIR`); en otros sistemas solo cuentan las de tu carpeta de Claude de
   siempre, y el comando te lo recuerda.
+- **Sesiones de tareas que ya no siguen** (Linux): la sesión propia de una tarea
+  (`session start`) cuya tarea está aparcada, para algún día, cerrada o ya no existe.
+  Claude guarda en su lista una sesión que paró, en Claude Desktop y en claude.ai, y
+  puede volver a levantarla cuando arranque. Se cierra como hace
+  `session stop --keep-worktrees`: sale de esas listas para siempre, y sus worktrees se
+  quedan.
+
+Después, una a una, **sesiones de fondo que no abrió ninguna tarea**, terminadas o que
+archivaste. Las empezó otro, así que pregunta por cada una, y `--yes` nunca las quita.
+Cada una se va con `claude stop` y `claude rm`: sale de Claude Desktop y claude.ai, y
+su conversación se queda para `claude --resume`. Si trabaja en un worktree que hizo
+Claude Code, el worktree también se va si no se pierde nada; si Claude se niega, dice
+por qué. Nunca toca una sesión que esté respondiendo, ni una de Claude Desktop o de un
+terminal.
 
 Antes de quitar cada cosa vuelve a mirar, así que una sesión que haya empezado entretanto
 conserva sus carpetas. `doctor` avisa cuando hay algo que limpiar.
 
-- `--yes`: no pregunta.
+- `--yes`: no pregunta, salvo por las sesiones de fondo que no abrió ninguna tarea.
 
 ## augmented-brain update
 

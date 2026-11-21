@@ -337,6 +337,18 @@ group of the list. Nothing answers in the old one: what you write there is lost.
 one in the group named after the new folder, and archive the old one in claude.ai or
 Claude Desktop.
 
+### Sessions I archived or parked come back
+
+Archiving a background session in Claude Desktop does not close it: Claude keeps it in
+its list and brings it back the next time it starts, as it does with every session it
+stopped for being unused. Run `augmented-brain clean`: it closes the sessions of tasks
+parked, put off or closed, and asks one by one for the background sessions no task
+opened. From now on, parking a task closes its session by itself.
+
+Right after Claude Code updates, Claude Desktop may also show one session twice, one of
+them offline. It is the same session (claude.ai shows it once), and Claude offers no way
+to remove the extra line from this computer.
+
 ## The computer
 
 ### The window uses a lot of memory

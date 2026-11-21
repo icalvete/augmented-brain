@@ -110,7 +110,8 @@ again only with `reopen`.
 subtasks keep it from closing, the result goes to the note, open watch dates are named,
 and the task's session and worktrees are dealt with the same way. Without `result` it
 still closes, with a line saying no result was given, and Claude writes the result in
-the journal.
+the journal. `status` `parked` or `someday` ends the task's own session as
+[`task_park`](#task_park) does.
 
 - `id`: the task's id.
 - `title` (optional): a new title. The id stays, so every link to the task still works.
@@ -219,6 +220,11 @@ refused: it opens again only with `task_update` and `reopen`, so its result stay
 - `someday` (optional): `true` when it will not be touched for weeks. The task leaves
   the daily list.
 
+If the task has a session of its own ([a session per task](task-sessions.md)), it
+closes once it has finished its answer, often the very answer that parks the task. It
+leaves Claude Desktop and claude.ai, so it does not come back by itself; its worktrees
+stay. `augmented-brain session start` opens a new one when you take the task up again.
+
 ## `task_close`
 
 **You say:** "done, close it."
@@ -297,8 +303,10 @@ otherwise comes up at every session start.
 **You say:** "let's do the weekly review."
 
 Lists what the weekly review goes through: the inbox, live tasks untouched for 14 days
-or more, and the dates due in the next 7 days. Claude then goes through it with you, one
-item at a time. It takes no parameters.
+or more, and the dates due in the next 7 days. It ends with the sessions of tasks that
+no longer go on (parked, put off, closed), if any are left, and Claude offers
+`augmented-brain clean`. Claude then goes through it with you, one item at a time. It
+takes no parameters.
 
 ## `review_done`
 

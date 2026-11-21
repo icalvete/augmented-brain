@@ -118,9 +118,18 @@ augmented-brain session stop task-new-website
 closes the session and takes it out of the lists of Claude Desktop and claude.ai,
 worktree and all. The Claude app on a phone may keep showing it, offline, until you
 archive it there.
-Closing the task does the same, once the session has finished its answer. A session
-also ends when the computer restarts, and does not come back by itself: ask for it
-again.
+Closing the task does the same, once the session has finished its answer. Parking it,
+or sending it to someday, does too, but leaves its worktrees: the task goes on later,
+and `session start` opens a new session for it. A session also ends when the computer
+restarts, and does not come back by itself: ask for it again.
+
+**Archiving in Claude Desktop does not close a session.** Claude keeps it in its list,
+and may bring it back the next time it starts, as it does with every session it stopped
+for being unused. Close it with `session stop`, park its task, or run `clean`.
+
+**After Claude Code updates**, Claude Desktop may show a session twice for a while, one
+of them offline (sometimes under "No folder"). It is the same session: claude.ai shows
+it once, and Claude offers no way to remove the extra line from this computer.
 
 ## Restart a session after an update
 
@@ -154,12 +163,15 @@ even if this one is gone, and the session tells you at once. It never waits for 
 
 ## Clean up what is left
 
-Claude Code makes worktrees and scratch folders of its own, and leaves some behind.
+Claude Code makes worktrees and scratch folders of its own, and leaves some behind; and
+sessions whose task no longer goes on, or that someone else started and archived, stay
+in its lists.
 
 ```bash
 augmented-brain clean
 ```
 
 shows what is left from sessions that are over, and removes it only if you say yes:
-never a worktree with work of its own, which it only names. `doctor` says when there is
-something to clean. Details in [`clean`](commands.md#augmented-brain-clean).
+never a worktree with work of its own, which it only names. A session no task opened is
+asked for one by one. `doctor` and the weekly review say when there is something to
+clean. Details in [`clean`](commands.md#augmented-brain-clean).
