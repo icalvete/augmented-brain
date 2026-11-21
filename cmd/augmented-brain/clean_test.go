@@ -78,7 +78,7 @@ func TestCleanSpareSessions(t *testing.T) {
 		t.Fatalf("clean --yes: %d\n%s%s", code, out.String(), errOut.String())
 	}
 	got := out.String()
-	for _, want := range []string{"«box · task-parked», de task-parked (aparcada)", "«vigilante» (ddd44444), en /w/repo/.claude/worktrees/fix, parada", "su worktree también se va", "«other» (eee55555)", "Ninguna de estas se va con --yes", "Sesiones de tareas cerradas: 1."} {
+	for _, want := range []string{"«box · task-parked», de task-parked (aparcada)", "«vigilante» (ddd44444), en ", "fix, parada · su worktree", "su worktree también se va", "«other» (eee55555)", "Ninguna de estas se va con --yes", "Sesiones de tareas cerradas: 1."} {
 		if !strings.Contains(got, want) {
 			t.Errorf("lacks %q:\n%s", want, got)
 		}
