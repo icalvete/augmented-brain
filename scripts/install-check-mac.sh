@@ -96,10 +96,11 @@ fi
 # With a terminal (script(1) gives it one), it waits for the tools and carries on.
 rm -f "$T/tools-asked" "$T/tools-done"
 mkdir -p "$T/home-wait"
-# The fake claude makes the installer think Claude Code was already here, so it would
-# also ask where augmented brain acts; AB_REACH answers that. script(1) with nothing on
-# its input answers one question at most, and a second one would wait for ever.
-printf '#!/bin/sh\nexec env HOME="%s" PATH="%s" AB_LANGUAGE=en AB_NO_DESKTOP=1 AB_REACH=machine sh "%s"\n' \
+# script(1) with nothing on its input answers one question at most (an end of file),
+# and a second one waits for ever. So only the last question is left, whether to open
+# Claude: the fake claude makes the installer think Claude Code was already here, and
+# AB_REACH answers where augmented brain acts; AB_NO_GH skips the offer of gh.
+printf '#!/bin/sh\nexec env HOME="%s" PATH="%s" AB_LANGUAGE=en AB_NO_DESKTOP=1 AB_REACH=machine AB_NO_GH=1 sh "%s"\n' \
   "$T/home-wait" "$T/notools:$SYS" "$ROOT/install.sh" >"$T/wait.sh"
 # A limit, so a new question fails here, with what it printed, instead of reaching
 # the job's limit and being cancelled without a word. macOS has no timeout(1).
