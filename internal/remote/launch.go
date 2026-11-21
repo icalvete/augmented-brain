@@ -826,6 +826,17 @@ func (s System) LaunchRunning(cfgDir, task string) bool {
 	return err == nil && running[r.ID]
 }
 
+// AnyLaunch says whether any task has a session of its own on record.
+func AnyLaunch(cfgDir string) bool {
+	entries, _ := os.ReadDir(launchRecords(cfgDir))
+	for _, e := range entries {
+		if strings.HasSuffix(e.Name(), ".json") {
+			return true
+		}
+	}
+	return false
+}
+
 // HasLaunch says whether the task has a session of its own on record, running or not.
 func HasLaunch(cfgDir, task string) bool {
 	_, ok := readLaunch(cfgDir, task)
