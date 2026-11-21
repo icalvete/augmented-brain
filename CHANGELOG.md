@@ -4,7 +4,7 @@
 
 ## 1.1.0
 
-Released 2026-11-20.
+Released 2026-11-21.
 
 - **Ask Claude for root on a machine, and confirm it.** A new tool, `root_exception_save`,
   adds a temporary root exception (a machine and an end date) when you ask for one.

@@ -4,7 +4,7 @@
 
 ## 1.1.0
 
-Publicada el 2026-11-20.
+Publicada el 2026-11-21.
 
 - **Pide a Claude root en una máquina, y confírmalo.** Una herramienta nueva,
   `root_exception_save`, añade una excepción temporal de root (una máquina y una fecha
