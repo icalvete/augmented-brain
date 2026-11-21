@@ -132,10 +132,9 @@ func (s System) RemoveSpare(cfgDir string, sp Spare) error {
 		return errors.New("claude is not installed or not in the PATH")
 	}
 	_, _ = s.Run(claude, "stop", sp.ID) // fails when it had ended already
-	out, err := s.Run(claude, "rm", sp.ID)
-	if err != nil {
+	if _, err := s.Run(claude, "rm", sp.ID); err != nil {
 		s.wakeDaemon(claude)
-		if out, err = s.Run(claude, "rm", sp.ID); err != nil {
+		if out, err := s.Run(claude, "rm", sp.ID); err != nil {
 			if msg := strings.TrimSpace(cleanTerminal(out)); msg != "" {
 				return fmt.Errorf("claude rm %s: %s", sp.ID, msg)
 			}
