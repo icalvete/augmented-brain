@@ -31,7 +31,8 @@ check() { # check <what> <command…>
 }
 
 echo "1. build a release from this checkout"
-"$ROOT/scripts/release-build.sh" 0.0.0-check "$TMP/release" >/dev/null
+# Only this machine's archive: the installer and update take no other (ci.yml builds all).
+AB_RELEASE_TARGETS="$(go env GOOS)/$(go env GOARCH)" "$ROOT/scripts/release-build.sh" 0.0.0-check "$TMP/release" >/dev/null
 
 # Only now switch to the throwaway home: the build above keeps using the real Go cache.
 if [ -n "${AB_CHECK_HOME:-}" ]; then
