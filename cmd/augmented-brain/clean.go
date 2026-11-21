@@ -105,7 +105,7 @@ func cmdClean(args []string, in io.Reader, out, errOut io.Writer) int {
 	// Sessions someone else started: one by one, never with --yes.
 	fmt.Fprintln(out, "\n"+i18n.T(lang, "clean.others"))
 	for _, sp := range others {
-		line := i18n.T(lang, "clean.other", sp.Name, sp.ID, paths.Tilde(sp.Folder), sp.State)
+		line := i18n.T(lang, "clean.other", sp.Name, sp.ID, paths.Tilde(sp.Folder), i18n.T(lang, "clean.state."+sp.State))
 		if sp.InWorktree() {
 			line += " " + i18n.T(lang, "clean.other.worktree")
 		}

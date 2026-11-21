@@ -21,6 +21,8 @@ var cleanMessages = map[string]msg{
 	"clean.status.parked":  {en: "parked", es: "aparcada"},
 	"clean.status.someday": {en: "someday", es: "para algún día"},
 	"clean.status.closed":  {en: "closed", es: "cerrada"},
+	"clean.state.done":     {en: "ended", es: "terminada"},
+	"clean.state.stopped":  {en: "stopped", es: "parada"},
 	"clean.sessions.unread": {
 		en: "The background sessions were not looked at: Claude's list could not be read (%v).",
 		es: "No he mirado las sesiones de fondo: no he podido leer la lista de Claude (%v).",
