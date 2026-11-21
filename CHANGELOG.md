@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+## 1.1.1
+
+Released 2026-11-21.
+
+- **`session restart --old`, and `update`, no longer bring back sessions you archived.**
+  Claude is not told when you archive a task's session in Claude Desktop, so restarting
+  it after an update opened it again, and restarting the remote access opened new
+  sessions in it. Now `--old` restarts none of them: it only stops their earlier
+  augmented brain, and the new one starts the next time the session uses it. Naming one
+  session (`session restart <task>`) still restarts it.
+- **Parking a task closes its own session, and `clean` removes the sessions left
+  over.** Claude keeps a session it stopped in its list, in Claude Desktop and in
+  claude.ai, and brings it back when it starts again, so sessions of parked tasks kept
+  coming back. Now parking a task, or sending it to someday, closes its session once it
+  finishes its answer, as closing does, but leaves its worktrees. `augmented-brain clean`
+  also removes the sessions of tasks no longer going on, and asks one by one for the
+  background sessions no task opened that ended or were archived. `doctor` and the
+  weekly review say when there are some.
+- **For contributors: try the plugin with the program you just built, and the Mac
+  install checks no longer hang.** `scripts/try-plugin.sh` builds the program, copies
+  the plugin so its hooks and MCP server run that build, and starts Claude on it in a
+  made-up space; `claude --plugin-dir plugin` alone ran the installed program. On the
+  Macs, the install check with a terminal no longer waits on a question until CI cancels
+  it, and a pull request that touches the installer runs the Macs too.
+
 ## 1.1.0
 
 Released 2026-11-21.

@@ -2,6 +2,32 @@
 
 ## Sin publicar
 
+## 1.1.1
+
+Publicada el 2026-11-21.
+
+- **`session restart --old`, y `update`, ya no traen de vuelta las sesiones que
+  archivaste.** A Claude no se le dice que archivas la sesión de una tarea en Claude
+  Desktop, así que reiniciarla tras actualizar la volvía a abrir, y reiniciar el acceso
+  remoto abría sesiones nuevas en él. Ahora `--old` no reinicia ninguna: solo para su
+  augmented brain anterior, y el nuevo arranca la próxima vez que la sesión lo use.
+  Nombrar una sesión (`session restart <tarea>`) sigue reiniciándola.
+- **Aparcar una tarea cierra su sesión propia, y `clean` quita las sesiones que
+  sobran.** Claude guarda en su lista una sesión que paró, en Claude Desktop y en
+  claude.ai, y la vuelve a levantar cuando arranca, así que las sesiones de tareas
+  aparcadas volvían una y otra vez. Ahora aparcar una tarea, o mandarla a algún día,
+  cierra su sesión cuando termina su respuesta, como al cerrarla, pero deja sus
+  worktrees. `augmented-brain clean` también quita las sesiones de tareas que ya no
+  siguen, y pregunta una a una por las sesiones de fondo que no abrió ninguna tarea,
+  terminadas o archivadas. `doctor` y la revisión semanal avisan cuando hay alguna.
+- **Para quien contribuye: probar el plugin con el programa recién compilado, y las
+  comprobaciones de instalación en Mac ya no se cuelgan.** `scripts/try-plugin.sh`
+  compila el programa, copia el plugin para que sus hooks y su servidor MCP usen esa
+  versión y arranca Claude con él en un espacio inventado; `claude --plugin-dir plugin`
+  solo usaba el programa instalado. En los Mac, la comprobación de instalación con
+  terminal ya no se queda esperando una pregunta hasta que la CI la cancela, y una pull
+  request que toca el instalador también pasa por los Mac.
+
 ## 1.1.0
 
 Publicada el 2026-11-21.
