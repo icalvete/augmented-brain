@@ -44,9 +44,10 @@ Heavier checks, before a release or when you touch what they cover:
 - `scripts/install-check.sh`: the installer from nothing, hands-off, and checks of the
   result; then uninstall and install again, `--config`, a home with spaces and accents,
   `--all`, and the update from the release published last. It installs Claude Code for whoever runs it, so use
-  `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on macOS and Ubuntu in
+  `AB_CHECK_HOME=<throwaway folder>` on a real machine. CI runs it on Ubuntu in
   every pull request that touches the installer, the plugin or the code (`install.yml`);
-  the Intel Mac only on `main`.
+  the Macs (two arm, one Intel) only in a pull request that touches `install.sh`, its
+  checks or `install.yml`, and on `main` after every merge that touches any of them.
 - `scripts/compat-check.sh`: what this version writes (tasks, people, secrets' names, what a repository is,
   captures, rules, a backup), the last two releases must still read: their `doctor`,
   `check`, MCP tools, session start and restore. After an update, open Claude sessions
@@ -56,7 +57,9 @@ Heavier checks, before a release or when you touch what they cover:
   <new binary> [versions]`; it leaves the folder for you to delete.
 - `scripts/install-check-mac.sh`: what only a Mac can get wrong in the installer (the PATH
   file for zsh and bash, macOS 13 or later, Apple's stub git), with fakes for `sw_vers`
-  and `xcode-select`. CI runs it on every Mac row; on a Mac without Go, give it a built
+  and `xcode-select`. CI runs it on every Mac row, with a limit of 120 s on the
+  run that has a terminal: a new question in the installer fails there instead of
+  hanging the job until it is cancelled. On a Mac without Go, give it a built
   release with `AB_CHECK_RELEASE`.
 - `scripts/install-check.ps1`: the same for Windows and `install.ps1`, with the update
   from the release published last. It
