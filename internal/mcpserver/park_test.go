@@ -85,3 +85,37 @@ func TestParkStopsTheTaskSession(t *testing.T) {
 		t.Errorf("kept %v closed %v", kept, closed)
 	}
 }
+
+// The weekly review names the tasks' own sessions whose task no longer goes on, and
+// sends to augmented-brain clean; with none on record it asks Claude nothing.
+func TestWeeklyReviewNamesSpareSessions(t *testing.T) {
+	cs := connect(t, space(t))
+	cfgDir := filepath.Join(os.Getenv("HOME"), "cfg")
+	oldSys := NewRemoteSystem
+	t.Cleanup(func() { NewRemoteSystem = oldSys })
+	asked := 0
+	NewRemoteSystem = func() (remote.System, error) {
+		return remote.System{GOOS: "linux",
+			LookPath: func(string) (string, error) { return "/usr/bin/claude", nil },
+			Run: func(name string, args ...string) (string, error) {
+				asked++
+				return `[{"id":"abc12345","kind":"background","state":"done"},{"id":"bcd23456","kind":"background","pid":5,"status":"idle","state":"working"}]`, nil
+			}}, nil
+	}
+	if out := mustCall(t, cs, "weekly_review", nil); strings.Contains(out, "no longer going on") || asked != 0 {
+		t.Fatalf("asked %d:\n%s", asked, out)
+	}
+	mustCall(t, cs, "task_new", map[string]any{"title": "Going"})
+	if err := os.MkdirAll(filepath.Join(cfgDir, "state", "sessions"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	for task, id := range map[string]string{"task-gone": "abc12345", "task-going": "bcd23456"} {
+		if err := os.WriteFile(filepath.Join(cfgDir, "state", "sessions", task+".json"), []byte(`{"id":"`+id+`","task":"`+task+`"}`), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	out := mustCall(t, cs, "weekly_review", nil)
+	if !strings.Contains(out, "Sessions of tasks no longer going on (1): task-gone.") || !strings.Contains(out, "augmented-brain clean") {
+		t.Errorf("weekly_review:\n%s", out)
+	}
+}

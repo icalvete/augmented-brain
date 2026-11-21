@@ -532,8 +532,8 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			return "Done: taken out of the inbox.", nil
 		})
 
-	tool(s, locked, "weekly_review", "What the weekly review goes through: the inbox, live tasks untouched for two weeks or more, and the dates due this week.",
-		func(b *brain.Brain, _ struct{}) (string, error) {
+	toolThen(s, locked, "weekly_review", "What the weekly review goes through: the inbox, live tasks untouched for two weeks or more, the dates due this week, and the sessions of tasks no longer going on.",
+		func(b *brain.Brain, _ struct{}) (string, then, error) {
 			r := b.Review()
 			var out strings.Builder
 			if r.Last == "" {
@@ -558,7 +558,9 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				fmt.Fprintf(&out, "- %s (%d days): %s%s\n", d.Date, d.Days, d.What, taskRef(d.TaskID))
 			}
 			out.WriteString("\nGo through it with the user one item at a time, then call review_done.")
-			return out.String(), nil
+			// Asking Claude may take seconds: once the notes are released.
+			cfgDir := b.ConfigDir
+			return out.String(), func() (string, error) { return spareTaskSessions(cfgDir), nil }, nil
 		})
 
 	type reviewDoneIn struct {
@@ -934,6 +936,38 @@ func parkedSession(cfgDir, task string) string {
 		return ""
 	}
 	return sys.ParkedTask(cfgDir, task, StopSessionWhenIdleKeep)
+}
+
+// spareTaskSessions is the weekly review's line on the tasks' own sessions whose task
+// is parked, put off, closed or gone: they stay in Claude Desktop and claude.ai, and
+// Claude may bring them back (remote.SpareSessions). Nothing when no task has a session
+// on record, without asking Claude.
+func spareTaskSessions(cfgDir string) string {
+	if !remote.AnyLaunch(cfgDir) {
+		return ""
+	}
+	c, err := config.Load(cfgDir)
+	if err != nil {
+		return ""
+	}
+	sys, err := NewRemoteSystem()
+	if err != nil {
+		return ""
+	}
+	list, err := sys.SpareSessions(cfgDir, brain.TaskStatuses(c))
+	if err != nil {
+		return ""
+	}
+	var tasks []string
+	for _, sp := range list {
+		if sp.OfTask() {
+			tasks = append(tasks, sp.Task)
+		}
+	}
+	if len(tasks) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("\n\nSessions of tasks no longer going on (%d): %s. They stay in Claude Desktop and claude.ai, and Claude may bring them back. Offer the user to run augmented-brain clean, which shows them and asks first.", len(tasks), strings.Join(tasks, ", "))
 }
 
 // closedWorktree ends the session of a closed task and removes its worktrees
