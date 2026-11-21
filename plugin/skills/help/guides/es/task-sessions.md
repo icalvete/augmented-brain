@@ -146,8 +146,9 @@ augmented-brain session restart task-new-website
 augmented-brain session restart --old
 ```
 
-El primero reinicia una sesión, con la misma conversación; `--old` reinicia todas las
-que están paradas y siguen con una versión anterior, y `update` lo lanza solo. Una
+El primero reinicia una sesión, con la misma conversación; `--old` pone al día todas las
+que están quietas y siguen con una versión anterior sin reiniciarlas (solo arranca otra
+vez su augmented brain), y `update` lo lanza solo. Una
 sesión que está respondiendo nunca se corta. Funciona en Linux y macOS; en Windows,
 cierra la sesión y ábrela otra vez tú. Los detalles, en
 [`session restart`](commands.md#augmented-brain-session-restart).

@@ -107,9 +107,8 @@ como `source ~/.bashrc` (`source ~/.zshrc` con zsh, la shell normal del Mac).
 ### Las herramientas de augmented brain fallan después de actualizar
 
 Una sesión que estaba abierta sigue con el programa antiguo. `augmented-brain session
-restart --old` reinicia las que están quietas, con la misma conversación; una de Claude
-Desktop sigue abierta y solo se reinicia su augmented brain (en Windows, ciérrala y vuelve
-a abrirla). `augmented-brain doctor` dice cuántas sesiones siguen con la versión
+restart --old` pone al día las que están quietas: cada una sigue abierta y solo se
+reinicia su augmented brain (en Windows, ciérrala y vuelve a abrirla). `augmented-brain doctor` dice cuántas sesiones siguen con la versión
 antigua.
 
 ### El instalador o la actualización no pueden descargar

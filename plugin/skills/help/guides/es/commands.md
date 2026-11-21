@@ -704,17 +704,18 @@ augmented-brain session restart --old
 
 - `<sesión>`: su tarea (si la abrió `session start`), su id, los ocho primeros caracteres
   de su id de sesión o su nombre; `claude agents` las lista.
-- `--old`: reinicia una a una todas las sesiones quietas que siguen con un augmented
-  brain anterior, y dice qué ha pasado con cada una. `update` lo lanza solo. Aquí solo la
-  sesión propia de una tarea (abierta por `session start`) recibe un proceso nuevo:
-  cualquier otra sesión de fondo puede estar archivada en Claude Desktop, cosa que a
-  Claude no se le dice, así que solo se para su servidor de augmented brain.
+- `--old`: pone al día una a una todas las sesiones quietas que siguen con un augmented
+  brain anterior, y dice qué ha pasado con cada una. `update` lo lanza solo. No reinicia
+  ninguna: solo para su servidor de augmented brain anterior, y Claude Code arranca la
+  versión nueva la próxima vez que la sesión lo use. Una sesión que archivaste en Claude
+  Desktop parece una más para Claude, así que reiniciarla la traería de vuelta; y
+  reiniciar un servicio del acceso remoto abre sesiones nuevas en él.
 - `--when-idle`: espera a que la sesión termine su respuesta y después la reinicia. Así
   se reinicia una sesión a sí misma después de aparcar su tarea: la orden vuelve en el
   acto, y un proceso en segundo plano espera, hasta 30 minutos. Lo que hizo queda en
   `state/session-restart.log`, en la carpeta de la configuración.
 
-Cada tipo de sesión se reinicia a su manera:
+Nombrada por sí sola, cada tipo de sesión se reinicia a su manera:
 
 - **La sesión de una tarea** (`claude --bg`): Claude le da un proceso nuevo con la misma
   conversación. Una que archivaste, o que terminó, nunca se relanza: solo se para su
@@ -932,9 +933,9 @@ hace lo que si no harías a mano:
   `update` acaba con error y no ha cambiado nada. El instalador prueba el programa nuevo
   antes de cambiar el viejo: si no arranca, el viejo se queda. Si después el programa no
   es la versión nueva, `update` lo dice y acaba con error.
-- **Después:** las sesiones de Claude quietas que siguen con la versión vieja se
-  reinician, una a una, como hace `session restart --old`: las de Claude Desktop siguen
-  abiertas y solo se reinicia su augmented brain. Para las que no puede reiniciar (una
+- **Después:** las sesiones de Claude quietas que siguen con la versión vieja se ponen
+  al día, una a una, como hace `session restart --old`: todas siguen como están, y solo
+  se reinicia su augmented brain. Para las que no puede poner al día (una
   que está respondiendo, o en Windows una de Claude Desktop), dice qué tarea está activa
   en cada espacio, y que vuelvas a lanzar `augmented-brain session restart --old` cuando
   hayan terminado de responder.
@@ -945,8 +946,8 @@ Opciones:
   instalado allí. Lo usa el instalador.
 - `--force`: actualiza aunque falle la copia de antes.
 - `--no-restart`: no reinicia ninguna sesión después de actualizar; solo dice cuáles
-  siguen con la versión vieja, y que `augmented-brain session restart --old` las
-  reinicia.
+  siguen con la versión vieja, y que `augmented-brain session restart --old` las pone
+  al día.
 - `--from <dirección>`: para pruebas: instala la versión de esa dirección en vez de la
   última de GitHub. Tiene que ser `https://`, `file://`, o `http://` a este ordenador o al
   host de una VM de pruebas (`10.0.2.2`).

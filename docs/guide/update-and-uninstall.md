@@ -28,19 +28,18 @@ What it does, in order:
    all fails, or the program is not the new version afterwards, it says so and nothing
    changes: run it again later. When there is no newer version, it only updates the
    plugin.
-4. **Restarts the idle Claude sessions** that still run the old version, one at a time,
-   with the same conversation. A session that is answering is left as it is.
-   - **A task's session** (opened by `session start`) gets a new process.
-   - **A session of the remote access** (`remote install`): its service restarts. Only
-     on Linux; on macOS and Windows it counts as one of Claude Desktop.
-   - **A session of Claude Desktop or a terminal** stays open, and only its augmented
-     brain restarts. On Windows it is left as it is.
-5. **Says what is left:** the sessions it could not restart (one answering, the one you
+4. **Updates the idle Claude sessions** that still run the old version, one at a time,
+   without restarting them: each stays as it is, and only its augmented brain stops.
+   Claude Code starts the new version the next time the session uses it. A session that
+   is answering is left as it is. None is brought back: a task's session you archived
+   in Claude Desktop stays archived, and the remote access opens no new sessions. On
+   Windows they are left as they are.
+5. **Says what is left:** the sessions it could not update (one answering, the one you
    ran it from, on Windows any of Claude Desktop), and which task each space has active.
 
 For those left, run `augmented-brain session restart --old` once they have finished
-their answer: it restarts them with the same conversation. A session that was open keeps
-the old program until it restarts, and its augmented brain tools may fail; `/clear` is
+their answer: it updates them the same way. A session that was open keeps the old
+program until then, and its augmented brain tools may fail; `/clear` is
 not enough. `augmented-brain doctor` and the start of a new session say how many still
 run the old version. One it cannot restart (on Windows, one of Claude Desktop) you close
 and open by hand.

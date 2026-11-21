@@ -688,17 +688,18 @@ augmented-brain session restart --old
 
 - `<session>`: its task (when `session start` opened it), its id, the first eight
   characters of its session id, or its name; `claude agents` lists them.
-- `--old`: restart every idle session still running an earlier augmented brain, one at
-  a time, and say what happened to each. `update` runs it by itself. Here only a task's
-  own session (opened by `session start`) gets a new process: any other background
-  session may have been archived in Claude Desktop, which Claude is not told, so only
-  its augmented brain server stops.
+- `--old`: update every idle session still running an earlier augmented brain, one at
+  a time, and say what happened to each. `update` runs it by itself. It restarts none of
+  them: it only stops their old augmented brain server, and Claude Code starts the new
+  version the next time the session uses it. A session you archived in Claude Desktop
+  looks like any other to Claude, so a restart would bring it back; and restarting a
+  remote access service opens new sessions in it.
 - `--when-idle`: wait until the session has finished its answer, then restart it. This
   is how a session restarts itself after parking its task: the command returns at once,
   and a process in the background waits, up to 30 minutes. What it did goes to
   `state/session-restart.log` in the configuration folder.
 
-Each kind of session restarts its own way:
+Named by itself, each kind of session restarts its own way:
 
 - **A task's session** (`claude --bg`): Claude gives it a new process with the same
   conversation. One you archived, or that ended, is never brought back: only its
@@ -912,9 +913,9 @@ plugin. Around it, it does what you would otherwise do by hand:
   program before it replaces the old one: if it does not start, the old one stays. If
   the program is not the new version afterwards, `update` says so and ends with an
   error.
-- **After:** the idle Claude sessions still running the old version are restarted, one
-  at a time, as `session restart --old` does: those of Claude Desktop stay open and only
-  their augmented brain restarts. For those it cannot restart (one answering, or on
+- **After:** the idle Claude sessions still running the old version are updated, one
+  at a time, as `session restart --old` does: they all stay as they are, and only their
+  augmented brain restarts. For those it cannot update (one answering, or on
   Windows one of Claude Desktop), it says which task is active in each space, and to run
   `augmented-brain session restart --old` again once they have finished their answer.
 
@@ -924,7 +925,7 @@ Options:
   installed there. The installer uses it.
 - `--force`: update even when the backup before it fails.
 - `--no-restart`: restart no session after updating; it only says which still run the
-  old version, and that `augmented-brain session restart --old` restarts them.
+  old version, and that `augmented-brain session restart --old` updates them.
 - `--from <address>`: for tests: install the release at this address instead of
   GitHub's latest. It must be `https://`, `file://`, or `http://` to this computer or to
   the host of a test VM (`10.0.2.2`).

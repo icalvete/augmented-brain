@@ -140,8 +140,9 @@ augmented-brain session restart task-new-website
 augmented-brain session restart --old
 ```
 
-The first restarts one session, with the same conversation; `--old` restarts every idle
-one still running an earlier version, and `update` runs it by itself. A session that is
+The first restarts one session, with the same conversation; `--old` updates every idle
+one still running an earlier version without restarting it (only its augmented brain
+starts again), and `update` runs it by itself. A session that is
 answering is never cut off. It works on Linux and macOS; on Windows, close the session
 and open it again yourself. Details in
 [`session restart`](commands.md#augmented-brain-session-restart).
