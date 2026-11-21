@@ -869,11 +869,24 @@ It looks in every folder Claude Code was opened in, and in its scratch folder:
   for over a day. Those of running sessions stay, and so does anything else there. On
   Linux that includes sessions of another Claude folder (`CLAUDE_CONFIG_DIR`); elsewhere
   only those of your usual Claude folder count, and the command reminds you.
+- **Sessions of tasks no longer going on** (Linux): a task's own session
+  (`session start`) whose task is parked, put off, closed or gone. Claude keeps a
+  session it stopped in its list, in Claude Desktop and in claude.ai, and may bring it
+  back when it starts again. It is closed as `session stop --keep-worktrees` does: out of
+  those lists for good, its worktrees left.
+
+Then, one by one, **background sessions no task opened** that ended or that you
+archived. Someone else started them, so it asks for each one, and `--yes` never removes
+them. Each goes with `claude stop` and `claude rm`: it leaves Claude Desktop and
+claude.ai, and its conversation stays for `claude --resume`. If it works in a worktree
+Claude Code made, the worktree goes too when nothing would be lost; when Claude refuses,
+it says why. A session answering now is never touched, nor one of Claude Desktop or a
+terminal.
 
 Before removing each thing it looks again, so a session that started meanwhile keeps its
 folders. `doctor` says when there is something to clean.
 
-- `--yes`: do not ask.
+- `--yes`: do not ask, except for the background sessions no task opened.
 
 ## augmented-brain update
 

@@ -123,8 +123,19 @@ augmented-brain session stop task-new-website
 cierra la sesión y la quita de las listas de Claude Desktop y claude.ai, con su
 worktree. La app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la
 archives allí. Cerrar la
-tarea hace lo mismo, cuando la sesión termina su respuesta. Una sesión también termina
-al reiniciar el ordenador, y no vuelve sola: pídela otra vez.
+tarea hace lo mismo, cuando la sesión termina su respuesta. Aparcarla, o mandarla a
+algún día, también, pero deja sus worktrees: la tarea sigue más adelante, y
+`session start` le abre una sesión nueva. Una sesión también termina al reiniciar el
+ordenador, y no vuelve sola: pídela otra vez.
+
+**Archivar en Claude Desktop no cierra una sesión.** Claude la guarda en su lista, y
+puede volver a levantarla la próxima vez que arranque, como hace con cada sesión que
+paró por falta de uso. Ciérrala con `session stop`, aparca su tarea o ejecuta `clean`.
+
+**Cuando Claude Code se actualiza**, Claude Desktop puede enseñar una sesión dos veces
+durante un rato, una de ellas desconectada (a veces bajo «No folder»). Es la misma
+sesión: claude.ai la enseña una vez, y Claude no da forma de quitar la línea de más
+desde este ordenador.
 
 ## Reinicia una sesión tras actualizar
 
@@ -159,12 +170,15 @@ en [`watch pr`](commands.es.md#augmented-brain-watch-pr).
 
 ## Limpia lo que queda
 
-Claude Code hace worktrees y carpetas temporales propias, y deja algunas atrás.
+Claude Code hace worktrees y carpetas temporales propias, y deja algunas atrás; y las
+sesiones cuya tarea ya no sigue, o que empezó otro y se archivaron, se quedan en sus
+listas.
 
 ```bash
 augmented-brain clean
 ```
 
 enseña lo que queda de sesiones que ya terminaron, y lo quita solo si dices que sí:
-nunca un worktree con trabajo propio, que solo nombra. `doctor` avisa cuando hay algo
+nunca un worktree con trabajo propio, que solo nombra. Por una sesión que no abrió
+ninguna tarea pregunta una a una. `doctor` y la revisión semanal avisan cuando hay algo
 que limpiar. Los detalles, en [`clean`](commands.es.md#augmented-brain-clean).

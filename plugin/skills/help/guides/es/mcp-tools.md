@@ -114,7 +114,8 @@ línea dice cuáles: saltarlas se puede, y se ve. Una tarea cerrada solo se reab
 abiertas impiden cerrarla, el resultado va a la nota, se nombran las fechas para revisar
 abiertas, y la sesión y los worktrees de la tarea se tratan igual. Sin `result` se cierra
 también, con una línea que dice que no se dio resultado, y Claude escribe el resultado en
-el diario.
+el diario. `status` `parked` o `someday` cierra la sesión propia de la tarea igual que
+[`task_park`](#task_park).
 
 - `id`: el id de la tarea.
 - `title` (opcional): un título nuevo. El id no cambia, así que los enlaces a la tarea
@@ -225,6 +226,11 @@ se rechaza: solo se vuelve a abrir con `task_update` y `reopen`, así su resulta
 - `someday` (opcional): `true` cuando no se va a tocar en semanas. La tarea sale de la
   lista del día.
 
+Si la tarea tiene sesión propia ([una sesión por tarea](task-sessions.md)), se cierra
+cuando termina su respuesta, muchas veces la misma respuesta que aparca la tarea. Sale
+de Claude Desktop y claude.ai, así que no vuelve sola; sus worktrees se quedan.
+`augmented-brain session start` le abre una nueva cuando retomes la tarea.
+
 ## `task_close`
 
 **Dices:** "hecho, ciérrala".
@@ -304,8 +310,10 @@ sale al empezar cada sesión.
 **Dices:** "hagamos la revisión semanal".
 
 Lista lo que repasa la revisión semanal: el buzón, las tareas vivas que nadie ha tocado
-en 14 días o más, y las fechas que llegan en los próximos 7 días. Después Claude lo
-repasa contigo, una cosa cada vez. No tiene parámetros.
+en 14 días o más, y las fechas que llegan en los próximos 7 días. Termina con las
+sesiones de tareas que ya no siguen (aparcadas, para algún día, cerradas), si queda
+alguna, y Claude propone `augmented-brain clean`. Después Claude lo repasa contigo, una
+cosa cada vez. No tiene parámetros.
 
 ## `review_done`
 
