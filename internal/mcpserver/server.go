@@ -374,7 +374,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Parent    string `json:"parent,omitempty" jsonschema:"id of the task to make this one a subtask of, or move it to (one level only: the parent is no subtask, this task has none; without area it takes the parent's area); none to make it a task of its own"`
 		Space     string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	toolThen(s, locked, "task_update", "Change a task's title, status, who it waits on, its next step, summary, area or parent, or add, close, take out or move a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
+	toolThen(s, locked, "task_update", "Change a task's title, status, who it waits on, its next step, summary, area or parent, or add, close, take out or move a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees; parked or someday ends its session too, and keeps its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
 		func(b0 *brain.Brain, in updateIn) (string, then, error) {
 			u := brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn, Next: in.Next,
 				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone,
@@ -417,6 +417,9 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				}
 				after = func() (string, error) { return closedWorktree(b.ConfigDir, in.ID), nil }
 			}
+			if in.Status == "parked" || in.Status == "someday" {
+				after = func() (string, error) { return parkedSession(b.ConfigDir, in.ID), nil }
+			}
 			return out + fromOther(b), after, nil
 		})
 
@@ -449,14 +452,17 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Essentials string `json:"essentials,omitempty" jsonschema:"pass it: 3 to 6 lines that are enough to resume the task without its journal (what it is, where it is, what was decided, the next step); replaces its first section. Without it only 'where it is' and 'next' are updated"`
 		Someday    bool   `json:"someday,omitempty" jsonschema:"true when it will not be touched for weeks"`
 	}
-	tool(s, locked, "task_park", "Pause a task without losing anything, before switching to other work.",
-		func(b *brain.Brain, in parkIn) (string, error) {
+	toolThen(s, locked, "task_park", "Pause a task without losing anything, before switching to other work. Its own session, if it has one, closes once it finishes its answer (its worktrees stay); augmented-brain session start opens a new one.",
+		func(b *brain.Brain, in parkIn) (string, then, error) {
 			n, err := b.Park(brain.ParkInput{ID: in.ID, Next: in.Next, WaitingOn: in.WaitingOn,
 				Essentials: in.Essentials, Someday: in.Someday})
-			if err == nil {
-				b.Released(in.ID)
+			if err != nil {
+				out, err := header(n, err)
+				return out, nil, err
 			}
-			return header(n, err)
+			b.Released(in.ID)
+			out, err := header(n, nil)
+			return out, func() (string, error) { return parkedSession(b.ConfigDir, in.ID), nil }, err
 		})
 
 	type closeIn struct {
@@ -915,6 +921,20 @@ const (
 // StopSessionWhenIdle starts, detached, the process that closes a task's session once
 // it has finished its answer (remote.StopWhenIdle). Tests replace it.
 var StopSessionWhenIdle = remote.StopWhenIdle
+
+// StopSessionWhenIdleKeep is StopSessionWhenIdle for a parked task: it leaves the
+// task's worktrees (remote.StopWhenIdleKeep). Tests replace it.
+var StopSessionWhenIdleKeep = remote.StopWhenIdleKeep
+
+// parkedSession ends the session of a task just parked or sent to someday, and leaves
+// its worktrees (remote.System.ParkedTask). It runs once the notes are released.
+func parkedSession(cfgDir, task string) string {
+	sys, err := NewRemoteSystem()
+	if err != nil {
+		return ""
+	}
+	return sys.ParkedTask(cfgDir, task, StopSessionWhenIdleKeep)
+}
 
 // closedWorktree ends the session of a closed task and removes its worktrees
 // (remote.System.ClosedTask), but the one this session works in.

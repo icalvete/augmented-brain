@@ -152,3 +152,29 @@ func TestSessionStopWhenIdleDetaches(t *testing.T) {
 		t.Errorf("copy detached again: %v\n%s%s", started, out.String(), errOut.String())
 	}
 }
+
+// `session stop --when-idle --keep-worktrees`, what parking a task starts, detaches the
+// copy that keeps the worktrees, not the one closing a task uses.
+func TestSessionStopKeepWorktreesDetaches(t *testing.T) {
+	h, cfg := home(t)
+	useFakeSystem(t, h, "linux")
+	dir := filepath.Join(cfg, "state", "sessions")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "task-site.json"), []byte(`{"id":"abc12345","task":"task-site","folder":"/x"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var plain, keep []string
+	oldPlain, oldKeep := stopDetached, stopDetachedKeep
+	t.Cleanup(func() { stopDetached, stopDetachedKeep = oldPlain, oldKeep })
+	stopDetached = func(cfgDir, task string) error { plain = append(plain, task); return nil }
+	stopDetachedKeep = func(cfgDir, task string) error { keep = append(keep, task); return nil }
+	var out, errOut bytes.Buffer
+	if code := run([]string{"session", "stop", "task-site", "--when-idle", "--keep-worktrees"}, nil, &out, &errOut); code != 0 {
+		t.Errorf("stop: %d\n%s%s", code, out.String(), errOut.String())
+	}
+	if len(plain) != 0 || len(keep) != 1 || keep[0] != "task-site" {
+		t.Errorf("plain %v keep %v", plain, keep)
+	}
+}

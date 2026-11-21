@@ -633,7 +633,7 @@ Closes a task's session and takes it out of the lists of Claude Desktop and clau
 The Claude app on a phone may keep showing it, offline, until you archive it there:
 Claude offers no way to remove it from there. It works from any folder.
 
-Syntax: `augmented-brain session stop <task> [--when-idle]`
+Syntax: `augmented-brain session stop <task> [--when-idle] [--keep-worktrees]`
 
 ```bash
 augmented-brain session stop task-new-website
@@ -645,6 +645,9 @@ augmented-brain session stop task-new-website
   stays open. Closing the task runs it this way by itself, so a session can close its own
   task without cutting its answer off. What it did goes to `state/session-stop.log` in
   the configuration folder, with a line every 5 minutes while it waits.
+- `--keep-worktrees`: close the session and leave the task's worktrees as they are.
+  Parking a task, or sending it to someday, runs it this way by itself, with
+  `--when-idle`: the task goes on later, and its branch with it.
 
 **The task's worktree** (the one `session start` made, see above) goes too, with its
 branch, as long as nothing would be lost. It stays, and the command says so, when it
