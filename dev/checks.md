@@ -86,6 +86,15 @@ Heavier checks, before a release or when you touch what they cover:
   "missing"), and every page of the panel in Safari itself through `safaridriver`. CI runs
   it on macOS (`mac` in `ci.yml`), with `AB_MAC_CHECK_KEYCHAIN=1` so it may add a
   throwaway keychain; on your Mac, allow Safari's remote automation first (Develop menu).
+- `scripts/try-plugin.sh`: not a check but the way to try a change by hand in a real
+  Claude session. `claude --plugin-dir plugin` alone runs the installed program, since
+  every hook in `hooks.json` and the server in `.mcp.json` put `~/.local/bin` first in
+  `PATH`. The script builds the program into a temporary folder, copies the plugin there
+  with those paths pointing at it (and stops if they no longer look as it expects), sets
+  up a made-up space with its own `AB_CONFIG_DIR` and starts `claude --plugin-dir <copy>`
+  in its work folder; arguments after `--` go to `claude`. Claude Code loads the copy in
+  place of the installed plugin, not beside it, so only one guard runs. `--prepare` stops
+  before Claude and prints how to start it; `AB_TRY_KEEP=1` keeps the folder after it.
 - `scripts/e2e-fresh.py`: several real, isolated Claude sessions on one space: a task
   closed by another session is heard before the next answer, own writes are not, /clear
   keeps it working, a capture sent from another space comes up there. Same login and
