@@ -27,7 +27,7 @@ SYS="/usr/bin:/bin:/usr/sbin:/sbin"
 REL="${AB_CHECK_RELEASE:-$T/release}"
 if [ -z "${AB_CHECK_RELEASE:-}" ]; then
   echo "building a release from this checkout"
-  "$ROOT/scripts/release-build.sh" 0.0.0-check "$REL" >/dev/null || exit 2
+  AB_RELEASE_TARGETS="$(go env GOOS)/$(go env GOARCH)" "$ROOT/scripts/release-build.sh" 0.0.0-check "$REL" >/dev/null || exit 2
 fi
 export AB_RELEASE_URL="file://$REL"
 

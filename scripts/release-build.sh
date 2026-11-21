@@ -9,6 +9,8 @@
 # checksums.txt with the SHA-256 of all of them in sha256sum's format, into output_dir
 # (default: dist/).
 # Binaries are static (CGO off) and stripped (-s -w); the version is set at build time.
+# AB_RELEASE_TARGETS ("darwin/arm64 …") builds only those: the install checks need just
+# this machine's, and building all six took a slow Intel Mac most of CI's 10 minutes.
 #
 # The same commit and the same Go give the same files, byte for byte, wherever they are
 # built: no paths (-trimpath), no git stamp (-buildvcs=false: it would depend on the
@@ -20,7 +22,7 @@ set -eu
 VERSION="${1:?usage: $0 <version> [output_dir]}"
 VERSION="${VERSION#v}"
 OUT="${2:-dist}"
-TARGETS="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64"
+TARGETS="${AB_RELEASE_TARGETS:-linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64}"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 mkdir -p "$OUT"
@@ -77,7 +79,11 @@ done
 cp "$ROOT/install.sh" "$ROOT/install.ps1" "$OUT/"
 
 cd "$OUT"
-set -- augmented-brain_"${VERSION}"_*.tar.gz augmented-brain_"${VERSION}"_*.zip install.sh install.ps1
+set --
+for f in augmented-brain_"${VERSION}"_*.tar.gz augmented-brain_"${VERSION}"_*.zip; do
+  [ -e "$f" ] && set -- "$@" "$f"   # with AB_RELEASE_TARGETS, maybe no .zip at all
+done
+set -- "$@" install.sh install.ps1
 if command -v sha256sum >/dev/null 2>&1; then
   sha256sum "$@" > checksums.txt
 else
