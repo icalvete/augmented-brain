@@ -129,6 +129,27 @@ func TestContextSpaceKnowledge(t *testing.T) {
 	}
 }
 
+// The names of the secrets in the keychain reach the session, never a value: before,
+// a session looked wherever a rule said and twice said a token the keychain held did not
+// exist (12 and 22-nov).
+func TestContextSecretNames(t *testing.T) {
+	c, s := space(t, "en")
+	if strings.Contains(Context(c, s), "Secrets in the keychain") {
+		t.Error("an empty secrets list should say nothing")
+	}
+	if err := brain.SaveSecretList(c.Dir, []string{"bitbucket/api-token: open and merge pull requests", "telegram/bot: the alerts bot"}); err != nil {
+		t.Fatal(err)
+	}
+	want := []string{"## Secrets in the keychain (names only)", "- bitbucket/api-token: open and merge pull requests", "- telegram/bot: the alerts bot", "Before saying a secret is missing"}
+	for name, got := range map[string]string{"Context": Context(c, s), "AllParts": strings.Join(AllParts(c, s, "", ""), "\n")} {
+		for _, w := range want {
+			if !strings.Contains(got, w) {
+				t.Errorf("%s lacks %q:\n%s", name, w, got)
+			}
+		}
+	}
+}
+
 func TestContextBudget(t *testing.T) {
 	c, s := space(t, "en")
 	long := strings.Repeat("Explain every step before doing it. ", 60)

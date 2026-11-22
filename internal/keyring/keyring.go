@@ -83,6 +83,19 @@ func classify(goos string, err error, stderr string) State {
 	return Unknown
 }
 
+// HowToRead is how a command reads the secret service/name from this computer's
+// keychain, to put inside $(…) so its value goes straight to the program that needs it,
+// or "" where it is not known.
+func HowToRead(service, name string) string {
+	switch runtime.GOOS {
+	case "linux", "freebsd", "openbsd":
+		return "secret-tool lookup service " + service + " name " + name
+	case "darwin":
+		return "security find-generic-password -s " + service + " -a " + name + " -w"
+	}
+	return ""
+}
+
 // HowToStore is the command that stores the secret service/name in this computer's
 // keychain, asking for its value (never written in the command), or "" where it is not
 // known.

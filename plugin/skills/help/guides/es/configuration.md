@@ -179,9 +179,10 @@ secrets = ["telegram/alerts-bot: avisos al móvil", "smtp/newsletter: envío del
 
 Cada entrada es `servicio/nombre: para qué es`. El servicio y el nombre son palabras
 sueltas, tal como los conoce el llavero. Claude le añade entradas con la herramienta
-`secret_name_save`, y la página Secretos del panel la lista. Un valor se rechaza. La
-0.6.0 guardaba la lista en `config.toml` como `secrets`;
-`check` y el inicio de sesión la pasan aquí.
+`secret_name_save`, y la página Secretos del panel la lista. Un valor se rechaza. Cada
+sesión empieza con la lista, así que Claude sabe qué secretos hay antes de decir que falta
+uno. La 0.6.0 guardaba la lista en `config.toml` como `secrets`; `check` y el inicio de
+sesión la pasan aquí.
 
 ## `guard.toml`
 
