@@ -90,6 +90,45 @@ func TestContextShared(t *testing.T) {
 	}
 }
 
+// The space's own references and lessons reach the session too, listed like the shared
+// ones, and in every part layout: the index leaves them out, and a lesson the session
+// never sees does not stop the mistake it records (22-nov, a keychain token said twice
+// not to exist).
+func TestContextSpaceKnowledge(t *testing.T) {
+	c, s := space(t, "en")
+	files := map[string]string{
+		"ref-open-prs.md":     "---\nid: ref-open-prs\ntype: reference\ntitle: Open pull requests through the API\narea: area-general\n---\nThe token is in the keychain.\n",
+		"lesson-token-yes.md": "---\nid: lesson-token-yes\ntype: lesson\ntitle: The token does exist\n---\n",
+	}
+	for name, text := range files {
+		if err := os.WriteFile(filepath.Join(s.Memory, "knowledge", name), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	want := []string{
+		"## Knowledge of this space",
+		"In " + filepath.Join(s.Memory, "knowledge") + ", each in <id>.md:",
+		"- Open pull requests through the API (ref-open-prs)",
+		"- The token does exist (lesson-token-yes)",
+	}
+	text := Context(c, s)
+	all := strings.Join(AllParts(c, s, "", ""), "\n")
+	var parts []string
+	for n := 1; n <= Parts; n++ {
+		parts = append(parts, Part(c, s, "", n))
+	}
+	for name, got := range map[string]string{"Context": text, "AllParts": all, "Part": strings.Join(parts, "\n")} {
+		for _, w := range want {
+			if !strings.Contains(got, w) {
+				t.Errorf("%s lacks %q:\n%s", name, w, got)
+			}
+		}
+	}
+	if strings.Contains(text, "The token is in the keychain.") {
+		t.Error("a knowledge note's body reached the session text: only its title should")
+	}
+}
+
 func TestContextBudget(t *testing.T) {
 	c, s := space(t, "en")
 	long := strings.Repeat("Explain every step before doing it. ", 60)

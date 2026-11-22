@@ -24,8 +24,9 @@ What is worth keeping beyond one task. There are two kinds, in `knowledge/`:
 - A **lesson** says what you learned, with a title that already states the conclusion:
   "Test the backup restore, not only the backup".
 
-You say: "save that as a lesson". Either kind can belong to an area, and Claude opens it
-when a task needs it.
+You say: "save that as a lesson". Either kind can belong to an area. Every session starts
+with the list of them, title and file, so Claude knows what is there and opens the one a
+task needs.
 
 ## People
 
