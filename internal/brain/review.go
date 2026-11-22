@@ -365,6 +365,9 @@ type Reminder struct {
 	Days   int // negative when overdue
 	What   string
 	TaskID string // empty for an inbox capture
+	// Deadline is set for a task's deadline: What is then the task's title, and there
+	// is nothing to mark done but the task itself.
+	Deadline bool
 }
 
 // Reminders returns what is due within the next `within` days, overdue first.
@@ -372,7 +375,7 @@ func (b *Brain) Reminders(within int) []Reminder {
 	_, due := b.Pending(within)
 	var out []Reminder
 	for _, d := range due {
-		out = append(out, Reminder{Date: d.Date, Days: d.Days, What: d.What, TaskID: d.TaskID})
+		out = append(out, Reminder{Date: d.Date, Days: d.Days, What: d.What, TaskID: d.TaskID, Deadline: d.Deadline})
 	}
 	today := b.today()
 	entries, _ := b.Inbox()

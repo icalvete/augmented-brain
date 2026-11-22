@@ -55,11 +55,12 @@ live. It takes no parameters.
 
 **You say:** "where were we?"
 
-The live tasks, those waiting on you first, each with its status, steps done, who it
+The live tasks, in order of priority (a deadline first, then the important ones, then
+those waiting on you), each with its status, steps done, deadline and importance, who it
 waits on and its next step (cut at 300 characters: `task_get` gives it whole). Then the
-watch dates that are due. Claude uses it for "where were we?".
+watch dates and deadlines that are due. Claude uses it for "where were we?".
 
-- `within_days` (optional): also list watch dates due within this many days. Default 7.
+- `within_days` (optional): also list watch dates and deadlines due within this many days. Default 7.
 - `space` (optional): another of your spaces, to list its live tasks instead, read
   only: to find the task you mean there.
 

@@ -58,11 +58,12 @@ están vivas. No tiene parámetros.
 
 **Dices:** "¿por dónde íbamos?"
 
-Las tareas vivas, primero las que esperan por ti, cada una con su estado, los pasos
-hechos, a quién espera y su siguiente paso (cortado a 300 caracteres: `task_get` lo da
-entero). Después, las fechas para revisar que han llegado. Claude la usa para "¿en qué estábamos?".
+Las tareas vivas, por orden de prioridad (primero las que tienen plazo, después las
+importantes, luego las que esperan por ti), cada una con su estado, los pasos hechos, su
+plazo e importancia, a quién espera y su siguiente paso (cortado a 300 caracteres:
+`task_get` lo da entero). Después, las fechas para revisar y los plazos que han llegado. Claude la usa para "¿en qué estábamos?".
 
-- `within_days` (opcional): lista también las fechas para revisar que llegan en estos
+- `within_days` (opcional): lista también las fechas para revisar y los plazos que llegan en estos
   días. Por defecto, 7.
 - `space` (opcional): otro de tus espacios, para listar sus tareas vivas en su lugar,
   solo para leer: para encontrar allí la tarea de la que hablas.

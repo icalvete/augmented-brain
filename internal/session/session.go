@@ -686,7 +686,11 @@ func dueNote(b *brain.Brain, task string) string {
 		if d.TaskID != "" {
 			where = d.TaskID
 		}
-		fmt.Fprintf(&out, "- %s (%s): %s [%s]\n", d.Date, when, shorten(memory.OneLine(d.What), lineBudget), where)
+		what := shorten(memory.OneLine(d.What), lineBudget)
+		if d.Deadline {
+			what = "deadline of the task: " + what
+		}
+		fmt.Fprintf(&out, "- %s (%s): %s [%s]\n", d.Date, when, what, where)
 	}
 	if more > 0 {
 		fmt.Fprintf(&out, "- and %d more: see the pending tool\n", more)

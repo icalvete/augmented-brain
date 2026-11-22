@@ -96,7 +96,8 @@ func (s *Server) today(v *view, _ *http.Request) (string, page, error) {
 				ts.MineParked = append(ts.MineParked, taskRow{ID: i.ID, Title: i.Title})
 			} else if i.WaitingOn == "me" {
 				ts.Mine = append(ts.Mine, taskRow{ID: i.ID, Title: i.Title, Status: i.Status,
-					StatusLabel: v.status(i.Status), Next: i.Next, Steps: v.steps(i.StepsDone, i.StepsTotal)})
+					StatusLabel: v.status(i.Status), Next: i.Next, Steps: v.steps(i.StepsDone, i.StepsTotal),
+					High: i.High, Due: i.Due})
 			}
 		}
 		entries, _ := b.Inbox()

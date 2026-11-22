@@ -287,6 +287,14 @@ var noteMessages = map[string]msg{
 		en: "%d/%d steps",
 		es: "%d/%d pasos",
 	},
+	"index.high": {
+		en: "important",
+		es: "importante",
+	},
+	"index.due": {
+		en: "due %s",
+		es: "plazo %s",
+	},
 	"note.summary.head": {
 		en: "# Conversation summary, %s\n\nWritten by Claude Code when it compacted the conversation (%s).",
 		es: "# Resumen de la conversación, %s\n\nLo escribió Claude Code al compactar la conversación (%s).",

@@ -310,7 +310,15 @@ func (m *Memory) children() map[string][]*Note {
 			out[n.Header.Parent] = append(out[n.Header.Parent], n)
 		}
 	}
+	for _, kids := range out {
+		SortTasks(kids)
+	}
 	return out
+}
+
+// SortTasks puts tasks in the order of CompareTasks.
+func SortTasks(ns []*Note) {
+	slices.SortFunc(ns, func(a, b *Note) int { return CompareTasks(&a.Header, &b.Header) })
 }
 
 func sortByID(ns []*Note) {

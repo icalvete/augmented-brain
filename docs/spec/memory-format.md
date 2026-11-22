@@ -192,6 +192,8 @@ watch:                           # optional: dates to look at something again
   - date: 2026-11-16
     what: Certificates renewed?
     done: false
+importance: high                 # optional: high, or nothing for normal
+due: 2026-11-27                  # optional: the date it must be done by
 ```
 
 | Field | Holds | Required | Limit |
@@ -201,6 +203,8 @@ watch:                           # optional: dates to look at something again
 | `next` | one line | yes, unless `closed` | 2,000 |
 | `watch` | a list of `date` (required), `what`, `done` | no | `what`: 1,000 |
 | `parent` | the id of a task (see "Subtasks") | no | |
+| `importance` | `high`, or nothing (normal) | no | |
+| `due` | a date, `YYYY-MM-DD` | no | |
 
 `status`, `waiting_on` and `next` on a note that is not a task make it not valid. A
 `watch` entry with a field other than these three makes the note not valid too.
@@ -208,6 +212,29 @@ watch:                           # optional: dates to look at something again
 A watch date that is not `done` and falls in the next 7 days, or is already past, is
 brought up at the start of the session. This holds for closed tasks too: closing is when
 the checks for later are written down, so they come up until they are marked `done`.
+
+### Priority
+
+`importance` and `due` say what goes first. `due` is a deadline: the date the task must
+be done by. It is not a watch date, which only says when to look again. `importance` is
+`high` or nothing; nothing is normal. A value the program does not know (`importance:
+urgent`, a `due` that is not a date) counts as nothing and never makes the note not
+valid: so a later program can give these fields a new value without an earlier one
+leaving the note out.
+
+Live tasks are listed in this order, in `MEMORY.md` (inside each area), the panel and the
+`pending` tool:
+
+1. Those with a deadline, the nearest first.
+2. Those of `high` importance.
+3. Those waiting on the user.
+4. The rest.
+
+Inside each group, the one untouched for longest (`updated`) goes first. The order does
+not depend on today's date, so `MEMORY.md` does not change from one day to the next. A
+deadline of a live task in the next 7 days, or already past, is brought up at the start
+of the session like a watch date; it goes away when the task is closed or its `due`
+changes.
 
 ### Subtasks
 
@@ -413,6 +440,13 @@ and `check`, `doctor`, the panel and the session start say to update (or to fix 
 field, if it is a typo). A field added before this rule (`parent`, in 0.3.0) is read
 by every release still covered by the promise of compatibility.
 
+An optional header field can come in without a new version when the program learns to
+read it before any program writes it: one release reads it (and treats a value it does
+not know as missing), and only when the last two releases read it does a later one
+write it. Readers of every release covered by the promise then know the field, and
+nothing is left out. `importance` and `due` came in this way: read from the release
+after 1.1.3, written from a later one.
+
 Every note is replaced in one step: written to a temporary file next to it
 (`<name>.<digits>.tmp`), synced to the disk, renamed over the note, and its folder
 synced, so a power cut leaves the old note or the new one, never an empty one. A
@@ -433,8 +467,9 @@ that says it is generated, and these sections, in the configuration's language:
 - **People**, when there are any.
 - **Live tasks**, grouped under the title of their area ("No area" for a task with none,
   or with an area that does not exist). One line each: title and link,
-  summary, status, steps done when the Plan has any ("1/2 steps"), who it waits on, and
-  the next step. A live subtask goes indented under its parent when the parent is live;
+  summary, status, steps done when the Plan has any ("1/2 steps"), its deadline and
+  importance when it has them ("due 2026-11-27", "important"), who it waits on, and
+  the next step, in the order of "Priority". A live subtask goes indented under its parent when the parent is live;
   otherwise on its own.
 - A last line with how many tasks are `someday`, which are not listed. Closed tasks are
   not listed.

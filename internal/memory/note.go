@@ -47,6 +47,12 @@ type Header struct {
 	WaitingOn string  `yaml:"waiting_on,omitempty"`
 	Next      string  `yaml:"next,omitempty"`
 	Watch     []Watch `yaml:"watch,omitempty"`
+	// Importance is "high" or nothing (normal); any other value counts as normal, so a
+	// value a newer program writes never leaves the note out. Due is the date the task
+	// must be done by (YYYY-MM-DD), not a date to look again (that is a watch date); one
+	// that is not a date is ignored. See priority.go.
+	Importance string `yaml:"importance,omitempty"`
+	Due        string `yaml:"due,omitempty"`
 }
 
 // Note is one file of the memory.
