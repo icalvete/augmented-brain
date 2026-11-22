@@ -754,21 +754,28 @@ type Item struct {
 	Parent, ParentTitle   string
 	Sub                   bool
 	StepsDone, StepsTotal int
+	// High is set for an important task; Due is its deadline, when it has one.
+	High bool
+	Due  string
 }
 
-// Due is a watch date that has come or is near.
+// Due is a watch date, or a task's deadline, that has come or is near.
 type Due struct {
 	TaskID, Date, What string
-	Days               int // negative when overdue
+	Days               int  // negative when overdue
+	Deadline           bool // the task's deadline (What is its title), not a watch date
 }
 
-// Pending returns the live tasks, those waiting on the user first, and the watch
-// dates due within the next `within` days.
+// Pending returns the live tasks, in the order of memory.CompareTasks (a deadline
+// first, then the important ones, then those waiting on the user), and the watch dates
+// and deadlines due within the next `within` days.
 func (b *Brain) Pending(within int) ([]Item, []Due) {
 	var items []Item
 	var due []Due
 	today := b.today()
-	for _, n := range b.Mem.OfType("task") {
+	tasks := b.Mem.OfType("task")
+	memory.SortTasks(tasks)
+	for _, n := range tasks {
 		h := n.Header
 		// A closed task is no longer pending, but its watch dates still are: closing
 		// is when the checks for later are written down.
@@ -779,6 +786,13 @@ func (b *Brain) Pending(within int) ([]Item, []Due) {
 				it.ParentTitle = p.Header.Title
 			}
 			it.StepsDone, it.StepsTotal = memory.StepCount(n.Body)
+			it.High = h.High()
+			if d, ok := h.DueDate(); ok {
+				it.Due = d
+				if days, ok := memory.DaysBetween(today, d); ok && days <= within {
+					due = append(due, Due{TaskID: h.ID, Date: d, What: h.Title, Days: days, Deadline: true})
+				}
+			}
 			items = append(items, it)
 		}
 		for _, w := range h.Watch {
@@ -787,15 +801,12 @@ func (b *Brain) Pending(within int) ([]Item, []Due) {
 				continue
 			}
 			if days <= within {
-				due = append(due, Due{h.ID, w.Date, w.What, days})
+				due = append(due, Due{TaskID: h.ID, Date: w.Date, What: w.What, Days: days})
 			}
 		}
 	}
-	sort.SliceStable(items, func(i, j int) bool {
-		return items[i].WaitingOn == "me" && items[j].WaitingOn != "me"
-	})
 	items = nest(items)
-	sort.Slice(due, func(i, j int) bool { return due[i].Date < due[j].Date })
+	sort.SliceStable(due, func(i, j int) bool { return due[i].Date < due[j].Date })
 	return items, due
 }
 

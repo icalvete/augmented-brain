@@ -833,3 +833,36 @@ func TestAliveCountsAsUse(t *testing.T) {
 		t.Errorf("/alive without the session: %d", w.Code)
 	}
 }
+
+// A task marked important and with a deadline shows both on the task list, and its
+// deadline, a few days ahead, among the reminders, with nothing to tick there.
+func TestPriorityMarks(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	if w := s.post(t, "/task/new", url.Values{"s": {"work"}, "title": {"Exam"}}); w.Code != http.StatusSeeOther {
+		t.Fatalf("new task: %d %s", w.Code, w.Body)
+	}
+	// Nothing writes the fields yet: the user or a later program does, by hand here.
+	p := filepath.Join(filepath.Dir(cfg), "brain-work", "tasks", "task-exam.md")
+	data, err := os.ReadFile(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	due := time.Now().AddDate(0, 0, 2).Format("2006-01-02")
+	text := strings.Replace(string(data), "\n---\n", "\nimportance: high\ndue: "+due+"\n---\n", 1)
+	if err := os.WriteFile(p, []byte(text), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	page := s.get(t, "/tasks?s=work").Body.String()
+	for _, want := range []string{">important<", ">due "} {
+		if !strings.Contains(page, want) {
+			t.Errorf("task list lacks %q", want)
+		}
+	}
+	rem := s.get(t, "/reminders?s=work").Body.String()
+	if !strings.Contains(rem, "Deadline: Exam") {
+		t.Errorf("the deadline is not among the reminders:\n%s", rem)
+	}
+	if strings.Contains(rem, "/watch/done") {
+		t.Error("a deadline can be ticked as a watch date")
+	}
+}

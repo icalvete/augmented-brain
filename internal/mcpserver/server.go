@@ -199,7 +199,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		WithinDays int    `json:"within_days,omitempty" jsonschema:"also list watch dates due within this many days (default 7)"`
 		Space      string `json:"space,omitempty" jsonschema:"another space whose tasks to list (its name, as in where_am_i), to find the id of one of its tasks; only when the user asks for it. Leave it out for this space"`
 	}
-	tool(s, locked, "pending", "The live tasks, those waiting on the user first, with status, who each waits on and its next step; and the watch dates that are due. "+
+	tool(s, locked, "pending", "The live tasks, in order of priority (a deadline first, then the important ones, then those waiting on the user), with status, who each waits on and its next step; and the watch dates and deadlines that are due. "+
 		"With space, those of another space instead, read only, to find the task the user means there.",
 		func(b *brain.Brain, in pendingIn) (string, error) {
 			if in.WithinDays == 0 {
@@ -227,13 +227,23 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				if i.StepsTotal > 0 {
 					steps = fmt.Sprintf(" · %d/%d steps", i.StepsDone, i.StepsTotal)
 				}
+				if i.Due != "" {
+					steps += " · due " + i.Due
+				}
+				if i.High {
+					steps += " · important"
+				}
 				// The next step is cut here, as the session start does: this list is
 				// for finding a task, and task_get gives it whole.
 				fmt.Fprintf(&out, "%s- %s (%s)%s · %s%s · waits on %s · next: %s\n", indent, i.ID, i.Title, part, i.Status, steps, i.WaitingOn,
 					memory.Clip(i.Next, maxPendingNext))
 			}
 			for _, d := range due {
-				fmt.Fprintf(&out, "! watch %s (%d days): %s [%s]\n", d.Date, d.Days, d.What, d.TaskID)
+				kind := "watch"
+				if d.Deadline {
+					kind = "deadline"
+				}
+				fmt.Fprintf(&out, "! %s %s (%d days): %s [%s]\n", kind, d.Date, d.Days, d.What, d.TaskID)
 			}
 			return out.String(), nil
 		})

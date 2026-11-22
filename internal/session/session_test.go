@@ -276,6 +276,11 @@ func TestContextDueAndReview(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(s.Memory, "tasks", "task-broken.md"), []byte("no header here\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	// A deadline in the next days comes up, said as one.
+	exam := "---\nid: task-exam\ntype: task\ntitle: Exam of physics\nstatus: plan\nwaiting_on: me\nnext: study\ndue: 2026-10-23\n---\n"
+	if err := os.WriteFile(filepath.Join(s.Memory, "tasks", "task-exam.md"), []byte(exam), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	text := Context(c, s)
 	for _, want := range []string{
@@ -284,6 +289,7 @@ func TestContextDueAndReview(t *testing.T) {
 		"## Due",
 		"- 2026-10-18 (2 days overdue): renewed? [" + task.Header.ID + "]",
 		"- 2026-10-21 (tomorrow): call the insurance [inbox]",
+		"- 2026-10-23 (in 3 days): deadline of the task: Exam of physics [task-exam]",
 		"- 2026-10-25 (in 5 days): renew the domain [inbox]",
 		"The weekly review is due: 10 days since the last one, with 3 captures in the inbox",
 	} {

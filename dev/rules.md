@@ -54,6 +54,10 @@
   nothing to move: a new header field, note type or task status (headers are read
   strictly, so an earlier program would leave those notes out instead of asking to
   update).
+  The one way round it is for an optional header field: read first, write later. One
+  release learns to read it, treating a value it does not know as missing, and nothing
+  writes it until the last two releases read it (so `compat-check` stays green). The
+  spec says so under "Format version"; `importance` and `due` came in this way.
 - **What people have keeps working.** This is a promise in the README and the
   DISCLAIMER: every change to how notes or settings are kept ships with its migration
   (above), and a command, flag, setting or MCP tool that is renamed or removed keeps

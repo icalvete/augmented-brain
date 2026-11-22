@@ -10,7 +10,7 @@ forma de decir lo mismo también.
 | Tú dices | Qué pasa |
 |---|---|
 | "Tarea nueva: mudar el blog a otro hosting." | Abre una tarea en definición, esperándote, y te pregunta qué es "terminado" |
-| "¿En qué estábamos?" | Lista tus tareas vivas, primero las que te esperan, cada una con su siguiente paso |
+| "¿En qué estábamos?" | Lista tus tareas vivas por orden de prioridad, cada una con su siguiente paso |
 | "Seguimos con lo del blog." | Lee la tarea, mira cómo están las cosas de verdad y la retoma donde la dejaste |
 | "Pasa al plan." | Lleva la tarea a su siguiente fase; tú apruebas cada cambio. Si te saltas una fase, el diario dice cuál |
 | "Nos quedamos con el hosting más barato." | Apunta la decisión en el diario de la tarea, con la fecha |

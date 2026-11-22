@@ -40,7 +40,7 @@
 </ul>{{else}}<p class="empty">{{t "review.stale.none"}}</p>{{end}}
 
 {{if .Reminders}}<h2>{{t "today.reminders"}}</h2><ul class="plain">
-{{range .Reminders}}<li>{{days .Days}} · {{inline .What}}{{if .TaskID}} · <a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.TaskID}}">{{.TaskTitle}}</a>{{end}}</li>{{end}}
+{{range .Reminders}}<li>{{days .Days}} · {{if .Deadline}}{{t "deadline"}}: {{end}}{{inline .What}}{{if .TaskID}} · <a href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.TaskID}}">{{.TaskTitle}}</a>{{end}}</li>{{end}}
 </ul>{{end}}
 
 <h2>{{t "review.finish"}}</h2>

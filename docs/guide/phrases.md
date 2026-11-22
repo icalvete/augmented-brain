@@ -11,7 +11,7 @@ wording with the same meaning works too.
 | You say | What happens |
 |---|---|
 | "New task: move the blog to a new host." | Opens a task in definition, waiting on you, and asks what "done" means |
-| "Where were we?" | Lists your live tasks, those waiting on you first, each with its next step |
+| "Where were we?" | Lists your live tasks in order of priority, each with its next step |
 | "Let's carry on with the blog." | Reads the task, checks the real state, and picks it up where you left it |
 | "Go on to the plan." | Moves the task to its next phase; you approve each change. If you skip a phase, the journal says which |
 | "We go with the cheaper host." | Writes the decision in the task's journal, with the date |

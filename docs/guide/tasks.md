@@ -84,8 +84,27 @@ Every task says two more things:
 - **waiting_on**: `me` (you), `nobody`, a person's name, or another task.
 - **next**: the single next action, in one line.
 
-That is what "where were we?" shows you: each live task, those waiting on you first, with
-its next step.
+That is what "where were we?" shows you: each live task, in order of priority, with its
+next step.
+
+## What goes first
+
+Two more fields, both optional, say what goes first:
+
+- **due**: a deadline, the date the task must be done by. It is not a watch date (below),
+  which only says when to look again.
+- **importance**: `high` for what matters most. Anything else is normal. Keep it for a
+  few tasks: when everything is important, nothing is.
+
+The live tasks are listed in this order, in the index, the panel and "where were we?":
+first those with a deadline, the nearest first; then the important ones; then those
+waiting on you; then the rest. Inside each group, the one untouched for longest goes
+first. A deadline in the next 7 days, or already past, comes up at the start of the
+session, like a watch date.
+
+For now these two fields are read but not yet written: you can add them by hand to a
+task's header (`due: 2026-11-27`, `importance: high`), and Claude will set them in a
+coming release. See [the format](../spec/memory-format.md#priority).
 
 ## Park and resume
 

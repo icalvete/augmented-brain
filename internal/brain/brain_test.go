@@ -153,6 +153,49 @@ func TestPendingAndCapture(t *testing.T) {
 	}
 }
 
+// Pending lists tasks in the order of memory.CompareTasks, and a deadline in the next
+// days comes up with the watch dates, marked as one.
+func TestPendingPriority(t *testing.T) {
+	b := open(t, "en")
+	if _, err := b.NewTask(NewTaskInput{Title: "Mine"}); err != nil {
+		t.Fatal(err)
+	}
+	high, _ := b.NewTask(NewTaskInput{Title: "Important"})
+	exam, _ := b.NewTask(NewTaskInput{Title: "Exam"})
+	for _, u := range []UpdateInput{{ID: high.Header.ID, WaitingOn: "nobody"}, {ID: exam.Header.ID, WaitingOn: "Ana"}} {
+		if _, err := b.Update(u); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// Nothing writes these fields yet: a later program, or the user by hand, does.
+	high = b.Mem.Notes[high.Header.ID]
+	high.Header.Importance = "high"
+	exam = b.Mem.Notes[exam.Header.ID]
+	exam.Header.Due = "2026-10-20"
+	for _, n := range []*memory.Note{high, exam} {
+		if err := b.save(n); err != nil {
+			t.Fatal(err)
+		}
+	}
+	items, due := b.Pending(7)
+	var got []string
+	for _, i := range items {
+		got = append(got, i.Title)
+	}
+	if strings.Join(got, ",") != "Exam,Important,Mine" || !items[1].High || items[0].Due != "2026-10-20" {
+		t.Errorf("pending = %+v", items)
+	}
+	if len(due) != 1 || !due[0].Deadline || due[0].What != "Exam" || due[0].Days != 5 || due[0].TaskID != exam.Header.ID {
+		t.Errorf("due = %+v", due)
+	}
+	if r := b.Reminders(7); len(r) != 1 || !r[0].Deadline {
+		t.Errorf("reminders = %+v", r)
+	}
+	if _, due := b.Pending(3); len(due) != 0 {
+		t.Errorf("a deadline 5 days ahead came up within 3: %+v", due)
+	}
+}
+
 func TestAreasAndKnowledge(t *testing.T) {
 	b := open(t, "en")
 	area, err := b.NewArea("Platform", "The servers and the cloud")

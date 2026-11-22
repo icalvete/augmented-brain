@@ -73,7 +73,7 @@ leads to the whole map.
 
 ## Tasks
 
-Grouped by area, those waiting on you first, with their status and next step. Filters
+Grouped by area and [in order of priority](tasks.md#what-goes-first), with their status, their deadline and importance when they have them, and their next step. Filters
 show only those waiting on you, under way, parked, untouched, or waiting on one person.
 A task nobody has changed for 14 days is marked "untouched N days". At the end, folded,
 the tasks left for **Someday** and the **Closed** ones.

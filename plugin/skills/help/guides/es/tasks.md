@@ -83,8 +83,27 @@ Cada tarea dice dos cosas más:
 - **waiting_on**: `me` (tú), `nobody` (nadie), el nombre de una persona u otra tarea.
 - **next**: la siguiente acción, una sola, en una línea.
 
-Eso es lo que te enseña "¿en qué estábamos?": cada tarea viva, primero las que te esperan
-a ti, con su siguiente paso.
+Eso es lo que te enseña "¿en qué estábamos?": cada tarea viva, por orden de prioridad,
+con su siguiente paso.
+
+## Qué va primero
+
+Dos campos más, los dos opcionales, dicen qué va primero:
+
+- **due**: un plazo, la fecha en la que la tarea tiene que estar hecha. No es una fecha
+  para volver a mirar algo (más abajo), que solo dice cuándo revisarla.
+- **importance**: `high` para lo que más importa. Cualquier otra cosa es normal. Úsalo en
+  pocas tareas: si todo es importante, nada lo es.
+
+Las tareas vivas salen en este orden, en el índice, el panel y "¿en qué estábamos?":
+primero las que tienen plazo, la más cercana antes; después las importantes; luego las
+que te esperan a ti; y luego el resto. Dentro de cada grupo, va antes la que lleva más
+tiempo sin tocarse. Un plazo en los próximos 7 días, o ya pasado, sale al empezar la
+sesión, como una fecha para volver a mirar algo.
+
+De momento estos dos campos se leen pero todavía no se escriben: puedes añadirlos a mano
+en la cabecera de una tarea (`due: 2026-11-27`, `importance: high`), y Claude los pondrá
+en una versión próxima. Mira [el formato de la memoria](../en/memory-format.md#priority) (en inglés).
 
 ## Aparcar y retomar
 

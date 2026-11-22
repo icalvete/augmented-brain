@@ -76,7 +76,7 @@ todos los repositorios** lleva al mapa completo.
 
 ## Tareas
 
-Agrupadas por área, primero las que te esperan a ti, con su estado y su siguiente paso.
+Agrupadas por área y [por orden de prioridad](tasks.es.md#qué-va-primero), con su estado, su plazo e importancia si los tienen y su siguiente paso.
 Los filtros enseñan solo las que te esperan, las que están en marcha, las aparcadas, las
 paradas, o las que esperan a una persona. Una tarea que nadie ha cambiado en 14 días sale
 marcada «parada N días». Al final, plegadas, las de **Algún día** y las **Cerradas**.

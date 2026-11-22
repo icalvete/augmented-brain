@@ -10,7 +10,7 @@
 {{range .Tasks}}
   <li class="card{{if .Mine}} mine{{end}}{{if .Sub}} sub{{end}}">
     <a class="title" href="{{$.Base}}/task?s={{$.Space}}&amp;id={{.ID}}">{{.Title}}</a>
-    <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span>
+    <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span>{{if .Due}}<span class="badge warn">{{tf "due" (day .Due)}}</span>{{end}}{{if .High}}<span class="badge">{{t "high"}}</span>{{end}}
       {{if .Mine}}<span class="badge you">{{t "waits.you"}}</span>{{else if .WaitingOn}}<span>{{t "waits"}}: {{if eq .WaitingOn "nobody"}}{{t "nobody"}}{{else if .PersonID}}<a href="{{$.Base}}/note?s={{$.Space}}&amp;id={{.PersonID}}">{{.WaitingOn}}</a>{{else}}{{.WaitingOn}}{{end}}</span>{{end}}
       {{if .Stale}}<span class="badge warn">{{tf "stale" .Stale}}</span>{{end}}
       {{if .Steps}}<span>{{.Steps}}</span>{{end}}

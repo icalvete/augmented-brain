@@ -93,11 +93,20 @@ func (m *Memory) index(lang string, compact bool) string {
 		groups = append(groups, a)
 	}
 	sort.Strings(groups) // "" (no area) sorts first
+	for _, ts := range byArea {
+		SortTasks(ts)
+	}
 	taskLine := func(t *Note, indent string) {
 		b.WriteString(indent)
 		extra := " · " + OneLine(t.Header.Status)
 		if done, total := StepCount(t.Body); total > 0 {
 			extra += " · " + fmt.Sprintf(l("steps"), done, total)
+		}
+		if d, ok := t.Header.DueDate(); ok {
+			extra += " · " + fmt.Sprintf(l("due"), d)
+		}
+		if t.Header.High() {
+			extra += " · " + l("high")
 		}
 		extra += fmt.Sprintf(" · %s %s", l("waits"), OneLine(t.Header.WaitingOn))
 		switch {

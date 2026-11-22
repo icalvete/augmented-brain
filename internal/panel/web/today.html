@@ -25,7 +25,7 @@
   </li>{{end}}</ul>{{end}}
   {{if .Reminders}}<h3>{{t "today.reminders"}}</h3><ul class="cards">
   {{range .Reminders}}<li class="card{{if le .Days 0}} mine{{end}}">
-    <div class="title">{{inline .What}}</div>
+    <div class="title">{{if .Deadline}}{{t "deadline"}}: {{end}}{{inline .What}}</div>
     <div class="meta"><span class="badge">{{days .Days}}</span>
     {{if .TaskID}}<a href="{{$.Base}}/task?s={{$sp}}&amp;id={{.TaskID}}">{{.TaskTitle}}</a>{{else}}<a href="{{$.Base}}/inbox?s={{$sp}}">{{t "inbox"}}</a>{{end}}</div>
   </li>{{end}}</ul>{{end}}
@@ -33,7 +33,7 @@
   {{if .Mine}}<ul class="cards">
   {{range .Mine}}<li class="card mine">
     <a class="title" href="{{$.Base}}/task?s={{$sp}}&amp;id={{.ID}}">{{.Title}}</a>
-    <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span>{{if .Steps}}<span>{{.Steps}}</span>{{end}}</div>
+    <div class="meta"><span class="badge s-{{.Status}}">{{.StatusLabel}}</span>{{if .Due}}<span class="badge warn">{{tf "due" (day .Due)}}</span>{{end}}{{if .High}}<span class="badge">{{t "high"}}</span>{{end}}{{if .Steps}}<span>{{.Steps}}</span>{{end}}</div>
     {{if .Next}}<div class="next">{{t "next"}}: {{inline .Next}}</div>{{end}}
   </li>{{end}}</ul>{{end}}
   {{if .MineParked}}<p class="hint">{{t "today.parkedmine"}} {{range $i, $t := .MineParked}}{{if $i}} · {{end}}<a href="{{$.Base}}/task?s={{$sp}}&amp;id={{$t.ID}}">{{$t.Title}}</a>{{end}}</p>{{end}}

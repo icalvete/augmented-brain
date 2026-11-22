@@ -26,6 +26,8 @@ type taskRow struct {
 	Stale                                                      int    // days untouched, when the weekly review would bring it up
 	PersonID                                                   string // the person "waits on" names, when one does
 	Updated                                                    string // the date of the last change, where it is shown
+	High                                                       bool   // marked as important
+	Due                                                        string // its deadline, when it has one
 }
 
 func (v *view) steps(done, total int) string {
@@ -95,7 +97,8 @@ func (s *Server) tasks(v *view, r *http.Request) (string, page, error) {
 	for _, i := range items {
 		row := taskRow{ID: i.ID, Title: i.Title, Status: i.Status, StatusLabel: v.status(i.Status),
 			WaitingOn: i.WaitingOn, Next: i.Next, AreaTitle: v.areaTitle(i.Area), Mine: i.WaitingOn == "me",
-			Sub: i.Sub, Steps: v.steps(i.StepsDone, i.StepsTotal), PersonID: v.personLink(i.WaitingOn)}
+			Sub: i.Sub, Steps: v.steps(i.StepsDone, i.StepsTotal), PersonID: v.personLink(i.WaitingOn),
+			High: i.High, Due: i.Due}
 		if !i.Sub {
 			row.PartOf = i.ParentTitle
 			group = i.Area

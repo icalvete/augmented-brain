@@ -160,7 +160,8 @@ The full text, with the reasons, is in [dev/rules.md](dev/rules.md).
   from `scripts/build-guides.py`;
   `docs/img/*.svg` from `docs/img/diagrams.py`; `MEMORY.md` from the program.
 - **The memory format is a contract.** Anything an earlier program would refuse (a new
-  header field, note type or task status) raises the format version with a migration.
+  header field, note type or task status) raises the format version with a migration;
+  an optional field may instead be read first and written later ([dev/rules.md](dev/rules.md)).
 - **What people have keeps working.** A renamed or removed command, flag, setting or tool
   keeps working under its old name; the last two releases must read what this one writes.
 - **Every guard rule says whether it holds outside the spaces** (`reach = "spaces"`).

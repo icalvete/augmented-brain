@@ -812,6 +812,18 @@ var panelMessages = map[string]msg{
 		en: "untouched %d days",
 		es: "parada %d días",
 	},
+	"panel.high": {
+		en: "important",
+		es: "importante",
+	},
+	"panel.due": {
+		en: "due %s",
+		es: "plazo %s",
+	},
+	"panel.deadline": {
+		en: "Deadline",
+		es: "Plazo",
+	},
 	"panel.person.new": {
 		en: "New person",
 		es: "Nueva persona",

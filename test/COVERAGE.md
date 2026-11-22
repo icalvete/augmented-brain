@@ -100,6 +100,7 @@ in the shapes of real commands: this repository is public, so no real paths or n
 | Two sessions writing at once | `TestConcurrentCalls`, `TestFreshBothWritingAtOnce` |
 | Phases: skipped, closing twice, reopening | `internal/brain` `TestPhases` |
 | A parent with open subtasks | `internal/brain` `TestSubtasks` |
+| Priority: the order (deadline, importance, waiting on the user, untouched longest), values not known read as nothing, the marks in the index and the panel, a deadline among the reminders and at the session start (not ticked as a watch date) | `internal/memory` `TestCompareTasks`, `TestPriorityFieldsAreRead`; `internal/brain` `TestPendingPriority`; `internal/session` `TestContextDueAndReview`; `internal/panel` `TestPriorityMarks` |
 | A task of another space (`space` in `task_get`, `task_journal`, `task_update`, `task_step`, `pending`): origin mark, nothing in this space, closing refused, its backup at session end | `TestTasksOfAnotherSpaceThroughTools`; `internal/hook` `TestSessionEndBacksUpWrittenFromOutside` |
 | `task_worktree`, and closing removes the task's worktrees (made, noted, with work, in use) | `TestTaskWorktreeTool`; `internal/remote` `TestNotedWorktrees` |
 | Closing a task whose own session runs | `TestCloseStopsTheTaskSession`; `internal/remote` `TestStopWhenIdle`; tried by hand on 10-nov |

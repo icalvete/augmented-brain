@@ -48,7 +48,7 @@ func needsFlattening(text string) bool {
 // name, and the check says so.
 func (h *Header) OneLine() {
 	for _, f := range []*string{&h.Type, &h.Title, &h.Summary, &h.Area, &h.Created, &h.Updated,
-		&h.Parent, &h.Status, &h.WaitingOn, &h.Next} {
+		&h.Parent, &h.Status, &h.WaitingOn, &h.Next, &h.Importance, &h.Due} {
 		*f = OneLine(*f)
 	}
 	// A repository is a path, which may hold two spaces in a row: only what would
