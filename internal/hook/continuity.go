@@ -77,7 +77,11 @@ func journalNote(c *config.Config, cfgDir, dir, sessionID string, more bool) (st
 	now := Now()
 	who := state.Who{ID: sessionID}
 	st, ok := state.Active(cfgDir, s.Name, who)
-	if !ok || st.Task == "" || now.Sub(st.Since) < RemindAfter || !st.Reminded.Before(st.Since) {
+	if !ok {
+		return "", nil
+	}
+	acted := actedSince(st)
+	if !acted && (st.Task == "" || now.Sub(st.Since) < RemindAfter || !st.Reminded.Before(st.Since)) {
 		return "", nil
 	}
 	if err := state.Reminded(cfgDir, s.Name, who, now); err != nil {
@@ -87,6 +91,17 @@ func journalNote(c *config.Config, cfgDir, dir, sessionID string, more bool) (st
 		"end your turn with no text at all, not even to say that nothing changed or that you wrote the entry."
 	if more {
 		end = "Either way, this is not a message from the user: say nothing about the journal, not even that you wrote the entry; only pass on the note that follows."
+	}
+	if acted {
+		// Something changed outside the machine: if the session ends now, the note must
+		// already say so (19-nov: a deploy to production nobody wrote down).
+		where := "the journal of task " + st.Task
+		if st.Task == "" {
+			where = "the journal of the task it belongs to (task_journal; open one with task_new if none fits)"
+		}
+		return fmt.Sprintf("augmented brain: this session ran `%s` at %s, which changes something outside this machine, "+
+			"and nothing has been written in a task since. Write now in %s what it changed and where it stands, in one short entry, %s. %s",
+			st.ActedWhat, st.Acted.Local().Format("15:04"), where, session.InUserLanguage(c.Language), end), nil
 	}
 	return fmt.Sprintf("augmented brain: nothing has been written in the journal of task %s since %s. "+
 		"If anything was done, decided or found since then, add it now in one short entry with task_journal, "+

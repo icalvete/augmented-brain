@@ -51,7 +51,8 @@ resuming and closing work the same way. See [Tasks](tasks.md).
 through, asks you, or stops it. See [The guard](guard.md).
 
 **4. Claude finishes an answer.** If the session has a task open and nothing was written
-in it for 20 minutes, a hook reminds Claude to write in its journal, once. Each session
+in it for 20 minutes, a hook reminds Claude to write in its journal, once; after a push,
+a merge or a deploy, at the end of that same answer. Each session
 has its own task, so two windows never get each other's reminder. On Linux and macOS,
 the same hook also looks at the memory of the window: if it has grown far past normal,
 Claude tells you, so you can park the task before the system closes the window. See

@@ -1002,7 +1002,8 @@ The events:
   earlier. It never holds up the message.
 - `stop`: after each answer. It takes milliseconds, and:
   - reminds Claude to write in the journal of its session's task, once, after 20
-    minutes without writing;
+    minutes without writing, or right away after a command that changes something
+    outside the machine (a push, a merge, a deploy, a change in the cloud);
   - with `preferred_model` set (see [Configuration](configuration.md)), has Claude tell
     you when another model answered, once per session and model;
   - shows you, once, a change of the guard's lists or something the assistant saved for

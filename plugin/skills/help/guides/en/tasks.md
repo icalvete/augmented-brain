@@ -102,7 +102,10 @@ Each decision or finished step goes to the journal at the moment, not only when 
 it. A session can end at any time, and what is not in the note is lost.
 
 If the session has a task open and nothing has been written in it for 20 minutes, Claude
-gets a reminder at the end of its answer, once.
+gets a reminder at the end of its answer, once. After a command that changes something
+outside the machine (a push, a merge, a deploy, a change in the cloud), the reminder
+comes at the end of that same answer, even with no task open: what reached production
+must be in the note before the session can end.
 
 Each session keeps track of its own task. With two windows on different tasks, each one
 is reminded of its own.
