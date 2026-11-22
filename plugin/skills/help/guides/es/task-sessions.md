@@ -97,6 +97,9 @@ próximo `session start`. Uno con cambios sin commitear, commits sin subir o fic
 git ignora y ninguna compilación rehace (un `.env`, una clave) se queda, y
 `augmented-brain doctor` lo nombra.
 
+Un worktree que quitas a mano no necesita nada más: cada inicio de sesión borra los
+apuntes de carpetas que ya no están, y los cerrojos viejos de sesiones que acabaron.
+
 ## Verlas y cerrarlas
 
 ```bash
