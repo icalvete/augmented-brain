@@ -59,6 +59,10 @@ var noteMessages = map[string]msg{
 		en: "Done when",
 		es: "Hecho cuando",
 	},
+	"note.where.status": {
+		en: "in %s since %s.",
+		es: "en %s desde el %s.",
+	},
 	"note.where.parked": {
 		en: "parked on %s.",
 		es: "aparcada el %s.",
