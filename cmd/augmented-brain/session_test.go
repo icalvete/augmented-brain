@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -210,8 +211,8 @@ func TestSessionStartWakesInItsOwnFolder(t *testing.T) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	rec := `{"id":"abc12345","task":"` + n.Header.ID + `","folder":"` + own + `"}`
-	if err := os.WriteFile(filepath.Join(dir, n.Header.ID+".json"), []byte(rec), 0o600); err != nil {
+	rec, _ := json.Marshal(map[string]string{"id": "abc12345", "task": n.Header.ID, "folder": own})
+	if err := os.WriteFile(filepath.Join(dir, n.Header.ID+".json"), rec, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	// Retired: listed with no pid until respawn, then running.
