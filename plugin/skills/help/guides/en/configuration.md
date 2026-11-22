@@ -166,8 +166,9 @@ secrets = ["telegram/alerts-bot: alerts to my phone", "smtp/newsletter: sending 
 
 Each entry is `service/name: what it is for`. The service and the name are single words,
 as the keychain knows them. Claude adds to it with the tool `secret_name_save`, and the
-panel's Secrets page lists it. A value is refused. 0.6.0 kept the list in `config.toml`
-as `secrets`; `check` and the session start move it here.
+panel's Secrets page lists it. A value is refused. Every session starts with the list,
+so Claude knows which secrets there are before saying one is missing. 0.6.0 kept the list
+in `config.toml` as `secrets`; `check` and the session start move it here.
 
 ## `guard.toml`
 

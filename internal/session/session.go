@@ -13,6 +13,7 @@ import (
 
 	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/keyring"
 	"github.com/icalvete/augmented-brain/internal/memory"
 	"github.com/icalvete/augmented-brain/internal/rules"
 )
@@ -88,7 +89,7 @@ func ContextFor(c *config.Config, s *config.Space, note, task string) string {
 		head:    heading(c, s, m, problems, note, task) + assistantText(c),
 		profile: section("Who the user is", profileText(c, s)),
 		common:  section("Rules", rules.Common(c.Language)),
-		index:   "\n" + m.SessionIndex(c.Language) + spaceKnowledge(m) + sharedKnowledge(shared),
+		index:   "\n" + m.SessionIndex(c.Language) + spaceKnowledge(m) + sharedKnowledge(shared) + secretNames(c.Dir),
 	}, c, s, m, shared)
 }
 
@@ -207,7 +208,7 @@ func layout(mt meter, c *config.Config, s *config.Space, m, shared *memory.Memor
 	rulesEnd := "\n(Cut to fit. Read the rules in " + s.Memory + " and the shared notes in " + shared.Dir + ".)\n"
 	// Parts has one digit, so the tag measured with it is as long as any.
 	room := mt.budget - mt.size(partTag(s.Name, Parts, Parts))
-	chunks := mt.lines("\n"+m.SessionIndex(c.Language)+spaceKnowledge(m)+sharedKnowledge(shared), room-mt.size(cutNote))
+	chunks := mt.lines("\n"+m.SessionIndex(c.Language)+spaceKnowledge(m)+sharedKnowledge(shared)+secretNames(c.Dir), room-mt.size(cutNote))
 	if len(chunks) > indexParts {
 		chunks = chunks[:indexParts]
 		chunks[len(chunks)-1] += cutNote
@@ -486,6 +487,30 @@ func knowledgeList(m *memory.Memory, title string) string {
 		return ""
 	}
 	return section(title, "In "+filepath.Join(m.Dir, "knowledge")+", each in <id>.md:\n"+strings.Join(lines, "\n"))
+}
+
+// secretNames lists the secrets the user keeps in the keychain, by name and what each
+// is for (the configuration's secrets list, never a value), with how to read one in a
+// command. Before this a session had no list at hand and looked wherever a rule said:
+// on 12 and 22-nov it said a token the keychain held did not exist.
+func secretNames(cfgDir string) string {
+	list, _ := brain.SecretNames(cfgDir)
+	if len(list) == 0 {
+		return ""
+	}
+	lines := make([]string, 0, len(list))
+	for _, sn := range list {
+		line := "- " + sn.Key()
+		if sn.What != "" {
+			line += ": " + memory.OneLine(sn.What)
+		}
+		lines = append(lines, line)
+	}
+	how := "Before saying a secret is missing, look in this list, then in the keychain itself."
+	if read := keyring.HowToRead("<service>", "<name>"); read != "" {
+		how += " Read one inside the command that needs it, as $(" + read + "); never print its value."
+	}
+	return section("Secrets in the keychain (names only)", how+"\n"+strings.Join(lines, "\n"))
 }
 
 // heading is what always goes whole: where the memory is, the caller's note, broken
