@@ -645,7 +645,9 @@ augmented-brain session stop task-new-website
   session waiting for a permission counts as answering, and one still answering by then
   stays open. Closing the task runs it this way by itself, so a session can close its own
   task without cutting its answer off. What it did goes to `state/session-stop.log` in
-  the configuration folder, with a line every 5 minutes while it waits.
+  the configuration folder, with a line every 5 minutes while it waits. Only one process
+  waits per task. If the computer goes off while it waits, the next session start (in
+  any space) starts the wait again, unless the task was taken up since.
 - `--keep-worktrees`: close the session and leave the task's worktrees as they are.
   Parking a task, sending it to someday or moving it to validation runs it this way by
   itself, with `--when-idle`: the task goes on later, and its branch with it.

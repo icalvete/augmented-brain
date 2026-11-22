@@ -40,6 +40,11 @@ func stopDetached(cfgDir, task string, keepWorktrees bool) error {
 	if err != nil {
 		return err
 	}
+	// On record first: if the machine goes down while the copy waits, the next session
+	// start finds it and starts it again (ResumeStops).
+	if err := MarkStop(cfgDir, task, keepWorktrees); err != nil {
+		return err
+	}
 	args := []string{"session", "stop", task, "--when-idle"}
 	if keepWorktrees {
 		args = append(args, "--keep-worktrees")

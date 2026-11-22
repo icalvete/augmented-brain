@@ -660,7 +660,9 @@ augmented-brain session stop task-new-website
   entonces se queda abierta. Cerrar la tarea lo lanza así solo, para que una sesión pueda
   cerrar su propia tarea sin cortar su respuesta. Lo que hizo queda en
   `state/session-stop.log`, en la carpeta de la configuración, con una línea cada 5
-  minutos mientras espera.
+  minutos mientras espera. Solo espera un proceso por tarea. Si el ordenador se apaga
+  mientras espera, el siguiente inicio de sesión (en cualquier espacio) vuelve a lanzar
+  la espera, salvo que la tarea se haya retomado.
 - `--keep-worktrees`: cierra la sesión y deja los worktrees de la tarea como están.
   Aparcar una tarea, mandarla a algún día o pasarla a validación lo lanza así solo, con
   `--when-idle`: la tarea sigue más adelante, y su rama con ella.

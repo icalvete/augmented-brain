@@ -148,11 +148,29 @@ func TestSessionStopWhenIdleDetaches(t *testing.T) {
 	}
 	t.Setenv("AB_STOP_DETACHED", "1")
 	started = nil
+	// One copy waits per task: a second leaves it to the first (22-nov: two stops of
+	// one task were waiting at once).
+	if err := remote.MarkStop(cfg, "task-site", false); err != nil {
+		t.Fatal(err)
+	}
+	release, ok := remote.HoldStop(cfg, "task-site")
+	if !ok {
+		t.Fatal("hold")
+	}
+	run([]string{"session", "stop", "task-site", "--when-idle"}, nil, &out, &errOut)
+	if !strings.Contains(out.String(), "Ya hay otro proceso esperando") || strings.Contains(out.String(), "Cerrada") {
+		t.Errorf("second copy: %s%s", out.String(), errOut.String())
+	}
+	release()
 	out.Reset()
 	errOut.Reset()
 	run([]string{"session", "stop", "task-site", "--when-idle"}, nil, &out, &errOut)
 	if len(started) != 0 || !strings.Contains(out.String(), "Cerrada la sesión de task-site") {
 		t.Errorf("copy detached again: %v\n%s%s", started, out.String(), errOut.String())
+	}
+	// Done, the stop leaves the record: nothing for the next session start to resume.
+	if p := remote.PendingStops(cfg); len(p) != 0 {
+		t.Errorf("still pending after the stop: %v", p)
 	}
 }
 
