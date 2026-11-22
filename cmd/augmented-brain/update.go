@@ -253,14 +253,13 @@ func beforeUpdate(lang string, force bool, out, errOut io.Writer) int {
 
 // afterUpdate restarts the idle Claude sessions still running the old program, through
 // the new one (`session restart --old`: this one may still be the old one, running
-// from memory, which knows nothing of how). For any left, or with restart false, it
-// says which task each space has active: park it, then close and open Claude.
+// from memory, which knows nothing of how). That command names each session it leaves
+// and why; this only adds to run it again when they finish. With restart false, it
+// says how many are left and how to update them. It never asks to park a task: since
+// 1.1.1 `--old` leaves busy sessions as they are, and parking would close the task's
+// session, not update it.
 func afterUpdate(lang, now string, restart bool, out io.Writer) {
 	dir, err := config.Dir()
-	if err != nil {
-		return
-	}
-	c, err := config.Load(dir)
 	if err != nil {
 		return
 	}
@@ -272,22 +271,14 @@ func afterUpdate(lang, now string, restart bool, out io.Writer) {
 		fmt.Fprintln(out, i18n.T(lang, "update.after.none"))
 		return
 	}
-	if restart && restartOldWith(out) == nil {
+	if restart {
+		if restartOldWith(out) == nil {
+			return
+		}
+		fmt.Fprintln(out, i18n.T(lang, "update.after.again"))
 		return
 	}
-	if !restart {
-		fmt.Fprintln(out, i18n.T(lang, "update.after.old", len(old)))
-	}
-	for _, n := range c.SpaceNames() {
-		// Each open session has its own active task; two may share one.
-		said := map[string]bool{}
-		for _, se := range state.Read(dir, n).Sessions {
-			if se.Task != "" && !se.Closed && !said[se.Task] {
-				said[se.Task] = true
-				fmt.Fprintln(out, i18n.T(lang, "update.after.task", n, se.Task))
-			}
-		}
-	}
+	fmt.Fprintln(out, i18n.T(lang, "update.after.old", len(old)))
 	fmt.Fprintln(out, i18n.T(lang, "update.after.restart"))
 }
 

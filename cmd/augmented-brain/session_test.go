@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/brain"
+	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/remote"
 )
 
@@ -176,5 +178,68 @@ func TestSessionStopKeepWorktreesDetaches(t *testing.T) {
 	}
 	if len(plain) != 0 || len(keep) != 1 || keep[0] != "task-site" {
 		t.Errorf("plain %v keep %v", plain, keep)
+	}
+}
+
+// Started again without --folder, a task's session Claude retired comes back where it
+// worked, with its conversation (claude respawn), not as a second session in the
+// space's folder: on 22-nov a session opened with --folder and started again without
+// it opened a new one, and the first stayed in claude.ai, disconnected.
+func TestSessionStartWakesInItsOwnFolder(t *testing.T) {
+	h, cfg := home(t)
+	calls := useFakeSystem(t, h, "linux")
+	work := filepath.Join(h, "augmented-brain", "trabajo")
+	t.Chdir(work)
+	c, err := config.Load(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := brain.Open(c, c.Spaces["trabajo"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	n, err := b.NewTask(brain.NewTaskInput{Title: "Site"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	own := filepath.Join(work, "sesiones", "site")
+	if err := os.MkdirAll(own, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	dir := filepath.Join(cfg, "state", "sessions")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	rec := `{"id":"abc12345","task":"` + n.Header.ID + `","folder":"` + own + `"}`
+	if err := os.WriteFile(filepath.Join(dir, n.Header.ID+".json"), []byte(rec), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	// Retired: listed with no pid until respawn, then running.
+	respawned := false
+	fake := remoteSystem
+	remoteSystem = func() (remote.System, error) {
+		s, err := fake()
+		run := s.Run
+		s.Run = func(name string, args ...string) (string, error) {
+			if len(args) > 0 && args[0] == "agents" {
+				if respawned {
+					return `[{"id":"abc12345","pid":7,"kind":"background","status":"idle"}]`, nil
+				}
+				return `[{"id":"abc12345","kind":"background","state":"done"}]`, nil
+			}
+			if len(args) > 0 && args[0] == "respawn" {
+				respawned = true
+			}
+			return run(name, args...)
+		}
+		return s, err
+	}
+	var out, errOut bytes.Buffer
+	if code := run([]string{"session", "start", n.Header.ID}, nil, &out, &errOut); code != 0 || !strings.Contains(out.String(), "Recuperada") {
+		t.Fatalf("start: %d\n%s%s", code, out.String(), errOut.String())
+	}
+	all := strings.Join(*calls, "\n")
+	if !strings.Contains(all, "respawn abc12345") || strings.Contains(all, "--bg") {
+		t.Errorf("calls:\n%s", all)
 	}
 }

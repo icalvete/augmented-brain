@@ -107,7 +107,8 @@ func TestBeforeUpdate(t *testing.T) {
 	}
 }
 
-// After: the sessions still on the old version, and the active task of each space.
+// After: the sessions still on the old version and how to update them, never a task to
+// park (since 1.1.1 parking closes the session instead of updating it).
 func TestAfterUpdate(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("needs a process to stand for an open session")
@@ -147,14 +148,17 @@ func TestAfterUpdate(t *testing.T) {
 	}
 	out.Reset()
 	afterUpdate("es", "0.10.0-alpha", false, &out) // --no-restart
-	for _, want := range []string{"1 sesiones", "trabajo", "task-mudanza", "session restart --old", "augmented-brain doctor"} {
+	for _, want := range []string{"1 sesiones", "session restart --old", "augmented-brain doctor"} {
 		if !strings.Contains(out.String(), want) {
 			t.Errorf("missing %q:\n%s", want, out.String())
 		}
 	}
+	if strings.Contains(out.String(), "task-mudanza") || strings.Contains(out.String(), "aparque") {
+		t.Errorf("asks to park a task:\n%s", out.String())
+	}
 
 	// With the restart, the new program does it: when it leaves none, nothing more is
-	// said; when it leaves some, the tasks to park and how to restart Claude follow.
+	// said; when it leaves some, to run it again once they finish.
 	ran := 0
 	left := error(nil)
 	orig := restartOldWith
@@ -172,7 +176,7 @@ func TestAfterUpdate(t *testing.T) {
 	left = errors.New("exit status 1")
 	out.Reset()
 	afterUpdate("es", "0.10.0-alpha", true, &out)
-	if !strings.Contains(out.String(), "task-mudanza") || !strings.Contains(out.String(), "session restart --old") || strings.Contains(out.String(), "1 sesiones") {
+	if strings.Contains(out.String(), "task-mudanza") || !strings.Contains(out.String(), "Vuelve a lanzar `augmented-brain session restart --old`") || strings.Contains(out.String(), "1 sesiones") {
 		t.Errorf("some left:\n%s", out.String())
 	}
 }

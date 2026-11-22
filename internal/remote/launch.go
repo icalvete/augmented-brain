@@ -837,6 +837,20 @@ func AnyLaunch(cfgDir string) bool {
 	return false
 }
 
+// LaunchFolder is the folder of the task's session on record, running or not, when it
+// is still there: where `session start` brings it back, with its conversation, when it
+// is not told another folder.
+func LaunchFolder(cfgDir, task string) (string, bool) {
+	r, ok := readLaunch(cfgDir, task)
+	if !ok || r.Folder == "" {
+		return "", false
+	}
+	if fi, err := os.Stat(r.Folder); err != nil || !fi.IsDir() {
+		return "", false
+	}
+	return r.Folder, true
+}
+
 // HasLaunch says whether the task has a session of its own on record, running or not.
 func HasLaunch(cfgDir, task string) bool {
 	_, ok := readLaunch(cfgDir, task)

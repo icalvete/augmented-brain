@@ -123,9 +123,11 @@ augmented-brain session stop task-new-website
 cierra la sesión y la quita de las listas de Claude Desktop y claude.ai, con su
 worktree. La app de Claude del móvil puede seguir enseñándola, desconectada, hasta que la
 archives allí. Cerrar la
-tarea hace lo mismo, cuando la sesión termina su respuesta. Aparcarla, o mandarla a
-algún día, también, pero deja sus worktrees: la tarea sigue más adelante, y
-`session start` le abre una sesión nueva. Una sesión también termina al reiniciar el
+tarea hace lo mismo, cuando la sesión termina su respuesta. Aparcarla, mandarla a algún
+día o pasarla a validación, también, pero deja sus worktrees: la tarea sigue más
+adelante, y `session start` le abre una sesión nueva. La validación te espera a ti, a
+menudo durante horas: Claude para una sesión que lleva tanto sin usarse, y se queda en
+claude.ai como desconectada hasta que la archivas a mano. Una sesión también termina al reiniciar el
 ordenador, y no vuelve sola: pídela otra vez.
 
 **Archivar en Claude Desktop no cierra una sesión.** Claude la guarda en su lista, y
