@@ -808,7 +808,7 @@ func brokenLinks(c *config.Config) []Check {
 		for _, b := range broken[:min(5, len(broken))] {
 			some = append(some, "[["+b.ID+"]] ("+b.Path+")")
 		}
-		return []Check{{Warning, i18n.T(l, "doctor.links", where, len(broken), strings.Join(some, ", ")), i18n.T(l, "doctor.links.fix", paths.Tilde(dir))}}
+		return []Check{{Warning, i18n.T(l, "doctor.links", where, i18n.Count(l, "doctor.links", len(broken)), strings.Join(some, ", ")), i18n.T(l, "doctor.links.fix", paths.Tilde(dir))}}
 	}
 	var out []Check
 	for _, name := range c.SpaceNames() {
