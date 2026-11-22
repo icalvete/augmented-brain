@@ -565,3 +565,46 @@ func TestSpareSessionsLine(t *testing.T) {
 		t.Errorf("spare line = %+v", c)
 	}
 }
+
+// doctor names the [[links]] no note answers to, per space and in the shared notes; a
+// link to a note of another space, the profile or a retired note is not broken.
+func TestBrokenLinksLine(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	work, other := filepath.Join(home, "work"), filepath.Join(home, "other")
+	for _, d := range []string{work, other} {
+		if err := os.MkdirAll(d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: work, Memory: "~/brain"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := setup.AddSpace(cfg, setup.Options{Space: "other", WorkFolder: other, Memory: "~/brain-other"}); err != nil {
+		t.Fatal(err)
+	}
+	c, err := config.Load(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := brokenLinks(c); len(got) != 0 {
+		t.Errorf("lines with no broken link: %+v", got)
+	}
+	write := func(path, text string) {
+		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(filepath.Join(c.Spaces["work"].Memory, "rules", "rule-core.md"), "---\nid: rule-core\ntype: rule\ntitle: Core\n---\nSee [[rule-core-tests]], [[ref-people]] and [[profile]].\n")
+	write(filepath.Join(c.Spaces["other"].Memory, "knowledge", "ref-people.md"), "---\nid: ref-people\ntype: reference\ntitle: People\n---\n")
+	write(filepath.Join(c.SharedDir(), "rules", "rule-mail.md"), "---\nid: rule-mail\ntype: rule\ntitle: Mail\n---\nAs [[rule-con-marcos-v]] says.\n")
+	got := brokenLinks(c)
+	if len(got) != 2 || !strings.Contains(got[0].What, "work: 1 links") || !strings.Contains(got[0].What, "[[rule-core-tests]] (rules/rule-core.md)") ||
+		!strings.Contains(got[1].What, "shared notes: 1 links") || !strings.Contains(got[1].What, "[[rule-con-marcos-v]]") || got[0].Status != Warning {
+		t.Errorf("lines: %+v", got)
+	}
+}
