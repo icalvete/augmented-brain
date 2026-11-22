@@ -603,8 +603,8 @@ func TestBrokenLinksLine(t *testing.T) {
 	write(filepath.Join(c.Spaces["other"].Memory, "knowledge", "ref-people.md"), "---\nid: ref-people\ntype: reference\ntitle: People\n---\n")
 	write(filepath.Join(c.SharedDir(), "rules", "rule-mail.md"), "---\nid: rule-mail\ntype: rule\ntitle: Mail\n---\nAs [[rule-con-marcos-v]] says.\n")
 	got := brokenLinks(c)
-	if len(got) != 2 || !strings.Contains(got[0].What, "work: 1 links") || !strings.Contains(got[0].What, "[[rule-core-tests]] (rules/rule-core.md)") ||
-		!strings.Contains(got[1].What, "shared notes: 1 links") || !strings.Contains(got[1].What, "[[rule-con-marcos-v]]") || got[0].Status != Warning {
+	if len(got) != 2 || !strings.Contains(got[0].What, "work: 1 link to") || !strings.Contains(got[0].What, "[[rule-core-tests]] (rules/rule-core.md)") ||
+		!strings.Contains(got[1].What, "shared notes: 1 link to") || !strings.Contains(got[1].What, "[[rule-con-marcos-v]]") || got[0].Status != Warning {
 		t.Errorf("lines: %+v", got)
 	}
 }

@@ -111,8 +111,16 @@ var doctorMessages = map[string]msg{
 		es: "%s: las reglas del usuario (%d, compartidas y del espacio) ocupan %d caracteres de cada arranque de sesión, unos %d tokens; las más largas: %s",
 	},
 	"doctor.links": {
-		en: "%s: %d links to notes that do not exist: %s",
-		es: "%s: %d enlaces a notas que no existen: %s",
+		en: "%s: %s to notes that do not exist: %s",
+		es: "%s: %s a notas que no existen: %s",
+	},
+	"doctor.links.1": {
+		en: "1 link",
+		es: "1 enlace",
+	},
+	"doctor.links.n": {
+		en: "%d links",
+		es: "%d enlaces",
 	},
 	"doctor.links.fix": {
 		en: "a note retired, renamed or with its id cut short: correct the link in the note (in %s), or ask Claude to",
