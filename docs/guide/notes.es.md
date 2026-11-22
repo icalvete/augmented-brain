@@ -25,8 +25,9 @@ Lo que merece la pena guardar más allá de una tarea. Hay dos tipos, en `knowle
 - Una **lección** dice lo que aprendiste, con un título que ya dice la conclusión:
   "Prueba a restaurar la copia, no solo a hacerla".
 
-Dices: "guárdalo como lección". Cualquiera de las dos puede ser de un área, y Claude la
-abre cuando una tarea la necesita.
+Dices: "guárdalo como lección". Cualquiera de las dos puede ser de un área. Cada sesión
+empieza con su lista, título y fichero, así que Claude sabe lo que hay y abre la que una
+tarea necesita.
 
 ## Personas
 

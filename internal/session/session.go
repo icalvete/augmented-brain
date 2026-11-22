@@ -88,7 +88,7 @@ func ContextFor(c *config.Config, s *config.Space, note, task string) string {
 		head:    heading(c, s, m, problems, note, task) + assistantText(c),
 		profile: section("Who the user is", profileText(c, s)),
 		common:  section("Rules", rules.Common(c.Language)),
-		index:   "\n" + m.SessionIndex(c.Language) + sharedKnowledge(shared),
+		index:   "\n" + m.SessionIndex(c.Language) + spaceKnowledge(m) + sharedKnowledge(shared),
 	}, c, s, m, shared)
 }
 
@@ -207,7 +207,7 @@ func layout(mt meter, c *config.Config, s *config.Space, m, shared *memory.Memor
 	rulesEnd := "\n(Cut to fit. Read the rules in " + s.Memory + " and the shared notes in " + shared.Dir + ".)\n"
 	// Parts has one digit, so the tag measured with it is as long as any.
 	room := mt.budget - mt.size(partTag(s.Name, Parts, Parts))
-	chunks := mt.lines("\n"+m.SessionIndex(c.Language)+sharedKnowledge(shared), room-mt.size(cutNote))
+	chunks := mt.lines("\n"+m.SessionIndex(c.Language)+spaceKnowledge(m)+sharedKnowledge(shared), room-mt.size(cutNote))
 	if len(chunks) > indexParts {
 		chunks = chunks[:indexParts]
 		chunks[len(chunks)-1] += cutNote
@@ -459,21 +459,33 @@ func (p parts) join() string { return p.head + p.profile + p.common + p.userRule
 // once, and a note elsewhere goes by its path. The summaries stay in the files: the
 // titles say enough to know which one to open, and the list loads at every start.
 func sharedKnowledge(shared *memory.Memory) string {
+	return knowledgeList(shared, "Knowledge for every space (open the file when it bears on the work)")
+}
+
+// spaceKnowledge lists the space's own references and lessons the same way. The index
+// (MEMORY.md) leaves them out, so before this a session knew only those an area page
+// linked to, and only once it opened that page: a lesson saved after a repeated
+// mistake did not stop the next one (22-nov: a token the keychain held, said twice
+// not to exist).
+func spaceKnowledge(m *memory.Memory) string {
+	return knowledgeList(m, "Knowledge of this space (open the file when it bears on the work)")
+}
+
+func knowledgeList(m *memory.Memory, title string) string {
 	var lines []string
 	for _, typ := range []string{"reference", "lesson"} {
-		for _, n := range shared.OfType(typ) {
+		for _, n := range m.OfType(typ) {
 			name := filepath.FromSlash(n.Path)
 			if n.Path == "knowledge/"+n.Header.ID+".md" {
 				name = n.Header.ID
 			}
-			lines = append(lines, fmt.Sprintf("- %s (%s)", n.Header.Title, name))
+			lines = append(lines, fmt.Sprintf("- %s (%s)", memory.OneLine(n.Header.Title), name))
 		}
 	}
 	if len(lines) == 0 {
 		return ""
 	}
-	return section("Knowledge for every space (open the file when it bears on the work)",
-		"In "+filepath.Join(shared.Dir, "knowledge")+", each in <id>.md:\n"+strings.Join(lines, "\n"))
+	return section(title, "In "+filepath.Join(m.Dir, "knowledge")+", each in <id>.md:\n"+strings.Join(lines, "\n"))
 }
 
 // heading is what always goes whole: where the memory is, the caller's note, broken
