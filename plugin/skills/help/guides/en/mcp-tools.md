@@ -103,8 +103,9 @@ where they are.
 
 Changes a task. Only the fields given change. A change of status is written in the
 journal, and when it skips phases (straight from `definition` to `execution`, say), the
-line names the ones skipped: skipping is allowed, and it is seen. A closed task opens
-again only with `reopen`.
+line names the ones skipped: skipping is allowed, and it is seen. The essentials follow:
+a new status rewrites their "Where it is" line, and a new next step their "Next" line. A
+closed task opens again only with `reopen`.
 
 `status` `closed` closes the task exactly as [`task_close`](#task_close) does: open
 subtasks keep it from closing, the result goes to the note, open watch dates are named,

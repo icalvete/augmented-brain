@@ -540,6 +540,19 @@ func (b *Brain) Update(in UpdateInput) (*memory.Note, error) {
 		b.closeNote(&cp, result)
 		return &cp, b.save(&cp)
 	}
+	// The essentials' "where it is" and "next" lines follow the header: before, only
+	// Park rewrote them, and a task that moved from phase to phase without being parked
+	// kept "just opened" and its first next step for good (22-nov: 10 tasks so).
+	if h.Next != n.Header.Next && h.Next != "" {
+		cp.Body = setLine(cp.Body, "next", oneLine(h.Next))
+	}
+	if h.Status != old {
+		where := fmt.Sprintf(b.text("where.status"), i18n.T(b.Language, "panel.status."+h.Status), b.today())
+		if h.Status == "parked" || h.Status == "someday" {
+			where = fmt.Sprintf(b.text("where.parked"), b.today())
+		}
+		cp.Body = setLine(cp.Body, "where", where)
+	}
 	if h.Status != old {
 		// Skipping phases is allowed (a small task may go straight to execution), and
 		// written down, so it is seen; reopening says why.

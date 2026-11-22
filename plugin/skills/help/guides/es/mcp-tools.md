@@ -107,8 +107,9 @@ y una línea dice dónde están.
 
 Cambia una tarea. Solo cambian los campos que se le dan. Un cambio de estado se apunta en
 el diario, y si se salta fases (de `definition` directa a `execution`, por ejemplo), la
-línea dice cuáles: saltarlas se puede, y se ve. Una tarea cerrada solo se reabre con
-`reopen`.
+línea dice cuáles: saltarlas se puede, y se ve. Lo esencial sigue el cambio: un estado
+nuevo reescribe su línea «Dónde está», y un siguiente paso nuevo su línea «Siguiente». Una
+tarea cerrada solo se reabre con `reopen`.
 
 `status` `closed` cierra la tarea igual que [`task_close`](#task_close): las subtareas
 abiertas impiden cerrarla, el resultado va a la nota, se nombran las fechas para revisar

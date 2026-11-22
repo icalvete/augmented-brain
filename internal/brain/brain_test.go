@@ -1,6 +1,9 @@
 package brain
 
 import (
+	"fmt"
+
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"os"
 	"path/filepath"
 	"strings"
@@ -311,5 +314,50 @@ func TestPeopleWithNonLatinNames(t *testing.T) {
 	}
 	if n.Header.ID != "person-marcos-garcia" || n.Header.Title != "Marcos García" || !strings.HasSuffix(n.Header.Summary, "also: Marquitos") {
 		t.Errorf("by alias: %+v", n.Header)
+	}
+}
+
+// Changing a task's phase or next step keeps the essentials' "where it is" and "next"
+// lines in step with the header: before, only Park did, and tasks moved through every
+// phase still saying "just opened" (22-nov audit: 10 tasks).
+func TestUpdateKeepsEssentialsCurrent(t *testing.T) {
+	for _, lang := range []string{"en", "es"} {
+		b := open(t, lang)
+		n, err := b.NewTask(NewTaskInput{Title: "Move the shop"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		where, next := i18n.T(lang, "note.label.where"), i18n.T(lang, "note.label.next")
+		essentials := func() string {
+			text := read(t, b, n.Path)
+			start := strings.Index(text, "## ")
+			return text[:start+3+strings.Index(text[start+3:], "\n## ")]
+		}
+		if _, err := b.Update(UpdateInput{ID: n.Header.ID, Status: "execution", Next: "Pack the boxes"}); err != nil {
+			t.Fatal(err)
+		}
+		got := essentials()
+		for _, want := range []string{
+			"- " + where + ": " + fmt.Sprintf(i18n.T(lang, "note.where.status"), i18n.T(lang, "panel.status.execution"), b.today()),
+			"- " + next + ": Pack the boxes",
+		} {
+			if !strings.Contains(got, want) {
+				t.Errorf("%s: essentials lack %q:\n%s", lang, want, got)
+			}
+		}
+		// Only the next step changes: "where" stays, "next" follows.
+		if _, err := b.Update(UpdateInput{ID: n.Header.ID, Next: "Book the van"}); err != nil {
+			t.Fatal(err)
+		}
+		if got := essentials(); !strings.Contains(got, "- "+next+": Book the van") || strings.Contains(got, "Pack the boxes") {
+			t.Errorf("%s: next not followed:\n%s", lang, got)
+		}
+		// The journal keeps what it had: the old next step is not rewritten there.
+		if _, err := b.Update(UpdateInput{ID: n.Header.ID, Summary: "only the summary"}); err != nil {
+			t.Fatal(err)
+		}
+		if got := essentials(); !strings.Contains(got, "Book the van") {
+			t.Errorf("%s: a change of summary moved the essentials:\n%s", lang, got)
+		}
 	}
 }
