@@ -93,6 +93,9 @@ from Claude Desktop), at the next `session start`. One with changes not committe
 commits not pushed, or files git ignores that no build makes again (a `.env`, a key)
 stays, and `augmented-brain doctor` names it.
 
+A worktree you remove by hand needs nothing else: every session start takes off the
+records of folders that are gone, and the old locks of sessions that ended.
+
 ## See them, and close them
 
 ```bash

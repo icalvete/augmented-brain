@@ -146,6 +146,7 @@ func NoteTaskWorktree(cfgDir, task, folder string) error {
 // (and the branch made for each), except those in skip (the folder a session still works
 // in). It returns what it removed and what stays, with why.
 func RemoveNotedWorktrees(cfgDir, task string, skip ...string) (removed []string, kept []Leftover) {
+	var vanished []string // removed by hand already: off the record, nothing to say
 	for _, n := range readNoted(cfgDir, task) {
 		if slicesSame(skip, n.folder) {
 			kept = append(kept, Leftover{task, n.folder, KeptInUse})
@@ -157,6 +158,8 @@ func RemoveNotedWorktrees(cfgDir, task string, skip ...string) (removed []string
 			removed = append(removed, n.folder)
 		case why != "":
 			kept = append(kept, Leftover{task, n.folder, why})
+		case folderGone(n.folder):
+			vanished = append(vanished, n.folder)
 		}
 	}
 	// Git ran without the record's lock: what was noted meanwhile stays.
@@ -164,7 +167,7 @@ func RemoveNotedWorktrees(cfgDir, task string, skip ...string) (removed []string
 		var left []noted
 		for _, n := range list {
 			gone := false
-			for _, r := range removed {
+			for _, r := range append(removed, vanished...) {
 				gone = gone || paths.Same(r, n.folder)
 			}
 			if !gone {

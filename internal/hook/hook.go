@@ -231,8 +231,10 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir, task string) 
 var StartStop = remote.StartStop
 
 // resumeStops starts again the stops of task sessions that the machine going down cut
-// short (remote.ResumeStops). It says nothing: the stop writes its own log.
+// short (remote.ResumeStops), and takes off the state records that outlived what they
+// named (remote.TidyRecords). It says nothing: the stop writes its own log.
 func resumeStops(c *config.Config, cfgDir string) {
+	remote.TidyRecords(cfgDir, Now())
 	if len(remote.PendingStops(cfgDir)) == 0 {
 		return
 	}
