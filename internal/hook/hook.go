@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/backup"
+	"github.com/icalvete/augmented-brain/internal/brain"
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/guard"
@@ -220,9 +221,22 @@ func startNote(c *config.Config, s *config.Space, i input, cfgDir, task string) 
 	note += guardSealNote(c, cfgDir, i.Source)
 	note += unknownSettingsNote(c, cfgDir)
 	note += launcherNote(c)
+	resumeStops(c, cfgDir)
 	// A change made by hand since the last version becomes one: it can be undone too.
 	_, _ = confighistory.Record(cfgDir, confighistory.ByOutside, "")
 	return note
+}
+
+// StartStop starts the detached stop of a task's session; tests replace it.
+var StartStop = remote.StartStop
+
+// resumeStops starts again the stops of task sessions that the machine going down cut
+// short (remote.ResumeStops). It says nothing: the stop writes its own log.
+func resumeStops(c *config.Config, cfgDir string) {
+	if len(remote.PendingStops(cfgDir)) == 0 {
+		return
+	}
+	remote.ResumeStops(cfgDir, brain.TaskStatuses(c), StartStop)
 }
 
 // launchedTask is the task this session was opened for with session start, or "".

@@ -271,6 +271,10 @@ var launchMessages = map[string]msg{
 		en: "Could not restart \"%s\": %v",
 		es: "No he podido reiniciar «%s»: %v",
 	},
+	"wait.already": {
+		en: "Another process is already waiting to close the session of \"%s\": it is left to that one.",
+		es: "Ya hay otro proceso esperando para cerrar la sesión de «%s»: se le deja a él.",
+	},
 	"wait.start": {
 		en: "Waiting for \"%s\" to end its answer, %d minutes at most.",
 		es: "Espero a que «%s» termine su respuesta, %d minutos como mucho.",
