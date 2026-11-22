@@ -195,8 +195,10 @@ algo que falla. Debajo de una línea que pide arreglo, `→` dice qué hacer. Re
 - **Tus notas:** la carpeta de notas de cada espacio, sus notas, su índice y si tiene
   copia de seguridad; las tareas demasiado largas para leerlas de una vez, que `check`
   acorta; cuánto ocupan tus reglas en cada arranque de sesión, con las tres más largas
-  (van enteras a cada sesión, así que una regla más corta cuesta menos cada vez); las
-  notas que otros usuarios del ordenador podrían leer; una segunda memoria que Claude
+  (van enteras a cada sesión, así que una regla más corta cuesta menos cada vez); los
+  `[[enlaces]]` de tus notas, y de las compartidas, a notas que no existen (retiradas,
+  renombradas o con el id cortado); las notas que otros usuarios del ordenador podrían
+  leer; una segunda memoria que Claude
   Code guarda por su cuenta para tus carpetas.
 - **Claude Code y el guardia:** Claude Code, git y el plugin, y si Claude Code es lo
   bastante reciente para pararlo todo cuando el guardia falla (2.1.295 o posterior); el

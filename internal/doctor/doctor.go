@@ -191,6 +191,7 @@ func Run(e Env) []Check {
 	for _, name := range c.SpaceNames() {
 		out = append(out, space(c, c.Spaces[name])...)
 	}
+	out = append(out, brokenLinks(c)...)
 	out = append(out, asking(e, "doctor.part.remote", func() []Check { return remoteChecks(e, c) })...)
 	out = append(out, asking(e, "doctor.part.codex", func() []Check { return codexChecks(e, c) })...)
 	out = append(out, asking(e, "doctor.part.worktrees", func() []Check { return worktreeChecks(e, c) })...)
@@ -780,6 +781,47 @@ func remotePanelRunning(cfgDir string) bool {
 		Remote *struct{ Host string } `json:"remote"`
 	}
 	return json.Unmarshal(data, &i) == nil && i.Remote != nil && i.Remote.Host != ""
+}
+
+// brokenLinks names the [[id]] in the notes of each space, and in the shared notes,
+// that no note answers to (memory.BrokenLinks): a link to a note of another space is
+// not broken, since the note is there. One line per space, with the first few.
+func brokenLinks(c *config.Config) []Check {
+	l := c.Language
+	shared, _, err := memory.LoadShared(c.SharedDir())
+	if err != nil {
+		shared = nil
+	}
+	mems := map[string]*memory.Memory{}
+	var all []*memory.Memory
+	for _, name := range c.SpaceNames() {
+		if m, _, err := memory.Load(c.Spaces[name].Memory); err == nil {
+			mems[name] = m
+			all = append(all, m)
+		}
+	}
+	report := func(where, dir string, broken []memory.BrokenLink) []Check {
+		if len(broken) == 0 {
+			return nil
+		}
+		var some []string
+		for _, b := range broken[:min(5, len(broken))] {
+			some = append(some, "[["+b.ID+"]] ("+b.Path+")")
+		}
+		return []Check{{Warning, i18n.T(l, "doctor.links", where, len(broken), strings.Join(some, ", ")), i18n.T(l, "doctor.links.fix", paths.Tilde(dir))}}
+	}
+	var out []Check
+	for _, name := range c.SpaceNames() {
+		m := mems[name]
+		if m == nil {
+			continue
+		}
+		out = append(out, report(name, m.Dir, m.BrokenLinks(append([]*memory.Memory{shared}, all...)...))...)
+	}
+	if shared != nil {
+		out = append(out, report(i18n.T(l, "doctor.links.shared"), shared.Dir, shared.BrokenLinks(all...))...)
+	}
+	return out
 }
 
 // rulesSize says how much of every session start the user's rules take (they go whole,

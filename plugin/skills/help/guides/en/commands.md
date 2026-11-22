@@ -188,8 +188,9 @@ something that fails. Under a line that needs work, `→` says what to do. It ch
 - **Your notes:** each space's notes folder, its notes and its index, and whether it has
   a backup; tasks too long to read in one go, which `check` shortens; how much of every
   session start your rules take, with the three longest (they go whole to every session,
-  so a shorter rule costs less each time); notes that other users of the computer could
-  read; a second memory that Claude Code keeps of its own for your folders.
+  so a shorter rule costs less each time); `[[links]]` in your notes, and in the shared
+  ones, to notes that do not exist (retired, renamed or with the id cut short); notes
+  that other users of the computer could read; a second memory that Claude Code keeps of its own for your folders.
 - **Claude Code and the guard:** Claude Code, git and the plugin, and whether Claude Code
   is recent enough to stop everything when the guard fails (2.1.295 or later); the
   guard, for real, with a command that must be stopped; the guard's lists, the root
