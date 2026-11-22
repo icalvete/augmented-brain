@@ -42,8 +42,13 @@ type Session struct {
 	Since time.Time `json:"since,omitzero"`
 	// Reminded is when the assistant was last reminded to write in the journal.
 	Reminded time.Time `json:"reminded,omitzero"`
-	Closed   bool      `json:"closed,omitempty"`
-	Reported bool      `json:"reported,omitempty"` // a later session already offered to recover it
+	// Acted is when the session last ran a command that changes something outside the
+	// machine (a push, a merge, a deploy), and ActedWhat which one, cut short: the Stop
+	// hook asks for a journal entry at once when nothing was written since.
+	Acted     time.Time `json:"acted,omitzero"`
+	ActedWhat string    `json:"acted_what,omitempty"`
+	Closed    bool      `json:"closed,omitempty"`
+	Reported  bool      `json:"reported,omitempty"` // a later session already offered to recover it
 }
 
 // Space is the state of one space on this machine. (Earlier versions kept a single
@@ -162,6 +167,19 @@ func Reminded(cfgDir, space string, w Who, now time.Time) error {
 	return Update(cfgDir, space, now, func(s *Space) {
 		if se := s.Session(w); se != nil {
 			se.Reminded = now
+		}
+	})
+}
+
+// Acted records that the session w just ran a command that changes something outside
+// the machine (what, already short). Nothing happens when w names no session.
+func Acted(cfgDir, space string, w Who, what string, now time.Time) error {
+	if w == (Who{}) {
+		return nil
+	}
+	return Update(cfgDir, space, now, func(s *Space) {
+		if se := s.Session(w); se != nil {
+			se.Acted, se.ActedWhat = now, what
 		}
 	})
 }

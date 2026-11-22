@@ -309,6 +309,11 @@ func PreToolUseFor(in io.Reader, out io.Writer, cfgDir string, client Client) er
 		}
 		d = guard.Decision{Verdict: guard.Deny, Reason: i18n.T(p.Lang, key, d.Reason)}
 	}
+	if ok && i.ToolName == "Bash" && d.Verdict != guard.Deny {
+		if command, isText := i.ToolInput["command"].(string); isText {
+			markOutward(cfgDir, i, command)
+		}
+	}
 	decision := map[guard.Verdict]string{guard.Deny: "deny", guard.Ask: "ask"}[d.Verdict]
 	if decision == "" {
 		return nil

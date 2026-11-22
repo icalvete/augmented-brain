@@ -1027,7 +1027,8 @@ Los eventos:
   lo que leyó antes. Nunca retiene el mensaje.
 - `stop`: después de cada respuesta. Tarda milisegundos, y:
   - recuerda a Claude que escriba en el diario de la tarea de su sesión, una vez,
-    después de 20 minutos sin escribir;
+    después de 20 minutos sin escribir, o en el acto tras un comando que cambia algo
+    fuera de la máquina (un push, una mezcla, un despliegue, un cambio en la nube);
   - con `preferred_model` puesto (mira [Configuración](configuration.md)), hace que
     Claude te diga cuándo contestó otro modelo, una vez por sesión y modelo;
   - te enseña, una vez, un cambio de las listas del guardia o algo que el asistente

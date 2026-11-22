@@ -59,7 +59,7 @@ te pregunta o lo para. Mira [El guardia](guard.es.md).
 
 **4. Claude termina una respuesta.** Si la sesión tiene una tarea abierta y en 20 minutos
 no se ha escrito nada en ella, un hook le recuerda a Claude que escriba en su diario, una
-vez. Cada sesión tiene su propia tarea, así que dos ventanas nunca reciben el aviso de la
+vez; tras un push, una mezcla o un despliegue, al final de esa misma respuesta. Cada sesión tiene su propia tarea, así que dos ventanas nunca reciben el aviso de la
 otra. En Linux y macOS, el mismo hook mira también la memoria de la ventana: si ha
 crecido mucho más de lo normal, Claude te lo dice, para que aparques la tarea antes de
 que el sistema cierre la ventana. Mira

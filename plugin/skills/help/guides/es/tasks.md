@@ -102,7 +102,10 @@ Cada decisión o paso terminado va al diario en el momento, no solo al aparcar. 
 puede acabar en cualquier momento, y lo que no está en la nota se pierde.
 
 Si la sesión tiene una tarea abierta y en 20 minutos no se ha escrito nada en ella, Claude
-recibe un recordatorio al final de su respuesta, una vez.
+recibe un recordatorio al final de su respuesta, una vez. Tras un comando que cambia algo
+fuera de la máquina (un push, una mezcla, un despliegue, un cambio en la nube), el
+recordatorio llega al final de esa misma respuesta, aunque no haya tarea abierta: lo que
+llegó a producción tiene que estar en la nota antes de que la sesión pueda acabar.
 
 Cada sesión lleva la cuenta de su propia tarea. Con dos ventanas en tareas distintas, a
 cada una se le recuerda la suya.
