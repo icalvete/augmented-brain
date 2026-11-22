@@ -2,6 +2,34 @@
 
 ## Unreleased
 
+## 1.1.3
+
+Released 2026-11-22.
+
+- **`doctor` names the links in your notes that lead nowhere.** A `[[link]]` to a note
+  retired, renamed or with its id cut short went unseen; a rule with one sent Claude
+  to a note that is not there.
+- **A task's essentials stay current when its phase or next step changes.** Only parking
+  rewrote them, so a task that moved on without being parked kept saying it was just
+  opened, and a session resuming it read an old next step.
+- **After a push, a merge or a deploy, Claude writes it in the task's journal before
+  ending its answer.** The reminder used to come only after 20 minutes without writing,
+  so a session that ended soon after a deploy to production left the note saying it was
+  still to do.
+- **A task's session closes even when the computer goes off while it waits.** Parking,
+  closing or validating a task waits for its session to end its answer; a shutdown in
+  that time left the session behind until `clean` was run. Now the next session start
+  finishes the job, and only one wait runs per task.
+- **The records of worktrees and sessions no longer pile up.** A worktree removed by hand
+  stayed noted for good, and every task session left a lock file behind. Each session
+  start now takes off the records of folders that are gone and the old locks.
+- **Every session now starts with the list of the space's references and lessons.** Only
+  the shared ones were listed before, so a lesson saved after a mistake did not reach the
+  next session, and the mistake came back.
+- **Every session now starts with the names of your secrets.** The list on the Secrets
+  page (names and what each is for, never a value) reaches Claude, with how to read one
+  in a command, so it no longer says a secret is missing when the keychain holds it.
+
 ## 1.1.2
 
 Released 2026-11-22.

@@ -2,6 +2,35 @@
 
 ## Sin publicar
 
+## 1.1.3
+
+Publicada el 2026-11-22.
+
+- **`doctor` nombra los enlaces de tus notas que no llevan a ninguna parte.** Un
+  `[[enlace]]` a una nota retirada, renombrada o con el id cortado pasaba sin verse; una
+  regla con uno mandaba a Claude a una nota que no existe.
+- **Lo esencial de una tarea se mantiene al día cuando cambia su fase o su siguiente
+  paso.** Solo aparcarla lo reescribía, así que una tarea que avanzaba sin aparcarse
+  seguía diciendo que estaba recién abierta, y la sesión que la retomaba leía un
+  siguiente paso viejo.
+- **Tras un push, una mezcla o un despliegue, Claude lo apunta en el diario de la tarea
+  antes de acabar su respuesta.** Antes el recordatorio llegaba solo tras 20 minutos sin
+  escribir, así que una sesión que acababa poco después de desplegar en producción dejaba
+  la nota diciendo que estaba por hacer.
+- **La sesión de una tarea se cierra aunque el ordenador se apague mientras espera.**
+  Aparcar, cerrar o validar una tarea espera a que su sesión acabe su respuesta; un
+  apagado en ese rato dejaba la sesión colgada hasta pasar `clean`. Ahora el siguiente
+  inicio de sesión termina el trabajo, y solo corre una espera por tarea.
+- **Los apuntes de worktrees y sesiones ya no se acumulan.** Un worktree quitado a mano
+  seguía apuntado para siempre, y cada sesión de tarea dejaba un cerrojo. Ahora cada
+  inicio de sesión borra los apuntes de carpetas que ya no están y los cerrojos viejos.
+- **Cada sesión empieza ahora con la lista de referencias y lecciones del espacio.** Antes
+  solo salían las compartidas, así que una lección guardada tras un fallo no llegaba a la
+  sesión siguiente, y el fallo volvía.
+- **Cada sesión empieza ahora con los nombres de tus secretos.** La lista de la página
+  Secretos (nombres y para qué es cada uno, nunca un valor) llega a Claude, con cómo leer
+  uno en un comando, así que ya no dice que falta un secreto que el llavero tiene.
+
 ## 1.1.2
 
 Publicada el 2026-11-22.
