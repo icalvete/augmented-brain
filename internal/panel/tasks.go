@@ -328,6 +328,13 @@ func (s *Server) taskUpdate(v *view, r *http.Request) (string, error) {
 	if _, err := v.b.Update(in); err != nil {
 		return "", err
 	}
+	if in.Status == "validation" {
+		// As task_update does: the task's own session ends while it runs, before Claude
+		// retires it and leaves it disconnected in claude.ai. The task stays the
+		// session's own until it ends.
+		v.unlock()
+		parkedTask(v.b.ConfigDir, id)
+	}
 	return taskPage(id), nil
 }
 

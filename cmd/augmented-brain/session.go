@@ -176,8 +176,14 @@ func cmdSession(args []string, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
-	dir, code := sessionFolder(c, s, sys, id, task.Header.Repos, *folder, out, errOut)
-	if code != 0 {
+	// Without --folder, the task's earlier session comes back where it worked: its
+	// conversation belongs to that folder. On 22-nov a session opened with --folder
+	// and started again without it opened a second one in the space's folder, and the
+	// first stayed in claude.ai, disconnected.
+	dir, code := "", 0
+	if prev, ok := remote.LaunchFolder(c.Dir, id); ok && *folder == "" {
+		dir = prev
+	} else if dir, code = sessionFolder(c, s, sys, id, task.Header.Repos, *folder, out, errOut); code != 0 {
 		return code
 	}
 	name := set.NamePrefix + " · " + task.Header.Title

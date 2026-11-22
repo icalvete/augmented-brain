@@ -622,7 +622,8 @@ repository given with `--folder`. See
 - If Claude stopped the task's session (it does that to one left unused for hours, and
   to every one when its background service restarts), `session start` brings it back,
   with its whole conversation and no new first message. Only if Claude refuses does a
-  new session open and replace it.
+  new session open and replace it. Without `--folder`, it opens in the folder of the
+  task's last session, where its conversation is, rather than in the space's folder.
 - On a system where task sessions do not run yet, it says so before it makes anything.
 - The session closes with `session stop`, or when the computer restarts. Sessions are
   not brought back after a reboot: ask for them again.
@@ -646,8 +647,8 @@ augmented-brain session stop task-new-website
   task without cutting its answer off. What it did goes to `state/session-stop.log` in
   the configuration folder, with a line every 5 minutes while it waits.
 - `--keep-worktrees`: close the session and leave the task's worktrees as they are.
-  Parking a task, or sending it to someday, runs it this way by itself, with
-  `--when-idle`: the task goes on later, and its branch with it.
+  Parking a task, sending it to someday or moving it to validation runs it this way by
+  itself, with `--when-idle`: the task goes on later, and its branch with it.
 
 **The task's worktree** (the one `session start` made, see above) goes too, with its
 branch, as long as nothing would be lost. It stays, and the command says so, when it

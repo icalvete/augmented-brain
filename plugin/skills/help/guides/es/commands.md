@@ -636,7 +636,8 @@ mismo vale para un repositorio bare dado con `--folder`. Mira
 - Si Claude paró la sesión de la tarea (lo hace con una que lleva horas sin usarse, y con
   todas cuando se reinicia su servicio en segundo plano), `session start` la trae de
   vuelta, con toda su conversación y sin un primer mensaje nuevo. Solo si Claude se niega
-  se abre una sesión nueva que la sustituye.
+  se abre una sesión nueva que la sustituye. Sin `--folder`, se abre en la carpeta de la
+  última sesión de la tarea, donde está su conversación, y no en la del espacio.
 - En un sistema donde las sesiones de tarea aún no funcionan, lo dice antes de crear nada.
 - La sesión se cierra con `session stop` o al reiniciar el ordenador. Las sesiones no
   vuelven solas tras un reinicio: pídelas otra vez.
@@ -661,8 +662,8 @@ augmented-brain session stop task-new-website
   `state/session-stop.log`, en la carpeta de la configuración, con una línea cada 5
   minutos mientras espera.
 - `--keep-worktrees`: cierra la sesión y deja los worktrees de la tarea como están.
-  Aparcar una tarea, o mandarla a algún día, lo lanza así solo, con `--when-idle`: la
-  tarea sigue más adelante, y su rama con ella.
+  Aparcar una tarea, mandarla a algún día o pasarla a validación lo lanza así solo, con
+  `--when-idle`: la tarea sigue más adelante, y su rama con ella.
 
 **El worktree de la tarea** (el que creó `session start`, mira arriba) también se va, con
 su rama, siempre que no se pierda nada. Se queda, y el comando lo dice, si tiene:

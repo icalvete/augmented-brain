@@ -374,7 +374,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		Parent    string `json:"parent,omitempty" jsonschema:"id of the task to make this one a subtask of, or move it to (one level only: the parent is no subtask, this task has none; without area it takes the parent's area); none to make it a task of its own"`
 		Space     string `json:"space,omitempty" jsonschema:"another space whose task this is (its name, as in where_am_i); only when the user asks to work on a task of that space from here. Leave it out for this space"`
 	}
-	toolThen(s, locked, "task_update", "Change a task's title, status, who it waits on, its next step, summary, area or parent, or add, close, take out or move a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees; parked or someday ends its session too, and keeps its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
+	toolThen(s, locked, "task_update", "Change a task's title, status, who it waits on, its next step, summary, area or parent, or add, close, take out or move a watch date. Only the fields given change; a status change is written in the journal, saying which phases it skipped, if any. Status closed closes it as task_close does (give result), ending its session and removing its worktrees; parked, someday or validation ends its session too, and keeps its worktrees. A closed task opens again only with reopen. "+otherSpace+" A task of another space is closed from a session of its own space.",
 		func(b0 *brain.Brain, in updateIn) (string, then, error) {
 			u := brain.UpdateInput{ID: in.ID, Status: in.Status, WaitingOn: in.WaitingOn, Next: in.Next,
 				Summary: in.Summary, Area: in.Area, WatchDate: in.WatchDate, WatchWhat: in.WatchWhat, WatchDone: in.WatchDone,
@@ -417,7 +417,11 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 				}
 				after = func() (string, error) { return closedWorktree(b.ConfigDir, in.ID), nil }
 			}
-			if in.Status == "parked" || in.Status == "someday" {
+			// Validation waits on the user, often for hours: the task's session ends now,
+			// while it runs, as when parking. Left alone, Claude retires it after 8 hours
+			// unused, and a retired session leaves a disconnected entry in claude.ai that
+			// only the user can archive.
+			if in.Status == "parked" || in.Status == "someday" || in.Status == "validation" {
 				after = func() (string, error) { return parkedSession(b.ConfigDir, in.ID), nil }
 			}
 			return out + fromOther(b), after, nil

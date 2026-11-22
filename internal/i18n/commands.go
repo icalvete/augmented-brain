@@ -346,13 +346,13 @@ var commandMessages = map[string]msg{
 		en: "%d open Claude sessions still run the old version: their augmented brain tools may fail until they are restarted.",
 		es: "%d sesiones de Claude abiertas siguen con la versión vieja: sus herramientas de augmented brain pueden fallar hasta que las reinicies.",
 	},
-	"update.after.task": {
-		en: "  · space %s: task %s is active. Ask its session to park it first.",
-		es: "  · espacio %s: la tarea %s está activa. Pide antes a su sesión que la aparque.",
+	"update.after.again": {
+		en: "Run `augmented-brain session restart --old` again when the sessions above have finished their answer. `augmented-brain doctor` says whether any is left.",
+		es: "Vuelve a lanzar `augmented-brain session restart --old` cuando las sesiones de arriba terminen su respuesta. `augmented-brain doctor` dice si queda alguna.",
 	},
 	"update.after.restart": {
-		en: "Then run `augmented-brain session restart --old`: it updates the idle ones without restarting them (each stays open, only its augmented brain restarts). One busy answering waits: run it again when it has finished. `augmented-brain doctor` says whether any is left.",
-		es: "Después lanza `augmented-brain session restart --old`: pone al día las que están quietas sin reiniciarlas (cada una sigue abierta, solo se reinicia su augmented brain). Una que está respondiendo espera: vuelve a lanzarlo cuando termine. `augmented-brain doctor` dice si queda alguna.",
+		en: "Run `augmented-brain session restart --old`: it updates the idle ones without restarting them (each stays open, only its augmented brain restarts). One busy answering waits: run it again when it has finished. `augmented-brain doctor` says whether any is left.",
+		es: "Lanza `augmented-brain session restart --old`: pone al día las que están quietas sin reiniciarlas (cada una sigue abierta, solo se reinicia su augmented brain). Una que está respondiendo espera: vuelve a lanzarlo cuando termine. `augmented-brain doctor` dice si queda alguna.",
 	},
 	"update.codex": {
 		en: "✓ augmented brain in Codex up to date, its hooks trusted again. Open a new Codex session to use it.",
