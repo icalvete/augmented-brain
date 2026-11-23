@@ -105,7 +105,9 @@ augmented-brain session list
 lists the task sessions open on this computer: the task, whether it runs, and its
 folder.
 
-- **retired**: Claude stops a session left unused for hours. claude.ai shows it as
+- **retired**: Claude stopped it, which it does to every session when its background
+  service restarts. A task's session is pinned in `claude agents`, so Claude no longer
+  stops it for being unused for hours. claude.ai shows a retired one as
   disconnected. `session start` with its task brings it back, with its whole
   conversation.
 - **failed**: its last answer was an error, such as an expired login. The line says what

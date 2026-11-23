@@ -635,8 +635,12 @@ mismo vale para un repositorio bare dado con `--folder`. Mira
   hasta un minuto la primera respuesta de la sesión; si esa respuesta es un error (se
   acabó el login, el servicio está saturado), la sesión se cierra. En los dos casos dice
   qué hacer, como `claude auth login`.
-- Si Claude paró la sesión de la tarea (lo hace con una que lleva horas sin usarse, y con
-  todas cuando se reinicia su servicio en segundo plano), `session start` la trae de
+- La sesión queda fijada en `claude agents`, como hace su botón de fijar: Claude para
+  una sesión en segundo plano que lleva 8 horas sin uso, pero no una fijada, así que la
+  sesión de una tarea sigue conectada en claude.ai mientras la tarea espera. `session
+  stop` la quita de las fijadas; las que fijaste tú se quedan.
+- Si Claude paró la sesión de la tarea de todas formas (al reiniciarse su servicio en
+  segundo plano, o una abierta por una versión anterior que llevaba horas sin uso), `session start` la trae de
   vuelta, con toda su conversación y sin un primer mensaje nuevo. Solo si Claude se niega
   se abre una sesión nueva que la sustituye. Sin `--folder`, se abre en la carpeta de la
   última sesión de la tarea, donde está su conversación, y no en la del espacio.

@@ -619,8 +619,12 @@ repository given with `--folder`. See
   waits up to a minute for the session's first answer; when that answer is an error
   (the login ran out, the service is overloaded), the session is closed. Either way it
   says what to do, such as `claude auth login`.
-- If Claude stopped the task's session (it does that to one left unused for hours, and
-  to every one when its background service restarts), `session start` brings it back,
+- The session is pinned in `claude agents`, as its pin toggle does: Claude stops a
+  background session left unused for 8 hours, but not a pinned one, so a task's
+  session stays connected in claude.ai while the task waits. `session stop` takes the
+  pin out; your own pins stay.
+- If Claude stopped the task's session anyway (when its background service restarts,
+  or one opened by an earlier version and left unused for hours), `session start` brings it back,
   with its whole conversation and no new first message. Only if Claude refuses does a
   new session open and replace it. Without `--folder`, it opens in the folder of the
   task's last session, where its conversation is, rather than in the space's folder.

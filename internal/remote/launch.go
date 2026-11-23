@@ -24,7 +24,8 @@ import (
 // own with a first message that names its task. Claude's own daemon keeps it running,
 // not the session that asked for it. `session stop` ends it with `claude stop` and removes it with `claude rm`,
 // which also takes it out of Claude Desktop and claude.ai (measured on 10-nov-2026,
-// 2.1.322). Which session belongs to which task is kept in state/sessions/<task>.json.
+// 2.1.322). While it lives it is pinned, so Claude does not retire it after 8 idle
+// hours (pins.go). Which session belongs to which task is kept in state/sessions/<task>.json.
 // A reboot ends it too: launched sessions are not brought back.
 //
 // Measured on 2.1.322: with --bg, Claude asks nothing about trust and lets two sessions
@@ -522,10 +523,12 @@ func (s System) Start(c *config.Config, set Settings, l Launch, first string) er
 	if err := s.firstTurn(claude, id, c.Dir, l.Task); err != nil {
 		return err
 	}
+	_ = s.pin(id) // so Claude does not retire it (pins.go)
 	if hadOld && old.ID != id {
 		// A failed one still runs: it is stopped first.
 		_, _ = s.Run(claude, "stop", old.ID)
 		_, _ = s.Run(claude, "rm", old.ID)
+		_ = s.unpin(old.ID)
 	}
 	return nil
 }
@@ -568,6 +571,7 @@ func (s System) Wake(cfgDir string, l Launch) (woke bool, err error) {
 	}
 	for p := s.newPace(wakeWait, everySecond); !p.over(); p.sleep(false) {
 		if running, err := s.runningAgents(claude); err == nil && running[r.ID] {
+			_ = s.pin(r.ID) // one of an earlier version was not
 			return true, nil
 		}
 	}
@@ -743,6 +747,11 @@ func (s System) Stop(cfgDir, task string) error {
 		if !sessionID.MatchString(r.ID) {
 			return fmt.Errorf("the record of %s names %q, which is not a session id: %w", task, r.ID, ErrCannotTell)
 		}
+		// The record goes with the pin: `claude rm` leaves the pin (pins.go).
+		drop := func() error {
+			_ = s.unpin(r.ID)
+			return os.Remove(launchRecordPath(cfgDir, task))
+		}
 		_, _ = s.Run(claude, "stop", r.ID) // fails when it had ended already
 		if _, err := s.Run(claude, "rm", r.ID); err != nil {
 			list, lerr := s.agents(claude)
@@ -762,14 +771,14 @@ func (s System) Stop(cfgDir, task string) error {
 							return ErrCannotTell
 						}
 					}
-					if err := os.Remove(launchRecordPath(cfgDir, task)); err != nil {
+					if err := drop(); err != nil {
 						return err
 					}
 					return &LeftInClaude{ID: r.ID}
 				}
 			}
 		}
-		return os.Remove(launchRecordPath(cfgDir, task))
+		return drop()
 	}
 	if !s.hasUnit(task) {
 		return ErrNoSession

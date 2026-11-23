@@ -108,7 +108,9 @@ augmented-brain session list
 
 lista las sesiones de tarea abiertas en este ordenador: la tarea, si corre y su carpeta.
 
-- **retirada**: Claude para una sesión que lleva horas sin uso. claude.ai la enseña
+- **retirada**: Claude la paró, como hace con todas al reiniciarse su servicio en
+  segundo plano. La sesión de una tarea queda fijada en `claude agents`, así que Claude
+  ya no la para por llevar horas sin uso. claude.ai enseña una retirada como
   desconectada. `session start` con su tarea la trae de vuelta, con toda su
   conversación.
 - **fallida**: su última respuesta fue un error, como un login caducado. La línea dice
