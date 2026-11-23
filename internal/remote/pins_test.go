@@ -29,7 +29,11 @@ func writePins(t *testing.T, f *fake, text string) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, pinsFile), []byte(text), 0o664); err != nil {
+	path := filepath.Join(dir, pinsFile)
+	if err := os.WriteFile(path, []byte(text), 0o664); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chmod(path, 0o664); err != nil { // past the umask
 		t.Fatal(err)
 	}
 }
