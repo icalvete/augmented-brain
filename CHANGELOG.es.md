@@ -2,6 +2,21 @@
 
 ## Sin publicar
 
+## 1.1.4
+
+Publicada el 2026-11-23.
+
+- **La sesión de una tarea ya no se queda desconectada tras horas sin uso.**
+  `session start` la fija en `claude agents`, así que Claude no la retira tras 8 horas
+  sin uso ni deja una entrada «desconectada» en claude.ai. `session stop`, aparcar y
+  cerrar la tarea la quitan de las fijadas; las que fijaste tú se quedan.
+- **Las tareas salen por orden de prioridad.** El índice, el panel y "¿en qué
+  estábamos?" ponen primero las tareas con plazo (`due`), la más cercana antes, después
+  las importantes (`importance: high`), luego las que te esperan a ti y luego el resto;
+  un plazo en los próximos 7 días sale al empezar la sesión. Esta versión lee los dos
+  campos, que puedes añadir a mano en la cabecera de una tarea; Claude los pondrá en una
+  versión próxima, cuando las anteriores también los lean.
+
 ## 1.1.3
 
 Publicada el 2026-11-22.
