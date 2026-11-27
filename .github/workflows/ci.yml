@@ -35,15 +35,30 @@ jobs:
           go-version-file: go.mod
       - name: Format
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      # On macOS, without Telegram's two packages: its library alone took vet and the
+      # tests past this job's 10 minutes there. Linux tests them, and telegram-build
+      # builds them for macOS.
+      - name: Packages
+        id: pkgs
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then
+            echo "list=$(go list ./... | grep -v -e '/internal/telegram$' -e '/cmd/augmented-brain-telegram$' | tr '\n' ' ')" >> "$GITHUB_OUTPUT"
+          else
+            echo "list=./..." >> "$GITHUB_OUTPUT"
+          fi
       - name: Vet
-        run: go vet ./...
+        env:
+          PKGS: ${{ steps.pkgs.outputs.list }}
+        run: go vet $PKGS
       # The version is fixed, as for actionlint: a new staticcheck can bring new warnings
       # on its own, and a check that changes by itself is not one to trust.
       - name: staticcheck
         if: matrix.os == 'ubuntu-latest'
         run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
       - name: Test
-        run: go test -race ./...
+        env:
+          PKGS: ${{ steps.pkgs.outputs.list }}
+        run: go test -race $PKGS
       - name: The guard's tests cover no less than before
         if: matrix.os == 'ubuntu-latest'
         run: scripts/guard-coverage.sh
