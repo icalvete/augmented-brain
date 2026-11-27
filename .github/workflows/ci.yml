@@ -48,6 +48,29 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: scripts/guard-coverage.sh
       - name: Build every release target
+        env:
+          AB_RELEASE_PROGRAMS: augmented-brain   # Telegram's program: its own job, below
+        run: scripts/release-build.sh 0.0.0-ci /tmp/dist
+
+  # Telegram's program takes minutes for each system: one job per system, side by side.
+  telegram-build:
+    timeout-minutes: 10   # a stuck runner fails here instead of waiting six hours
+    strategy:
+      matrix:
+        target: [linux/amd64, linux/arm64, darwin/amd64, darwin/arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - name: Build
+        env:
+          AB_RELEASE_PROGRAMS: augmented-brain-telegram
+          AB_RELEASE_TARGETS: ${{ matrix.target }}
+          AB_RELEASE_CHECKSUMS: "0"
         run: scripts/release-build.sh 0.0.0-ci /tmp/dist
 
   # What this version writes, the last two releases must still read: after an update,

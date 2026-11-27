@@ -26,9 +26,10 @@
   or changed its section of the changelog (`scripts/release-commit.sh`: what merged
   later waits for the next version), refuses one already tagged, a tag on a commit not
   on `main`, or a commit where any required check, or a macOS one, has not passed
-  (`scripts/release-checks.sh`); then a read-only job with no cache builds the archives,
-  the installers and `checksums.txt` (reproducible: the same commit and Go give the same
-  bytes), and another, in the environment `release`, attests their provenance and
+  (`scripts/release-checks.sh`); then read-only jobs with no cache build the archives
+  (augmented-brain in one; Telegram's program, minutes per system, one job per system),
+  a fourth joins them with the installers and `checksums.txt` (reproducible: the same
+  commit and Go give the same bytes), and another, in the environment `release`, attests their provenance and
   publishes them; the installer always takes the latest release. Two settings are the
   maintainer's, in GitHub: immutable releases, and actions pinned to a full commit SHA
   (every workflow already pins them; `zizmor` and `actionlint` check the workflows in

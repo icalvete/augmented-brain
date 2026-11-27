@@ -12,6 +12,11 @@
 # Binaries are static (CGO off) and stripped (-s -w); the version is set at build time.
 # AB_RELEASE_TARGETS ("darwin/arm64 …") builds only those: the install checks need just
 # this machine's, and building all six took a slow Intel Mac most of CI's 10 minutes.
+# AB_RELEASE_PROGRAMS ("augmented-brain augmented-brain-telegram", the default) builds
+# only those programs; empty, none. AB_RELEASE_CHECKSUMS=0 leaves out the installers and
+# checksums.txt. Telegram's program takes minutes for each system on CI's runners: CI and
+# the release build it in jobs of its own, side by side, and a last run with
+# AB_RELEASE_PROGRAMS="" over all the archives writes checksums.txt.
 #
 # The same commit and the same Go give the same files, byte for byte, wherever they are
 # built: no paths (-trimpath), no git stamp (-buildvcs=false: it would depend on the
@@ -24,6 +29,8 @@ VERSION="${1:?usage: $0 <version> [output_dir]}"
 VERSION="${VERSION#v}"
 OUT="${2:-dist}"
 TARGETS="${AB_RELEASE_TARGETS:-linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64}"
+PROGRAMS="${AB_RELEASE_PROGRAMS-augmented-brain augmented-brain-telegram}"
+has() { case " $PROGRAMS " in *" $1 "*) return 0 ;; esac; return 1; }
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 mkdir -p "$OUT"
@@ -47,37 +54,40 @@ stamp() {
 for t in $TARGETS; do
   os="${t%/*}"
   arch="${t#*/}"
-  name="augmented-brain_${VERSION}_${os}_${arch}"
-  exe=augmented-brain
-  [ "$os" = windows ] && exe=augmented-brain.exe
-  mkdir -p "$WORK/$name"
-  (cd "$ROOT" && CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath -buildvcs=false \
-    -ldflags "-s -w -X github.com/icalvete/augmented-brain/internal/version.Version=$VERSION" \
-    -o "$WORK/$name/$exe" ./cmd/augmented-brain)
-  cp "$ROOT/LICENSE" "$ROOT/THIRD_PARTY_NOTICES.md" "$ROOT/README.md" "$WORK/$name/"
-  chmod 755 "$WORK/$name" "$WORK/$name/$exe"
-  chmod 644 "$WORK/$name/LICENSE" "$WORK/$name/THIRD_PARTY_NOTICES.md" "$WORK/$name/README.md"
-  stamp "$WORK/$name"
-  files="$(cd "$WORK" && find "$name" | LC_ALL=C sort)"
-  if [ "$os" = windows ]; then
-    # Windows opens a .zip by itself; install.ps1 unpacks it with Expand-Archive.
-    # -X: no extra fields (owner ids, other dates); -D: no folder entries.
-    rm -f "$OUT/$name.zip"
-    # shellcheck disable=SC2086 # one name per line, none with spaces
-    (cd "$WORK" && zip -qX -D "$OUT/$name.zip" $files)
-    echo "built $name.zip"
-  elif tar --version 2>/dev/null | grep -q 'GNU tar'; then
-    tar -C "$WORK" --sort=name --owner=0 --group=0 --numeric-owner --format=gnu \
-      --mtime="@$EPOCH" -cf - "$name" | gzip -9n > "$OUT/$name.tar.gz"
-    echo "built $name.tar.gz"
-  else
-    tar -C "$WORK" -cf - "$name" | gzip -9n > "$OUT/$name.tar.gz"
-    echo "built $name.tar.gz"
+  if has augmented-brain; then
+    name="augmented-brain_${VERSION}_${os}_${arch}"
+    exe=augmented-brain
+    [ "$os" = windows ] && exe=augmented-brain.exe
+    mkdir -p "$WORK/$name"
+    (cd "$ROOT" && CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath -buildvcs=false \
+      -ldflags "-s -w -X github.com/icalvete/augmented-brain/internal/version.Version=$VERSION" \
+      -o "$WORK/$name/$exe" ./cmd/augmented-brain)
+    cp "$ROOT/LICENSE" "$ROOT/THIRD_PARTY_NOTICES.md" "$ROOT/README.md" "$WORK/$name/"
+    chmod 755 "$WORK/$name" "$WORK/$name/$exe"
+    chmod 644 "$WORK/$name/LICENSE" "$WORK/$name/THIRD_PARTY_NOTICES.md" "$WORK/$name/README.md"
+    stamp "$WORK/$name"
+    files="$(cd "$WORK" && find "$name" | LC_ALL=C sort)"
+    if [ "$os" = windows ]; then
+      # Windows opens a .zip by itself; install.ps1 unpacks it with Expand-Archive.
+      # -X: no extra fields (owner ids, other dates); -D: no folder entries.
+      rm -f "$OUT/$name.zip"
+      # shellcheck disable=SC2086 # one name per line, none with spaces
+      (cd "$WORK" && zip -qX -D "$OUT/$name.zip" $files)
+      echo "built $name.zip"
+    elif tar --version 2>/dev/null | grep -q 'GNU tar'; then
+      tar -C "$WORK" --sort=name --owner=0 --group=0 --numeric-owner --format=gnu \
+        --mtime="@$EPOCH" -cf - "$name" | gzip -9n > "$OUT/$name.tar.gz"
+      echo "built $name.tar.gz"
+    else
+      tar -C "$WORK" -cf - "$name" | gzip -9n > "$OUT/$name.tar.gz"
+      echo "built $name.tar.gz"
+    fi
   fi
   # Telegram's program, on its own (its library triples a program's size): augmented
   # brain downloads it only when someone turns Telegram on. Linux and macOS: it keeps
   # its session in their keychains. .tgz, never .tar.gz: installers pick augmented-brain's
   # own archive by "_<os>_<arch>.tar.gz".
+  has augmented-brain-telegram || continue
   [ "$os" = windows ] && continue
   tname="augmented-brain-telegram_${VERSION}_${os}_${arch}"
   mkdir -p "$WORK/$tname"
@@ -96,6 +106,8 @@ for t in $TARGETS; do
   fi
   echo "built $tname.tgz"
 done
+
+[ "${AB_RELEASE_CHECKSUMS:-1}" = 0 ] && exit 0
 
 # The installers go in the release as they are in this commit, and in checksums.txt.
 cp "$ROOT/install.sh" "$ROOT/install.ps1" "$OUT/"
