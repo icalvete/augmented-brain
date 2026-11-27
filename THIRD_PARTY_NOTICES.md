@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ```
 
-## github.com/andybalholm/brotli v1.2.1
+## github.com/andybalholm/brotli v1.2.7
 
 ```
 Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
@@ -530,7 +530,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
-## github.com/klauspost/compress v1.19.2
+## github.com/klauspost/compress v1.20.2
 
 ```
 Copyright (c) 2012 The Go Authors. All rights reserved.
