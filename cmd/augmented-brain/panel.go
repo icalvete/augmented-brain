@@ -9,14 +9,13 @@ import (
 	"os"
 	"os/signal"
 	"os/user"
-	"strings"
 	"syscall"
 
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/panel"
 	"github.com/icalvete/augmented-brain/internal/tailnet"
-	"rsc.io/qr"
+	"github.com/icalvete/augmented-brain/internal/termqr"
 )
 
 // panelTailnet is the Tailscale `panel remote` uses; tests replace it with a fake.
@@ -297,38 +296,5 @@ func explainTailnet(l string, err error) string {
 	return err.Error()
 }
 
-// qrText draws text as a QR code with half blocks, two rows of modules per line, for a
-// terminal: light modules are drawn and dark ones left blank, as qrencode does, which
-// reads right on the usual dark terminal. "" when it cannot be encoded.
-func qrText(text string) string {
-	code, err := qr.Encode(text, qr.L)
-	if err != nil {
-		return ""
-	}
-	const quiet = 2
-	light := func(x, y int) bool {
-		if x < 0 || y < 0 || x >= code.Size || y >= code.Size {
-			return true
-		}
-		return !code.Black(x, y)
-	}
-	var b strings.Builder
-	for y := -quiet; y < code.Size+quiet; y += 2 {
-		b.WriteString("  ")
-		for x := -quiet; x < code.Size+quiet; x++ {
-			top, bottom := light(x, y), light(x, y+1)
-			switch {
-			case top && bottom:
-				b.WriteString("█")
-			case top:
-				b.WriteString("▀")
-			case bottom:
-				b.WriteString("▄")
-			default:
-				b.WriteString(" ")
-			}
-		}
-		b.WriteString("\n")
-	}
-	return b.String()
-}
+// qrText draws text as a QR code with characters, for a terminal.
+func qrText(text string) string { return termqr.Text(text) }

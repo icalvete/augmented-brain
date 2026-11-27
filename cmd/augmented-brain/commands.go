@@ -63,6 +63,11 @@ var commands = []command{
 	{name: "codex install"},
 	{name: "codex uninstall"},
 	{name: "codex status"},
+	// telegram is hidden: its subcommands are the ones the usage text lists.
+	{name: "telegram", hidden: true, run: cmdTelegram},
+	{name: "telegram connect"},
+	{name: "telegram status"},
+	{name: "telegram disconnect", flags: func() []string { fs, _ := telegramFlags(io.Discard); return flagNames(fs) }},
 	{name: "watch", hidden: true, run: withoutIn(cmdWatch)},
 	{name: "watch pr", flags: func() []string { fs, _ := watchFlags(io.Discard); return flagNames(fs) }},
 	{name: "config", hidden: true, run: func(args []string, _ io.Reader, _, errOut io.Writer) int { return cmdConfig(args, errOut) }},
