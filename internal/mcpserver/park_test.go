@@ -61,16 +61,16 @@ func TestParkStopsTheTaskSession(t *testing.T) {
 		t.Fatalf("kept %v", kept)
 	}
 
-	// task_update to validation too: it waits on the user, often longer than the 8
-	// hours after which Claude retires a session and leaves it disconnected in claude.ai.
+	// task_update to validation keeps it: the proof is run there with the user, and a
+	// failed one goes back to execution in the same conversation (27-nov: three
+	// sessions were cut the moment their task went to validation).
 	mustCall(t, cs, "task_new", map[string]any{"title": "Shop"})
 	record("task-shop", "cde34567")
 	agents = `[{"pid":4245,"id":"cde34567","status":"busy","state":"working"}]`
 	out = mustCall(t, cs, "task_update", map[string]any{"id": "task-shop", "status": "validation"})
-	if len(kept) != 3 || kept[2] != cfgDir+" task-shop" || !strings.Contains(out, "its worktrees stay") {
-		t.Fatalf("kept %v:\n%s", kept, out)
+	if len(kept) != 2 || len(closed) != 0 || strings.Contains(out, "its worktrees stay") {
+		t.Fatalf("validation ended the session: kept %v closed %v:\n%s", kept, closed, out)
 	}
-	kept = kept[:2]
 
 	// One Claude retired: closed at once, with claude rm, so the daemon cannot bring it back.
 	mustCall(t, cs, "task_new", map[string]any{"title": "Docs"})
