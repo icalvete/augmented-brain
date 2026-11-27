@@ -141,9 +141,9 @@ func (s *Server) telegram(v *view, r *http.Request) (string, page, error) {
 	v.unlock() // the program reaches Telegram: seconds, not with the notes held
 	d := struct {
 		Supported, Installed, App, Connected, Waiting, Password, Remote bool
-		Account                                                        *tgAccount
-		QR                                                             template.HTML
-		Err                                                            string
+		Account                                                         *tgAccount
+		QR                                                              template.HTML
+		Err                                                             string
 	}{Supported: telegramprog.Supported(), Remote: s.viaRemote(r)}
 	path := ""
 	if d.Supported {
