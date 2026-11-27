@@ -50,6 +50,7 @@ it feels to a newcomer.
 | `internal/codex` | `codex install \| uninstall \| status`: augmented brain in Codex as a plugin, its hooks trusted through Codex's app server. |
 | `internal/watch` | `watch pr`: follows a pull request until there is news. |
 | `internal/telegram`, `internal/telegramprog` | The person's own Telegram account (gotd/td: QR login, chats, read, send; the session in the keychain), used only by the separate program `cmd/augmented-brain-telegram`; finding, downloading and calling that program, which never imports Telegram's library. |
+| `internal/replywait` | The replies a task waits for on Telegram: kept as data in the configuration folder (never in the notes), looked for by `telegram check` on a timer, brought to the task's journal. |
 | `internal/leftovers` | `clean`: what Claude Code leaves behind. |
 | `internal/backup` | Backup and restore through a private git repository; the git runner. |
 | `internal/format` | Format versions and their migrations. |
