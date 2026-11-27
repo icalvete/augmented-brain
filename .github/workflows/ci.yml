@@ -49,7 +49,9 @@ jobs:
       - name: Vet
         env:
           PKGS: ${{ steps.pkgs.outputs.list }}
-        run: go vet $PKGS
+        run: |
+          # shellcheck disable=SC2086 # a list of packages, split on purpose
+          go vet $PKGS
       # The version is fixed, as for actionlint: a new staticcheck can bring new warnings
       # on its own, and a check that changes by itself is not one to trust.
       - name: staticcheck
@@ -58,7 +60,9 @@ jobs:
       - name: Test
         env:
           PKGS: ${{ steps.pkgs.outputs.list }}
-        run: go test -race $PKGS
+        run: |
+          # shellcheck disable=SC2086 # a list of packages, split on purpose
+          go test -race $PKGS
       - name: The guard's tests cover no less than before
         if: matrix.os == 'ubuntu-latest'
         run: scripts/guard-coverage.sh
