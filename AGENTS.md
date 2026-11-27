@@ -49,6 +49,7 @@ it feels to a newcomer.
 | `internal/remote` | `remote install` services and `session start \| stop \| restart \| list`. |
 | `internal/codex` | `codex install \| uninstall \| status`: augmented brain in Codex as a plugin, its hooks trusted through Codex's app server. |
 | `internal/watch` | `watch pr`: follows a pull request until there is news. |
+| `internal/telegram`, `internal/telegramprog` | The person's own Telegram account (gotd/td: QR login, chats, read, send; the session in the keychain), used only by the separate program `cmd/augmented-brain-telegram`; finding, downloading and calling that program, which never imports Telegram's library. |
 | `internal/leftovers` | `clean`: what Claude Code leaves behind. |
 | `internal/backup` | Backup and restore through a private git repository; the git runner. |
 | `internal/format` | Format versions and their migrations. |
@@ -57,6 +58,7 @@ it feels to a newcomer.
 | `internal/fresh` | Which tasks changed outside a session since it last looked. |
 | `internal/importer` | `import`: a memory of Claude Code into the spaces. |
 | `internal/setup`, `internal/doctor`, `internal/claudecode`, `internal/update` | `init` and `space add`; the health check; the plugin in Claude Code; the new-version check. |
+| `internal/termqr` | A QR code drawn with characters, for a terminal: the panel's remote address, Telegram's login code. |
 | `internal/repostat` | Whether a repository has work not committed or not pushed. |
 | `internal/keyring` | Whether the system keychain holds a secret, never its value. |
 | `internal/hostmem` | The memory of the program hosting a Claude session. |

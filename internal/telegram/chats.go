@@ -202,7 +202,7 @@ func Read(ctx context.Context, s Secrets, chat string, limit int) ([]Message, er
 		}
 		m, ok := h.AsModified()
 		if !ok {
-			return errors.New("Telegram sent no messages")
+			return errors.New("no messages came from Telegram")
 		}
 		users := map[int64]*tg.User{}
 		for _, u := range m.GetUsers() {

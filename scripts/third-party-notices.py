@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Write THIRD_PARTY_NOTICES.md: the license of every module compiled into the program.
+"""Write THIRD_PARTY_NOTICES.md: the license of every module compiled into the programs
+(augmented-brain and augmented-brain-telegram).
 
 Their licenses (MIT, BSD, Apache 2.0) ask that their notice travels with the program, so
 the release archives carry this file next to LICENSE. Run it after a dependency changes;
@@ -18,7 +19,8 @@ def build() -> str:
     listing = subprocess.run(
         ["go", "list", "-deps", "-f",
          "{{with .Module}}{{if not .Main}}{{.Path}} {{.Version}} {{.Dir}}{{end}}{{end}}",
-         "./cmd/augmented-brain"],
+         # Telegram's program ships the same file in its own archive.
+         "./cmd/augmented-brain", "./cmd/augmented-brain-telegram"],
         cwd=ROOT, check=True, capture_output=True, text=True).stdout
     mods = sorted({tuple(l.split(" ", 2)) for l in listing.splitlines() if l.strip()})
     parts = ["# Third-party notices", "",

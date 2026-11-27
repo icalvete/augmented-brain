@@ -179,6 +179,21 @@
     "repo: string",
     "required id"
   ],
+  "telegram_chats": [
+    "limit: integer",
+    "query: string"
+  ],
+  "telegram_read": [
+    "chat: string",
+    "limit: integer",
+    "required chat"
+  ],
+  "telegram_send": [
+    "chat: string",
+    "required chat",
+    "required text",
+    "text: string"
+  ],
   "weekly_review": [],
   "where_am_i": []
 }

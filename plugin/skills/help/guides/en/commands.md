@@ -49,6 +49,8 @@ with these guides, or with no question proposes your next step.
 | Open a session of its own for a task | [`session start`](#augmented-brain-session-start) |
 | Restart sessions after an update | [`session restart`](#augmented-brain-session-restart) |
 | Be told when a pull request is done | [`watch pr`](#augmented-brain-watch-pr) |
+| Let my assistant use my Telegram | [`telegram connect`](#augmented-brain-telegram-connect) |
+| Take my Telegram away from it | [`telegram disconnect`](#augmented-brain-telegram-disconnect) |
 | Go back to an earlier configuration | [`config restore`](#augmented-brain-config-restore) |
 | Clean up what Claude Code left behind | [`clean`](#augmented-brain-clean) |
 | Update to the latest version | [`update`](#augmented-brain-update) |
@@ -808,6 +810,75 @@ line asks it to tell you straight away. It ends with 0 when the checks passed, t
 pull request was merged or it starts no required check and can be merged, and 1
 otherwise.
 
+## augmented-brain telegram
+
+Connects your own Telegram account to your assistant, as one more device of it: see
+[Telegram (your account)](telegram.md). It is three commands, `connect`, `status` and
+`disconnect`, each with its own section. Linux (with `secret-tool`, the keychain's command) and
+macOS only: elsewhere they say so and end with `1`. Without a subcommand, or with another, `telegram`
+prints its usage.
+
+They run augmented brain's Telegram program, `augmented-brain-telegram`, a separate
+program next to `augmented-brain`. `connect` downloads it the first time.
+
+## augmented-brain telegram connect
+
+Connects your Telegram account, by a QR code you scan with your phone.
+
+Syntax: `augmented-brain telegram connect`
+
+```bash
+augmented-brain telegram connect
+```
+
+When the Telegram program is not there yet, it downloads it first (about 6 MB, from the
+release of your version, checked against its checksums). The first time it also asks for
+your own Telegram application, its `api_id` and `api_hash` from my.telegram.org; the
+`api_hash` is not shown as you type.
+
+Then it draws a QR code. Scan it on your phone: Telegram → Settings → Devices → Link
+Desktop Device. The code changes about every 30 seconds, and the command draws the new
+one. If your account has two-step verification, it asks for its password, which it never
+keeps. The application and the session go to the system keychain, never to a file.
+
+To ask for the application or the password it needs a terminal: without one, it says to
+use the panel's Telegram page instead, and ends with `1`. It waits 5 minutes for the
+scan, then ends with `1`. Already connected, it only says who as.
+Start a new Claude session afterwards to use it.
+
+## augmented-brain telegram status
+
+Says whether your Telegram account is connected, and as whom. Changes nothing.
+
+Syntax: `augmented-brain telegram status`
+
+```bash
+augmented-brain telegram status
+```
+
+One line: connected, with your name and username, or not connected, with how to connect.
+Both end with `0`. It ends with `1` only when it cannot tell (Telegram does not answer,
+the keychain fails).
+
+## augmented-brain telegram disconnect
+
+Disconnects your Telegram account.
+
+Syntax: `augmented-brain telegram disconnect [--forget]`
+
+```bash
+augmented-brain telegram disconnect
+```
+
+It ends the session in Telegram, so **augmented brain (<computer name>)** leaves
+Settings → Devices on your phone, and takes it out of the keychain. Your application stays, so connecting again
+needs only the QR code. Not connected, it does nothing and ends with `0`.
+
+If Telegram cannot be reached, the session still leaves the keychain, and it ends with
+`1` and asks you to close **augmented brain** on your phone yourself.
+
+- `--forget`: also take the application (`api_id` and `api_hash`) out of the keychain.
+
 ## augmented-brain config
 
 The versions of your configuration: two commands, `history` and `restore`, each with its own section. Without a subcommand, `config` prints its usage. See
@@ -953,7 +1024,9 @@ augmented-brain uninstall
 ```
 
 It shows what it will remove and asks first. augmented brain in Codex, when you
-installed it there, goes too (as `codex uninstall`). The remote access services and the
+installed it there, goes too (as `codex uninstall`), and so does Telegram, when you
+connected it: the session ends and leaves the keychain with the application, and the
+Telegram program goes. The remote access services and the
 sessions opened for tasks go first; if one cannot be stopped, nothing else is removed.
 
 - `--config`: also remove the configuration and the profile.

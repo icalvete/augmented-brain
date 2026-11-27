@@ -36,8 +36,8 @@ var telegramMessages = map[string]msg{
 		es: "Escanea este código con el móvil: Telegram → Ajustes → Dispositivos → Vincular dispositivo de escritorio. Cambia cada 30 segundos o así; escanea el último.",
 	},
 	"telegram.connected": {
-		en: "Connected as %s. Start a new Claude session to use it. To end it: augmented-brain telegram disconnect, or close \"augmented brain\" in Telegram → Settings → Devices.",
-		es: "Conectado como %s. Abre una sesión nueva de Claude para usarlo. Para cerrarlo: augmented-brain telegram disconnect, o cierra «augmented brain» en Telegram → Ajustes → Dispositivos.",
+		en: "Connected as %s. Start a new Claude session to use it. To end it: augmented-brain telegram disconnect, or close \"augmented brain (this computer's name)\" in Telegram → Settings → Devices.",
+		es: "Conectado como %s. Abre una sesión nueva de Claude para usarlo. Para cerrarlo: augmented-brain telegram disconnect, o cierra «augmented brain (nombre de este ordenador)» en Telegram → Ajustes → Dispositivos.",
 	},
 	"telegram.status.on": {
 		en: "Telegram: connected as %s.",
@@ -141,8 +141,8 @@ var telegramMessages = map[string]msg{
 	},
 	"panel.telegram.disconnect": {en: "Disconnect", es: "Desconectar"},
 	"panel.telegram.disconnect.hint": {
-		en: "Ends the session in Telegram (\"augmented brain\" leaves Settings → Devices) and takes it out of the keychain.",
-		es: "Cierra la sesión en Telegram («augmented brain» sale de Ajustes → Dispositivos) y la saca del llavero.",
+		en: "Ends the session in Telegram (\"augmented brain (this computer's name)\" leaves Settings → Devices) and takes it out of the keychain.",
+		es: "Cierra la sesión en Telegram («augmented brain (nombre de este ordenador)» sale de Ajustes → Dispositivos) y la saca del llavero.",
 	},
 	"panel.telegram.forget": {
 		en: "Also forget the application (api_id, api_hash)",

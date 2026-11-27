@@ -32,7 +32,7 @@ import (
 
 // ErrNotConnected means there is no logged-in session: Login has not run, or the
 // session was closed from another device.
-var ErrNotConnected = errors.New("Telegram is not connected")
+var ErrNotConnected = errors.New("not connected to Telegram")
 
 // DeviceName is how this device shows in Telegram's Settings → Devices, followed by
 // the computer's name: with augmented brain on two computers, each is a device of its
@@ -126,7 +126,7 @@ func Login(ctx context.Context, s Secrets, show func(url string) error,
 		}
 		u, ok := a.User.AsNotEmpty()
 		if !ok {
-			return errors.New("Telegram did not say who logged in")
+			return errors.New("no account in Telegram's answer")
 		}
 		acc = accountOf(u)
 		return nil
@@ -186,7 +186,7 @@ func Logout(ctx context.Context, s Secrets, forget bool) error {
 	if err != nil && !errors.Is(err, ErrNotConnected) {
 		// The session goes from here anyway: the person can still close it in
 		// Telegram's Settings → Devices.
-		err = fmt.Errorf("could not end the session in Telegram (close %q in Settings → Devices): %w", DeviceName, err)
+		err = fmt.Errorf("could not end the session in Telegram (close %q in Settings → Devices): %w", deviceModel(), err)
 	} else {
 		err = nil
 	}
@@ -210,13 +210,13 @@ func explain(err error) error {
 		return nil
 	}
 	if d, ok := tgerr.AsFloodWait(err); ok {
-		return fmt.Errorf("Telegram asks to wait %s before trying again", d.Round(time.Second))
+		return fmt.Errorf("too many requests: Telegram asks to wait %s before trying again", d.Round(time.Second))
 	}
 	switch {
 	case tgerr.Is(err, "AUTH_KEY_UNREGISTERED", "SESSION_REVOKED", "USER_DEACTIVATED"):
 		return ErrNotConnected
 	case tgerr.Is(err, "API_ID_INVALID", "API_ID_PUBLISHED_FLOOD"):
-		return errors.New("Telegram does not accept this api_id and api_hash: check them at my.telegram.org")
+		return errors.New("this api_id and api_hash are not accepted by Telegram: check them at my.telegram.org")
 	case tgerr.Is(err, "PASSWORD_HASH_INVALID"):
 		return errors.New("wrong two-step verification password")
 	}

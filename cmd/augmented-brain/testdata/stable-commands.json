@@ -73,6 +73,11 @@
     "work",
     "yes"
   ],
+  "telegram connect": [],
+  "telegram disconnect": [
+    "forget"
+  ],
+  "telegram status": [],
   "uninstall": [
     "all",
     "config",

@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/icalvete/augmented-brain/internal/claudecode"
 	"github.com/icalvete/augmented-brain/internal/codex"
@@ -20,6 +21,8 @@ import (
 	"github.com/icalvete/augmented-brain/internal/panel"
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/remote"
+	"github.com/icalvete/augmented-brain/internal/runlimit"
+	"github.com/icalvete/augmented-brain/internal/telegramprog"
 )
 
 // uninstallFlags are uninstall's flags: --yes, --config and --all.
@@ -238,6 +241,13 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 	// Last, the program itself, if it has its own name (not a test binary or go run).
 	if b := filepath.Base(self); self != "" && (b == "augmented-brain" || b == "augmented-brain.exe") {
 		if pluginGone {
+			// Telegram's program, where someone turned it on: the session ends in Telegram
+			// and leaves the keychain with the application (an uninstall leaves no way into
+			// the account behind), then the program goes.
+			if tp := filepath.Join(filepath.Dir(self), telegramprog.Name); statOK(tp) {
+				_, _ = runlimit.Output(time.Minute, tp, "disconnect", "--forget", "--json")
+				fail(os.Remove(tp))
+			}
 			fail(removeSelf(self, lang))
 		} else {
 			fmt.Fprintln(errOut, i18n.T(lang, "uninstall.keptself", self))
@@ -318,3 +328,5 @@ func countNotes(dir string) int {
 }
 
 func exists(p string) bool { _, err := os.Stat(p); return err == nil }
+
+func statOK(p string) bool { _, err := os.Stat(p); return err == nil }

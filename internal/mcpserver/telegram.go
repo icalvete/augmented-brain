@@ -27,7 +27,7 @@ func WithTelegram(path string) Option {
 var telegramRun = func(ctx context.Context, path string, args []string, stdin string, v any) error {
 	err := telegramprog.Call(ctx, path, args, stdin, v)
 	if errors.Is(err, telegramprog.ErrNotConnected) {
-		return errors.New("Telegram is not connected. The user connects it with `augmented-brain telegram connect` in a terminal, or on the panel's Telegram page; then this session can use it")
+		return errors.New("not connected to Telegram. The user connects it with `augmented-brain telegram connect` in a terminal, or on the panel's Telegram page; then this session can use it")
 	}
 	return err
 }

@@ -42,6 +42,12 @@ claude mcp add --scope user --transport http <name> <address of the server>
 Many services publish an official MCP server; use those when they exist. Read what a
 server can do before adding it: it acts with your account.
 
+## Telegram
+
+For Telegram, augmented brain brings its own way in, not a claude.ai connector: your
+assistant uses your own Telegram account as one more device of it, to read a chat or
+write from your account. Linux and macOS. See [Telegram (your account)](telegram.md).
+
 ## Good habits
 
 - **Connect only what you use.** Every connector adds tools your assistant has to choose

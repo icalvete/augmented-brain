@@ -92,7 +92,7 @@ var Base = os.Getenv("AB_TELEGRAM_FROM")
 // It returns its path.
 func Install() (string, error) {
 	if !Supported() {
-		return "", fmt.Errorf("Telegram is not supported on %s yet", runtime.GOOS)
+		return "", fmt.Errorf("no Telegram on %s yet", runtime.GOOS)
 	}
 	ver := version.Version
 	if strings.Contains(ver, "-dev") {
@@ -190,7 +190,7 @@ func extract(data []byte, name string) ([]byte, error) {
 const Wait = 90 * time.Second
 
 // ErrNotConnected is the program's "not connected" (or "no application yet").
-var ErrNotConnected = errors.New("Telegram is not connected")
+var ErrNotConnected = errors.New("not connected to Telegram")
 
 // Call runs the program at path with args and --json, stdin on its standard input, and
 // decodes its one JSON line into v.
@@ -213,7 +213,7 @@ func Call(ctx context.Context, path string, args []string, stdin string, v any) 
 	}
 	if runErr != nil {
 		if ctx.Err() != nil {
-			return fmt.Errorf("Telegram did not answer in %s", Wait)
+			return fmt.Errorf("no answer from Telegram in %s", Wait)
 		}
 		return fmt.Errorf("%s: %v %s", Name, runErr, strings.TrimSpace(errOut.String()))
 	}
