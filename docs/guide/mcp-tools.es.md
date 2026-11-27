@@ -599,3 +599,10 @@ asistente lee el chat antes de mandarlo otra vez.
 
 - `chat`: el chat, como en `telegram_read`.
 - `text`: el mensaje, en texto normal, 4096 caracteres como mucho.
+- `wait_task` (opcional): cuando el mensaje pide respuesta, la tarea que la espera. La
+  tarea pasa a esperar a esa persona, su diario lo dice, y la respuesta llega sola a su
+  diario, tarde lo que tarde (mira
+  [Esperar una respuesta](telegram.es.md#esperar-una-respuesta)). Una tarea que no existe
+  o está cerrada, o el chat `me`, se rechaza antes de mandar nada.
+- `wait_who` (opcional): con `wait_task`, quién tiene que contestar, como a quién espera la
+  tarea; si no se da, el chat.

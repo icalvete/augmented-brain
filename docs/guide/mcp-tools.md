@@ -583,3 +583,10 @@ assistant reads the chat before sending it again.
 
 - `chat`: the chat, as in `telegram_read`.
 - `text`: the message, plain text, 4096 characters at most.
+- `wait_task` (optional): when the message asks for an answer, the task that waits for
+  it. The task then waits on that person, its journal says so, and the reply comes to
+  its journal by itself, however late (see
+  [Waiting for a reply](telegram.md#waiting-for-a-reply)). A task that is not there or is
+  closed, or the chat `me`, is refused before anything is sent.
+- `wait_who` (optional): with `wait_task`, who is to answer, as the task's waiting on;
+  the chat if not given.

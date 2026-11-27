@@ -807,7 +807,7 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 		})
 
 	if o.telegram != "" && !o.tasksOnly {
-		addTelegramTools(s, o.telegram)
+		addTelegramTools(s, o.telegram, locked)
 	}
 	return s.Server
 }
