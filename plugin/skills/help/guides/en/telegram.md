@@ -132,6 +132,34 @@ The tools are there only in Claude, not in [Codex](codex.md).
 - **It reads only what the task needs**, not your whole history.
 - **It never sends in bulk.**
 
+## Waiting for a reply
+
+People answer when they can: in a minute, or in three days. So when the assistant sends
+a message that asks for an answer, it notes that the task it is for waits for it
+(`telegram_send` with [`wait_task`](mcp-tools.md#telegram_send)). Nothing stays running
+for that: the wait is a note of this computer, with no end.
+
+- The task now waits on that person, and its journal says it waits for a reply on Telegram.
+- Every 5 minutes, a timer of your system looks only at the chats with a wait, and only
+  at what came after the message sent. In a chat with one person any message is the
+  reply; in a group, only an answer to the message sent.
+- When the reply comes, it goes to the task's journal, marked as someone else's text. The
+  task waits on you again, and its next step is to read it.
+- A session working on that task hears of it before its next answer. If none is open,
+  whoever opens the task finds the reply there.
+
+The timer is set when you connect Telegram and goes when you disconnect it or uninstall
+augmented brain (Linux: a systemd user timer; macOS: a LaunchAgent). To see the waits, or
+take one out, and to look right now:
+
+```bash
+augmented-brain telegram waits
+```
+
+```bash
+augmented-brain telegram check
+```
+
 ## Disconnect it
 
 In a terminal:

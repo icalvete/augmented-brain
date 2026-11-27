@@ -133,6 +133,34 @@ Las herramientas solo están en Claude, no en [Codex](codex.md).
 - **Lee solo lo que la tarea necesita**, no todo tu historial.
 - **Nunca manda en masa.**
 
+## Esperar una respuesta
+
+La gente contesta cuando puede: en un minuto o en tres días. Así que cuando el asistente
+manda un mensaje que pide respuesta, apunta que la tarea para la que es la espera
+(`telegram_send` con [`wait_task`](mcp-tools.md#telegram_send)). No queda nada en
+marcha para eso: la espera es una nota de este ordenador, y no caduca.
+
+- La tarea pasa a esperar a esa persona, y su diario dice que espera respuesta por Telegram.
+- Cada 5 minutos, un temporizador de tu sistema mira solo los chats con una espera, y
+  solo lo que llegó después del mensaje enviado. En un chat con una persona, cualquier
+  mensaje es la respuesta; en un grupo, solo una contestación al mensaje enviado.
+- Cuando llega la respuesta, va al diario de la tarea, marcada como texto de otra persona.
+  La tarea vuelve a esperarte a ti, y su siguiente paso es leerla.
+- Una sesión que trabaje en esa tarea se entera antes de su siguiente respuesta. Si no hay
+  ninguna abierta, quien abra la tarea encuentra ahí la respuesta.
+
+El temporizador se pone al conectar Telegram y se va al desconectarlo o al desinstalar
+augmented brain (Linux: un temporizador de usuario de systemd; macOS: un LaunchAgent). Para
+ver las esperas, o quitar una, y para mirar ahora mismo:
+
+```bash
+augmented-brain telegram waits
+```
+
+```bash
+augmented-brain telegram check
+```
+
 ## Desconectarlo
 
 En un terminal:
