@@ -246,6 +246,7 @@ func cmdUninstall(args []string, in io.Reader, out, errOut io.Writer) int {
 			// the account behind), then the program goes.
 			if tp := filepath.Join(filepath.Dir(self), telegramprog.Name); statOK(tp) {
 				_, _ = runlimit.Output(time.Minute, tp, "disconnect", "--forget", "--json")
+				_, _ = unsetTelegramTimer()
 				fail(os.Remove(tp))
 			}
 			fail(removeSelf(self, lang))

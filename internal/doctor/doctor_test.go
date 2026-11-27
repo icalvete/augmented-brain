@@ -12,6 +12,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/codex"
 	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/remote"
+	"github.com/icalvete/augmented-brain/internal/replywait"
 	"github.com/icalvete/augmented-brain/internal/setup"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/tailnet"
@@ -606,5 +607,37 @@ func TestBrokenLinksLine(t *testing.T) {
 	if len(got) != 2 || !strings.Contains(got[0].What, "work: 1 link to") || !strings.Contains(got[0].What, "[[rule-core-tests]] (rules/rule-core.md)") ||
 		!strings.Contains(got[1].What, "shared notes: 1 link to") || !strings.Contains(got[1].What, "[[rule-con-marcos-v]]") || got[0].Status != Warning {
 		t.Errorf("lines: %+v", got)
+	}
+}
+
+// Waits for Telegram replies get a line, and a warning when no timer looks for them.
+func TestDoctorTelegramWaits(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	cfg := filepath.Join(home, "cfg")
+	if _, err := setup.Init(cfg, setup.Options{Space: "work", WorkFolder: "~/work", Memory: "~/brain/work"}); err != nil {
+		t.Fatal(err)
+	}
+	sys := &remote.System{
+		Run:      func(string, ...string) (string, error) { return "", nil },
+		LookPath: func(n string) (string, error) { return "/usr/bin/" + n, nil },
+		Hostname: func() (string, error) { return "box", nil }, GOOS: "linux", User: "lucia",
+		UnitDir: filepath.Join(home, "units"), ClaudeJSON: filepath.Join(home, "none.json"), Self: "/bin/augmented-brain",
+	}
+	env := Env{ConfigDir: cfg, WorkDir: home, LookPath: allTools, Plugin: yes, Hook: denies, Remote: sys}
+	if c := find(Run(env), "Telegram: replies"); c != nil {
+		t.Errorf("no waits, yet doctor says: %+v", c)
+	}
+	if err := replywait.Add(cfg, replywait.Wait{Space: "work", Task: "task-x", Chat: "user:7", After: 3}); err != nil {
+		t.Fatal(err)
+	}
+	if c := find(Run(env), "Telegram: replies"); c == nil || c.Status != Warning || !strings.Contains(c.Fix, "telegram connect") {
+		t.Errorf("waits without a timer: %+v", c)
+	}
+	if err := sys.InstallTelegramTimer(cfg); err != nil {
+		t.Fatal(err)
+	}
+	if c := find(Run(env), "Telegram: replies"); c == nil || c.Status != OK {
+		t.Errorf("waits with a timer: %+v", c)
 	}
 }

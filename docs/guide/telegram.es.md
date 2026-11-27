@@ -185,7 +185,7 @@ En el móvil: Telegram → **Ajustes → Dispositivos**, y cierra **augmented br
 mano.
 
 `augmented-brain uninstall` también lo hace: cierra la sesión, la saca del llavero junto
-con la aplicación y quita el programa de Telegram.
+con la aplicación y quita el programa de Telegram y su temporizador.
 
 ## En dos ordenadores
 

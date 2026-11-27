@@ -183,7 +183,7 @@ On your phone: Telegram → **Settings → Devices**, and close **augmented brai
 (<computer name>)**. This works even if the computer is lost or out of reach.
 
 `augmented-brain uninstall` does it too: it ends the session, takes it and the application out
-of the keychain, and removes the Telegram program.
+of the keychain, and removes the Telegram program and its timer.
 
 ## On two computers
 
