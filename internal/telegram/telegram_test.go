@@ -186,3 +186,17 @@ func TestExplain(t *testing.T) {
 		t.Errorf("flood: %v", err)
 	}
 }
+
+func TestMessageOfReplyTo(t *testing.T) {
+	users := map[int64]*tg.User{7: {ID: 7, FirstName: "Lucía"}}
+	msg := &tg.Message{ID: 12, Message: "vale", FromID: &tg.PeerUser{UserID: 7}, PeerID: &tg.PeerUser{UserID: 7}}
+	msg.SetReplyTo(&tg.MessageReplyHeader{ReplyToMsgID: 9})
+	m := messageOf(msg, users, nil)
+	if m.ID != 12 || m.ReplyTo != 9 || m.From != "Lucía" || m.Out || m.Text != "vale" {
+		t.Fatalf("got %+v", m)
+	}
+	plain := messageOf(&tg.Message{ID: 13, Message: "hola", PeerID: &tg.PeerUser{UserID: 7}}, users, nil)
+	if plain.ReplyTo != 0 {
+		t.Fatalf("a message that answers none: %+v", plain)
+	}
+}
