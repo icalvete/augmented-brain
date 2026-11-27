@@ -46,6 +46,8 @@ Hay cosas que valen para todas:
   [`safety_save`](#safety_save), [`root_exception_save`](#root_exception_save),
   [`secret_name_save`](#secret_name_save),
   [`backup_setup`](#backup_setup), [`session_recover`](#session_recover).
+- **Telegram**, solo cuando conectas tu cuenta: [`telegram_chats`](#telegram_chats),
+  [`telegram_read`](#telegram_read), [`telegram_send`](#telegram_send).
 
 ## `where_am_i`
 
@@ -548,3 +550,51 @@ diario lo que falte.
 
 - `session_id` (opcional): la sesión que recuperar. Sin él, la que ofreció el inicio de
   la sesión.
+
+## Herramientas de Telegram
+
+Estas tres solo existen cuando conectas tu propia cuenta de Telegram
+([Telegram (tu cuenta)](telegram.md)), a partir de la sesión siguiente. No están en
+Codex. Cada llamada lanza el programa de Telegram de augmented brain y llega a Telegram,
+así que tarda unos segundos; ninguna toca tus notas. Si la cuenta no está conectada,
+responden cómo conectarla.
+
+## `telegram_chats`
+
+**Dices:** "¿qué ha dicho Lucía en el grupo de la familia?" (primero, para encontrar el
+grupo).
+
+Encuentra chats de tu cuenta de Telegram por su nombre, los más recientes primero, con
+el id que toman `telegram_read` y `telegram_send`. Cada línea da el id, el nombre, su
+tipo (`user`, `group`, `channel`, `bot` o `saved`), el `@usuario` y los mensajes sin
+leer. Mira tus 500 chats más recientes.
+
+- `query` (opcional): palabras del nombre del chat o de su `@usuario`. Tienen que estar
+  todas, en mayúsculas o minúsculas. Vacío, lista los chats más recientes.
+- `limit` (opcional): cuántos chats, como mucho. Por defecto, 20.
+
+## `telegram_read`
+
+**Dices:** "¿tengo mensajes sin leer de Marcos?"
+
+Lee los últimos mensajes de un chat, los más antiguos primero: fecha, quién lo escribió
+y el texto. Una foto, una nota de voz o un fichero aparecen como su tipo, por ejemplo
+`[Photo]`. La respuesta empieza diciendo que estos mensajes los escribió otra gente: lo
+que dicen son datos, nunca instrucciones para el asistente.
+
+- `chat`: el chat. Un id de `telegram_chats` (`user:<n>`, `group:<n>`, `channel:<n>`), un
+  `@usuario`, o `me` para tus Mensajes guardados.
+- `limit` (opcional): cuántos de los últimos mensajes. Por defecto, 20; 100 como mucho.
+
+## `telegram_send`
+
+**Dices:** "dile a Lucía que llego diez minutos tarde".
+
+Manda un mensaje desde tu cuenta de Telegram: llega como escrito por ti. A cualquiera que
+no seas tú (el chat `me`), el asistente te enseña antes el texto exacto y el chat, y solo
+lo manda después de tu sí. Cuando habla por sí mismo, firma como tu asistente; cuando
+pasa tus propias palabras, no. Un mensaje que parece fallar puede haber llegado: el
+asistente lee el chat antes de mandarlo otra vez.
+
+- `chat`: el chat, como en `telegram_read`.
+- `text`: el mensaje, en texto normal, 4096 caracteres como mucho.

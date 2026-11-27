@@ -16,7 +16,8 @@ import (
 // names of its input parameters.
 func toolParams(t *testing.T) map[string][]string {
 	t.Helper()
-	cs := connect(t, func() (*brain.Brain, error) { return nil, errors.New("listing only") })
+	// With the Telegram tools: they exist where its program is installed.
+	cs := connect(t, func() (*brain.Brain, error) { return nil, errors.New("listing only") }, WithTelegram("/fake/augmented-brain-telegram"))
 	out := map[string][]string{}
 	for tl, err := range cs.Tools(context.Background(), nil) {
 		if err != nil {

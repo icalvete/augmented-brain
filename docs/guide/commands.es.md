@@ -50,6 +50,8 @@ guías, o sin pregunta te propone el siguiente paso.
 | Abrir una sesión propia para una tarea | [`session start`](#augmented-brain-session-start) |
 | Reiniciar sesiones tras actualizar | [`session restart`](#augmented-brain-session-restart) |
 | Enterarme de cuándo acaba una pull request | [`watch pr`](#augmented-brain-watch-pr) |
+| Que mi asistente use mi Telegram | [`telegram connect`](#augmented-brain-telegram-connect) |
+| Quitarle mi Telegram | [`telegram disconnect`](#augmented-brain-telegram-disconnect) |
 | Volver a una configuración anterior | [`config restore`](#augmented-brain-config-restore) |
 | Limpiar lo que dejó Claude Code | [`clean`](#augmented-brain-clean) |
 | Pasar a la última versión | [`update`](#augmented-brain-update) |
@@ -828,6 +830,74 @@ línea le pide avisarte en el acto. Acaba con 0 si los checks pasaron, la pull r
 mezcló o no lanza ningún check obligatorio y se puede mezclar, y con 1 en cualquier otro
 caso.
 
+## augmented-brain telegram
+
+Conecta tu propia cuenta de Telegram a tu asistente, como un dispositivo más: mira
+[Telegram (tu cuenta)](telegram.es.md). Son tres comandos, `connect`, `status` y
+`disconnect`, cada uno con su sección. Solo Linux (con `secret-tool`, el comando del llavero) y
+macOS: en otro sitio lo dicen y acaban con `1`. Sin subcomando, o con otro, `telegram` muestra su uso.
+
+Lanzan el programa de Telegram de augmented brain, `augmented-brain-telegram`, un
+programa aparte junto a `augmented-brain`. `connect` lo descarga la primera vez.
+
+## augmented-brain telegram connect
+
+Conecta tu cuenta de Telegram, con un código QR que escaneas con el móvil.
+
+Sintaxis: `augmented-brain telegram connect`
+
+```bash
+augmented-brain telegram connect
+```
+
+Si el programa de Telegram aún no está, primero lo descarga (unos 6 MB, de la versión que
+tienes, comprobado con sus sumas de verificación). La primera vez también pide tu propia
+aplicación de Telegram, su `api_id` y su `api_hash` de my.telegram.org; el `api_hash` no
+se ve al escribir.
+
+Después dibuja un código QR. Escanéalo en el móvil: Telegram → Ajustes → Dispositivos →
+Vincular dispositivo de escritorio. El código cambia cada 30 segundos o así, y el comando
+dibuja el nuevo. Si tu cuenta tiene verificación en dos pasos, pide su contraseña, que
+nunca guarda. La aplicación y la sesión van al llavero del sistema, nunca a un fichero.
+
+Para pedir la aplicación o la contraseña necesita un terminal: sin él, dice que uses la
+página Telegram del panel, y acaba con `1`. Espera 5 minutos a que escanees, y después
+acaba con `1`. Si ya está conectado, solo dice como
+quién. Abre después una sesión nueva de Claude para usarlo.
+
+## augmented-brain telegram status
+
+Dice si tu cuenta de Telegram está conectada, y como quién. No cambia nada.
+
+Sintaxis: `augmented-brain telegram status`
+
+```bash
+augmented-brain telegram status
+```
+
+Una línea: conectado, con tu nombre y tu usuario, o no conectado, con cómo conectarlo.
+Las dos acaban con `0`. Acaba con `1` solo cuando no puede saberlo (Telegram no responde,
+falla el llavero).
+
+## augmented-brain telegram disconnect
+
+Desconecta tu cuenta de Telegram.
+
+Sintaxis: `augmented-brain telegram disconnect [--forget]`
+
+```bash
+augmented-brain telegram disconnect
+```
+
+Cierra la sesión en Telegram, así que **augmented brain (<nombre del ordenador>)** sale
+de Ajustes → Dispositivos en tu móvil, y la saca del llavero. Tu aplicación se queda, así que para volver a
+conectar basta con el código QR. Si no está conectado, no hace nada y acaba con `0`.
+
+Si no puede llegar a Telegram, la sesión sale igualmente del llavero, y acaba con `1` y te
+pide que cierres tú **augmented brain** en el móvil.
+
+- `--forget`: saca también la aplicación (`api_id` y `api_hash`) del llavero.
+
 ## augmented-brain config
 
 Las versiones de tu configuración: dos comandos, `history` y `restore`, cada uno con su apartado. Sin subcomando, `config` muestra su uso. Mira
@@ -977,7 +1047,9 @@ augmented-brain uninstall
 ```
 
 Enseña lo que va a quitar y pregunta antes. augmented brain en Codex, si lo instalaste
-allí, también se va (como con `codex uninstall`). Primero se van los servicios del acceso
+allí, también se va (como con `codex uninstall`), y también Telegram, si lo conectaste:
+la sesión se cierra y sale del llavero junto con la aplicación, y se quita el programa de
+Telegram. Primero se van los servicios del acceso
 remoto y las sesiones abiertas para tareas; si uno no se puede parar, no se quita nada
 más.
 

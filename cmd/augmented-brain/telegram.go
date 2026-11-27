@@ -52,6 +52,8 @@ func cmdTelegram(args []string, in io.Reader, out, errOut io.Writer) int {
 			return 1
 		}
 	}
+	// unbounded: connect waits for a person to scan a QR code and type a password; the
+	// Telegram program bounds its own waits (5 minutes for a login, 1 for a call).
 	cmd := exec.Command(p, args...)
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = in, out, errOut
 	cmd.Env = append(os.Environ(), "AB_LANGUAGE="+l)

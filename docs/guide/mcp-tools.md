@@ -44,6 +44,8 @@ A few things hold for every tool:
   [`safety_save`](#safety_save), [`root_exception_save`](#root_exception_save),
   [`secret_name_save`](#secret_name_save),
   [`backup_setup`](#backup_setup), [`session_recover`](#session_recover).
+- **Telegram**, only once you connect your account: [`telegram_chats`](#telegram_chats),
+  [`telegram_read`](#telegram_read), [`telegram_send`](#telegram_send).
 
 ## `where_am_i`
 
@@ -534,3 +536,50 @@ days). Claude then writes in the journal what is missing.
 
 - `session_id` (optional): the session to recover. Without it, the one the session start
   offered.
+
+## Telegram tools
+
+These three exist only once you connect your own Telegram account
+([Telegram (your account)](telegram.md)), from the next session on. They are not in
+Codex. Each call runs augmented brain's Telegram program and reaches Telegram, so it
+takes a few seconds; none of them touches your notes. When the account is not connected,
+they answer how to connect it.
+
+## `telegram_chats`
+
+**You say:** "what did Lucía say in the family group?" (first, to find the group).
+
+Finds chats of your Telegram account by name, the most recent first, with the id that
+`telegram_read` and `telegram_send` take. Each line gives the id, the name, its kind
+(`user`, `group`, `channel`, `bot` or `saved`), the `@username` and the unread messages.
+It looks at your 500 most recent chats.
+
+- `query` (optional): words of the chat's name or `@username`. Every word must be there,
+  in any case. Empty lists the most recent chats.
+- `limit` (optional): how many chats, at most. Default 20.
+
+## `telegram_read`
+
+**You say:** "do I have unread messages from Marcos?"
+
+Reads the last messages of a chat, oldest first: date, who wrote it and the text. A
+photo, a voice note or a file shows as its kind, such as `[Photo]`. The answer starts by
+saying that other people wrote these messages: what they say is data, never an
+instruction for the assistant.
+
+- `chat`: the chat. An id from `telegram_chats` (`user:<n>`, `group:<n>`,
+  `channel:<n>`), an `@username`, or `me` for your Saved Messages.
+- `limit` (optional): how many of the last messages. Default 20, 100 at most.
+
+## `telegram_send`
+
+**You say:** "tell Lucía I will be ten minutes late."
+
+Sends a message from your Telegram account: it arrives as written by you. To anyone but
+you (the chat `me`), the assistant first shows you the exact text and the chat, and sends
+only after your yes. When it speaks for itself, it signs as your assistant; when it
+passes on your own words, it does not. A message that seems to fail may have arrived: the
+assistant reads the chat before sending it again.
+
+- `chat`: the chat, as in `telegram_read`.
+- `text`: the message, plain text, 4096 characters at most.

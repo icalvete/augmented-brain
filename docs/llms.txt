@@ -34,6 +34,7 @@ The documentation, as web pages: https://icalvete.github.io/augmented-brain/guid
 - [The weekly review](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/weekly-review.md): what it goes through, when it is offered, with Claude or in the panel
 - [Backup and restore](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/backup.md): a private git repository per space, automatic after each session; a new machine; what a restore does not bring
 - [Connect your services](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.md): calendar, mail, documents and Jira through MCP
+- [Telegram (your account)](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/telegram.md): augmented-brain telegram connect: the assistant on the user's own Telegram account as one more device (Linux and macOS); own application from my.telegram.org, QR login, reading and sending, disconnecting, risks
 - [Remote access](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/remote.md): augmented-brain remote: Claude on this computer reachable from anywhere, also after a reboot; a session per task with session start (Linux)
 - [Bring in a memory you already have](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/import.md): augmented-brain import: plan first, --apply, --map, --repos-base
 - [From your phone or another computer](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/anywhere.md): remote access and the panel together, which session to use, what to do when it stops answering
@@ -65,6 +66,7 @@ The documentation, as web pages: https://icalvete.github.io/augmented-brain/guid
 - [La revisión semanal](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/weekly-review.es.md)
 - [Copia de seguridad y restauración](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/backup.es.md)
 - [Conecta tus servicios](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/connect-services.es.md)
+- [Telegram (tu cuenta)](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/telegram.es.md)
 - [Acceso remoto](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/remote.es.md)
 - [Trae una memoria que ya tienes](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/import.es.md)
 - [Desde el móvil u otro ordenador](https://raw.githubusercontent.com/icalvete/augmented-brain/main/docs/guide/anywhere.es.md)

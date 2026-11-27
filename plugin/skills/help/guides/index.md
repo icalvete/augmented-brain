@@ -32,6 +32,7 @@ español en es/ (la especificación del formato, solo en inglés).
 ## Make it yours · Ponlo a tu medida
 
 - `en/connect-services.md` · `es/connect-services.md`: Calendar, mail, documents and Jira, through MCP. · Calendario, correo, documentos y Jira, por MCP.
+- `en/telegram.md` · `es/telegram.md`: Your assistant reads and writes your Telegram chats, as one more device. · Tu asistente lee y escribe tus chats de Telegram, como un dispositivo más.
 - `en/backup.md` · `es/backup.md`: A private repository per space, and a new machine in minutes. · Un repositorio privado por espacio, y una máquina nueva en minutos.
 - `en/config-history.md` · `es/config-history.md`: See what changed in your configuration, and go back. · Ver qué cambió en tu configuración, y volver atrás.
 - `en/anywhere.md` · `es/anywhere.md`: Remote access and the panel together, and what to do when it drops. · Acceso remoto y panel juntos, y qué hacer cuando se cae.

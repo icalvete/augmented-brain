@@ -49,6 +49,7 @@ abierto, enseña cada bloque en dos columnas, y una sombra al pie dice que sigue
 | [Copia de seguridad](#copia-de-seguridad) | Copias de tus notas | todos los espacios |
 | [Salud](#salud) | Si el espacio está en orden | un espacio |
 | [Guardia](#guardia) | Lo que Claude puede hacer | este ordenador |
+| [Telegram](#telegram) | Tu propia cuenta de Telegram, para tu asistente | este ordenador |
 | [Versiones](#versiones) | Configuraciones anteriores | este ordenador |
 | [Ayuda](#ayuda) | Respuestas, y avisar de un problema | — |
 | [Perfil](#perfil) | Quién eres, tu asistente | todos los espacios |
@@ -280,6 +281,33 @@ Cómo se comporta:
   hacer en este ordenador, así que solo se cambian desde el panel de este ordenador.
 
 Cómo funciona cada lista lo cuenta [El guardia](guard.md).
+
+## Telegram
+
+Conecta tu propia cuenta de Telegram, como un dispositivo más, para que tu asistente
+pueda leer un chat cuando una tarea lo necesite y escribir desde tu cuenta. Qué es, y sus
+riesgos, están en [Telegram (tu cuenta)](telegram.md). La página va paso a paso:
+
+1. **Descargar el programa de Telegram**: unos 6 MB, una sola vez, de la versión que
+   tienes, comprobado con sus sumas de verificación.
+2. **Tu aplicación**: los pasos para crearla en my.telegram.org, y un formulario para su
+   `api_id` y su `api_hash`. **Guardar y enseñar el código QR** los guarda en el llavero
+   de este ordenador, nunca en un fichero.
+3. **El código QR**: escanéalo con el móvil, en Telegram → Ajustes → Dispositivos →
+   Vincular dispositivo de escritorio. Cambia cada 30 segundos o así, y la página lo
+   sigue. **Cancelar** deja de esperar. A los 5 minutos se para solo: **Enseñar el código
+   QR** vuelve a empezar.
+4. **La contraseña de la verificación en dos pasos**, si tu cuenta la tiene. Va a
+   Telegram una vez y no se guarda en ningún sitio.
+5. **Conectado**, con tu nombre. Abre una sesión nueva de Claude para usarlo.
+
+Ya conectado, **Desconectar** cierra la sesión en Telegram (**augmented brain (<nombre del ordenador>)**
+sale de Ajustes → Dispositivos) y la saca del llavero. Marca **Olvidar también la aplicación**
+para sacar también el `api_id` y el `api_hash`. Te pide marcar que lo dices en serio.
+
+Desde otro dispositivo la página solo enseña si está conectado: conectar y desconectar
+se hace solo en este ordenador, porque la sesión es tu cuenta entera. En Windows la
+página dice que aún no está soportado.
 
 ## Versiones
 

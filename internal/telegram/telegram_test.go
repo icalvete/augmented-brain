@@ -182,7 +182,7 @@ func TestExplain(t *testing.T) {
 	if err := explain(tgerr.New(401, "AUTH_KEY_UNREGISTERED")); !errors.Is(err, ErrNotConnected) {
 		t.Errorf("revoked session: %v", err)
 	}
-	if err := explain(tgerr.New(420, "FLOOD_WAIT_30")); err == nil || err.Error() != "Telegram asks to wait 30s before trying again" {
+	if err := explain(tgerr.New(420, "FLOOD_WAIT_30")); err == nil || err.Error() != "too many requests: Telegram asks to wait 30s before trying again" {
 		t.Errorf("flood: %v", err)
 	}
 }

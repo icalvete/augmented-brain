@@ -359,6 +359,50 @@ var cmdHelpMessages = map[string]msg{
 		en: "augmented-brain watch pr 104 --task task-my-change",
 		es: "augmented-brain watch pr 104 --task task-my-change",
 	},
+	"cmdhelp.telegram.what": {
+		en: "Connects your own Telegram account to your assistant, as one more device of it: see Telegram (your account). It is three commands, connect, status and disconnect, each with its own section. Linux (with secret-tool, the keychain's command) and macOS only: elsewhere they say so and end with 1. Without a subcommand, or with another, telegram prints its usage.",
+		es: "Conecta tu propia cuenta de Telegram a tu asistente, como un dispositivo más: mira Telegram (tu cuenta). Son tres comandos, connect, status y disconnect, cada uno con su sección. Solo Linux (con secret-tool, el comando del llavero) y macOS: en otro sitio lo dicen y acaban con 1. Sin subcomando, o con otro, telegram muestra su uso.",
+	},
+	"cmdhelp.telegram connect.what": {
+		en: "Connects your Telegram account, by a QR code you scan with your phone.",
+		es: "Conecta tu cuenta de Telegram, con un código QR que escaneas con el móvil.",
+	},
+	"cmdhelp.telegram connect.syntax": {
+		en: "augmented-brain telegram connect",
+		es: "augmented-brain telegram connect",
+	},
+	"cmdhelp.telegram connect.example": {
+		en: "augmented-brain telegram connect",
+		es: "augmented-brain telegram connect",
+	},
+	"cmdhelp.telegram status.what": {
+		en: "Says whether your Telegram account is connected, and as whom. Changes nothing.",
+		es: "Dice si tu cuenta de Telegram está conectada, y como quién. No cambia nada.",
+	},
+	"cmdhelp.telegram status.syntax": {
+		en: "augmented-brain telegram status",
+		es: "augmented-brain telegram status",
+	},
+	"cmdhelp.telegram status.example": {
+		en: "augmented-brain telegram status",
+		es: "augmented-brain telegram status",
+	},
+	"cmdhelp.telegram disconnect.what": {
+		en: "Disconnects your Telegram account.",
+		es: "Desconecta tu cuenta de Telegram.",
+	},
+	"cmdhelp.telegram disconnect.syntax": {
+		en: "augmented-brain telegram disconnect [--forget]",
+		es: "augmented-brain telegram disconnect [--forget]",
+	},
+	"cmdhelp.telegram disconnect.options": {
+		en: "--forget\talso take the application (api_id and api_hash) out of the keychain.",
+		es: "--forget\tsaca también la aplicación (api_id y api_hash) del llavero.",
+	},
+	"cmdhelp.telegram disconnect.example": {
+		en: "augmented-brain telegram disconnect",
+		es: "augmented-brain telegram disconnect",
+	},
 	"cmdhelp.config.what": {
 		en: "The versions of your configuration: two commands, history and restore, each with its own section. Without a subcommand, config prints its usage. See Configuration versions.",
 		es: "Las versiones de tu configuración: dos comandos, history y restore, cada uno con su apartado. Sin subcomando, config muestra su uso. Mira Versiones de la configuración.",

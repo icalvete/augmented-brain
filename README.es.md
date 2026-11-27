@@ -193,6 +193,7 @@ y en inglés:
 - **Día a día**: [Qué decirle a Claude](https://icalvete.github.io/augmented-brain/guide/phrases.es.html), [El panel](https://icalvete.github.io/augmented-brain/guide/panel.es.html),
   [La revisión semanal](https://icalvete.github.io/augmented-brain/guide/weekly-review.es.html).
 - **Ponlo a tu medida**: [Conecta tus servicios](https://icalvete.github.io/augmented-brain/guide/connect-services.es.html),
+  [Telegram (tu cuenta)](https://icalvete.github.io/augmented-brain/guide/telegram.es.html),
   [Copia de seguridad y restauración](https://icalvete.github.io/augmented-brain/guide/backup.es.html),
   [Versiones de la configuración](https://icalvete.github.io/augmented-brain/guide/config-history.es.html),
   [Desde el móvil u otro ordenador](https://icalvete.github.io/augmented-brain/guide/anywhere.es.html),

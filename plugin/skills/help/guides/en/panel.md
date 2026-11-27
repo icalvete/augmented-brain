@@ -48,6 +48,7 @@ each block in two columns, and a shadow at its foot says there is more below.
 | [Backup](#backup) | Copies of your notes | every space |
 | [Health](#health) | Whether the space is in order | one space |
 | [Guard](#guard) | What Claude may do | this computer |
+| [Telegram](#telegram) | Your own Telegram account, for your assistant | this computer |
 | [Versions](#versions) | Earlier configurations | this computer |
 | [Help](#help) | Answers, and reporting a problem | — |
 | [Profile](#profile) | Who you are, your assistant | every space |
@@ -275,6 +276,33 @@ How it behaves:
   computer, so they change only from this computer's panel.
 
 How each list works is in [The guard](guard.md).
+
+## Telegram
+
+Connects your own Telegram account, as one more device of it, so your assistant can read
+a chat when a task needs it and write from your account. What it is, and its risks, are
+in [Telegram (your account)](telegram.md). The page goes step by step:
+
+1. **Download the Telegram program**: about 6 MB, once, from the release of your version,
+   checked against its checksums.
+2. **Your application**: the steps to make it at my.telegram.org, and a form for its
+   `api_id` and `api_hash`. **Save and show the QR code** keeps them in this computer's
+   keychain, never in a file.
+3. **The QR code**: scan it on your phone, in Telegram → Settings → Devices → Link
+   Desktop Device. It changes about every 30 seconds, and the page follows it. **Cancel**
+   stops waiting. After 5 minutes it stops by itself: **Show the QR code** starts again.
+4. **The two-step password**, if your account has one. It goes to Telegram once and is
+   kept nowhere.
+5. **Connected**, with your name. Start a new Claude session to use it.
+
+Connected, **Disconnect** ends the session in Telegram (**augmented brain (<computer name>)**
+leaves Settings → Devices) and takes it out of the keychain. Tick **Also forget the
+application** to take the `api_id` and `api_hash` out too. It asks you to tick that you
+mean it.
+
+From another device the page only shows whether it is connected: connecting and
+disconnecting are done only on this computer, because the session is your whole account.
+On Windows the page says it is not supported yet.
 
 ## Versions
 

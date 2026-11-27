@@ -25,6 +25,7 @@ var unbounded = map[string]string{
 	"cmd/augmented-brain/update.go":             "the installer and session restart --old, which show their progress",
 	"cmd/augmented-brain/restart.go":            "session restart --when-idle, detached",
 	"cmd/augmented-brain/watch.go":              "the keeper of watch pr, detached",
+	"cmd/augmented-brain/telegram.go":           "telegram connect: the person scans a QR code; the Telegram program bounds its own waits",
 	"cmd/augmented-brain/removeself_windows.go": "the line that deletes the program after it ends",
 }
 

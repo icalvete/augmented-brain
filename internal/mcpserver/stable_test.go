@@ -49,7 +49,8 @@ func typeOf(raw json.RawMessage) string {
 // parameter its name and type, and no tool gets a new required parameter. They are
 // frozen in testdata/stable-tools.json: "param: type" and "required param".
 func TestStableTools(t *testing.T) {
-	cs := connect(t, func() (*brain.Brain, error) { return nil, errors.New("listing only") })
+	// With the Telegram tools, which exist where its program is installed: frozen too.
+	cs := connect(t, func() (*brain.Brain, error) { return nil, errors.New("listing only") }, WithTelegram("/fake/augmented-brain-telegram"))
 	now := stable.Surface{}
 	for tl, err := range cs.Tools(context.Background(), nil) {
 		if err != nil {

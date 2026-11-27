@@ -28,7 +28,7 @@ WIN = os.name == "nt"
 EXE = ".exe" if WIN else ""
 ENGINES = [a for a in sys.argv[1:] if not a.startswith("-")] or ["chromium"]
 PAGES = ["today", "tasks", "reminders", "inbox", "areas", "knowledge", "rules", "people", "search?q=bread",
-         "review", "secrets", "backup", "profile", "space", "sessions", "repos", "guard", "versions", "help"]
+         "review", "secrets", "backup", "profile", "space", "sessions", "repos", "guard", "telegram", "versions", "help"]
 # The lowest contrast of any text on the page (WCAG's ratio): for each element with a
 # text of its own, its color against the first background behind it, with opacity.
 # Answers [ratio, "what"] for the worst one.

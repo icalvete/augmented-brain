@@ -10,13 +10,13 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
 	"strings"
 	"sync"
 	"time"
 
 	"rsc.io/qr"
 
+	"github.com/icalvete/augmented-brain/internal/runlimit"
 	"github.com/icalvete/augmented-brain/internal/telegramprog"
 )
 
@@ -63,7 +63,7 @@ func startLogin(path string) error {
 		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Minute)
-	cmd := exec.CommandContext(ctx, path, "login", "--json")
+	cmd := runlimit.Command(ctx, path, "login", "--json")
 	cmd.Env = os.Environ()
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
