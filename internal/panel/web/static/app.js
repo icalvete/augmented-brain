@@ -7,6 +7,17 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   document.querySelectorAll(".nojs").forEach(function (b) { b.hidden = true; });
 
+  // A page waiting on something outside (Telegram's QR code, scanned on the phone)
+  // looks again every few seconds, unless someone is typing in it.
+  var reload = document.querySelector("[data-reload]");
+  if (reload) {
+    setInterval(function () {
+      var a = document.activeElement;
+      if (a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA") && a.value) { return; }
+      location.replace(location.pathname + location.search);
+    }, (parseInt(reload.dataset.reload, 10) || 5) * 1000);
+  }
+
   // "Saved" is said once: the address loses its ok= at once, so reloading the page or
   // coming back to it later does not say it again.
   if (window.history && history.replaceState && window.URLSearchParams) {
