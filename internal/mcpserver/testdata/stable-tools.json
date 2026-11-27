@@ -192,7 +192,9 @@
     "chat: string",
     "required chat",
     "required text",
-    "text: string"
+    "text: string",
+    "wait_task: string",
+    "wait_who: string"
   ],
   "weekly_review": [],
   "where_am_i": []

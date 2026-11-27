@@ -7,6 +7,8 @@ import (
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/icalvete/augmented-brain/internal/replywait"
 )
 
 // The Telegram tools exist only with WithTelegram and outside WithTasksOnly; they call
@@ -86,5 +88,52 @@ func TestTelegramTools(t *testing.T) {
 		if i >= len(calls) || !slices.Equal(calls[i].args, w.args) || calls[i].stdin != w.stdin {
 			t.Errorf("call %d = %+v, want %+v", i, calls[i], w)
 		}
+	}
+}
+
+// telegram_send with wait_task keeps the wait: in the waits' file, in the task's
+// journal and as who the task waits on; it refuses before sending when the task is not
+// there or the chat is the user's own.
+func TestTelegramSendWaits(t *testing.T) {
+	var sends int
+	old := telegramRun
+	t.Cleanup(func() { telegramRun = old })
+	telegramRun = func(_ context.Context, _ string, args []string, _ string, v any) error {
+		sends++
+		return json.Unmarshal([]byte(`{"sent":41,"chat":"user:7"}`), v)
+	}
+	open := space(t)
+	cs := connect(t, open, WithTelegram("/fake/augmented-brain-telegram"))
+	out, isErr := call(t, cs, "task_new", map[string]any{"title": "Pedir el informe a Lucía"})
+	if isErr {
+		t.Fatal(out)
+	}
+	b, _ := open()
+	id := b.Mem.OfType("task")[0].Header.ID
+
+	if out, isErr := call(t, cs, "telegram_send", map[string]any{"chat": "user:7", "text": "¿Me lo mandas?", "wait_task": "task-nope"}); !isErr || sends != 0 {
+		t.Errorf("a task that is not there: %v %s, sends %d", isErr, out, sends)
+	}
+	if out, isErr := call(t, cs, "telegram_send", map[string]any{"chat": "me", "text": "x", "wait_task": id}); !isErr || sends != 0 {
+		t.Errorf("Saved Messages: %v %s, sends %d", isErr, out, sends)
+	}
+	out, isErr = call(t, cs, "telegram_send", map[string]any{"chat": "user:7", "text": "¿Me lo mandas?", "wait_task": id, "wait_who": "Lucía"})
+	if isErr || sends != 1 || !strings.Contains(out, "now waits for the reply") {
+		t.Fatalf("send: %v %s", isErr, out)
+	}
+	b, _ = open()
+	waits, err := replywait.List(b.ConfigDir)
+	if err != nil || len(waits) != 1 {
+		t.Fatalf("waits: %+v %v", waits, err)
+	}
+	if w := waits[0]; w.Task != id || w.Chat != "user:7" || w.After != 41 || w.Who != "Lucía" || w.Space != "work" {
+		t.Errorf("wait: %+v", w)
+	}
+	n, err := b.Task(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n.Header.WaitingOn != "Lucía" || !strings.Contains(n.Body, "Waits for a reply from Lucía on Telegram (chat user:7, after message 41)") {
+		t.Errorf("task: waiting %q\n%s", n.Header.WaitingOn, n.Body)
 	}
 }
