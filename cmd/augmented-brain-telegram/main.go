@@ -15,7 +15,7 @@
 //	app --json              reads {"api_id": "…", "api_hash": "…"} on standard input
 //	status --json           {"account": …} or {"connected": false}
 //	chats --json [--query Q] [--limit N]
-//	read --json --chat ID [--limit N]
+//	read --json --chat ID [--limit N] [--after MSG]
 //	send --json --chat ID   the text on standard input; {"sent": id}
 package main
 
@@ -65,7 +65,7 @@ func main() {
 type opts struct {
 	json, forget bool
 	query, chat  string
-	limit        int
+	limit, after int
 }
 
 func parse(name string, args []string, errOut io.Writer) (*opts, []string, error) {
@@ -77,6 +77,7 @@ func parse(name string, args []string, errOut io.Writer) (*opts, []string, error
 	fs.StringVar(&o.query, "query", "", "words of the chat's name or username")
 	fs.StringVar(&o.chat, "chat", "", "the chat: an id from chats, @username or me")
 	fs.IntVar(&o.limit, "limit", 20, "how many")
+	fs.IntVar(&o.after, "after", 0, "read only the messages after the one with this id")
 	var rest []string
 	for {
 		if err := fs.Parse(args); err != nil {
@@ -225,7 +226,7 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 	case "read":
 		ctx, cancel := context.WithTimeout(ctx, callWait)
 		defer cancel()
-		msgs, err := telegram.Read(ctx, s, o.chat, o.limit)
+		msgs, err := telegram.ReadAfter(ctx, s, o.chat, o.after, o.limit)
 		if err != nil {
 			return fail(err)
 		}

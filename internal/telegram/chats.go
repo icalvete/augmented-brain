@@ -36,6 +36,8 @@ type Message struct {
 	From string    `json:"from"`
 	Out  bool      `json:"out"`
 	Text string    `json:"text"`
+	// ReplyTo is the id of the message this one answers, when it was sent as an answer.
+	ReplyTo int `json:"reply_to,omitempty"`
 }
 
 // Limits keep every call small: this is a person's account, not a bulk tool.
@@ -187,6 +189,12 @@ func resolve(ctx context.Context, api *tg.Client, id string) (tg.InputPeerClass,
 
 // Read returns the last limit messages of a chat, oldest first.
 func Read(ctx context.Context, s Secrets, chat string, limit int) ([]Message, error) {
+	return ReadAfter(ctx, s, chat, 0, limit)
+}
+
+// ReadAfter is Read, keeping only the messages that came after the message with id
+// after (0: all of them).
+func ReadAfter(ctx context.Context, s Secrets, chat string, after, limit int) ([]Message, error) {
 	if limit <= 0 || limit > maxMessages {
 		limit = 20
 	}
@@ -196,7 +204,7 @@ func Read(ctx context.Context, s Secrets, chat string, limit int) ([]Message, er
 		if err != nil {
 			return err
 		}
-		h, err := api.MessagesGetHistory(ctx, &tg.MessagesGetHistoryRequest{Peer: p, Limit: limit})
+		h, err := api.MessagesGetHistory(ctx, &tg.MessagesGetHistoryRequest{Peer: p, Limit: limit, MinID: max(after, 0)})
 		if err != nil {
 			return err
 		}
@@ -224,13 +232,10 @@ func Read(ctx context.Context, s Secrets, chat string, limit int) ([]Message, er
 			if !ok {
 				continue
 			}
-			out = append(out, Message{
-				ID:   msg.ID,
-				Date: time.Unix(int64(msg.Date), 0),
-				From: sender(msg, users, titles),
-				Out:  msg.Out,
-				Text: textOf(msg),
-			})
+			if msg.ID <= after {
+				continue
+			}
+			out = append(out, messageOf(msg, users, titles))
 		}
 		for i, j := 0, len(out)-1; i < j; i, j = i+1, j-1 {
 			out[i], out[j] = out[j], out[i]
@@ -238,6 +243,22 @@ func Read(ctx context.Context, s Secrets, chat string, limit int) ([]Message, er
 		return nil
 	})
 	return out, err
+}
+
+func messageOf(msg *tg.Message, users map[int64]*tg.User, titles map[int64]string) Message {
+	m := Message{
+		ID:   msg.ID,
+		Date: time.Unix(int64(msg.Date), 0),
+		From: sender(msg, users, titles),
+		Out:  msg.Out,
+		Text: textOf(msg),
+	}
+	if r, ok := msg.GetReplyTo(); ok {
+		if h, ok := r.(*tg.MessageReplyHeader); ok {
+			m.ReplyTo = h.ReplyToMsgID
+		}
+	}
+	return m
 }
 
 func sender(m *tg.Message, users map[int64]*tg.User, titles map[int64]string) string {
