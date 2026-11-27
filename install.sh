@@ -511,6 +511,26 @@ rm -f "$DIR/augmented-brain.old"
 say "✓ augmented brain $v installed in $(tilde "$DIR")" \
     "✓ augmented brain $v instalado en $(tilde "$DIR")"
 
+# Telegram's program, only where someone turned Telegram on: it is kept at the same
+# version as augmented-brain. A failure here leaves the old one and says so; it never
+# undoes augmented-brain.
+if [ -f "$DIR/augmented-brain-telegram" ]; then
+  tarchive="augmented-brain-telegram_${v}_${os}_${arch}.tgz"
+  twant="$(grep " ${tarchive}\$" "$TMP/checksums.txt" | awk '{print $1}')"
+  if [ -n "$twant" ] && fetch "$tarchive" "$TMP/$tarchive" && [ "$(sha "$TMP/$tarchive")" = "$twant" ] &&
+     tar -xzf "$TMP/$tarchive" -C "$TMP" &&
+     cp "$TMP/${tarchive%.tgz}/augmented-brain-telegram" "$DIR/augmented-brain-telegram.new" &&
+     chmod 755 "$DIR/augmented-brain-telegram.new" &&
+     "$DIR/augmented-brain-telegram.new" version >/dev/null 2>&1; then
+    mv "$DIR/augmented-brain-telegram.new" "$DIR/augmented-brain-telegram"
+    say "✓ its Telegram program too" "✓ y su programa de Telegram"
+  else
+    rm -f "$DIR/augmented-brain-telegram.new"
+    say "! Telegram's program could not be updated: the one you had stays; the next update tries again." \
+        "! No se ha podido actualizar el programa de Telegram: sigue el que tenías; la próxima actualización lo intenta de nuevo."
+  fi
+fi
+
 # --- gh, GitHub's program, for the backup -------------------------------------------
 
 # The backup goes to a private repository in the person's GitHub account, made with gh.

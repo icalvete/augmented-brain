@@ -1,9 +1,7 @@
 package mcpserver
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -11,15 +9,11 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
-	"github.com/icalvete/augmented-brain/internal/runlimit"
+	"github.com/icalvete/augmented-brain/internal/telegramprog"
 )
 
 // TelegramTools are the tools WithTelegram adds.
 var TelegramTools = []string{"telegram_chats", "telegram_read", "telegram_send"}
-
-// telegramWait bounds one call to the Telegram program: it connects, does one thing
-// and ends.
-const telegramWait = 90 * time.Second
 
 // WithTelegram adds the Telegram tools, which run augmented brain's Telegram program
 // (augmented-brain-telegram, at path) for every call. They need no notes, so they take
@@ -31,29 +25,11 @@ func WithTelegram(path string) Option {
 // telegramRun runs the Telegram program with args and stdin, and decodes its one JSON
 // line into v. A variable, for tests.
 var telegramRun = func(ctx context.Context, path string, args []string, stdin string, v any) error {
-	ctx, cancel := context.WithTimeout(ctx, telegramWait)
-	defer cancel()
-	cmd := runlimit.Command(ctx, path, append(args, "--json")...)
-	var out, errOut bytes.Buffer
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = strings.NewReader(stdin), &out, &errOut
-	runErr := cmd.Run()
-	var e struct {
-		Error string `json:"error"`
-		Code  string `json:"code"`
+	err := telegramprog.Call(ctx, path, args, stdin, v)
+	if errors.Is(err, telegramprog.ErrNotConnected) {
+		return errors.New("Telegram is not connected. The user connects it with `augmented-brain telegram connect` in a terminal, or on the panel's Telegram page; then this session can use it")
 	}
-	if json.Unmarshal(out.Bytes(), &e) == nil && e.Error != "" {
-		if e.Code == "not_connected" || e.Code == "no_app" {
-			return errors.New("Telegram is not connected. The user connects it with `augmented-brain telegram connect` in a terminal, or on the panel's Telegram page; then this session can use it")
-		}
-		return errors.New(e.Error)
-	}
-	if runErr != nil {
-		if ctx.Err() != nil {
-			return fmt.Errorf("Telegram did not answer in %s", telegramWait)
-		}
-		return fmt.Errorf("augmented-brain-telegram: %v %s", runErr, strings.TrimSpace(errOut.String()))
-	}
-	return json.Unmarshal(out.Bytes(), v)
+	return err
 }
 
 // externalNote heads what is read from Telegram: other people wrote it.
