@@ -96,6 +96,7 @@ type Option func(*options)
 type options struct {
 	freshDir, freshKey string
 	tasksOnly          bool
+	telegram           string
 }
 
 // WithFresh has every tool that holds the notes lock tell the session which tasks
@@ -805,6 +806,9 @@ func New(open Resolver, lockFile string, opts ...Option) *mcp.Server {
 			return recoverSession(b, in.SessionID, time.Now())
 		})
 
+	if o.telegram != "" && !o.tasksOnly {
+		addTelegramTools(s, o.telegram)
+	}
 	return s.Server
 }
 

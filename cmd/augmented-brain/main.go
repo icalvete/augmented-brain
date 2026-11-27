@@ -346,6 +346,10 @@ func cmdMCP(errOut io.Writer) int {
 	}
 	if tasksOnly {
 		opts = append(opts, mcpserver.WithTasksOnly())
+	} else if p := telegramPath(); p != "" {
+		// Telegram's tools exist only where its program is installed: whoever never
+		// turned it on sees none.
+		opts = append(opts, mcpserver.WithTelegram(p))
 	}
 	if err := mcpserver.New(open, lockFile, opts...).Run(context.Background(), &mcp.StdioTransport{}); err != nil {
 		fmt.Fprintln(errOut, err)
