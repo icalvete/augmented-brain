@@ -16,7 +16,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/gotd/td/session"
@@ -32,8 +34,20 @@ import (
 // session was closed from another device.
 var ErrNotConnected = errors.New("Telegram is not connected")
 
-// DeviceName is how this device shows in Telegram's Settings → Devices.
+// DeviceName is how this device shows in Telegram's Settings → Devices, followed by
+// the computer's name: with augmented brain on two computers, each is a device of its
+// own, closed on its own.
 const DeviceName = "augmented brain"
+
+func deviceModel() string {
+	if h, err := os.Hostname(); err == nil && h != "" {
+		if i := strings.IndexByte(h, '.'); i > 0 {
+			h = h[:i]
+		}
+		return DeviceName + " (" + h + ")"
+	}
+	return DeviceName
+}
 
 // Account is who the session is logged in as.
 type Account struct {
@@ -66,7 +80,7 @@ var newClient = func(app App, s Secrets, handler tgclient.UpdateHandler) *tgclie
 		SessionStorage: keychainStorage{s},
 		UpdateHandler:  handler,
 		Device: tgclient.DeviceConfig{
-			DeviceModel:   DeviceName,
+			DeviceModel:   deviceModel(),
 			SystemVersion: runtime.GOOS,
 			AppVersion:    version.Version,
 		},
