@@ -2,6 +2,34 @@
 
 ## Unreleased
 
+## 1.2.0
+
+Released 2026-11-27.
+
+- **Moving a task to validation no longer closes its session.** The proof is run there
+  with you, and a failed one goes back to execution in the same conversation; before,
+  the session was cut the moment the task went to validation. Closing, parking and
+  someday still close it. Since 1.1.4 a task's session is pinned, so Claude does not
+  retire it while it waits.
+- **A reply on Telegram comes to its task by itself, however late.** When your assistant
+  sends a message that asks for an answer, the task it is for now waits on that person,
+  and the reply goes to the task's journal on its own, marked as someone else's text,
+  with reading it as the next step. Nothing stays running: a timer of your system
+  (systemd on Linux, a LaunchAgent on macOS) looks every 5 minutes, only at the chats
+  with a wait. `augmented-brain telegram waits` lists the waits, and `telegram check`
+  looks right away. Only one connection to Telegram runs at a time now, so the panel and
+  two sessions no longer write over each other's session. See
+  [Waiting for a reply](https://icalvete.github.io/augmented-brain/guide/telegram.html#waiting-for-a-reply).
+- **Your assistant can use your own Telegram account.** It joins as one more device of
+  it, as Telegram Desktop does, not as a bot: it finds a chat, reads its last messages
+  and writes from your account, showing you the exact text before sending it to anyone
+  but you. Connect it with `augmented-brain telegram connect` or the panel's new Telegram
+  page: your own application from my.telegram.org, then a QR code you scan with your
+  phone. The session stays in the system keychain; `augmented-brain telegram disconnect`
+  or Telegram's Settings → Devices ends it. Its program is a separate download of about
+  6 MB, only for who turns it on. Linux and macOS; not Windows yet. See
+  [Telegram (your account)](https://icalvete.github.io/augmented-brain/guide/telegram.html).
+
 ## 1.1.4
 
 Released 2026-11-23.

@@ -2,6 +2,35 @@
 
 ## Sin publicar
 
+## 1.2.0
+
+Publicada el 2026-11-27.
+
+- **Pasar una tarea a validación ya no cierra su sesión.** La prueba se hace ahí contigo,
+  y si falla la tarea vuelve a ejecución en la misma conversación; antes la sesión se
+  cortaba en cuanto la tarea pasaba a validación. Cerrar, aparcar y algún día la siguen
+  cerrando. Desde la 1.1.4 la sesión de una tarea está fijada, así que Claude no la
+  retira mientras espera.
+- **Una respuesta por Telegram llega sola a su tarea, tarde lo que tarde.** Cuando tu
+  asistente manda un mensaje que pide respuesta, la tarea para la que es pasa a esperar a
+  esa persona, y la respuesta va sola al diario de la tarea, marcada como texto de otra
+  persona, con leerla como siguiente paso. No queda nada en marcha: un temporizador de tu
+  sistema (systemd en Linux, un LaunchAgent en macOS) mira cada 5 minutos, solo los chats
+  con una espera. `augmented-brain telegram waits` lista las esperas, y `telegram check`
+  mira al momento. Ahora solo hay una conexión a Telegram a la vez, así que el panel y dos
+  sesiones ya no se pisan la sesión. Mira
+  [Esperar una respuesta](https://icalvete.github.io/augmented-brain/guide/telegram.es.html#esperar-una-respuesta).
+- **Tu asistente puede usar tu propia cuenta de Telegram.** Entra como un dispositivo
+  más, igual que Telegram Desktop, no como un bot: encuentra un chat, lee sus últimos
+  mensajes y escribe desde tu cuenta, y te enseña el texto exacto antes de mandarlo a
+  cualquiera que no seas tú. Se conecta con `augmented-brain telegram connect` o con la
+  nueva página Telegram del panel: tu propia aplicación de my.telegram.org, y después un
+  código QR que escaneas con el móvil. La sesión se queda en el llavero del sistema;
+  `augmented-brain telegram disconnect` o Ajustes → Dispositivos en Telegram la cierran.
+  Su programa es una descarga aparte de unos 6 MB, solo para quien lo enciende. Linux y
+  macOS; Windows aún no. Mira
+  [Telegram (tu cuenta)](https://icalvete.github.io/augmented-brain/guide/telegram.es.html).
+
 ## 1.1.4
 
 Publicada el 2026-11-23.
