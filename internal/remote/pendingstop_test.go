@@ -26,11 +26,11 @@ func TestResumeStops(t *testing.T) {
 	tasks := map[string]string{
 		"task-parked":    "parked",
 		"task-closed":    "closed",
-		"task-validated": "validation",
-		"task-resumed":   "execution", // taken up again since: its session must stay
-		"task-waiting":   "parked",    // its stop is still waiting
-		"task-gone":      "",          // no space has it
-		"task-norecord":  "parked",    // its session is gone already
+		"task-validated": "validation", // in validation: its session stays
+		"task-resumed":   "execution",  // taken up again since: its session must stay
+		"task-waiting":   "parked",     // its stop is still waiting
+		"task-gone":      "",           // no space has it
+		"task-norecord":  "parked",     // its session is gone already
 	}
 	for task := range tasks {
 		if task != "task-norecord" {
@@ -57,13 +57,13 @@ func TestResumeStops(t *testing.T) {
 		return nil
 	})
 	slices.Sort(got)
-	if want := []string{"task-closed", "task-parked", "task-validated"}; !slices.Equal(got, want) {
+	if want := []string{"task-closed", "task-parked"}; !slices.Equal(got, want) {
 		t.Errorf("started %v, want %v", got, want)
 	}
 	if !started["task-parked"] || started["task-closed"] {
 		t.Errorf("worktrees: a parked task keeps them, a closed one does not: %v", started)
 	}
-	for _, task := range []string{"task-resumed", "task-gone", "task-norecord"} {
+	for _, task := range []string{"task-resumed", "task-validated", "task-gone", "task-norecord"} {
 		if _, err := os.Stat(stopFile(cfgDir, task, ".pending")); !os.IsNotExist(err) {
 			t.Errorf("%s: a stop that no longer applies is still on record", task)
 		}

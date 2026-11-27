@@ -79,12 +79,12 @@ func TestParkFromThePanelStopsTheSession(t *testing.T) {
 	if len(kept) != 1 || kept[0] != cfg+" task-site" || len(stopped) != 0 {
 		t.Errorf("kept %v stopped %v", kept, stopped)
 	}
-	// Moving it to validation ends its session the same way.
+	// Moving it to validation keeps its session: the proof is run there.
 	kept = nil
 	if w := s.post(t, "/task/update", url.Values{"s": {"work"}, "id": {"task-site"}, "status": {"validation"}}); w.Code != http.StatusSeeOther {
 		t.Fatalf("update: %d %s", w.Code, w.Body)
 	}
-	if len(kept) != 1 || kept[0] != cfg+" task-site" || len(stopped) != 0 {
+	if len(kept) != 0 || len(stopped) != 0 {
 		t.Errorf("validation: kept %v stopped %v", kept, stopped)
 	}
 }

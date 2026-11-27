@@ -119,9 +119,9 @@ tarea cerrada solo se reabre con `reopen`.
 abiertas impiden cerrarla, el resultado va a la nota, se nombran las fechas para revisar
 abiertas, y la sesión y los worktrees de la tarea se tratan igual. Sin `result` se cierra
 también, con una línea que dice que no se dio resultado, y Claude escribe el resultado en
-el diario. `status` `parked`, `someday` o `validation` cierra la sesión propia de la tarea
-igual que [`task_park`](#task_park): la validación te espera a ti, y una sesión que lleva
-horas sin usarse se queda en claude.ai como desconectada.
+el diario. `status` `parked` o `someday` cierra la sesión propia de la tarea igual que
+[`task_park`](#task_park). `validation` la deja viva: la prueba se hace ahí contigo, y si
+falla la tarea vuelve a ejecución en la misma conversación.
 
 - `id`: el id de la tarea.
 - `title` (opcional): un título nuevo. El id no cambia, así que los enlaces a la tarea

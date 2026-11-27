@@ -114,9 +114,9 @@ closed task opens again only with `reopen`.
 subtasks keep it from closing, the result goes to the note, open watch dates are named,
 and the task's session and worktrees are dealt with the same way. Without `result` it
 still closes, with a line saying no result was given, and Claude writes the result in
-the journal. `status` `parked`, `someday` or `validation` ends the task's own session as
-[`task_park`](#task_park) does: validation waits on you, and a session left unused for
-hours stays in claude.ai as disconnected.
+the journal. `status` `parked` or `someday` ends the task's own session as
+[`task_park`](#task_park) does. `validation` keeps it: the proof is run there with you,
+and a failed one goes back to execution in the same conversation.
 
 - `id`: the task's id.
 - `title` (optional): a new title. The id stays, so every link to the task still works.

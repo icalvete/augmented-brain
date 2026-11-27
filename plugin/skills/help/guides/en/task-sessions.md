@@ -123,11 +123,11 @@ augmented-brain session stop task-new-website
 closes the session and takes it out of the lists of Claude Desktop and claude.ai,
 worktree and all. The Claude app on a phone may keep showing it, offline, until you
 archive it there.
-Closing the task does the same, once the session has finished its answer. Parking it,
-sending it to someday or moving it to validation does too, but leaves its worktrees:
-the task goes on later, and `session start` opens a new session for it. Validation
-waits on you, often for hours: a session left unused that long is stopped by Claude,
-and stays in claude.ai as disconnected until you archive it by hand. A session also ends when the computer
+Closing the task does the same, once the session has finished its answer. Parking it or
+sending it to someday does too, but leaves its worktrees: the task goes on later, and
+`session start` opens a new session for it. Moving it to validation keeps the session:
+the proof is run there with you, and if it fails the task goes back to execution in the
+same conversation. A session also ends when the computer
 restarts, and does not come back by itself: ask for it again.
 
 **Archiving in Claude Desktop does not close a session.** Claude keeps it in its list,

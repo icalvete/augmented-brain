@@ -92,11 +92,11 @@ func PendingStops(cfgDir string) []PendingStop {
 	return out
 }
 
-// stopStatus are the statuses whose task's session is closed: closing, parking and
-// validating close it.
+// stopStatus are the statuses whose task's session is closed: closing and parking close
+// it; validation keeps it, for the proof with the user.
 func stopStatus(status string) bool {
 	switch status {
-	case "parked", "someday", "closed", "validation":
+	case "parked", "someday", "closed":
 		return true
 	}
 	return false
