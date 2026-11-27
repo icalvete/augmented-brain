@@ -11,5 +11,7 @@ import (
 // hook they would make them inside the real one.
 func TestMain(m *testing.M) {
 	testenv.CleanGit()
+	setTelegramTimer = func(string) error { return nil } // never the real systemd or launchd
+	unsetTelegramTimer = func() (bool, error) { return false, nil }
 	os.Exit(m.Run())
 }

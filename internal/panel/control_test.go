@@ -27,6 +27,8 @@ func TestMain(m *testing.M) {
 	testenv.CleanGit()
 	realUnpublish = UnpublishLeftover
 	UnpublishLeftover = func(string) error { return nil } // never the real Tailscale
+	tgTimer = func(string) error { return nil }           // never the real systemd or launchd
+	tgUntimer = func() (bool, error) { return false, nil }
 	if len(os.Args) == 3 && os.Args[1] == "panel" && os.Args[2] == "serve" && os.Getenv("AB_PANEL_TEST_CFG") != "" {
 		if err := Serve(context.Background(), os.Getenv("AB_PANEL_TEST_CFG"), time.Minute); err != nil {
 			os.Exit(1)

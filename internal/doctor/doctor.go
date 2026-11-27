@@ -30,6 +30,7 @@ import (
 	"github.com/icalvete/augmented-brain/internal/paths"
 	"github.com/icalvete/augmented-brain/internal/reach"
 	"github.com/icalvete/augmented-brain/internal/remote"
+	"github.com/icalvete/augmented-brain/internal/replywait"
 	"github.com/icalvete/augmented-brain/internal/session"
 	"github.com/icalvete/augmented-brain/internal/state"
 	"github.com/icalvete/augmented-brain/internal/tailnet"
@@ -197,6 +198,7 @@ func Run(e Env) []Check {
 	out = append(out, asking(e, "doctor.part.worktrees", func() []Check { return worktreeChecks(e, c) })...)
 	out = append(out, leftoverChecks(e, l)...)
 	out = append(out, asking(e, "doctor.part.lingering", func() []Check { return lingeringChecks(e, c) })...)
+	out = append(out, telegramWaits(e, c)...)
 	out = append(out, panelRemote(e, c)...)
 	out = append(out, configHistory(c)...)
 	out = append(out, autoMemory(e, c)...)
@@ -723,6 +725,32 @@ func remoteChecks(e Env, c *config.Config) []Check {
 		}
 	}
 	return out
+}
+
+// telegramWaits is one line when tasks wait for replies on Telegram: how many, and
+// whether the timer that looks for them is there. Without waits, nothing: most people
+// never use Telegram.
+func telegramWaits(e Env, c *config.Config) []Check {
+	l := c.Language
+	waits, err := replywait.List(c.Dir)
+	if err != nil {
+		return []Check{{Warning, i18n.T(l, "doctor.telegram.waits.bad", err), ""}}
+	}
+	if len(waits) == 0 {
+		return nil
+	}
+	sys := e.Remote
+	if sys == nil {
+		s, err := remote.NewSystem()
+		if err != nil {
+			return nil
+		}
+		sys = &s
+	}
+	if !sys.TelegramTimerSet() {
+		return []Check{{Warning, i18n.T(l, "doctor.telegram.notimer", len(waits)), i18n.T(l, "doctor.telegram.notimer.fix")}}
+	}
+	return []Check{{OK, i18n.T(l, "doctor.telegram.waits", len(waits)), ""}}
 }
 
 // panelRemote is one line about the remote panel, once `panel remote` has worked on this

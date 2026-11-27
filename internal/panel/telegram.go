@@ -16,6 +16,8 @@ import (
 
 	"rsc.io/qr"
 
+	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/runlimit"
 	"github.com/icalvete/augmented-brain/internal/telegramprog"
 )
@@ -53,6 +55,10 @@ var (
 	tgInstall = telegramprog.Install
 	tgCall    = telegramprog.Call
 	tgStart   = startLogin
+	// tgTimer and tgUntimer set and remove the timer that looks for replies; tests
+	// never touch the real systemd or launchd.
+	tgTimer   = remote.SetTelegramTimer
+	tgUntimer = remote.UnsetTelegramTimer
 )
 
 // startLogin runs the program's login and follows what it says.
@@ -102,6 +108,9 @@ func startLogin(path string) error {
 				login.password = true
 			case ev.Account != nil:
 				login.account, login.qr, login.password = ev.Account, "", false
+				if dir, err := config.Dir(); err == nil {
+					_ = tgTimer(dir) // doctor says when it is missing
+				}
 			case ev.Error != "":
 				login.err, login.qr, login.password = ev.Error, "", false
 			}
@@ -255,6 +264,7 @@ func (s *Server) telegramDisconnect(v *view, r *http.Request) (string, error) {
 	if err := tgCall(r.Context(), path, args, "", &out); err != nil {
 		return "", err
 	}
+	_, _ = tgUntimer()
 	login.mu.Lock()
 	login.account, login.err = nil, ""
 	login.mu.Unlock()

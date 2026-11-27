@@ -8,7 +8,9 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/telegramprog"
 )
 
@@ -24,6 +26,30 @@ var telegramPath = telegramprog.Path
 
 // telegramInstall downloads it; a variable, for tests.
 var telegramInstall = telegramprog.Install
+
+// setTelegramTimer and unsetTelegramTimer set and remove the timer that looks for the
+// replies tasks wait for; variables, so tests never touch the real systemd or launchd.
+var (
+	setTelegramTimer   = remote.SetTelegramTimer
+	unsetTelegramTimer = remote.UnsetTelegramTimer
+)
+
+// afterTelegram keeps the timer in step with the connection: set after connect, gone
+// after disconnect. A timer that cannot be set is said, and nothing else fails.
+func afterTelegram(sub string, out io.Writer, l string) {
+	switch sub {
+	case "connect":
+		dir, err := config.Dir()
+		if err == nil {
+			err = setTelegramTimer(dir)
+		}
+		if err != nil {
+			fmt.Fprintln(out, i18n.T(l, "telegram.timer.failed", err))
+		}
+	case "disconnect":
+		_, _ = unsetTelegramTimer()
+	}
+}
 
 // cmdTelegram runs augmented brain's Telegram program with the same words. connect
 // downloads it first, when it is not there yet: only who turns Telegram on has it.
@@ -79,5 +105,6 @@ func cmdTelegram(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, err)
 		return 1
 	}
+	afterTelegram(rest[0], out, l)
 	return 0
 }

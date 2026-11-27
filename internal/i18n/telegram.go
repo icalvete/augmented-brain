@@ -179,4 +179,24 @@ var telegramMessages = map[string]msg{
 		en: "Waits for a reply from %s on Telegram (chat %s, after message %d): it will come to this journal by itself.",
 		es: "Espera respuesta de %s por Telegram (chat %s, tras el mensaje %d): llegará sola a este diario.",
 	},
+	"telegram.timer.failed": {
+		en: "Connected, but the timer that looks for the replies your tasks wait for could not be set: %v. augmented-brain doctor says how it stands.",
+		es: "Conectado, pero no se pudo poner el temporizador que busca las respuestas que esperan tus tareas: %v. augmented-brain doctor dice cómo está.",
+	},
+	"doctor.telegram.waits": {
+		en: "Telegram: replies your tasks wait for: %d. The timer that looks for them is set.",
+		es: "Telegram: respuestas que esperan tus tareas: %d. El temporizador que las busca está puesto.",
+	},
+	"doctor.telegram.notimer": {
+		en: "Telegram: replies your tasks wait for: %d. The timer that looks for them is not set, so they will not arrive by themselves.",
+		es: "Telegram: respuestas que esperan tus tareas: %d. El temporizador que las busca no está puesto, así que no llegarán solas.",
+	},
+	"doctor.telegram.notimer.fix": {
+		en: "Connect Telegram again (augmented-brain telegram connect) to set it; meanwhile, augmented-brain telegram check looks once.",
+		es: "Vuelve a conectar Telegram (augmented-brain telegram connect) para ponerlo; mientras, augmented-brain telegram check mira una vez.",
+	},
+	"doctor.telegram.waits.bad": {
+		en: "Telegram: the file of the replies your tasks wait for cannot be read: %v",
+		es: "Telegram: no se puede leer el fichero de las respuestas que esperan tus tareas: %v",
+	},
 }
