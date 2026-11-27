@@ -32,6 +32,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/config"
 	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/telegram"
 	"github.com/icalvete/augmented-brain/internal/termqr"
@@ -43,6 +44,13 @@ const loginWait = 5 * time.Minute
 
 // callWait bounds every other call: one look at Telegram.
 const callWait = time.Minute
+
+// lockWait is how long a call waits for another connection to Telegram to end.
+const lockWait = 30 * time.Second
+
+// configDir is augmented brain's configuration folder, where the lock lives; tests
+// replace it.
+var configDir = config.Dir
 
 // secrets is the keychain; tests replace it.
 var secrets telegram.Secrets = telegram.Keychain{}
@@ -105,6 +113,8 @@ func code(err error) string {
 		return "no_keychain"
 	case errors.Is(err, context.DeadlineExceeded):
 		return "timeout"
+	case errors.Is(err, telegram.ErrBusy):
+		return "busy"
 	}
 	return "error"
 }
@@ -131,6 +141,16 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 	if !supported() {
 		return fail(fmt.Errorf("%s: %w", i18n.T(l, "telegram.unsupported"), telegram.ErrNoKeychain))
 	}
+	// One connection at a time: they all share the session in the keychain.
+	dir, err := configDir()
+	if err != nil {
+		return fail(err)
+	}
+	unlock, err := telegram.Lock(dir, lockWait)
+	if err != nil {
+		return fail(err)
+	}
+	defer unlock()
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 	s := secrets
