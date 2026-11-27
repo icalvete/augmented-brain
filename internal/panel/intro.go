@@ -74,6 +74,7 @@ var guideAnchors = map[string][2]string{ // key → English, Spanish
 	"sessions":  {"sessions", "sesiones"},
 	"profile":   {"profile", "perfil"},
 	"guard":     {"guard", "guardia"},
+	"telegram":  {"telegram", "telegram"},
 	"versions":  {"versions", "versiones"},
 	"space":     {"health", "salud"},
 	"backup":    {"backup", "copia-de-seguridad"},

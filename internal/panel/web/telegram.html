@@ -1,0 +1,84 @@
+{{define "content"}}{{with .D}}
+<h1>{{t "telegram"}}</h1>
+{{template "intro" (intro $ "telegram" (t "telegram.hint"))}}
+{{if .Err}}<p class="flash warn">{{.Err}}</p>{{end}}
+{{if not .Supported}}
+<p class="empty">{{t "telegram.unsupported"}}</p>
+{{else if .Connected}}
+<div class="box">
+  <p><span class="badge">{{t "telegram.on"}}</span> {{.Account.Name}}{{if .Account.Username}} (@{{.Account.Username}}){{end}}</p>
+  <p class="hint">{{t "telegram.use"}}</p>
+</div>
+{{if not .Remote}}
+<details class="box"{{if $.Open "/telegram/disconnect"}} open{{end}}>
+  <summary>{{t "telegram.disconnect"}}</summary>
+  <form method="post" action="{{$.Base}}/telegram/disconnect" class="stack">
+    {{template "fields" (fields $)}}
+    <p class="hint">{{t "telegram.disconnect.hint"}}</p>
+    <label class="check"><input type="checkbox" name="forget" value="yes"> {{t "telegram.forget"}}</label>
+    <label class="check"><input type="checkbox" name="confirm" value="yes" required> {{t "telegram.disconnect.confirm"}}</label>
+    {{template "ferr" ($.FormErr "/telegram/disconnect")}}
+    <button type="submit" class="small">{{t "telegram.disconnect"}}</button>
+  </form>
+</details>
+{{end}}
+{{else if .Remote}}
+<p class="empty">{{t "telegram.localonly"}}</p>
+{{else if not .Installed}}
+<div class="box">
+  <p>{{t "telegram.install.hint"}}</p>
+  <form method="post" action="{{$.Base}}/telegram/install">
+    {{template "fields" (fields $)}}
+    {{template "ferr" ($.FormErr "/telegram/install")}}
+    <button type="submit">{{t "telegram.install"}}</button>
+  </form>
+</div>
+{{else if .Password}}
+<div class="box" data-reload="4">
+  <form method="post" action="{{$.Base}}/telegram/password" class="stack">
+    {{template "fields" (fields $)}}
+    <label>{{t "telegram.password"}} <input type="password" name="password" required autocomplete="off" autofocus></label>
+    <p class="hint">{{t "telegram.password.hint"}}</p>
+    {{template "ferr" ($.FormErr "/telegram/password")}}
+    <button type="submit">{{t "telegram.password.send"}}</button>
+  </form>
+</div>
+{{else if .Waiting}}
+<div class="box" data-reload="3">
+  <ol>
+    <li>{{t "telegram.scan.1"}}</li>
+    <li>{{t "telegram.scan.2"}}</li>
+  </ol>
+  {{if .QR}}<p>{{.QR}}</p>{{else}}<p class="hint">{{t "telegram.wait"}}</p>{{end}}
+  <form method="post" action="{{$.Base}}/telegram/cancel">
+    {{template "fields" (fields $)}}
+    <button type="submit" class="small">{{t "telegram.cancel"}}</button>
+  </form>
+</div>
+{{else if .App}}
+<div class="box">
+  <p>{{t "telegram.login.hint"}}</p>
+  <form method="post" action="{{$.Base}}/telegram/login">
+    {{template "fields" (fields $)}}
+    {{template "ferr" ($.FormErr "/telegram/login")}}
+    <button type="submit">{{t "telegram.login"}}</button>
+  </form>
+</div>
+{{else}}
+<div class="box">
+  <ol>
+    <li>{{t "telegram.app.1"}} <a href="https://my.telegram.org" rel="noopener noreferrer" target="_blank">my.telegram.org</a></li>
+    <li>{{t "telegram.app.2"}}</li>
+    <li>{{t "telegram.app.3"}}</li>
+  </ol>
+  <form method="post" action="{{$.Base}}/telegram/app" class="stack">
+    {{template "fields" (fields $)}}
+    <label>api_id <input name="api_id" required inputmode="numeric" maxlength="15" autocomplete="off" value="{{$.Val "/telegram/app" "api_id" ""}}"></label>
+    <label>api_hash <input type="password" name="api_hash" required maxlength="64" autocomplete="off"></label>
+    <p class="hint">{{t "telegram.app.hint"}}</p>
+    {{template "ferr" ($.FormErr "/telegram/app")}}
+    <button type="submit">{{t "telegram.app.save"}}</button>
+  </form>
+</div>
+{{end}}
+{{end}}{{end}}

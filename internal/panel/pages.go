@@ -44,6 +44,7 @@ func (s *Server) routes() *http.ServeMux {
 	s.page(m, "/sessions", "sessions", s.sessions)
 	s.page(m, "/repos", "repos", s.repos)
 	s.page(m, "/guard", "guard", s.guardPage)
+	s.page(m, "/telegram", "telegram", s.telegram)
 	s.page(m, "/versions", "versions", s.versionsPage)
 	s.page(m, "/help", "help", s.help)
 	m.HandleFunc("GET /help/report", s.helpReport)
@@ -85,6 +86,12 @@ func (s *Server) routes() *http.ServeMux {
 	m.HandleFunc("POST /guard/model", s.write(s.localGuard(s.guardModel)))
 	m.HandleFunc("POST /guard/trust", s.write(s.localGuard(s.guardTrust)))
 	m.HandleFunc("POST /guard/reach", s.write(s.localGuard(s.guardReach)))
+	m.HandleFunc("POST /telegram/install", s.write(s.localGuard(s.telegramInstall)))
+	m.HandleFunc("POST /telegram/app", s.write(s.localGuard(s.telegramApp)))
+	m.HandleFunc("POST /telegram/login", s.write(s.localGuard(s.telegramLogin)))
+	m.HandleFunc("POST /telegram/password", s.write(s.localGuard(s.telegramPassword)))
+	m.HandleFunc("POST /telegram/cancel", s.write(s.localGuard(s.telegramCancel)))
+	m.HandleFunc("POST /telegram/disconnect", s.write(s.localGuard(s.telegramDisconnect)))
 	m.HandleFunc("POST /versions/restore", s.write(s.versionsRestore))
 	m.HandleFunc("POST /hints", s.hintsChange)
 	m.HandleFunc("POST /backup/run", s.write(s.backupRun))
@@ -115,7 +122,7 @@ var menu = []struct {
 }{
 	{"nav.day", []string{"today", "tasks", "sessions", "reminders", "inbox", "review"}},
 	{"nav.notes", []string{"areas", "knowledge", "rules", "people", "repos", "secrets"}},
-	{"nav.care", []string{"backup", "space", "guard", "versions", "help"}},
+	{"nav.care", []string{"backup", "space", "guard", "telegram", "versions", "help"}},
 }
 
 type option struct {
