@@ -7,16 +7,10 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
-	"runtime"
 
 	"github.com/icalvete/augmented-brain/internal/i18n"
+	"github.com/icalvete/augmented-brain/internal/telegramprog"
 )
-
-// telegramProgram is the name of augmented brain's Telegram program. It is a program
-// of its own, next to this one, because Telegram's library triples a program's size:
-// only who turns Telegram on downloads it.
-const telegramProgram = "augmented-brain-telegram"
 
 func telegramFlags(errOut io.Writer) (*flag.FlagSet, *bool) {
 	fs := flag.NewFlagSet("telegram disconnect", flag.ContinueOnError)
@@ -25,27 +19,14 @@ func telegramFlags(errOut io.Writer) (*flag.FlagSet, *bool) {
 	return fs, forget
 }
 
-// telegramPath is where the Telegram program is, or "" when it is not installed: next
-// to this program, where update puts it, or else in PATH. A variable, for tests.
-var telegramPath = func() string {
-	name := telegramProgram
-	if runtime.GOOS == "windows" {
-		name += ".exe"
-	}
-	if self, err := os.Executable(); err == nil {
-		if self, err = filepath.EvalSymlinks(self); err == nil {
-			p := filepath.Join(filepath.Dir(self), name)
-			if _, err := os.Stat(p); err == nil {
-				return p
-			}
-		}
-	}
-	if p, err := exec.LookPath(name); err == nil {
-		return p
-	}
-	return ""
-}
+// telegramPath is where the Telegram program is, or ""; a variable, for tests.
+var telegramPath = telegramprog.Path
 
+// telegramInstall downloads it; a variable, for tests.
+var telegramInstall = telegramprog.Install
+
+// cmdTelegram runs augmented brain's Telegram program with the same words. connect
+// downloads it first, when it is not there yet: only who turns Telegram on has it.
 func cmdTelegram(args []string, in io.Reader, out, errOut io.Writer) int {
 	l := userLanguage()
 	fs, _ := telegramFlags(errOut)
@@ -54,15 +35,20 @@ func cmdTelegram(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprintln(errOut, i18n.T(l, "usage.telegram"))
 		return 2
 	}
+	if !telegramprog.Supported() {
+		fmt.Fprintln(errOut, i18n.T(l, "telegram.unsupported"))
+		return 1
+	}
 	p := telegramPath()
 	if p == "" {
 		if rest[0] != "connect" {
 			fmt.Fprintln(out, i18n.T(l, "telegram.status.off"))
 			return 0
 		}
+		fmt.Fprintln(out, i18n.T(l, "telegram.installing"))
 		var err error
-		if p, err = installTelegram(l, out); err != nil {
-			fmt.Fprintln(errOut, err)
+		if p, err = telegramInstall(); err != nil {
+			fmt.Fprintln(errOut, i18n.T(l, "telegram.installfailed", err))
 			return 1
 		}
 	}
@@ -78,9 +64,4 @@ func cmdTelegram(args []string, in io.Reader, out, errOut io.Writer) int {
 		return 1
 	}
 	return 0
-}
-
-// installTelegram downloads the Telegram program of this version next to this program.
-func installTelegram(l string, out io.Writer) (string, error) {
-	return "", errors.New(i18n.T(l, "telegram.notinstalled"))
 }

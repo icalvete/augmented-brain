@@ -55,9 +55,13 @@ var telegramMessages = map[string]msg{
 		en: " The application (api_id, api_hash) is gone from the keychain too.",
 		es: " La aplicación (api_id, api_hash) también está fuera del llavero.",
 	},
-	"telegram.notinstalled": {
-		en: "augmented brain's Telegram program (augmented-brain-telegram) is not installed next to augmented-brain.",
-		es: "El programa de Telegram de augmented brain (augmented-brain-telegram) no está instalado junto a augmented-brain.",
+	"telegram.installing": {
+		en: "Downloading augmented brain's Telegram program (about 6 MB, once)…",
+		es: "Descargando el programa de Telegram de augmented brain (unos 6 MB, una sola vez)…",
+	},
+	"telegram.installfailed": {
+		en: "Could not install the Telegram program: %v",
+		es: "No se ha podido instalar el programa de Telegram: %v",
 	},
 	"telegram.timeout": {
 		en: "Nobody scanned the code in %s. Run it again when you have the phone at hand.",
