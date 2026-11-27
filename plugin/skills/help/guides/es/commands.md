@@ -832,8 +832,8 @@ caso.
 ## augmented-brain telegram
 
 Conecta tu propia cuenta de Telegram a tu asistente, como un dispositivo más: mira
-[Telegram (tu cuenta)](telegram.md). Son tres comandos, `connect`, `status` y
-`disconnect`, cada uno con su sección. Solo Linux (con `secret-tool`, el comando del llavero) y
+[Telegram (tu cuenta)](telegram.md). Son cinco comandos, `connect`, `status`,
+`disconnect`, `waits` y `check`, cada uno con su sección. Solo Linux (con `secret-tool`, el comando del llavero) y
 macOS: en otro sitio lo dicen y acaban con `1`. Sin subcomando, o con otro, `telegram` muestra su uso.
 
 Lanzan el programa de Telegram de augmented brain, `augmented-brain-telegram`, un
@@ -896,6 +896,49 @@ Si no puede llegar a Telegram, la sesión sale igualmente del llavero, y acaba c
 pide que cierres tú **augmented brain** en el móvil.
 
 - `--forget`: saca también la aplicación (`api_id` y `api_hash`) del llavero.
+
+## augmented-brain telegram waits
+
+Lista las respuestas que esperan tus tareas por Telegram, o quita las de una tarea.
+
+Sintaxis: `augmented-brain telegram waits [--drop TAREA]`
+
+```bash
+augmented-brain telegram waits
+```
+
+Cuando tu asistente manda un mensaje que pide respuesta, la tarea para la que es espera
+esa respuesta: mira [Esperar una respuesta](telegram.md#esperar-una-respuesta). Una
+línea por espera: la tarea, su espacio, a quién espera, el chat y desde cuándo. Una espera
+no caduca: dura hasta que llega la respuesta o la quitas. Acaba con `0`.
+
+- `--drop TAREA`: quita las esperas de esa tarea y dice cuántas. La tarea no cambia:
+  apunta tú en ella que ya no espera.
+
+## augmented-brain telegram check
+
+Busca ahora las respuestas que esperan tus tareas por Telegram, y lleva cada una a su tarea.
+
+Sintaxis: `augmented-brain telegram check`
+
+```bash
+augmented-brain telegram check
+```
+
+Casi nunca hace falta: un temporizador de tu sistema lo lanza cada 5 minutos mientras
+Telegram está conectado. Si no hay ninguna espera, ni se conecta a Telegram. Si las hay,
+lee solo los chats con una espera, y solo los mensajes posteriores al enviado. En un chat
+con una persona, cualquier mensaje que llegue es la respuesta; en un grupo, solo una
+contestación al mensaje enviado (o a una contestación a él).
+
+La respuesta va al diario de la tarea, marcada como texto de otra persona, que es un dato y
+nunca instrucciones; la tarea vuelve a esperarte a ti y su siguiente paso es leerla. La
+espera termina. Una sesión que trabaje en esa tarea se entera del cambio antes de su
+siguiente respuesta; si no, quien abra la tarea la encuentra. Una espera cuya tarea está
+cerrada o ya no existe se quita.
+
+Una línea por respuesta llevada. Acaba con `0`, también si Telegram no está conectado (las
+esperas se quedan); con `1` si no pudo leer un chat o escribir una tarea.
 
 ## augmented-brain config
 

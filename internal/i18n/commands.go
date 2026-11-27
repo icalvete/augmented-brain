@@ -496,7 +496,7 @@ Usage:
   augmented-brain remote uninstall  stop that and remove it
   augmented-brain remote status     say whether it runs, and what is missing
   augmented-brain codex install     set augmented brain up in Codex, to carry on a task there (codex uninstall: remove it) (codex status: how it stands)
-  augmented-brain telegram connect  let your assistant use your own Telegram account (telegram status: how it stands) (telegram disconnect: end it)
+  augmented-brain telegram connect  let your assistant use your own Telegram account (telegram status: how it stands) (telegram disconnect: end it) (telegram waits: the replies your tasks wait for) (telegram check: look for them now)
   augmented-brain session start TASK   open a remote session of its own for a task, in its folder (--folder DIR) (Linux)
   augmented-brain session stop TASK    close it (session list: the open ones)
   augmented-brain session restart SESSION  restart a Claude session with the program of now (--old: every one still on an earlier one)
@@ -528,7 +528,7 @@ Uso:
   augmented-brain remote uninstall  lo para y lo quita
   augmented-brain remote status     dice si funciona y qué falta
   augmented-brain codex install     prepara augmented brain en Codex, para seguir allí una tarea (codex uninstall: lo quita) (codex status: cómo está)
-  augmented-brain telegram connect  deja que tu asistente use tu propia cuenta de Telegram (telegram status: cómo está) (telegram disconnect: la cierra)
+  augmented-brain telegram connect  deja que tu asistente use tu propia cuenta de Telegram (telegram status: cómo está) (telegram disconnect: la cierra) (telegram waits: las respuestas que esperan tus tareas) (telegram check: buscarlas ahora)
   augmented-brain session start TAREA  abre una sesión remota propia para una tarea, en su carpeta (--folder DIR) (Linux)
   augmented-brain session stop TAREA   la cierra (session list: las abiertas)
   augmented-brain session restart SESIÓN  reinicia una sesión de Claude con el programa de ahora (--old: todas las que siguen con uno anterior)

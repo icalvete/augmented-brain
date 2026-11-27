@@ -28,6 +28,20 @@ var telegramInstall = telegramprog.Install
 // cmdTelegram runs augmented brain's Telegram program with the same words. connect
 // downloads it first, when it is not there yet: only who turns Telegram on has it.
 func cmdTelegram(args []string, in io.Reader, out, errOut io.Writer) int {
+	if len(args) > 0 && (args[0] == "check" || args[0] == "waits") {
+		c, ok := loadConfig(errOut)
+		if !ok {
+			return 1
+		}
+		if args[0] == "check" {
+			if len(args) != 1 {
+				fmt.Fprintln(errOut, i18n.T(c.Language, "usage.telegram"))
+				return 2
+			}
+			return telegramCheck(c, out, errOut)
+		}
+		return telegramWaits(c, args[1:], out, errOut)
+	}
 	l := userLanguage()
 	fs, _ := telegramFlags(errOut)
 	rest, ok := parseArgs(fs, args, 1, errOut)

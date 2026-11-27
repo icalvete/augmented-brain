@@ -360,8 +360,8 @@ var cmdHelpMessages = map[string]msg{
 		es: "augmented-brain watch pr 104 --task task-my-change",
 	},
 	"cmdhelp.telegram.what": {
-		en: "Connects your own Telegram account to your assistant, as one more device of it: see Telegram (your account). It is three commands, connect, status and disconnect, each with its own section. Linux (with secret-tool, the keychain's command) and macOS only: elsewhere they say so and end with 1. Without a subcommand, or with another, telegram prints its usage.",
-		es: "Conecta tu propia cuenta de Telegram a tu asistente, como un dispositivo más: mira Telegram (tu cuenta). Son tres comandos, connect, status y disconnect, cada uno con su sección. Solo Linux (con secret-tool, el comando del llavero) y macOS: en otro sitio lo dicen y acaban con 1. Sin subcomando, o con otro, telegram muestra su uso.",
+		en: "Connects your own Telegram account to your assistant, as one more device of it: see Telegram (your account). It is five commands, connect, status, disconnect, waits and check, each with its own section. Linux (with secret-tool, the keychain's command) and macOS only: elsewhere they say so and end with 1. Without a subcommand, or with another, telegram prints its usage.",
+		es: "Conecta tu propia cuenta de Telegram a tu asistente, como un dispositivo más: mira Telegram (tu cuenta). Son cinco comandos, connect, status, disconnect, waits y check, cada uno con su sección. Solo Linux (con secret-tool, el comando del llavero) y macOS: en otro sitio lo dicen y acaban con 1. Sin subcomando, o con otro, telegram muestra su uso.",
 	},
 	"cmdhelp.telegram connect.what": {
 		en: "Connects your Telegram account, by a QR code you scan with your phone.",
@@ -402,6 +402,34 @@ var cmdHelpMessages = map[string]msg{
 	"cmdhelp.telegram disconnect.example": {
 		en: "augmented-brain telegram disconnect",
 		es: "augmented-brain telegram disconnect",
+	},
+	"cmdhelp.telegram waits.what": {
+		en: "Lists the replies your tasks wait for on Telegram, or takes out a task's.",
+		es: "Lista las respuestas que esperan tus tareas por Telegram, o quita las de una tarea.",
+	},
+	"cmdhelp.telegram waits.syntax": {
+		en: "augmented-brain telegram waits [--drop TASK]",
+		es: "augmented-brain telegram waits [--drop TAREA]",
+	},
+	"cmdhelp.telegram waits.options": {
+		en: "--drop TASK\ttake out the waits of that task, and say how many went. The task does not change: say in it yourself that it no longer waits.",
+		es: "--drop TAREA\tquita las esperas de esa tarea y dice cuántas. La tarea no cambia: apunta tú en ella que ya no espera.",
+	},
+	"cmdhelp.telegram waits.example": {
+		en: "augmented-brain telegram waits",
+		es: "augmented-brain telegram waits",
+	},
+	"cmdhelp.telegram check.what": {
+		en: "Looks now for the replies your tasks wait for on Telegram, and brings each to its task.",
+		es: "Busca ahora las respuestas que esperan tus tareas por Telegram, y lleva cada una a su tarea.",
+	},
+	"cmdhelp.telegram check.syntax": {
+		en: "augmented-brain telegram check",
+		es: "augmented-brain telegram check",
+	},
+	"cmdhelp.telegram check.example": {
+		en: "augmented-brain telegram check",
+		es: "augmented-brain telegram check",
 	},
 	"cmdhelp.config.what": {
 		en: "The versions of your configuration: two commands, history and restore, each with its own section. Without a subcommand, config prints its usage. See Configuration versions.",

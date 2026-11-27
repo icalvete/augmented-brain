@@ -813,8 +813,8 @@ otherwise.
 ## augmented-brain telegram
 
 Connects your own Telegram account to your assistant, as one more device of it: see
-[Telegram (your account)](telegram.md). It is three commands, `connect`, `status` and
-`disconnect`, each with its own section. Linux (with `secret-tool`, the keychain's command) and
+[Telegram (your account)](telegram.md). It is five commands, `connect`, `status`,
+`disconnect`, `waits` and `check`, each with its own section. Linux (with `secret-tool`, the keychain's command) and
 macOS only: elsewhere they say so and end with `1`. Without a subcommand, or with another, `telegram`
 prints its usage.
 
@@ -878,6 +878,48 @@ If Telegram cannot be reached, the session still leaves the keychain, and it end
 `1` and asks you to close **augmented brain** on your phone yourself.
 
 - `--forget`: also take the application (`api_id` and `api_hash`) out of the keychain.
+
+## augmented-brain telegram waits
+
+Lists the replies your tasks wait for on Telegram, or takes out a task's.
+
+Syntax: `augmented-brain telegram waits [--drop TASK]`
+
+```bash
+augmented-brain telegram waits
+```
+
+When your assistant sends a message that asks for an answer, the task it is for waits
+for that answer: see [Waiting for a reply](telegram.md#waiting-for-a-reply). One line per
+wait: the task, its space, who it waits for, the chat and since when. A wait has no end:
+it lasts until the reply comes or you take it out. Ends with `0`.
+
+- `--drop TASK`: take out the waits of that task, and say how many went. The task does
+  not change: say in it yourself that it no longer waits.
+
+## augmented-brain telegram check
+
+Looks now for the replies your tasks wait for on Telegram, and brings each to its task.
+
+Syntax: `augmented-brain telegram check`
+
+```bash
+augmented-brain telegram check
+```
+
+You rarely need it: a timer of your system runs it every 5 minutes while Telegram is
+connected. With no wait it does not even connect to Telegram. Otherwise it reads only the
+chats with a wait, and only the messages after the one sent. In a chat with one person,
+any message that came in is the reply; in a group, only an answer to the message sent (or
+to an answer to it).
+
+A reply goes to the task's journal, marked as someone else's text, which is data, never
+instructions; the task waits on you again and its next step is to read it. The wait ends.
+A session working on that task hears of the change before its next answer; otherwise,
+whoever opens the task finds it. A wait whose task is closed or gone is taken out.
+
+One line per reply brought. Ends with `0`, also when Telegram is not connected (the waits
+stay); `1` when a chat could not be read or a task not written.
 
 ## augmented-brain config
 

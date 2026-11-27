@@ -73,11 +73,15 @@
     "work",
     "yes"
   ],
+  "telegram check": [],
   "telegram connect": [],
   "telegram disconnect": [
     "forget"
   ],
   "telegram status": [],
+  "telegram waits": [
+    "drop"
+  ],
   "uninstall": [
     "all",
     "config",
