@@ -22,7 +22,9 @@ It is a separate program, `augmented-brain-telegram`. Telegram's library would m
 augmented brain three times bigger, so only who turns Telegram on downloads it (about
 6 MB, once). It comes from the same release as your augmented brain, is checked against
 that release's checksums, and goes next to the `augmented-brain` program. `augmented-brain
-update` keeps it up to date from then on.
+update` keeps it up to date from then on. If the program is gone but the keychain still
+holds your session (you connected with a build of your own, say), `update` brings it
+back, and `augmented-brain telegram connect` does too, with no QR code.
 
 ## What you need
 

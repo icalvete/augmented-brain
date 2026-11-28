@@ -28,6 +28,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/keyring"
 	"github.com/icalvete/augmented-brain/internal/runlimit"
 	"github.com/icalvete/augmented-brain/internal/update"
 	"github.com/icalvete/augmented-brain/internal/version"
@@ -71,6 +72,21 @@ func Path() string {
 		return p
 	}
 	return ""
+}
+
+// KeychainService and KeychainSession name the Telegram session in the keychain: the
+// same as internal/telegram's Service and NameSession, which this package cannot
+// import (it would bring Telegram's library into augmented-brain).
+const (
+	KeychainService = "augmented-brain"
+	KeychainSession = "telegram-session"
+)
+
+// SessionSaved says whether the keychain holds a Telegram session, without reading it.
+// Without the program, it tells "connected, the program is missing" from "never
+// connected". A variable, for tests.
+var SessionSaved = func() bool {
+	return keyring.Has(KeychainService, KeychainSession) == keyring.Present
 }
 
 // Archive is the name of the program's archive in a release. Not .tar.gz: installers

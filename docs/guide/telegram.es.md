@@ -23,7 +23,10 @@ Es un programa aparte, `augmented-brain-telegram`. La biblioteca de Telegram har
 augmented brain tres veces más grande, así que solo lo descarga quien enciende Telegram
 (unos 6 MB, una sola vez). Viene de la misma versión que tu augmented brain, se comprueba
 con las sumas de verificación de esa versión y se queda junto al programa
-`augmented-brain`. Desde entonces, `augmented-brain update` lo mantiene al día.
+`augmented-brain`. Desde entonces, `augmented-brain update` lo mantiene al día. Si el programa falta pero
+el llavero aún guarda tu sesión (te conectaste con una versión compilada por ti, por
+ejemplo), `update` lo vuelve a poner, y `augmented-brain telegram connect` también, sin
+código QR.
 
 ## Qué necesitas
 

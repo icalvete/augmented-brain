@@ -57,6 +57,13 @@ func TestTelegramPage(t *testing.T) {
 	}
 
 	page := func() string { return s.get(t, "/telegram?s=work").Body.String() }
+	// A session in the keychain without the program: connected, only the program is
+	// missing, and the page says so.
+	tgSaved = func() bool { return true }
+	if p := page(); !strings.Contains(p, "only augmented brain") || !strings.Contains(p, "Download the Telegram program") {
+		t.Fatalf("saved session, no program:\n%.2000s", p)
+	}
+	tgSaved = func() bool { return false }
 	if p := page(); !strings.Contains(p, "Download the Telegram program") || !strings.Contains(p, ">Telegram<") {
 		t.Fatalf("not installed:\n%.2000s", p)
 	}

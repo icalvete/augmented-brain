@@ -47,6 +47,10 @@ var telegramMessages = map[string]msg{
 		en: "Telegram: not connected. To connect: augmented-brain telegram connect, or the panel's Telegram page.",
 		es: "Telegram: no conectado. Para conectarlo: augmented-brain telegram connect, o la página Telegram del panel.",
 	},
+	"telegram.status.noprogram": {
+		en: "Telegram: the session is saved in the keychain, but augmented brain's Telegram program is missing. augmented-brain telegram connect downloads it, with no QR code.",
+		es: "Telegram: la sesión está guardada en el llavero, pero falta el programa de Telegram de augmented brain. augmented-brain telegram connect lo descarga, sin código QR.",
+	},
 	"telegram.disconnected": {
 		en: "Disconnected: the session is closed in Telegram and gone from the keychain.",
 		es: "Desconectado: la sesión está cerrada en Telegram y fuera del llavero.",
@@ -85,6 +89,10 @@ var telegramMessages = map[string]msg{
 	"panel.telegram.install.hint": {
 		en: "First, augmented brain's Telegram program: about 6 MB, downloaded once from this version's release and checked against its checksums.",
 		es: "Primero, el programa de Telegram de augmented brain: unos 6 MB, descargado una sola vez de esta versión y comprobado con sus sumas de verificación.",
+	},
+	"panel.telegram.install.saved": {
+		en: "Your Telegram session is saved in the keychain; only augmented brain's Telegram program is missing (about 6 MB, from this version's release). Download it and you are connected again, with no QR code.",
+		es: "Tu sesión de Telegram está guardada en el llavero; solo falta el programa de Telegram de augmented brain (unos 6 MB, de esta versión). Descárgalo y vuelves a estar conectado, sin código QR.",
 	},
 	"panel.telegram.install": {en: "Download the Telegram program", es: "Descargar el programa de Telegram"},
 	"panel.telegram.installfailed": {

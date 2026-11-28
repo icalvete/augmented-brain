@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/icalvete/augmented-brain/internal/telegramprog"
 	"github.com/icalvete/augmented-brain/internal/testenv"
 )
 
@@ -13,5 +14,6 @@ func TestMain(m *testing.M) {
 	testenv.CleanGit()
 	setTelegramTimer = func(string) error { return nil } // never the real systemd or launchd
 	unsetTelegramTimer = func() (bool, error) { return false, nil }
+	telegramprog.SessionSaved = func() bool { return false } // never the real keychain
 	os.Exit(m.Run())
 }

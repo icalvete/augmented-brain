@@ -82,7 +82,13 @@ func cmdTelegram(args []string, in io.Reader, out, errOut io.Writer) int {
 	p := telegramPath()
 	if p == "" {
 		if rest[0] != "connect" {
-			fmt.Fprintln(out, i18n.T(l, "telegram.status.off"))
+			// Without the program nothing can reach Telegram, but a session in the
+			// keychain still means connected: connect brings the program, with no QR.
+			if telegramprog.SessionSaved() {
+				fmt.Fprintln(out, i18n.T(l, "telegram.status.noprogram"))
+			} else {
+				fmt.Fprintln(out, i18n.T(l, "telegram.status.off"))
+			}
 			return 0
 		}
 		fmt.Fprintln(out, i18n.T(l, "telegram.installing"))
