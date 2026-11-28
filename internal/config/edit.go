@@ -42,9 +42,31 @@ func SetSpaceKey(dir, space, key, value string) error {
 	return setSpaceLine(dir, space, key, fmt.Sprintf("%s = %q", key, value))
 }
 
-// SetSpaceList sets one list setting of a space (such as untouchable_hosts) the same way.
+// SetSpaceList sets one list setting of a space (such as untouchable_hosts): it adds
+// and takes out values where the list is, however many lines it takes, keeping the
+// comments in it (see setList), or adds the setting under the space's header.
 func SetSpaceList(dir, space, key string, values []string) error {
-	return setSpaceLine(dir, space, key, listLine(key, values))
+	return SetSpaceListWhy(dir, space, key, values, "")
+}
+
+// SetSpaceListWhy is SetSpaceList that writes why after each value it adds, with the
+// day: "# 2026-11-28, why". An empty why writes nothing.
+func SetSpaceListWhy(dir, space, key string, values []string, why string) error {
+	f, err := openLines(dir)
+	if err != nil {
+		return err
+	}
+	start, end, ok := f.table(space)
+	if !ok {
+		return errors.New(i18n.T(langOf(dir), "config.nospace", f.path, space))
+	}
+	comment := whyComment(why)
+	if i := f.find(start, end, key); i >= 0 {
+		f.setList(i, key, values, comment)
+	} else {
+		f.insert(start, newList(key, values, comment)...)
+	}
+	return f.save()
 }
 
 // RemoveSpaceKey takes one setting out of a space in the configuration file in dir,
@@ -53,8 +75,8 @@ func RemoveSpaceKey(dir, space, key string) error {
 	return setSpaceLine(dir, space, key, "")
 }
 
-// setSpaceLine puts line in place of the key's line under the space's header, or adds
-// it there. An empty line removes the key.
+// setSpaceLine puts line in place of the key's setting under the space's header (all
+// the lines its value takes), or adds it there. An empty line removes the key.
 func setSpaceLine(dir, space, key, line string) error {
 	f, err := openLines(dir)
 	if err != nil {
@@ -65,11 +87,11 @@ func setSpaceLine(dir, space, key, line string) error {
 		return errors.New(i18n.T(langOf(dir), "config.nospace", f.path, space))
 	}
 	if i := f.find(start, end, key); i >= 0 {
-		if line == "" {
-			f.lines = append(f.lines[:i], f.lines[i+1:]...)
-		} else {
-			f.lines[i] = line
+		var with []string
+		if line != "" {
+			with = []string{line}
 		}
+		f.lines = append(f.lines[:i], append(with, f.lines[valueEnd(f.lines, i):]...)...)
 		return f.save()
 	}
 	if line == "" {
@@ -80,19 +102,20 @@ func setSpaceLine(dir, space, key, line string) error {
 }
 
 // SetTopList sets one machine-wide list setting (production_aws_profiles,
-// untouchable_hosts) in the configuration file in dir: it changes only that line, or
-// adds it before the first table, and keeps everything else, comments included.
+// untouchable_hosts) in the configuration file in dir: it edits the list where it is
+// (see setList), or adds it before the first table, and keeps everything else,
+// comments included.
 func SetTopList(dir, key string, values []string) error {
 	f, err := openLines(dir)
 	if err != nil {
 		return err
 	}
-	line := listLine(key, values)
 	_, end, _ := f.table("")
 	if i := f.find(0, end, key); i >= 0 {
-		f.lines[i] = line
+		f.setList(i, key, values, "")
 		return f.save()
 	}
+	line := listLine(key, values)
 	// Keep a blank line between the top settings and the first table.
 	if end > 0 && strings.TrimSpace(f.lines[end-1]) == "" {
 		f.insert(end-1, line)
@@ -104,8 +127,8 @@ func SetTopList(dir, key string, values []string) error {
 	return f.save()
 }
 
-// RemoveTopKey takes a top-level setting out of the configuration file in dir,
-// changing nothing else. A key that is not there is no error.
+// RemoveTopKey takes a top-level setting out of the configuration file in dir, all the
+// lines its value takes, changing nothing else. A key that is not there is no error.
 func RemoveTopKey(dir, key string) error {
 	f, err := openLines(dir)
 	if err != nil {
@@ -116,7 +139,7 @@ func RemoveTopKey(dir, key string) error {
 	if i < 0 {
 		return nil
 	}
-	f.lines = append(f.lines[:i], f.lines[i+1:]...)
+	f.lines = append(f.lines[:i], f.lines[valueEnd(f.lines, i):]...)
 	return f.save()
 }
 
