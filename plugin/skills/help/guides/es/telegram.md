@@ -66,7 +66,7 @@ short name, o prueba con otro navegador sin bloqueadores de anuncios.
 ### Desde el panel
 
 1. Abre el panel (`/brain:panel` en Claude, o `augmented-brain panel`).
-2. En **Mantenimiento**, abre **Telegram**.
+2. En **Día a día**, abre **Telegram**.
 3. Pulsa **Descargar el programa de Telegram**.
 4. Pega tu `api_id` y tu `api_hash`, y pulsa **Guardar y enseñar el código QR**.
 5. En el móvil, abre Telegram → **Ajustes → Dispositivos → Vincular dispositivo de
