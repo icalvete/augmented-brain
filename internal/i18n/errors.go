@@ -57,8 +57,21 @@ func Message(lang string, err error) string {
 	if errors.As(err, &e) {
 		return e.in(lang)
 	}
+	var s *Said
+	if errors.As(err, &s) {
+		if pick(lang) == "es" && s.ES != "" {
+			return s.ES
+		}
+		return s.EN
+	}
 	return err.Error()
 }
+
+// Said is an error another program already put in every language (the Telegram
+// program, through its JSON): its Error() is the English text, and Message picks.
+type Said struct{ EN, ES string }
+
+func (s *Said) Error() string { return s.EN }
 
 // Errors of the notes: what brain says when a change cannot be made.
 var errorMessages = map[string]msg{

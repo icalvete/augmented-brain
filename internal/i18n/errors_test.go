@@ -31,3 +31,14 @@ func TestError(t *testing.T) {
 		t.Error("a plain error keeps its text")
 	}
 }
+
+// A Said, already in both languages, gives each its own text, wrapped or not.
+func TestSaid(t *testing.T) {
+	err := fmt.Errorf("call: %w", &Said{EN: "too slow", ES: "muy lento"})
+	if Message("es", err) != "muy lento" || Message("en", err) != "too slow" {
+		t.Errorf("es %q, en %q", Message("es", err), Message("en", err))
+	}
+	if Message("es", &Said{EN: "only English"}) != "only English" {
+		t.Error("without Spanish, the English text")
+	}
+}

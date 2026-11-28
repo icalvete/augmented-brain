@@ -72,6 +72,72 @@ var telegramMessages = map[string]msg{
 		es: "Nadie ha escaneado el código en %s. Vuelve a lanzarlo cuando tengas el móvil a mano.",
 	},
 
+	// Errors of the Telegram program a person reads, in the terminal or on the panel.
+	"telegram.err.busy": {
+		en: "another connection to Telegram is in use; try again in a moment",
+		es: "hay otra conexión a Telegram en uso; vuelve a intentarlo en un momento",
+	},
+	"telegram.err.notconnected": {
+		en: "not connected to Telegram",
+		es: "Telegram no está conectado",
+	},
+	"telegram.err.noaccount": {
+		en: "no account in Telegram's answer",
+		es: "la respuesta de Telegram no trae ninguna cuenta",
+	},
+	"telegram.err.logout": {
+		en: "could not end the session in Telegram (close %q in Settings → Devices): %v",
+		es: "no se ha podido cerrar la sesión en Telegram (cierra %q en Ajustes → Dispositivos): %v",
+	},
+	"telegram.err.flood": {
+		en: "too many requests: Telegram asks to wait %s before trying again",
+		es: "demasiadas peticiones: Telegram pide esperar %s antes de volver a intentarlo",
+	},
+	"telegram.err.badapp": {
+		en: "this api_id and api_hash are not accepted by Telegram: check them at my.telegram.org",
+		es: "Telegram no acepta este api_id y este api_hash: compruébalos en my.telegram.org",
+	},
+	"telegram.err.password": {
+		en: "wrong two-step verification password",
+		es: "la contraseña de la verificación en dos pasos no es correcta",
+	},
+	"telegram.err.nopassword": {
+		en: "no password came",
+		es: "no ha llegado ninguna contraseña",
+	},
+	"telegram.err.nokeychain": {
+		en: "no keychain on this computer",
+		es: "este ordenador no tiene llavero",
+	},
+	"telegram.err.keychainslow": {
+		en: "the keychain did not answer in %s",
+		es: "el llavero no ha contestado en %s",
+	},
+	"telegram.err.apiid": {
+		en: "api_id is a number, as my.telegram.org shows it",
+		es: "el api_id es un número, tal como lo enseña my.telegram.org",
+	},
+	"telegram.err.apihash": {
+		en: "api_hash is 32 letters and digits (0-9, a-f), as my.telegram.org shows it",
+		es: "el api_hash son 32 letras y cifras (0-9, a-f), tal como lo enseña my.telegram.org",
+	},
+	"telegram.err.devbuild": {
+		en: "this augmented-brain is a development build: build the Telegram program next to it with go build -o <its folder>/augmented-brain-telegram ./cmd/augmented-brain-telegram",
+		es: "este augmented-brain es una versión de desarrollo: compila el programa de Telegram a su lado con go build -o <su carpeta>/augmented-brain-telegram ./cmd/augmented-brain-telegram",
+	},
+	"telegram.err.checksum": {
+		en: "the download does not match its checksum: not installed",
+		es: "la descarga no coincide con su suma de verificación: no se ha instalado",
+	},
+	"telegram.err.nostart": {
+		en: "the Telegram program does not start on this computer: not installed (%v)",
+		es: "el programa de Telegram no arranca en este ordenador: no se ha instalado (%v)",
+	},
+	"telegram.err.noanswer": {
+		en: "no answer from Telegram in %s",
+		es: "Telegram no ha contestado en %s",
+	},
+
 	// The panel's Telegram page.
 	"panel.telegram": {en: "Telegram", es: "Telegram"},
 	"panel.telegram.hint": {

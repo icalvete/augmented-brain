@@ -133,9 +133,11 @@ func run(args []string, in io.Reader, out, errOut io.Writer) int {
 	}
 	fail := func(err error) int {
 		if o.json {
-			emit(out, map[string]string{"error": err.Error(), "code": code(err)})
+			// The error in both languages: the panel shows it in the person's, the
+			// assistant reads the English one.
+			emit(out, map[string]string{"error": err.Error(), "error_es": i18n.Message("es", err), "code": code(err)})
 		} else {
-			fmt.Fprintln(errOut, err)
+			fmt.Fprintln(errOut, i18n.Message(l, err))
 		}
 		return 1
 	}
@@ -265,13 +267,13 @@ func login(ctx context.Context, s telegram.Secrets, in io.Reader, out io.Writer,
 	}, func(context.Context) (string, error) {
 		emit(out, map[string]bool{"password": true})
 		if !lines.Scan() {
-			return "", errors.New("no password came")
+			return "", i18n.Errorf("telegram.err.nopassword")
 		}
 		return lines.Text(), nil
 	})
 	if err != nil {
 		if ctx.Err() != nil {
-			err = fmt.Errorf("%w: nobody scanned the code in %s", context.DeadlineExceeded, loginWait)
+			err = fmt.Errorf("%w: %w", context.DeadlineExceeded, i18n.Errorf("telegram.timeout", loginWait))
 		}
 		return fail(err)
 	}
@@ -284,7 +286,7 @@ func login(ctx context.Context, s telegram.Secrets, in io.Reader, out io.Writer,
 func connect(ctx context.Context, l string, s telegram.Secrets, out, errOut io.Writer) int {
 	if _, err := telegram.LoadApp(s); err != nil {
 		if !errors.Is(err, telegram.ErrNotFound) {
-			fmt.Fprintln(errOut, err)
+			fmt.Fprintln(errOut, i18n.Message(l, err))
 			return 1
 		}
 		fmt.Fprintln(out, i18n.T(l, "telegram.app.intro"))
@@ -301,7 +303,7 @@ func connect(ctx context.Context, l string, s telegram.Secrets, out, errOut io.W
 			return 1
 		}
 		if _, err := telegram.SaveApp(s, id, hash); err != nil {
-			fmt.Fprintln(errOut, err)
+			fmt.Fprintln(errOut, i18n.Message(l, err))
 			return 1
 		}
 	}
@@ -324,7 +326,7 @@ func connect(ctx context.Context, l string, s telegram.Secrets, out, errOut io.W
 		return 1
 	}
 	if err != nil {
-		fmt.Fprintln(errOut, err)
+		fmt.Fprintln(errOut, i18n.Message(l, err))
 		return 1
 	}
 	fmt.Fprintln(out, i18n.T(l, "telegram.connected", accountName(a)))

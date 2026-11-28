@@ -17,7 +17,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -28,6 +27,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/keyring"
 	"github.com/icalvete/augmented-brain/internal/runlimit"
 	"github.com/icalvete/augmented-brain/internal/update"
@@ -97,7 +97,7 @@ func Archive(ver, goos, goarch string) string {
 
 // ErrDevBuild means this augmented-brain was not built for a release: there is nothing
 // to download for it.
-var ErrDevBuild = errors.New("this augmented-brain is a development build: build the Telegram program next to it with go build -o <its folder>/augmented-brain-telegram ./cmd/augmented-brain-telegram")
+var ErrDevBuild = i18n.Errorf("telegram.err.devbuild")
 
 // Base, when not "", is where release files are fetched from instead of GitHub (tests,
 // the rehearsal): <Base>/<file>.
@@ -142,7 +142,7 @@ func Install() (string, error) {
 		return "", err
 	}
 	if got := sha256.Sum256(data); hex.EncodeToString(got[:]) != want {
-		return "", errors.New("the download does not match its checksum: not installed")
+		return "", i18n.Errorf("telegram.err.checksum")
 	}
 	prog, err := extract(data, Name)
 	if err != nil {
@@ -155,7 +155,7 @@ func Install() (string, error) {
 	}
 	if out, err := runlimit.Output(30*time.Second, tmpDst, "version"); err != nil || strings.TrimSpace(string(out)) == "" {
 		_ = os.Remove(tmpDst)
-		return "", fmt.Errorf("the Telegram program does not start on this computer: not installed (%v)", err)
+		return "", i18n.Errorf("telegram.err.nostart", err)
 	}
 	if err := os.Rename(tmpDst, dst); err != nil {
 		_ = os.Remove(tmpDst)
@@ -206,7 +206,7 @@ func extract(data []byte, name string) ([]byte, error) {
 const Wait = 90 * time.Second
 
 // ErrNotConnected is the program's "not connected" (or "no application yet").
-var ErrNotConnected = errors.New("not connected to Telegram")
+var ErrNotConnected = i18n.Errorf("telegram.err.notconnected")
 
 // Call runs the program at path with args and --json, stdin on its standard input, and
 // decodes its one JSON line into v.
@@ -219,17 +219,18 @@ func Call(ctx context.Context, path string, args []string, stdin string, v any) 
 	runErr := cmd.Run()
 	var e struct {
 		Error string `json:"error"`
+		ES    string `json:"error_es"`
 		Code  string `json:"code"`
 	}
 	if json.Unmarshal(out.Bytes(), &e) == nil && e.Error != "" {
 		if e.Code == "not_connected" || e.Code == "no_app" {
 			return ErrNotConnected
 		}
-		return errors.New(e.Error)
+		return &i18n.Said{EN: e.Error, ES: e.ES}
 	}
 	if runErr != nil {
 		if ctx.Err() != nil {
-			return fmt.Errorf("no answer from Telegram in %s", Wait)
+			return i18n.Errorf("telegram.err.noanswer", Wait)
 		}
 		return fmt.Errorf("%s: %v %s", Name, runErr, strings.TrimSpace(errOut.String()))
 	}

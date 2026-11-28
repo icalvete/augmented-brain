@@ -17,6 +17,7 @@ import (
 	"rsc.io/qr"
 
 	"github.com/icalvete/augmented-brain/internal/config"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/remote"
 	"github.com/icalvete/augmented-brain/internal/runlimit"
 	"github.com/icalvete/augmented-brain/internal/telegramprog"
@@ -43,7 +44,7 @@ type tgLogin struct {
 	qr       string // the tg://login address to draw
 	password bool   // the program waits for the two-step password
 	account  *tgAccount
-	err      string
+	err      error // what the login ended with, in both languages
 	running  bool
 }
 
@@ -87,7 +88,7 @@ func startLogin(path string) error {
 		return err
 	}
 	login.cancel, login.stdin = cancel, stdin
-	login.qr, login.password, login.account, login.err, login.running = "", false, nil, "", true
+	login.qr, login.password, login.account, login.err, login.running = "", false, nil, nil, true
 	go func() {
 		defer cancel()
 		sc := bufio.NewScanner(stdout)
@@ -97,6 +98,7 @@ func startLogin(path string) error {
 				Password bool       `json:"password"`
 				Account  *tgAccount `json:"account"`
 				Error    string     `json:"error"`
+				ES       string     `json:"error_es"`
 			}
 			if json.Unmarshal(sc.Bytes(), &ev) != nil {
 				continue
@@ -113,7 +115,7 @@ func startLogin(path string) error {
 					_ = tgTimer(dir) // doctor says when it is missing
 				}
 			case ev.Error != "":
-				login.err, login.qr, login.password = ev.Error, "", false
+				login.err, login.qr, login.password = &i18n.Said{EN: ev.Error, ES: ev.ES}, "", false
 			}
 			login.mu.Unlock()
 		}
@@ -167,7 +169,7 @@ func (s *Server) telegram(v *view, r *http.Request) (string, page, error) {
 	if login.qr != "" && d.Waiting && !d.Password {
 		d.QR = qrSVG(login.qr)
 	}
-	d.Err = login.err
+	d.Err = i18n.Message(v.lang, login.err)
 	login.mu.Unlock()
 	if d.Installed && !d.Waiting {
 		var st struct {
@@ -176,7 +178,7 @@ func (s *Server) telegram(v *view, r *http.Request) (string, page, error) {
 			Account   *tgAccount `json:"account"`
 		}
 		if err := tgCall(r.Context(), path, []string{"status"}, "", &st); err != nil && !errors.Is(err, telegramprog.ErrNotConnected) {
-			d.Err = err.Error()
+			d.Err = i18n.Message(v.lang, err)
 		}
 		d.Connected, d.Account = st.Connected, st.Account
 		d.App = st.App || st.Connected
@@ -192,7 +194,7 @@ func (s *Server) telegramInstall(v *view, _ *http.Request) (string, error) {
 		return "/telegram", nil
 	}
 	if _, err := tgInstall(); err != nil {
-		return "", errors.New(v.t("telegram.installfailed", err))
+		return "", errors.New(v.t("telegram.installfailed", i18n.Message(v.lang, err)))
 	}
 	return "/telegram", nil
 }
@@ -245,7 +247,7 @@ func (s *Server) telegramCancel(_ *view, _ *http.Request) (string, error) {
 	if login.cancel != nil {
 		login.cancel()
 	}
-	login.qr, login.password, login.err = "", false, ""
+	login.qr, login.password, login.err = "", false, nil
 	return "/telegram", nil
 }
 
@@ -268,7 +270,7 @@ func (s *Server) telegramDisconnect(v *view, r *http.Request) (string, error) {
 	}
 	_, _ = tgUntimer()
 	login.mu.Lock()
-	login.account, login.err = nil, ""
+	login.account, login.err = nil, nil
 	login.mu.Unlock()
 	return "/telegram", nil
 }

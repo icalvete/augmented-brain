@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/runlimit"
 )
 
@@ -29,7 +30,7 @@ const (
 var ErrNotFound = errors.New("not in the keychain")
 
 // ErrNoKeychain means this computer has no keychain this package knows how to use.
-var ErrNoKeychain = errors.New("no keychain on this computer")
+var ErrNoKeychain = i18n.Errorf("telegram.err.nokeychain")
 
 // Secrets reads and writes the secrets of this package. Keychain is the real one;
 // tests use a map.
@@ -68,7 +69,7 @@ func run(stdin string, name string, arg ...string) (string, string, error) {
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = strings.NewReader(stdin), &out, &errOut
 	err := cmd.Run()
 	if ctx.Err() != nil {
-		return "", "", fmt.Errorf("the keychain did not answer in %s", keychainTimeout)
+		return "", "", i18n.Errorf("telegram.err.keychainslow", keychainTimeout)
 	}
 	return out.String(), errOut.String(), err
 }
@@ -183,10 +184,10 @@ func ParseApp(id, hash string) (App, error) {
 	id, hash = strings.TrimSpace(id), strings.TrimSpace(hash)
 	n, err := strconv.Atoi(id)
 	if err != nil || n <= 0 {
-		return App{}, errors.New("api_id is a number, as my.telegram.org shows it")
+		return App{}, i18n.Errorf("telegram.err.apiid")
 	}
 	if len(hash) != 32 || strings.Trim(strings.ToLower(hash), "0123456789abcdef") != "" {
-		return App{}, errors.New("api_hash is 32 letters and digits (0-9, a-f), as my.telegram.org shows it")
+		return App{}, i18n.Errorf("telegram.err.apihash")
 	}
 	return App{ID: n, Hash: strings.ToLower(hash)}, nil
 }
