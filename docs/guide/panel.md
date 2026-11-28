@@ -39,6 +39,7 @@ each block in two columns, and a shadow at its foot says there is more below.
 | [Today](#today) | What is due and what waits on you | every space |
 | [Tasks](#tasks) | See, change, open and close tasks | one space |
 | [Sessions](#sessions) | Your Claude sessions, and the ones cut off | this computer |
+| [Telegram](#telegram) | Your own Telegram account, for your assistant | this computer |
 | [Reminders](#reminders) | Watch dates and inbox reminders | one space |
 | [Inbox](#inbox) | Loose ideas, to deal with later | one space |
 | [Weekly review](#weekly-review) | Empty the inbox, look at stalled tasks | one space |
@@ -49,7 +50,6 @@ each block in two columns, and a shadow at its foot says there is more below.
 | [Backup](#backup) | Copies of your notes | every space |
 | [Health](#health) | Whether the space is in order | one space |
 | [Guard](#guard) | What Claude may do | this computer |
-| [Telegram](#telegram) | Your own Telegram account, for your assistant | this computer |
 | [Versions](#versions) | Earlier configurations | this computer |
 | [Help](#help) | Answers, and reporting a problem | — |
 | [Profile](#profile) | Who you are, your assistant | every space |
@@ -285,7 +285,8 @@ a chat when a task needs it and write from your account. What it is, and its ris
 in [Telegram (your account)](telegram.md). The page goes step by step:
 
 1. **Download the Telegram program**: about 6 MB, once, from the release of your version,
-   checked against its checksums.
+   checked against its checksums. If the keychain still holds your session, the page says
+   so: download it and you are connected again, with no QR code.
 2. **Your application**: the steps to make it at my.telegram.org, and a form for its
    `api_id` and `api_hash`. **Save and show the QR code** keeps them in this computer's
    keychain, never in a file.
