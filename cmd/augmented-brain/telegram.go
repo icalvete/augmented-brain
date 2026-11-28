@@ -94,7 +94,7 @@ func cmdTelegram(args []string, in io.Reader, out, errOut io.Writer) int {
 		fmt.Fprintln(out, i18n.T(l, "telegram.installing"))
 		var err error
 		if p, err = telegramInstall(); err != nil {
-			fmt.Fprintln(errOut, i18n.T(l, "telegram.installfailed", err))
+			fmt.Fprintln(errOut, i18n.T(l, "telegram.installfailed", i18n.Message(l, err)))
 			return 1
 		}
 	}

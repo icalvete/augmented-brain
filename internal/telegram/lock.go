@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/icalvete/augmented-brain/internal/filelock"
+	"github.com/icalvete/augmented-brain/internal/i18n"
 )
 
 // LockName is the lock file, in augmented brain's configuration folder, that every
@@ -18,7 +19,7 @@ import (
 const LockName = "telegram.lock"
 
 // ErrBusy means another connection to Telegram held the lock all the time Lock waited.
-var ErrBusy = errors.New("another connection to Telegram is in use; try again in a moment")
+var ErrBusy = i18n.Errorf("telegram.err.busy")
 
 // Lock waits at most wait for the lock in dir and returns the function that releases it.
 func Lock(dir string, wait time.Duration) (func(), error) {
