@@ -40,6 +40,7 @@ abierto, enseña cada bloque en dos columnas, y una sombra al pie dice que sigue
 | [Hoy](#hoy) | Lo que vence y lo que te espera | todos los espacios |
 | [Tareas](#tareas) | Ver, cambiar, abrir y cerrar tareas | un espacio |
 | [Sesiones](#sesiones) | Tus sesiones de Claude, y las que se cortaron | este ordenador |
+| [Telegram](#telegram) | Tu propia cuenta de Telegram, para tu asistente | este ordenador |
 | [Recordatorios](#recordatorios) | Fechas para revisar y recordatorios del buzón | un espacio |
 | [Buzón](#buzón) | Ideas sueltas, para más tarde | un espacio |
 | [Revisión semanal](#revisión-semanal) | Vaciar el buzón, mirar las tareas paradas | un espacio |
@@ -50,7 +51,6 @@ abierto, enseña cada bloque en dos columnas, y una sombra al pie dice que sigue
 | [Copia de seguridad](#copia-de-seguridad) | Copias de tus notas | todos los espacios |
 | [Salud](#salud) | Si el espacio está en orden | un espacio |
 | [Guardia](#guardia) | Lo que Claude puede hacer | este ordenador |
-| [Telegram](#telegram) | Tu propia cuenta de Telegram, para tu asistente | este ordenador |
 | [Versiones](#versiones) | Configuraciones anteriores | este ordenador |
 | [Ayuda](#ayuda) | Respuestas, y avisar de un problema | — |
 | [Perfil](#perfil) | Quién eres, tu asistente | todos los espacios |
@@ -290,7 +290,8 @@ pueda leer un chat cuando una tarea lo necesite y escribir desde tu cuenta. Qué
 riesgos, están en [Telegram (tu cuenta)](telegram.es.md). La página va paso a paso:
 
 1. **Descargar el programa de Telegram**: unos 6 MB, una sola vez, de la versión que
-   tienes, comprobado con sus sumas de verificación.
+   tienes, comprobado con sus sumas de verificación. Si el llavero aún guarda tu sesión,
+   la página lo dice: descárgalo y vuelves a estar conectado, sin código QR.
 2. **Tu aplicación**: los pasos para crearla en my.telegram.org, y un formulario para su
    `api_id` y su `api_hash`. **Guardar y enseñar el código QR** los guarda en el llavero
    de este ordenador, nunca en un fichero.

@@ -120,9 +120,9 @@ var menu = []struct {
 	key      string
 	sections []string
 }{
-	{"nav.day", []string{"today", "tasks", "sessions", "reminders", "inbox", "review"}},
+	{"nav.day", []string{"today", "tasks", "sessions", "telegram", "reminders", "inbox", "review"}},
 	{"nav.notes", []string{"areas", "knowledge", "rules", "people", "repos", "secrets"}},
-	{"nav.care", []string{"backup", "space", "guard", "telegram", "versions", "help"}},
+	{"nav.care", []string{"backup", "space", "guard", "versions", "help"}},
 }
 
 type option struct {

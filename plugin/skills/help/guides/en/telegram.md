@@ -64,7 +64,7 @@ or try another browser without ad blockers.
 ### From the panel
 
 1. Open the panel (`/brain:panel` in Claude, or `augmented-brain panel`).
-2. In **Upkeep**, open **Telegram**.
+2. In **Day to day**, open **Telegram**.
 3. Press **Download the Telegram program**.
 4. Paste your `api_id` and `api_hash`, and press **Save and show the QR code**.
 5. On your phone, open Telegram → **Settings → Devices → Link Desktop Device**, and scan
