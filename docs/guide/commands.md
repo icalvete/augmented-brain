@@ -858,7 +858,9 @@ augmented-brain telegram status
 ```
 
 One line: connected, with your name and username, or not connected, with how to connect.
-Both end with `0`. It ends with `1` only when it cannot tell (Telegram does not answer,
+Without the Telegram program, it says whether the keychain still holds your session: then
+you are connected, and `augmented-brain telegram connect` brings the program back with no
+QR code. All end with `0`. It ends with `1` only when it cannot tell (Telegram does not answer,
 the keychain fails).
 
 ## augmented-brain telegram disconnect

@@ -10,6 +10,8 @@ import (
 	"github.com/gotd/td/telegram/query/dialogs"
 	"github.com/gotd/td/tg"
 	"github.com/gotd/td/tgerr"
+
+	"github.com/icalvete/augmented-brain/internal/telegramprog"
 )
 
 // memSecrets is a keychain in memory.
@@ -198,5 +200,14 @@ func TestMessageOfReplyTo(t *testing.T) {
 	plain := messageOf(&tg.Message{ID: 13, Message: "hola", PeerID: &tg.PeerUser{UserID: 7}}, users, nil)
 	if plain.ReplyTo != 0 {
 		t.Fatalf("a message that answers none: %+v", plain)
+	}
+}
+
+// telegramprog names the session in the keychain without importing this package: the
+// names must be the same.
+func TestKeychainNamesMatchTelegramprog(t *testing.T) {
+	if telegramprog.KeychainService != Service || telegramprog.KeychainSession != NameSession {
+		t.Errorf("telegramprog has %s/%s, this package %s/%s",
+			telegramprog.KeychainService, telegramprog.KeychainSession, Service, NameSession)
 	}
 }

@@ -511,10 +511,24 @@ rm -f "$DIR/augmented-brain.old"
 say "✓ augmented brain $v installed in $(tilde "$DIR")" \
     "✓ augmented brain $v instalado en $(tilde "$DIR")"
 
+# Whether the keychain holds a Telegram session, without reading it out: its value goes
+# to /dev/null. Bounded, so a keychain that does not answer never stops the installer.
+telegram_session() {
+  tlimit=""
+  command -v timeout >/dev/null 2>&1 && tlimit="timeout 5"
+  case "$os" in
+    linux) command -v secret-tool >/dev/null 2>&1 &&
+           $tlimit secret-tool lookup service augmented-brain name telegram-session >/dev/null 2>&1 ;;
+    darwin) $tlimit security find-generic-password -s augmented-brain -a telegram-session >/dev/null 2>&1 ;;
+    *) return 1 ;;
+  esac
+}
+
 # Telegram's program, only where someone turned Telegram on: it is kept at the same
-# version as augmented-brain. A failure here leaves the old one and says so; it never
-# undoes augmented-brain.
-if [ -f "$DIR/augmented-brain-telegram" ]; then
+# version as augmented-brain, and brought back when the keychain holds a session but the
+# program is gone (connected with a build of one's own, say). A failure here leaves the
+# old one and says so; it never undoes augmented-brain.
+if [ -f "$DIR/augmented-brain-telegram" ] || telegram_session; then
   tarchive="augmented-brain-telegram_${v}_${os}_${arch}.tgz"
   twant="$(grep " ${tarchive}\$" "$TMP/checksums.txt" | awk '{print $1}')"
   if [ -n "$twant" ] && fetch "$tarchive" "$TMP/$tarchive" && [ "$(sha "$TMP/$tarchive")" = "$twant" ] &&
@@ -529,6 +543,11 @@ if [ -f "$DIR/augmented-brain-telegram" ]; then
     say "! Telegram's program could not be updated: the one you had stays; the next update tries again." \
         "! No se ha podido actualizar el programa de Telegram: sigue el que tenías; la próxima actualización lo intenta de nuevo."
   fi
+else
+  case "$os" in linux|darwin)
+    say "  Also: your assistant can read and write on your own Telegram. To connect it: augmented-brain telegram connect, or the panel's Telegram page." \
+        "  Además: tu asistente puede leer y escribir en tu propio Telegram. Para conectarlo: augmented-brain telegram connect, o la página Telegram del panel." ;;
+  esac
 fi
 
 # --- gh, GitHub's program, for the backup -------------------------------------------

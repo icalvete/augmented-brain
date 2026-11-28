@@ -875,7 +875,9 @@ augmented-brain telegram status
 ```
 
 Una línea: conectado, con tu nombre y tu usuario, o no conectado, con cómo conectarlo.
-Las dos acaban con `0`. Acaba con `1` solo cuando no puede saberlo (Telegram no responde,
+Sin el programa de Telegram, dice si el llavero aún guarda tu sesión: entonces sigues
+conectado, y `augmented-brain telegram connect` vuelve a poner el programa sin código
+QR. Todas acaban con `0`. Acaba con `1` solo cuando no puede saberlo (Telegram no responde,
 falla el llavero).
 
 ## augmented-brain telegram disconnect
