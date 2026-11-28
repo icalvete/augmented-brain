@@ -65,6 +65,7 @@
     {{template "fields" (fields $ "list" "allowed" "op" "add" "form" "allowed")}}
     {{template "space" (repos $ "allowed" .Allowed)}}
     <label>{{t "guard.repo"}} <input name="value" required maxlength="500" value="{{$.Val "/guard/list#allowed" "value" ""}}"></label>
+    <label>{{t "guard.why"}} <input name="why" maxlength="200" value="{{$.Val "/guard/list#allowed" "why" ""}}"></label>
     <label class="check"><input type="checkbox" name="confirm" value="yes" required> {{t "guard.allowed.confirm"}}</label>
     {{template "ferr" ($.FormErr "/guard/list#allowed")}}
     <button type="submit">{{t "add"}}</button>
@@ -80,6 +81,7 @@
     {{template "fields" (fields $ "list" "ask" "op" "add" "form" "ask")}}
     {{template "space" (repos $ "ask" .AskRepos)}}
     <label>{{t "guard.repo"}} <input name="value" required maxlength="500" value="{{$.Val "/guard/list#ask" "value" ""}}"></label>
+    <label>{{t "guard.why"}} <input name="why" maxlength="200" value="{{$.Val "/guard/list#ask" "why" ""}}"></label>
     {{template "ferr" ($.FormErr "/guard/list#ask")}}
     <button type="submit">{{t "add"}}</button>
   </form>

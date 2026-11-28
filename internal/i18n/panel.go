@@ -439,6 +439,10 @@ var panelMessages = map[string]msg{
 		en: "Repository folder",
 		es: "Carpeta del repositorio",
 	},
+	"panel.guard.why": {
+		en: "Why (optional, written next to it in config.toml with today's date)",
+		es: "Por qué (opcional; se apunta a su lado en config.toml con la fecha de hoy)",
+	},
 	"panel.guard.add.repo": {
 		en: "Add a repository",
 		es: "Añadir un repositorio",

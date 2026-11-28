@@ -17,7 +17,7 @@ One folder per computer, the **configuration folder**:
 
 Inside it, `config.toml` holds the settings. It is a **TOML** file: `name = value` lines,
 and a `[section]` heading for each space. Lines starting with `#` are comments; the
-program keeps them when it changes the file.
+program keeps them when it changes the file, also inside a list that takes many lines.
 
 ## The files
 

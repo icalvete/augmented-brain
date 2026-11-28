@@ -18,7 +18,8 @@ Hay una carpeta por ordenador, la **carpeta de configuración**:
 
 Dentro, `config.toml` guarda los ajustes. Es un fichero **TOML**: líneas `nombre = valor`,
 y un encabezado `[sección]` para cada espacio. Las líneas que empiezan por `#` son
-comentarios; el programa los conserva cuando cambia el fichero.
+comentarios; el programa los conserva cuando cambia el fichero, también dentro de una
+lista de varias líneas.
 
 ## Los ficheros
 
