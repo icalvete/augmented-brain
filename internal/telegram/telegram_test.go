@@ -11,6 +11,7 @@ import (
 	"github.com/gotd/td/tg"
 	"github.com/gotd/td/tgerr"
 
+	"github.com/icalvete/augmented-brain/internal/i18n"
 	"github.com/icalvete/augmented-brain/internal/telegramprog"
 )
 
@@ -209,5 +210,19 @@ func TestKeychainNamesMatchTelegramprog(t *testing.T) {
 	if telegramprog.KeychainService != Service || telegramprog.KeychainSession != NameSession {
 		t.Errorf("telegramprog has %s/%s, this package %s/%s",
 			telegramprog.KeychainService, telegramprog.KeychainSession, Service, NameSession)
+	}
+}
+
+// The errors a person reads come out in their language, and stay in English for the
+// assistant and the logs.
+func TestErrorsSpeakSpanish(t *testing.T) {
+	_, idErr := ParseApp("abc", "0123456789abcdef0123456789abcdef")
+	_, hashErr := ParseApp("123", "short")
+	for _, err := range []error{ErrBusy, ErrNotConnected, ErrNoKeychain, idErr, hashErr,
+		explain(tgerr.New(400, "PASSWORD_HASH_INVALID")), explain(tgerr.New(400, "API_ID_INVALID"))} {
+		en, es := err.Error(), i18n.Message("es", err)
+		if en == es || es == "" || i18n.Message("en", err) != en {
+			t.Errorf("%q in Spanish: %q", en, es)
+		}
 	}
 }
