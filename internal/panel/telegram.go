@@ -54,6 +54,7 @@ var (
 	tgPath    = telegramprog.Path
 	tgInstall = telegramprog.Install
 	tgCall    = telegramprog.Call
+	tgSaved   = telegramprog.SessionSaved
 	tgStart   = startLogin
 	// tgTimer and tgUntimer set and remove the timer that looks for replies; tests
 	// never touch the real systemd or launchd.
@@ -149,15 +150,16 @@ func qrSVG(text string) template.HTML {
 func (s *Server) telegram(v *view, r *http.Request) (string, page, error) {
 	v.unlock() // the program reaches Telegram: seconds, not with the notes held
 	d := struct {
-		Supported, Installed, App, Connected, Waiting, Password, Remote bool
-		Account                                                         *tgAccount
-		QR                                                              template.HTML
-		Err                                                             string
+		Supported, Installed, Saved, App, Connected, Waiting, Password, Remote bool
+		Account                                                                *tgAccount
+		QR                                                                     template.HTML
+		Err                                                                    string
 	}{Supported: telegramprog.Supported(), Remote: s.viaRemote(r)}
 	path := ""
 	if d.Supported {
 		path = tgPath()
 		d.Installed = path != ""
+		d.Saved = !d.Installed && tgSaved()
 	}
 	login.mu.Lock()
 	d.Waiting = login.running && login.account == nil
