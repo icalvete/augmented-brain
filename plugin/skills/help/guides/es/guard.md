@@ -85,6 +85,12 @@ donde Claude hace commit y push sin preguntar, sale un aviso y tienes que marcar
 casilla que dice que lo entiendes. Añade solo repositorios donde un error se pueda
 deshacer.
 
+La página también puede apuntar por qué añades un repositorio: rellena «Por qué» y se
+escribe a su lado en `config.toml`, con el día (`"~/code/shop",  # 2026-11-28, la tienda
+online`). Una lista que llevas a mano en varias líneas, con tus comentarios, se queda
+como está: la página añade el repositorio nuevo antes del `]` de cierre, y quitar uno
+quita solo su línea.
+
 Cuando el guardia para un commit, Claude te lo dice y te cuenta dónde permitirlo: esta
 página, que se abre al escribir `/brain:panel`. En la entrevista de la primera sesión, si
 programas, Claude te pregunta qué repositorios son y se ofrece a abrírtela.

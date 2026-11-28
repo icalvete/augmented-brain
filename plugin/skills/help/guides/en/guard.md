@@ -83,6 +83,11 @@ The easiest way is the panel's **Guard** page. Adding a repository to the list w
 Claude commits and pushes without asking shows a warning, and you must tick a box that
 says you understand. Add only repositories where a mistake can be undone.
 
+The page can also write why you add a repository: fill in "Why" and it goes next to it
+in `config.toml`, with the day (`"~/code/shop",  # 2026-11-28, the online store`). A list
+you keep by hand over many lines, with your own comments, stays as it is: the page adds
+the new repository before the closing `]`, and taking one out takes only its line.
+
 When the guard stops a commit, Claude tells you so and where to allow it: this page,
 which opens when you type `/brain:panel`. In the first-session interview, if you write
 code, Claude asks which repositories they are and offers to open it for you.

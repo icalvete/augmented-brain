@@ -399,7 +399,15 @@ func (s *Server) guardList(v *view, r *http.Request) (string, error) {
 			if err != nil {
 				return err
 			}
-			return config.SetSpaceList(v.c.Dir, sp.Name, key, tildeEach(out))
+			// A reason to write by the repository it adds, as the box allows it.
+			why := ""
+			if op == "add" {
+				why = field(r, "why")
+				if rs := []rune(why); len(rs) > 200 {
+					why = string(rs[:200])
+				}
+			}
+			return config.SetSpaceListWhy(v.c.Dir, sp.Name, key, tildeEach(out), why)
 		case "profiles":
 			out, err := edit(v.c.ProductionAWSProfiles)
 			if err != nil {

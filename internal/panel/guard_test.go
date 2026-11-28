@@ -427,3 +427,42 @@ func TestGuardPageSaysAFolderIsMissing(t *testing.T) {
 		t.Error("the warning is not next to the missing folder")
 	}
 }
+
+// A list kept on many lines, with a comment by each repository, changes from the page
+// too: the repository added goes last with its reason and the day, the one taken out
+// goes with its line, and the other comments stay.
+func TestGuardPageEditsAListOfManyLines(t *testing.T) {
+	s, cfg := fixture(t, "en")
+	home := filepath.Dir(cfg)
+	a, b, c := filepath.Join(home, "alpha"), filepath.Join(home, "beta"), filepath.Join(home, "gamma")
+	if err := config.SetSpaceListWhy(cfg, "work", "git_ask_repos", []string{a, b}, "kept by hand"); err != nil {
+		t.Fatal(err)
+	}
+	sealNow(t, cfg)
+	for _, f := range []url.Values{
+		{"s": {"work"}, "list": {"ask"}, "space": {"work"}, "op": {"add"}, "value": {c}, "why": {"for the demo"}},
+		{"s": {"work"}, "list": {"ask"}, "space": {"work"}, "op": {"remove"}, "value": {a}},
+	} {
+		if w := s.post(t, "/guard/list", f); w.Code != http.StatusSeeOther {
+			t.Fatalf("%v: %d %s", f, w.Code, w.Body.String())
+		}
+		sealNow(t, cfg)
+	}
+	data, _ := os.ReadFile(filepath.Join(cfg, config.FileName))
+	text, day := string(data), time.Now().Format("2006-01-02")
+	for _, want := range []string{"beta\",  # " + day + ", kept by hand", "gamma\",  # " + day + ", for the demo"} {
+		if !strings.Contains(text, want) {
+			t.Errorf("no %q in:\n%s", want, text)
+		}
+	}
+	if strings.Contains(text, "alpha") {
+		t.Errorf("alpha still there:\n%s", text)
+	}
+	conf, err := config.Load(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ask := conf.GitLists(); len(ask) != 2 {
+		t.Errorf("ask: %v", ask)
+	}
+}
