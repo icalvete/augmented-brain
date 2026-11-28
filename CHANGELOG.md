@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+## 1.2.1
+
+Released 2026-11-28.
+
+- **Telegram says the truth when its program is missing.** If the keychain still holds
+  your session, `telegram status` and the panel say so, and that `telegram connect`
+  brings the program back with no QR code; `update` brings it back by itself.
+- **Telegram is easier to find.** Its panel page moves to Day to day, after Sessions,
+  and the installer mentions it when it is not connected.
+- **Telegram's errors speak your language.** "Telegram asks to wait", a wrong
+  application or password, the keychain: in the terminal and on the panel, in Spanish
+  too.
+- **The Guard page changes a list that takes many lines.** Adding a repository to a list
+  kept by hand over several lines, with comments, failed with "the change would break
+  config.toml". Now the value goes in before the closing `]` and taking one out takes
+  only its line; your comments stay. Adding a repository also takes an optional "Why",
+  written next to it with the day.
+
 ## 1.2.0
 
 Released 2026-11-27.

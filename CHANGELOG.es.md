@@ -2,6 +2,24 @@
 
 ## Sin publicar
 
+## 1.2.1
+
+Publicada el 2026-11-28.
+
+- **Telegram dice la verdad cuando falta su programa.** Si el llavero aún guarda tu
+  sesión, `telegram status` y el panel lo dicen y avisan de que `telegram connect` vuelve a
+  poner el programa sin código QR; `update` lo vuelve a poner solo.
+- **Telegram se encuentra mejor.** Su página del panel pasa a Día a día, tras Sesiones,
+  y el instalador lo menciona cuando no está conectado.
+- **Los errores de Telegram hablan tu idioma.** «Telegram pide esperar», una aplicación
+  o una contraseña que no vale, el llavero: en el terminal y en el panel, también en
+  español.
+- **La página Guardia cambia una lista de varias líneas.** Añadir un repositorio a una
+  lista llevada a mano en varias líneas, con comentarios, fallaba con «el cambio
+  estropearía config.toml». Ahora el valor entra antes del `]` de cierre y quitar uno
+  quita solo su línea; tus comentarios se quedan. Al añadir un repositorio hay además un
+  «Por qué» opcional, que se escribe a su lado con el día.
+
 ## 1.2.0
 
 Publicada el 2026-11-27.
