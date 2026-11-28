@@ -5,7 +5,8 @@ name: release
 #   one in VERSION, and this workflow makes its tag on the commit of main that last set
 #   VERSION or changed that version's section of the changelog
 #   (scripts/release-commit.sh), not on whatever main holds at the moment of the click.
-#   The guard keeps assistants from starting it (internal/guard, dispatch).
+#   An assistant may start it only with the maintainer's yes: the guard asks them every
+#   time, and denies it where nobody can be asked (internal/guard, dispatch).
 # - Pushing a tag v<version> by hand, on a commit of main.
 #
 # Jobs, each with only the permissions it needs:
