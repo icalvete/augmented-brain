@@ -433,7 +433,7 @@ func TestGuardPageSaysAFolderIsMissing(t *testing.T) {
 // goes with its line, and the other comments stay.
 func TestGuardPageEditsAListOfManyLines(t *testing.T) {
 	s, cfg := fixture(t, "en")
-	home := filepath.Dir(cfg)
+	home, _ := filepath.EvalSymlinks(filepath.Dir(cfg)) // macOS: /var is /private/var
 	a, b, c := filepath.Join(home, "alpha"), filepath.Join(home, "beta"), filepath.Join(home, "gamma")
 	if err := config.SetSpaceListWhy(cfg, "work", "git_ask_repos", []string{a, b}, "kept by hand"); err != nil {
 		t.Fatal(err)
